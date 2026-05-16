@@ -226,7 +226,13 @@
       "defaultConfiguration": "test"
     },
     "start-containers": {
-      "dependsOn": ["api-container-image"],
+      "dependsOn": [
+        "api-container-image",
+        "worker-container-image",
+        "vnc-container-image",
+        "ssh-container-image",
+        "agi-container-image"
+      ],
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
