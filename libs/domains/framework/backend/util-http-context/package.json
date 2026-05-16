@@ -12,6 +12,6 @@
     "@nestjs/platform-socket.io": "11.1.6",
     "socket.io": "4.8.1",
     "typeorm": "0.3.27",
-    "socket.io-client": "4.8.1"
+    "socket.io-client": "4.8.3"
   }
 }
