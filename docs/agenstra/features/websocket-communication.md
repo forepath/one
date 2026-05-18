@@ -8,10 +8,11 @@ Agenstra uses WebSocket (Socket.IO) for real-time bidirectional communication. T
 
 - **Frontend ↔ Controller (`clients` namespace)**: Workspace selection (`setClient`), `forward` to remote agent-managers, and controller-originated ticket hints for chat
 - **Frontend ↔ Controller (`tickets` namespace)**: Ticket board and automation realtime for subscribers
+- **Frontend ↔ Controller (`status` namespace)**: Per-user workspace/environment notification state (git dirty, unread chat) without `setClient`
 - **Controller ↔ Manager**: Event forwarding to remote agent-managers
 - **Manager ↔ Agent Containers**: Real-time chat and container communication
 
-On the controller, **`clients`** and **`tickets`** share the same TCP port (`WEBSOCKET_PORT`); namespaces are selected in the Socket.IO client path.
+On the controller, **`clients`**, **`tickets`**, **`pages`** (knowledge), and **`status`** share the same TCP port (`WEBSOCKET_PORT`); namespaces are selected in the Socket.IO client path.
 
 ## Authentication
 
@@ -22,6 +23,19 @@ WebSocket connections to the controller require authentication. Pass the `Author
 - **Users**: `Bearer <jwt-token>`
 
 Unauthenticated connections are rejected with `connect_error` "Unauthorized". The `setClient` operation enforces per-client authorization: only users with access to the requested client (global admin, client creator, or client_users entry) can set that client context. Unauthorized attempts emit an `error` event with message "You do not have access to this client".
+
+### Agent console status (`status` namespace)
+
+The agent console opens a dedicated Socket.IO connection to **`status`** (derived from `controller.websocketUrl` by replacing `/clients` with `/status`, or via `controller.statusWebsocketUrl`). Handshake auth matches other controller namespaces.
+
+- **No `setClient`**: the stream is scoped to the authenticated user only.
+- **On connect**: server emits **`statusSnapshot`** with all accessible workspaces/environments (git dirty + unread flags).
+- **While connected**: server emits **`statusPatch`** for deltas; background polling (`STATUS_POLL_INTERVAL_MS`, default 30s) refreshes git state and catches unread when no `clients` socket is active. Successful VCS mutations proxied through the controller (stage, commit, fetch, pull, push including force, branch operations, conflict resolve, prepare-clean workspace) also emit **`statusPatch`** immediately to every user with access to that workspace.
+- **Agent workspace changes**: agent-manager broadcasts **`gitStateChanged`** on the agents namespace after file writes, file-update notifications, workspace-affecting agent tool results, and local VCS/file mutations. The controller **`clients`** gateway listens for **`gitStateChanged`** and **`fileUpdateNotification`**, then pushes **`statusPatch`** on the **`status`** namespace to users with workspace access (same security model as VCS proxy hooks).
+- **Client → server**: `markEnvironmentRead` `{ clientId, agentId }`, `setActiveEnvironment` `{ clientId, agentId | null }`.
+- **Unread** includes agent chat replies and live ticket automation chat card updates; read cursors persist in `user_environment_read_state` on the controller database.
+
+See `libs/domains/framework/backend/feature-agent-controller/spec/asyncapi.yaml` and `libs/domains/framework/frontend/data-access-agent-console/docs/notifications-state.mmd`.
 
 ### Billing manager (dashboard status)
 

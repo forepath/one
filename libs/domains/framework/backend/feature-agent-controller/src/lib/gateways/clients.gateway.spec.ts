@@ -8,6 +8,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
@@ -163,6 +164,10 @@ describe('ClientsGateway', () => {
   const mockWorkspaceConfigurationOverridesProxy = {
     getConfigurationOverrides: jest.fn().mockResolvedValue([]),
   };
+  const mockAgentConsoleStatusService = {
+    onAgentChatActivity: jest.fn().mockResolvedValue(undefined),
+    notifyVcsStateChanged: jest.fn().mockResolvedValue(undefined),
+  };
   const createMockSocket = (id = 'socket-1', withUserInfo = true) => {
     const emitted: Record<string, unknown>[] = [];
     const socket = {
@@ -194,6 +199,7 @@ describe('ClientsGateway', () => {
         { provide: TicketsService, useValue: mockTicketsService },
         { provide: KnowledgeTreeService, useValue: mockKnowledgeTreeService },
         { provide: AutoContextResolverService, useValue: mockAutoContextResolverService },
+        { provide: AgentConsoleStatusService, useValue: mockAgentConsoleStatusService },
         {
           provide: ClientWorkspaceConfigurationOverridesProxyService,
           useValue: mockWorkspaceConfigurationOverridesProxy,
@@ -713,6 +719,8 @@ describe('ClientsGateway', () => {
     await new Promise((resolve) => setImmediate(resolve));
     // Clear previous emit calls to isolate this test
     (socket.emit as jest.Mock).mockClear();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (gateway as any).lastAgentIdBySocket.set(socket.id, 'agent-uuid');
     // Simulate fileUpdateNotification event from remote agent-manager gateway
     const fileUpdateNotification = {
       success: true,
@@ -734,6 +742,79 @@ describe('ClientsGateway', () => {
     await new Promise((resolve) => setImmediate(resolve));
     // Should forward fileUpdateNotification to local socket
     expect(socket.emit).toHaveBeenCalledWith('fileUpdateNotification', fileUpdateNotification);
+    expect(mockAgentConsoleStatusService.notifyVcsStateChanged).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+  });
+
+  it('pushes status patch when remote emits gitStateChanged', async () => {
+    const socket = createMockSocket();
+    const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
+    const remote = io() as any;
+
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'x',
+      agentWsPort: 8099,
+    } as any);
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    await new Promise((resolve) => setImmediate(resolve));
+    remote.triggerEvent('connect');
+    await new Promise((resolve) => setImmediate(resolve));
+    mockAgentConsoleStatusService.notifyVcsStateChanged.mockClear();
+    (socket.emit as jest.Mock).mockClear();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (gateway as any).lastAgentIdBySocket.set(socket.id, 'agent-uuid');
+
+    const onAnyHandler = remote.onAny.mock.calls[0]?.[0];
+
+    if (onAnyHandler) {
+      onAnyHandler('gitStateChanged', {
+        success: true,
+        data: { agentId: 'agent-uuid', timestamp: new Date().toISOString() },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(mockAgentConsoleStatusService.notifyVcsStateChanged).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+  });
+
+  it('pushes status patch for gitStateChanged using agentId from payload when lastAgentId is unset', async () => {
+    const socket = createMockSocket();
+    const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
+    const remote = io() as any;
+
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'x',
+      agentWsPort: 8099,
+    } as any);
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    await new Promise((resolve) => setImmediate(resolve));
+    remote.triggerEvent('connect');
+    await new Promise((resolve) => setImmediate(resolve));
+    mockAgentConsoleStatusService.notifyVcsStateChanged.mockClear();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (gateway as any).lastAgentIdBySocket.delete(socket.id);
+
+    const onAnyHandler = remote.onAny.mock.calls[0]?.[0];
+
+    if (onAnyHandler) {
+      onAnyHandler('gitStateChanged', {
+        success: true,
+        data: { agentId: 'agent-from-payload', timestamp: new Date().toISOString() },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(mockAgentConsoleStatusService.notifyVcsStateChanged).toHaveBeenCalledWith(
+      'client-uuid',
+      'agent-from-payload',
+    );
   });
 
   describe('Remote Socket Reconnection', () => {

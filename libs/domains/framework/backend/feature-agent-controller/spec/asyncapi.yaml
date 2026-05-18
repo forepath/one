@@ -258,6 +258,20 @@ channels:
       pagesKnowledgePageActivityCreatedEvent:
         $ref: '#/components/messages/KnowledgePageActivityCreatedPayload'
     description: Incremental page activity row for currently open page details.
+  status/statusSnapshot:
+    address: status/statusSnapshot
+    description: |
+      Full per-user notification state on connect (git dirty + unread per environment, client rollups, spacesHasAttention).
+      Unicast to the connecting socket only. Namespace **status** (STATUS_WEBSOCKET_NAMESPACE, default "status").
+  status/statusPatch:
+    address: status/statusPatch
+    description: Incremental notification deltas after connect (unicast).
+  status/markEnvironmentRead:
+    address: status/markEnvironmentRead
+    description: Client marks an environment chat as read; persists user_environment_read_state.
+  status/setActiveEnvironment:
+    address: status/setActiveEnvironment
+    description: Client reports the environment currently in view (suppresses unread for active user).
 operations:
   clientSendsSetClient:
     action: send

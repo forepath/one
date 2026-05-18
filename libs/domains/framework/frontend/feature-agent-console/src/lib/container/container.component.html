@@ -135,12 +135,23 @@
       <a
         routerLink="/clients"
         routerLinkActive="active"
-        class="sidebar__item"
+        class="sidebar__item position-relative"
         i18n-title="@@featureContainer-spacesTitle"
         title="Spaces"
       >
         <i class="bi bi-grid me-1"></i>
         <span class="small" i18n="@@featureContainer-spaces">Spaces</span>
+        @if (spacesAttentionBadge$ | async; as attentionBadge) {
+          <span
+            class="notification-badge"
+            [class.notification-badge--git]="attentionBadge === 'git'"
+            [class.notification-badge--unread]="attentionBadge === 'unread'"
+            [class.notification-badge--both]="attentionBadge === 'both'"
+            aria-hidden="true"
+          >
+            <span class="visually-hidden" i18n="@@featureContainer-spacesAttention">Spaces need attention</span>
+          </span>
+        }
       </a>
       <a
         [routerLink]="ticketsSidebarLink()"

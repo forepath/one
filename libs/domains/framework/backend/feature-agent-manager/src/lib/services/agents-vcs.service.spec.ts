@@ -7,6 +7,7 @@ import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentFileSystemService } from './agent-file-system.service';
+import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
 import { AgentsVcsService } from './agents-vcs.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
@@ -43,6 +44,9 @@ describe('AgentsVcsService', () => {
   const mockAgentFileSystemService = {
     readFile: jest.fn(),
   };
+  const mockGitStateBroadcast = {
+    notifyGitStateMayHaveChanged: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -63,6 +67,10 @@ describe('AgentsVcsService', () => {
         {
           provide: AgentFileSystemService,
           useValue: mockAgentFileSystemService,
+        },
+        {
+          provide: AgentGitStateBroadcastService,
+          useValue: mockGitStateBroadcast,
         },
       ],
     }).compile();
@@ -279,6 +287,7 @@ describe('AgentsVcsService', () => {
         undefined,
         false,
       );
+      expect(mockGitStateBroadcast.notifyGitStateMayHaveChanged).toHaveBeenCalledWith(mockAgentId);
     });
 
     it('should stage all files when empty array provided', async () => {

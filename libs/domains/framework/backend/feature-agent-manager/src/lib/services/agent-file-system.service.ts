@@ -11,6 +11,7 @@ import { AgentsRepository } from '../repositories/agents.repository';
 import type { AgentFileManagerContext } from '../utils/agent-file-manager-context';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 
+import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
 
@@ -30,7 +31,12 @@ export class AgentFileSystemService {
     private readonly agentsRepository: AgentsRepository,
     private readonly dockerService: DockerService,
     private readonly agentProviderFactory: AgentProviderFactory,
+    private readonly gitStateBroadcast: AgentGitStateBroadcastService,
   ) {}
+
+  private notifyGitStateMayHaveChanged(agentId: string): void {
+    this.gitStateBroadcast.notifyGitStateMayHaveChanged(agentId);
+  }
 
   /**
    * Sanitize and validate a file path to prevent directory traversal attacks.
@@ -354,6 +360,7 @@ export class AgentFileSystemService {
       );
 
       this.logger.debug(`File written: ${filePath} for agent ${agentId} (encoding: ${encoding || 'utf-8'})`);
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -574,6 +581,10 @@ export class AgentFileSystemService {
       }
 
       this.logger.debug(`Created ${type}: ${filePath} for agent ${agentId}`);
+
+      if (type === 'directory' || content === undefined) {
+        this.notifyGitStateMayHaveChanged(agentId);
+      }
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -617,6 +628,7 @@ export class AgentFileSystemService {
       );
 
       this.logger.debug(`Deleted: ${filePath} for agent ${agentId}`);
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -672,6 +684,7 @@ export class AgentFileSystemService {
       );
 
       this.logger.debug(`Moved: ${sourcePath} to ${destinationPath} for agent ${agentId}`);
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 

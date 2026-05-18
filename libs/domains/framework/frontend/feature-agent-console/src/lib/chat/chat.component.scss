@@ -1,6 +1,21 @@
 @use '../section.scss';
+@use '../notification-badge.scss';
+
+@mixin open-editor-git-dirty-indicator {
+  z-index: 2;
+  background-color: rgba(var(--bs-primary-rgb), 0.12) !important;
+  box-shadow: inset 0 0 0.75rem rgba(var(--bs-primary-rgb), 0.4) !important;
+}
 
 :host {
+  .btn.open-editor-btn--git-dirty {
+    @include open-editor-git-dirty-indicator;
+  }
+
+  .btn-group.open-editor-btn--git-dirty > .btn.btn-outline-primary:first-child {
+    @include open-editor-git-dirty-indicator;
+  }
+
   display: flex;
   flex-direction: column;
   width: 100%;

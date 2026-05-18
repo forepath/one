@@ -1,3 +1,5 @@
+@use '../notification-badge.scss';
+
 :host {
   display: flex;
   flex-direction: column;
@@ -110,4 +112,10 @@
   &:after {
     display: none;
   }
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
 }

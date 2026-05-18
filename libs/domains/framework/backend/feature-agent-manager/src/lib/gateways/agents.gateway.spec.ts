@@ -8,6 +8,7 @@ import { AgentProvider, AgentResponseObject } from '../providers/agent-provider.
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import { ChatFilter, FilterDirection } from '../providers/chat-filter.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
+import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
@@ -117,8 +118,18 @@ describe('AgentsGateway', () => {
   const mockAgentSessionHydrationService = {
     consumePendingSummary: jest.fn().mockReturnValue(undefined),
   };
+  let gitStateBroadcaster: ((agentId: string) => void) | undefined;
+  const mockGitStateBroadcast = {
+    registerBroadcaster: jest.fn((broadcaster: (agentId: string) => void) => {
+      gitStateBroadcaster = broadcaster;
+    }),
+    notifyGitStateMayHaveChanged: jest.fn((agentId: string) => {
+      gitStateBroadcaster?.(agentId);
+    }),
+  };
 
   beforeEach(async () => {
+    gitStateBroadcaster = undefined;
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AgentsGateway,
@@ -158,10 +169,15 @@ describe('AgentsGateway', () => {
           provide: AgentSessionHydrationService,
           useValue: mockAgentSessionHydrationService,
         },
+        {
+          provide: AgentGitStateBroadcastService,
+          useValue: mockGitStateBroadcast,
+        },
       ],
     }).compile();
 
     gateway = module.get<AgentsGateway>(AgentsGateway);
+    gateway.onModuleInit();
     agentsService = module.get(AgentsService);
     agentsRepository = module.get(AgentsRepository);
     dockerService = module.get(DockerService);
@@ -2665,6 +2681,41 @@ describe('AgentsGateway', () => {
     });
   });
 
+  describe('git state changed broadcasts', () => {
+    it('emits gitStateChanged after workspace tool results', () => {
+      const socketId = mockSocket.id || 'test-socket-id';
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gateway as any).socketById.set(socketId, mockSocket);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gateway as any).broadcastChatEvent(mockAgent.id, {
+        eventId: 'event-1',
+        kind: 'toolResult',
+        agentId: mockAgent.id,
+        correlationId: 'corr-1',
+        sequence: 2,
+        timestamp: new Date().toISOString(),
+        payload: {
+          toolCallId: 'tool-1',
+          name: 'write_file',
+          result: { ok: true },
+          isError: false,
+        },
+      } as AgentEventEnvelope);
+
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'gitStateChanged',
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({ agentId: mockAgent.id }),
+        }),
+      );
+    });
+  });
+
   describe('handleFileUpdate', () => {
     it('should broadcast file update notification for authenticated user', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
@@ -2695,6 +2746,16 @@ describe('AgentsGateway', () => {
             timestamp: expect.any(String),
           },
           timestamp: expect.any(String),
+        }),
+      );
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'gitStateChanged',
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({
+            agentId: mockAgent.id,
+            timestamp: expect.any(String),
+          }),
         }),
       );
       loggerLogSpy.mockRestore();

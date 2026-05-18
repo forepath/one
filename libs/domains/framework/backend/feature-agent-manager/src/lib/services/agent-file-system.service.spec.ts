@@ -10,6 +10,7 @@ import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentFileSystemService } from './agent-file-system.service';
+import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
 
@@ -55,6 +56,9 @@ describe('AgentFileSystemService', () => {
   const mockAgentProviderFactory = {
     getProvider: jest.fn().mockReturnValue(mockProvider),
   };
+  const mockGitStateBroadcast = {
+    notifyGitStateMayHaveChanged: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -75,6 +79,10 @@ describe('AgentFileSystemService', () => {
         {
           provide: AgentProviderFactory,
           useValue: mockAgentProviderFactory,
+        },
+        {
+          provide: AgentGitStateBroadcastService,
+          useValue: mockGitStateBroadcast,
         },
       ],
     }).compile();
@@ -365,6 +373,7 @@ describe('AgentFileSystemService', () => {
 
       expect(agentsService.findOne).toHaveBeenCalledWith(mockAgentId);
       expect(dockerService.sendCommandToContainer).toHaveBeenCalled();
+      expect(mockGitStateBroadcast.notifyGitStateMayHaveChanged).toHaveBeenCalledWith(mockAgentId);
     });
 
     it('should write binary file content successfully', async () => {

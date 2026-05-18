@@ -43,14 +43,20 @@ import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketEntity } from '../entities/ticket.entity';
+import { UserEnvironmentReadStateEntity } from '../entities/user-environment-read-state.entity';
 import { ClientsGateway } from '../gateways/clients.gateway';
 import { KnowledgeBoardGateway } from '../gateways/knowledge-board.gateway';
+import { StatusGateway } from '../gateways/status.gateway';
 import { TicketsBoardGateway } from '../gateways/tickets-board.gateway';
 import { DigitalOceanProvider } from '../providers/provisioning/digital-ocean.provider';
 import { HetznerProvider } from '../providers/provisioning/hetzner.provider';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
+import { TicketAutomationRunsStatusRepository } from '../repositories/ticket-automation-runs-status.repository';
+import { UserEnvironmentReadStateRepository } from '../repositories/user-environment-read-state.repository';
+import { AgentConsoleStatusRealtimeService } from '../services/agent-console-status-realtime.service';
+import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { AutonomousRunOrchestratorService } from '../services/autonomous-run-orchestrator.service';
 import { AutonomousTicketScheduler } from '../services/autonomous-ticket.scheduler';
@@ -58,6 +64,7 @@ import { ClientAgentAutonomyService } from '../services/client-agent-autonomy.se
 import { ClientAgentDeploymentsProxyService } from '../services/client-agent-deployments-proxy.service';
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
+import { ClientAgentMessagesProxyService } from '../services/client-agent-messages-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
@@ -107,6 +114,7 @@ const authMethod = getAuthenticationMethod();
       KnowledgeNodeEmbeddingEntity,
       KnowledgePageActivityEntity,
       KnowledgeRelationEntity,
+      UserEnvironmentReadStateEntity,
     ]),
     StatisticsModule,
     forwardRef(() => FilterRulesModule),
@@ -155,6 +163,11 @@ const authMethod = getAuthenticationMethod();
     ClientAgentCredentialsRepository,
     ClientAgentCredentialsService,
     SocketAuthService,
+    AgentConsoleStatusRealtimeService,
+    AgentConsoleStatusService,
+    ClientAgentMessagesProxyService,
+    UserEnvironmentReadStateRepository,
+    TicketAutomationRunsStatusRepository,
     ClientsGateway,
     TicketBoardRealtimeService,
     KnowledgeBoardRealtimeService,
@@ -162,6 +175,7 @@ const authMethod = getAuthenticationMethod();
     TicketAutomationChatSyncService,
     TicketsBoardGateway,
     KnowledgeBoardGateway,
+    StatusGateway,
     ProvisioningService,
     ProvisioningProviderFactory,
     ProvisioningReferencesRepository,

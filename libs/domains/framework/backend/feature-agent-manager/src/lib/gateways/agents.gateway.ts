@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, OnModuleInit } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -11,6 +11,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
+import { GIT_STATE_CHANGED_EVENT, toolMayMutateGitWorkspace } from '../constants/agent-git-state.constants';
 import { AgentEventEnvelope, AgentInteractionQueryPayload, AgentResponseMode } from '../providers/agent-events.types';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentResponseObject } from '../providers/agent-provider.interface';
@@ -22,6 +23,7 @@ import {
   FilterDirection,
 } from '../providers/chat-filter.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
+import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
@@ -89,6 +91,11 @@ interface ChatEnhanceFailureData {
 
 interface FileUpdatePayload {
   filePath: string;
+}
+
+interface GitStateChangedData {
+  agentId: string;
+  timestamp: string;
 }
 
 interface CreateTerminalPayload {
@@ -232,7 +239,7 @@ function toAgentEventEnvelopeBase(
     skipMiddlewares: true,
   },
 })
-export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit {
   @WebSocketServer()
   server: Server;
 
@@ -264,7 +271,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly chatFilterFactory: ChatFilterFactory,
     private readonly promptContextComposer: PromptContextComposerService,
     private readonly agentSessionHydrationService: AgentSessionHydrationService,
+    private readonly gitStateBroadcast: AgentGitStateBroadcastService,
   ) {}
+
+  onModuleInit(): void {
+    this.gitStateBroadcast.registerBroadcaster((agentId) => this.broadcastGitStateChanged(agentId));
+  }
 
   /**
    * Handle client connection.
@@ -386,6 +398,21 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private broadcastChatEvent(agentUuid: string, event: AgentEventEnvelope): void {
     this.broadcastToAgent(agentUuid, 'chatEvent', createSuccessResponse<AgentEventEnvelope>(event));
     void this.agentMessageEventsService.persistEvent(agentUuid, event);
+
+    if (event.kind === 'toolResult' && !event.payload.isError && toolMayMutateGitWorkspace(event.payload.name)) {
+      this.gitStateBroadcast.notifyGitStateMayHaveChanged(agentUuid);
+    }
+  }
+
+  private broadcastGitStateChanged(agentUuid: string): void {
+    this.broadcastToAgent(
+      agentUuid,
+      GIT_STATE_CHANGED_EVENT,
+      createSuccessResponse<GitStateChangedData>({
+        agentId: agentUuid,
+        timestamp: new Date().toISOString(),
+      }),
+    );
   }
 
   /**
@@ -2131,6 +2158,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           timestamp: updateTimestamp,
         }),
       );
+      this.gitStateBroadcast.notifyGitStateMayHaveChanged(agentUuid);
     } catch (error) {
       socket.emit('error', createErrorResponse('Error processing file update', 'FILE_UPDATE_ERROR'));
       const err = error as { message?: string; stack?: string };

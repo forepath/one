@@ -20,6 +20,8 @@ export interface Environment {
     websocketUrl: string;
     /** When unset, derived from `websocketUrl` by swapping the `/clients` suffix for `/tickets`. */
     ticketsWebsocketUrl?: string;
+    /** When unset, derived from `websocketUrl` by swapping the `/clients` suffix for `/status`. */
+    statusWebsocketUrl?: string;
   };
   billing: {
     restApiUrl: string;

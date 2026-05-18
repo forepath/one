@@ -6,6 +6,7 @@ import { AgentsDeploymentsController } from '../controllers/agents-deployments.c
 import { AgentsEnvironmentVariablesController } from '../controllers/agents-environment-variables.controller';
 import { AgentsFilesController } from '../controllers/agents-files.controller';
 import { AgentsFiltersController } from '../controllers/agents-filters.controller';
+import { AgentsMessagesController } from '../controllers/agents-messages.controller';
 import { AgentsVcsController } from '../controllers/agents-vcs.controller';
 import { AgentsVerificationController } from '../controllers/agents-verification.controller';
 import { AgentsController } from '../controllers/agents.controller';
@@ -44,6 +45,7 @@ import { RegexFilterRulesRepository } from '../repositories/regex-filter-rules.r
 import { WorkspaceConfigurationOverridesRepository } from '../repositories/workspace-configuration-overrides.repository';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
 import { AgentFileSystemService } from '../services/agent-file-system.service';
+import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
@@ -78,6 +80,7 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
   ],
   controllers: [
     AgentsController,
+    AgentsMessagesController,
     AgentsFilesController,
     AgentsVcsController,
     AgentsVerificationController,
@@ -95,6 +98,7 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
     AgentMessageEventsService,
     AgentSessionHydrationService,
     AgentEnvironmentVariablesService,
+    AgentGitStateBroadcastService,
     AgentFileSystemService,
     AgentsVcsService,
     AgentsVerificationService,

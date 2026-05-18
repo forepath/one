@@ -1,0 +1,12 @@
+.notification-badge {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--bs-primary);
+}
+
+.list-group-item.active .notification-badge {
+  background-color: var(--bs-white);
+}

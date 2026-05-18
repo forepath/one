@@ -16,6 +16,7 @@ export * from './lib/dto/file-node.dto';
 export * from './lib/dto/git-branch.dto';
 export * from './lib/dto/git-diff.dto';
 export * from './lib/dto/git-status.dto';
+export * from './lib/dto/latest-agent-message.dto';
 export * from './lib/dto/move-file.dto';
 export * from './lib/dto/prepare-clean-workspace.dto';
 export * from './lib/dto/push-options.dto';

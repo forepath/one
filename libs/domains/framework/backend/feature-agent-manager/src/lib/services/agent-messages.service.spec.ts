@@ -30,6 +30,7 @@ describe('AgentMessagesService', () => {
   const mockRepository = {
     create: jest.fn(),
     findByAgentId: jest.fn(),
+    findLatestAgentMessage: jest.fn(),
     countByAgentId: jest.fn(),
     deleteByAgentId: jest.fn(),
   };
@@ -292,6 +293,35 @@ describe('AgentMessagesService', () => {
 
       expect(result).toBe(5);
       expect(mockRepository.countByAgentId).toHaveBeenCalledWith(agentId);
+    });
+  });
+
+  describe('getLatestAgentMessage', () => {
+    it('returns id and createdAt when message exists', async () => {
+      const createdAt = new Date('2026-01-01T00:00:00.000Z');
+
+      mockRepository.findLatestAgentMessage.mockResolvedValue({
+        id: 'msg-1',
+        createdAt,
+        agentId: 'agent-uuid-123',
+        actor: 'agent',
+        message: 'hi',
+        filtered: false,
+        updatedAt: createdAt,
+      });
+
+      const result = await service.getLatestAgentMessage('agent-uuid-123');
+
+      expect(result).toEqual({ id: 'msg-1', createdAt });
+      expect(mockRepository.findLatestAgentMessage).toHaveBeenCalledWith('agent-uuid-123');
+    });
+
+    it('returns null when repository has no agent message', async () => {
+      mockRepository.findLatestAgentMessage.mockResolvedValue(null);
+
+      const result = await service.getLatestAgentMessage('agent-uuid-123');
+
+      expect(result).toBeNull();
     });
   });
 

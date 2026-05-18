@@ -39,6 +39,7 @@ import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketEntity } from '../entities/ticket.entity';
+import { UserEnvironmentReadStateEntity } from '../entities/user-environment-read-state.entity';
 import { ClientsGateway } from '../gateways/clients.gateway';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { AutonomousTicketScheduler } from '../services/autonomous-ticket.scheduler';
@@ -176,6 +177,8 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(KnowledgeRelationEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(KnowledgePageActivityEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(UserEnvironmentReadStateEntity))
       .useValue(mockRepository)
       .overrideProvider(UsersRepository)
       .useValue(mockRepository)

@@ -90,6 +90,7 @@ export * from './lib/entities/ticket-activity.entity';
 export * from './lib/entities/ticket-body-generation-session.entity';
 export * from './lib/entities/ticket-comment.entity';
 export * from './lib/entities/ticket.entity';
+export * from './lib/entities/user-environment-read-state.entity';
 export * from './lib/entities/ticket.enums';
 export * from './lib/entities/statistics-agent.entity';
 export * from './lib/entities/statistics-chat-filter-drop.entity';

@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant FE as Frontend_notifications
+    participant SG as StatusGateway
+    participant Svc as AgentConsoleStatusService
+    participant DB as controller_DB
+    participant Mgr as agent_manager_HTTP
+
+    FE->>SG: connect (auth)
+    SG->>Svc: buildSnapshot(user)
+    Svc->>DB: read user_environment_read_state
+    Svc->>Mgr: latest agent message + vcs status
+    Svc-->>FE: statusSnapshot
+
+    Note over SG,Svc: chatMessage / automation upsert hook
+    Svc-->>FE: statusPatch (unicast)
