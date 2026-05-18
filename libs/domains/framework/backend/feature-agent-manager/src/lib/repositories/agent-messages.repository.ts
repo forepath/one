@@ -90,6 +90,16 @@ export class AgentMessagesRepository {
   }
 
   /**
+   * Find the most recent agent-authored message for an environment.
+   */
+  async findLatestAgentMessage(agentId: string): Promise<AgentMessageEntity | null> {
+    return await this.repository.findOne({
+      where: { agentId, actor: 'agent' },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  /**
    * Create a new message.
    * @param dto - Data transfer object for creating a message
    * @returns The created message entity

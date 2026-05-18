@@ -2,7 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
-import { AuthenticationFacade, ClientsFacade } from '@forepath/framework/frontend/data-access-agent-console';
+import {
+  AuthenticationFacade,
+  ClientsFacade,
+  NotificationsFacade,
+} from '@forepath/framework/frontend/data-access-agent-console';
 import { LocaleService } from '@forepath/framework/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { combineLatest, filter, map, startWith } from 'rxjs';
@@ -19,6 +23,7 @@ import { ThemeService } from '../theme.service';
 export class AgentConsoleContainerComponent implements OnInit {
   private readonly authenticationFacade = inject(AuthenticationFacade);
   private readonly clientsFacade = inject(ClientsFacade);
+  protected readonly notificationsFacade = inject(NotificationsFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -70,6 +75,7 @@ export class AgentConsoleContainerComponent implements OnInit {
    * Observable indicating whether the user is authenticated
    */
   readonly isAuthenticated$ = this.authenticationFacade.isAuthenticated$;
+  readonly spacesAttentionBadge$ = this.notificationsFacade.spacesAttentionBadge$;
 
   /** Selected space (client); tickets need a client context in the UI. */
   readonly activeClientId$ = this.clientsFacade.activeClientId$;
@@ -131,6 +137,16 @@ export class AgentConsoleContainerComponent implements OnInit {
   ngOnInit(): void {
     this.authenticationFacade.checkAuthentication();
 
+    this.authenticationFacade.isAuthenticated$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((isAuthenticated) => {
+        if (isAuthenticated) {
+          this.notificationsFacade.connectSocket();
+        } else {
+          this.notificationsFacade.disconnectSocket();
+        }
+      });
+
     // Check initial query params immediately
     const initialParams = this.route.snapshot.queryParams;
     const isStandalone = !!initialParams['standalone'];
@@ -155,6 +171,7 @@ export class AgentConsoleContainerComponent implements OnInit {
    * Handles logout action
    */
   onLogout(): void {
+    this.notificationsFacade.disconnectSocket();
     this.authenticationFacade.logout();
   }
 }

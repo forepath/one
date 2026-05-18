@@ -29,6 +29,7 @@ import {
   filterTicketsForTicketContextSuggestions,
   findPermittedTicketByExactSha,
   KnowledgeFacade,
+  NotificationsFacade,
   SocketsFacade,
   StatsFacade,
   TicketAutomationFacade,
@@ -159,6 +160,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly authFacade = inject(AuthenticationFacade);
   private readonly socketsFacade = inject(SocketsFacade);
+  protected readonly notificationsFacade = inject(NotificationsFacade);
   private readonly statsFacade = inject(StatsFacade);
   private readonly ticketsFacade = inject(TicketsFacade);
   private readonly ticketAutomationFacade = inject(TicketAutomationFacade);
@@ -744,6 +746,21 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       const sidePanelOpen = deploymentManagerOpen;
 
       return ((!editorOpen && !sidePanelOpen) || gatewayVisible) && selectedAgent.agentType === 'openclaw';
+    }),
+  );
+
+  readonly getClientAttentionBadge$ = (clientId: string) => this.notificationsFacade.getClientAttentionBadge$(clientId);
+
+  readonly getEnvironmentAttentionBadge$ = (clientId: string, agentId: string) =>
+    this.notificationsFacade.getEnvironmentAttentionBadge$(clientId, agentId);
+
+  readonly selectedEnvironmentGitDirty$ = combineLatest([this.activeClientId$, this.selectedAgent$]).pipe(
+    switchMap(([clientId, agent]) => {
+      if (!clientId || !agent?.id) {
+        return of(false);
+      }
+
+      return this.notificationsFacade.getEnvironmentGitDirty$(clientId, agent.id);
     }),
   );
 
@@ -1988,6 +2005,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       this.previousMessageCount = 0;
       this.previousDisplayThreadLength = 0;
       this.lastUserMessageTimestamp.set(null);
+      this.notificationsFacade.setActiveEnvironment(null, null);
 
       // Close editor if open
       if (this.editorOpen()) {
@@ -2033,6 +2051,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (this.standaloneMode() && this.route.snapshot.queryParams['file']) {
         this.standaloneLoadingService.setLoading(true);
       }
+
+      this.notificationsFacade.setActiveEnvironment(clientId, null);
     }
   }
 
@@ -2077,6 +2097,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
           this.enhanceErrorMessage.set(null);
         }
+
+        this.notificationsFacade.setActiveEnvironment(clientId, agentId);
+        this.notificationsFacade.markEnvironmentRead(clientId, agentId);
       }
     }
   }
@@ -2095,6 +2118,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     // Clear local selected agent ID
     this.selectedAgentId.set(null);
+    this.notificationsFacade.setActiveEnvironment(clientId ?? null, null);
     // Disconnect socket if connected
     this.socketConnected$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((connected) => {
       if (connected) {

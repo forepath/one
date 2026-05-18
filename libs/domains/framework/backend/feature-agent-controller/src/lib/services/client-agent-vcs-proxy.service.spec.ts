@@ -12,6 +12,7 @@ import axios, { AxiosError } from 'axios';
 
 import { ClientsRepository } from '../repositories/clients.repository';
 
+import { AgentConsoleStatusService } from './agent-console-status.service';
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
 import { ClientsService } from './clients.service';
 
@@ -40,6 +41,9 @@ describe('ClientAgentVcsProxyService', () => {
   const mockClientsRepository = {
     findByIdOrThrow: jest.fn(),
   };
+  const mockAgentConsoleStatusService = {
+    notifyVcsStateChanged: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -47,6 +51,7 @@ describe('ClientAgentVcsProxyService', () => {
         ClientAgentVcsProxyService,
         { provide: ClientsService, useValue: mockClientsService },
         { provide: ClientsRepository, useValue: mockClientsRepository },
+        { provide: AgentConsoleStatusService, useValue: mockAgentConsoleStatusService },
       ],
     }).compile();
 
@@ -196,6 +201,49 @@ describe('ClientAgentVcsProxyService', () => {
           url: `https://example.com/api/agents/${mockAgentId}/vcs/branches/${encodeURIComponent('feature/foo bar')}/switch`,
         }),
       );
+      expect(mockAgentConsoleStatusService.notifyVcsStateChanged).toHaveBeenCalledWith(mockClientId, mockAgentId);
+    });
+  });
+
+  describe('git state notifications', () => {
+    it('should notify status socket after successful push', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({ status: 204, data: undefined } as any);
+
+      await service.push(mockClientId, mockAgentId, { force: true });
+
+      expect(mockAgentConsoleStatusService.notifyVcsStateChanged).toHaveBeenCalledWith(mockClientId, mockAgentId);
+    });
+
+    it('should notify status socket after successful fetch', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({ status: 204, data: undefined } as any);
+
+      await service.fetch(mockClientId, mockAgentId);
+
+      expect(mockAgentConsoleStatusService.notifyVcsStateChanged).toHaveBeenCalledWith(mockClientId, mockAgentId);
+    });
+
+    it('should not notify status socket when getStatus fails', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        status: 404,
+        data: { message: 'Agent not found' },
+      } as any);
+
+      await expect(service.getStatus(mockClientId, mockAgentId)).rejects.toThrow(NotFoundException);
+      expect(mockAgentConsoleStatusService.notifyVcsStateChanged).not.toHaveBeenCalled();
+    });
+
+    it('should not notify status socket when push fails', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        status: 400,
+        data: { message: 'Push rejected' },
+      } as any);
+
+      await expect(service.push(mockClientId, mockAgentId)).rejects.toThrow(BadRequestException);
+      expect(mockAgentConsoleStatusService.notifyVcsStateChanged).not.toHaveBeenCalled();
     });
   });
 
@@ -215,6 +263,82 @@ describe('ClientAgentVcsProxyService', () => {
           data: body,
         }),
       );
+      expect(mockAgentConsoleStatusService.notifyVcsStateChanged).toHaveBeenCalledWith(mockClientId, mockAgentId);
+    });
+  });
+
+  describe('additional git mutations', () => {
+    beforeEach(() => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({ status: 204, data: undefined } as any);
+    });
+
+    it('notifies after pull and commit', async () => {
+      await service.pull(mockClientId, mockAgentId);
+      await service.commit(mockClientId, mockAgentId, { message: 'feat: test' });
+
+      expect(mockAgentConsoleStatusService.notifyVcsStateChanged).toHaveBeenCalledTimes(2);
+    });
+
+    it('notifies after stage and unstage', async () => {
+      await service.stageFiles(mockClientId, mockAgentId, { files: ['a.ts'] });
+      await service.unstageFiles(mockClientId, mockAgentId, { files: ['a.ts'] });
+
+      expect(mockAgentConsoleStatusService.notifyVcsStateChanged).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('auth and error handling', () => {
+    it('throws for unsupported authentication type', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue({
+        ...mockClientEntity,
+        authenticationType: 'unknown' as AuthenticationType,
+      });
+
+      await expect(service.getStatus(mockClientId, mockAgentId)).rejects.toThrow(BadRequestException);
+    });
+
+    it('maps non-404/400 HTTP status to BadRequestException', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        status: 403,
+        data: { message: 'Forbidden' },
+      } as any);
+
+      await expect(service.getStatus(mockClientId, mockAgentId)).rejects.toThrow('Request failed: Forbidden');
+    });
+
+    it('maps axios response errors with non-400 status', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      const err = new AxiosError('Forbidden');
+
+      err.response = { status: 403, data: { message: 'denied' } } as never;
+      mockedAxios.request.mockRejectedValue(err);
+
+      await expect(service.getStatus(mockClientId, mockAgentId)).rejects.toThrow('Request failed: denied');
+    });
+
+    it('maps axios setup errors', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      const err = new AxiosError('Invalid config');
+
+      mockedAxios.request.mockRejectedValue(err);
+
+      await expect(service.getStatus(mockClientId, mockAgentId)).rejects.toThrow('Request setup failed');
+    });
+
+    it('logs when status notification fails after mutation', async () => {
+      const warnSpy = jest.spyOn(service['logger'], 'warn').mockImplementation(() => undefined);
+
+      mockAgentConsoleStatusService.notifyVcsStateChanged.mockRejectedValue(new Error('socket down'));
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({ status: 204, data: undefined } as any);
+
+      await service.fetch(mockClientId, mockAgentId);
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to publish status patch'));
+      warnSpy.mockRestore();
     });
   });
 

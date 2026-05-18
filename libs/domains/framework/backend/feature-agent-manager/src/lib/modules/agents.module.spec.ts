@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { AgentsDeploymentsController } from '../controllers/agents-deployments.controller';
+import { AgentsMessagesController } from '../controllers/agents-messages.controller';
 import { AgentsController } from '../controllers/agents.controller';
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 import { AgentMessageEventEntity } from '../entities/agent-message-event.entity';
@@ -115,6 +116,13 @@ describe('AgentsModule', () => {
 
     expect(controller).toBeDefined();
     expect(controller).toBeInstanceOf(AgentsController);
+  });
+
+  it('should provide AgentsMessagesController', () => {
+    const controller = module.get<AgentsMessagesController>(AgentsMessagesController);
+
+    expect(controller).toBeDefined();
+    expect(controller).toBeInstanceOf(AgentsMessagesController);
   });
 
   it('should provide AgentsGateway', () => {

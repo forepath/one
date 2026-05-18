@@ -8,6 +8,7 @@ import { ResolveConflictDto } from '../dto/resolve-conflict.dto';
 import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentFileSystemService } from './agent-file-system.service';
+import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
 
@@ -30,10 +31,15 @@ export class AgentsVcsService {
     private readonly agentsRepository: AgentsRepository,
     private readonly dockerService: DockerService,
     private readonly agentFileSystemService: AgentFileSystemService,
+    private readonly gitStateBroadcast: AgentGitStateBroadcastService,
   ) {
     // Get commit author from environment variables
     this.commitAuthorName = process.env.GIT_COMMIT_AUTHOR_NAME || 'Agenstra Agent';
     this.commitAuthorEmail = process.env.GIT_COMMIT_AUTHOR_EMAIL || 'agent@agenstra.local';
+  }
+
+  private notifyGitStateMayHaveChanged(agentId: string): void {
+    this.gitStateBroadcast.notifyGitStateMayHaveChanged(agentId);
   }
 
   /**
@@ -708,6 +714,8 @@ export class AgentsVcsService {
 
         await this.executeGitCommand(agentEntity.containerId, `add ${escapedFiles}`);
       }
+
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -739,6 +747,8 @@ export class AgentsVcsService {
 
         await this.executeGitCommand(agentEntity.containerId, `reset HEAD ${escapedFiles}`);
       }
+
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -772,6 +782,7 @@ export class AgentsVcsService {
         agentEntity.containerId,
         `-c user.name='${this.commitAuthorName}' -c user.email='${this.commitAuthorEmail}' commit -m '${escapedMessage}'`,
       );
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -818,6 +829,7 @@ export class AgentsVcsService {
       // This will cause Git to fail immediately if credentials aren't available
       // Also enable exit code checking to properly detect and report push failures
       await this.executeGitCommand(agentEntity.containerId, pushCommand, this.BASE_PATH, false, true, true);
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -871,6 +883,7 @@ export class AgentsVcsService {
         true,
         true,
       );
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -911,6 +924,7 @@ export class AgentsVcsService {
       // Execute fetch with disablePrompts=true to prevent interactive credential prompts
       // Also enable exit code checking to properly detect and report fetch failures
       await this.executeGitCommand(agentEntity.containerId, 'fetch origin', this.BASE_PATH, false, true, true);
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -952,6 +966,7 @@ export class AgentsVcsService {
       const cleanBranchName = this.cleanBranchName(branch);
 
       await this.executeGitCommand(agentEntity.containerId, `rebase ${this.escapePath(cleanBranchName)}`);
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -977,6 +992,7 @@ export class AgentsVcsService {
       const cleanBranchName = this.cleanBranchName(branch);
 
       await this.executeGitCommand(agentEntity.containerId, `checkout ${this.escapePath(cleanBranchName)}`);
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -1019,6 +1035,7 @@ export class AgentsVcsService {
       const baseBranch = dto.baseBranch || 'HEAD';
 
       await this.executeGitCommand(agentEntity.containerId, `checkout -b ${this.escapePath(branchName)} ${baseBranch}`);
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -1055,6 +1072,7 @@ export class AgentsVcsService {
       }
 
       await this.executeGitCommand(agentEntity.containerId, `branch -D ${this.escapePath(cleanBranchName)}`);
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -1102,6 +1120,8 @@ export class AgentsVcsService {
         default:
           throw new BadRequestException(`Unknown conflict resolution strategy: ${dto.strategy}`);
       }
+
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -1140,6 +1160,7 @@ export class AgentsVcsService {
       await this.executeGitCommand(containerId, `checkout ${escaped}`, this.BASE_PATH, false, true, true);
       await this.executeGitCommand(containerId, `reset --hard origin/${escaped}`, this.BASE_PATH, false, true, true);
       await this.executeGitCommand(containerId, 'clean -fd', this.BASE_PATH, false, true, true);
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 

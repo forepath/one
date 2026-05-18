@@ -92,6 +92,19 @@ export class AgentMessagesService {
   }
 
   /**
+   * Latest agent-authored message for unread cursor comparison.
+   */
+  async getLatestAgentMessage(agentId: string): Promise<{ id: string; createdAt: Date } | null> {
+    const message = await this.agentMessagesRepository.findLatestAgentMessage(agentId);
+
+    if (!message) {
+      return null;
+    }
+
+    return { id: message.id, createdAt: message.createdAt };
+  }
+
+  /**
    * Delete all messages for a specific agent.
    * @param agentId - The UUID of the agent
    * @returns Number of messages deleted

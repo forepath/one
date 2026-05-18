@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant UI as AgentConsole_UI
+    participant NgRx as notifications_store
+    participant SG as StatusGateway
+    participant Svc as AgentConsoleStatusService
+
+    UI->>NgRx: connectNotificationsSocket
+    NgRx->>SG: connect (auth)
+    SG->>Svc: buildSnapshot(user)
+    Svc-->>SG: statusSnapshot
+    SG-->>NgRx: statusSnapshot
+    NgRx-->>UI: badges (spaces/workspaces/envs)
+
+    Note over SG,NgRx: statusPatch on chat/automation/git change
+    SG-->>NgRx: statusPatch
+    NgRx-->>UI: play sound if not active env
+
+    UI->>NgRx: markEnvironmentRead / setActiveEnvironment
+    NgRx->>SG: emit to server

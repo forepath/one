@@ -7,6 +7,7 @@ import { TicketAutomationRunPhase, TicketAutomationRunStatus } from '../entities
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
 
+import { AgentConsoleStatusService } from './agent-console-status.service';
 import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
 
@@ -19,6 +20,9 @@ describe('TicketAutomationChatSyncService', () => {
   const ticketRepo = { findOne: jest.fn() };
   const automationRepo = { findOne: jest.fn() };
   const chatRealtime = { emitToClient: jest.fn(), emitToSocket: jest.fn() };
+  const agentConsoleStatusService = {
+    onAutomationChatActivity: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -38,6 +42,7 @@ describe('TicketAutomationChatSyncService', () => {
         { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
         { provide: ClientAutomationChatRealtimeService, useValue: chatRealtime },
+        { provide: AgentConsoleStatusService, useValue: agentConsoleStatusService },
       ],
     }).compile();
 
@@ -90,5 +95,48 @@ describe('TicketAutomationChatSyncService', () => {
 
     expect(payload.hydrate).toBe(true);
     expect(payload.run.id).toBe('r1');
+    expect(agentConsoleStatusService.onAutomationChatActivity).not.toHaveBeenCalled();
+  });
+
+  it('emitLiveRunUpdateFromEntity notifies status service', async () => {
+    const run = {
+      id: 'r1',
+      ticketId: 't1',
+      clientId: 'c1',
+      agentId: 'a1',
+      status: TicketAutomationRunStatus.SUCCEEDED,
+      phase: TicketAutomationRunPhase.FINALIZE,
+      ticketStatusBefore: TicketStatus.TODO,
+      startedAt: new Date('2020-01-01'),
+      updatedAt: new Date('2020-01-02'),
+      finishedAt: new Date('2020-01-02'),
+      iterationCount: 1,
+      completionMarkerSeen: true,
+      verificationPassed: true,
+      failureCode: null,
+      summary: null,
+      cancelRequestedAt: null,
+      cancelledByUserId: null,
+      cancellationReason: null,
+    } as TicketAutomationRunEntity;
+
+    ticketRepo.findOne.mockResolvedValue({
+      id: 't1',
+      clientId: 'c1',
+      title: 'Hello',
+      priority: TicketPriority.MEDIUM,
+      status: TicketStatus.TODO,
+      preferredChatAgentId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    automationRepo.findOne.mockResolvedValue({ eligible: true });
+
+    service.emitLiveRunUpdateFromEntity(run);
+
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(chatRealtime.emitToClient).toHaveBeenCalled();
+    expect(agentConsoleStatusService.onAutomationChatActivity).toHaveBeenCalledWith('c1', 'a1', run.updatedAt);
   });
 });

@@ -179,8 +179,21 @@
                         (click)="onClientSelect(client.id)"
                       >
                         <div class="d-flex flex-column">
-                          <div class="d-flex justify-content-between align-items-center mb-1">
+                          <div class="d-flex justify-content-start align-items-center mb-1">
                             <strong class="text-truncate me-2">{{ client.name }}</strong>
+                            @if (getClientAttentionBadge$(client.id) | async; as attentionBadge) {
+                              <span
+                                class="notification-badge"
+                                [class.notification-badge--git]="attentionBadge === 'git'"
+                                [class.notification-badge--unread]="attentionBadge === 'unread'"
+                                [class.notification-badge--both]="attentionBadge === 'both'"
+                                aria-hidden="true"
+                              >
+                                <span class="visually-hidden" i18n="@@featureChat-environmentsAttention"
+                                  >Environments need attention</span
+                                >
+                              </span>
+                            }
                           </div>
                           @if (client.description) {
                             <small class="text-muted text-truncate mb-2">{{ client.description }}</small>
@@ -340,6 +353,22 @@
                           <div class="d-flex align-items-center mb-1">
                             <strong class="text-truncate me-2">{{ agent.name }}</strong>
                             @if (activeClient$ | async; as activeClient) {
+                              @if (
+                                getEnvironmentAttentionBadge$(activeClient.id, agent.id) | async;
+                                as attentionBadge
+                              ) {
+                                <span
+                                  class="notification-badge"
+                                  [class.notification-badge--git]="attentionBadge === 'git'"
+                                  [class.notification-badge--unread]="attentionBadge === 'unread'"
+                                  [class.notification-badge--both]="attentionBadge === 'both'"
+                                  aria-hidden="true"
+                                >
+                                  <span class="visually-hidden" i18n="@@featureChat-environmentsAttention"
+                                    >Environment needs attention</span
+                                  >
+                                </span>
+                              }
                               @if (getAgentDeploymentStatus$(activeClient.id, agent.id) | async; as deploymentStatus) {
                                 @if (deploymentStatus) {
                                   <small class="flex-shrink-0">
@@ -664,6 +693,7 @@
                   <button
                     type="button"
                     class="btn btn-sm btn-outline-primary"
+                    [class.open-editor-btn--git-dirty]="selectedEnvironmentGitDirty$ | async"
                     (click)="onToggleEditor(true, getOpenInNewWindow())"
                     [title]="getOpenEditorTitle()"
                   >
@@ -1364,6 +1394,7 @@
                   <button
                     type="button"
                     class="btn btn-sm btn-outline-primary"
+                    [class.open-editor-btn--git-dirty]="selectedEnvironmentGitDirty$ | async"
                     (click)="onToggleEditor(true, getOpenInNewWindow())"
                     [title]="getOpenEditorTitle()"
                   >

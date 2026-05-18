@@ -189,6 +189,14 @@ export * from './lib/state/knowledge-board-socket/knowledge-board-socket.effects
 export * from './lib/state/knowledge-board-socket/knowledge-board-socket.facade';
 export * from './lib/state/knowledge-board-socket/knowledge-board-socket.reducer';
 export * from './lib/state/knowledge-board-socket/knowledge-board-socket.selectors';
+export * from './lib/state/notifications/notifications-attention.util';
+export * from './lib/state/notifications/notifications.actions';
+export * from './lib/state/notifications/notifications.effects';
+export * from './lib/state/notifications/notifications.facade';
+export * from './lib/state/notifications/notifications.reducer';
+export * from './lib/state/notifications/notifications.selectors';
+export * from './lib/state/notifications/notifications.types';
+export * from './lib/state/notifications/status-socket.constants';
 export * from './lib/state/statistics/statistics.actions';
 export * from './lib/state/statistics/statistics.effects';
 export * from './lib/state/statistics/statistics.facade';

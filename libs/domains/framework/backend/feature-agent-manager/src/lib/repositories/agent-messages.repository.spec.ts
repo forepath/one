@@ -218,6 +218,30 @@ describe('AgentMessagesRepository', () => {
     });
   });
 
+  describe('findLatestAgentMessage', () => {
+    it('returns latest agent-authored message', async () => {
+      const agentMessage = { ...mockMessage, actor: 'agent' };
+
+      mockTypeOrmRepository.findOne.mockResolvedValue(agentMessage);
+
+      const result = await repository.findLatestAgentMessage('agent-uuid-123');
+
+      expect(result).toEqual(agentMessage);
+      expect(mockTypeOrmRepository.findOne).toHaveBeenCalledWith({
+        where: { agentId: 'agent-uuid-123', actor: 'agent' },
+        order: { createdAt: 'DESC' },
+      });
+    });
+
+    it('returns null when no agent messages exist', async () => {
+      mockTypeOrmRepository.findOne.mockResolvedValue(null);
+
+      const result = await repository.findLatestAgentMessage('agent-uuid-123');
+
+      expect(result).toBeNull();
+    });
+  });
+
   describe('deleteByAgentId', () => {
     it('should delete all messages for agent', async () => {
       mockTypeOrmRepository.delete.mockResolvedValue({ affected: 3 });

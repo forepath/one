@@ -14,13 +14,14 @@ import {
   UnstageFilesDto,
 } from '@forepath/framework/backend/feature-agent-manager';
 import { AuthenticationType } from '@forepath/identity/backend';
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import { ClientsRepository } from '../repositories/clients.repository';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
+import { AgentConsoleStatusService } from './agent-console-status.service';
 import { ClientsService } from './clients.service';
 
 /**
@@ -34,7 +35,25 @@ export class ClientAgentVcsProxyService {
   constructor(
     private readonly clientsService: ClientsService,
     private readonly clientsRepository: ClientsRepository,
+    @Inject(forwardRef(() => AgentConsoleStatusService))
+    private readonly agentConsoleStatusService: AgentConsoleStatusService,
   ) {}
+
+  private emitGitStateChanged(clientId: string, agentId: string): void {
+    void this.agentConsoleStatusService.notifyVcsStateChanged(clientId, agentId).catch((error: unknown) => {
+      this.logger.warn(
+        `Failed to publish status patch after VCS change for ${clientId}/${agentId}: ${(error as Error).message}`,
+      );
+    });
+  }
+
+  private async runGitStateMutation<T>(clientId: string, agentId: string, operation: () => Promise<T>): Promise<T> {
+    const result = await operation();
+
+    this.emitGitStateChanged(clientId, agentId);
+
+    return result;
+  }
 
   /**
    * Get authentication header for a client.
@@ -208,11 +227,13 @@ export class ClientAgentVcsProxyService {
    * @param stageFilesDto - Files to stage (empty array stages all)
    */
   async stageFiles(clientId: string, agentId: string, stageFilesDto: StageFilesDto): Promise<void> {
-    await this.makeRequest<void>(clientId, agentId, {
-      method: 'POST',
-      url: '/stage',
-      data: stageFilesDto,
-    });
+    await this.runGitStateMutation(clientId, agentId, () =>
+      this.makeRequest<void>(clientId, agentId, {
+        method: 'POST',
+        url: '/stage',
+        data: stageFilesDto,
+      }),
+    );
   }
 
   /**
@@ -222,11 +243,13 @@ export class ClientAgentVcsProxyService {
    * @param unstageFilesDto - Files to unstage (empty array unstages all)
    */
   async unstageFiles(clientId: string, agentId: string, unstageFilesDto: UnstageFilesDto): Promise<void> {
-    await this.makeRequest<void>(clientId, agentId, {
-      method: 'POST',
-      url: '/unstage',
-      data: unstageFilesDto,
-    });
+    await this.runGitStateMutation(clientId, agentId, () =>
+      this.makeRequest<void>(clientId, agentId, {
+        method: 'POST',
+        url: '/unstage',
+        data: unstageFilesDto,
+      }),
+    );
   }
 
   /**
@@ -236,11 +259,13 @@ export class ClientAgentVcsProxyService {
    * @param commitDto - Commit message
    */
   async commit(clientId: string, agentId: string, commitDto: CommitDto): Promise<void> {
-    await this.makeRequest<void>(clientId, agentId, {
-      method: 'POST',
-      url: '/commit',
-      data: commitDto,
-    });
+    await this.runGitStateMutation(clientId, agentId, () =>
+      this.makeRequest<void>(clientId, agentId, {
+        method: 'POST',
+        url: '/commit',
+        data: commitDto,
+      }),
+    );
   }
 
   /**
@@ -250,11 +275,13 @@ export class ClientAgentVcsProxyService {
    * @param pushOptions - Optional push options (e.g., force flag)
    */
   async push(clientId: string, agentId: string, pushOptions: { force?: boolean } = {}): Promise<void> {
-    await this.makeRequest<void>(clientId, agentId, {
-      method: 'POST',
-      url: '/push',
-      data: pushOptions,
-    });
+    await this.runGitStateMutation(clientId, agentId, () =>
+      this.makeRequest<void>(clientId, agentId, {
+        method: 'POST',
+        url: '/push',
+        data: pushOptions,
+      }),
+    );
   }
 
   /**
@@ -263,10 +290,12 @@ export class ClientAgentVcsProxyService {
    * @param agentId - The UUID of the agent
    */
   async pull(clientId: string, agentId: string): Promise<void> {
-    await this.makeRequest<void>(clientId, agentId, {
-      method: 'POST',
-      url: '/pull',
-    });
+    await this.runGitStateMutation(clientId, agentId, () =>
+      this.makeRequest<void>(clientId, agentId, {
+        method: 'POST',
+        url: '/pull',
+      }),
+    );
   }
 
   /**
@@ -275,10 +304,12 @@ export class ClientAgentVcsProxyService {
    * @param agentId - The UUID of the agent
    */
   async fetch(clientId: string, agentId: string): Promise<void> {
-    await this.makeRequest<void>(clientId, agentId, {
-      method: 'POST',
-      url: '/fetch',
-    });
+    await this.runGitStateMutation(clientId, agentId, () =>
+      this.makeRequest<void>(clientId, agentId, {
+        method: 'POST',
+        url: '/fetch',
+      }),
+    );
   }
 
   /**
@@ -288,11 +319,13 @@ export class ClientAgentVcsProxyService {
    * @param rebaseDto - Branch to rebase onto
    */
   async rebase(clientId: string, agentId: string, rebaseDto: RebaseDto): Promise<void> {
-    await this.makeRequest<void>(clientId, agentId, {
-      method: 'POST',
-      url: '/rebase',
-      data: rebaseDto,
-    });
+    await this.runGitStateMutation(clientId, agentId, () =>
+      this.makeRequest<void>(clientId, agentId, {
+        method: 'POST',
+        url: '/rebase',
+        data: rebaseDto,
+      }),
+    );
   }
 
   /**
@@ -302,10 +335,12 @@ export class ClientAgentVcsProxyService {
    * @param branch - Branch name to switch to
    */
   async switchBranch(clientId: string, agentId: string, branch: string): Promise<void> {
-    await this.makeRequest<void>(clientId, agentId, {
-      method: 'POST',
-      url: `/branches/${encodeURIComponent(branch)}/switch`,
-    });
+    await this.runGitStateMutation(clientId, agentId, () =>
+      this.makeRequest<void>(clientId, agentId, {
+        method: 'POST',
+        url: `/branches/${encodeURIComponent(branch)}/switch`,
+      }),
+    );
   }
 
   /**
@@ -315,11 +350,13 @@ export class ClientAgentVcsProxyService {
    * @param createBranchDto - Branch creation data
    */
   async createBranch(clientId: string, agentId: string, createBranchDto: CreateBranchDto): Promise<void> {
-    await this.makeRequest<void>(clientId, agentId, {
-      method: 'POST',
-      url: '/branches',
-      data: createBranchDto,
-    });
+    await this.runGitStateMutation(clientId, agentId, () =>
+      this.makeRequest<void>(clientId, agentId, {
+        method: 'POST',
+        url: '/branches',
+        data: createBranchDto,
+      }),
+    );
   }
 
   /**
@@ -329,10 +366,12 @@ export class ClientAgentVcsProxyService {
    * @param branch - Branch name to delete
    */
   async deleteBranch(clientId: string, agentId: string, branch: string): Promise<void> {
-    await this.makeRequest<void>(clientId, agentId, {
-      method: 'DELETE',
-      url: `/branches/${encodeURIComponent(branch)}`,
-    });
+    await this.runGitStateMutation(clientId, agentId, () =>
+      this.makeRequest<void>(clientId, agentId, {
+        method: 'DELETE',
+        url: `/branches/${encodeURIComponent(branch)}`,
+      }),
+    );
   }
 
   /**
@@ -342,22 +381,26 @@ export class ClientAgentVcsProxyService {
    * @param resolveConflictDto - Conflict resolution data
    */
   async resolveConflict(clientId: string, agentId: string, resolveConflictDto: ResolveConflictDto): Promise<void> {
-    await this.makeRequest<void>(clientId, agentId, {
-      method: 'POST',
-      url: '/conflicts/resolve',
-      data: resolveConflictDto,
-    });
+    await this.runGitStateMutation(clientId, agentId, () =>
+      this.makeRequest<void>(clientId, agentId, {
+        method: 'POST',
+        url: '/conflicts/resolve',
+        data: resolveConflictDto,
+      }),
+    );
   }
 
   /**
    * Fetch, checkout base branch, hard reset to upstream, and clean (proxied to client agent-manager).
    */
   async prepareCleanWorkspace(clientId: string, agentId: string, body: PrepareCleanWorkspaceDto): Promise<void> {
-    await this.makeRequest<void>(clientId, agentId, {
-      method: 'POST',
-      url: '/workspace/prepare-clean',
-      data: body,
-    });
+    await this.runGitStateMutation(clientId, agentId, () =>
+      this.makeRequest<void>(clientId, agentId, {
+        method: 'POST',
+        url: '/workspace/prepare-clean',
+        data: body,
+      }),
+    );
   }
 
   /**

@@ -12,6 +12,7 @@ import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketEntity } from '../entities/ticket.entity';
 import { ticketAutomationRunEntityToDto } from '../utils/ticket-board-realtime-mappers';
 
+import { AgentConsoleStatusService } from './agent-console-status.service';
 import { ClientAutomationChatRealtimeService } from './client-automation-chat-realtime.service';
 
 /** Cap for post-login hydration (per agent + client). */
@@ -34,6 +35,7 @@ export class TicketAutomationChatSyncService {
     @InjectRepository(TicketAutomationEntity)
     private readonly automationRepo: Repository<TicketAutomationEntity>,
     private readonly clientAutomationChatRealtime: ClientAutomationChatRealtimeService,
+    private readonly agentConsoleStatusService: AgentConsoleStatusService,
   ) {}
 
   /**
@@ -73,6 +75,9 @@ export class TicketAutomationChatSyncService {
 
     if (payload) {
       this.clientAutomationChatRealtime.emitToClient(run.clientId, payload);
+      void this.agentConsoleStatusService
+        .onAutomationChatActivity(run.clientId, run.agentId, run.updatedAt)
+        .catch(() => undefined);
     }
   }
 
@@ -81,6 +86,9 @@ export class TicketAutomationChatSyncService {
     void this.buildPayload(run, false).then((payload) => {
       if (payload) {
         this.clientAutomationChatRealtime.emitToClient(run.clientId, payload);
+        void this.agentConsoleStatusService
+          .onAutomationChatActivity(run.clientId, run.agentId, run.updatedAt)
+          .catch(() => undefined);
       }
     });
   }

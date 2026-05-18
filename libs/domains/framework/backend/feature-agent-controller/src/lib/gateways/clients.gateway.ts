@@ -25,6 +25,7 @@ import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.ent
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
@@ -117,6 +118,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly knowledgeTreeService: KnowledgeTreeService,
     private readonly autoContextResolverService: AutoContextResolverService,
     private readonly workspaceConfigurationOverridesProxy: ClientWorkspaceConfigurationOverridesProxyService,
+    private readonly agentConsoleStatusService: AgentConsoleStatusService,
   ) {}
 
   afterInit(server: Server): void {
@@ -386,7 +388,23 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
             this.statisticsService
               .recordChatOutput(currentClientId, lastAgentId, wordCount, charCount, userId)
               .catch(() => undefined);
+
+            void this.agentConsoleStatusService
+              .onAgentChatActivity(currentClientId, lastAgentId)
+              .catch(() => undefined);
           }
+        } else if (event === 'gitStateChanged' && currentClientId && args.length > 0) {
+          const data = args[0] as { success?: boolean; data?: { agentId?: string } };
+          const payload: { agentId?: string } | undefined = data?.success ? data.data : (data as { agentId?: string });
+          const agentId = payload?.agentId ?? lastAgentId;
+
+          if (agentId) {
+            void this.agentConsoleStatusService.notifyVcsStateChanged(currentClientId, agentId).catch(() => undefined);
+          }
+        } else if (event === 'fileUpdateNotification' && currentClientId && lastAgentId) {
+          void this.agentConsoleStatusService
+            .notifyVcsStateChanged(currentClientId, lastAgentId)
+            .catch(() => undefined);
         } else if (event === 'messageFilterResult' && currentClientId && lastAgentId && args.length > 0) {
           const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
           const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;

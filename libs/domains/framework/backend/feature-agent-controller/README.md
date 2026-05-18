@@ -356,6 +356,18 @@ See the [OpenAPI specification](./spec/openapi.yaml) for detailed request/respon
 
 ## WebSocket Gateway
 
+### Status notifications (`StatusGateway`)
+
+- **Namespace**: `/status` (`STATUS_WEBSOCKET_NAMESPACE`, default `status`)
+- **Port**: same as other controller namespaces (`WEBSOCKET_PORT`, default `8081`)
+- **Auth**: handshake `Authorization` (no `setClient`)
+- **On connect**: `statusSnapshot` (git dirty + unread per environment for all accessible workspaces)
+- **Updates**: `statusPatch`; background poll via `STATUS_POLL_INTERVAL_MS` (default `30000`)
+- **Client commands**: `markEnvironmentRead`, `setActiveEnvironment`
+- **Diagram**: [agent-console-status-realtime.mmd](./docs/agent-console-status-realtime.mmd)
+
+### Clients proxy (`ClientsGateway`)
+
 The `ClientsGateway` provides WebSocket-based real-time event forwarding to remote agent-manager WebSocket endpoints:
 
 - **Namespace**: `/clients`

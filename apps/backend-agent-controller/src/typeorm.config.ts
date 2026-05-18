@@ -28,6 +28,7 @@ import {
   TicketBodyGenerationSessionEntity,
   TicketCommentEntity,
   TicketEntity,
+  UserEnvironmentReadStateEntity,
 } from '@forepath/framework/backend';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/framework/backend/util-http-context';
 import { ClientAgentCredentialEntity, ClientEntity, ClientUserEntity, UserEntity } from '@forepath/identity/backend';
@@ -95,6 +96,7 @@ export const typeormConfig: DataSourceOptions = {
     AgentConsoleRegexFilterRuleEntity,
     AgentConsoleRegexFilterRuleClientEntity,
     AgentConsoleRegexFilterRuleSyncTargetEntity,
+    UserEnvironmentReadStateEntity,
   ],
   migrations: [
     'src/migrations/*.js',
