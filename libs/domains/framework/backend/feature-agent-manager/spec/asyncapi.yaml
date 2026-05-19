@@ -170,7 +170,7 @@ channels:
     messages:
       containerStatsEvent:
         $ref: '#/components/messages/ContainerStats'
-    description: Server broadcasts container status (running/stopped) and, when running, container statistics (CPU, memory, network, etc.) periodically to all clients authenticated to the agent. First broadcast is sent immediately after successful login, then every 5 seconds while clients remain authenticated. When the container is stopped, stats is null but status is always present.
+    description: Server broadcasts container status (running/stopped) and, when running, container statistics (CPU, memory, network, etc.) periodically to all clients authenticated to the agent. First broadcast is sent immediately after successful login, then every 15 seconds by default (CONTAINER_STATS_SCHEDULER_INTERVAL in milliseconds on the agent-manager) while clients remain authenticated. When the container is stopped, stats is null but status is always present.
 operations:
   clientSendsLogin:
     action: send

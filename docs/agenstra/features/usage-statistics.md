@@ -27,10 +27,10 @@ Global equivalents exist under `/api/statistics/...` for cross-workspace views w
 
 ## Relationship to container stats
 
-| Concern                  | Source                                                              | Typical use                                              |
-| ------------------------ | ------------------------------------------------------------------- | -------------------------------------------------------- |
-| **Usage statistics**     | Agent controller HTTP API                                           | Dashboards, billing-adjacent usage, compliance reporting |
-| **Container statistics** | Agent manager WebSocket (`containerStats` forwarded via controller) | Live health of a running agent container                 |
+| Concern                  | Source                                                              | Typical use                                                                                                                |
+| ------------------------ | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Usage statistics**     | Agent controller HTTP API                                           | Dashboards, billing-adjacent usage, compliance reporting                                                                   |
+| **Container statistics** | Agent manager WebSocket (`containerStats` forwarded via controller) | Live health of a running agent container (default poll every 15s on the manager; see `CONTAINER_STATS_SCHEDULER_INTERVAL`) |
 
 ## Related documentation
 

@@ -160,7 +160,9 @@ Monitor container resource usage:
 - Memory usage
 - Network I/O
 
-These metrics come from the **agent-manager** via the proxied `clients` WebSocket (`containerStats`). For **usage statistics** (messages, filters, entity events) aggregated on the controller, see [Usage Statistics](./usage-statistics.md).
+These metrics come from the **agent-manager** via the proxied `clients` WebSocket (`containerStats`). The manager sends the first snapshot right after login, then broadcasts on a fixed interval (default **15 seconds**). Operators can change the interval with `CONTAINER_STATS_SCHEDULER_INTERVAL` (milliseconds) on the agent-manager; see [Environment Configuration](../deployment/environment-configuration.md).
+
+For **usage statistics** (messages, filters, entity events) aggregated on the controller, see [Usage Statistics](./usage-statistics.md).
 
 ### Start, stop, and restart
 

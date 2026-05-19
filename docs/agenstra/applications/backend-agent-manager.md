@@ -137,7 +137,8 @@ The Socket.IO WebSocket gateway is available at `http://localhost:8080/agents` (
 - `loginSuccess` - Emitted on successful authentication
 - `loginError` - Emitted on authentication failure
 - `chatMessage` - Chat traffic (broadcast or unicast depending on message options)
-- `containerStats`, file and terminal notifications, and other provider-specific events per AsyncAPI
+- `containerStats` — container status and resource usage; first event after login, then every 15 seconds by default (`CONTAINER_STATS_SCHEDULER_INTERVAL` in ms)
+- File and terminal notifications, and other provider-specific events per AsyncAPI
 - `error` - Emitted on authorization or processing errors
 
 For complete WebSocket event specifications, authentication flow, and usage examples, see the application and API reference docs linked below.

@@ -123,6 +123,10 @@ These variables tune the **Atlassian Cloud** import scheduler and provider on th
 - `RATE_LIMIT_TTL` - Time window in seconds (default: `60`)
 - `RATE_LIMIT_LIMIT` - Maximum requests per window (default: `100`)
 
+### Container stats broadcasting (WebSocket)
+
+- `CONTAINER_STATS_SCHEDULER_INTERVAL` - Milliseconds between periodic `containerStats` broadcasts per authenticated agent on the `/agents` gateway (default: `15000`). The first snapshot is sent immediately after successful `login`; subsequent updates use this interval while at least one client remains authenticated for that agent.
+
 ### Git Repository Configuration
 
 **For HTTPS Repositories:**
