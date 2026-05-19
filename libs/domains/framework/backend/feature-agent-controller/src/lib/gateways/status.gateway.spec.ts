@@ -1,4 +1,4 @@
-import { SocketAuthService } from '@forepath/identity/backend';
+import { SocketAuthService, UserRole } from '@forepath/identity/backend';
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import type { Server } from 'socket.io';
@@ -104,7 +104,7 @@ describe('StatusGateway', () => {
     const socket = createMockSocket();
 
     await gateway.handleConnection(socket);
-    expect(mockRealtime.registerSocket).toHaveBeenCalledWith('api-key-user', 'socket-1');
+    expect(mockRealtime.registerSocket).toHaveBeenCalledWith('api-key-user', 'socket-1', UserRole.USER);
     expect(mockStatusService.emitSnapshotToSocket).toHaveBeenCalled();
 
     await jest.advanceTimersByTimeAsync(30_000);

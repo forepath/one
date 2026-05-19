@@ -480,7 +480,7 @@ The `ClientsGateway` provides WebSocket-based real-time event forwarding to remo
   }
   ```
 
-  This event is automatically forwarded from the remote agent-manager gateway periodically (every 5 seconds) after successful login. First stats are sent immediately after login, then every 5 seconds while clients remain authenticated.
+  This event is automatically forwarded from the remote agent-manager gateway periodically (default every 15 seconds; `CONTAINER_STATS_SCHEDULER_INTERVAL` on the agent-manager) after successful login. First stats are sent immediately after login, then on that interval while clients remain authenticated.
 
 - `error` - Emitted on errors
 

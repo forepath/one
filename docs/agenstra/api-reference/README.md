@@ -73,7 +73,7 @@ The Agent Manager WebSocket gateway provides:
 - Real-time chat communication (`chat` event, `chatMessage` broadcast)
 - File update notifications (`fileUpdate`, `fileUpdateNotification`)
 - Terminal session management (`createTerminal`, `terminalInput`, `terminalOutput`, `closeTerminal`)
-- Container statistics broadcasting (`containerStats`)
+- Container statistics broadcasting (`containerStats`; default every 15s on the manager, configurable via `CONTAINER_STATS_SCHEDULER_INTERVAL`)
 
 ## Billing Manager WebSocket
 

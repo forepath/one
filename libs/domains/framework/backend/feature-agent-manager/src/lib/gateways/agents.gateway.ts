@@ -260,6 +260,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   // Track stats intervals per agent UUID
   // Maps agent UUID -> NodeJS.Timeout
   private statsIntervalsByAgent = new Map<string, NodeJS.Timeout>();
+  // Stats broadcasting interval in milliseconds
+  private readonly intervalMs = parseInt(process.env.CONTAINER_STATS_SCHEDULER_INTERVAL ?? '15000', 10);
 
   constructor(
     private readonly agentsService: AgentsService,
@@ -2481,7 +2483,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     // Send first stats immediately
     await this.broadcastContainerStats(agentUuid, containerId);
 
-    // Set up periodic stats broadcasting (every 5 seconds)
+    // Start stats broadcasting interval
     const interval = setInterval(async () => {
       // Check if agent still has authenticated clients
       const hasAuthenticatedClients = Array.from(this.authenticatedClients.values()).includes(agentUuid);
@@ -2501,7 +2503,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         this.logger.warn(`Failed to broadcast stats for agent ${agentUuid}: ${err.message}`);
         // Continue broadcasting even if one attempt fails
       }
-    }, 5000); // 5 seconds interval
+    }, this.intervalMs);
 
     this.statsIntervalsByAgent.set(agentUuid, interval);
     this.logger.debug(`Started stats broadcasting for agent ${agentUuid}`);

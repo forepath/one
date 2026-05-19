@@ -86,6 +86,7 @@ All diagrams are available in the [`docs/`](./docs/) directory:
 - **[HTTP Automation Verification Sequence Diagram](./docs/sequence-http-automation-verify.mmd)** - Sequence diagram for `POST .../automation/verify-commands` (bounded shell in the agent container)
 - **[WebSocket Auth & Logs Diagram](./docs/sequence-ws-auth-logs.mmd)** - Sequence diagram for WebSocket connection, authentication flow, and container log streaming
 - **[WebSocket Chat Diagram](./docs/sequence-ws-chat.mmd)** - Sequence diagram for WebSocket chat message flow and disconnection handling
+- **[WebSocket Container Stats Diagram](./docs/sequence-ws-container-stats.mmd)** - Periodic `containerStats` broadcasting after login (default interval 15s via `CONTAINER_STATS_SCHEDULER_INTERVAL`)
 - **[Lifecycle Diagram](./docs/lifecycle.mmd)** - End-to-end sequence diagram showing the complete agent lifecycle from creation through deletion
 
 These diagrams provide comprehensive visual documentation of:
@@ -185,6 +186,7 @@ The `AgentsGateway` provides WebSocket-based real-time communication with databa
 
 - **Namespace**: `/agents`
 - **Port**: `8080` (configurable via `WEBSOCKET_PORT` environment variable)
+- **Container stats interval**: `CONTAINER_STATS_SCHEDULER_INTERVAL` in milliseconds (default `15000`); first `containerStats` after login is immediate, then periodic while clients stay authenticated
 - **CORS**: Configured for development (adjust for production)
 
 ### Events

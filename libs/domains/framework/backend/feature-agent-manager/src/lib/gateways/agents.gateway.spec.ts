@@ -3189,7 +3189,7 @@ describe('AgentsGateway', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
-      jest.advanceTimersByTime(5000);
+      jest.advanceTimersByTime(15000);
 
       await Promise.resolve();
       await Promise.resolve();
@@ -3303,7 +3303,7 @@ describe('AgentsGateway', () => {
 
       expect(statsIntervals.has(mockAgent.id)).toBe(true);
 
-      jest.advanceTimersByTime(5000);
+      jest.advanceTimersByTime(15000);
       await Promise.resolve();
       await Promise.resolve();
       await Promise.resolve();
