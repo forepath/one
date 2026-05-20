@@ -2,13 +2,21 @@
 
 This section collects **security, compliance-oriented transparency, and hardening** information for Agenstra: mapping to **EU Cyber Resilience Act (CRA)** and **BSI IT-Grundschutz** documentation themes, a formal **accepted-risk register**, **vulnerability reporting**, **SBOM** and **desktop integrity** artifacts, and pointers to **environment variables** for production.
 
-For disclosure, supported versions, SBOM paths, and response-time commitments, see **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**. A concise risk summary table is in **[Accepted risks](./accepted-risks.md)**. The same reporting policy is also published at the repository root as the file `SECURITY.md` (for example on GitHub’s Security tab).
+For disclosure, supported versions, SBOM paths, and response-time commitments, see **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**. A concise risk summary table is in **[Accepted risks](./accepted-risks.md)**. CRA-oriented **threat modeling** and **risk profiling** (probability × impact) are in **[Threat model](./threat-model.md)** and **[Risk profile](./risk-profile.md)**. The same reporting policy is also published at the repository root as the file `SECURITY.md` (for example on GitHub’s Security tab).
 
 ## Overview
 
-Agenstra spans browsers, multiple NestJS backends, Express frontends, optional Electron distribution, and customer-controlled remote endpoints. Security is enforced through authentication modes, SSRF guardrails, sanitized logging, content security policy choices, **hardened container images** (non-root users, no default secrets in images, least-privilege Docker socket access), and **documented** residual risks where product or deployment constraints apply.
+Agenstra spans browsers, multiple NestJS backends, Express frontends, optional Electron distribution, and customer-controlled remote endpoints. Security is enforced through authentication modes, SSRF guardrails, sanitized logging, content security policy choices, **hardened container images** (non-root users, no default secrets in images, least-privilege Docker socket access), **documented threat models and risk registers** for monorepo services, and **documented** residual risks where product or deployment constraints apply.
 
 ## Documentation structure
+
+### [Threat model](./threat-model.md)
+
+Trust boundaries, threat actors, and per-service threats (STRIDE-style) for all `apps/*` deployables, including controller, manager, frontends, billing, MCP, and desktop shell.
+
+### [Risk profile](./risk-profile.md)
+
+Scored risks per service using **LOW / MEDIUM / HIGH / CRITICAL** for **probability** and **impact**, with an **accumulated** score (P × I) and overall severity.
 
 ### [Compliance and standards](./compliance-and-standards.md)
 
@@ -40,6 +48,7 @@ For variable-by-variable deployment settings, including **`CLIENT_ENDPOINT_*`**,
 
 ## Related documentation
 
+- **[Threat model](./threat-model.md)** and **[Risk profile](./risk-profile.md)** — CRA Art. 13 evidence (informative)
 - **[Architecture](../architecture/README.md)** — Trust boundaries and component roles
 - **[Authentication feature](../features/authentication.md)** — User-facing authentication flows
 - **[Deployment](../deployment/README.md)** — Docker and production guides

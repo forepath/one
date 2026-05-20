@@ -105,7 +105,7 @@ For library testing information, see the [library documentation](../../libs/doma
 
 ## Security Considerations
 
-For security best practices and considerations, see the [library documentation](../../libs/domains/framework/backend/feature-agent-controller/README.md#security-considerations).
+For security best practices and considerations, see the [library documentation](../../libs/domains/framework/backend/feature-agent-controller/README.md#security-considerations). CRA-oriented **[threat model](../../docs/agenstra/security/threat-model.md#backend-agent-controller)** and **[risk profile](../../docs/agenstra/security/risk-profile.md#backend-agent-controller)** for this service are in the docs site.
 
 ## Rate Limiting
 
