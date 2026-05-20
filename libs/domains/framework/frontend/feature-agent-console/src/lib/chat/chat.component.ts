@@ -268,7 +268,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   );
   readonly activeClientId$: Observable<string | null> = this.clientsFacade.activeClientId$;
   readonly activeClient$: Observable<ClientResponseDto | null> = this.clientsFacade.activeClient$;
-  readonly clientsLoading$: Observable<boolean> = this.clientsFacade.loading$;
+  readonly clientsLoading$: Observable<boolean> = combineLatest([
+    this.clientsFacade.loading$,
+    this.clientsFacade.clients$,
+  ]).pipe(map(([loading, clients]) => loading && clients.length === 0));
   readonly clientsError$: Observable<string | null> = this.clientsFacade.error$;
   readonly clientsDeleting$: Observable<boolean> = this.clientsFacade.deleting$;
   readonly clientsCreating$: Observable<boolean> = this.clientsFacade.creating$;
@@ -300,7 +303,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         return of(false);
       }
 
-      return this.agentsFacade.getClientAgentsLoading$(clientId);
+      return combineLatest([
+        this.agentsFacade.getClientAgentsLoading$(clientId),
+        this.agentsFacade.getClientAgents$(clientId),
+      ]).pipe(map(([loading, agents]) => loading && agents.length === 0));
     }),
   );
   readonly agentsDeleting$: Observable<boolean> = this.activeClientId$.pipe(
@@ -1229,8 +1235,19 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         }
       });
 
-    // Load clients on init
-    this.clientsFacade.loadClients();
+    // Load clients on init only when not already cached (avoids spinner on route reuse)
+    this.clientsFacade.hasClients$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((hasClients) => {
+      if (!hasClients) {
+        this.clientsFacade.loadClients();
+      }
+    });
+
+    // Sync local active client from store when component is recreated
+    this.activeClientId$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((clientId) => {
+      if (clientId) {
+        this.activeClientId = clientId;
+      }
+    });
 
     // Load provider model catalog when client + selected agent are set (includes deep-link and reducer-driven selection).
     combineLatest([this.activeClientId$, this.selectedAgent$])
@@ -1599,7 +1616,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         this.selectedAgentId.set(null);
         // Update active client
         this.activeClientId = clientId;
-        this.agentsFacade.loadClientAgents(clientId);
+        this.loadClientAgentsIfNeeded(clientId);
 
         // Clear search agent query
         if (this.searchAgentQuery()) {
@@ -1974,6 +1991,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
   }
 
+  private loadClientAgentsIfNeeded(clientId: string): void {
+    this.agentsFacade
+      .hasClientAgents$(clientId)
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+      .subscribe((hasAgents) => {
+        if (!hasAgents) {
+          this.agentsFacade.loadClientAgents(clientId);
+        }
+      });
+  }
+
   onClientSelect(clientId: string, navigate = true): void {
     // Use local state for immediate check to avoid race conditions
     const currentActiveClientId = this.activeClientId;
@@ -2034,7 +2062,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       // This ensures agents are loaded even if the subscription doesn't fire due to timing
       if (this.activeClientId !== clientId) {
         this.activeClientId = clientId;
-        this.agentsFacade.loadClientAgents(clientId);
+        this.loadClientAgentsIfNeeded(clientId);
         // Ensure socket is connected before setting client
         this.ensureSocketConnectedAndSetClient(clientId);
       }

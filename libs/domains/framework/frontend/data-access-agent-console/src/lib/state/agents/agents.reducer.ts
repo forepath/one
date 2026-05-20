@@ -183,7 +183,6 @@ export const agentsReducer = createReducer(
   on(loadClientAgents, (state, { clientId }) =>
     updateClientState(state, clientId, (clientState) => ({
       ...clientState,
-      agents: [], // Clear existing agents when starting new load
       loading: true,
       error: null,
     })),
