@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0](https://github.com/forepath/agenstra/compare/v2.1.3...v2.2.0) (2026-05-20)
+
+
+### Features
+
+* in-app workspace status notifications ([#367](https://github.com/forepath/agenstra/issues/367)) ([b0ee5dd](https://github.com/forepath/agenstra/commit/b0ee5ddcc65218f959837b10eb6d83ca76d89333))
+
+
+### Bug Fixes
+
+* workspaces ui component reuse strategy ([#371](https://github.com/forepath/agenstra/issues/371)) ([c60febe](https://github.com/forepath/agenstra/commit/c60febe3d7ff6a26be51ef798906df83c3cf92a4))
+
+
+### Chores
+
+* bump socketio client dependency ([#364](https://github.com/forepath/agenstra/issues/364)) ([82a3fb1](https://github.com/forepath/agenstra/commit/82a3fb1ae010c2841722f0bcecb1bd33d4b61ad1))
+* increased container status interval ([#368](https://github.com/forepath/agenstra/issues/368)) ([74b09f4](https://github.com/forepath/agenstra/commit/74b09f49d5cef16458de23dcc57119f2cfc92063))
+* revert container start subset ([#365](https://github.com/forepath/agenstra/issues/365)) ([14e3546](https://github.com/forepath/agenstra/commit/14e3546629604e5645bda35f593aa87b3148098e))
+
 ## [2.1.3](https://github.com/forepath/agenstra/compare/v2.1.2...v2.1.3) (2026-05-16)
 
 
