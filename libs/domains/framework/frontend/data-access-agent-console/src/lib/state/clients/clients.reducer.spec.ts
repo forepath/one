@@ -71,7 +71,7 @@ describe('clientsReducer', () => {
   });
 
   describe('loadClients', () => {
-    it('should set loading to true, clear existing clients, and clear error', () => {
+    it('should set loading to true, preserve existing clients, and clear error', () => {
       const state: ClientsState = {
         ...initialClientsState,
         entities: [mockClient],
@@ -80,7 +80,7 @@ describe('clientsReducer', () => {
       const newState = clientsReducer(state, loadClients({}));
 
       expect(newState.loading).toBe(true);
-      expect(newState.entities).toEqual([]);
+      expect(newState.entities).toEqual([mockClient]);
       expect(newState.error).toBeNull();
     });
   });

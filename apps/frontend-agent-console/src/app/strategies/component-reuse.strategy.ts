@@ -4,11 +4,34 @@ import { ActivatedRouteSnapshot, DetachedRouteHandle, RouteReuseStrategy } from 
  * Custom RouteReuseStrategy that reuses component instances when navigating
  * between routes that use the same component.
  *
- * Only applies when the route path ends with /editor. Otherwise defaults to
+ * Applies when the route path ends with /editor, or when navigating between the
+ * clients shell routes (workspaces → environments → chat). Editor/config/deployments
+ * panels use the editor or default rules. Otherwise defaults to
  * Angular's default strategy (no reuse, standard route config matching).
  */
 export class ComponentReuseStrategy implements RouteReuseStrategy {
   private storedRoutes = new Map<string, DetachedRouteHandle>();
+
+  /**
+   * Returns true when the route is a leaf under the `clients` parent with a component.
+   */
+  private isUnderClientsRoute(route: ActivatedRouteSnapshot): boolean {
+    return route.pathFromRoot.some((segment) => segment.routeConfig?.path === 'clients');
+  }
+
+  /**
+   * Main clients shell routes (workspaces list → workspace → environment/chat).
+   * Excludes editor/config/deployments so those keep distinct route-config semantics.
+   */
+  private isClientsShellRoute(route: ActivatedRouteSnapshot): boolean {
+    if (!route.component || !this.isUnderClientsRoute(route)) {
+      return false;
+    }
+
+    const path = route.routeConfig?.path ?? '';
+
+    return path === '' || path === ':clientId' || path === ':clientId/agents/:agentId';
+  }
 
   /**
    * Returns true if the route path ends with /editor, meaning the custom reuse strategy applies.
@@ -75,6 +98,14 @@ export class ComponentReuseStrategy implements RouteReuseStrategy {
    * For editor routes: reuses when components are identical AND route paths match.
    */
   shouldReuseRoute(future: ActivatedRouteSnapshot, curr: ActivatedRouteSnapshot): boolean {
+    const futureIsShell = this.isClientsShellRoute(future);
+    const currIsShell = this.isClientsShellRoute(curr);
+
+    // Workspaces / environments / chat: reuse shell across param-only navigation
+    if (futureIsShell && currIsShell && future.component && future.component === curr.component) {
+      return true;
+    }
+
     const futureIsEditor = this.isEditorRoute(future);
     const currIsEditor = this.isEditorRoute(curr);
 

@@ -109,7 +109,6 @@ export const clientsReducer = createReducer(
   // Load Clients
   on(loadClients, (state) => ({
     ...state,
-    entities: [], // Clear existing clients when starting new load
     loading: true,
     error: null,
   })),

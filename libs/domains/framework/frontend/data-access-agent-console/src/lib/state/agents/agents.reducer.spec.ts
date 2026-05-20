@@ -66,7 +66,7 @@ describe('agentsReducer', () => {
   });
 
   describe('loadClientAgents', () => {
-    it('should set loading to true for the client, clear existing agents, and clear error', () => {
+    it('should set loading to true for the client, preserve existing agents, and clear error', () => {
       const state: AgentsState = {
         ...initialAgentsState,
         entities: { [clientId]: [mockAgent] },
@@ -75,7 +75,7 @@ describe('agentsReducer', () => {
       const newState = agentsReducer(state, loadClientAgents({ clientId, params: {} }));
 
       expect(newState.loading[clientId]).toBe(true);
-      expect(newState.entities[clientId]).toEqual([]);
+      expect(newState.entities[clientId]).toEqual([mockAgent]);
       expect(newState.errors[clientId]).toBeNull();
     });
   });
