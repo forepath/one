@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.1](https://github.com/forepath/agenstra/compare/v2.2.0...v2.2.1) (2026-05-20)
+
+
+### Bug Fixes
+
+* mermaid diagram theme switching ([#373](https://github.com/forepath/agenstra/issues/373)) ([5652094](https://github.com/forepath/agenstra/commit/5652094ffa43bff96c57f3444dfb0f32ee674e77))
+
 ## [2.2.0](https://github.com/forepath/agenstra/compare/v2.1.3...v2.2.0) (2026-05-20)
 
 
