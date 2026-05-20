@@ -3,6 +3,7 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
+  effect,
   ElementRef,
   inject,
   input,
@@ -10,6 +11,8 @@ import {
   PLATFORM_ID,
   ViewChild,
 } from '@angular/core';
+
+import { ThemeService } from '../../services';
 
 /**
  * Component for rendering Mermaid diagrams
@@ -25,6 +28,7 @@ export class MermaidDiagramComponent implements AfterViewInit, OnDestroy {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly document = inject<Document>(DOCUMENT);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly themeService = inject(ThemeService);
 
   /**
    * Mermaid diagram code
@@ -42,6 +46,23 @@ export class MermaidDiagramComponent implements AfterViewInit, OnDestroy {
   private mermaidInstance: any = null;
   private mermaidLoadPromise: Promise<any> | null = null;
   private isRendered = false;
+
+  constructor() {
+    effect(() => {
+      this.themeService.isDarkMode();
+
+      if (!isPlatformBrowser(this.platformId) || !this.mermaidInstance) {
+        return;
+      }
+
+      this.initializeMermaid(this.mermaidInstance);
+
+      if (this.mermaidContainer && this.isRendered) {
+        this.isRendered = false;
+        void this.renderDiagram();
+      }
+    });
+  }
 
   ngAfterViewInit(): void {
     this.renderDiagram();
@@ -143,17 +164,7 @@ export class MermaidDiagramComponent implements AfterViewInit, OnDestroy {
         const mermaidModule = await import('mermaid');
 
         this.mermaidInstance = mermaidModule.default;
-
-        // Initialize Mermaid with proper configuration
-        this.mermaidInstance.initialize({
-          startOnLoad: false,
-          theme: 'default',
-          securityLevel: 'loose',
-          flowchart: {
-            useMaxWidth: true,
-            htmlLabels: true,
-          },
-        });
+        this.initializeMermaid(this.mermaidInstance);
 
         return this.mermaidInstance;
       } catch (error) {
@@ -163,5 +174,17 @@ export class MermaidDiagramComponent implements AfterViewInit, OnDestroy {
     })();
 
     return this.mermaidLoadPromise;
+  }
+
+  private initializeMermaid(mermaid: { initialize: (config: object) => void }): void {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: this.themeService.isDarkMode() ? 'dark' : 'default',
+      securityLevel: 'loose',
+      flowchart: {
+        useMaxWidth: true,
+        htmlLabels: true,
+      },
+    });
   }
 }
