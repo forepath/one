@@ -55,12 +55,24 @@ export class PortalCloudComponent implements OnInit, AfterViewInit {
     initialValue: false,
   });
 
+  readonly cheapestLoaded = toSignal(this.servicePlansFacade.getCheapestServicePlanOfferingLoaded$(), {
+    initialValue: false,
+  });
+
   readonly plans = toSignal(this.servicePlansFacade.getServicePlans$(), {
     initialValue: [],
   });
 
   readonly plansLoading = toSignal(this.servicePlansFacade.getServicePlansLoading$(), {
     initialValue: false,
+  });
+
+  readonly plansLoaded = toSignal(this.servicePlansFacade.getServicePlansLoaded$(), {
+    initialValue: false,
+  });
+
+  readonly plansError = toSignal(this.servicePlansFacade.getServicePlansError$(), {
+    initialValue: null,
   });
 
   readonly plansScrollAtStart = signal(true);
@@ -89,12 +101,12 @@ export class PortalCloudComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.titleService.setTitle(
-      $localize`:@@featurePortalCloud-metaTitle:Agenstra Cloud - Fully Managed Control Plane For Your AI Agents`,
+      $localize`:@@featurePortalCloud-metaTitle:Fully managed cloud, zero platform ops :: Agenstra`,
     );
     this.metaService.addTags([
       {
         name: 'description',
-        content: $localize`:@@featurePortalCloud-metaDescription:Agenstra Cloud is the fully managed, cloud hosted control plane for distributed AI agents. Design, deploy, and govern agents across tools, clouds, and environments without operating your own infrastructure.`,
+        content: $localize`:@@featurePortalCloud-metaDescription:Fully managed Agenstra control plane for distributed coding agents. Deploy, monitor, and govern agents across tools and environments without running your own ops stack.`,
       },
       {
         name: 'keywords',

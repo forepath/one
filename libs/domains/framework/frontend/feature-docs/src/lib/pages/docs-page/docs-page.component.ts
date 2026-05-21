@@ -3,7 +3,12 @@ import { Component, effect, inject, OnInit, PLATFORM_ID, signal } from '@angular
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
-import { DocMetadata, NavigationNode } from '@forepath/framework/frontend/util-docs-parser';
+import {
+  DocMetadata,
+  formatAgenstraMetaDescription,
+  formatAgenstraMetaTitle,
+  NavigationNode,
+} from '@forepath/framework/frontend/util-docs-parser';
 import { catchError, filter, map, Observable, of, startWith, switchMap } from 'rxjs';
 
 import { DocsBreadcrumbsComponent, DocsContentComponent, DocsTableOfContentsComponent } from '../../components';
@@ -25,12 +30,19 @@ export class DocsPageComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
 
+  private readonly metaTitleFallback = $localize`:@@featureDocsPage-metaTitleFallback:Documentation :: Agenstra`;
+  private readonly metaDescriptionFallback = $localize`:@@featureDocsPage-metaDescriptionFallback:Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.`;
+
   constructor() {
     // Update active path whenever currentPath changes
     effect(() => {
       const path = this.currentPath();
 
       this.navigationService.setActivePath(path || '/docs');
+    });
+
+    effect(() => {
+      this.applyPageMeta(this.metadata(), this.currentPath());
     });
   }
 
@@ -115,24 +127,13 @@ export class DocsPageComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    const metadataTitle = this.metadata()?.title;
-    const titleFallback = $localize`:@@featureDocsPage-metaTitleFallback:Centralized Control for Distributed AI Agent Infrastructure`;
-
-    this.titleService.setTitle(`Agenstra - ${metadataTitle || titleFallback}`);
     this.metaService.addTags([
-      {
-        name: 'description',
-        content:
-          this.metadata()?.summary ||
-          $localize`:@@featureDocsPage-metaDescriptionFallback:Centralized Control for Distributed AI Agent Infrastructure`,
-      },
       {
         name: 'keywords',
         content: $localize`:@@featureDocsPage-metaKeywords:Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents`,
       },
       { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
       { name: 'robots', content: 'index, follow' },
-      { name: 'canonical', content: `https://docs.agenstra.com${this.currentPath()}` },
     ]);
 
     // During SSR, skip content loading to avoid loops and timeout issues
@@ -243,6 +244,22 @@ export class DocsPageComponent implements OnInit {
           }
         }
       });
+  }
+
+  private applyPageMeta(metadata: DocMetadata | null, path: string): void {
+    const pageTitle = metadata?.title?.trim();
+    const title = pageTitle ? formatAgenstraMetaTitle(pageTitle) : this.metaTitleFallback;
+
+    this.titleService.setTitle(title);
+
+    const summary = metadata?.summary?.trim();
+    const description = formatAgenstraMetaDescription(summary || this.metaDescriptionFallback);
+
+    this.metaService.updateTag({ name: 'description', content: description });
+    this.metaService.updateTag({
+      name: 'canonical',
+      content: `https://docs.agenstra.com${path}`,
+    });
   }
 
   /**

@@ -10,6 +10,8 @@ import type {
 import { loadCheapestServicePlanOffering, loadServicePlans } from './service-plans.actions';
 import {
   selectCheapestServicePlanOffering,
+  selectCheapestServicePlanOfferingError,
+  selectCheapestServicePlanOfferingLoaded,
   selectCheapestServicePlanOfferingLoading,
   selectHasServicePlans,
   selectServicePlansByServiceTypeId,
@@ -17,6 +19,7 @@ import {
   selectServicePlansCount,
   selectServicePlansEntities,
   selectServicePlansError,
+  selectServicePlansLoaded,
   selectServicePlansLoading,
 } from './service-plans.selectors';
 
@@ -42,8 +45,20 @@ export class ServicePlansFacade {
     return this.store.select(selectCheapestServicePlanOfferingLoading);
   }
 
+  getServicePlansLoaded$(): Observable<boolean> {
+    return this.store.select(selectServicePlansLoaded);
+  }
+
+  getCheapestServicePlanOfferingLoaded$(): Observable<boolean> {
+    return this.store.select(selectCheapestServicePlanOfferingLoaded);
+  }
+
   getServicePlansError$(): Observable<string | null> {
     return this.store.select(selectServicePlansError);
+  }
+
+  getCheapestServicePlanOfferingError$(): Observable<string | null> {
+    return this.store.select(selectCheapestServicePlanOfferingError);
   }
 
   getServicePlansCount$(): Observable<number> {

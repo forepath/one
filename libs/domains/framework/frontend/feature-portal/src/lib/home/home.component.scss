@@ -48,19 +48,49 @@
   box-shadow: 0 8px 24px rgba(139, 92, 246, 0.25);
 }
 
-#engineering {
-  .engineering-screenshot {
-    position: absolute;
-    bottom: 0;
-    left: 52.5%;
-    min-width: 50%;
-    height: 105%;
-    width: auto;
-  }
+.home-engineering-screenshot {
+  display: block;
+  margin-top: -8rem;
+}
 
-  .engineering-text {
-    line-height: 1.5rem;
+.home-engineering-closing {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, #fff 55%);
+}
+
+.home-ecosystem-studio-surfaces,
+.home-ecosystem-cloud-aside {
+  @media (max-width: 991.98px) {
+    border-left: 0 !important;
+    border-top: 1px solid var(--bs-border-color);
   }
+}
+
+.home-ecosystem-studio {
+  overflow: visible;
+}
+
+.home-ecosystem-surface {
+  background: var(--bs-body-tertiary);
+}
+
+.home-security-lead,
+.home-security-intro {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.home-security-pill {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+}
+
+.home-security-closing {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.home-security-visual {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 // Custom inline style replacements
@@ -178,4 +208,38 @@
 .hero-content {
   position: relative;
   z-index: 10;
+}
+
+.home-pillar-icon,
+.home-solution-icon {
+  width: 72px;
+  height: 72px;
+  background: rgba(139, 92, 246, 0.12);
+}
+
+.home-solution-panel-top {
+  border-color: var(--bs-border-color) !important;
+}
+
+@media (max-width: 991.98px) {
+  .home-pillar-panel .border-end {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--bs-border-color) !important;
+  }
+}
+
+.letter-spacing-wide {
+  letter-spacing: 0.08em;
+}
+
+.home-solution-closing {
+  border-left: 4px solid var(--bs-primary);
+  background: linear-gradient(to right, rgba(139, 92, 246, 0.06) 0%, #fff 40%) !important;
+}
+
+@media (max-width: 991.98px) {
+  .home-solution-studio .border-end {
+    border-right: 0 !important;
+    border-top: 1px solid var(--bs-border-color);
+  }
 }

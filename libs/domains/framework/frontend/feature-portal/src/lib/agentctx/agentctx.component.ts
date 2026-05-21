@@ -22,12 +22,12 @@ export class PortalAgentCtxComponent implements OnInit {
 
   ngOnInit(): void {
     this.titleService.setTitle(
-      $localize`:@@featurePortalAgentctx-metaTitle:AgentCTX - One Context For All Your AI Coding Tools`,
+      $localize`:@@featurePortalAgentctx-metaTitle:One context for all your AI coding tools :: Agenstra`,
     );
     this.metaService.addTags([
       {
         name: 'description',
-        content: $localize`:@@featurePortalAgentctx-metaDescription:AgentCTX generates tool specific configuration from a single shared context. Keep Claude, Cursor, GitHub Copilot, and other AI coding tools aligned with one source of truth.`,
+        content: $localize`:@@featurePortalAgentctx-metaDescription:Maintain project context once and generate aligned configs for Claude, Cursor, GitHub Copilot, and other AI coding tools your team already uses.`,
       },
       {
         name: 'keywords',

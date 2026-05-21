@@ -29,7 +29,7 @@ describe('servicePlansReducer', () => {
   });
 
   describe('loadServicePlans', () => {
-    it('should set loading and clear entities', () => {
+    it('should set loading and keep cached entities', () => {
       const state: ServicePlansState = {
         ...initialServicePlansState,
         entities: [mockOffering],
@@ -38,8 +38,8 @@ describe('servicePlansReducer', () => {
       const newState = servicePlansReducer(state, loadServicePlans({ params: {} }));
 
       expect(newState.loading).toBe(true);
-      expect(newState.entities).toEqual([]);
-      expect(newState.error).toBeNull();
+      expect(newState.entities).toEqual([mockOffering]);
+      expect(newState.plansError).toBeNull();
     });
   });
 
@@ -65,19 +65,21 @@ describe('servicePlansReducer', () => {
 
       expect(newState.entities).toEqual([mockOffering]);
       expect(newState.loading).toBe(false);
-      expect(newState.error).toBeNull();
+      expect(newState.plansLoaded).toBe(true);
+      expect(newState.plansError).toBeNull();
     });
   });
 
   describe('loadServicePlansFailure', () => {
-    it('should set error and clear loading', () => {
+    it('should set plansError and mark plans as loaded', () => {
       const newState = servicePlansReducer(
         { ...initialServicePlansState, loading: true },
         loadServicePlansFailure({ error: 'failed' }),
       );
 
       expect(newState.loading).toBe(false);
-      expect(newState.error).toBe('failed');
+      expect(newState.plansLoaded).toBe(true);
+      expect(newState.plansError).toBe('failed');
     });
   });
 
@@ -86,7 +88,7 @@ describe('servicePlansReducer', () => {
       const newState = servicePlansReducer(initialServicePlansState, loadCheapestServicePlanOffering({}));
 
       expect(newState.loadingCheapest).toBe(true);
-      expect(newState.error).toBeNull();
+      expect(newState.cheapestError).toBeNull();
     });
   });
 
@@ -99,18 +101,20 @@ describe('servicePlansReducer', () => {
 
       expect(newState.cheapestOffering).toEqual(mockOffering);
       expect(newState.loadingCheapest).toBe(false);
+      expect(newState.cheapestLoaded).toBe(true);
     });
   });
 
   describe('loadCheapestServicePlanOfferingFailure', () => {
-    it('should set error and clear loadingCheapest', () => {
+    it('should set cheapestError and mark cheapest as loaded', () => {
       const newState = servicePlansReducer(
         { ...initialServicePlansState, loadingCheapest: true },
         loadCheapestServicePlanOfferingFailure({ error: 'not found' }),
       );
 
       expect(newState.loadingCheapest).toBe(false);
-      expect(newState.error).toBe('not found');
+      expect(newState.cheapestLoaded).toBe(true);
+      expect(newState.cheapestError).toBe('not found');
     });
   });
 });

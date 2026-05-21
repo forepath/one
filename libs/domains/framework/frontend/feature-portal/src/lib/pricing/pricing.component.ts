@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -8,6 +8,7 @@ import {
   inject,
   LOCALE_ID,
   OnInit,
+  PLATFORM_ID,
   signal,
   ViewChild,
 } from '@angular/core';
@@ -31,6 +32,7 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
   private readonly environment = inject<Environment>(ENVIRONMENT);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly locale = inject(LOCALE_ID);
+  private readonly platformId = inject(PLATFORM_ID);
 
   @ViewChild('pricingCarousel') pricingCarousel!: ElementRef<HTMLDivElement>;
   @ViewChild('enterpriseCard') enterpriseCard!: ElementRef<HTMLDivElement>;
@@ -45,6 +47,10 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
     initialValue: false,
   });
 
+  readonly cheapestLoaded = toSignal(this.servicePlansFacade.getCheapestServicePlanOfferingLoaded$(), {
+    initialValue: false,
+  });
+
   readonly billingBaseUrl = this.environment.production
     ? `${this.environment.billing.frontendUrl}/${this.locale}/subscriptions?order=true`
     : `${this.environment.billing.frontendUrl}/subscriptions?order=true`;
@@ -52,12 +58,12 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.servicePlansFacade.loadCheapestServicePlanOffering();
     this.titleService.setTitle(
-      $localize`:@@featurePortalPricing-metaTitle:Agenstra Pricing - Flexible Plans for Every Team`,
+      $localize`:@@featurePortalPricing-metaTitle:Licensing from open source to enterprise :: Agenstra`,
     );
     this.metaService.addTags([
       {
         name: 'description',
-        content: $localize`:@@featurePortalPricing-metaDescription:Choose the right Agenstra plan for your team. From open source to enterprise, we offer flexible licensing options to fit your needs.`,
+        content: $localize`:@@featurePortalPricing-metaDescription:Compare open-source, team, and enterprise Agenstra plans. Flexible licensing for self-hosted or cloud deployments, with governance and scale when you need it.`,
       },
       {
         name: 'keywords',
@@ -70,7 +76,7 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    if (this.pricingCarousel.nativeElement) {
+    if (isPlatformBrowser(this.platformId) && this.pricingCarousel.nativeElement) {
       this.pricingCarousel.nativeElement.scrollBy({
         left: this.enterpriseCard.nativeElement.offsetLeft,
         behavior: 'smooth',
@@ -79,7 +85,7 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
   }
 
   scrollPricingCarousel(direction: 'left' | 'right'): void {
-    if (this.pricingCarousel.nativeElement) {
+    if (isPlatformBrowser(this.platformId) && this.pricingCarousel.nativeElement) {
       if (direction === 'left') {
         this.isLastCardVisible.set(false);
       } else {
@@ -98,7 +104,7 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
 
   @HostListener('window:resize')
   onResize(): void {
-    if (this.pricingCarousel.nativeElement) {
+    if (isPlatformBrowser(this.platformId) && this.pricingCarousel.nativeElement) {
       this.isLastCardVisible.set(true);
       this.pricingCarousel.nativeElement.scrollBy({
         left: this.enterpriseCard.nativeElement.offsetLeft,

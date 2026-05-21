@@ -1,50 +1,175 @@
 @import '../page.component.scss';
 
-.desktop-compare-icon {
-  font-size: 2.5rem;
-  color: var(--bs-secondary);
+.desktop-pillar-icon {
+  width: 72px;
+  height: 72px;
+  background: rgba(139, 92, 246, 0.12);
 }
 
-.desktop-compare-card-emphasis {
-  background: rgba(139, 92, 246, 0.08);
-  border: 2px solid var(--bs-primary);
-  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15);
-}
-
-.desktop-compare-icon-emphasis {
-  font-size: 3rem;
-  color: var(--bs-primary);
-}
-
-// Toolchain section (plan)
-.desktop-toolchain-bg {
-  background: rgba(33, 128, 141, 0.04);
-}
-
-.desktop-toolchain-icons {
-  gap: 1rem;
-}
-
-.desktop-tool-icon {
-  min-width: 80px;
-  transition: transform 0.3s ease;
-  text-align: center;
-
-  &:hover {
-    transform: scale(1.05);
+@media (max-width: 991.98px) {
+  .desktop-pillar-panel .border-end {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--bs-border-color) !important;
   }
 }
 
-.desktop-tool-icon-center {
-  border-color: var(--bs-primary) !important;
-  box-shadow: 0 0 32px rgba(139, 92, 246, 0.4);
+.desktop-hero-visual {
+  min-height: 12rem;
 }
 
 .desktop-screenshot {
-  position: absolute;
-  top: 0;
-  left: 52.5%;
-  min-width: 50%;
-  height: 106%;
-  width: auto;
+  max-width: 100%;
+  height: auto;
+}
+
+.desktop-workflow-node--focus {
+  box-shadow: 0 12px 28px rgba(139, 92, 246, 0.18);
+}
+
+.desktop-security-flow {
+  border: 1px solid var(--bs-border-color);
+}
+
+.desktop-flow-chip {
+  background: var(--bs-body-tertiary-bg);
+  color: var(--bs-body-color);
+  font-size: 0.875rem;
+}
+
+.desktop-flow-chip--accent {
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--bs-primary);
+}
+
+.desktop-toolchain-dock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 2vw, 1.25rem);
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 50%;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(139, 92, 246, 0.2) 20%,
+      rgba(139, 92, 246, 0.35) 50%,
+      rgba(139, 92, 246, 0.2) 80%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+}
+
+.desktop-toolchain-node {
+  flex: 0 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.desktop-toolchain-node-card {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--bs-body-bg);
+  box-shadow: var(--bs-box-shadow-sm);
+  min-width: 4.5rem;
+}
+
+.desktop-toolchain-node-icon {
+  display: block;
+  margin: 0 auto 0.375rem;
+  line-height: 1;
+}
+
+.desktop-toolchain-node-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--bs-secondary-color);
+  line-height: 1.2;
+}
+
+.desktop-toolchain-node--far {
+  transform: scale(0.78);
+
+  .desktop-toolchain-node-card {
+    padding: 0.625rem 0.75rem;
+    min-width: 3.75rem;
+  }
+
+  .desktop-toolchain-node-icon {
+    font-size: 1.125rem;
+  }
+
+  .desktop-toolchain-node-label {
+    font-size: 0.6875rem;
+  }
+}
+
+.desktop-toolchain-node--near {
+  transform: scale(0.9);
+
+  .desktop-toolchain-node-card {
+    padding: 0.75rem 0.875rem;
+    min-width: 4.25rem;
+  }
+
+  .desktop-toolchain-node-icon {
+    font-size: 1.375rem;
+  }
+
+  .desktop-toolchain-node-label {
+    font-size: 0.75rem;
+  }
+}
+
+.desktop-toolchain-node--center {
+  transform: scale(1.05);
+  z-index: 2;
+
+  .desktop-toolchain-node-card--focus {
+    min-width: 9.5rem;
+    padding: 1.25rem 1.5rem;
+    border-color: rgba(139, 92, 246, 0.22);
+    box-shadow: 0 12px 28px rgba(139, 92, 246, 0.16);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .desktop-toolchain-dock {
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+
+    &::after {
+      display: none;
+    }
+  }
+
+  .desktop-toolchain-node--center {
+    order: -1;
+    flex: 1 1 100%;
+    transform: none;
+
+    .desktop-toolchain-node-card--focus {
+      max-width: 14rem;
+      margin: 0 auto;
+    }
+  }
+
+  .desktop-toolchain-node--far,
+  .desktop-toolchain-node--near {
+    flex: 1 1 calc(33.333% - 0.5rem);
+    transform: scale(0.92);
+    opacity: 1;
+  }
 }

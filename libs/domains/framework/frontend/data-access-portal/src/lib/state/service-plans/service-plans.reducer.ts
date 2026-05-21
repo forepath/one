@@ -17,7 +17,10 @@ export interface ServicePlansState {
   cheapestOffering: PublicServicePlanOffering | null;
   loading: boolean;
   loadingCheapest: boolean;
-  error: string | null;
+  plansLoaded: boolean;
+  cheapestLoaded: boolean;
+  plansError: string | null;
+  cheapestError: string | null;
 }
 
 export const initialServicePlansState: ServicePlansState = {
@@ -25,48 +28,54 @@ export const initialServicePlansState: ServicePlansState = {
   cheapestOffering: null,
   loading: false,
   loadingCheapest: false,
-  error: null,
+  plansLoaded: false,
+  cheapestLoaded: false,
+  plansError: null,
+  cheapestError: null,
 };
 
 export const servicePlansReducer = createReducer(
   initialServicePlansState,
   on(loadServicePlans, (state) => ({
     ...state,
-    entities: [],
     loading: true,
-    error: null,
+    plansError: null,
   })),
   on(loadServicePlansBatch, (state, { accumulatedServicePlans }) => ({
     ...state,
     entities: accumulatedServicePlans,
     loading: true,
-    error: null,
+    plansError: null,
   })),
   on(loadServicePlansSuccess, (state, { servicePlans }) => ({
     ...state,
     entities: servicePlans,
     loading: false,
-    error: null,
+    plansLoaded: true,
+    plansError: null,
   })),
   on(loadServicePlansFailure, (state, { error }) => ({
     ...state,
     loading: false,
-    error,
+    plansLoaded: true,
+    plansError: error,
   })),
   on(loadCheapestServicePlanOffering, (state) => ({
     ...state,
     loadingCheapest: true,
-    error: null,
+    cheapestError: null,
   })),
   on(loadCheapestServicePlanOfferingSuccess, (state, { offering }) => ({
     ...state,
     cheapestOffering: offering,
     loadingCheapest: false,
-    error: null,
+    cheapestLoaded: true,
+    cheapestError: null,
   })),
   on(loadCheapestServicePlanOfferingFailure, (state, { error }) => ({
     ...state,
     loadingCheapest: false,
-    error,
+    cheapestLoaded: true,
+    cheapestError: error,
   })),
 );

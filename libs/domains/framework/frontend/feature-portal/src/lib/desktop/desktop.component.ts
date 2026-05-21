@@ -17,12 +17,12 @@ export class PortalDesktopComponent implements OnInit {
 
   ngOnInit(): void {
     this.titleService.setTitle(
-      $localize`:@@featurePortalDesktop-metaTitle:Agenstra Desktop - Local Control Center For Your AI Agents`,
+      $localize`:@@featurePortalDesktop-metaTitle:Your local control center for AI agents :: Agenstra`,
     );
     this.metaService.addTags([
       {
         name: 'description',
-        content: $localize`:@@featurePortalDesktop-metaDescription:Agenstra Desktop gives developers a secure local control center for connecting to Agenstra, inspecting agents, and working with context in their daily workflow.`,
+        content: $localize`:@@featurePortalDesktop-metaDescription:Local control center for Agenstra: connect to your workspace, inspect agents, and manage context from the desktop app developers use every day.`,
       },
       {
         name: 'keywords',

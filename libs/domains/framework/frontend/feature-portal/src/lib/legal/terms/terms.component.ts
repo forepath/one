@@ -16,11 +16,11 @@ export class PortalLegalTermsComponent implements OnInit {
   private readonly metaService = inject(Meta);
 
   ngOnInit(): void {
-    this.titleService.setTitle($localize`:@@featurePortalTerms-metaTitle:Agenstra - Terms of Service`);
+    this.titleService.setTitle($localize`:@@featurePortalTerms-metaTitle:Terms of Service :: Agenstra`);
     this.metaService.addTags([
       {
         name: 'description',
-        content: $localize`:@@featurePortalTerms-metaDescription:Agenstra is a platform for managing distributed AI agent infrastructure. This is the terms of service for the platform.`,
+        content: $localize`:@@featurePortalTerms-metaDescription:Terms governing use of the Agenstra platform, websites, and related services. Accounts, licensing, acceptable use, liability, and contact information.`,
       },
       {
         name: 'keywords',

@@ -1,7 +1,11 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, LOCALE_ID, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
+import type { PublicServicePlanOffering } from '@forepath/framework/frontend/data-access-portal';
+import { ServicePlansFacade } from '@forepath/framework/frontend/data-access-portal';
+import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
 
 @Component({
   selector: 'framework-portal-home',
@@ -15,21 +19,42 @@ export class PortalHomeComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly servicePlansFacade = inject(ServicePlansFacade);
+  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly locale = inject(LOCALE_ID);
+
   activeSlide = signal<number>(1);
   autoplayInterval = this.initializeAutoplayInterval();
 
+  readonly cheapestOffering = toSignal(this.servicePlansFacade.getCheapestServicePlanOffering$(), {
+    initialValue: null,
+  });
+
+  readonly cheapestOfferingLoading = toSignal(this.servicePlansFacade.getCheapestServicePlanOfferingLoading$(), {
+    initialValue: false,
+  });
+
+  readonly cheapestLoaded = toSignal(this.servicePlansFacade.getCheapestServicePlanOfferingLoaded$(), {
+    initialValue: false,
+  });
+
+  readonly billingBaseUrl = this.environment.production
+    ? `${this.environment.billing.frontendUrl}/${this.locale}/subscriptions?order=true`
+    : `${this.environment.billing.frontendUrl}/subscriptions?order=true`;
+
   ngOnInit(): void {
+    this.servicePlansFacade.loadCheapestServicePlanOffering();
     this.titleService.setTitle(
-      $localize`:@@featurePortalHome-metaTitle:Agenstra Platform - Centralized Control For Distributed AI Agents`,
+      $localize`:@@featurePortalHome-metaTitle:One place to run, govern, and ship with agents :: Agenstra`,
     );
     this.metaService.addTags([
       {
         name: 'description',
-        content: $localize`:@@featurePortalHome-metaDescription:Agenstra is the centralized control plane for AI agents. Orchestrate, govern, and observe distributed agent infrastructure with one platform designed for engineering teams.`,
+        content: $localize`:@@featurePortalHome-metaDescription:Run and govern coding agents at enterprise scale: workspaces, ticket automation, in-browser coding, releases, policy, and audit trails. Self-host Agenstra or run on Agenstra Cloud.`,
       },
       {
         name: 'keywords',
-        content: $localize`:@@featurePortalHome-metaKeywords:Agenstra, AI agent orchestration platform, AI agent management, agent infrastructure, central control plane, enterprise AI agent governance, multi agent orchestration`,
+        content: $localize`:@@featurePortalHome-metaKeywords:Agenstra, enterprise coding agents, AI agent governance, ticket automation, agent audit, self-hosted AI platform, software delivery, team knowledge, Cursor OpenCode integration`,
       },
       { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
       { name: 'robots', content: 'index, follow' },
@@ -72,5 +97,21 @@ export class PortalHomeComponent implements OnInit {
     }
 
     return null;
+  }
+
+  billingIntervalSuffix(plan: PublicServicePlanOffering): string {
+    if (plan.billingIntervalType === 'month' && plan.billingIntervalValue === 1) {
+      return $localize`:@@featurePortalCloud-planPriceMonth:/month`;
+    }
+
+    if (plan.billingIntervalType === 'hour') {
+      return $localize`:@@featurePortalCloud-planPriceHour:/hour`;
+    }
+
+    if (plan.billingIntervalType === 'day') {
+      return $localize`:@@featurePortalCloud-planPriceDay:/day`;
+    }
+
+    return ` / ${plan.billingIntervalValue} ${plan.billingIntervalType}`;
   }
 }

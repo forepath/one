@@ -1,6 +1,6 @@
 @import '../page.component.scss';
 
-// Hero "From" price — same card pattern as pricing page cloud tier
+// Hero "From" price. Same card pattern as pricing page cloud tier.
 .cloud-hero-price {
   max-width: 17rem;
 
@@ -9,13 +9,100 @@
   }
 }
 
-.cloud-teaser-screenshot {
+.cloud-onboarding-track {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.cloud-onboarding-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.cloud-onboarding-num {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cloud-onboarding-step-label {
+  max-width: 11rem;
+}
+
+@media (min-width: 992px) {
+  .cloud-onboarding-track {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem 0.75rem;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 1rem;
+      left: 8%;
+      right: 8%;
+      height: 1px;
+      margin-top: -0.5px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(139, 92, 246, 0.2) 20%,
+        rgba(139, 92, 246, 0.35) 50%,
+        rgba(139, 92, 246, 0.2) 80%,
+        transparent 100%
+      );
+      z-index: 0;
+      pointer-events: none;
+    }
+  }
+
+  .cloud-onboarding-step {
+    position: relative;
+    z-index: 1;
+    padding: 0 0.25rem;
+  }
+
+  .cloud-onboarding-step-label {
+    max-width: none;
+    padding: 0 0.25rem;
+  }
+}
+
+.cloud-infra-card {
+  position: relative;
+  padding-left: 0.35rem;
+}
+
+.cloud-infra-card-accent {
   position: absolute;
+  left: 0;
+  top: 0;
   bottom: 0;
-  left: 52.5%;
-  min-width: 50%;
-  height: 110%;
-  width: auto;
+  width: 4px;
+  border-radius: 4px 0 0 4px;
+}
+
+.cloud-infra-card--primary .cloud-infra-card-accent {
+  background: var(--bs-primary);
+}
+
+.cloud-infra-card--secondary .cloud-infra-card-accent {
+  background: var(--bs-success);
+}
+
+.cloud-infra-spec-label {
+  min-width: 6.5rem;
 }
 
 .provider-logo {
@@ -142,14 +229,12 @@
   max-width: 100%;
 }
 
-#why {
-  .engineering-text {
-    line-height: 1.5rem;
-  }
-}
-
 @media (width >= 992px) {
   .cloud-plans-row {
     overflow-x: hidden;
   }
+}
+
+.cloud-why-visual-img {
+  margin-top: -8rem;
 }
