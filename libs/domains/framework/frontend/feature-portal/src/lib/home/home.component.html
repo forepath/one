@@ -4,49 +4,48 @@
     <div class="row justify-content-center">
       <div class="col-12 text-center hero-container">
         <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featurePortalHome-heroTitle">
-          <span class="text-primary">Centralized control</span> for AI agents in your software delivery pipeline
+          <span class="text-primary">One place</span> to run, govern, and ship with coding agents
         </h1>
         <p class="hero-lead lead fs-5 mb-4 mx-auto" i18n="@@featurePortalHome-heroLead">
-          Agents are wired into editors, pipelines, and internal tools as part of how teams ship. Agenstra gives
-          engineering and platform teams one place to define policy, observe behavior, and govern how agents access
-          code, systems, and environments from development through production.
+          Agenstra brings workspaces, tickets, knowledge, coding, and releases together on infrastructure you own. Your
+          team can trust agents from the first experiment through production.
         </p>
         <p class="fs-6 fw-light mb-5 hero-cta-line" i18n="@@featurePortalHome-heroCtaLine">
-          Keep agent-assisted work on the same bar as the rest of your practice: guardrails, observability, and controls
-          that match how you review changes, manage access, and release software.
+          Keep agent-assisted work on the same bar as the rest of your practice: approvals, audit trails, and controls
+          that match how you review changes and release software.
         </p>
         <div class="d-flex gap-2 justify-content-center flex-wrap hero-feature-badges mb-5">
           <span class="badge bg-success info-badge px-3 py-2">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge1">Unified Agent Management</span>
+            <span i18n="@@featurePortalHome-heroFeatureBadge1">Multi-workspace control</span>
           </span>
           <span class="badge bg-success info-badge px-3 py-2">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge2">Prompt Governance</span>
+            <span i18n="@@featurePortalHome-heroFeatureBadge2">Ticket automation</span>
           </span>
           <span class="badge bg-success info-badge px-3 py-2">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge3">Audit &amp; Observability</span>
+            <span i18n="@@featurePortalHome-heroFeatureBadge3">Policy &amp; audit trails</span>
           </span>
           <span class="badge bg-success info-badge px-3 py-2">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge4">Web IDE</span>
+            <span i18n="@@featurePortalHome-heroFeatureBadge4">Code &amp; Git in the browser</span>
           </span>
           <span class="badge bg-success info-badge px-3 py-2">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge5">Git Version Control</span>
+            <span i18n="@@featurePortalHome-heroFeatureBadge5">Deployments</span>
           </span>
           <span class="badge bg-success info-badge px-3 py-2">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge6">CI/CD Deployment</span>
+            <span i18n="@@featurePortalHome-heroFeatureBadge6">Team knowledge</span>
           </span>
           <span class="badge bg-success info-badge px-3 py-2">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge7">Auth &amp; Access Control</span>
+            <span i18n="@@featurePortalHome-heroFeatureBadge7">Roles &amp; single sign-on</span>
           </span>
           <span class="badge bg-success info-badge px-3 py-2">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
-            <span i18n="@@featurePortalHome-heroFeatureBadge8">Tickets, Knowledge &amp; Workspaces</span>
+            <span i18n="@@featurePortalHome-heroFeatureBadge8">Your cloud or ours</span>
           </span>
         </div>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
@@ -78,27 +77,31 @@
       <div class="col-md-12 intent-cards" (mouseenter)="pauseAutoplay()" (mouseleave)="resumeAutoplay()">
         <img
           src="assets/images/screenshots/spaces-dark_framed.png"
-          alt="Spaces"
+          alt="Agenstra workspaces"
           class="img-fluid intent-card"
           [class.d-none]="activeSlide() !== 1"
+          i18n-alt="@@featurePortalHome-heroSlideSpaces"
         />
         <img
           src="assets/images/screenshots/tasks-dark_framed.png"
-          alt="Tasks"
+          alt="Agenstra tickets board"
           class="img-fluid intent-card"
           [class.d-none]="activeSlide() !== 2"
+          i18n-alt="@@featurePortalHome-heroSlideTickets"
         />
         <img
           src="assets/images/screenshots/editor-dark_framed.png"
-          alt="IDE"
+          alt="Agenstra web IDE"
           class="img-fluid intent-card"
           [class.d-none]="activeSlide() !== 3"
+          i18n-alt="@@featurePortalHome-heroSlideIde"
         />
         <img
           src="assets/images/screenshots/audit-dark_framed.png"
-          alt="Audit"
+          alt="Agenstra audit and usage statistics"
           class="img-fluid intent-card"
           [class.d-none]="activeSlide() !== 4"
+          i18n-alt="@@featurePortalHome-heroSlideAudit"
         />
         <div
           class="intent-card-progress bg-body-tertiary"
@@ -114,7 +117,10 @@
 <section class="py-5 bg-body-tertiary">
   <div class="container">
     <div class="row justify-content-center">
-      <div class="col-12">
+      <div class="col-12 text-center">
+        <p class="small text-muted mb-4" i18n="@@featurePortalHome-partnersTagline">
+          Runs with the coding agents your teams already use
+        </p>
         <div class="d-flex flex-row justify-content-center align-items-center gap-5 flex-wrap">
           <img src="assets/images/logos/cursor.svg" alt="Cursor" class="img-fluid logo-partner" />
           <img src="assets/images/logos/opencode.svg" alt="OpenCode" class="img-fluid logo-partner" />
@@ -125,534 +131,1101 @@
   </div>
 </section>
 
-<!-- Problem Section -->
-<section id="problem" class="py-10 bg-white">
+<!-- Problem & solution (combined) -->
+<section id="solution" class="py-10 bg-white">
+  <span id="problem" class="visually-hidden" aria-hidden="true"></span>
   <div class="container">
-    <h2
-      class="h2 fw-semibold mb-4 text-center mx-auto section-title-lg text-dark"
-      i18n="@@featurePortalHome-problemTitle"
-    >
-      Your agents are powerful. Your control over them is not.
-    </h2>
-    <p class="lead mb-5 text-center mx-auto text-muted section-lead" i18n="@@featurePortalHome-problemLead">
-      Most organizations start with a single agent or coding assistant inside one tool. Very quickly, this grows into a
-      patchwork of agents, prompts, and integrations that nobody fully understands or controls.
-    </p>
-    <div class="row row-cols-1 row-cols-md-2 g-4 my-4">
-      <div class="col">
-        <div class="card border-0 h-100 rounded-2 card-capability card-capability-primary p-4">
-          <i class="bi bi-stack text-primary mb-3 icon-md" aria-hidden="true"></i>
-          <p class="mb-0 lh-base" i18n="@@featurePortalHome-problemItem1">
-            Every team uses a different stack of tools and models
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 h-100 rounded-2 card-capability card-capability-primary p-4">
-          <i class="bi bi-file-earmark-text text-primary mb-3 icon-md" aria-hidden="true"></i>
-          <p class="mb-0 lh-base" i18n="@@featurePortalHome-problemItem2">
-            Prompts and rules live in private docs, Slack threads, or personal config files
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 h-100 rounded-2 card-capability card-capability-primary p-4">
-          <i class="bi bi-gear text-primary mb-3 icon-md" aria-hidden="true"></i>
-          <p class="mb-0 lh-base" i18n="@@featurePortalHome-problemItem3">
-            Governance is manual and reactive instead of encoded into the system
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 h-100 rounded-2 card-capability card-capability-primary p-4">
-          <i class="bi bi-shield-exclamation text-primary mb-3 icon-md" aria-hidden="true"></i>
-          <p class="mb-0 lh-base" i18n="@@featurePortalHome-problemItem4">
-            Security teams have little visibility into what agents can access or execute
-          </p>
-        </div>
-      </div>
-    </div>
-    <div class="problem-box p-4 rounded-2 d-flex align-items-center gap-3">
-      <i class="bi bi-x-circle-fill flex-shrink-0 problem-icon" aria-hidden="true"></i>
-      <p class="mb-0" i18n="@@featurePortalHome-problemClosing">
-        The result is fragile experimentation. You can demo impressive capabilities, but you hesitate to trust agents
-        with real production workflows.
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 mx-auto section-title-lg text-dark" i18n="@@featurePortalHome-solutionTitle">
+        Turn agent momentum into software you can trust
+      </h2>
+      <p class="lead mx-auto text-muted section-lead mb-0" i18n="@@featurePortalHome-solutionLead">
+        Coding agents help teams move faster. Agenstra helps you keep that speed with visibility, guardrails, and a
+        single place to run work from idea to release.
       </p>
     </div>
-  </div>
-</section>
 
-<!-- Solution Section -->
-<section id="solution" class="py-10 bg-body-tertiary">
-  <div class="container">
-    <h2 class="h2 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalHome-solutionTitle">
-      A control plane for agentic AI systems
-    </h2>
-    <p class="lead text-center mb-5 mx-auto text-muted section-lead" i18n="@@featurePortalHome-solutionLead">
-      Agenstra turns scattered agents into a managed platform. It connects to your existing agent managers and runtimes
-      and provides a centralized layer for configuration, governance, and interaction.
-    </p>
-    <p class="text-center mb-4 fw-medium text-dark" i18n="@@featurePortalHome-solutionWith">With Agenstra you can:</p>
-    <div class="row row-cols-1 row-cols-lg-3 justify-content-center g-4 mt-4">
-      <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover">
-          <div class="d-flex align-items-center mb-3">
-            <span class="rounded-circle d-flex align-items-center justify-content-center me-3 card-icon">
-              <i class="bi bi-diagram-3-fill text-primary icon-solution" aria-hidden="true"></i>
-            </span>
-            <h3 class="h6 fw-semibold mt-0 mb-0" i18n="@@featurePortalHome-solutionItem1Title">Register and manage</h3>
-          </div>
-          <p class="text-muted small mb-0" i18n="@@featurePortalHome-solutionItem1Desc">
-            Register and manage multiple remote agent managers from one interface
+    <div
+      class="card border rounded-3 shadow-sm overflow-hidden mb-5 home-solution-studio card-capability card-capability-primary"
+    >
+      <div class="row g-0 align-items-center">
+        <div class="col-lg-8 p-4 p-lg-5">
+          <h3 class="h4 fw-semibold mb-3" i18n="@@featurePortalHome-solutionStudioTitle">Meet Agenstra Studio</h3>
+          <p class="text-muted mb-0 lh-lg" i18n="@@featurePortalHome-solutionStudioLead">
+            Your organization’s home for agents: connect the tools you already use, manage workspaces, and keep delivery
+            and oversight in one experience without pulling developers out of Cursor, OpenCode, or the editors they
+            prefer.
           </p>
         </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover">
-          <div class="d-flex align-items-center mb-3">
-            <span class="rounded-circle d-flex align-items-center justify-content-center me-3 card-icon">
-              <i class="bi bi-file-earmark-check text-primary icon-solution" aria-hidden="true"></i>
-            </span>
-            <h3 class="h6 fw-semibold mt-0 mb-0" i18n="@@featurePortalHome-solutionItem2Title">Define once, reuse</h3>
+        <div class="col-lg-4 p-4 p-lg-5 d-flex align-items-center justify-content-center">
+          <div class="text-center">
+            <i class="bi bi-stars text-primary icon-xl mb-3 d-block" aria-hidden="true"></i>
+            <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionStudioTagline">
+              One platform. Many teams. Clear accountability.
+            </p>
           </div>
-          <p class="text-muted small mb-0" i18n="@@featurePortalHome-solutionItem2Desc">
-            Define prompts, tools, and policies once and reuse them across agents
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover">
-          <div class="d-flex align-items-center mb-3">
-            <span class="rounded-circle d-flex align-items-center justify-content-center me-3 card-icon">
-              <i class="bi bi-arrow-left-right text-primary icon-solution" aria-hidden="true"></i>
-            </span>
-            <h3 class="h6 fw-semibold mt-0 mb-0" i18n="@@featurePortalHome-solutionItem3Title">Route traffic</h3>
-          </div>
-          <p class="text-muted small mb-0" i18n="@@featurePortalHome-solutionItem3Desc">
-            Route traffic and workloads between environments while keeping behavior consistent
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover">
-          <div class="d-flex align-items-center mb-3">
-            <span class="rounded-circle d-flex align-items-center justify-content-center me-3 card-icon">
-              <i class="bi bi-code-square text-primary icon-solution" aria-hidden="true"></i>
-            </span>
-            <h3 class="h6 fw-semibold mt-0 mb-0" i18n="@@featurePortalHome-solutionItem4Title">Web IDE</h3>
-          </div>
-          <p class="text-muted small mb-0" i18n="@@featurePortalHome-solutionItem4Desc">
-            Work with agents through an integrated web IDE for fast iteration and debugging
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover">
-          <div class="d-flex align-items-center mb-3">
-            <span class="rounded-circle d-flex align-items-center justify-content-center me-3 card-icon">
-              <i class="bi bi-kanban text-primary icon-solution" aria-hidden="true"></i>
-            </span>
-            <h3 class="h6 fw-semibold mt-0 mb-0" i18n="@@featurePortalHome-solutionItem5Title">Plan and track</h3>
-          </div>
-          <p class="text-muted small mb-0" i18n="@@featurePortalHome-solutionItem5Desc">
-            Run tickets, priorities, and knowledge pages per workspace so agent work stays tied to outcomes and context
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover">
-          <div class="d-flex align-items-center mb-3">
-            <span class="rounded-circle d-flex align-items-center justify-content-center me-3 card-icon">
-              <i class="bi bi-lightning-charge text-primary icon-solution" aria-hidden="true"></i>
-            </span>
-            <h3 class="h6 fw-semibold mt-0 mb-0" i18n="@@featurePortalHome-solutionItem6Title">Run code</h3>
-          </div>
-          <p class="text-muted small mb-0" i18n="@@featurePortalHome-solutionItem6Desc">
-            Execute commands and code in connected workspaces and review output in context, so runs live next to the
-            agents and repositories your team already uses
-          </p>
         </div>
       </div>
     </div>
-    <p class="text-center text-muted mt-4" i18n="@@featurePortalHome-solutionClosing">
-      Instead of treating every agent as a one off experiment, you get an infrastructure layer that makes them part of
-      your engineering system.
-    </p>
+
+    <ul
+      class="nav nav-pills nav-fill flex-wrap gap-2 justify-content-center mb-4 portal-page-tabs home-solution-tabs"
+      role="tablist"
+    >
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active px-3 py-2"
+          id="solution-tab-workspaces"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-workspaces"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-workspaces"
+          aria-selected="true"
+        >
+          <i class="bi bi-diagram-3 me-2" aria-hidden="true"></i>
+          <span i18n="@@featurePortalHome-solutionAdvantageTabWorkspaces">Visibility</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-knowledge"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-knowledge"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-knowledge"
+          aria-selected="false"
+        >
+          <i class="bi bi-journal-text me-2" aria-hidden="true"></i>
+          <span i18n="@@featurePortalHome-solutionAdvantageTabKnowledge">Shared context</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-policy"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-policy"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-policy"
+          aria-selected="false"
+        >
+          <i class="bi bi-funnel me-2" aria-hidden="true"></i>
+          <span i18n="@@featurePortalHome-solutionAdvantageTabPolicy">Trust and control</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-tickets"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-tickets"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-tickets"
+          aria-selected="false"
+        >
+          <i class="bi bi-kanban me-2" aria-hidden="true"></i>
+          <span i18n="@@featurePortalHome-solutionAdvantageTabTickets">Delivery rhythm</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-ide"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-ide"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-ide"
+          aria-selected="false"
+        >
+          <i class="bi bi-code-square me-2" aria-hidden="true"></i>
+          <span i18n="@@featurePortalHome-solutionAdvantageTabIde">Builder focus</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-deploy"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-deploy"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-deploy"
+          aria-selected="false"
+        >
+          <i class="bi bi-rocket-takeoff me-2" aria-hidden="true"></i>
+          <span i18n="@@featurePortalHome-solutionAdvantageTabDeploy">Release confidence</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content home-solution-panels">
+      <div
+        class="tab-pane fade show active"
+        id="solution-pane-workspaces"
+        role="tabpanel"
+        aria-labelledby="solution-tab-workspaces"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
+          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-diagram-3-fill text-primary icon-xl"></i>
+            </div>
+            <h3
+              class="h4 fw-semibold mb-3 text-center text-lg-start"
+              i18n="@@featurePortalHome-solutionAdvantageWorkspacesHeadline"
+            >
+              One trustworthy view across every squad
+            </h3>
+            <p
+              class="text-muted mb-0 text-center text-lg-start"
+              i18n="@@featurePortalHome-solutionAdvantageWorkspacesLead"
+            >
+              Platform and engineering leaders see where agents run and who owns what, without micromanaging how each
+              team works day to day.
+            </p>
+          </div>
+          <div class="home-solution-panel-bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-sm-3 g-3">
+              <div class="col">
+                <i class="bi bi-binoculars text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageWorkspacesBenefit1Title">
+                  Leadership clarity
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageWorkspacesBenefit1Desc">
+                  Executives and platform teams share one map of agent activity instead of reconciling spreadsheets and
+                  chat threads.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-people text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageWorkspacesBenefit2Title">
+                  Team autonomy
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageWorkspacesBenefit2Desc">
+                  Squads keep their editors and vendors while still fitting inside org-wide boundaries.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-graph-up-arrow text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageWorkspacesBenefit3Title">
+                  Safer scale
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageWorkspacesBenefit3Desc">
+                  New workspaces inherit policy and access patterns so adoption does not create another shadow
+                  toolchain.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="solution-pane-knowledge"
+        role="tabpanel"
+        aria-labelledby="solution-tab-knowledge"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
+          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-journal-text text-primary icon-xl"></i>
+            </div>
+            <h3
+              class="h4 fw-semibold mb-3 text-center text-lg-start"
+              i18n="@@featurePortalHome-solutionAdvantageKnowledgeHeadline"
+            >
+              Context that survives handoffs
+            </h3>
+            <p
+              class="text-muted mb-0 text-center text-lg-start"
+              i18n="@@featurePortalHome-solutionAdvantageKnowledgeLead"
+            >
+              Operators and agents reason from the same curated knowledge instead of stale wikis, private notes, or
+              whatever was last pasted into chat.
+            </p>
+          </div>
+          <div class="home-solution-panel-bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-sm-3 g-3">
+              <div class="col">
+                <i class="bi bi-chat-square-quote text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageKnowledgeBenefit1Title">
+                  Fewer repeated questions
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageKnowledgeBenefit1Desc">
+                  Teams stop re-explaining architecture and runbooks every time someone new joins a thread.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-person-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageKnowledgeBenefit2Title">
+                  Faster onboarding
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageKnowledgeBenefit2Desc">
+                  New contributors and agents reach useful answers in minutes, not days of scavenger hunts.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-signpost-split text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageKnowledgeBenefit3Title">
+                  Decisions that stick
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageKnowledgeBenefit3Desc">
+                  Agreements live where work happens, so automation does not reopen settled debates.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="solution-pane-policy"
+        role="tabpanel"
+        aria-labelledby="solution-tab-policy"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
+          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-funnel-fill text-primary icon-xl"></i>
+            </div>
+            <h3
+              class="h4 fw-semibold mb-3 text-center text-lg-start"
+              i18n="@@featurePortalHome-solutionAdvantagePolicyHeadline"
+            >
+              Speed with a defensible audit trail
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featurePortalHome-solutionAdvantagePolicyLead">
+              Security and compliance partners get evidence for what agents sent, what was blocked, and who approved
+              autonomous work.
+            </p>
+          </div>
+          <div class="home-solution-panel-bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-sm-3 g-3">
+              <div class="col">
+                <i class="bi bi-shield-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantagePolicyBenefit1Title">
+                  Confidence to expand usage
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantagePolicyBenefit1Desc">
+                  Leaders can sponsor wider agent adoption because risk is measured, not guessed.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-sliders text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantagePolicyBenefit2Title">
+                  Consistent guardrails
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantagePolicyBenefit2Desc">
+                  The same rules apply in every workspace, so policy does not depend on who configured which tool.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-clipboard-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantagePolicyBenefit3Title">
+                  Humans approve the blast radius
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantagePolicyBenefit3Desc">
+                  Autonomous runs start only when the right owner says yes, with limits on scope and runtime.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="solution-pane-tickets"
+        role="tabpanel"
+        aria-labelledby="solution-tab-tickets"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
+          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-kanban-fill text-primary icon-xl"></i>
+            </div>
+            <h3
+              class="h4 fw-semibold mb-3 text-center text-lg-start"
+              i18n="@@featurePortalHome-solutionAdvantageTicketsHeadline"
+            >
+              Automation that matches how you ship
+            </h3>
+            <p
+              class="text-muted mb-0 text-center text-lg-start"
+              i18n="@@featurePortalHome-solutionAdvantageTicketsLead"
+            >
+              Agents accelerate tickets without bypassing the reviews and approvals your organization already expects
+              from human contributors.
+            </p>
+          </div>
+          <div class="home-solution-panel-bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-sm-3 g-3">
+              <div class="col">
+                <i class="bi bi-arrow-repeat text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageTicketsBenefit1Title">
+                  Predictable flow
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageTicketsBenefit1Desc">
+                  Work moves through familiar stages instead of ad hoc agent side quests.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-eye text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageTicketsBenefit2Title">
+                  Visible progress
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageTicketsBenefit2Desc">
+                  Teammates see what agents are doing before surprises land in review or production.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-patch-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageTicketsBenefit3Title">
+                  Less rework after merge
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageTicketsBenefit3Desc">
+                  Checks and approvals happen while context is fresh, not after code is already on main.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="solution-pane-ide" role="tabpanel" aria-labelledby="solution-tab-ide" tabindex="0">
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
+          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-code-square text-primary icon-xl"></i>
+            </div>
+            <h3
+              class="h4 fw-semibold mb-3 text-center text-lg-start"
+              i18n="@@featurePortalHome-solutionAdvantageIdeHeadline"
+            >
+              Stay in flow from idea to commit
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featurePortalHome-solutionAdvantageIdeLead">
+              Developers spend less time jumping between chat, review, and source control when the work happens beside
+              the agents doing it.
+            </p>
+          </div>
+          <div class="home-solution-panel-bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-sm-3 g-3">
+              <div class="col">
+                <i class="bi bi-lightning-charge text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageIdeBenefit1Title">
+                  Shorter feedback loops
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageIdeBenefit1Desc">
+                  Questions, edits, and commits stay in one thread of work instead of three different apps.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-git text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageIdeBenefit2Title">
+                  Review where the code lives
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageIdeBenefit2Desc">
+                  Peers comment on real changes with repository context, not screenshots in chat.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-bullseye text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageIdeBenefit3Title">
+                  Momentum through the sprint
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageIdeBenefit3Desc">
+                  Builders stay focused on the ticket at hand instead of re-establishing context after every switch.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="solution-pane-deploy"
+        role="tabpanel"
+        aria-labelledby="solution-tab-deploy"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
+          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-rocket-takeoff-fill text-primary icon-xl"></i>
+            </div>
+            <h3
+              class="h4 fw-semibold mb-3 text-center text-lg-start"
+              i18n="@@featurePortalHome-solutionAdvantageDeployHeadline"
+            >
+              Ship without leaving the workspace
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featurePortalHome-solutionAdvantageDeployLead">
+              Releases and environments are reachable where agents and engineers already collaborate, so delivery is not
+              a separate ceremony.
+            </p>
+          </div>
+          <div class="home-solution-panel-bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-sm-3 g-3">
+              <div class="col">
+                <i class="bi bi-arrow-left-right text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageDeployBenefit1Title">
+                  Fewer context breaks
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageDeployBenefit1Desc">
+                  Operators do not hand off to another portal just to promote what agents already built.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-broadcast text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageDeployBenefit2Title">
+                  Operators stay in the loop
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageDeployBenefit2Desc">
+                  Run logs and status are visible to the same team that kicked off the work.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-rocket-takeoff text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageDeployBenefit3Title">
+                  Production alignment
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionAdvantageDeployBenefit3Desc">
+                  What ships matches what was reviewed because release steps sit next to the agent thread.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- Key Capabilities Section -->
+<!-- Engineering: bento workflow -->
+<section id="engineering" class="py-10 bg-body-tertiary home-engineering">
+  <div class="container">
+    <div class="row justify-content-center text-center pb-10">
+      <div class="col-lg-9">
+        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featurePortalHome-engineeringTitle">
+          Built for how platform and engineering teams ship software
+        </h2>
+        <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalHome-engineeringLead">
+          Agenstra is where your team operates agents. It is not a replacement for your IDE. It sits beside the editors,
+          Git, and pipelines you already use so agent work follows familiar review and release habits.
+        </p>
+      </div>
+    </div>
+
+    <div class="home-engineering-bento">
+      <div class="row g-3 g-lg-4">
+        <div class="col-lg-8">
+          <div
+            class="card border rounded-3 shadow-sm overflow-hidden h-100 home-engineering-visual card-capability card-capability-primary"
+          >
+            <div class="p-3 p-lg-4 pb-0">
+              <span class="badge bg-primary mb-3 bento-badge" i18n="@@featurePortalHome-engineeringVisualBadge"
+                >Web IDE + agent chat</span
+              >
+            </div>
+            <img
+              src="assets/images/screenshots/ide-dark_framed.png"
+              alt="Agenstra web IDE and dashboard"
+              class="img-fluid w-100 home-engineering-screenshot"
+              i18n-alt="@@featurePortalHome-dashboardAlt"
+            />
+          </div>
+        </div>
+        <div class="col-lg-4 d-flex flex-column gap-3">
+          <article class="card border rounded-3 shadow-sm p-4 h-100 home-engineering-tile-subtle">
+            <i class="bi bi-terminal text-primary icon-md mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-engineeringTile1Title">Code where you chat</h3>
+            <p class="small text-muted mb-0" i18n="@@featurePortalHome-engineeringItem1">
+              Use a full web-based code editor with terminal beside chat without context switching
+            </p>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-4 h-100 home-engineering-tile-subtle">
+            <i class="bi bi-git text-primary icon-md mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-engineeringTile2Title">Context in Git</h3>
+            <p class="small text-muted mb-0" i18n="@@featurePortalHome-engineeringItem2">
+              Keep agent configuration and context in version control where reviews and history already live
+            </p>
+          </article>
+        </div>
+      </div>
+      <div class="row g-3 g-lg-4 mt-0 mt-lg-1">
+        <div class="col-md-4">
+          <article class="card border rounded-3 shadow-sm p-4 h-100 home-engineering-tile-subtle">
+            <i class="bi bi-signpost-split text-primary icon-md mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-engineeringTile3Title">Lanes you recognize</h3>
+            <p class="small text-muted mb-0" i18n="@@featurePortalHome-engineeringItem3">
+              Map workspaces and environments to dev, staging, and production delivery lanes
+            </p>
+          </article>
+        </div>
+        <div class="col-md-4">
+          <article class="card border rounded-3 shadow-sm p-4 h-100 home-engineering-tile-subtle">
+            <i class="bi bi-sliders text-primary icon-md mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-engineeringTile4Title">Ops without a repo PR</h3>
+            <p class="small text-muted mb-0" i18n="@@featurePortalHome-engineeringItem4">
+              Let operators adjust knowledge, tickets, and policies without opening the repository
+            </p>
+          </article>
+        </div>
+        <div class="col-md-4">
+          <article class="card border rounded-3 shadow-sm p-4 h-100 home-engineering-tile-subtle">
+            <i class="bi bi-kanban text-primary icon-md mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-engineeringTile5Title">Tickets first</h3>
+            <p class="small text-muted mb-0" i18n="@@featurePortalHome-engineeringItem5">
+              Start from tickets so automation, branches, and reviews stay tied to real delivery work
+            </p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- What you get -->
 <section id="features" class="py-10 bg-white">
   <div class="container">
-    <h2 class="h2 fw-semibold mb-5 text-center text-dark" i18n="@@featurePortalHome-capabilitiesTitle">
-      Everything you need to operate AI agents like production software
+    <h2 class="h2 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalHome-capabilitiesTitle">
+      Five ways Agenstra earns a place in your delivery stack
     </h2>
-    <div class="mb-5">
-      <div class="card border-0 rounded-3 card-capability card-capability-primary p-4 p-lg-5">
-        <h3 class="h4 fw-semibold mb-4">
-          <i class="bi bi-diagram-3-fill text-primary me-2" aria-hidden="true"></i>
-          <span i18n="@@featurePortalHome-capability1Title">Unified agent management</span>
-        </h3>
-        <ul class="list-unstyled ps-0 mb-0">
-          <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability1Item1"
-              >Connect multiple agent managers and runtimes from different vendors or frameworks</span
-            >
-          </li>
-          <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability1Item2"
-              >Tag and organize agents by team, environment, or use case</span
-            >
-          </li>
-          <li class="mb-0 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability1Item3"
-              >Apply global policies that govern how agents access tools, data, and external systems</span
-            >
-          </li>
-        </ul>
+    <p class="lead text-center text-muted pb-10 mx-auto section-lead" i18n="@@featurePortalHome-capabilitiesLead">
+      Pick a theme to see what Agenstra does: workspaces, policy, tickets, knowledge, IDE, integrations, and releases.
+      This is the feature-level detail engineering and platform teams evaluate.
+    </p>
+
+    <ul class="nav nav-pills nav-fill flex-wrap gap-2 justify-content-center mb-4 portal-page-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active px-4 py-2"
+          id="pillar-tab-run"
+          data-bs-toggle="tab"
+          data-bs-target="#pillar-pane-run"
+          type="button"
+          role="tab"
+          aria-controls="pillar-pane-run"
+          aria-selected="true"
+          i18n="@@featurePortalHome-pillarTabRun"
+        >
+          <i class="bi bi-diagram-3 me-2" aria-hidden="true"></i>
+          Run together
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-4 py-2"
+          id="pillar-tab-govern"
+          data-bs-toggle="tab"
+          data-bs-target="#pillar-pane-govern"
+          type="button"
+          role="tab"
+          aria-controls="pillar-pane-govern"
+          aria-selected="false"
+          i18n="@@featurePortalHome-pillarTabGovern"
+        >
+          <i class="bi bi-shield-lock me-2" aria-hidden="true"></i>
+          Stay in control
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-4 py-2"
+          id="pillar-tab-ship"
+          data-bs-toggle="tab"
+          data-bs-target="#pillar-pane-ship"
+          type="button"
+          role="tab"
+          aria-controls="pillar-pane-ship"
+          aria-selected="false"
+          i18n="@@featurePortalHome-pillarTabShip"
+        >
+          <i class="bi bi-rocket-takeoff me-2" aria-hidden="true"></i>
+          Ship faster
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-4 py-2"
+          id="pillar-tab-know"
+          data-bs-toggle="tab"
+          data-bs-target="#pillar-pane-know"
+          type="button"
+          role="tab"
+          aria-controls="pillar-pane-know"
+          aria-selected="false"
+          i18n="@@featurePortalHome-pillarTabKnow"
+        >
+          <i class="bi bi-journal-text me-2" aria-hidden="true"></i>
+          Share context
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-4 py-2"
+          id="pillar-tab-connect"
+          data-bs-toggle="tab"
+          data-bs-target="#pillar-pane-connect"
+          type="button"
+          role="tab"
+          aria-controls="pillar-pane-connect"
+          aria-selected="false"
+          i18n="@@featurePortalHome-pillarTabConnect"
+        >
+          <i class="bi bi-plug me-2" aria-hidden="true"></i>
+          Fit your tools
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content home-pillar-panels">
+      <div
+        class="tab-pane fade show active"
+        id="pillar-pane-run"
+        role="tabpanel"
+        aria-labelledby="pillar-tab-run"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-pillar-panel card-capability-primary">
+          <div class="row g-0 align-items-stretch">
+            <div class="col-lg-5 p-4 p-lg-5 bg-white border-end">
+              <div
+                class="home-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+                aria-hidden="true"
+              >
+                <i class="bi bi-diagram-3-fill text-primary icon-xl"></i>
+              </div>
+              <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featurePortalHome-capability1Title">
+                One home for every workspace
+              </h3>
+              <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featurePortalHome-pillarRunLead">
+                Stop chasing agents across clouds and vendors. Give each team a governed space while leadership keeps a
+                single view of what is running where.
+              </p>
+            </div>
+            <div class="col-lg-7 p-4 p-lg-5 d-flex align-items-center">
+              <div class="row row-cols-1 row-cols-sm-3 g-3">
+                <div class="col">
+                  <i class="bi bi-collection text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1 p" i18n="@@featurePortalHome-pillarRunPoint1Title">
+                    Every squad, one map
+                  </p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability1Item1">
+                    Register agents from different tools and see them together in Agenstra Studio
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-people text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarRunPoint2Title">The right access</p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability1Item2">
+                    Invite teammates with roles per workspace and sign in with your company identity provider
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-layers text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarRunPoint3Title">Clear boundaries</p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability1Item3">
+                    Keep dev, staging, and production separate so experiments never blur into live systems
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="pillar-pane-govern"
+        role="tabpanel"
+        aria-labelledby="pillar-tab-govern"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-pillar-panel card-capability-primary">
+          <div class="row g-0 align-items-stretch">
+            <div class="col-lg-5 p-4 p-lg-5 bg-white border-end">
+              <div
+                class="home-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+                aria-hidden="true"
+              >
+                <i class="bi bi-shield-lock-fill text-primary icon-xl"></i>
+              </div>
+              <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featurePortalHome-capability2Title">
+                Trust you can show auditors
+              </h3>
+              <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featurePortalHome-pillarGovernLead">
+                Set guardrails once and apply them everywhere. When something sensitive slips through, you have a
+                record, not a debate in chat.
+              </p>
+            </div>
+            <div class="col-lg-7 p-4 p-lg-5 d-flex align-items-center">
+              <div class="row row-cols-1 row-cols-sm-3 g-3">
+                <div class="col">
+                  <i class="bi bi-funnel text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarGovernPoint1Title">Company rules</p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability2Item1">
+                    Block or rewrite risky content before it reaches agents, consistently across workspaces
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-clipboard-data text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarGovernPoint2Title">Full picture</p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability2Item2">
+                    Review what was blocked, flagged, or sent. That is ready for compliance reviews and leadership
+                    dashboards
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-hand-thumbs-up text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarGovernPoint3Title">
+                    Humans stay in charge
+                  </p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability2Item3">
+                    Require sign-off before agents run on their own, with limits on scope and runtime
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="pillar-pane-ship" role="tabpanel" aria-labelledby="pillar-tab-ship" tabindex="0">
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-pillar-panel card-capability-primary">
+          <div class="row g-0 align-items-stretch">
+            <div class="col-lg-5 p-4 p-lg-5 bg-white border-end">
+              <div
+                class="home-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+                aria-hidden="true"
+              >
+                <i class="bi bi-rocket-takeoff-fill text-primary icon-xl"></i>
+              </div>
+              <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featurePortalHome-capability3Title">
+                From ticket to release, in one flow
+              </h3>
+              <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featurePortalHome-pillarShipLead">
+                Agents stop being a side channel. Plan work, run automation, commit code, and ship without switching
+                between five different products.
+              </p>
+            </div>
+            <div class="col-lg-7 p-4 p-lg-5 d-flex align-items-center">
+              <div class="row row-cols-1 row-cols-sm-3 g-3">
+                <div class="col">
+                  <i class="bi bi-kanban text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarShipPoint1Title">Visible work</p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability3Item1">
+                    Track tickets with comments and live updates so everyone sees what agents are working on
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-lightning-charge text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarShipPoint2Title">
+                    Smart automation
+                  </p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability3Item2">
+                    Let agents draft solutions on tickets, with checks before changes merge
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-git text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarShipPoint3Title">
+                    Ship with confidence
+                  </p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability3Item3">
+                    Trigger releases, follow run logs, and use Git from the same place you chat with agents
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="pillar-pane-know" role="tabpanel" aria-labelledby="pillar-tab-know" tabindex="0">
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-pillar-panel card-capability-primary">
+          <div class="row g-0 align-items-stretch">
+            <div class="col-lg-5 p-4 p-lg-5 bg-white border-end">
+              <div
+                class="home-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+                aria-hidden="true"
+              >
+                <i class="bi bi-journal-richtext text-primary icon-xl"></i>
+              </div>
+              <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featurePortalHome-capability5Title">
+                Context everyone actually uses
+              </h3>
+              <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featurePortalHome-pillarKnowLead">
+                Replace scattered docs and tribal knowledge with pages your agents and teammates can search. They are
+                linked to the work in flight.
+              </p>
+            </div>
+            <div class="col-lg-7 p-4 p-lg-5 d-flex align-items-center">
+              <div class="row row-cols-1 row-cols-sm-3 g-3">
+                <div class="col">
+                  <i class="bi bi-folder2-open text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarKnowPoint1Title">Living library</p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability5Item1">
+                    Organize guides and decisions in searchable pages per workspace
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-link-45deg text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarKnowPoint2Title">Connected work</p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability5Item2">
+                    Tie knowledge to tickets so context travels with every handoff
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-file-earmark-code text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarKnowPoint3Title">
+                    One source for editors
+                  </p>
+                  <p class="small text-muted mb-0">
+                    <ng-container i18n="@@featurePortalHome-capability5Item3Prefix"
+                      >Standardize how assistants read your repo with
+                    </ng-container>
+                    <a
+                      routerLink="/agentctx"
+                      class="text-decoration-none"
+                      i18n="@@featurePortalHome-capability5Item3Link"
+                      >AgentCTX</a
+                    >
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="pillar-pane-connect"
+        role="tabpanel"
+        aria-labelledby="pillar-tab-connect"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-pillar-panel card-capability-primary">
+          <div class="row g-0 align-items-stretch">
+            <div class="col-lg-5 p-4 p-lg-5 bg-white border-end">
+              <div
+                class="home-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+                aria-hidden="true"
+              >
+                <i class="bi bi-plug-fill text-primary icon-xl"></i>
+              </div>
+              <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featurePortalHome-capability4Title">
+                Plays nice with what you already bought
+              </h3>
+              <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featurePortalHome-pillarConnectLead">
+                Agenstra sits alongside your editors, issue trackers, and cloud, not instead of them. Keep vendor choice
+                and data where you want it.
+              </p>
+            </div>
+            <div class="col-lg-7 p-4 p-lg-5 d-flex align-items-center">
+              <div class="row row-cols-1 row-cols-sm-3 g-3">
+                <div class="col">
+                  <i class="bi bi-kanban-fill text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarConnectPoint1Title">
+                    Jira &amp; Confluence
+                  </p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability4Item1">
+                    Pull issue and wiki context into workspaces so agents start informed
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-cpu text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarConnectPoint2Title">Your agents</p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability4Item2">
+                    Use Cursor, OpenCode, OpenClaw, and more on infrastructure you choose
+                  </p>
+                </div>
+                <div class="col">
+                  <i class="bi bi-cloud-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                  <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-pillarConnectPoint3Title">
+                    Your deployment
+                  </p>
+                  <p class="small text-muted mb-0" i18n="@@featurePortalHome-capability4Item3">
+                    Run on your own servers, our managed cloud, or Desktop for day-to-day operators
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="mb-5">
-      <div class="card border-0 rounded-3 card-capability card-capability-primary p-4 p-lg-5">
-        <h3 class="h4 fw-semibold mb-4">
-          <i class="bi bi-file-earmark-text-fill me-2 text-primary" aria-hidden="true"></i>
-          <span i18n="@@featurePortalHome-capability2Title">Prompt and context governance</span>
-        </h3>
-        <ul class="list-unstyled ps-0 mb-0">
-          <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability2Item1"
-              >Store prompts, configuration, and context centrally instead of in ad hoc files</span
-            >
-          </li>
-          <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability2Item2"
-              >Define reusable rulesets, filters, and transformers that shape requests before they reach agents</span
-            >
-          </li>
-          <li class="mb-0 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability2Item3"
-              >Run prompts through automated checks to detect risky content and missing context</span
-            >
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div class="mb-5">
-      <div class="card border-0 rounded-3 card-capability card-capability-primary p-4 p-lg-5">
-        <h3 class="h4 fw-semibold mb-4">
-          <i class="bi bi-graph-up-arrow me-2 text-primary" aria-hidden="true"></i>
-          <span i18n="@@featurePortalHome-capability3Title">Observability and auditability</span>
-        </h3>
-        <ul class="list-unstyled ps-0 mb-0">
-          <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability3Item1"
-              >Trace every agent request from input through tools to final output</span
-            >
-          </li>
-          <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability3Item2"
-              >Inspect intermediate steps and tool calls for debugging and quality review</span
-            >
-          </li>
-          <li class="mb-0 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability3Item3"
-              >Generate audit logs that show what decisions an agent made and why</span
-            >
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div class="mb-5">
-      <div class="card border-0 rounded-3 card-capability card-capability-primary p-4 p-lg-5">
-        <h3 class="h4 fw-semibold mb-4">
-          <i class="bi bi-kanban me-2 text-primary" aria-hidden="true"></i>
-          <span i18n="@@featurePortalHome-capability5Title">Planning and knowledge</span>
-        </h3>
-        <ul class="list-unstyled ps-0 mb-0">
-          <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability5Item1"
-              >Track work per workspace with tickets, priorities, and status so agent initiatives stay visible next to
-              execution</span
-            >
-          </li>
-          <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability5Item2"
-              >Build structured knowledge with folders and markdown pages, then find what matters quickly with workspace
-              search</span
-            >
-          </li>
-          <li class="mb-0 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability5Item3"
-              >Link tickets and knowledge so context, decisions, and activity stay connected while work moves across
-              agents and people</span
-            >
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div>
-      <div class="card border-0 rounded-3 card-capability card-capability-primary p-4 p-lg-5">
-        <h3 class="h4 fw-semibold mb-4">
-          <i class="bi bi-shield-lock-fill me-2 text-primary" aria-hidden="true"></i>
-          <span i18n="@@featurePortalHome-capability4Title">Secure connectivity</span>
-        </h3>
-        <ul class="list-unstyled ps-0 mb-0">
-          <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability4Item1"
-              >Keep secrets and credentials out of prompts by using managed integrations</span
-            >
-          </li>
-          <li class="mb-3 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability4Item2"
-              >Limit which tools and data each agent can access based on role and environment</span
-            >
-          </li>
-          <li class="mb-0 d-flex align-items-start">
-            <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-            <span class="lh-lg" i18n="@@featurePortalHome-capability4Item3"
-              >Support hybrid and distributed setups where agents run close to the systems they automate</span
-            >
-          </li>
-        </ul>
-      </div>
-    </div>
+    <span id="delivery" class="visually-hidden" aria-hidden="true"></span>
+    <span id="integration" class="visually-hidden" aria-hidden="true"></span>
   </div>
 </section>
 
-<!-- Designed for Engineering Teams -->
-<section id="engineering" class="position-relative py-10 bg-body-tertiary overflow-hidden">
+<!-- Product ecosystem: hub layout -->
+<section id="ecosystem" class="py-10 bg-body-tertiary home-ecosystem">
   <div class="container">
-    <div class="row align-items-center">
-      <div class="col-lg-6 mb-5 mb-lg-0">
-        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featurePortalHome-engineeringTitle">
-          Fits how your team already builds software
-        </h2>
-        <p class="lead text-muted mb-5" i18n="@@featurePortalHome-engineeringLead">
-          Agentic systems only succeed when they integrate with existing engineering practice. Agenstra is built with
-          platform and developer experience in mind.
-        </p>
-        <ul class="list-group list-group-flush bg-transparent mb-5">
-          <li class="list-group-item bg-transparent border-0 ps-0 d-flex align-items-start">
-            <i
-              class="bi bi-check-circle-fill text-success me-3 mt-1 flex-shrink-0 engineering-icon"
-              aria-hidden="true"
-            ></i>
-            <span class="lh-lg engineering-text" i18n="@@featurePortalHome-engineeringItem1"
-              >Work in a web based IDE that feels familiar to developers</span
-            >
-          </li>
-          <li class="list-group-item bg-transparent border-0 ps-0 d-flex align-items-start">
-            <i
-              class="bi bi-check-circle-fill text-success me-3 mt-1 flex-shrink-0 engineering-icon"
-              aria-hidden="true"
-            ></i>
-            <span class="lh-lg engineering-text" i18n="@@featurePortalHome-engineeringItem2"
-              >Keep all configuration in version control where reviews and history already live</span
-            >
-          </li>
-          <li class="list-group-item bg-transparent border-0 ps-0 d-flex align-items-start">
-            <i
-              class="bi bi-check-circle-fill text-success me-3 mt-1 flex-shrink-0 engineering-icon"
-              aria-hidden="true"
-            ></i>
-            <span class="lh-lg engineering-text" i18n="@@featurePortalHome-engineeringItem3"
-              >Use environments, workspaces, and pipelines in your development workflow</span
-            >
-          </li>
-          <li class="list-group-item bg-transparent border-0 ps-0 d-flex align-items-start">
-            <i
-              class="bi bi-check-circle-fill text-success me-3 mt-1 flex-shrink-0 engineering-icon"
-              aria-hidden="true"
-            ></i>
-            <span class="lh-lg engineering-text" i18n="@@featurePortalHome-engineeringItem4"
-              >Expose safe surfaces for product and domain experts to adjust behavior without touching code</span
-            >
-          </li>
-        </ul>
-        <p class="text-muted" i18n="@@featurePortalHome-engineeringClosing">
-          This lets you bring AI agents into your delivery process instead of inventing a separate one.
-        </p>
-      </div>
-      <div class="col-lg-6 text-center">
-        <img
-          src="assets/images/screenshots/ide-dark_framed.png"
-          alt="Agenstra web IDE and dashboard"
-          class="engineering-screenshot d-none d-lg-block"
-          i18n-alt="@@featurePortalHome-dashboardAlt"
-        />
-      </div>
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featurePortalHome-ecosystemTitle">
+        One platform, flexible surfaces
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalHome-ecosystemLead">
+        Agenstra Studio is the product your teams sign into. Run it on your infrastructure or choose Agenstra Cloud when
+        you want us to operate the platform.
+      </p>
     </div>
-  </div>
-</section>
 
-<!-- Use Cases Section -->
-<section id="usecases" class="py-10 bg-white">
-  <div class="container">
-    <h2 class="h2 fw-semibold mb-5 text-center text-dark" i18n="@@featurePortalHome-usecasesTitle">
-      Where teams use Agenstra today
-    </h2>
-    <p class="lead text-center text-muted mb-5 mx-auto section-lead" i18n="@@featurePortalHome-usecasesLead">
-      Agenstra is useful wherever agents interact with live systems, sensitive data, or mission critical workflows.
-      Typical scenarios include:
-    </p>
-    <div class="row row-cols-1 row-cols-md-2 g-4">
-      <div class="col">
-        <div class="card h-100 border-0 rounded-3 p-4 position-relative card-capability card-capability-primary">
-          <span
-            class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge mb-3"
-            aria-hidden="true"
-            >1</span
+    <article
+      class="card border rounded-3 shadow-sm home-ecosystem-studio card-capability card-capability-primary mb-4 overflow-hidden"
+    >
+      <div class="row g-0 align-items-lg-stretch">
+        <div class="col-lg-6 p-4 p-lg-5 d-flex flex-column card-capability-primary">
+          <span class="badge bg-primary mb-3 align-self-start" i18n="@@featurePortalHome-ecosystemStudioBadge"
+            >Core platform</span
           >
-          <h3 class="h5 fw-semibold mb-3 mt-0" i18n="@@featurePortalHome-usecase1Title">Customer facing agents</h3>
-          <p class="text-muted mb-0" i18n="@@featurePortalHome-usecase1Desc">
-            Customer facing agents that read or write data in CRM, ticketing, or billing systems
+          <h3 class="h3 fw-semibold mb-3" i18n="@@featurePortalHome-ecosystemStudioTitle">Agenstra Studio</h3>
+          <p class="text-muted mb-4 lh-lg" i18n="@@featurePortalHome-ecosystemStudioLead">
+            The console your organization runs every day: workspaces, tickets, knowledge, IDE, releases, and governance
+            in one signed-in experience.
           </p>
+          <p class="small text-muted mb-4" i18n="@@featurePortalHome-ecosystemStudioAside">
+            Self-hosted or managed. Same product, your choice of operations.
+          </p>
+          <div class="mt-auto">
+            <a
+              routerLink="."
+              fragment="features"
+              class="btn btn-primary rounded-3"
+              i18n="@@featurePortalHome-ecosystemStudioCta"
+              >See what you get</a
+            >
+          </div>
+        </div>
+        <div class="col-lg-6 home-ecosystem-studio-surfaces border-start bg-white p-4 p-lg-4">
+          <p class="small fw-semibold text-muted mb-3 mb-lg-4" i18n="@@featurePortalHome-ecosystemSurfacesLabel">
+            Part of Studio
+          </p>
+          <div class="d-flex flex-column gap-3">
+            <article class="home-ecosystem-surface rounded-3 border p-3 p-lg-4">
+              <div class="d-flex gap-3">
+                <i class="bi bi-file-earmark-code text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <div>
+                  <h4 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-ecosystemAgentCtxTitle">AgentCTX</h4>
+                  <p class="small text-muted mb-3" i18n="@@featurePortalHome-ecosystemAgentCtxDesc">
+                    Maintain project context once for the whole team. Keep every coding assistant aligned without
+                    copying rules between editors.
+                  </p>
+                  <a
+                    routerLink="/agentctx"
+                    class="small fw-semibold text-decoration-none"
+                    i18n="@@featurePortalHome-ecosystemAgentCtxCta"
+                    >Explore AgentCTX</a
+                  >
+                </div>
+              </div>
+            </article>
+            <article class="home-ecosystem-surface rounded-3 border p-3 p-lg-4">
+              <div class="d-flex gap-3">
+                <i class="bi bi-display text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <div>
+                  <h4 class="h6 fw-semibold mb-2" i18n="@@featurePortalHome-ecosystemDesktopTitle">Agenstra Desktop</h4>
+                  <p class="small text-muted mb-3" i18n="@@featurePortalHome-ecosystemDesktopDesc">
+                    A desktop app for daily operators with the same sign-in and permissions as the web console.
+                  </p>
+                  <a
+                    routerLink="/desktop"
+                    class="small fw-semibold text-decoration-none"
+                    i18n="@@featurePortalHome-ecosystemDesktopCta"
+                    >Explore Desktop</a
+                  >
+                </div>
+              </div>
+            </article>
+          </div>
         </div>
       </div>
-      <div class="col">
-        <div class="card h-100 border-0 rounded-3 p-4 position-relative card-capability card-capability-primary">
-          <span
-            class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge mb-3"
-            aria-hidden="true"
-            >2</span
-          >
-          <h3 class="h5 fw-semibold mb-3 mt-0" i18n="@@featurePortalHome-usecase2Title">Internal copilots</h3>
-          <p class="text-muted mb-0" i18n="@@featurePortalHome-usecase2Desc">
-            Internal copilots that automate deployments, incident response, or operational runbooks
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card h-100 border-0 rounded-3 p-4 position-relative card-capability card-capability-primary">
-          <span
-            class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge mb-3"
-            aria-hidden="true"
-            >3</span
-          >
-          <h3 class="h5 fw-semibold mb-3 mt-0" i18n="@@featurePortalHome-usecase3Title">Data and analytics agents</h3>
-          <p class="text-muted mb-0" i18n="@@featurePortalHome-usecase3Desc">
-            Data and analytics agents that orchestrate pipelines or connect multiple tools
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card h-100 border-0 rounded-3 p-4 position-relative card-capability card-capability-primary">
-          <span
-            class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge mb-3"
-            aria-hidden="true"
-            >4</span
-          >
-          <h3 class="h5 fw-semibold mb-3 mt-0" i18n="@@featurePortalHome-usecase4Title">Coding assistants</h3>
-          <p class="text-muted mb-0" i18n="@@featurePortalHome-usecase4Desc">
-            Coding assistants wired into repositories and CI for automated code changes
-          </p>
-        </div>
-      </div>
-    </div>
-    <p class="text-center text-muted mt-5" i18n="@@featurePortalHome-usecasesClosing">
-      The more important the workflow, the more value you get from a central control plane.
-    </p>
-  </div>
-</section>
+    </article>
 
-<!-- Integration Section -->
-<section id="integration" class="py-10 bg-body-tertiary">
-  <div class="container">
-    <h2 class="h2 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalHome-integrationTitle">
-      Bring your own models, tools, and infrastructure
-    </h2>
-    <p class="lead text-center text-muted mb-4" i18n="@@featurePortalHome-integrationLead">
-      Agenstra is not another monolithic black box. It is an orchestration and governance layer that works with what you
-      already have.
-    </p>
-    <div class="row row-cols-1 row-cols-md-3 g-4 mt-4">
-      <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover text-center">
-          <i class="bi bi-plug-fill mx-auto mb-3 icon-integration" aria-hidden="true"></i>
-          <h3 class="h6 fw-medium mt-3 mb-0" i18n="@@featurePortalHome-integrationItem1">Agent frameworks</h3>
-          <p class="small text-muted mb-0 mt-2" i18n="@@featurePortalHome-integrationItem1Desc">
-            Connect to existing agent frameworks and vendor platforms
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover text-center">
-          <i class="bi bi-git mx-auto mb-3 icon-integration" aria-hidden="true"></i>
-          <h3 class="h6 fw-medium mt-3 mb-0" i18n="@@featurePortalHome-integrationItem2">Code &amp; CI</h3>
-          <p class="small text-muted mb-0 mt-2" i18n="@@featurePortalHome-integrationItem2Desc">
-            Integrate with your code hosting, CI, observability, and secret management
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover text-center">
-          <i class="bi bi-cloud-check mx-auto mb-3 icon-integration" aria-hidden="true"></i>
-          <h3 class="h6 fw-medium mt-3 mb-0" i18n="@@featurePortalHome-integrationItem3">Cloud or on-prem</h3>
-          <p class="small text-muted mb-0 mt-2" i18n="@@featurePortalHome-integrationItem3Desc">
-            Support cloud, on premises, or hybrid agent runtimes
-          </p>
-        </div>
-      </div>
-    </div>
-    <p class="text-center text-muted mt-5 mb-0" i18n="@@featurePortalHome-integrationClosing">
-      You keep control of your data and infrastructure while gaining a unified way to manage and govern agents.
-    </p>
-  </div>
-</section>
-
-<!-- Security Section -->
-<section id="security" class="py-10 bg-white">
-  <div class="container">
-    <div class="row align-items-center flex-lg-row-reverse">
-      <div class="col-lg-6 mb-5 mb-lg-0">
-        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featurePortalHome-securityTitle">
-          Built for teams that cannot afford surprises
-        </h2>
-        <p class="lead text-muted mb-4" i18n="@@featurePortalHome-securityLead">
-          When agents can deploy code, touch customer data, or move money, guardrails are not optional.
-        </p>
-        <p class="mb-4" i18n="@@featurePortalHome-securityIntro">
-          Agenstra gives security and compliance leaders the visibility and control they need:
-        </p>
-        <ul class="list-unstyled mb-4">
-          <li class="mb-2" i18n="@@featurePortalHome-securityItem1">Central policies for tool and data access</li>
-          <li class="mb-2" i18n="@@featurePortalHome-securityItem2">
-            Audit logs for all agent activity and configuration changes
-          </li>
-          <li class="mb-2" i18n="@@featurePortalHome-securityItem3">
-            Clear separation between development, staging, and production
-          </li>
-          <li class="mb-0" i18n="@@featurePortalHome-securityItem4">
-            Testing workflows for prompts, tools, and policies before rollout
-          </li>
-        </ul>
-        <div class="d-flex flex-wrap gap-3 mt-4">
-          <span class="badge bg-success info-badge px-4 py-2" i18n="@@featurePortalHome-securityBadge1">Policies</span>
-          <span class="badge bg-primary info-badge px-4 py-2" i18n="@@featurePortalHome-securityBadge2"
-            >Audit logs</span
-          >
-          <span class="badge bg-warning info-badge px-4 py-2" i18n="@@featurePortalHome-securityBadge3">Testing</span>
-        </div>
-        <p class="mt-4 text-muted" i18n="@@featurePortalHome-securityClosing">
-          You can adopt agentic AI without losing your ability to explain and prove what happened.
-        </p>
-      </div>
-      <div class="col-lg-6 text-center">
-        <i class="bi bi-shield-check text-primary icon-security-large" aria-hidden="true"></i>
+    <div class="row g-4 align-items-stretch">
+      <div class="col-12">
+        <article
+          class="card border rounded-3 shadow-sm overflow-hidden home-ecosystem-product home-ecosystem-product--cloud"
+        >
+          <div class="row g-0 align-items-stretch bg-body-tertiary">
+            <div class="col-lg-8 p-4 p-lg-5 bg-white">
+              <div class="mb-3">
+                <i class="bi bi-cloud-check text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+                <h3 class="h5 fw-semibold mb-0" i18n="@@featurePortalHome-ecosystemCloudTitle">Agenstra Cloud</h3>
+              </div>
+              <p class="text-muted mb-4 mb-lg-0" i18n="@@featurePortalHome-ecosystemCloudDesc">
+                We run the platform for you. Your agents stay in your tools and clouds while upgrades, scaling, and
+                audit trails are handled by us.
+              </p>
+            </div>
+            <div
+              class="col-lg-4 p-4 p-lg-5 text-center card-capability-primary border-start home-ecosystem-cloud-aside d-flex flex-column justify-content-center"
+            >
+              <p class="small text-muted mb-2" i18n="@@featurePortalPricing-cloudStartingAt">Starting at</p>
+              <div class="h2 fw-bold text-primary mb-4">
+                @if (cheapestOfferingLoading() || !cheapestLoaded()) {
+                  <span class="text-muted" aria-hidden="true">…</span>
+                } @else {
+                  @if (cheapestOffering(); as cloudPlan) {
+                    €{{ cloudPlan.totalPrice | number: '1.2-2'
+                    }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(cloudPlan) }}</span>
+                  } @else {
+                    <span class="text-muted" i18n="@@featurePortalPricing-cloudPriceUnavailable">Not available</span>
+                  }
+                }
+              </div>
+              <a
+                [href]="billingBaseUrl"
+                class="btn btn-primary mb-2"
+                target="_blank"
+                rel="noopener noreferrer"
+                i18n="@@featurePortalPricing-getStartedNow"
+                >Get Started Now</a
+              >
+              <a
+                routerLink="/cloud"
+                class="text-primary fw-semibold small text-decoration-none"
+                i18n="@@featurePortalPricing-exploreCloud"
+                >Explore Cloud</a
+              >
+            </div>
+          </div>
+        </article>
       </div>
     </div>
   </div>
@@ -664,13 +1237,15 @@
     <div class="row">
       <div class="col-12">
         <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
-          <h2 class="h2 fw-semibold mb-4" i18n="@@featurePortalHome-ctaTitle">Build agentic systems you can trust</h2>
+          <h2 class="h2 fw-semibold mb-4" i18n="@@featurePortalHome-ctaTitle">
+            Operate coding agents like production infrastructure
+          </h2>
           <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featurePortalHome-ctaLead">
-            If your team is moving from AI experiments to real production workflows, you need a platform that treats
-            agents like part of your software infrastructure.
+            Move from isolated experiments to a governed platform: one console for workspaces, automation, and
+            compliance-ready observability.
           </p>
           <p class="mb-5 mx-auto cta-sub-light" i18n="@@featurePortalHome-ctaSub">
-            Agenstra gives you centralized control, governance, and observability for distributed AI agents.
+            Run on your own infrastructure or let us host Agenstra Cloud for you.
           </p>
           <div class="d-flex gap-3 justify-content-center flex-wrap">
             <a

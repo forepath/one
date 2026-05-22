@@ -16,11 +16,11 @@ export class PortalLegalPrivacyComponent implements OnInit {
   private readonly metaService = inject(Meta);
 
   ngOnInit(): void {
-    this.titleService.setTitle($localize`:@@featurePortalPrivacy-metaTitle:Agenstra - Privacy Policy`);
+    this.titleService.setTitle($localize`:@@featurePortalPrivacy-metaTitle:Privacy Policy :: Agenstra`);
     this.metaService.addTags([
       {
         name: 'description',
-        content: $localize`:@@featurePortalPrivacy-metaDescription:Agenstra is a platform for managing distributed AI agent infrastructure. This is the privacy policy for the platform.`,
+        content: $localize`:@@featurePortalPrivacy-metaDescription:How Agenstra and IPvX process personal data when you use our platform, websites, and support. Cookies, retention, your rights, and how to contact us.`,
       },
       {
         name: 'keywords',

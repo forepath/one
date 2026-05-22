@@ -42,13 +42,19 @@
         <source>Loading...</source>
         </trans-unit>
       <trans-unit id="featureDocsPage-metaTitleFallback" datatype="html">
-        <source>Centralized Control for Distributed AI Agent Infrastructure</source>
+        <source>Documentation :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featureDocsPage-metaDescriptionFallback" datatype="html">
-        <source>Centralized Control for Distributed AI Agent Infrastructure</source>
+        <source>Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.</source>
         </trans-unit>
       <trans-unit id="featureDocsPage-metaKeywords" datatype="html">
         <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaTitle" datatype="html">
+        <source>Search Documentation :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
+        <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-title" datatype="html">
         <source>Search Documentation</source>

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
-import { of } from 'rxjs';
+import { firstValueFrom, of } from 'rxjs';
 
 import type { PublicServicePlanOffering } from '../../types/portal-service-plans.types';
 
@@ -32,21 +32,41 @@ describe('ServicePlansFacade', () => {
     facade = TestBed.inject(ServicePlansFacade);
   });
 
-  it('getCheapestServicePlanOffering$ should select cheapest offering', (done) => {
-    store.select.mockReturnValue(of(mockOffering));
-    facade.getCheapestServicePlanOffering$().subscribe((result) => {
-      expect(result).toEqual(mockOffering);
-      done();
-    });
+  it.each([
+    ['getServicePlans$', () => facade.getServicePlans$(), [mockOffering]],
+    ['getCheapestServicePlanOffering$', () => facade.getCheapestServicePlanOffering$(), mockOffering],
+    ['getServicePlansLoading$', () => facade.getServicePlansLoading$(), true],
+    ['getCheapestServicePlanOfferingLoading$', () => facade.getCheapestServicePlanOfferingLoading$(), true],
+    ['getServicePlansLoaded$', () => facade.getServicePlansLoaded$(), true],
+    ['getCheapestServicePlanOfferingLoaded$', () => facade.getCheapestServicePlanOfferingLoaded$(), true],
+    ['getServicePlansError$', () => facade.getServicePlansError$(), 'load failed'],
+    ['getCheapestServicePlanOfferingError$', () => facade.getCheapestServicePlanOfferingError$(), 'not found'],
+    ['getServicePlansCount$', () => facade.getServicePlansCount$(), 2],
+    ['hasServicePlans$', () => facade.hasServicePlans$(), true],
+    ['getServicePlanById$', () => facade.getServicePlanById$('sp-1'), mockOffering],
+    ['getServicePlansByServiceTypeId$', () => facade.getServicePlansByServiceTypeId$('st-1'), [mockOffering]],
+  ])('%s should select from store', async (_label, observableFactory, expected) => {
+    store.select.mockReturnValue(of(expected));
+    await expect(firstValueFrom(observableFactory())).resolves.toEqual(expected);
   });
 
-  it('loadCheapestServicePlanOffering should dispatch', () => {
+  it('loadCheapestServicePlanOffering should dispatch with service type', () => {
     facade.loadCheapestServicePlanOffering('st-x');
     expect(store.dispatch).toHaveBeenCalledWith(loadCheapestServicePlanOffering({ serviceTypeId: 'st-x' }));
   });
 
-  it('loadServicePlans should dispatch', () => {
+  it('loadCheapestServicePlanOffering should dispatch without service type', () => {
+    facade.loadCheapestServicePlanOffering();
+    expect(store.dispatch).toHaveBeenCalledWith(loadCheapestServicePlanOffering({ serviceTypeId: undefined }));
+  });
+
+  it('loadServicePlans should dispatch with params', () => {
     facade.loadServicePlans({ limit: 5 });
     expect(store.dispatch).toHaveBeenCalledWith(loadServicePlans({ params: { limit: 5 } }));
+  });
+
+  it('loadServicePlans should dispatch without params', () => {
+    facade.loadServicePlans();
+    expect(store.dispatch).toHaveBeenCalledWith(loadServicePlans({ params: undefined }));
   });
 });

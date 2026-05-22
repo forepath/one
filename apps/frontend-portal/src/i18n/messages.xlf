@@ -6,7 +6,7 @@
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>One Context<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> For All Your AI Coding Tools </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-heroDescription" datatype="html">
-        <source> Every AI coding tool wants its own configuration file and instructions. Over time, they drift apart and your agents behave differently in every editor. AgentCTX fixes this by turning one shared context into tool specific configs for all your AI coding assistants. </source>
+        <source> Every AI coding tool wants its own configuration and instructions. Over time they drift apart and assistants start contradicting each other. AgentCTX lets you maintain project context once and generate aligned configs for every editor your team uses. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-installCta" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Install AgentCTX </source>
@@ -14,41 +14,47 @@
       <trans-unit id="featurePortalAgentctx-quickstartCta" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-file-text me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> View quickstart </source>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-problemTitle" datatype="html">
-        <source>Configuration sprawl across AI coding tools</source>
+      <trans-unit id="featurePortalAgentctx-partnersTagline" datatype="html">
+        <source> Generates configs for the assistants your team already uses </source>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-problemLead" datatype="html">
-        <source> Modern engineering teams rarely use a single AI assistant. A typical repository now contains separate configuration files for each tool: </source>
+      <trans-unit id="featurePortalAgentctx-storyTitle" datatype="html">
+        <source> End config sprawl. Keep every AI tool on the same page </source>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-problemCopy" datatype="html">
-        <source> Each file repeats the same project description, coding standards, and security guidelines with slight variations. Some are updated, others are forgotten, and nobody is sure which one is the source of truth. </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-problemResult" datatype="html">
-        <source> The result is context drift. Different tools give different answers to the same request, and new team members are never quite sure what the rules are. </source>
+      <trans-unit id="featurePortalAgentctx-solutionLead" datatype="html">
+        <source> AgentCTX is for teams that rely on more than one AI coding assistant. You define how the project should be described, built, and protected in one maintained context. AgentCTX generates what each tool expects so standards stick without copy and paste between editors. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-solutionTitle" datatype="html">
         <source> A single source of truth that syncs everywhere </source>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-solutionLead" datatype="html">
-        <source> AgentCTX introduces a shared context file for your project. You maintain your project description, coding standards, workflows, and constraints in one place. From that context, AgentCTX generates the tool specific configuration files your AI assistants expect. </source>
+      <trans-unit id="featurePortalAgentctx-solutionClosing" datatype="html">
+        <source> Your context lives in one place you maintain. No more duplicating project rules in every AI editor. Just update your context, run AgentCTX, and each supported assistant stays aligned. </source>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-solutionKey" datatype="html">
-        <source>Key ideas:</source>
+      <trans-unit id="featurePortalAgentctx-solutionTagline" datatype="html">
+        <source> One context. Every assistant. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-key1Label" datatype="html">
+        <source>Sources you maintain</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-key1" datatype="html">
-        <source>One human maintained context file in your repository</source>
+        <source> Rules, commands, agents, and metadata in .agenstra/ </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-key2Label" datatype="html">
+        <source>Generated everywhere</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-key2" datatype="html">
         <source> Automatic generation of Claude, Cursor, Copilot, and other tool configs </source>
         </trans-unit>
+      <trans-unit id="featurePortalAgentctx-key3Label" datatype="html">
+        <source>Same rules everywhere</source>
+        </trans-unit>
       <trans-unit id="featurePortalAgentctx-key3" datatype="html">
         <source> Consistent instructions and standards across every editor and assistant </source>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-solutionClosing" datatype="html">
-        <source> You edit the context once, run AgentCTX, and every supported tool is up to date. </source>
-        </trans-unit>
       <trans-unit id="featurePortalAgentctx-howTitle" datatype="html">
         <source> Simple workflow for any project </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-howLead" datatype="html">
+        <source> Most repositories already repeat the same guidance in several tool-specific places. AgentCTX replaces that loop with a short workflow you can use in every project, from install to fresh configs in minutes. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-step1Title" datatype="html">
         <source>Install AgentCTX</source>
@@ -57,10 +63,10 @@
         <source> Install AgentCTX with a single command. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-step2Title" datatype="html">
-        <source>Add context file</source>
+        <source>Add project context</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-step2Desc" datatype="html">
-        <source> Add a project context file to your repository that describes architecture, standards, workflows, and security notes. </source>
+        <source> Add a .agenstra/ directory with rules, commands, agents, and metadata for architecture, standards, workflows, and security. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-step3Title" datatype="html">
         <source>Run AgentCTX</source>
@@ -74,26 +80,44 @@
       <trans-unit id="featurePortalAgentctx-step4Desc" datatype="html">
         <source> Commit the generated files if needed or let them stay as build artifacts. </source>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-howClosing" datatype="html">
-        <source> When you update your project context, you rerun AgentCTX and all configs are regenerated. No manual copy and paste, no stale instructions. </source>
-        </trans-unit>
       <trans-unit id="featurePortalAgentctx-contentTitle" datatype="html">
-        <source> Give your AI coding tools the information they really need </source>
+        <source> Less drift, more alignment </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-contentLead" datatype="html">
-        <source> AgentCTX encourages teams to treat context as a first class asset. Instead of long, unfocused prompts, you maintain structured knowledge that AI tools can rely on, such as: </source>
+        <source> AgentCTX helps teams treat project context as a first class asset. You capture architecture, standards, security, and documentation as linked knowledge assistants can rely on. When it stays current, every tool follows the same rules, people onboard faster, and you can add or swap editors without starting over. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-contentMapAriaLabel" datatype="html">
+        <source>How project context topics connect</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-benefit1Title" datatype="html">
+        <source>Consistency</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-benefit1Desc" datatype="html">
+        <source> Every assistant follows the same rules and understands the same project story. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-content1Title" datatype="html">
-        <source> Architecture &amp; domain </source>
+        <source>Architecture &amp; domain</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-content1Desc" datatype="html">
         <source> High level architecture and domain overview </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-benefit2Title" datatype="html">
+        <source>Faster onboarding</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-benefit2Desc" datatype="html">
+        <source> New team members get clear guidance from .agenstra/ and consistent behavior from their tools. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-content2Title" datatype="html">
         <source>Coding style</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-content2Desc" datatype="html">
         <source> Coding styles, naming conventions, and review expectations </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-contentHubTitle" datatype="html">
+        <source>AgentCTX</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-contentHubCaption" datatype="html">
+        <source> One context, every assistant </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-content3Title" datatype="html">
         <source>Security</source>
@@ -107,47 +131,38 @@
       <trans-unit id="featurePortalAgentctx-content4Desc" datatype="html">
         <source> Links to documentation, ADRs, and design docs </source>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-contentClosing" datatype="html">
-        <source> The richer and more accurate your context file is, the more reliable your AI coding tools become. </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-benefitsTitle" datatype="html">
-        <source> Less drift, more alignment </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-benefit1Title" datatype="html">
-        <source> Consistency </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-benefit1Desc" datatype="html">
-        <source> Every assistant follows the same rules and understands the same project story. </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-benefit2Title" datatype="html">
-        <source> Faster onboarding </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-benefit2Desc" datatype="html">
-        <source> New team members get clear guidance through the context file and consistent behavior from their tools. </source>
-        </trans-unit>
       <trans-unit id="featurePortalAgentctx-benefit3Title" datatype="html">
-        <source> Version control friendly </source>
+        <source>Version control friendly</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-benefit3Desc" datatype="html">
-        <source> Context lives in your repository with pull requests, reviews, and history. </source>
+        <source> .agenstra/ lives in your repository with pull requests, reviews, and history. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-benefit4Title" datatype="html">
-        <source> Tool flexibility </source>
+        <source>Tool flexibility</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-benefit4Desc" datatype="html">
         <source> You can add or swap AI tools without redefining everything from scratch. </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-benefitsClosing" datatype="html">
-        <source> AgentCTX turns context from an afterthought into an asset. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-audienceTitle" datatype="html">
         <source> Built for teams that code with AI every day </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-audienceLead" datatype="html">
-        <source> AgentCTX is a natural fit for software development teams! </source>
+        <source> AgentCTX is a natural fit for everybody who: </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-audienceItem1" datatype="html">
+        <source>Uses multiple AI coding tools across different editors</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-audienceItem2" datatype="html">
+        <source>Works in monorepos or large codebases with many contributors</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-audienceItem3" datatype="html">
+        <source>Cares about consistent standards and secure defaults</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-audienceItem4" datatype="html">
+        <source>Wants AI to feel like part of the engineering system, not a personal side tool</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona1" datatype="html">
-        <source>Platform engineers</source>
+        <source> Platform engineers </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona1Desc" datatype="html">
         <source> Standardize tool config across repos </source>
@@ -159,34 +174,22 @@
         <source> Keep teams aligned on standards </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona3" datatype="html">
-        <source>Security-conscious teams</source>
+        <source> Security-conscious teams </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona3Desc" datatype="html">
-        <source>Govern what AI can see and do</source>
+        <source> Govern what AI can see and do </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona4" datatype="html">
-        <source>Open source maintainers</source>
+        <source> Open source maintainers </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona4Desc" datatype="html">
         <source> One context for all contributors </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-audienceItem1" datatype="html">
-        <source> Uses multiple AI coding tools across different editors </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-audienceItem2" datatype="html">
-        <source> Works in monorepos or large codebases with many contributors </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-audienceItem3" datatype="html">
-        <source> Cares about consistent standards and secure defaults </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-audienceItem4" datatype="html">
-        <source> Wants AI to feel like part of the engineering system, not a personal side tool </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-ctaTitle" datatype="html">
         <source>Add AgentCTX to your next sprint</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-ctaLead" datatype="html">
-        <source> Set up AgentCTX in a single project first. Define a minimal context file that covers architecture, standards, and how to run the app. Generate configs for your existing tools, gather feedback from the team, and evolve the context over time. </source>
+        <source> Start with one repository. Define enough context that assistants understand your architecture, standards, and how you ship. Generate configs for the tools your team already uses, gather feedback, and expand when the approach sticks. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-ctaSub" datatype="html">
         <source> Once your team feels the difference, you can roll out AgentCTX across repositories to standardize how AI coding tools understand your systems. </source>
@@ -198,19 +201,19 @@
         <source> Explore example context files </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-metaTitle" datatype="html">
-        <source>AgentCTX - One Context For All Your AI Coding Tools</source>
+        <source>One context for all your AI coding tools :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-metaDescription" datatype="html">
-        <source>AgentCTX generates tool specific configuration from a single shared context. Keep Claude, Cursor, GitHub Copilot, and other AI coding tools aligned with one source of truth.</source>
+        <source>Maintain project context once and generate aligned configs for Claude, Cursor, GitHub Copilot, and other AI coding tools your team already uses.</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-metaKeywords" datatype="html">
         <source>AgentCTX, agentctx, .agenstra, AI coding tools, Cursor, OpenCode, GitHub Copilot, agent context, rules, commands, skills, MCP, single source of truth</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-heroTitle" datatype="html">
-        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Fully managed control plane<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for your AI agents </source>
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Fully managed platform<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for your coding agents </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-heroLead" datatype="html">
-        <source> Run Agenstra as a fully managed cloud service. Your agents stay in the tools, clouds, and environments you already use. You don&apos;t deploy infrastructure or operate the control plane. </source>
+        <source> Run Agenstra as a fully managed cloud service. Your agents stay in the tools, clouds, and environments you already use. You do not deploy infrastructure or operate the platform yourself. </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-heroFrom" datatype="html">
         <source>From</source>
@@ -219,7 +222,7 @@
         <source>/month</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-heroPriceUnavailable" datatype="html">
-        <source>—</source>
+        <source>Not available</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-heroCtaPrimary" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Talk to us </source>
@@ -227,29 +230,44 @@
       <trans-unit id="featurePortalCloud-heroCtaSecondary" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-trophy me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> See how it works </source>
         </trans-unit>
+      <trans-unit id="featurePortalCloud-providersTagline" datatype="html">
+        <source> Hosted on cloud providers your platform team already trusts </source>
+        </trans-unit>
       <trans-unit id="featurePortalCloud-teaserTitle" datatype="html">
-        <source> The same control plane. But without maintaining it yourself! </source>
+        <source> The same platform without running it yourself </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-teaserLead" datatype="html">
         <source> Agenstra Cloud is for teams that want governed agents in coding tools and environments they already use, with upgrades, scaling, and platform operations handled for you. </source>
         </trans-unit>
-      <trans-unit id="featurePortalCloud-teaserItem1" datatype="html">
-        <source>Connect from cloud, on-prem, or hybrid agent runtimes. Your data and infrastructure stay yours.</source>
-        </trans-unit>
-      <trans-unit id="featurePortalCloud-teaserItem2" datatype="html">
-        <source>Use the same concepts as self-hosted Agenstra: distributed infrastructure, shared prompts, tools, policies, and environments.</source>
-        </trans-unit>
-      <trans-unit id="featurePortalCloud-teaserItem3" datatype="html">
-        <source>Central policies, audit-friendly logs, and clear separation between dev, staging, and production.</source>
-        </trans-unit>
-      <trans-unit id="featurePortalCloud-teaserItem4" datatype="html">
-        <source>Focus on modeling agents and guardrails. We run the managed control plane and keep it up to date.</source>
-        </trans-unit>
-      <trans-unit id="featurePortalCloud-teaserClosing" datatype="html">
-        <source> Bring AI agents into how you already build software, without standing up another platform team. </source>
+      <trans-unit id="featurePortalCloud-teaserVisualBadge" datatype="html">
+        <source>Managed console + workspaces</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-teaserScreenshotAlt" datatype="html">
         <source>Agenstra Cloud management interface</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserItem1Title" datatype="html">
+        <source>Connect any runtime</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserItem1" datatype="html">
+        <source> Connect from cloud, on-prem, or hybrid agent runtimes. Your data and infrastructure stay yours. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserItem2Title" datatype="html">
+        <source>Ready on day one</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserItem2" datatype="html">
+        <source> Same workspaces, knowledge, policies, and environments as self-hosted Agenstra and is ready on day one. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserItem3Title" datatype="html">
+        <source>Governed environments</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserItem3" datatype="html">
+        <source> Central policies, audit-friendly logs, and clear separation between dev, staging, and production. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserItem4Title" datatype="html">
+        <source>We operate it</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-teaserItem4" datatype="html">
+        <source> Focus on agents and guardrails. We operate the platform and keep it current. </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-plansTitle" datatype="html">
         <source> Cloud plans that match how you work </source>
@@ -262,6 +280,9 @@
         </trans-unit>
       <trans-unit id="featurePortalCloud-plansScrollNext" datatype="html">
         <source>Next plans</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-plansLoadError" datatype="html">
+        <source> Plans could not be loaded right now. Please refresh the page or try again later. </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-plansEmpty" datatype="html">
         <source> Plans will appear here when they are available from billing. </source>
@@ -276,22 +297,22 @@
         <source> Getting started </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-step1" datatype="html">
-        <source>Choose a plan</source>
+        <source> Choose a plan </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-step2" datatype="html">
-        <source>Log in to the interface</source>
+        <source> Log in to the interface </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-step3" datatype="html">
-        <source>Connect your agents</source>
+        <source> Connect your agents </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-step4" datatype="html">
-        <source>Start building</source>
+        <source> Start building </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-infraTitle" datatype="html">
-        <source> Where the control plane runs </source>
+        <source>Where Agenstra Cloud runs</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-infraLead" datatype="html">
-        <source> Technical outline of the infrastructure behind Agenstra Cloud. We add providers and regions deliberately. Security, latency, and your requirements drive the roadmap. </source>
+        <source> We choose providers and regions deliberately. Security, latency, and your requirements shape the roadmap. </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-infraLabelDc" datatype="html">
         <source>Datacenters</source>
@@ -342,10 +363,10 @@
         <source>SSD-backed Droplets from shared vCPU sizes for typical workloads to dedicated vCPU plans when you need steady CPU performance.</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-metaTitle" datatype="html">
-        <source>Agenstra Cloud - Fully Managed Control Plane For Your AI Agents</source>
+        <source>Fully managed cloud, zero platform ops :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-metaDescription" datatype="html">
-        <source>Agenstra Cloud is the fully managed, cloud hosted control plane for distributed AI agents. Design, deploy, and govern agents across tools, clouds, and environments without operating your own infrastructure.</source>
+        <source>Fully managed Agenstra control plane for distributed coding agents. Deploy, monitor, and govern agents across tools and environments without running your own ops stack.</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-metaKeywords" datatype="html">
         <source>Agenstra Cloud, Agenstra, AI agent platform, AI control plane, AI governance, AI observability, managed SaaS, agentic systems</source>
@@ -360,10 +381,10 @@
         <source>/day</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-codeium-metaTitle" datatype="html">
-        <source>Codeium &amp; Windsurf vs. Agenstra. AI agent platform comparison</source>
+        <source>Codeium &amp; Windsurf vs Agenstra :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-codeium-metaDescription" datatype="html">
-        <source>Compare Codeium and Windsurf with Agenstra’s multi-workspace agent control plane and browser IDE.</source>
+        <source>Compare Codeium and Windsurf with Agenstra’s multi-workspace agent control plane, browser IDE, ticket workflows, and self-hosted governance for platform teams.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-codeium-heroSubtitle" datatype="html">
         <source>Broad IDE coverage and optional self-hosted backends versus a dedicated agent operations console.</source>
@@ -375,10 +396,10 @@
         <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-cursor-metaTitle" datatype="html">
-        <source>Cursor vs. Agenstra. AI agent platform comparison</source>
+        <source>Cursor vs Agenstra :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-cursor-metaDescription" datatype="html">
-        <source>Compare Cursor’s AI-native editor with Agenstra’s web console and multi-workspace agent control plane.</source>
+        <source>Compare Cursor’s AI-native editor with Agenstra’s web console, multi-workspace agent hosts, tickets, governance, and self-hosted delivery options.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-cursor-heroSubtitle" datatype="html">
         <source>IDE-first velocity versus an operations-focused console for distributed agent hosts.</source>
@@ -390,10 +411,10 @@
         <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-devin-metaTitle" datatype="html">
-        <source>Devin vs. Agenstra. AI agent platform comparison</source>
+        <source>Devin vs Agenstra :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-devin-metaDescription" datatype="html">
-        <source>Compare Devin’s cloud autonomous engineer with Agenstra’s self-hosted multi-workspace control plane, tickets, knowledge, and deployments.</source>
+        <source>Compare Devin’s cloud autonomous engineer with Agenstra’s self-hosted control plane: workspaces, tickets, team knowledge, releases, and governance on your infrastructure.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-devin-heroSubtitle" datatype="html">
         <source>Cloud sessions from Cognition versus a control plane you run for many Docker-backed coding agents.</source>
@@ -405,10 +426,10 @@
         <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-copilot-metaTitle" datatype="html">
-        <source>GitHub Copilot vs. Agenstra. AI agent platform comparison</source>
+        <source>GitHub Copilot vs Agenstra :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-copilot-metaDescription" datatype="html">
-        <source>Compare GitHub Copilot and Copilot coding agent with Agenstra’s self-hosted agent control plane.</source>
+        <source>Compare GitHub Copilot and Copilot coding agent with Agenstra’s agent control plane, browser IDE, workspaces, tickets, and operations-focused governance.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-copilot-heroSubtitle" datatype="html">
         <source>GitHub-native AI assistance versus an infrastructure-first agent operations stack.</source>
@@ -420,10 +441,10 @@
         <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-orq-metaTitle" datatype="html">
-        <source>Orq.ai vs. Agenstra. AI agent platform comparison</source>
+        <source>Orq.ai vs Agenstra :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-orq-metaDescription" datatype="html">
-        <source>Compare Orq.ai’s agent lifecycle platform with Agenstra’s self-hosted coding agent control plane.</source>
+        <source>Compare Orq.ai’s agent lifecycle platform with Agenstra’s coding agent control plane: workspaces, delivery workflows, auditability, and infrastructure you control.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-orq-heroSubtitle" datatype="html">
         <source>Managed experimentation and deployments versus ops-owned Docker agent infrastructure.</source>
@@ -435,10 +456,10 @@
         <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-portkey-metaTitle" datatype="html">
-        <source>Portkey vs. Agenstra. AI agent platform comparison</source>
+        <source>Portkey vs Agenstra :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-portkey-metaDescription" datatype="html">
-        <source>Compare Portkey’s LLM gateway with Agenstra’s workspace-oriented agent control plane.</source>
+        <source>Compare Portkey’s LLM gateway with Agenstra’s workspace-oriented agent control plane for coding agents, tickets, IDE access, and governed software delivery.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-portkey-heroSubtitle" datatype="html">
         <source>Centralized model traffic governance versus Docker agent hosts with IDE and ticket workflows.</source>
@@ -452,26 +473,35 @@
       <trans-unit id="featurePortalComparison-heroVs" datatype="html">
         <source> vs. </source>
         </trans-unit>
-      <trans-unit id="featurePortalComparison-overviewUsHeading" datatype="html">
-        <source>Agenstra</source>
+      <trans-unit id="featurePortalComparison-overviewHeading" datatype="html">
+        <source> Two approaches to coding agents at scale </source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-overviewThemTitle" datatype="html">
+        <source> What they optimize for </source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-overviewUsTitle" datatype="html">
+        <source>What we optimize for</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-matrixHeading" datatype="html">
-        <source> Feature comparison </source>
+        <source>Feature comparison</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-matrixIntro" datatype="html">
         <source> The same thirteen capabilities appear on every page. You can compare vendors without chasing different rubrics. </source>
         </trans-unit>
+      <trans-unit id="featurePortalComparison-matrixLegend" datatype="html">
+        <source> Hover an icon for a short rationale. Ratings follow a public research pass (Strong / Partial / Weak / N.A.) and are meant for orientation. They are not a substitute for your own procurement review. </source>
+        </trans-unit>
       <trans-unit id="featurePortalComparison-technologyFitHeading" datatype="html">
         <source> Build with technology that fits your needs </source>
-        </trans-unit>
-      <trans-unit id="featurePortalComparison-moreHeading" datatype="html">
-        <source>More comparisons</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-ctaDemo" datatype="html">
         <source> Book a demo </source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-ctaPricing" datatype="html">
         <source> View pricing </source>
+        </trans-unit>
+      <trans-unit id="featurePortalComparison-moreHeading" datatype="html">
+        <source>More comparisons</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-metaKeywords" datatype="html">
         <source>Agenstra comparison, AI agent platform, AI control plane, DevOps agents, self-hosted AI</source>
@@ -884,10 +914,6 @@
       <trans-unit id="featurePortalComparison-matrixColAgenstra" datatype="html">
         <source> Agenstra </source>
         </trans-unit>
-      <trans-unit id="featurePortalComparison-matrixLegend" datatype="html">
-        <source> Hover an icon for a short rationale. Ratings follow a public research pass (Strong / Partial / Weak / N.A.) and are meant for orientation. They are not a substitute for your own procurement review.
-</source>
-        </trans-unit>
       <trans-unit id="featurePortalComparison-navDevin" datatype="html">
         <source>Devin</source>
         </trans-unit>
@@ -913,10 +939,10 @@
         <source>The future of your software depends on choices you make before the next sprint, not on buzzwords. Because choosing technology that fits your workflow is a crucial step towards a sustainable future of AI in software development. Do you think Agenstra could be a good fit for your workflow?</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-tabnine-metaTitle" datatype="html">
-        <source>Tabnine Enterprise vs. Agenstra. AI agent platform comparison</source>
+        <source>Tabnine vs Agenstra :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-tabnine-metaDescription" datatype="html">
-        <source>Compare self-hosted Tabnine Enterprise with Agenstra’s agent control plane and browser IDE.</source>
+        <source>Compare self-hosted Tabnine Enterprise with Agenstra’s agent control plane, browser IDE, workspace operations, tickets, and governance for coding agents.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-tabnine-heroSubtitle" datatype="html">
         <source>Private assistant clusters versus containerized agent fleets with tickets and deployments.</source>
@@ -1045,13 +1071,13 @@
         <source>Web Interface</source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-webUse" datatype="html">
-        <source>Admin &amp; Config</source>
+        <source>Admin &amp; config</source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-desktopLabel" datatype="html">
         <source>Desktop App</source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-desktopUse" datatype="html">
-        <source>Daily Development</source>
+        <source>Daily development</source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-ideLabel" datatype="html">
         <source>Your IDE</source>
@@ -1061,6 +1087,21 @@
         </trans-unit>
       <trans-unit id="featurePortalDesktop-featuresTitle" datatype="html">
         <source> Everything you need during a development day </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-featuresLead" datatype="html">
+        <source> Observe environments, runs, and context from the desktop. Then trigger tests, catch alerts, and close the loop with your code without opening another browser tab. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-tabObserve" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-eye me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Observe </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-tabAct" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-lightning-charge me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Act </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-pillarObserveTitle" datatype="html">
+        <source> Observe from your desktop </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-pillarObserveLead" datatype="html">
+        <source> View environments, runs, and context from the desktop without leaving your development flow. </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-feature1Title" datatype="html">
         <source> View and switch environments </source>
@@ -1074,20 +1115,26 @@
       <trans-unit id="featurePortalDesktop-feature2Desc" datatype="html">
         <source> Inspect recent agent runs, inputs, and outputs while you work on related code </source>
         </trans-unit>
-      <trans-unit id="featurePortalDesktop-feature3Title" datatype="html">
-        <source>Trigger test runs</source>
-        </trans-unit>
-      <trans-unit id="featurePortalDesktop-feature3Desc" datatype="html">
-        <source> Trigger test runs or replay scenarios directly from your desktop </source>
-        </trans-unit>
       <trans-unit id="featurePortalDesktop-feature4Title" datatype="html">
         <source>Access context files</source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-feature4Desc" datatype="html">
         <source> Access context files and configuration linked to your repositories </source>
         </trans-unit>
+      <trans-unit id="featurePortalDesktop-pillarActTitle" datatype="html">
+        <source> Act without another browser tab </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-pillarActLead" datatype="html">
+        <source> Trigger tests, catch alerts, and close the loop with the code you are working on. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-feature3Title" datatype="html">
+        <source>Trigger test runs</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-feature3Desc" datatype="html">
+        <source> Trigger test runs or replay scenarios directly from your desktop </source>
+        </trans-unit>
       <trans-unit id="featurePortalDesktop-feature5Title" datatype="html">
-        <source>Receive notifications</source>
+        <source> Receive notifications </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-feature5Desc" datatype="html">
         <source> Receive notifications about relevant agent events, such as failures or rule violations </source>
@@ -1102,43 +1149,43 @@
         <source> Local convenience, centralized control </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-securityLead" datatype="html">
-        <source> Agenstra Desktop connects securely to your Agenstra backend using your organization&apos;s authentication and access controls. The desktop app does not weaken your security model. It simply gives developers a more convenient surface to interact with the systems your security and platform teams have already approved. </source>
+        <source> Agenstra Desktop connects securely to your backend using your organization&apos;s authentication and access controls. It does not weaken your security model. It simply gives developers a more convenient surface to interact with the systems your security and platform teams have already approved. </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-securityItem1" datatype="html">
-        <source>Respect existing roles and permissions</source>
+        <source> Respect existing roles and permissions </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-securityItem1Sub" datatype="html">
         <source> Same access control as the web console </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-securityItem2" datatype="html">
-        <source>Do not expose secrets in local configuration</source>
+        <source> Do not expose secrets in local configuration </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-securityItem2Sub" datatype="html">
         <source> Credentials stay server-side </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-securityItem3" datatype="html">
-        <source>Keep sensitive operations behind controlled APIs</source>
+        <source> Keep sensitive operations behind controlled APIs </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-securityItem3Sub" datatype="html">
         <source> No bypass of governance </source>
         </trans-unit>
-      <trans-unit id="featurePortalDesktop-securityDiagram" datatype="html">
-        <source> Desktop → Encrypted → Cloud </source>
+      <trans-unit id="featurePortalDesktop-flowDesktop" datatype="html">
+        <source>Desktop</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-flowEncrypted" datatype="html">
+        <source>Encrypted Data</source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-flowCloud" datatype="html">
+        <source>Cloud</source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-toolchainTitle" datatype="html">
         <source> Works alongside your editor, terminal, and browser </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-toolchainLead" datatype="html">
-        <source> Agenstra Desktop is meant to live next to the tools you already rely on: </source>
+        <source> Your editor, terminal, and browser stay where they are. Agenstra Desktop sits beside them as a governed window into agent activity while you code, debug, and review. </source>
         </trans-unit>
-      <trans-unit id="featurePortalDesktop-toolchainItem1" datatype="html">
-        <source> Keep it open next to your IDE to observe agent behavior while coding </source>
-        </trans-unit>
-      <trans-unit id="featurePortalDesktop-toolchainItem2" datatype="html">
-        <source> Use it during incident reviews to replay problematic runs </source>
-        </trans-unit>
-      <trans-unit id="featurePortalDesktop-toolchainItem3" datatype="html">
-        <source> Combine it with AgentCTX so to keep agents and developers in sync </source>
+      <trans-unit id="featurePortalDesktop-toolchainDockAriaLabel" datatype="html">
+        <source>Tools around Agenstra Desktop</source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-toolIde" datatype="html">
         <source>IDE</source>
@@ -1155,14 +1202,20 @@
       <trans-unit id="featurePortalDesktop-toolGit" datatype="html">
         <source>Git</source>
         </trans-unit>
-      <trans-unit id="featurePortalDesktop-toolchainClosing" datatype="html">
-        <source> By giving developers a direct but governed window into agent activity, Agenstra Desktop reduces guesswork and shortens feedback loops. </source>
+      <trans-unit id="featurePortalDesktop-toolchainItem1" datatype="html">
+        <source> Keep it open next to your IDE to observe agent behavior while coding </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-toolchainItem2" datatype="html">
+        <source> Use it during incident reviews to replay problematic runs </source>
+        </trans-unit>
+      <trans-unit id="featurePortalDesktop-toolchainItem3" datatype="html">
+        <source> Combine it with AgentCTX to keep agents and developers in sync </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-ctaTitle" datatype="html">
         <source> Bring Agenstra Desktop into your team workflow </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-ctaLead" datatype="html">
-        <source> Start by connecting Agenstra Desktop to a non production environment. Let your developers and operators use it to explore existing agents, run tests, and understand how the control plane behaves. </source>
+        <source> Start by connecting Agenstra Desktop to a non production environment. Let your developers and operators use it to explore existing agents, run tests, and see how your platform behaves. </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-ctaSub" datatype="html">
         <source> Once the team is comfortable, you can add access to staging and production according to your organization&apos;s access policies. </source>
@@ -1173,50 +1226,44 @@
       <trans-unit id="featurePortalDesktop-talkToTeam" datatype="html">
         <source> Talk to the team </source>
         </trans-unit>
-      <trans-unit id="featurePortalDesktop-badgeWin" datatype="html">
-        <source>Windows</source>
-        </trans-unit>
-      <trans-unit id="featurePortalDesktop-badgeLinux" datatype="html">
-        <source>Linux</source>
-        </trans-unit>
       <trans-unit id="featurePortalDesktop-metaTitle" datatype="html">
-        <source>Agenstra Desktop - Local Control Center For Your AI Agents</source>
+        <source>Your local control center for AI agents :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-metaDescription" datatype="html">
-        <source>Agenstra Desktop gives developers a secure local control center for connecting to Agenstra, inspecting agents, and working with context in their daily workflow.</source>
+        <source>Local control center for Agenstra: connect to your workspace, inspect agents, and manage context from the desktop app developers use every day.</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroTitle" datatype="html">
-        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Centralized control<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for AI agents in your software delivery pipeline </source>
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>One place<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> to run, govern, and ship with coding agents </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroLead" datatype="html">
-        <source> Agents are wired into editors, pipelines, and internal tools as part of how teams ship. Agenstra gives engineering and platform teams one place to define policy, observe behavior, and govern how agents access code, systems, and environments from development through production. </source>
+        <source> Agenstra brings workspaces, tickets, knowledge, coding, and releases together on infrastructure you own. Your team can trust agents from the first experiment through production. </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroCtaLine" datatype="html">
-        <source> Keep agent-assisted work on the same bar as the rest of your practice: guardrails, observability, and controls that match how you review changes, manage access, and release software. </source>
+        <source> Keep agent-assisted work on the same bar as the rest of your practice: approvals, audit trails, and controls that match how you review changes and release software. </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge1" datatype="html">
-        <source>Unified Agent Management</source>
+        <source>Multi-workspace control</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge2" datatype="html">
-        <source>Prompt Governance</source>
+        <source>Ticket automation</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge3" datatype="html">
-        <source>Audit &amp; Observability</source>
+        <source>Policy &amp; audit trails</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge4" datatype="html">
-        <source>Web IDE</source>
+        <source>Code &amp; Git in the browser</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge5" datatype="html">
-        <source>Git Version Control</source>
+        <source>Deployments</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge6" datatype="html">
-        <source>CI/CD Deployment</source>
+        <source>Team knowledge</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge7" datatype="html">
-        <source>Auth &amp; Access Control</source>
+        <source>Roles &amp; single sign-on</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge8" datatype="html">
-        <source>Tickets, Knowledge &amp; Workspaces</source>
+        <source>Your cloud or ours</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-getStartedHero" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Get started </source>
@@ -1224,263 +1271,452 @@
       <trans-unit id="featurePortalHome-productTour" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-trophy me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> View product tour </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-problemTitle" datatype="html">
-        <source> Your agents are powerful. Your control over them is not. </source>
+      <trans-unit id="featurePortalHome-heroSlideSpaces" datatype="html">
+        <source>Agenstra workspaces</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-problemLead" datatype="html">
-        <source> Most organizations start with a single agent or coding assistant inside one tool. Very quickly, this grows into a patchwork of agents, prompts, and integrations that nobody fully understands or controls. </source>
+      <trans-unit id="featurePortalHome-heroSlideTickets" datatype="html">
+        <source>Agenstra tickets board</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-problemItem1" datatype="html">
-        <source> Every team uses a different stack of tools and models </source>
+      <trans-unit id="featurePortalHome-heroSlideIde" datatype="html">
+        <source>Agenstra web IDE</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-problemItem2" datatype="html">
-        <source> Prompts and rules live in private docs, Slack threads, or personal config files </source>
+      <trans-unit id="featurePortalHome-heroSlideAudit" datatype="html">
+        <source>Agenstra audit and usage statistics</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-problemItem3" datatype="html">
-        <source> Governance is manual and reactive instead of encoded into the system </source>
-        </trans-unit>
-      <trans-unit id="featurePortalHome-problemItem4" datatype="html">
-        <source> Security teams have little visibility into what agents can access or execute </source>
-        </trans-unit>
-      <trans-unit id="featurePortalHome-problemClosing" datatype="html">
-        <source> The result is fragile experimentation. You can demo impressive capabilities, but you hesitate to trust agents with real production workflows. </source>
+      <trans-unit id="featurePortalHome-partnersTagline" datatype="html">
+        <source> Runs with the coding agents your teams already use </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionTitle" datatype="html">
-        <source> A control plane for agentic AI systems </source>
+        <source> Turn agent momentum into software you can trust </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionLead" datatype="html">
-        <source> Agenstra turns scattered agents into a managed platform. It connects to your existing agent managers and runtimes and provides a centralized layer for configuration, governance, and interaction. </source>
+        <source> Coding agents help teams move faster. Agenstra helps you keep that speed with visibility, guardrails, and a single place to run work from idea to release. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionWith" datatype="html">
-        <source>With Agenstra you can:</source>
+      <trans-unit id="featurePortalHome-solutionStudioTitle" datatype="html">
+        <source>Meet Agenstra Studio</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionItem1Title" datatype="html">
-        <source>Register and manage</source>
+      <trans-unit id="featurePortalHome-solutionStudioLead" datatype="html">
+        <source> Your organization’s home for agents: connect the tools you already use, manage workspaces, and keep delivery and oversight in one experience without pulling developers out of Cursor, OpenCode, or the editors they prefer. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionItem1Desc" datatype="html">
-        <source> Register and manage multiple remote agent managers from one interface </source>
+      <trans-unit id="featurePortalHome-solutionStudioTagline" datatype="html">
+        <source> One platform. Many teams. Clear accountability. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionItem2Title" datatype="html">
-        <source>Define once, reuse</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageTabWorkspaces" datatype="html">
+        <source>Visibility</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionItem2Desc" datatype="html">
-        <source> Define prompts, tools, and policies once and reuse them across agents </source>
+      <trans-unit id="featurePortalHome-solutionAdvantageTabKnowledge" datatype="html">
+        <source>Shared context</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionItem3Title" datatype="html">
-        <source>Route traffic</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageTabPolicy" datatype="html">
+        <source>Trust and control</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionItem3Desc" datatype="html">
-        <source> Route traffic and workloads between environments while keeping behavior consistent </source>
+      <trans-unit id="featurePortalHome-solutionAdvantageTabTickets" datatype="html">
+        <source>Delivery rhythm</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionItem4Title" datatype="html">
-        <source>Web IDE</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageTabIde" datatype="html">
+        <source>Builder focus</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionItem4Desc" datatype="html">
-        <source> Work with agents through an integrated web IDE for fast iteration and debugging </source>
+      <trans-unit id="featurePortalHome-solutionAdvantageTabDeploy" datatype="html">
+        <source>Release confidence</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionItem5Title" datatype="html">
-        <source>Plan and track</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesHeadline" datatype="html">
+        <source> One trustworthy view across every squad </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionItem5Desc" datatype="html">
-        <source> Run tickets, priorities, and knowledge pages per workspace so agent work stays tied to outcomes and context </source>
+      <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesLead" datatype="html">
+        <source> Platform and engineering leaders see where agents run and who owns what, without micromanaging how each team works day to day. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionItem6Title" datatype="html">
-        <source>Run code</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit1Title" datatype="html">
+        <source> Leadership clarity </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionItem6Desc" datatype="html">
-        <source> Execute commands and code in connected workspaces and review output in context, so runs live next to the agents and repositories your team already uses </source>
+      <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit1Desc" datatype="html">
+        <source> Executives and platform teams share one map of agent activity instead of reconciling spreadsheets and chat threads. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-solutionClosing" datatype="html">
-        <source> Instead of treating every agent as a one off experiment, you get an infrastructure layer that makes them part of your engineering system. </source>
+      <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit2Title" datatype="html">
+        <source> Team autonomy </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capabilitiesTitle" datatype="html">
-        <source> Everything you need to operate AI agents like production software </source>
+      <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit2Desc" datatype="html">
+        <source> Squads keep their editors and vendors while still fitting inside org-wide boundaries. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability1Title" datatype="html">
-        <source>Unified agent management</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit3Title" datatype="html">
+        <source> Safer scale </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability1Item1" datatype="html">
-        <source>Connect multiple agent managers and runtimes from different vendors or frameworks</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit3Desc" datatype="html">
+        <source> New workspaces inherit policy and access patterns so adoption does not create another shadow toolchain. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability1Item2" datatype="html">
-        <source>Tag and organize agents by team, environment, or use case</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeHeadline" datatype="html">
+        <source> Context that survives handoffs </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability1Item3" datatype="html">
-        <source>Apply global policies that govern how agents access tools, data, and external systems</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeLead" datatype="html">
+        <source> Operators and agents reason from the same curated knowledge instead of stale wikis, private notes, or whatever was last pasted into chat. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability2Title" datatype="html">
-        <source>Prompt and context governance</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeBenefit1Title" datatype="html">
+        <source> Fewer repeated questions </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability2Item1" datatype="html">
-        <source>Store prompts, configuration, and context centrally instead of in ad hoc files</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeBenefit1Desc" datatype="html">
+        <source> Teams stop re-explaining architecture and runbooks every time someone new joins a thread. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability2Item2" datatype="html">
-        <source>Define reusable rulesets, filters, and transformers that shape requests before they reach agents</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeBenefit2Title" datatype="html">
+        <source> Faster onboarding </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability2Item3" datatype="html">
-        <source>Run prompts through automated checks to detect risky content and missing context</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeBenefit2Desc" datatype="html">
+        <source> New contributors and agents reach useful answers in minutes, not days of scavenger hunts. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability3Title" datatype="html">
-        <source>Observability and auditability</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeBenefit3Title" datatype="html">
+        <source> Decisions that stick </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability3Item1" datatype="html">
-        <source>Trace every agent request from input through tools to final output</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeBenefit3Desc" datatype="html">
+        <source> Agreements live where work happens, so automation does not reopen settled debates. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability3Item2" datatype="html">
-        <source>Inspect intermediate steps and tool calls for debugging and quality review</source>
+      <trans-unit id="featurePortalHome-solutionAdvantagePolicyHeadline" datatype="html">
+        <source> Speed with a defensible audit trail </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability3Item3" datatype="html">
-        <source>Generate audit logs that show what decisions an agent made and why</source>
+      <trans-unit id="featurePortalHome-solutionAdvantagePolicyLead" datatype="html">
+        <source> Security and compliance partners get evidence for what agents sent, what was blocked, and who approved autonomous work. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability5Title" datatype="html">
-        <source>Planning and knowledge</source>
+      <trans-unit id="featurePortalHome-solutionAdvantagePolicyBenefit1Title" datatype="html">
+        <source> Confidence to expand usage </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability5Item1" datatype="html">
-        <source>Track work per workspace with tickets, priorities, and status so agent initiatives stay visible next to execution</source>
+      <trans-unit id="featurePortalHome-solutionAdvantagePolicyBenefit1Desc" datatype="html">
+        <source> Leaders can sponsor wider agent adoption because risk is measured, not guessed. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability5Item2" datatype="html">
-        <source>Build structured knowledge with folders and markdown pages, then find what matters quickly with workspace search</source>
+      <trans-unit id="featurePortalHome-solutionAdvantagePolicyBenefit2Title" datatype="html">
+        <source> Consistent guardrails </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability5Item3" datatype="html">
-        <source>Link tickets and knowledge so context, decisions, and activity stay connected while work moves across agents and people</source>
+      <trans-unit id="featurePortalHome-solutionAdvantagePolicyBenefit2Desc" datatype="html">
+        <source> The same rules apply in every workspace, so policy does not depend on who configured which tool. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability4Title" datatype="html">
-        <source>Secure connectivity</source>
+      <trans-unit id="featurePortalHome-solutionAdvantagePolicyBenefit3Title" datatype="html">
+        <source> Humans approve the blast radius </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability4Item1" datatype="html">
-        <source>Keep secrets and credentials out of prompts by using managed integrations</source>
+      <trans-unit id="featurePortalHome-solutionAdvantagePolicyBenefit3Desc" datatype="html">
+        <source> Autonomous runs start only when the right owner says yes, with limits on scope and runtime. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability4Item2" datatype="html">
-        <source>Limit which tools and data each agent can access based on role and environment</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageTicketsHeadline" datatype="html">
+        <source> Automation that matches how you ship </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-capability4Item3" datatype="html">
-        <source>Support hybrid and distributed setups where agents run close to the systems they automate</source>
+      <trans-unit id="featurePortalHome-solutionAdvantageTicketsLead" datatype="html">
+        <source> Agents accelerate tickets without bypassing the reviews and approvals your organization already expects from human contributors. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageTicketsBenefit1Title" datatype="html">
+        <source> Predictable flow </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageTicketsBenefit1Desc" datatype="html">
+        <source> Work moves through familiar stages instead of ad hoc agent side quests. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageTicketsBenefit2Title" datatype="html">
+        <source> Visible progress </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageTicketsBenefit2Desc" datatype="html">
+        <source> Teammates see what agents are doing before surprises land in review or production. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageTicketsBenefit3Title" datatype="html">
+        <source> Less rework after merge </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageTicketsBenefit3Desc" datatype="html">
+        <source> Checks and approvals happen while context is fresh, not after code is already on main. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageIdeHeadline" datatype="html">
+        <source> Stay in flow from idea to commit </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageIdeLead" datatype="html">
+        <source> Developers spend less time jumping between chat, review, and source control when the work happens beside the agents doing it. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageIdeBenefit1Title" datatype="html">
+        <source> Shorter feedback loops </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageIdeBenefit1Desc" datatype="html">
+        <source> Questions, edits, and commits stay in one thread of work instead of three different apps. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageIdeBenefit2Title" datatype="html">
+        <source> Review where the code lives </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageIdeBenefit2Desc" datatype="html">
+        <source> Peers comment on real changes with repository context, not screenshots in chat. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageIdeBenefit3Title" datatype="html">
+        <source> Momentum through the sprint </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageIdeBenefit3Desc" datatype="html">
+        <source> Builders stay focused on the ticket at hand instead of re-establishing context after every switch. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageDeployHeadline" datatype="html">
+        <source> Ship without leaving the workspace </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageDeployLead" datatype="html">
+        <source> Releases and environments are reachable where agents and engineers already collaborate, so delivery is not a separate ceremony. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageDeployBenefit1Title" datatype="html">
+        <source> Fewer context breaks </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageDeployBenefit1Desc" datatype="html">
+        <source> Operators do not hand off to another portal just to promote what agents already built. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageDeployBenefit2Title" datatype="html">
+        <source> Operators stay in the loop </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageDeployBenefit2Desc" datatype="html">
+        <source> Run logs and status are visible to the same team that kicked off the work. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageDeployBenefit3Title" datatype="html">
+        <source> Production alignment </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-solutionAdvantageDeployBenefit3Desc" datatype="html">
+        <source> What ships matches what was reviewed because release steps sit next to the agent thread. </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-engineeringTitle" datatype="html">
-        <source> Fits how your team already builds software </source>
+        <source> Built for how platform and engineering teams ship software </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-engineeringLead" datatype="html">
-        <source> Agentic systems only succeed when they integrate with existing engineering practice. Agenstra is built with platform and developer experience in mind. </source>
+        <source> Agenstra is where your team operates agents. It is not a replacement for your IDE. It sits beside the editors, Git, and pipelines you already use so agent work follows familiar review and release habits. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-engineeringItem1" datatype="html">
-        <source>Work in a web based IDE that feels familiar to developers</source>
-        </trans-unit>
-      <trans-unit id="featurePortalHome-engineeringItem2" datatype="html">
-        <source>Keep all configuration in version control where reviews and history already live</source>
-        </trans-unit>
-      <trans-unit id="featurePortalHome-engineeringItem3" datatype="html">
-        <source>Use environments, workspaces, and pipelines in your development workflow</source>
-        </trans-unit>
-      <trans-unit id="featurePortalHome-engineeringItem4" datatype="html">
-        <source>Expose safe surfaces for product and domain experts to adjust behavior without touching code</source>
-        </trans-unit>
-      <trans-unit id="featurePortalHome-engineeringClosing" datatype="html">
-        <source> This lets you bring AI agents into your delivery process instead of inventing a separate one. </source>
+      <trans-unit id="featurePortalHome-engineeringVisualBadge" datatype="html">
+        <source>Web IDE + agent chat</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-dashboardAlt" datatype="html">
         <source>Agenstra web IDE and dashboard</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-usecasesTitle" datatype="html">
-        <source> Where teams use Agenstra today </source>
+      <trans-unit id="featurePortalHome-engineeringTile1Title" datatype="html">
+        <source>Code where you chat</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-usecasesLead" datatype="html">
-        <source> Agenstra is useful wherever agents interact with live systems, sensitive data, or mission critical workflows. Typical scenarios include: </source>
+      <trans-unit id="featurePortalHome-engineeringItem1" datatype="html">
+        <source> Use a full web-based code editor with terminal beside chat without context switching </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-usecase1Title" datatype="html">
-        <source>Customer facing agents</source>
+      <trans-unit id="featurePortalHome-engineeringTile2Title" datatype="html">
+        <source>Context in Git</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-usecase1Desc" datatype="html">
-        <source> Customer facing agents that read or write data in CRM, ticketing, or billing systems </source>
+      <trans-unit id="featurePortalHome-engineeringItem2" datatype="html">
+        <source> Keep agent configuration and context in version control where reviews and history already live </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-usecase2Title" datatype="html">
-        <source>Internal copilots</source>
+      <trans-unit id="featurePortalHome-engineeringTile3Title" datatype="html">
+        <source>Lanes you recognize</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-usecase2Desc" datatype="html">
-        <source> Internal copilots that automate deployments, incident response, or operational runbooks </source>
+      <trans-unit id="featurePortalHome-engineeringItem3" datatype="html">
+        <source> Map workspaces and environments to dev, staging, and production delivery lanes </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-usecase3Title" datatype="html">
-        <source>Data and analytics agents</source>
+      <trans-unit id="featurePortalHome-engineeringTile4Title" datatype="html">
+        <source>Ops without a repo PR</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-usecase3Desc" datatype="html">
-        <source> Data and analytics agents that orchestrate pipelines or connect multiple tools </source>
+      <trans-unit id="featurePortalHome-engineeringItem4" datatype="html">
+        <source> Let operators adjust knowledge, tickets, and policies without opening the repository </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-usecase4Title" datatype="html">
-        <source>Coding assistants</source>
+      <trans-unit id="featurePortalHome-engineeringTile5Title" datatype="html">
+        <source>Tickets first</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-usecase4Desc" datatype="html">
-        <source> Coding assistants wired into repositories and CI for automated code changes </source>
+      <trans-unit id="featurePortalHome-engineeringItem5" datatype="html">
+        <source> Start from tickets so automation, branches, and reviews stay tied to real delivery work </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-usecasesClosing" datatype="html">
-        <source> The more important the workflow, the more value you get from a central control plane. </source>
+      <trans-unit id="featurePortalHome-capabilitiesTitle" datatype="html">
+        <source> Five ways Agenstra earns a place in your delivery stack </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-integrationTitle" datatype="html">
-        <source> Bring your own models, tools, and infrastructure </source>
+      <trans-unit id="featurePortalHome-capabilitiesLead" datatype="html">
+        <source> Pick a theme to see what Agenstra does: workspaces, policy, tickets, knowledge, IDE, integrations, and releases. This is the feature-level detail engineering and platform teams evaluate. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-integrationLead" datatype="html">
-        <source> Agenstra is not another monolithic black box. It is an orchestration and governance layer that works with what you already have. </source>
+      <trans-unit id="featurePortalHome-pillarTabRun" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-diagram-3 me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Run together </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-integrationItem1" datatype="html">
-        <source>Agent frameworks</source>
+      <trans-unit id="featurePortalHome-pillarTabGovern" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-shield-lock me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Stay in control </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-integrationItem1Desc" datatype="html">
-        <source> Connect to existing agent frameworks and vendor platforms </source>
+      <trans-unit id="featurePortalHome-pillarTabShip" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Ship faster </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-integrationItem2" datatype="html">
-        <source>Code &amp; CI</source>
+      <trans-unit id="featurePortalHome-pillarTabKnow" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-journal-text me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Share context </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-integrationItem2Desc" datatype="html">
-        <source> Integrate with your code hosting, CI, observability, and secret management </source>
+      <trans-unit id="featurePortalHome-pillarTabConnect" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-plug me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Fit your tools </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-integrationItem3" datatype="html">
-        <source>Cloud or on-prem</source>
+      <trans-unit id="featurePortalHome-capability1Title" datatype="html">
+        <source> One home for every workspace </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-integrationItem3Desc" datatype="html">
-        <source> Support cloud, on premises, or hybrid agent runtimes </source>
+      <trans-unit id="featurePortalHome-pillarRunLead" datatype="html">
+        <source> Stop chasing agents across clouds and vendors. Give each team a governed space while leadership keeps a single view of what is running where. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-integrationClosing" datatype="html">
-        <source> You keep control of your data and infrastructure while gaining a unified way to manage and govern agents. </source>
+      <trans-unit id="featurePortalHome-pillarRunPoint1Title" datatype="html">
+        <source> Every squad, one map </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-securityTitle" datatype="html">
-        <source> Built for teams that cannot afford surprises </source>
+      <trans-unit id="featurePortalHome-capability1Item1" datatype="html">
+        <source> Register agents from different tools and see them together in Agenstra Studio </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-securityLead" datatype="html">
-        <source> When agents can deploy code, touch customer data, or move money, guardrails are not optional. </source>
+      <trans-unit id="featurePortalHome-pillarRunPoint2Title" datatype="html">
+        <source>The right access</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-securityIntro" datatype="html">
-        <source> Agenstra gives security and compliance leaders the visibility and control they need: </source>
+      <trans-unit id="featurePortalHome-capability1Item2" datatype="html">
+        <source> Invite teammates with roles per workspace and sign in with your company identity provider </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-securityItem1" datatype="html">
-        <source>Central policies for tool and data access</source>
+      <trans-unit id="featurePortalHome-pillarRunPoint3Title" datatype="html">
+        <source>Clear boundaries</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-securityItem2" datatype="html">
-        <source> Audit logs for all agent activity and configuration changes </source>
+      <trans-unit id="featurePortalHome-capability1Item3" datatype="html">
+        <source> Keep dev, staging, and production separate so experiments never blur into live systems </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-securityItem3" datatype="html">
-        <source> Clear separation between development, staging, and production </source>
+      <trans-unit id="featurePortalHome-capability2Title" datatype="html">
+        <source> Trust you can show auditors </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-securityItem4" datatype="html">
-        <source> Testing workflows for prompts, tools, and policies before rollout </source>
+      <trans-unit id="featurePortalHome-pillarGovernLead" datatype="html">
+        <source> Set guardrails once and apply them everywhere. When something sensitive slips through, you have a record, not a debate in chat. </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-securityBadge1" datatype="html">
-        <source>Policies</source>
+      <trans-unit id="featurePortalHome-pillarGovernPoint1Title" datatype="html">
+        <source>Company rules</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-securityBadge2" datatype="html">
-        <source>Audit logs</source>
+      <trans-unit id="featurePortalHome-capability2Item1" datatype="html">
+        <source> Block or rewrite risky content before it reaches agents, consistently across workspaces </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-securityBadge3" datatype="html">
-        <source>Testing</source>
+      <trans-unit id="featurePortalHome-pillarGovernPoint2Title" datatype="html">
+        <source>Full picture</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-securityClosing" datatype="html">
-        <source> You can adopt agentic AI without losing your ability to explain and prove what happened. </source>
+      <trans-unit id="featurePortalHome-capability2Item2" datatype="html">
+        <source> Review what was blocked, flagged, or sent. That is ready for compliance reviews and leadership dashboards </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarGovernPoint3Title" datatype="html">
+        <source> Humans stay in charge </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability2Item3" datatype="html">
+        <source> Require sign-off before agents run on their own, with limits on scope and runtime </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability3Title" datatype="html">
+        <source> From ticket to release, in one flow </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarShipLead" datatype="html">
+        <source> Agents stop being a side channel. Plan work, run automation, commit code, and ship without switching between five different products. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarShipPoint1Title" datatype="html">
+        <source>Visible work</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability3Item1" datatype="html">
+        <source> Track tickets with comments and live updates so everyone sees what agents are working on </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarShipPoint2Title" datatype="html">
+        <source> Smart automation </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability3Item2" datatype="html">
+        <source> Let agents draft solutions on tickets, with checks before changes merge </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarShipPoint3Title" datatype="html">
+        <source> Ship with confidence </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability3Item3" datatype="html">
+        <source> Trigger releases, follow run logs, and use Git from the same place you chat with agents </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Title" datatype="html">
+        <source> Context everyone actually uses </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarKnowLead" datatype="html">
+        <source> Replace scattered docs and tribal knowledge with pages your agents and teammates can search. They are linked to the work in flight. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarKnowPoint1Title" datatype="html">
+        <source>Living library</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Item1" datatype="html">
+        <source> Organize guides and decisions in searchable pages per workspace </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarKnowPoint2Title" datatype="html">
+        <source>Connected work</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Item2" datatype="html">
+        <source> Tie knowledge to tickets so context travels with every handoff </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarKnowPoint3Title" datatype="html">
+        <source> One source for editors </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Item3Prefix" datatype="html">
+        <source>Standardize how assistants read your repo with </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability5Item3Link" datatype="html">
+        <source>AgentCTX</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability4Title" datatype="html">
+        <source> Plays nice with what you already bought </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarConnectLead" datatype="html">
+        <source> Agenstra sits alongside your editors, issue trackers, and cloud, not instead of them. Keep vendor choice and data where you want it. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarConnectPoint1Title" datatype="html">
+        <source> Jira &amp; Confluence </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability4Item1" datatype="html">
+        <source> Pull issue and wiki context into workspaces so agents start informed </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarConnectPoint2Title" datatype="html">
+        <source>Your agents</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability4Item2" datatype="html">
+        <source> Use Cursor, OpenCode, OpenClaw, and more on infrastructure you choose </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-pillarConnectPoint3Title" datatype="html">
+        <source> Your deployment </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-capability4Item3" datatype="html">
+        <source> Run on your own servers, our managed cloud, or Desktop for day-to-day operators </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemTitle" datatype="html">
+        <source> One platform, flexible surfaces </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemLead" datatype="html">
+        <source> Agenstra Studio is the product your teams sign into. Run it on your infrastructure or choose Agenstra Cloud when you want us to operate the platform. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemStudioBadge" datatype="html">
+        <source>Core platform</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemStudioTitle" datatype="html">
+        <source>Agenstra Studio</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemStudioLead" datatype="html">
+        <source> The console your organization runs every day: workspaces, tickets, knowledge, IDE, releases, and governance in one signed-in experience. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemStudioAside" datatype="html">
+        <source> Self-hosted or managed. Same product, your choice of operations. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemStudioCta" datatype="html">
+        <source>See what you get</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemSurfacesLabel" datatype="html">
+        <source> Part of Studio </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemAgentCtxTitle" datatype="html">
+        <source>AgentCTX</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemAgentCtxDesc" datatype="html">
+        <source> Maintain project context once for the whole team. Keep every coding assistant aligned without copying rules between editors. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemAgentCtxCta" datatype="html">
+        <source>Explore AgentCTX</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemDesktopTitle" datatype="html">
+        <source>Agenstra Desktop</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemDesktopDesc" datatype="html">
+        <source> A desktop app for daily operators with the same sign-in and permissions as the web console. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemDesktopCta" datatype="html">
+        <source>Explore Desktop</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemCloudTitle" datatype="html">
+        <source>Agenstra Cloud</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHome-ecosystemCloudDesc" datatype="html">
+        <source> We run the platform for you. Your agents stay in your tools and clouds while upgrades, scaling, and audit trails are handled by us. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-cloudStartingAt" datatype="html">
+        <source>Starting at</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-cloudPriceUnavailable" datatype="html">
+        <source>Not available</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-getStartedNow" datatype="html">
+        <source>Get Started Now</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-exploreCloud" datatype="html">
+        <source>Explore Cloud</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-ctaTitle" datatype="html">
-        <source>Build agentic systems you can trust</source>
+        <source> Operate coding agents like production infrastructure </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-ctaLead" datatype="html">
-        <source> If your team is moving from AI experiments to real production workflows, you need a platform that treats agents like part of your software infrastructure. </source>
+        <source> Move from isolated experiments to a governed platform: one console for workspaces, automation, and compliance-ready observability. </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-ctaSub" datatype="html">
-        <source> Agenstra gives you centralized control, governance, and observability for distributed AI agents. </source>
+        <source> Run on your own infrastructure or let us host Agenstra Cloud for you. </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-getStarted" datatype="html">
         <source> Get started </source>
@@ -1489,13 +1725,13 @@
         <source> Talk to the team </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-metaTitle" datatype="html">
-        <source>Agenstra Platform - Centralized Control For Distributed AI Agents</source>
+        <source>One place to run, govern, and ship with agents :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-metaDescription" datatype="html">
-        <source>Agenstra is the centralized control plane for AI agents. Orchestrate, govern, and observe distributed agent infrastructure with one platform designed for engineering teams.</source>
+        <source>Run and govern coding agents at enterprise scale: workspaces, ticket automation, in-browser coding, releases, policy, and audit trails. Self-host Agenstra or run on Agenstra Cloud.</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-metaKeywords" datatype="html">
-        <source>Agenstra, AI agent orchestration platform, AI agent management, agent infrastructure, central control plane, enterprise AI agent governance, multi agent orchestration</source>
+        <source>Agenstra, enterprise coding agents, AI agent governance, ticket automation, agent audit, self-hosted AI platform, software delivery, team knowledge, Cursor OpenCode integration</source>
         </trans-unit>
       <trans-unit id="featurePortalDisclosure-title" datatype="html">
         <source>Legal Disclosure</source>
@@ -1588,10 +1824,10 @@
         <source> Contact us </source>
         </trans-unit>
       <trans-unit id="featurePortalDisclosure-metaTitle" datatype="html">
-        <source>Agenstra - Legal Disclosure</source>
+        <source>Legal Disclosure :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalDisclosure-metaDescription" datatype="html">
-        <source>Agenstra is a platform for managing distributed AI agent infrastructure. This is the legal disclosure for the platform.</source>
+        <source>Imprint and legal disclosure for Agenstra by IPvX UG (haftungsbeschränkt). Company details, representation, and regulatory information for Germany.</source>
         </trans-unit>
       <trans-unit id="featurePortalDisclosure-metaKeywords" datatype="html">
         <source>Agenstra, legal disclosure, platform, distributed AI agent infrastructure</source>
@@ -1778,10 +2014,10 @@
         <source> Contact us </source>
         </trans-unit>
       <trans-unit id="featurePortalPrivacy-metaTitle" datatype="html">
-        <source>Agenstra - Privacy Policy</source>
+        <source>Privacy Policy :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalPrivacy-metaDescription" datatype="html">
-        <source>Agenstra is a platform for managing distributed AI agent infrastructure. This is the privacy policy for the platform.</source>
+        <source>How Agenstra and IPvX process personal data when you use our platform, websites, and support. Cookies, retention, your rights, and how to contact us.</source>
         </trans-unit>
       <trans-unit id="featurePortalPrivacy-metaKeywords" datatype="html">
         <source>Agenstra, privacy policy, platform, distributed AI agent infrastructure</source>
@@ -1988,10 +2224,10 @@
         <source> Contact us </source>
         </trans-unit>
       <trans-unit id="featurePortalTerms-metaTitle" datatype="html">
-        <source>Agenstra - Terms of Service</source>
+        <source>Terms of Service :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalTerms-metaDescription" datatype="html">
-        <source>Agenstra is a platform for managing distributed AI agent infrastructure. This is the terms of service for the platform.</source>
+        <source>Terms governing use of the Agenstra platform, websites, and related services. Accounts, licensing, acceptable use, liability, and contact information.</source>
         </trans-unit>
       <trans-unit id="featurePortalTerms-metaKeywords" datatype="html">
         <source>Agenstra, terms of service, platform, distributed AI agent infrastructure</source>
@@ -2000,7 +2236,45 @@
         <source> Choose Your <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>License<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-heroDescription" datatype="html">
-        <source> Scale from teams to enterprise with predictable pricing. </source>
+        <source> Run Agenstra on your own infrastructure or let us host it with predictable pricing as you grow from experiments to enterprise governance. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-pathsTitle" datatype="html">
+        <source>Two ways to run Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-pathsLead" datatype="html">
+        <source> Most teams start self-hosted; move to managed cloud when you want us to operate the platform. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-pathSelfHostedTitle" datatype="html">
+        <source>Self-hosted</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-pathSelfHostedDesc" datatype="html">
+        <source> Open source through enterprise licenses. You control data, networking, and upgrades. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-pathSelfHostedCta" datatype="html">
+        <source>See license tiers <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-down ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-pathManagedTitle" datatype="html">
+        <source>Agenstra Cloud</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-pathManagedDesc" datatype="html">
+        <source> Fully managed platform. We handle infrastructure, updates, and scaling. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-pathManagedCta" datatype="html">
+        <source>See cloud pricing <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-down ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-tiersTitle" datatype="html">
+        <source>License tiers</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-tiersLead" datatype="html">
+        <source> Compare self-hosted plans from open source through enterprise. Swipe or use the arrows to review Startup, Business, and Enterprise. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-scrollPrev" datatype="html">
+        <source>Previous plans</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-scrollNext" datatype="html">
+        <source>Next plans</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-openSourceTitle" datatype="html">
         <source>Open Source</source>
@@ -2015,7 +2289,7 @@
         <source>AGPL-3.0 License</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-openSourceFeature1" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Agent Manager<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Full agent lifecycle management</source>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Agenstra Studio<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> includes workspaces, tickets, and agent oversight</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-openSourceFeature2" datatype="html">
         <source>Single-machine agent runtime</source>
@@ -2030,7 +2304,7 @@
         <source>Must share modifications if used as a service (AGPL requirement)</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-viewOnGitHub" datatype="html">
-        <source> View on GitHub </source>
+        <source>View on GitHub</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-startupTitle" datatype="html">
         <source>Startup</source>
@@ -2045,13 +2319,13 @@
         <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Everything in Open Source<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-startupFeature2" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Agent Controller<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Centralized management &amp; server provisioning</source>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Multi-workspace operations<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> provide centralized management and server provisioning</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-startupFeature3" datatype="html">
         <source>Multi-machine agent runtime orchestration</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-startupFeature4" datatype="html">
-        <source>Extensive web-ui for agent management</source>
+        <source>Full web console for agent management</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-startupNote" datatype="html">
         <source>For businesses with Total Finances &lt; €2,000,000/year</source>
@@ -2081,7 +2355,7 @@
         <source>For businesses with Total Finances ≥ €2,000,000/year</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-bookDemo" datatype="html">
-        <source> Book a Demo </source>
+        <source>Book a Demo</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-enterpriseTitle" datatype="html">
         <source>Enterprise</source>
@@ -2105,130 +2379,55 @@
         <source>Custom licensing terms</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-contactSales" datatype="html">
-        <source> Contact Sales </source>
+        <source>Contact Sales</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-managedTitle" datatype="html">
+        <source>Agenstra Cloud</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPricing-managedLead" datatype="html">
+        <source> Fully managed hosting with predictable monthly pricing. We operate infrastructure, scaling, and updates so your teams can focus on delivery. </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-cloudTitle" datatype="html">
-        <source>Cloud</source>
+        <source>Agenstra Cloud</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-managedBadge" datatype="html">
         <source>Managed</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-soonBadge" datatype="html">
-        <source>Soon</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-cloudDescription" datatype="html">
         <source> Fully managed Agenstra platform hosted in the cloud. Made for any size of business. No infrastructure setup required. </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-cloudFeature1" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Fully Managed<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - We handle all infrastructure, updates, and maintenance</source>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Fully managed.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> We handle infrastructure, updates, and maintenance</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-cloudFeature2" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>All Features Included<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Complete platform with web IDE, agent management, and more</source>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Full platform.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Studio, web IDE, automation, and governance</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-cloudFeature3" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Automatic Scaling<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Infrastructure scales with your needs</source>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Automatic scaling.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Capacity grows with your teams</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-cloudFeature4" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>99.9% Uptime SLA<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Enterprise-grade reliability</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-cloudFeature5" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Priority Support<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> - Dedicated support team</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-cloudStartingAt" datatype="html">
-        <source>Starting at</source>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>99.9% uptime SLA<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> for enterprise-grade reliability</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-cloudPriceUnit" datatype="html">
         <source>/month</source>
         </trans-unit>
-      <trans-unit id="featurePortalPricing-cloudPriceUnavailable" datatype="html">
-        <source>—</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-getStartedNow" datatype="html">
-        <source> Get Started Now </source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-paymentInfoTitle" datatype="html">
-        <source> Payment &amp; Licensing Information </source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-paymentInfoLead" datatype="html">
-        <source> Transparent pricing and flexible payment options for teams of all sizes </source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-paymentMethodsTitle" datatype="html">
-        <source>Payment Methods</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-paymentMethod1" datatype="html">
-        <source>Credit card (Visa, MasterCard, American Express)</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-paymentMethod2" datatype="html">
-        <source>Wire transfer (for annual plans)</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-paymentMethod3" datatype="html">
-        <source>Purchase orders for enterprise customers</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-paymentMethod4" datatype="html">
-        <source>Flexible billing cycles (monthly or annual)</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-licenseTermsTitle" datatype="html">
-        <source>License Terms</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-licenseTerm1" datatype="html">
-        <source>Self-hosted means you control your data and infrastructure</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-licenseTerm2" datatype="html">
-        <source>No per-seat pricing - pay for the platform</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-licenseTerm3" datatype="html">
-        <source>Cancel anytime with 14-day notice</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-licenseTerm4" datatype="html">
-        <source>Enterprise terms customized to your needs</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-supportTitle" datatype="html">
-        <source>Support &amp; Training</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-support1" datatype="html">
-        <source>Community support for open source users</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-support2" datatype="html">
-        <source>Email &amp; phone support for paid plans</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-support3" datatype="html">
-        <source>Comprehensive documentation and guides</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-support4" datatype="html">
-        <source>Training sessions for enterprise customers</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-upgradeTitle" datatype="html">
-        <source>Easy Upgrades</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-upgrade1" datatype="html">
-        <source>Start free and upgrade when you&apos;re ready</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-upgrade2" datatype="html">
-        <source>Seamless migration between plans</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-upgrade3" datatype="html">
-        <source>Pro-rated billing when upgrading mid-month</source>
-        </trans-unit>
-      <trans-unit id="featurePortalPricing-upgrade4" datatype="html">
-        <source>Migration assistance for enterprise plans</source>
-        </trans-unit>
       <trans-unit id="featurePortalPricing-ctaTitle" datatype="html">
-        <source> Ready to get started with Agenstra? </source>
+        <source>Ready to get started with Agenstra?</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-ctaLead" datatype="html">
         <source> Whether you&apos;re starting with our open source version or need enterprise features, we&apos;re here to help you build reliable agentic systems. </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-ctaGetStarted" datatype="html">
-        <source> Get Started Free </source>
+        <source>Get Started Free</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-ctaTalkToSales" datatype="html">
-        <source> Talk to Sales </source>
+        <source>Talk to Sales</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-metaTitle" datatype="html">
-        <source>Agenstra Pricing - Flexible Plans for Every Team</source>
+        <source>Licensing from open source to enterprise :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-metaDescription" datatype="html">
-        <source>Choose the right Agenstra plan for your team. From open source to enterprise, we offer flexible licensing options to fit your needs.</source>
+        <source>Compare open-source, team, and enterprise Agenstra plans. Flexible licensing for self-hosted or cloud deployments, with governance and scale when you need it.</source>
         </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>

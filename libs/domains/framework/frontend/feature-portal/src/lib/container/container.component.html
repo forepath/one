@@ -36,9 +36,9 @@
         </button>
         <div class="collapse navbar-collapse mobile-navbar" [class.mobile-open]="mobileMenuOpen()" id="navbarNav">
           <ul class="navbar-nav ms-auto align-items-center">
-            <li class="nav-item dropdown">
+            <li class="nav-item dropdown portal-nav-dropdown">
               <a
-                class="nav-link dropdown-toggle text-white"
+                class="nav-link dropdown-toggle text-white portal-nav-dropdown-toggle"
                 [class.active]="productDropdownActive()"
                 href="#"
                 id="productNavDropdown"
@@ -47,13 +47,13 @@
                 aria-expanded="false"
               >
                 <span i18n="@@featurePortal-navProduct">Product</span>
-                <i class="bi bi-chevron-down"></i>
+                <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
               </a>
-              <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="productNavDropdown">
+              <ul class="dropdown-menu dropdown-menu-end portal-nav-dropdown-menu" aria-labelledby="productNavDropdown">
                 <li>
                   <a
                     routerLink="/"
-                    class="dropdown-item"
+                    class="dropdown-item portal-nav-dropdown-item"
                     routerLinkActive="active"
                     [routerLinkActiveOptions]="{ exact: true }"
                     (click)="closeMobileMenu()"
@@ -64,7 +64,7 @@
                 <li>
                   <a
                     routerLink="/agentctx"
-                    class="dropdown-item"
+                    class="dropdown-item portal-nav-dropdown-item"
                     routerLinkActive="active"
                     [routerLinkActiveOptions]="{ exact: true }"
                     (click)="closeMobileMenu()"
@@ -75,7 +75,7 @@
                 <li>
                   <a
                     routerLink="/desktop"
-                    class="dropdown-item"
+                    class="dropdown-item portal-nav-dropdown-item"
                     routerLinkActive="active"
                     [routerLinkActiveOptions]="{ exact: true }"
                     (click)="closeMobileMenu()"
@@ -86,7 +86,7 @@
                 <li>
                   <a
                     routerLink="/cloud"
-                    class="dropdown-item"
+                    class="dropdown-item portal-nav-dropdown-item"
                     routerLinkActive="active"
                     [routerLinkActiveOptions]="{ exact: true }"
                     (click)="closeMobileMenu()"
@@ -106,9 +106,9 @@
                 >Pricing</a
               >
             </li>
-            <li class="nav-item dropdown">
+            <li class="nav-item dropdown portal-nav-dropdown">
               <a
-                class="nav-link dropdown-toggle text-white"
+                class="nav-link dropdown-toggle text-white portal-nav-dropdown-toggle"
                 [class.active]="comparisonDropdownActive()"
                 href="#"
                 id="comparisonNavDropdown"
@@ -117,13 +117,16 @@
                 aria-expanded="false"
               >
                 <span i18n="@@featurePortal-navComparison">Comparison</span>
-                <i class="bi bi-chevron-down"></i>
+                <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
               </a>
-              <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="comparisonNavDropdown">
+              <ul
+                class="dropdown-menu dropdown-menu-end portal-nav-dropdown-menu portal-nav-dropdown-menu--wide"
+                aria-labelledby="comparisonNavDropdown"
+              >
                 @for (item of comparisonNavItems; track item.slug) {
                   <li>
                     <a
-                      class="dropdown-item"
+                      class="dropdown-item portal-nav-dropdown-item"
                       [routerLink]="item.routerLink"
                       routerLinkActive="active"
                       [routerLinkActiveOptions]="{ exact: true }"

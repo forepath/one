@@ -1,4 +1,4 @@
-<!-- Hero - Developer focused dark theme -->
+<!-- Hero -->
 <section id="hero" class="py-10 py-lg-6 bg-dark text-white">
   <div class="container">
     <div class="text-center">
@@ -6,9 +6,9 @@
         <span class="text-primary">One Context</span> For All Your AI Coding Tools
       </h1>
       <p class="lead mb-5 mx-auto hero-lead max-w-750" i18n="@@featurePortalAgentctx-heroDescription">
-        Every AI coding tool wants its own configuration file and instructions. Over time, they drift apart and your
-        agents behave differently in every editor. AgentCTX fixes this by turning one shared context into tool specific
-        configs for all your AI coding assistants.
+        Every AI coding tool wants its own configuration and instructions. Over time they drift apart and assistants
+        start contradicting each other. AgentCTX lets you maintain project context once and generate aligned configs for
+        every editor your team uses.
       </p>
       <div class="d-flex gap-3 justify-content-center flex-wrap">
         <a
@@ -36,472 +36,406 @@
   </div>
 </section>
 
-<!-- Supported AI Agents Section -->
 <section class="py-5 bg-body-tertiary">
   <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-12">
-        <div class="d-flex flex-row justify-content-center align-items-center gap-5 flex-wrap">
-          <img src="assets/images/logos/cursor.svg" alt="Cursor" class="img-fluid logo-partner" />
-          <img src="assets/images/logos/opencode.svg" alt="OpenCode" class="img-fluid logo-partner" />
-          <img src="assets/images/logos/github-copilot.svg" alt="GitHub Copilot" class="img-fluid logo-partner" />
-        </div>
-      </div>
+    <p class="small text-muted text-center mb-4" i18n="@@featurePortalAgentctx-partnersTagline">
+      Generates configs for the assistants your team already uses
+    </p>
+    <div class="d-flex flex-row justify-content-center align-items-center gap-5 flex-wrap">
+      <img src="assets/images/logos/cursor.svg" alt="Cursor" class="img-fluid logo-partner" />
+      <img src="assets/images/logos/opencode.svg" alt="OpenCode" class="img-fluid logo-partner" />
+      <img src="assets/images/logos/github-copilot.svg" alt="GitHub Copilot" class="img-fluid logo-partner" />
     </div>
   </div>
 </section>
 
-<!-- Problem Section -->
-<section id="problem" class="py-10 bg-white">
+<!-- Story: sprawl → one source (combined) -->
+<section id="solution" class="py-10 bg-white agentctx-story">
+  <span id="problem" class="visually-hidden" aria-hidden="true"></span>
   <div class="container">
-    <h2 class="h2 fw-semibold mb-4 text-center text-dark">
-      <span i18n="@@featurePortalAgentctx-problemTitle">Configuration sprawl across AI coding tools</span>
-    </h2>
-    <p class="lead text-center text-muted mb-4" i18n="@@featurePortalAgentctx-problemLead">
-      Modern engineering teams rarely use a single AI assistant. A typical repository now contains separate
-      configuration files for each tool:
-    </p>
-    <div class="card border-0 h-100 rounded-2 card-capability card-capability-primary p-4 mb-4">
-      <div class="agentctx-file-list">
-        <div class="bg-white border rounded p-3 mb-2 d-flex align-items-center gap-2">
-          <i class="bi bi-file-code text-muted" aria-hidden="true"></i>
-          <code class="font-monospace small mb-0">AGENTS.md</code>
-        </div>
-        <div class="bg-white border rounded p-3 mb-2 d-flex align-items-center gap-2">
-          <i class="bi bi-file-code text-muted" aria-hidden="true"></i>
-          <code class="font-monospace small mb-0">.cursor/rules</code>
-        </div>
-        <div class="bg-white border rounded p-3 mb-2 d-flex align-items-center gap-2">
-          <i class="bi bi-file-code text-muted" aria-hidden="true"></i>
-          <code class="font-monospace small mb-0">.github/instructions</code>
-        </div>
-      </div>
-    </div>
-    <p class="text-muted mb-4" i18n="@@featurePortalAgentctx-problemCopy">
-      Each file repeats the same project description, coding standards, and security guidelines with slight variations.
-      Some are updated, others are forgotten, and nobody is sure which one is the source of truth.
-    </p>
-    <div class="problem-box p-4 rounded-2 d-flex align-items-center gap-3">
-      <i class="bi bi-x-circle-fill flex-shrink-0 problem-icon" aria-hidden="true"></i>
-      <p class="mb-0" i18n="@@featurePortalAgentctx-problemResult">
-        The result is context drift. Different tools give different answers to the same request, and new team members
-        are never quite sure what the rules are.
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featurePortalAgentctx-storyTitle">
+        End config sprawl. Keep every AI tool on the same page
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalAgentctx-solutionLead">
+        AgentCTX is for teams that rely on more than one AI coding assistant. You define how the project should be
+        described, built, and protected in one maintained context. AgentCTX generates what each tool expects so
+        standards stick without copy and paste between editors.
       </p>
     </div>
-  </div>
-</section>
 
-<!-- Solution Section -->
-<section id="solution" class="py-10 bg-body-tertiary">
-  <div class="container">
-    <h2 class="h2 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalAgentctx-solutionTitle">
-      A single source of truth that syncs everywhere
-    </h2>
-    <p class="lead text-center text-muted mb-5" i18n="@@featurePortalAgentctx-solutionLead">
-      AgentCTX introduces a shared context file for your project. You maintain your project description, coding
-      standards, workflows, and constraints in one place. From that context, AgentCTX generates the tool specific
-      configuration files your AI assistants expect.
-    </p>
-    <div class="agentctx-diagram-box rounded-3 p-5 mb-5 shadow-sm">
-      <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-4 flex-wrap">
-        <div class="agentctx-diagram-center rounded-3 p-4 text-center">
-          <code class="fw-bold fs-5">.agentctx</code>
+    <div
+      class="card border rounded-3 shadow-sm overflow-hidden mb-4 mb-lg-5 agentctx-solution-highlight card-capability card-capability-primary"
+    >
+      <div class="row g-0 align-items-center">
+        <div class="col-lg-8 p-4 p-lg-5">
+          <h3 class="h4 fw-semibold mb-3" i18n="@@featurePortalAgentctx-solutionTitle">
+            A single source of truth that syncs everywhere
+          </h3>
+          <p class="text-muted mb-0 lh-lg" i18n="@@featurePortalAgentctx-solutionClosing">
+            Your context lives in one place you maintain. No more duplicating project rules in every AI editor. Just
+            update your context, run AgentCTX, and each supported assistant stays aligned.
+          </p>
         </div>
-        <i class="bi bi-arrow-right d-none d-md-block fs-2 text-secondary" aria-hidden="true"></i>
-        <div class="d-flex gap-3 flex-wrap justify-content-center">
-          <div class="border rounded-3 p-3 bg-white">
-            <code class="small">AGENTS.md</code>
-          </div>
-          <div class="border rounded-3 p-3 bg-white">
-            <code class="small">.cursor/</code>
-          </div>
-          <div class="border rounded-3 p-3 bg-white">
-            <code class="small">.opencode/</code>
-          </div>
-          <div class="border rounded-3 p-3 bg-white">
-            <code class="small">.github/</code>
+        <div class="col-lg-4 p-4 p-lg-5 d-flex align-items-center justify-content-center">
+          <div class="text-center">
+            <i class="bi bi-arrow-repeat text-primary icon-xl mb-3 d-block" aria-hidden="true"></i>
+            <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-solutionTagline">
+              One context. Every assistant.
+            </p>
           </div>
         </div>
       </div>
     </div>
-    <p class="fw-medium text-center mb-4" i18n="@@featurePortalAgentctx-solutionKey">Key ideas:</p>
-    <div class="row row-cols-1 row-cols-md-3 g-4">
+
+    <div class="row row-cols-1 row-cols-md-3 g-3">
       <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover">
-          <span
-            class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge mb-3"
-            aria-hidden="true"
-            >1</span
-          >
-          <p class="mb-0" i18n="@@featurePortalAgentctx-key1">One human maintained context file in your repository</p>
+        <div class="card border rounded-3 shadow-sm p-4 h-100 text-center">
+          <i class="bi bi-file-earmark-text text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+          <p class="small fw-semibold mb-2" i18n="@@featurePortalAgentctx-key1Label">Sources you maintain</p>
+          <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-key1">
+            Rules, commands, agents, and metadata in .agenstra/
+          </p>
         </div>
       </div>
       <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover">
-          <span
-            class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge mb-3"
-            aria-hidden="true"
-            >2</span
-          >
-          <p class="mb-0" i18n="@@featurePortalAgentctx-key2">
+        <div class="card border rounded-3 shadow-sm p-4 h-100 text-center">
+          <i class="bi bi-arrow-repeat text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+          <p class="small fw-semibold mb-2" i18n="@@featurePortalAgentctx-key2Label">Generated everywhere</p>
+          <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-key2">
             Automatic generation of Claude, Cursor, Copilot, and other tool configs
           </p>
         </div>
       </div>
       <div class="col">
-        <div class="card border-0 shadow-sm h-100 rounded-3 p-4 card-hover">
-          <span
-            class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold small iteration-badge mb-3"
-            aria-hidden="true"
-            >3</span
-          >
-          <p class="mb-0" i18n="@@featurePortalAgentctx-key3">
+        <div class="card border rounded-3 shadow-sm p-4 h-100 text-center">
+          <i class="bi bi-check2-all text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+          <p class="small fw-semibold mb-2" i18n="@@featurePortalAgentctx-key3Label">Same rules everywhere</p>
+          <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-key3">
             Consistent instructions and standards across every editor and assistant
           </p>
         </div>
       </div>
     </div>
-    <p class="text-center text-muted mt-4" i18n="@@featurePortalAgentctx-solutionClosing">
-      You edit the context once, run AgentCTX, and every supported tool is up to date.
-    </p>
   </div>
 </section>
 
-<!-- How it works - Timeline -->
-<section id="how" class="py-10 bg-white">
+<!-- Workflow: horizontal steps -->
+<section id="how" class="py-10 bg-body-tertiary agentctx-how">
   <div class="container">
-    <h2 class="h2 fw-semibold mb-5 text-center text-dark" i18n="@@featurePortalAgentctx-howTitle">
-      Simple workflow for any project
-    </h2>
-    <div class="agentctx-timeline">
-      <div class="d-flex mb-5">
-        <div
-          class="agentctx-timeline-number rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold text-dark mb-4" i18n="@@featurePortalAgentctx-howTitle">
+        Simple workflow for any project
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalAgentctx-howLead">
+        Most repositories already repeat the same guidance in several tool-specific places. AgentCTX replaces that loop
+        with a short workflow you can use in every project, from install to fresh configs in minutes.
+      </p>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4 agentctx-how-track">
+      <div class="col">
+        <article
+          class="card border rounded-3 shadow-sm h-100 p-4 agentctx-step-card d-flex flex-column justify-content-between"
         >
-          1
-        </div>
-        <div class="ms-4 flex-grow-1">
-          <div class="card border-0 h-100 rounded-2 card-capability card-capability-primary p-4">
-            <h3 class="h5 fw-semibold mb-2" i18n="@@featurePortalAgentctx-step1Title">Install AgentCTX</h3>
-            <p class="text-muted mb-0" i18n="@@featurePortalAgentctx-step1Desc">
+          <div>
+            <span class="agentctx-step-num rounded-circle bg-primary text-white mb-3" aria-hidden="true">1</span>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-step1Title">Install AgentCTX</h3>
+            <p class="small text-muted mb-3" i18n="@@featurePortalAgentctx-step1Desc">
               Install AgentCTX with a single command.
             </p>
-            <pre
-              class="bg-dark text-light font-monospace small p-3 rounded mt-3 mb-0"
-            ><code>{{ installCommand }}</code></pre>
           </div>
-        </div>
+          <pre
+            class="bg-dark text-light font-monospace small p-3 rounded-3 mb-0"
+          ><code>{{ installCommand }}</code></pre>
+        </article>
       </div>
-      <div class="d-flex mb-5">
-        <div
-          class="agentctx-timeline-number rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-        >
-          2
-        </div>
-        <div class="ms-4 flex-grow-1">
-          <div class="card border-0 h-100 rounded-2 card-capability card-capability-primary p-4">
-            <h3 class="h5 fw-semibold mb-2" i18n="@@featurePortalAgentctx-step2Title">Add context file</h3>
-            <p class="text-muted mb-0" i18n="@@featurePortalAgentctx-step2Desc">
-              Add a project context file to your repository that describes architecture, standards, workflows, and
-              security notes.
-            </p>
-          </div>
-        </div>
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 agentctx-step-card d-flex flex-column">
+          <span class="agentctx-step-num rounded-circle bg-primary text-white mb-3" aria-hidden="true">2</span>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-step2Title">Add project context</h3>
+          <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-step2Desc">
+            Add a .agenstra/ directory with rules, commands, agents, and metadata for architecture, standards,
+            workflows, and security.
+          </p>
+        </article>
       </div>
-      <div class="d-flex mb-5">
-        <div
-          class="agentctx-timeline-number rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+      <div class="col">
+        <article
+          class="card border rounded-3 shadow-sm h-100 p-4 agentctx-step-card d-flex flex-column justify-content-between"
         >
-          3
-        </div>
-        <div class="ms-4 flex-grow-1">
-          <div class="card border-0 h-100 rounded-2 card-capability card-capability-primary p-4">
-            <h3 class="h5 fw-semibold mb-2" i18n="@@featurePortalAgentctx-step3Title">Run AgentCTX</h3>
-            <p class="text-muted mb-0" i18n="@@featurePortalAgentctx-step3Desc">
+          <div>
+            <span class="agentctx-step-num rounded-circle bg-primary text-white mb-3" aria-hidden="true">3</span>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-step3Title">Run AgentCTX</h3>
+            <p class="small text-muted mb-3" i18n="@@featurePortalAgentctx-step3Desc">
               Run AgentCTX to generate tool specific config files for the AI coding tools you use.
             </p>
-            <pre
-              class="bg-dark text-light font-monospace small p-3 rounded mt-3 mb-0"
-            ><code>{{ runCommand }}</code></pre>
           </div>
-        </div>
+          <pre class="bg-dark text-light font-monospace small p-3 rounded-3 mb-0"><code>{{ runCommand }}</code></pre>
+        </article>
       </div>
-      <div class="d-flex">
-        <div
-          class="agentctx-timeline-number rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-        >
-          4
-        </div>
-        <div class="ms-4 flex-grow-1">
-          <div class="card border-0 h-100 rounded-2 card-capability card-capability-primary p-4">
-            <h3 class="h5 fw-semibold mb-2" i18n="@@featurePortalAgentctx-step4Title">Commit or keep as artifacts</h3>
-            <p class="text-muted mb-0" i18n="@@featurePortalAgentctx-step4Desc">
-              Commit the generated files if needed or let them stay as build artifacts.
-            </p>
-          </div>
-        </div>
+      <div class="col">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 agentctx-step-card d-flex flex-column">
+          <span class="agentctx-step-num rounded-circle bg-primary text-white mb-3" aria-hidden="true">4</span>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-step4Title">Commit or keep as artifacts</h3>
+          <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-step4Desc">
+            Commit the generated files if needed or let them stay as build artifacts.
+          </p>
+        </article>
       </div>
     </div>
-    <p class="text-center text-muted mt-5" i18n="@@featurePortalAgentctx-howClosing">
-      When you update your project context, you rerun AgentCTX and all configs are regenerated. No manual copy and
-      paste, no stale instructions.
-    </p>
   </div>
 </section>
 
-<!-- What belongs in your context -->
-<section id="content" class="py-10 bg-body-tertiary">
+<!-- Context bento -->
+<section id="content" class="py-10 bg-white agentctx-content">
   <div class="container">
-    <h2 class="h2 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalAgentctx-contentTitle">
-      Give your AI coding tools the information they really need
-    </h2>
-    <p class="lead text-center text-muted mb-5" i18n="@@featurePortalAgentctx-contentLead">
-      AgentCTX encourages teams to treat context as a first class asset. Instead of long, unfocused prompts, you
-      maintain structured knowledge that AI tools can rely on, such as:
-    </p>
-    <div class="row row-cols-1 row-cols-lg-2 g-4">
-      <div class="col">
-        <div class="card border-0 shadow-sm rounded-3 p-4 h-100 card-hover">
-          <div class="card-icon rounded-2 d-inline-flex align-items-center justify-content-center mb-3">
-            <i class="bi bi-diagram-3-fill text-primary icon-md" aria-hidden="true"></i>
-          </div>
-          <h3 class="h6 fw-semibold mb-2 mt-3" i18n="@@featurePortalAgentctx-content1Title">
-            Architecture &amp; domain
-          </h3>
-          <p class="small text-muted mb-3" i18n="@@featurePortalAgentctx-content1Desc">
-            High level architecture and domain overview
-          </p>
-          <pre
-            class="bg-body-secondary p-2 rounded font-monospace x-small mb-0"
-          ><code># Project overview...</code></pre>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm rounded-3 p-4 h-100 card-hover">
-          <div class="card-icon rounded-2 d-inline-flex align-items-center justify-content-center mb-3">
-            <i class="bi bi-code-slash text-primary icon-md" aria-hidden="true"></i>
-          </div>
-          <h3 class="h6 fw-semibold mb-2 mt-3" i18n="@@featurePortalAgentctx-content2Title">Coding style</h3>
-          <p class="small text-muted mb-3" i18n="@@featurePortalAgentctx-content2Desc">
-            Coding styles, naming conventions, and review expectations
-          </p>
-          <pre class="bg-body-secondary p-2 rounded font-monospace x-small mb-0"><code># Conventions...</code></pre>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm rounded-3 p-4 h-100 card-hover">
-          <div class="card-icon rounded-2 d-inline-flex align-items-center justify-content-center mb-3">
-            <i class="bi bi-shield-lock text-primary icon-md" aria-hidden="true"></i>
-          </div>
-          <h3 class="h6 fw-semibold mb-2 mt-3" i18n="@@featurePortalAgentctx-content3Title">Security</h3>
-          <p class="small text-muted mb-3" i18n="@@featurePortalAgentctx-content3Desc">
-            Security considerations, secrets handling, and what must never be changed automatically
-          </p>
-          <pre class="bg-body-secondary p-2 rounded font-monospace x-small mb-0"><code># Security...</code></pre>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm rounded-3 p-4 h-100 card-hover">
-          <div class="card-icon rounded-2 d-inline-flex align-items-center justify-content-center mb-3">
-            <i class="bi bi-journal-text text-primary icon-md" aria-hidden="true"></i>
-          </div>
-          <h3 class="h6 fw-semibold mb-2 mt-3" i18n="@@featurePortalAgentctx-content4Title">Documentation</h3>
-          <p class="small text-muted mb-3" i18n="@@featurePortalAgentctx-content4Desc">
-            Links to documentation, ADRs, and design docs
-          </p>
-          <pre class="bg-body-secondary p-2 rounded font-monospace x-small mb-0"><code># Docs...</code></pre>
-        </div>
-      </div>
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold text-dark mb-4" i18n="@@featurePortalAgentctx-contentTitle">
+        Less drift, more alignment
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalAgentctx-contentLead">
+        AgentCTX helps teams treat project context as a first class asset. You capture architecture, standards,
+        security, and documentation as linked knowledge assistants can rely on. When it stays current, every tool
+        follows the same rules, people onboard faster, and you can add or swap editors without starting over.
+      </p>
     </div>
-    <p class="text-center text-muted mt-5" i18n="@@featurePortalAgentctx-contentClosing">
-      The richer and more accurate your context file is, the more reliable your AI coding tools become.
-    </p>
+    <div
+      class="agentctx-context-map"
+      role="group"
+      i18n-aria-label="@@featurePortalAgentctx-contentMapAriaLabel"
+      aria-label="How project context topics connect"
+    >
+      <svg class="agentctx-context-map__svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="agentctx-context-line-h" gradientUnits="userSpaceOnUse" x1="0" y1="50" x2="100" y2="50">
+            <stop offset="0%" stop-color="rgba(139, 92, 246, 0)" />
+            <stop offset="20%" stop-color="rgba(139, 92, 246, 0.2)" />
+            <stop offset="50%" stop-color="rgba(139, 92, 246, 0.35)" />
+            <stop offset="80%" stop-color="rgba(139, 92, 246, 0.2)" />
+            <stop offset="100%" stop-color="rgba(139, 92, 246, 0)" />
+          </linearGradient>
+          <linearGradient id="agentctx-context-line-v" gradientUnits="userSpaceOnUse" x1="50" y1="0" x2="50" y2="100">
+            <stop offset="0%" stop-color="rgba(139, 92, 246, 0)" />
+            <stop offset="20%" stop-color="rgba(139, 92, 246, 0.2)" />
+            <stop offset="50%" stop-color="rgba(139, 92, 246, 0.35)" />
+            <stop offset="80%" stop-color="rgba(139, 92, 246, 0.2)" />
+            <stop offset="100%" stop-color="rgba(139, 92, 246, 0)" />
+          </linearGradient>
+        </defs>
+        <line
+          class="agentctx-context-map__line agentctx-context-map__line--peer"
+          x1="18"
+          y1="50"
+          x2="82"
+          y2="50"
+          stroke="url(#agentctx-context-line-h)"
+        />
+        <line
+          class="agentctx-context-map__line agentctx-context-map__line--peer"
+          x1="50"
+          y1="16"
+          x2="50"
+          y2="84"
+          stroke="url(#agentctx-context-line-v)"
+        />
+        <line class="agentctx-context-map__line agentctx-context-map__line--spoke" x1="50" y1="50" x2="50" y2="18" />
+        <line class="agentctx-context-map__line agentctx-context-map__line--spoke" x1="50" y1="50" x2="18" y2="50" />
+        <line class="agentctx-context-map__line agentctx-context-map__line--spoke" x1="50" y1="50" x2="82" y2="50" />
+        <line class="agentctx-context-map__line agentctx-context-map__line--spoke" x1="50" y1="50" x2="50" y2="84" />
+      </svg>
+
+      <article class="agentctx-context-benefit agentctx-context-benefit--1 card border rounded-3 shadow-sm p-4 h-100">
+        <i class="bi bi-check2-square text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-benefit1Title">Consistency</h3>
+        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-benefit1Desc">
+          Every assistant follows the same rules and understands the same project story.
+        </p>
+      </article>
+
+      <article class="agentctx-context-node agentctx-context-node--arch card border rounded-3 shadow-sm p-4 h-100">
+        <i class="bi bi-diagram-3-fill text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-content1Title">Architecture &amp; domain</h3>
+        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-content1Desc">
+          High level architecture and domain overview
+        </p>
+      </article>
+
+      <article class="agentctx-context-benefit agentctx-context-benefit--2 card border rounded-3 shadow-sm p-4 h-100">
+        <i class="bi bi-people text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-benefit2Title">Faster onboarding</h3>
+        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-benefit2Desc">
+          New team members get clear guidance from .agenstra/ and consistent behavior from their tools.
+        </p>
+      </article>
+
+      <article class="agentctx-context-node agentctx-context-node--coding card border rounded-3 shadow-sm p-4 h-100">
+        <i class="bi bi-code-slash text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-content2Title">Coding style</h3>
+        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-content2Desc">
+          Coding styles, naming conventions, and review expectations
+        </p>
+      </article>
+
+      <div class="agentctx-context-hub">
+        <div class="agentctx-context-node agentctx-context-node--hub card border rounded-3 shadow-sm p-4 text-center">
+          <i class="bi bi-share text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-contentHubTitle">AgentCTX</h3>
+          <p class="small text-muted mb-0 mt-2" i18n="@@featurePortalAgentctx-contentHubCaption">
+            One context, every assistant
+          </p>
+        </div>
+      </div>
+
+      <article class="agentctx-context-node agentctx-context-node--security card border rounded-3 shadow-sm p-4 h-100">
+        <i class="bi bi-shield-lock text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-content3Title">Security</h3>
+        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-content3Desc">
+          Security considerations, secrets handling, and what must never be changed automatically
+        </p>
+      </article>
+
+      <article class="agentctx-context-node agentctx-context-node--doc card border rounded-3 shadow-sm p-4 h-100">
+        <i class="bi bi-journal-text text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-content4Title">Documentation</h3>
+        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-content4Desc">
+          Links to documentation, ADRs, and design docs
+        </p>
+      </article>
+
+      <article class="agentctx-context-benefit agentctx-context-benefit--3 card border rounded-3 shadow-sm p-4 h-100">
+        <i class="bi bi-git text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-benefit3Title">Version control friendly</h3>
+        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-benefit3Desc">
+          .agenstra/ lives in your repository with pull requests, reviews, and history.
+        </p>
+      </article>
+
+      <article class="agentctx-context-benefit agentctx-context-benefit--4 card border rounded-3 shadow-sm p-4 h-100">
+        <i class="bi bi-arrow-left-right text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-benefit4Title">Tool flexibility</h3>
+        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-benefit4Desc">
+          You can add or swap AI tools without redefining everything from scratch.
+        </p>
+      </article>
+    </div>
   </div>
 </section>
 
-<!-- Benefits - Accordion -->
-<section id="benefits" class="py-10 bg-white">
+<!-- Audience: personas + fit checklist -->
+<section id="audience" class="py-10 bg-dark text-white agentctx-audience">
   <div class="container">
-    <h2 class="h2 fw-semibold mb-5 text-center text-dark" i18n="@@featurePortalAgentctx-benefitsTitle">
-      Less drift, more alignment
-    </h2>
-    <div class="accordion accordion-flush" id="agentctxBenefitsAccordion">
-      <div class="accordion-item rounded-3 mb-3 border">
-        <h3 class="accordion-header">
-          <button
-            class="accordion-button collapsed rounded-3 agentctx-accordion-header"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#benefit1"
-            aria-expanded="false"
-            aria-controls="benefit1"
-            i18n="@@featurePortalAgentctx-benefit1Title"
-          >
-            Consistency
-          </button>
-        </h3>
-        <div id="benefit1" class="accordion-collapse collapse" data-bs-parent="#agentctxBenefitsAccordion">
-          <div class="accordion-body">
-            <p class="lh-lg mb-0" i18n="@@featurePortalAgentctx-benefit1Desc">
-              Every assistant follows the same rules and understands the same project story.
-            </p>
-          </div>
-        </div>
+    <div class="row align-items-center g-5">
+      <div class="col-lg-5">
+        <h2 class="h2 fw-semibold mb-3" i18n="@@featurePortalAgentctx-audienceTitle">
+          Built for teams that code with AI every day
+        </h2>
+        <p class="mb-4 agentctx-audience-lead" i18n="@@featurePortalAgentctx-audienceLead">
+          AgentCTX is a natural fit for everybody who:
+        </p>
+        <ul class="list-unstyled mb-0 agentctx-fit-list">
+          <li class="mb-3 d-flex align-items-start">
+            <i class="bi bi-check-circle-fill text-success me-3 flex-shrink-0" aria-hidden="true"></i>
+            <span i18n="@@featurePortalAgentctx-audienceItem1"
+              >Uses multiple AI coding tools across different editors</span
+            >
+          </li>
+          <li class="mb-3 d-flex align-items-start">
+            <i class="bi bi-check-circle-fill text-success me-3 flex-shrink-0" aria-hidden="true"></i>
+            <span i18n="@@featurePortalAgentctx-audienceItem2"
+              >Works in monorepos or large codebases with many contributors</span
+            >
+          </li>
+          <li class="mb-3 d-flex align-items-start">
+            <i class="bi bi-check-circle-fill text-success me-3 flex-shrink-0" aria-hidden="true"></i>
+            <span i18n="@@featurePortalAgentctx-audienceItem3"
+              >Cares about consistent standards and secure defaults</span
+            >
+          </li>
+          <li class="d-flex align-items-start">
+            <i class="bi bi-check-circle-fill text-success me-3 flex-shrink-0" aria-hidden="true"></i>
+            <span i18n="@@featurePortalAgentctx-audienceItem4"
+              >Wants AI to feel like part of the engineering system, not a personal side tool</span
+            >
+          </li>
+        </ul>
       </div>
-      <div class="accordion-item rounded-3 mb-3 border">
-        <h3 class="accordion-header">
-          <button
-            class="accordion-button collapsed rounded-3 agentctx-accordion-header"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#benefit2"
-            aria-expanded="false"
-            aria-controls="benefit2"
-            i18n="@@featurePortalAgentctx-benefit2Title"
-          >
-            Faster onboarding
-          </button>
-        </h3>
-        <div id="benefit2" class="accordion-collapse collapse" data-bs-parent="#agentctxBenefitsAccordion">
-          <div class="accordion-body">
-            <p class="lh-lg mb-0" i18n="@@featurePortalAgentctx-benefit2Desc">
-              New team members get clear guidance through the context file and consistent behavior from their tools.
-            </p>
+      <div class="col-lg-6 offset-lg-1">
+        <div class="row row-cols-2 g-3 mb-4">
+          <div class="col">
+            <article
+              class="card border-light border-opacity-10 rounded-3 p-4 h-100 home-governance-card d-flex flex-row gap-3 align-items-center"
+            >
+              <span class="agentctx-persona-dot rounded-circle d-none d-md-inline-block" aria-hidden="true"></span>
+              <div>
+                <h3 class="h6 fw-semibold mb-1 text-white" i18n="@@featurePortalAgentctx-persona1">
+                  Platform engineers
+                </h3>
+                <p class="small mb-0 home-governance-card-text" i18n="@@featurePortalAgentctx-persona1Desc">
+                  Standardize tool config across repos
+                </p>
+              </div>
+            </article>
           </div>
-        </div>
-      </div>
-      <div class="accordion-item rounded-3 mb-3 border">
-        <h3 class="accordion-header">
-          <button
-            class="accordion-button collapsed rounded-3 agentctx-accordion-header"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#benefit3"
-            aria-expanded="false"
-            aria-controls="benefit3"
-            i18n="@@featurePortalAgentctx-benefit3Title"
-          >
-            Version control friendly
-          </button>
-        </h3>
-        <div id="benefit3" class="accordion-collapse collapse" data-bs-parent="#agentctxBenefitsAccordion">
-          <div class="accordion-body">
-            <p class="lh-lg mb-0" i18n="@@featurePortalAgentctx-benefit3Desc">
-              Context lives in your repository with pull requests, reviews, and history.
-            </p>
+          <div class="col">
+            <article
+              class="card border-light border-opacity-10 rounded-3 p-4 h-100 home-governance-card d-flex flex-row gap-3 align-items-center"
+            >
+              <span class="agentctx-persona-dot rounded-circle d-none d-md-inline-block" aria-hidden="true"></span>
+              <div>
+                <h3 class="h6 fw-semibold mb-1 text-white" i18n="@@featurePortalAgentctx-persona2">Dev leads</h3>
+                <p class="small mb-0 home-governance-card-text" i18n="@@featurePortalAgentctx-persona2Desc">
+                  Keep teams aligned on standards
+                </p>
+              </div>
+            </article>
           </div>
-        </div>
-      </div>
-      <div class="accordion-item rounded-3 mb-3 border">
-        <h3 class="accordion-header">
-          <button
-            class="accordion-button collapsed rounded-3 agentctx-accordion-header"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#benefit4"
-            aria-expanded="false"
-            aria-controls="benefit4"
-            i18n="@@featurePortalAgentctx-benefit4Title"
-          >
-            Tool flexibility
-          </button>
-        </h3>
-        <div id="benefit4" class="accordion-collapse collapse" data-bs-parent="#agentctxBenefitsAccordion">
-          <div class="accordion-body">
-            <p class="lh-lg mb-0" i18n="@@featurePortalAgentctx-benefit4Desc">
-              You can add or swap AI tools without redefining everything from scratch.
-            </p>
+          <div class="col">
+            <article
+              class="card border-light border-opacity-10 rounded-3 p-4 h-100 home-governance-card d-flex flex-row gap-3 align-items-center"
+            >
+              <span class="agentctx-persona-dot rounded-circle d-none d-md-inline-block" aria-hidden="true"></span>
+              <div>
+                <h3 class="h6 fw-semibold mb-1 text-white" i18n="@@featurePortalAgentctx-persona3">
+                  Security-conscious teams
+                </h3>
+                <p class="small mb-0 home-governance-card-text" i18n="@@featurePortalAgentctx-persona3Desc">
+                  Govern what AI can see and do
+                </p>
+              </div>
+            </article>
+          </div>
+          <div class="col">
+            <article
+              class="card border-light border-opacity-10 rounded-3 p-4 h-100 home-governance-card d-flex flex-row gap-3 align-items-center"
+            >
+              <span class="agentctx-persona-dot rounded-circle d-none d-md-inline-block" aria-hidden="true"></span>
+              <div>
+                <h3 class="h6 fw-semibold mb-1 text-white" i18n="@@featurePortalAgentctx-persona4">
+                  Open source maintainers
+                </h3>
+                <p class="small mb-0 home-governance-card-text" i18n="@@featurePortalAgentctx-persona4Desc">
+                  One context for all contributors
+                </p>
+              </div>
+            </article>
           </div>
         </div>
       </div>
     </div>
-    <p class="text-center text-muted mt-5" i18n="@@featurePortalAgentctx-benefitsClosing">
-      AgentCTX turns context from an afterthought into an asset.
-    </p>
   </div>
 </section>
 
-<!-- Who AgentCTX is for -->
-<section id="audience" class="py-10 bg-body-tertiary">
-  <div class="container">
-    <h2 class="h2 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalAgentctx-audienceTitle">
-      Built for teams that code with AI every day
-    </h2>
-    <p class="lead text-center text-muted mb-5" i18n="@@featurePortalAgentctx-audienceLead">
-      AgentCTX is a natural fit for software development teams!
-    </p>
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-5">
-      <div class="col">
-        <div class="card border-0 shadow-sm rounded-3 p-4 text-center h-100 card-hover">
-          <h3 class="h6 fw-semibold mt-0 mb-2" i18n="@@featurePortalAgentctx-persona1">Platform engineers</h3>
-          <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-persona1Desc">
-            Standardize tool config across repos
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm rounded-3 p-4 text-center h-100 card-hover">
-          <h3 class="h6 fw-semibold mt-0 mb-2" i18n="@@featurePortalAgentctx-persona2">Dev leads</h3>
-          <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-persona2Desc">
-            Keep teams aligned on standards
-          </p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm rounded-3 p-4 text-center h-100 card-hover">
-          <h3 class="h6 fw-semibold mt-0 mb-2" i18n="@@featurePortalAgentctx-persona3">Security-conscious teams</h3>
-          <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-persona3Desc">Govern what AI can see and do</p>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card border-0 shadow-sm rounded-3 p-4 text-center h-100 card-hover">
-          <h3 class="h6 fw-semibold mt-0 mb-2" i18n="@@featurePortalAgentctx-persona4">Open source maintainers</h3>
-          <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-persona4Desc">
-            One context for all contributors
-          </p>
-        </div>
-      </div>
-    </div>
-    <ul class="list-unstyled mb-5">
-      <li class="mb-3 d-flex align-items-start justify-content-center">
-        <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-        <span class="lh-lg" i18n="@@featurePortalAgentctx-audienceItem1">
-          Uses multiple AI coding tools across different editors
-        </span>
-      </li>
-      <li class="mb-3 d-flex align-items-start justify-content-center">
-        <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-        <span class="lh-lg" i18n="@@featurePortalAgentctx-audienceItem2">
-          Works in monorepos or large codebases with many contributors
-        </span>
-      </li>
-      <li class="mb-3 d-flex align-items-start justify-content-center">
-        <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-        <span class="lh-lg" i18n="@@featurePortalAgentctx-audienceItem3">
-          Cares about consistent standards and secure defaults
-        </span>
-      </li>
-      <li class="mb-0 d-flex align-items-start justify-content-center">
-        <i class="bi bi-check-circle-fill text-success me-3 mt-1 fs-6" aria-hidden="true"></i>
-        <span class="lh-lg" i18n="@@featurePortalAgentctx-audienceItem4">
-          Wants AI to feel like part of the engineering system, not a personal side tool
-        </span>
-      </li>
-    </ul>
-  </div>
-</section>
-
-<!-- Final CTA Section -->
-<section id="cta" class="py-10 bg-dark">
+<!-- CTA -->
+<section id="cta" class="pb-10 bg-dark">
   <div class="container">
     <div class="row">
       <div class="col-12">
         <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
           <h2 class="h2 fw-semibold mb-4" i18n="@@featurePortalAgentctx-ctaTitle">Add AgentCTX to your next sprint</h2>
           <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featurePortalAgentctx-ctaLead">
-            Set up AgentCTX in a single project first. Define a minimal context file that covers architecture,
-            standards, and how to run the app. Generate configs for your existing tools, gather feedback from the team,
-            and evolve the context over time.
+            Start with one repository. Define enough context that assistants understand your architecture, standards,
+            and how you ship. Generate configs for the tools your team already uses, gather feedback, and expand when
+            the approach sticks.
           </p>
           <p class="mb-5 mx-auto cta-sub-light" i18n="@@featurePortalAgentctx-ctaSub">
             Once your team feels the difference, you can roll out AgentCTX across repositories to standardize how AI

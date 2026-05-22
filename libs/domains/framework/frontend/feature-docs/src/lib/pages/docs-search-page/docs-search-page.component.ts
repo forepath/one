@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { filter, map } from 'rxjs';
 
@@ -18,6 +19,8 @@ export class DocsSearchPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly searchService = inject(DocsSearchService);
+  private readonly titleService = inject(Title);
+  private readonly metaService = inject(Meta);
 
   /**
    * Search query from route
@@ -41,6 +44,16 @@ export class DocsSearchPageComponent implements OnInit {
   readonly loading = signal<boolean>(true);
 
   ngOnInit(): void {
+    this.titleService.setTitle($localize`:@@featureDocsSearchPage-metaTitle:Search Documentation :: Agenstra`);
+    this.metaService.addTags([
+      {
+        name: 'description',
+        content: $localize`:@@featureDocsSearchPage-metaDescription:Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.`,
+      },
+      { name: 'robots', content: 'noindex, follow' },
+      { name: 'canonical', content: 'https://docs.agenstra.com/search' },
+    ]);
+
     const query = this.searchQuery();
 
     if (query) {

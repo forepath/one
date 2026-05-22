@@ -18,7 +18,19 @@ export const selectCheapestServicePlanOfferingLoading = createSelector(
   (state) => state.loadingCheapest,
 );
 
-export const selectServicePlansError = createSelector(selectServicePlansState, (state) => state.error);
+export const selectServicePlansLoaded = createSelector(selectServicePlansState, (state) => state.plansLoaded);
+
+export const selectCheapestServicePlanOfferingLoaded = createSelector(
+  selectServicePlansState,
+  (state) => state.cheapestLoaded,
+);
+
+export const selectServicePlansError = createSelector(selectServicePlansState, (state) => state.plansError);
+
+export const selectCheapestServicePlanOfferingError = createSelector(
+  selectServicePlansState,
+  (state) => state.cheapestError,
+);
 
 export const selectServicePlansCount = createSelector(selectServicePlansEntities, (entities) => entities.length);
 

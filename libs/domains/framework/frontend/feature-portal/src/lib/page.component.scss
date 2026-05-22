@@ -97,6 +97,41 @@ section {
   font-size: 2.5rem;
 }
 
+.letter-spacing-wide {
+  letter-spacing: 0.08em;
+}
+
+.section-lead {
+  max-width: 700px;
+}
+
+.portal-page-tabs {
+  .nav-link {
+    font-weight: 500;
+    color: var(--bs-secondary);
+    transition: all 0.2s ease;
+
+    &:hover:not(.active) {
+      background-color: rgba(139, 92, 246, 0.08);
+      color: var(--bs-primary);
+    }
+
+    &.active {
+      box-shadow: var(--bs-box-shadow-sm);
+      color: var(--bs-white);
+    }
+  }
+}
+
+.home-governance-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+.home-governance-card-text {
+  color: rgba(255, 255, 255, 0.72);
+}
+
 .problem-box {
   background: rgba(255, 84, 89, 0.05);
 }
@@ -104,27 +139,6 @@ section {
 .problem-icon {
   color: var(--bs-danger);
   font-size: 1.25rem;
-}
-
-// Card Styles
-// Standard card with hover lift effect
-.card-hover {
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12) !important;
-  }
-}
-
-// Subtle card hover (smaller lift)
-.card-hover-subtle {
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.12) !important;
-  }
 }
 
 // Card icon container
@@ -135,29 +149,20 @@ section {
   flex-shrink: 0;
 }
 
-// Capability cards with gradient and left border
-.card-capability {
-  border-left: 4px solid transparent;
-}
-
 .card-capability-primary {
   background: linear-gradient(to right, rgba(139, 92, 246, 0.05) 0%, transparent 100%);
-  border-left-color: var(--bs-primary) !important;
 }
 
 .card-capability-success {
   background: linear-gradient(to right, rgba(33, 128, 141, 0.05) 0%, transparent 100%);
-  border-left-color: var(--bs-success) !important;
 }
 
 .card-capability-warning {
   background: linear-gradient(to right, rgba(230, 129, 97, 0.05) 0%, transparent 100%);
-  border-left-color: var(--bs-warning) !important;
 }
 
 .card-capability-secondary {
   background: linear-gradient(to right, rgba(98, 108, 113, 0.05) 0%, transparent 100%);
-  border-left-color: var(--bs-secondary) !important;
 }
 
 // Integration card with dashed border
@@ -200,4 +205,9 @@ section {
   i {
     font-size: 1.25rem;
   }
+}
+
+.bento-badge {
+  position: relative;
+  z-index: 1;
 }

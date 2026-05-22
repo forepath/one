@@ -4,8 +4,8 @@ import { COMPARISON_TECHNOLOGY_FIT_LEAD } from '../shared/misc/comparison-techno
 export const TABNINE_ENTERPRISE_COMPARISON_PAGE: ComparisonPageConfig = {
   slug: 'tabnine-enterprise',
   competitorDisplayName: 'Tabnine Enterprise',
-  metaTitle: $localize`:@@featurePortalComparison-tabnine-metaTitle:Tabnine Enterprise vs. Agenstra. AI agent platform comparison`,
-  metaDescription: $localize`:@@featurePortalComparison-tabnine-metaDescription:Compare self-hosted Tabnine Enterprise with Agenstra’s agent control plane and browser IDE.`,
+  metaTitle: $localize`:@@featurePortalComparison-tabnine-metaTitle:Tabnine vs Agenstra :: Agenstra`,
+  metaDescription: $localize`:@@featurePortalComparison-tabnine-metaDescription:Compare self-hosted Tabnine Enterprise with Agenstra’s agent control plane, browser IDE, workspace operations, tickets, and governance for coding agents.`,
   canonicalUrl: 'https://agenstra.com/compare/tabnine-enterprise',
   heroSubtitle: $localize`:@@featurePortalComparison-tabnine-heroSubtitle:Private assistant clusters versus containerized agent fleets with tickets and deployments.`,
   overviewCompetitorLead: $localize`:@@featurePortalComparison-tabnine-overviewCompetitor:Tabnine Enterprise keeps AI coding assistance inside your VPC or data center so completions and chat stay on infrastructure you operate. It suits teams whose priority is private assistant coverage in familiar editors rather than a full agent operations layer for remote workspaces.`,
