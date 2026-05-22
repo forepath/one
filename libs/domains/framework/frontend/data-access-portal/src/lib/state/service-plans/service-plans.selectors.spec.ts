@@ -3,6 +3,7 @@ import type { PublicServicePlanOffering } from '../../types/portal-service-plans
 import { initialServicePlansState, type ServicePlansState } from './service-plans.reducer';
 import {
   selectCheapestServicePlanOffering,
+  selectCheapestServicePlanOfferingError,
   selectCheapestServicePlanOfferingLoaded,
   selectCheapestServicePlanOfferingLoading,
   selectHasServicePlans,
@@ -90,6 +91,12 @@ describe('Portal Service Plans Selectors', () => {
     const state = createState({ plansError: 'e' });
 
     expect(selectServicePlansError({ servicePlans: state } as never)).toBe('e');
+  });
+
+  it('selectCheapestServicePlanOfferingError should select cheapestError', () => {
+    const state = createState({ cheapestError: 'cheapest failed' });
+
+    expect(selectCheapestServicePlanOfferingError({ servicePlans: state } as never)).toBe('cheapest failed');
   });
 
   it('selectServicePlansCount should count entities', () => {
