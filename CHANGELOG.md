@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.0](https://github.com/forepath/agenstra/compare/v2.2.1...v2.3.0) (2026-05-22)
+
+
+### Features
+
+* landingpage overhall ([#374](https://github.com/forepath/agenstra/issues/374)) ([c5c4596](https://github.com/forepath/agenstra/commit/c5c4596435783bedf05db0c3fcf7b1ca435af5ab))
+
 ## [2.2.1](https://github.com/forepath/agenstra/compare/v2.2.0...v2.2.1) (2026-05-20)
 
 
