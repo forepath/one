@@ -36,8 +36,8 @@ export const environment: Environment = {
   },
   cookieConsent: {
     domain: '.agenstra.com',
-    privacyPolicyUrl: 'https://www.agenstra.com/legal/privacy',
-    termsUrl: 'https://www.agenstra.com/legal/terms',
+    privacyPolicyUrl: 'https://agenstra.com/legal/privacy',
+    termsUrl: 'https://agenstra.com/legal/terms',
   },
   socialPreview: {
     imageUrl: 'http://localhost:4300/assets/images/og-preview.png',
