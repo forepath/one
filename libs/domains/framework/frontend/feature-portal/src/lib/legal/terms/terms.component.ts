@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
+import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags } from '@forepath/framework/frontend/util-meta';
 
 @Component({
   selector: 'framework-portal-legal-terms',
@@ -14,21 +16,31 @@ import { RouterModule } from '@angular/router';
 export class PortalLegalTermsComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
+  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly locale = inject(LOCALE_ID);
+  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
-    this.titleService.setTitle($localize`:@@featurePortalTerms-metaTitle:Terms of Service :: Agenstra`);
-    this.metaService.addTags([
-      {
-        name: 'description',
-        content: $localize`:@@featurePortalTerms-metaDescription:Terms governing use of the Agenstra platform, websites, and related services. Accounts, licensing, acceptable use, liability, and contact information.`,
-      },
-      {
-        name: 'keywords',
-        content: $localize`:@@featurePortalTerms-metaKeywords:Agenstra, terms of service, platform, distributed AI agent infrastructure`,
-      },
-      { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
-      { name: 'robots', content: 'index, follow' },
-      { name: 'canonical', content: 'https://agenstra.com/legal/terms' },
-    ]);
+    const metaTitle = $localize`:@@featurePortalTerms-metaTitle:Terms of Service :: Agenstra`;
+    const metaDescription = $localize`:@@featurePortalTerms-metaDescription:Terms governing use of the Agenstra platform, websites, and related services. Accounts, licensing, acceptable use, liability, and contact information.`;
+
+    this.titleService.setTitle(metaTitle);
+    this.destroyRef.onDestroy(
+      addPageMetaTags(
+        this.metaService,
+        buildPageMetaTags({
+          description: metaDescription,
+          keywords: $localize`:@@featurePortalTerms-metaKeywords:Agenstra, terms of service, platform, distributed AI agent infrastructure`,
+          author: 'IPvX UG (haftungsbeschränkt)',
+          robots: 'index, follow',
+          canonicalUrl: 'https://agenstra.com/legal/terms',
+          socialTitle: metaTitle,
+          socialDescription: metaDescription,
+          socialImageUrl: this.environment.socialPreview.imageUrl,
+          localeId: this.locale,
+          localizeCanonicalUrl: this.environment.production,
+        }),
+      ),
+    );
   }
 }

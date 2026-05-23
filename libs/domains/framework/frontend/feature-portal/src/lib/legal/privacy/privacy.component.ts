@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
+import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags } from '@forepath/framework/frontend/util-meta';
 
 @Component({
   selector: 'framework-portal-legal-privacy',
@@ -14,21 +16,31 @@ import { RouterModule } from '@angular/router';
 export class PortalLegalPrivacyComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
+  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly locale = inject(LOCALE_ID);
+  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
-    this.titleService.setTitle($localize`:@@featurePortalPrivacy-metaTitle:Privacy Policy :: Agenstra`);
-    this.metaService.addTags([
-      {
-        name: 'description',
-        content: $localize`:@@featurePortalPrivacy-metaDescription:How Agenstra and IPvX process personal data when you use our platform, websites, and support. Cookies, retention, your rights, and how to contact us.`,
-      },
-      {
-        name: 'keywords',
-        content: $localize`:@@featurePortalPrivacy-metaKeywords:Agenstra, privacy policy, platform, distributed AI agent infrastructure`,
-      },
-      { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
-      { name: 'robots', content: 'index, follow' },
-      { name: 'canonical', content: 'https://agenstra.com/legal/privacy' },
-    ]);
+    const metaTitle = $localize`:@@featurePortalPrivacy-metaTitle:Privacy Policy :: Agenstra`;
+    const metaDescription = $localize`:@@featurePortalPrivacy-metaDescription:How Agenstra and IPvX process personal data when you use our platform, websites, and support. Cookies, retention, your rights, and how to contact us.`;
+
+    this.titleService.setTitle(metaTitle);
+    this.destroyRef.onDestroy(
+      addPageMetaTags(
+        this.metaService,
+        buildPageMetaTags({
+          description: metaDescription,
+          keywords: $localize`:@@featurePortalPrivacy-metaKeywords:Agenstra, privacy policy, platform, distributed AI agent infrastructure`,
+          author: 'IPvX UG (haftungsbeschränkt)',
+          robots: 'index, follow',
+          canonicalUrl: 'https://agenstra.com/legal/privacy',
+          socialTitle: metaTitle,
+          socialDescription: metaDescription,
+          socialImageUrl: this.environment.socialPreview.imageUrl,
+          localeId: this.locale,
+          localizeCanonicalUrl: this.environment.production,
+        }),
+      ),
+    );
   }
 }

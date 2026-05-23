@@ -3,6 +3,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   HostListener,
   inject,
@@ -17,6 +18,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ServicePlansFacade } from '@forepath/framework/frontend/data-access-portal';
 import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags } from '@forepath/framework/frontend/util-meta';
 
 @Component({
   selector: 'framework-portal-pricing',
@@ -33,6 +35,7 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
   private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly locale = inject(LOCALE_ID);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly destroyRef = inject(DestroyRef);
 
   @ViewChild('pricingCarousel') pricingCarousel!: ElementRef<HTMLDivElement>;
   @ViewChild('enterpriseCard') enterpriseCard!: ElementRef<HTMLDivElement>;
@@ -57,22 +60,28 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.servicePlansFacade.loadCheapestServicePlanOffering();
-    this.titleService.setTitle(
-      $localize`:@@featurePortalPricing-metaTitle:Licensing from open source to enterprise :: Agenstra`,
+    const metaTitle = $localize`:@@featurePortalPricing-metaTitle:Licensing from open source to enterprise :: Agenstra`;
+    const metaDescription = $localize`:@@featurePortalPricing-metaDescription:Compare open-source, team, and enterprise Agenstra plans. Flexible licensing for self-hosted or cloud deployments, with governance and scale when you need it.`;
+
+    this.titleService.setTitle(metaTitle);
+    this.destroyRef.onDestroy(
+      addPageMetaTags(
+        this.metaService,
+        buildPageMetaTags({
+          description: metaDescription,
+          keywords:
+            'Agenstra pricing, AI agent platform pricing, agent management pricing, self-hosted AI platform, enterprise AI agent pricing',
+          author: 'IPvX UG (haftungsbeschränkt)',
+          robots: 'index, follow',
+          canonicalUrl: 'https://agenstra.com/pricing',
+          socialTitle: metaTitle,
+          socialDescription: metaDescription,
+          socialImageUrl: this.environment.socialPreview.imageUrl,
+          localeId: this.locale,
+          localizeCanonicalUrl: this.environment.production,
+        }),
+      ),
     );
-    this.metaService.addTags([
-      {
-        name: 'description',
-        content: $localize`:@@featurePortalPricing-metaDescription:Compare open-source, team, and enterprise Agenstra plans. Flexible licensing for self-hosted or cloud deployments, with governance and scale when you need it.`,
-      },
-      {
-        name: 'keywords',
-        content:
-          'Agenstra pricing, AI agent platform pricing, agent management pricing, self-hosted AI platform, enterprise AI agent pricing',
-      },
-      { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
-      { name: 'robots', content: 'index, follow' },
-    ]);
   }
 
   ngAfterViewInit(): void {

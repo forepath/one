@@ -1,11 +1,21 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, LOCALE_ID, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  LOCALE_ID,
+  OnInit,
+  PLATFORM_ID,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import type { PublicServicePlanOffering } from '@forepath/framework/frontend/data-access-portal';
 import { ServicePlansFacade } from '@forepath/framework/frontend/data-access-portal';
 import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags } from '@forepath/framework/frontend/util-meta';
 
 @Component({
   selector: 'framework-portal-home',
@@ -22,6 +32,7 @@ export class PortalHomeComponent implements OnInit {
   private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly environment = inject<Environment>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
+  private readonly destroyRef = inject(DestroyRef);
 
   activeSlide = signal<number>(1);
   autoplayInterval = this.initializeAutoplayInterval();
@@ -44,22 +55,27 @@ export class PortalHomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.servicePlansFacade.loadCheapestServicePlanOffering();
-    this.titleService.setTitle(
-      $localize`:@@featurePortalHome-metaTitle:One place to run, govern, and ship with agents :: Agenstra`,
+    const metaTitle = $localize`:@@featurePortalHome-metaTitle:One place to run, govern, and ship with agents :: Agenstra`;
+    const metaDescription = $localize`:@@featurePortalHome-metaDescription:Run and govern coding agents at enterprise scale: workspaces, ticket automation, in-browser coding, releases, policy, and audit trails. Self-host Agenstra or run on Agenstra Cloud.`;
+
+    this.titleService.setTitle(metaTitle);
+    this.destroyRef.onDestroy(
+      addPageMetaTags(
+        this.metaService,
+        buildPageMetaTags({
+          description: metaDescription,
+          keywords: $localize`:@@featurePortalHome-metaKeywords:Agenstra, enterprise coding agents, AI agent governance, ticket automation, agent audit, self-hosted AI platform, software delivery, team knowledge, Cursor OpenCode integration`,
+          author: 'IPvX UG (haftungsbeschränkt)',
+          robots: 'index, follow',
+          canonicalUrl: 'https://agenstra.com',
+          socialTitle: metaTitle,
+          socialDescription: metaDescription,
+          socialImageUrl: this.environment.socialPreview.imageUrl,
+          localeId: this.locale,
+          localizeCanonicalUrl: this.environment.production,
+        }),
+      ),
     );
-    this.metaService.addTags([
-      {
-        name: 'description',
-        content: $localize`:@@featurePortalHome-metaDescription:Run and govern coding agents at enterprise scale: workspaces, ticket automation, in-browser coding, releases, policy, and audit trails. Self-host Agenstra or run on Agenstra Cloud.`,
-      },
-      {
-        name: 'keywords',
-        content: $localize`:@@featurePortalHome-metaKeywords:Agenstra, enterprise coding agents, AI agent governance, ticket automation, agent audit, self-hosted AI platform, software delivery, team knowledge, Cursor OpenCode integration`,
-      },
-      { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
-      { name: 'robots', content: 'index, follow' },
-      { name: 'canonical', content: 'https://agenstra.com' },
-    ]);
   }
 
   scrollToIntent(event: MouseEvent) {

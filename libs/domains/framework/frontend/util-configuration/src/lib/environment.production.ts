@@ -39,4 +39,7 @@ export const environment: Environment = {
     privacyPolicyUrl: 'https://www.agenstra.com/legal/privacy',
     termsUrl: 'https://www.agenstra.com/legal/terms',
   },
+  socialPreview: {
+    imageUrl: 'https://www.agenstra.com/assets/images/og-preview.png',
+  },
 };

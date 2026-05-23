@@ -3,6 +3,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   inject,
   LOCALE_ID,
@@ -16,6 +17,7 @@ import { RouterModule } from '@angular/router';
 import type { PublicServicePlanOffering } from '@forepath/framework/frontend/data-access-portal';
 import { ServicePlansFacade } from '@forepath/framework/frontend/data-access-portal';
 import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags } from '@forepath/framework/frontend/util-meta';
 
 export interface CloudInfrastructureProvider {
   id: string;
@@ -40,6 +42,7 @@ export class PortalCloudComponent implements OnInit, AfterViewInit {
   private readonly environment = inject<Environment>(ENVIRONMENT);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly locale = inject(LOCALE_ID);
+  private readonly destroyRef = inject(DestroyRef);
 
   @ViewChild('plansCarousel') plansCarousel!: ElementRef<HTMLDivElement>;
 
@@ -100,22 +103,27 @@ export class PortalCloudComponent implements OnInit, AfterViewInit {
   readonly planSkeletonPlaceholders = [1, 2, 3] as const;
 
   ngOnInit(): void {
-    this.titleService.setTitle(
-      $localize`:@@featurePortalCloud-metaTitle:Fully managed cloud, zero platform ops :: Agenstra`,
+    const metaTitle = $localize`:@@featurePortalCloud-metaTitle:Fully managed cloud, zero platform ops :: Agenstra`;
+    const metaDescription = $localize`:@@featurePortalCloud-metaDescription:Fully managed Agenstra control plane for distributed coding agents. Deploy, monitor, and govern agents across tools and environments without running your own ops stack.`;
+
+    this.titleService.setTitle(metaTitle);
+    this.destroyRef.onDestroy(
+      addPageMetaTags(
+        this.metaService,
+        buildPageMetaTags({
+          description: metaDescription,
+          keywords: $localize`:@@featurePortalCloud-metaKeywords:Agenstra Cloud, Agenstra, AI agent platform, AI control plane, AI governance, AI observability, managed SaaS, agentic systems`,
+          author: 'IPvX UG (haftungsbeschränkt)',
+          robots: 'index, follow',
+          canonicalUrl: 'https://agenstra.com/cloud',
+          socialTitle: metaTitle,
+          socialDescription: metaDescription,
+          socialImageUrl: this.environment.socialPreview.imageUrl,
+          localeId: this.locale,
+          localizeCanonicalUrl: this.environment.production,
+        }),
+      ),
     );
-    this.metaService.addTags([
-      {
-        name: 'description',
-        content: $localize`:@@featurePortalCloud-metaDescription:Fully managed Agenstra control plane for distributed coding agents. Deploy, monitor, and govern agents across tools and environments without running your own ops stack.`,
-      },
-      {
-        name: 'keywords',
-        content: $localize`:@@featurePortalCloud-metaKeywords:Agenstra Cloud, Agenstra, AI agent platform, AI control plane, AI governance, AI observability, managed SaaS, agentic systems`,
-      },
-      { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
-      { name: 'robots', content: 'index, follow' },
-      { name: 'canonical', content: 'https://agenstra.com/cloud' },
-    ]);
 
     this.servicePlansFacade.loadCheapestServicePlanOffering();
     this.servicePlansFacade.loadServicePlans();

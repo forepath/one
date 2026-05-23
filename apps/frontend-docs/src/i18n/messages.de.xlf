@@ -66,14 +66,6 @@
         <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
         <target>Agenstra, KI-Agents, Agent-Verwaltung, verteilte Systeme, KI-Agent-Infrastruktur, Agent-Plattform, KI-Agent-Konsole, Container-Verwaltung, WebSocket-Agents, Docker-Agents</target>
       </trans-unit>
-      <trans-unit id="featureDocsSearchPage-metaTitle" datatype="html">
-        <source>Search Documentation :: Agenstra</source>
-        <target>Dokumentation durchsuchen :: Agenstra</target>
-      </trans-unit>
-      <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
-        <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
-        <target>Durchsuchen Sie die Agenstra-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Agent-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
-      </trans-unit>
       <trans-unit id="featureDocsSearchPage-title" datatype="html">
         <source>Search Documentation</source>
         <target>Dokumentation durchsuchen</target>
@@ -89,6 +81,14 @@
       <trans-unit id="featureDocsSearchPage-enterQueryHint" datatype="html">
         <source>Enter a search query above to find documentation.</source>
         <target>Geben Sie oben eine Suchanfrage ein, um die Dokumentation zu durchsuchen.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaTitle" datatype="html">
+        <source>Search Documentation :: Agenstra</source>
+        <target>Dokumentation durchsuchen :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
+        <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
+        <target>Durchsuchen Sie die Agenstra-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Agent-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
       </trans-unit>
       <trans-unit id="featureDocsSearchPage-foundOneResult" datatype="html">
         <source>Found <x id="PH" equiv-text="count"/> result for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>

@@ -1,7 +1,27 @@
-<?xml version='1.0' encoding='utf-8'?>
-<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template" target-language="de">
     <body>
+      <trans-unit id="featureContainer-overviewTitle" datatype="html">
+        <source>Overview :: Agenstra</source>
+        <target>Übersicht :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-subscriptionsTitle" datatype="html">
+        <source>Plans :: Agenstra</source>
+        <target>Pläne :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-invoicesTitle" datatype="html">
+        <source>Invoices :: Agenstra</source>
+        <target>Rechnungen :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-serviceTypesTitle" datatype="html">
+        <source>Service Types :: Agenstra</source>
+        <target>Service-Typen :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-servicePlansTitle" datatype="html">
+        <source>Service Plans :: Agenstra</source>
+        <target>Service-Pläne :: Agenstra</target>
+      </trans-unit>
       <trans-unit id="featureBilling-subscriptionStatusEmpty" datatype="html">
         <source>Unknown</source>
         <target>Unbekannt</target>
@@ -23,7 +43,7 @@
         <target>Gekündigt</target>
       </trans-unit>
       <trans-unit id="featureBilling-subscriptionStatusUnknown" datatype="html">
-        <source>Unknown (<x id="PH" equiv-text="status" />)</source>
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
         <target>Unbekannt (<x id="PH" equiv-text="status" />)</target>
       </trans-unit>
       <trans-unit id="featureBilling-backorderStatusEmpty" datatype="html">
@@ -51,1388 +71,1634 @@
         <target>Fehlgeschlagen</target>
       </trans-unit>
       <trans-unit id="featureBilling-backorderStatusUnknown" datatype="html">
-        <source>Unknown (<x id="PH" equiv-text="status" />)</source>
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
         <target>Unbekannt (<x id="PH" equiv-text="status" />)</target>
       </trans-unit>
       <trans-unit id="featureContainer-loadingFile" datatype="html">
         <source>Loading file...</source>
         <target>Datei wird geladen...</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureContainer-brandAlt" datatype="html">
         <source>Agenstra</source>
         <target>Agenstra</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureContainer-languageSwitcherAriaLabel" datatype="html">
         <source>Select language</source>
         <target>Sprache auswählen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureContainer-toggleDarkMode" datatype="html">
         <source>Toggle dark mode</source>
         <target>Dunkelmodus ein-/ausschalten</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureContainer-logout" datatype="html">
         <source>Logout</source>
         <target>Abmelden</target>
-        </trans-unit>
-      <trans-unit id="featureContainer-overviewTitle" datatype="html">
-        <source>Overview</source>
-        <target>Übersicht</target></trans-unit>
+      </trans-unit>
       <trans-unit id="featureContainer-overview" datatype="html">
         <source>Overview</source>
-        <target>Übersicht</target></trans-unit>
-      <trans-unit id="featureContainer-subscriptionsTitle" datatype="html">
-        <source>Subscriptions</source>
-        <target>Abonnements</target></trans-unit>
+        <target>Übersicht</target>
+      </trans-unit>
       <trans-unit id="featureContainer-subscriptions" datatype="html">
         <source>Plans</source>
-        <target>Pläne</target></trans-unit>
-      <trans-unit id="featureContainer-invoicesTitle" datatype="html">
-        <source>Invoices</source>
-        <target>Rechnungen</target></trans-unit>
+        <target>Pläne</target>
+      </trans-unit>
       <trans-unit id="featureContainer-invoices" datatype="html">
         <source>Billing</source>
-        <target>Abrechnung</target></trans-unit>
-      <trans-unit id="featureContainer-serviceTypesTitle" datatype="html">
-        <source>Providers</source>
-        <target>Anbieter</target></trans-unit>
+        <target>Abrechnung</target>
+      </trans-unit>
       <trans-unit id="featureContainer-serviceTypes" datatype="html">
         <source>Providers</source>
-        <target>Anbieter</target></trans-unit>
-      <trans-unit id="featureContainer-servicePlansTitle" datatype="html">
-        <source>Plans</source>
-        <target>Pläne</target></trans-unit>
+        <target>Anbieter</target>
+      </trans-unit>
       <trans-unit id="featureContainer-servicePlans" datatype="html">
         <source>Plans</source>
-        <target>Pläne</target></trans-unit>
+        <target>Pläne</target>
+      </trans-unit>
       <trans-unit id="featureContainer-userManagementTitle" datatype="html">
         <source>User Management</source>
         <target>Benutzerverwaltung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureContainer-users" datatype="html">
         <source>Users</source>
         <target>Benutzer</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
-        <source>Role <x id="role" equiv-text="role" /></source>
+        <source>Role <x id="role" equiv-text="role"/></source>
         <target>Rolle <x id="role" equiv-text="role" /></target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureInvoices-title" datatype="html">
         <source>Billing</source>
-        <target>Abrechnung</target></trans-unit>
+        <target>Abrechnung</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-openOverdueCount" datatype="html">
         <source> Open and overdue invoices </source>
-        <target>Offene und überfällige Rechnungen</target></trans-unit>
+        <target>Offene und überfällige Rechnungen</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-openOverdueTotal" datatype="html">
         <source> Open total amount </source>
-        <target>Offener Gesamtbetrag</target></trans-unit>
+        <target>Offener Gesamtbetrag</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-nextBillingDay" datatype="html">
         <source> Your next billing day </source>
-        <target>Ihr nächster Abrechnungstag</target></trans-unit>
+        <target>Ihr nächster Abrechnungstag</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-unbilledTotal" datatype="html">
         <source>Unbilled amount</source>
-        <target>Nicht abgerechneter Betrag</target></trans-unit>
+        <target>Nicht abgerechneter Betrag</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-openOverdueList" datatype="html">
         <source>Open and overdue invoices</source>
-        <target>Offene und überfällige Rechnungen</target></trans-unit>
+        <target>Offene und überfällige Rechnungen</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-loadingOpenOverdue" datatype="html">
         <source>Loading open and overdue invoices...</source>
-        <target>Offene und überfällige Rechnungen werden geladen...</target></trans-unit>
+        <target>Offene und überfällige Rechnungen werden geladen...</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-subscription" datatype="html">
         <source>Subscription</source>
-        <target>Abonnement</target></trans-unit>
+        <target>Abonnement</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-id" datatype="html">
         <source>Invoice number</source>
-        <target>Rechnungsnummer</target></trans-unit>
+        <target>Rechnungsnummer</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-status" datatype="html">
         <source>Status</source>
-        <target>Status</target></trans-unit>
+        <target>Status</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-date" datatype="html">
         <source>Date</source>
-        <target>Datum</target></trans-unit>
+        <target>Datum</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-dueDate" datatype="html">
         <source>Due date</source>
-        <target>Fälligkeitsdatum</target></trans-unit>
+        <target>Fälligkeitsdatum</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-amount" datatype="html">
         <source>Amount</source>
-        <target>Betrag</target></trans-unit>
+        <target>Betrag</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-link" datatype="html">
         <source>Link</source>
-        <target>Link</target></trans-unit>
+        <target>Link</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-opening" datatype="html">
         <source>Opening…</source>
-        <target>Wird geöffnet…</target></trans-unit>
+        <target>Wird geöffnet…</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-openLink" datatype="html">
         <source> Open </source>
-        <target>Öffnen</target></trans-unit>
+        <target>Öffnen</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-noOpenOverdue" datatype="html">
         <source> No open or overdue invoices. </source>
-        <target>Keine offenen oder überfälligen Rechnungen.</target></trans-unit>
+        <target>Keine offenen oder überfälligen Rechnungen.</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-selectSubscription" datatype="html">
         <source>Subscription</source>
-        <target>Abonnement</target></trans-unit>
+        <target>Abonnement</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-chooseSubscription" datatype="html">
         <source>Choose a subscription</source>
-        <target>Abonnement auswählen</target></trans-unit>
+        <target>Abonnement auswählen</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-loading" datatype="html">
         <source>Loading invoices...</source>
-        <target>Rechnungen werden geladen...</target></trans-unit>
+        <target>Rechnungen werden geladen...</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-invoices" datatype="html">
         <source>Invoices</source>
-        <target>Rechnungen</target></trans-unit>
+        <target>Rechnungen</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-noInvoices" datatype="html">
         <source> No invoices for this subscription. </source>
-        <target>Keine Rechnungen für dieses Abonnement.</target></trans-unit>
+        <target>Keine Rechnungen für dieses Abonnement.</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-showingOf" datatype="html">
-        <source>Showing <x id="INTERPOLATION" equiv-text="{{ paginatedInvoices().length }}" /> of <x id="INTERPOLATION_1" equiv-text="{{ allInvoices().length }}" /></source>
-        <target>Zeige <x id="INTERPOLATION" equiv-text="{{ paginatedInvoices().length }}" /> von <x id="INTERPOLATION_1" equiv-text="{{ allInvoices().length }}" /></target></trans-unit>
+        <source>Showing <x id="INTERPOLATION" equiv-text="{{ paginatedInvoices().length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ allInvoices().length }}"/></source>
+        <target>Zeige <x id="INTERPOLATION" equiv-text="{{ paginatedInvoices().length }}" /> von <x id="INTERPOLATION_1" equiv-text="{{ allInvoices().length }}" /></target>
+      </trans-unit>
       <trans-unit id="featureInvoices-prev" datatype="html">
         <source>Previous</source>
-        <target>Zurück</target></trans-unit>
+        <target>Zurück</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-next" datatype="html">
         <source>Next</source>
-        <target>Weiter</target></trans-unit>
+        <target>Weiter</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-selectFirst" datatype="html">
         <source>Select a subscription to view invoices.</source>
-        <target>Wählen Sie ein Abonnement, um Rechnungen anzuzeigen.</target></trans-unit>
+        <target>Wählen Sie ein Abonnement, um Rechnungen anzuzeigen.</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-createInvoiceDisabledFinalized" datatype="html">
         <source>Subscription is finalized; no further invoices can be created.</source>
-        <target>Das Abonnement ist abgeschlossen; es können keine weiteren Rechnungen erstellt werden.</target></trans-unit>
+        <target>Das Abonnement ist abgeschlossen; es können keine weiteren Rechnungen erstellt werden.</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-statusDraft" datatype="html">
         <source>Draft</source>
-        <target>Entwurf</target></trans-unit>
+        <target>Entwurf</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-statusSent" datatype="html">
         <source>Sent</source>
-        <target>Versendet</target></trans-unit>
+        <target>Versendet</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-statusPartiallyPaid" datatype="html">
         <source>Partially paid</source>
-        <target>Teilweise bezahlt</target></trans-unit>
+        <target>Teilweise bezahlt</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-statusPaid" datatype="html">
         <source>Paid</source>
-        <target>Bezahlt</target></trans-unit>
+        <target>Bezahlt</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-statusCancelled" datatype="html">
         <source>Cancelled</source>
-        <target>Storniert</target></trans-unit>
+        <target>Storniert</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-statusReversed" datatype="html">
         <source>Reversed</source>
-        <target>Zurückgebucht</target></trans-unit>
+        <target>Zurückgebucht</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-statusFailed" datatype="html">
         <source>Failed</source>
-        <target>Fehlgeschlagen</target></trans-unit>
+        <target>Fehlgeschlagen</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-statusUnpaid" datatype="html">
         <source>Unpaid</source>
-        <target>Unbezahlt</target></trans-unit>
+        <target>Unbezahlt</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-statusUnknown" datatype="html">
-        <source>Unknown (<x id="PH" equiv-text="status" />)</source>
-        <target>Unbekannt ()</target></trans-unit>
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        <target>Unbekannt ()</target>
+      </trans-unit>
       <trans-unit id="featureOverview-title" datatype="html">
         <source>Overview</source>
-        <target>Übersicht</target></trans-unit>
+        <target>Übersicht</target>
+      </trans-unit>
       <trans-unit id="featureOverview-loadingSubscriptions" datatype="html">
         <source>Loading subscriptions...</source>
-        <target>Abonnements werden geladen...</target></trans-unit>
+        <target>Abonnements werden geladen...</target>
+      </trans-unit>
       <trans-unit id="featureOverview-activePlans" datatype="html">
         <source>Active plans</source>
-        <target>Aktive Pläne</target></trans-unit>
+        <target>Aktive Pläne</target>
+      </trans-unit>
       <trans-unit id="featureOverview-backorders" datatype="html">
         <source>Backorders</source>
-        <target>Rückstände</target></trans-unit>
+        <target>Rückstände</target>
+      </trans-unit>
       <trans-unit id="featureOverview-openOverdueCount" datatype="html">
         <source> Open and overdue invoices </source>
-        <target>Offene und überfällige Rechnungen</target></trans-unit>
+        <target>Offene und überfällige Rechnungen</target>
+      </trans-unit>
       <trans-unit id="featureOverview-viewInvoices" datatype="html">
         <source> View invoices </source>
-        <target>Rechnungen anzeigen</target></trans-unit>
+        <target>Rechnungen anzeigen</target>
+      </trans-unit>
       <trans-unit id="featureOverview-customerProfile" datatype="html">
         <source> Customer profile </source>
-        <target>Kundenprofil</target></trans-unit>
+        <target>Kundenprofil</target>
+      </trans-unit>
       <trans-unit id="featureOverview-loadingProfile" datatype="html">
         <source> Loading... </source>
-        <target>Wird geladen...</target></trans-unit>
+        <target>Wird geladen...</target>
+      </trans-unit>
       <trans-unit id="featureOverview-profileComplete" datatype="html">
         <source>Complete</source>
-        <target>Vollständig</target></trans-unit>
+        <target>Vollständig</target>
+      </trans-unit>
       <trans-unit id="featureOverview-profileIncomplete" datatype="html">
         <source>Incomplete</source>
-        <target>Unvollständig</target></trans-unit>
+        <target>Unvollständig</target>
+      </trans-unit>
       <trans-unit id="featureOverview-editProfile" datatype="html">
         <source> Edit profile </source>
-        <target>Profil bearbeiten</target></trans-unit>
+        <target>Profil bearbeiten</target>
+      </trans-unit>
       <trans-unit id="featureOverview-loadingServerInfo" datatype="html">
         <source>Loading server info...</source>
-        <target>Serverinformationen werden geladen...</target></trans-unit>
+        <target>Serverinformationen werden geladen...</target>
+      </trans-unit>
       <trans-unit id="featureOverview-agenstraCloudInstance" datatype="html">
         <source>Agenstra</source>
-        <target>Agenstra</target></trans-unit>
+        <target>Agenstra</target>
+      </trans-unit>
       <trans-unit id="featureOverview-agenstraManager" datatype="html">
         <source> - Manager</source>
-        <target>- Manager</target></trans-unit>
+        <target>- Manager</target>
+      </trans-unit>
       <trans-unit id="featureOverview-agenstraController" datatype="html">
         <source> - Controller</source>
-        <target>- Controller</target></trans-unit>
+        <target>- Controller</target>
+      </trans-unit>
       <trans-unit id="featureOverview-serverStart" datatype="html">
         <source>Start</source>
-        <target>Starten</target></trans-unit>
+        <target>Starten</target>
+      </trans-unit>
       <trans-unit id="featureOverview-serverStop" datatype="html">
         <source>Stop</source>
-        <target>Stoppen</target></trans-unit>
+        <target>Stoppen</target>
+      </trans-unit>
       <trans-unit id="featureOverview-serverRestart" datatype="html">
         <source>Restart</source>
-        <target>Neu starten</target></trans-unit>
+        <target>Neu starten</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-serverStatusUpdating" datatype="html">
+        <source>Server status updating…</source>
+        <target>Serverstatus wird aktualisiert…</target>
+      </trans-unit>
       <trans-unit id="featureOverview-openConsole" datatype="html">
         <source>Console</source>
-        <target>Konsole</target></trans-unit>
+        <target>Konsole</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-title" datatype="html">
         <source>Service Plans</source>
-        <target>Servicepläne</target></trans-unit>
+        <target>Servicepläne</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-list" datatype="html">
         <source>Service plans</source>
-        <target>Servicepläne</target></trans-unit>
+        <target>Servicepläne</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-add" datatype="html">
         <source> Add service plan </source>
-        <target>Serviceplan hinzufügen</target></trans-unit>
+        <target>Serviceplan hinzufügen</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-loading" datatype="html">
         <source>Loading...</source>
-        <target>Wird geladen...</target></trans-unit>
+        <target>Wird geladen...</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-name" datatype="html">
         <source>Name</source>
-        <target>Name</target></trans-unit>
+        <target>Name</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-serviceType" datatype="html">
         <source>Service type</source>
-        <target>Servicetyp</target></trans-unit>
+        <target>Servicetyp</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-billingInterval" datatype="html">
         <source>Billing interval</source>
-        <target>Abrechnungsintervall</target></trans-unit>
+        <target>Abrechnungsintervall</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-price" datatype="html">
         <source>Price</source>
-        <target>Preis</target></trans-unit>
+        <target>Preis</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-orderingHighlightsColumn" datatype="html">
         <source>Highlights</source>
-        <target>Highlights</target></trans-unit>
+        <target>Highlights</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-active" datatype="html">
         <source>Active</source>
-        <target>Aktiv</target></trans-unit>
+        <target>Aktiv</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-actions" datatype="html">
         <source>Actions</source>
-        <target>Aktionen</target></trans-unit>
+        <target>Aktionen</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-yes" datatype="html">
         <source>Yes</source>
-        <target>Ja</target></trans-unit>
+        <target>Ja</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-no" datatype="html">
         <source>No</source>
-        <target>Nein</target></trans-unit>
+        <target>Nein</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-edit" datatype="html">
         <source> Edit </source>
-        <target>Bearbeiten</target></trans-unit>
+        <target>Bearbeiten</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-delete" datatype="html">
         <source> Delete </source>
-        <target>Löschen</target></trans-unit>
+        <target>Löschen</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-empty" datatype="html">
         <source>No service plans.</source>
-        <target>Keine Servicepläne.</target></trans-unit>
+        <target>Keine Servicepläne.</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-createTitle" datatype="html">
         <source> Add service plan </source>
-        <target>Serviceplan hinzufügen</target></trans-unit>
+        <target>Serviceplan hinzufügen</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-chooseType" datatype="html">
         <source>Choose a service type</source>
-        <target>Servicetyp wählen</target></trans-unit>
+        <target>Servicetyp wählen</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-description" datatype="html">
         <source>Description</source>
-        <target>Beschreibung</target></trans-unit>
+        <target>Beschreibung</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-orderingHighlights" datatype="html">
         <source>Ordering highlights</source>
-        <target>Bestell-Highlights</target></trans-unit>
+        <target>Bestell-Highlights</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-addHighlight" datatype="html">
         <source> Add line </source>
-        <target>Zeile hinzufügen</target></trans-unit>
+        <target>Zeile hinzufügen</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-orderingHighlightsHint" datatype="html">
         <source> Optional icon key and label text for the order page (in addition to the description). </source>
-        <target>Optionales Symbol und Beschriftung für die Bestellseite (zusätzlich zur Beschreibung).</target></trans-unit>
+        <target>Optionales Symbol und Beschriftung für die Bestellseite (zusätzlich zur Beschreibung).</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-highlightIcon" datatype="html">
         <source>Icon</source>
-        <target>Symbol</target></trans-unit>
+        <target>Symbol</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-highlightText" datatype="html">
         <source>Text</source>
-        <target>Text</target></trans-unit>
+        <target>Text</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-moveHighlightUp" datatype="html">
         <source>Move up</source>
-        <target>Nach oben</target></trans-unit>
+        <target>Nach oben</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-moveHighlightDown" datatype="html">
         <source>Move down</source>
-        <target>Nach unten</target></trans-unit>
+        <target>Nach unten</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-removeHighlight" datatype="html">
         <source> Remove </source>
-        <target>Entfernen</target></trans-unit>
+        <target>Entfernen</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-billingIntervalType" datatype="html">
         <source>Interval type</source>
-        <target>Intervalltyp</target></trans-unit>
+        <target>Intervalltyp</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-billingIntervalValue" datatype="html">
         <source>Interval value</source>
-        <target>Intervallwert</target></trans-unit>
+        <target>Intervallwert</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-billingDayOfMonth" datatype="html">
         <source>Billing day of month (1–31)</source>
-        <target>Abrechnungstag im Monat (1–31)</target></trans-unit>
+        <target>Abrechnungstag im Monat (1–31)</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-minCommitmentDays" datatype="html">
         <source>Min commitment days</source>
-        <target>Mindestlaufzeit (Tage)</target></trans-unit>
+        <target>Mindestlaufzeit (Tage)</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-noticeDays" datatype="html">
         <source>Notice days</source>
-        <target>Kündigungsfrist (Tage)</target></trans-unit>
+        <target>Kündigungsfrist (Tage)</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-basePrice" datatype="html">
         <source>Base price</source>
-        <target>Grundpreis</target></trans-unit>
+        <target>Grundpreis</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-marginPercent" datatype="html">
         <source>Margin %</source>
-        <target>Marge %</target></trans-unit>
+        <target>Marge %</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-marginFixed" datatype="html">
         <source>Margin fixed</source>
-        <target>Marge fest</target></trans-unit>
+        <target>Marge fest</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-estimatedPrice" datatype="html">
         <source>Estimated price</source>
-        <target>Geschätzter Preis</target></trans-unit>
+        <target>Geschätzter Preis</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-providerConfigDefaults" datatype="html">
         <source>Provider default config</source>
-        <target>Standardkonfiguration Anbieter</target></trans-unit>
+        <target>Standardkonfiguration Anbieter</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-loadingServerTypes" datatype="html">
         <source>Loading server types...</source>
-        <target>Servertypen werden geladen...</target></trans-unit>
+        <target>Servertypen werden geladen...</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-chooseOption" datatype="html">
         <source>Choose...</source>
-        <target>Auswählen...</target></trans-unit>
+        <target>Auswählen...</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-cancelAtPeriodEnd" datatype="html">
         <source>Cancel at period end</source>
-        <target>Zum Periodenende kündigen</target></trans-unit>
+        <target>Zum Periodenende kündigen</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-close" datatype="html">
         <source> Close </source>
-        <target>Schließen</target></trans-unit>
+        <target>Schließen</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-create" datatype="html">
         <source> Create </source>
-        <target>Erstellen</target></trans-unit>
+        <target>Erstellen</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-editTitle" datatype="html">
         <source> Edit service plan </source>
-        <target>Serviceplan bearbeiten</target></trans-unit>
+        <target>Serviceplan bearbeiten</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-save" datatype="html">
         <source> Save </source>
-        <target>Speichern</target></trans-unit>
+        <target>Speichern</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-deleteTitle" datatype="html">
         <source> Delete service plan? </source>
-        <target>Serviceplan löschen?</target></trans-unit>
+        <target>Serviceplan löschen?</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-deleteConfirm" datatype="html">
-        <source> Are you sure you want to delete the service plan "<x id="INTERPOLATION" equiv-text="{{ plan.name }}" />"? </source>
-        <target> Möchten Sie den Serviceplan „<x id="INTERPOLATION" equiv-text="{{ plan.name }}" />“ wirklich löschen? </target></trans-unit>
+        <source> Are you sure you want to delete the service plan &quot;<x id="INTERPOLATION" equiv-text="{{ plan.name }}"/>&quot;? </source>
+        <target> Möchten Sie den Serviceplan „<x id="INTERPOLATION" equiv-text="{{ plan.name }}" />“ wirklich löschen? </target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-confirmDelete" datatype="html">
         <source> Delete </source>
-        <target>Löschen</target></trans-unit>
+        <target>Löschen</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-title" datatype="html">
         <source>Service Types</source>
-        <target>Servicetypen</target></trans-unit>
+        <target>Servicetypen</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-list" datatype="html">
         <source>Service types</source>
-        <target>Servicetypen</target></trans-unit>
+        <target>Servicetypen</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-add" datatype="html">
         <source> Add service type </source>
-        <target>Servicetyp hinzufügen</target></trans-unit>
+        <target>Servicetyp hinzufügen</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-loading" datatype="html">
         <source>Loading...</source>
-        <target>Wird geladen...</target></trans-unit>
+        <target>Wird geladen...</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-key" datatype="html">
         <source>Key</source>
-        <target>Schlüssel</target></trans-unit>
+        <target>Schlüssel</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-name" datatype="html">
         <source>Name</source>
-        <target>Name</target></trans-unit>
+        <target>Name</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-provider" datatype="html">
         <source>Provider</source>
-        <target>Anbieter</target></trans-unit>
+        <target>Anbieter</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-active" datatype="html">
         <source>Active</source>
-        <target>Aktiv</target></trans-unit>
+        <target>Aktiv</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-actions" datatype="html">
         <source>Actions</source>
-        <target>Aktionen</target></trans-unit>
+        <target>Aktionen</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-yes" datatype="html">
         <source>Yes</source>
-        <target>Ja</target></trans-unit>
+        <target>Ja</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-no" datatype="html">
         <source>No</source>
-        <target>Nein</target></trans-unit>
+        <target>Nein</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-edit" datatype="html">
         <source> Edit </source>
-        <target>Bearbeiten</target></trans-unit>
+        <target>Bearbeiten</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-delete" datatype="html">
         <source> Delete </source>
-        <target>Löschen</target></trans-unit>
+        <target>Löschen</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-empty" datatype="html">
         <source>No service types.</source>
-        <target>Keine Servicetypen.</target></trans-unit>
+        <target>Keine Servicetypen.</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-createTitle" datatype="html">
         <source> Add service type </source>
-        <target>Servicetyp hinzufügen</target></trans-unit>
+        <target>Servicetyp hinzufügen</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-description" datatype="html">
         <source>Description</source>
-        <target>Beschreibung</target></trans-unit>
+        <target>Beschreibung</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-loadingProviders" datatype="html">
         <source> Loading providers... </source>
-        <target>Anbieter werden geladen...</target></trans-unit>
+        <target>Anbieter werden geladen...</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-chooseProvider" datatype="html">
         <source>Choose a provider</source>
-        <target>Anbieter wählen</target></trans-unit>
+        <target>Anbieter wählen</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-providerPlaceholder" datatype="html">
         <source>e.g. hetzner</source>
-        <target>z. B. hetzner</target></trans-unit>
+        <target>z. B. hetzner</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-noProvidersHint" datatype="html">
         <source>No providers configured. Enter provider id manually.</source>
-        <target>Keine Anbieter konfiguriert. Anbieter-ID manuell eingeben.</target></trans-unit>
+        <target>Keine Anbieter konfiguriert. Anbieter-ID manuell eingeben.</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-close" datatype="html">
         <source> Close </source>
-        <target>Schließen</target></trans-unit>
+        <target>Schließen</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-create" datatype="html">
         <source> Create </source>
-        <target>Erstellen</target></trans-unit>
+        <target>Erstellen</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-editTitle" datatype="html">
         <source> Edit service type </source>
-        <target>Servicetyp bearbeiten</target></trans-unit>
+        <target>Servicetyp bearbeiten</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-save" datatype="html">
         <source> Save </source>
-        <target>Speichern</target></trans-unit>
+        <target>Speichern</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-deleteTitle" datatype="html">
         <source> Delete service type? </source>
-        <target>Servicetyp löschen?</target></trans-unit>
+        <target>Servicetyp löschen?</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-deleteConfirm" datatype="html">
-        <source> Are you sure you want to delete the service type "<x id="INTERPOLATION" equiv-text="{{ st.name }}" />" (<x id="INTERPOLATION_1" equiv-text="{{ st.key }}" />)? </source>
-        <target> Möchten Sie den Servicetyp „<x id="INTERPOLATION" equiv-text="{{ st.name }}" />“ (<x id="INTERPOLATION_1" equiv-text="{{ st.key }}" />) wirklich löschen? </target></trans-unit>
+        <source> Are you sure you want to delete the service type &quot;<x id="INTERPOLATION" equiv-text="{{ st.name }}"/>&quot; (<x id="INTERPOLATION_1" equiv-text="{{ st.key }}"/>)? </source>
+        <target> Möchten Sie den Servicetyp „<x id="INTERPOLATION" equiv-text="{{ st.name }}" />“ (<x id="INTERPOLATION_1" equiv-text="{{ st.key }}" />) wirklich löschen? </target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-confirmDelete" datatype="html">
         <source> Delete </source>
-        <target>Löschen</target></trans-unit>
+        <target>Löschen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-title" datatype="html">
         <source>Plans &amp; Subscriptions</source>
-        <target>Pläne &amp; Abonnements</target></trans-unit>
+        <target>Pläne &amp; Abonnements</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-orderPlanButton" datatype="html">
         <source>Order</source>
-        <target>Bestellen</target></trans-unit>
+        <target>Bestellen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-customerProfile" datatype="html">
         <source>Customer profile</source>
-        <target>Kundenprofil</target></trans-unit>
+        <target>Kundenprofil</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-customerProfileHint" datatype="html">
         <source> Required for invoicing. Please complete your profile with first name, last name, email, address, city and country. </source>
-        <target>Für die Rechnungsstellung erforderlich. Bitte Vornamen, Nachnamen, E-Mail, Adresse, Stadt und Land angeben.</target></trans-unit>
+        <target>Für die Rechnungsstellung erforderlich. Bitte Vornamen, Nachnamen, E-Mail, Adresse, Stadt und Land angeben.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-profileComplete" datatype="html">
         <source>Complete</source>
-        <target>Vollständig</target></trans-unit>
+        <target>Vollständig</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-profileIncomplete" datatype="html">
         <source>Incomplete</source>
-        <target>Unvollständig</target></trans-unit>
+        <target>Unvollständig</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-editProfile" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-pencil&quot;&gt;" /><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;" /></source>
-        <target /></trans-unit>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-pencil&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-pencil&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-loading" datatype="html">
         <source>Loading subscriptions...</source>
-        <target>Abonnements werden geladen...</target></trans-unit>
+        <target>Abonnements werden geladen...</target>
+      </trans-unit>
       <trans-unit id="featureAudit-chatIoTable" datatype="html">
         <source>Subscriptions</source>
-        <target>Abonnements</target></trans-unit>
+        <target>Abonnements</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-number" datatype="html">
         <source>Number</source>
-        <target>Nummer</target></trans-unit>
+        <target>Nummer</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-plan" datatype="html">
         <source>Plan</source>
-        <target>Plan</target></trans-unit>
+        <target>Plan</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-status" datatype="html">
         <source>Status</source>
-        <target>Status</target></trans-unit>
+        <target>Status</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-period" datatype="html">
         <source>Period</source>
-        <target>Periode</target></trans-unit>
+        <target>Periode</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-nextBilling" datatype="html">
         <source>Next billing</source>
-        <target>Nächste Abrechnung</target></trans-unit>
+        <target>Nächste Abrechnung</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-actions" datatype="html">
         <source>Actions</source>
-        <target>Aktionen</target></trans-unit>
+        <target>Aktionen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-cancel" datatype="html">
         <source> Cancel </source>
-        <target>Abbrechen</target></trans-unit>
+        <target>Abbrechen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-resume" datatype="html">
         <source> Resume </source>
-        <target>Fortsetzen</target></trans-unit>
+        <target>Fortsetzen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-noSubscriptions" datatype="html">
         <source> No subscriptions yet. </source>
-        <target>Noch keine Abonnements.</target></trans-unit>
+        <target>Noch keine Abonnements.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-showingOf" datatype="html">
-        <source>Showing <x id="INTERPOLATION" equiv-text="{{ paginatedSubscriptions().length }}" /> of <x id="INTERPOLATION_1" equiv-text="{{ subscriptions().length }}" /></source>
-        <target>Zeige <x id="INTERPOLATION" equiv-text="{{ paginatedSubscriptions().length }}" /> von <x id="INTERPOLATION_1" equiv-text="{{ subscriptions().length }}" /></target></trans-unit>
+        <source>Showing <x id="INTERPOLATION" equiv-text="{{ paginatedSubscriptions().length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ subscriptions().length }}"/></source>
+        <target>Zeige <x id="INTERPOLATION" equiv-text="{{ paginatedSubscriptions().length }}" /> von <x id="INTERPOLATION_1" equiv-text="{{ subscriptions().length }}" /></target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-prev" datatype="html">
         <source>Previous</source>
-        <target>Zurück</target></trans-unit>
+        <target>Zurück</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-next" datatype="html">
         <source>Next</source>
-        <target>Weiter</target></trans-unit>
+        <target>Weiter</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-loadingBackorders" datatype="html">
         <source>Loading backorders...</source>
-        <target>Rückstände werden geladen...</target></trans-unit>
+        <target>Rückstände werden geladen...</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-backorders" datatype="html">
         <source>Backorders</source>
-        <target>Rückstände</target></trans-unit>
+        <target>Rückstände</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-retry" datatype="html">
         <source> Retry </source>
-        <target>Erneut versuchen</target></trans-unit>
+        <target>Erneut versuchen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-noBackorders" datatype="html">
         <source> No pending backorders. </source>
-        <target>Keine ausstehenden Rückstände.</target></trans-unit>
+        <target>Keine ausstehenden Rückstände.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-orderPlanTitle" datatype="html">
         <source>Order plan</source>
-        <target>Plan bestellen</target></trans-unit>
+        <target>Plan bestellen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-selectPlan" datatype="html">
         <source>Plan</source>
-        <target>Plan</target></trans-unit>
+        <target>Plan</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-choosePlan" datatype="html">
         <source>Choose a plan</source>
-        <target>Plan wählen</target></trans-unit>
+        <target>Plan wählen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-price" datatype="html">
         <source>Price</source>
-        <target>Preis</target></trans-unit>
+        <target>Preis</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-billingInterval" datatype="html">
         <source>Runtime</source>
-        <target>Laufzeit</target></trans-unit>
+        <target>Laufzeit</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-minCommitment" datatype="html">
         <source>Min. commitment</source>
-        <target>Mind. Laufzeit</target></trans-unit>
+        <target>Mind. Laufzeit</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-days" datatype="html">
         <source>days</source>
-        <target>Tage</target></trans-unit>
+        <target>Tage</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-noticeDays" datatype="html">
         <source>Notice period</source>
-        <target>Kündigungsfrist</target></trans-unit>
+        <target>Kündigungsfrist</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-cloudInitConfig" datatype="html">
         <source>Instance configuration</source>
-        <target>Instanzkonfiguration</target></trans-unit>
+        <target>Instanzkonfiguration</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-service" datatype="html">
         <source>Service</source>
-        <target>Dienst</target></trans-unit>
+        <target>Dienst</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-serviceController" datatype="html">
         <source> Controller </source>
-        <target>Controller</target></trans-unit>
+        <target>Controller</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-serviceManager" datatype="html">
         <source>Manager</source>
-        <target>Manager</target></trans-unit>
+        <target>Manager</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-serviceHelp" datatype="html">
         <source> Controller runs the full stack; Manager runs the agent manager only. </source>
-        <target>Controller betreibt den vollen Stack; Manager nur den Agent-Manager.</target></trans-unit>
+        <target>Controller betreibt den vollen Stack; Manager nur den Agent-Manager.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-authMethod" datatype="html">
         <source>Authentication method</source>
-        <target>Authentifizierungsmethode</target></trans-unit>
+        <target>Authentifizierungsmethode</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-authUsers" datatype="html">
         <source>Users</source>
-        <target>Benutzer</target></trans-unit>
+        <target>Benutzer</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-authApiKey" datatype="html">
         <source>API Key</source>
-        <target>API-Schlüssel</target></trans-unit>
+        <target>API-Schlüssel</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-authKeycloak" datatype="html">
         <source>Keycloak</source>
-        <target>Keycloak</target></trans-unit>
+        <target>Keycloak</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-authMethodHelp" datatype="html">
         <source> How users authenticate to the agent instance. </source>
-        <target>Wie sich Nutzer an der Agent-Instanz anmelden.</target></trans-unit>
+        <target>Wie sich Nutzer an der Agent-Instanz anmelden.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-disableSignup" datatype="html">
         <source> Disable signup </source>
-        <target>Registrierung deaktivieren</target></trans-unit>
+        <target>Registrierung deaktivieren</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-disableSignupHelp" datatype="html">
         <source> Prevents new user registration on this instance. </source>
-        <target>Verhindert neue Benutzerregistrierung auf dieser Instanz.</target></trans-unit>
+        <target>Verhindert neue Benutzerregistrierung auf dieser Instanz.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-staticApiKey" datatype="html">
         <source> Static API Key </source>
-        <target>Statischer API-Schlüssel</target></trans-unit>
+        <target>Statischer API-Schlüssel</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-staticApiKeyHelp" datatype="html">
         <source> API key for authenticating requests. Required when using api-key authentication. </source>
-        <target>API-Schlüssel zur Authentifizierung von Anfragen. Erforderlich bei API-Key-Authentifizierung.</target></trans-unit>
+        <target>API-Schlüssel zur Authentifizierung von Anfragen. Erforderlich bei API-Key-Authentifizierung.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-keycloakSection" datatype="html">
         <source> Keycloak </source>
-        <target>Keycloak</target></trans-unit>
+        <target>Keycloak</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-smtpSection" datatype="html">
         <source> SMTP (optional) </source>
-        <target>SMTP (optional)</target></trans-unit>
+        <target>SMTP (optional)</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-cursorApiKey" datatype="html">
         <source> Cursor API key (optional) </source>
-        <target>Cursor-API-Schlüssel (optional)</target></trans-unit>
+        <target>Cursor-API-Schlüssel (optional)</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-cursorApiKeyHelp" datatype="html">
         <source> Used by the manager to communicate with Cursor for agent containers. Leave empty if not using Cursor agents. </source>
-        <target>Wird vom Manager für die Kommunikation mit Cursor für Agent-Container genutzen. Leer lassen, wenn keine Cursor-Agenten verwendet werden.</target></trans-unit>
+        <target>Wird vom Manager für die Kommunikation mit Cursor für Agent-Container genutzen. Leer lassen, wenn keine Cursor-Agenten verwendet werden.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-gitSection" datatype="html">
         <source> Git (optional) </source>
-        <target>Git (optional)</target></trans-unit>
+        <target>Git (optional)</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-gitHelp" datatype="html">
         <source> Git configuration for the agent manager (repository URL, credentials, commit author). Leave empty if not using Git-backed agents. </source>
-        <target>Git-Konfiguration für den Agent-Manager (Repository-URL, Zugangsdaten, Commit-Autor). Leer lassen, wenn keine Git-basierten Agenten genutzt werden.</target></trans-unit>
+        <target>Git-Konfiguration für den Agent-Manager (Repository-URL, Zugangsdaten, Commit-Autor). Leer lassen, wenn keine Git-basierten Agenten genutzt werden.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-provisioningSection" datatype="html">
         <source> Provisioning (optional) </source>
-        <target>Bereitstellung (optional)</target></trans-unit>
+        <target>Bereitstellung (optional)</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-provisioningHelp" datatype="html">
         <source> If you want this instance to provision additional servers via Hetzner or DigitalOcean, provide the API tokens. Leave empty otherwise. </source>
-        <target>Wenn diese Instanz zusätzliche Server über Hetzner oder DigitalOcean bereitstellen soll, geben Sie die API-Tokens an. Sonst leer lassen.</target></trans-unit>
+        <target>Wenn diese Instanz zusätzliche Server über Hetzner oder DigitalOcean bereitstellen soll, geben Sie die API-Tokens an. Sonst leer lassen.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-hetznerApiToken" datatype="html">
         <source> Hetzner API token </source>
-        <target>Hetzner-API-Token</target></trans-unit>
+        <target>Hetzner-API-Token</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-digitaloceanApiToken" datatype="html">
         <source> DigitalOcean API token </source>
-        <target>DigitalOcean-API-Token</target></trans-unit>
+        <target>DigitalOcean-API-Token</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-autoBackorder" datatype="html">
         <source>Backorder if unavailable</source>
-        <target>Nachbestellen wenn nicht verfügbar</target></trans-unit>
+        <target>Nachbestellen wenn nicht verfügbar</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-acceptLegalPrefix" datatype="html">
         <source>I have read and accept the</source>
-        <target>Ich habe gelesen und akzeptiere die</target></trans-unit>
+        <target>Ich habe gelesen und akzeptiere die</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-termsLink" datatype="html">
         <source>Terms and Conditions</source>
-        <target>Allgemeinen Geschäftsbedingungen</target></trans-unit>
+        <target>Allgemeinen Geschäftsbedingungen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-privacyLink" datatype="html">
         <source>Privacy Policy</source>
-        <target>Datenschutzerklärung</target></trans-unit>
+        <target>Datenschutzerklärung</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-completeProfileToOrder" datatype="html">
         <source>Complete your billing profile to place an order.</source>
-        <target>Vervollständigen Sie Ihr Rechnungsprofil, um zu bestellen.</target></trans-unit>
+        <target>Vervollständigen Sie Ihr Rechnungsprofil, um zu bestellen.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-completeBillingDetails" datatype="html">
         <source>Complete billing details</source>
-        <target>Rechnungsdaten vervollständigen</target></trans-unit>
+        <target>Rechnungsdaten vervollständigen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-close" datatype="html">
         <source> Close </source>
-        <target>Schließen</target></trans-unit>
+        <target>Schließen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-orderInProgress" datatype="html">
         <source>Provisioning in progress, please wait</source>
-        <target>Bereitstellung läuft, bitte warten</target></trans-unit>
+        <target>Bereitstellung läuft, bitte warten</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-submitOrder" datatype="html">
         <source>Order</source>
-        <target>Bestellen</target></trans-unit>
+        <target>Bestellen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-cancelSubscriptionTitle" datatype="html">
         <source> Cancel subscription? </source>
-        <target>Abonnement kündigen?</target></trans-unit>
+        <target>Abonnement kündigen?</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-cancelSubscriptionConfirm" datatype="html">
         <source> Are you sure you want to cancel this subscription? It will remain active until the end of the current period. </source>
-        <target>Dieses Abonnement wirklich kündigen? Es bleibt bis zum Ende der aktuellen Periode aktiv.</target></trans-unit>
+        <target>Dieses Abonnement wirklich kündigen? Es bleibt bis zum Ende der aktuellen Periode aktiv.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-confirmCancel" datatype="html">
         <source> Confirm cancel </source>
-        <target>Kündigung bestätigen</target></trans-unit>
+        <target>Kündigung bestätigen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-resumeSubscriptionTitle" datatype="html">
         <source> Resume subscription? </source>
-        <target>Abonnement fortsetzen?</target></trans-unit>
+        <target>Abonnement fortsetzen?</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-resumeSubscriptionConfirm" datatype="html">
         <source> Resume this subscription so it continues after the current period. </source>
-        <target>Dieses Abonnement fortsetzen, damit es nach der aktuellen Periode weiterläuft.</target></trans-unit>
+        <target>Dieses Abonnement fortsetzen, damit es nach der aktuellen Periode weiterläuft.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-confirmResume" datatype="html">
         <source> Resume </source>
-        <target>Fortsetzen</target></trans-unit>
+        <target>Fortsetzen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-cancelBackorderTitle" datatype="html">
         <source> Cancel backorder? </source>
-        <target>Rückstand stornieren?</target></trans-unit>
+        <target>Rückstand stornieren?</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-cancelBackorderConfirm" datatype="html">
         <source>Are you sure you want to cancel this backorder?</source>
-        <target>Diesen Rückstand wirklich stornieren?</target></trans-unit>
+        <target>Diesen Rückstand wirklich stornieren?</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-editProfileTitle" datatype="html">
         <source> Edit customer profile </source>
-        <target>Kundenprofil bearbeiten</target></trans-unit>
+        <target>Kundenprofil bearbeiten</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-editProfileHint" datatype="html">
         <source> First name, last name, email, address line 1, city and country are required for invoicing. </source>
-        <target>Vorname, Nachname, E-Mail, Adresszeile 1, Stadt und Land sind für die Rechnungsstellung erforderlich.</target></trans-unit>
+        <target>Vorname, Nachname, E-Mail, Adresszeile 1, Stadt und Land sind für die Rechnungsstellung erforderlich.</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-firstName" datatype="html">
         <source>First name</source>
-        <target>Vorname</target></trans-unit>
+        <target>Vorname</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-lastName" datatype="html">
         <source>Last name</source>
-        <target>Nachname</target></trans-unit>
+        <target>Nachname</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-company" datatype="html">
         <source>Company</source>
-        <target>Firma</target></trans-unit>
+        <target>Firma</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-email" datatype="html">
         <source>Email</source>
-        <target>E-Mail</target></trans-unit>
+        <target>E-Mail</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-addressLine1" datatype="html">
         <source>Address line 1</source>
-        <target>Adresszeile 1</target></trans-unit>
+        <target>Adresszeile 1</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-addressLine2" datatype="html">
         <source>Address line 2</source>
-        <target>Adresszeile 2</target></trans-unit>
+        <target>Adresszeile 2</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-postalCode" datatype="html">
         <source>Postal code</source>
-        <target>Postleitzahl</target></trans-unit>
+        <target>Postleitzahl</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-city" datatype="html">
         <source>City</source>
-        <target>Stadt</target></trans-unit>
+        <target>Stadt</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-state" datatype="html">
         <source>State / Region</source>
-        <target>Bundesland / Region</target></trans-unit>
+        <target>Bundesland / Region</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-country" datatype="html">
         <source>Country</source>
-        <target>Land</target></trans-unit>
+        <target>Land</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-chooseCountry" datatype="html">
         <source>Choose country</source>
-        <target>Land wählen</target></trans-unit>
+        <target>Land wählen</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-phone" datatype="html">
         <source>Phone</source>
-        <target>Telefon</target></trans-unit>
+        <target>Telefon</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-saveProfile" datatype="html">
         <source> Save </source>
-        <target>Speichern</target></trans-unit>
+        <target>Speichern</target>
+      </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>
-        <target>Diese Website verwendet Cookies, um Ihnen die bestmögliche Erfahrung zu bieten.</target></trans-unit>
+        <target>Diese Website verwendet Cookies, um Ihnen die bestmögliche Erfahrung zu bieten.</target>
+      </trans-unit>
       <trans-unit id="utilCookieConsent-dismiss" datatype="html">
         <source>Got it!</source>
-        <target>Verstanden!</target></trans-unit>
+        <target>Verstanden!</target>
+      </trans-unit>
       <trans-unit id="utilCookieConsent-allow" datatype="html">
         <source>Accept</source>
-        <target>Akzeptieren</target></trans-unit>
+        <target>Akzeptieren</target>
+      </trans-unit>
       <trans-unit id="utilCookieConsent-deny" datatype="html">
         <source>Decline</source>
-        <target>Ablehnen</target></trans-unit>
+        <target>Ablehnen</target>
+      </trans-unit>
       <trans-unit id="utilCookieConsent-link" datatype="html">
         <source>Learn more</source>
-        <target>Mehr erfahren</target></trans-unit>
+        <target>Mehr erfahren</target>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-title" datatype="html">
         <source>Confirm Your Email</source>
         <target>Bestätigen Sie Ihre E-Mail</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-description" datatype="html">
         <source> Enter the 6-character confirmation code you received via email (letters and numbers). You can paste the code or type it in the fields below. </source>
         <target> Geben Sie den 6-stelligen Bestätigungscode ein, den Sie per E-Mail erhalten haben (Buchstaben und Zahlen). Sie können den Code einfügen oder in die Felder unten eingeben. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-formTitle" datatype="html">
         <source>Email Confirmation</source>
         <target>E-Mail-Bestätigung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-authNotAvailable" datatype="html">
         <source>Email confirmation is not available for this authentication method.</source>
         <target>E-Mail-Bestätigung ist für diese Authentifizierungsmethode nicht verfügbar.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-returnToLogin" datatype="html">
         <source>Return to login</source>
         <target>Zurück zur Anmeldung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-confirmingA11y" datatype="html">
         <source>Confirming...</source>
         <target>Bestätigen...</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-confirming" datatype="html">
         <source>Confirming your email address...</source>
         <target>Ihre E-Mail-Adresse wird bestätigt...</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-emailLabel" datatype="html">
         <source>Email</source>
         <target>E-Mail</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-emailPlaceholder" datatype="html">
         <source>Enter your email address</source>
         <target>E-Mail-Adresse eingeben</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-emailRequired" datatype="html">
         <source>Email is required.</source>
         <target>E-Mail ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-emailInvalid" datatype="html">
         <source>Please enter a valid email address.</source>
         <target>Bitte geben Sie eine gültige E-Mail-Adresse ein.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-codeLabel" datatype="html">
         <source>Confirmation Code</source>
         <target>Bestätigungscode</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-codeRequired" datatype="html">
         <source>Confirmation code is required.</source>
         <target>Bestätigungscode ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-codePattern" datatype="html">
         <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
         <target>Code muss genau 6 Zeichen sein (Großbuchstaben und Zahlen).</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-submit" datatype="html">
         <source>Confirm Email</source>
         <target>E-Mail bestätigen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureConfirmEmail-backToLogin" datatype="html">
         <source>Back to login</source>
         <target>Zurück zur Anmeldung</target>
-        </trans-unit>
+      </trans-unit>
+      <trans-unit id="featureAuth-loginTitle" datatype="html">
+        <source>Login :: Agenstra</source>
+        <target>Anmelden :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-registerTitle" datatype="html">
+        <source>Register :: Agenstra</source>
+        <target>Registrieren :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-requestPasswordResetTitle" datatype="html">
+        <source>Request Password Reset :: Agenstra</source>
+        <target>Passwort zurücksetzen anfordern :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-requestPasswordResetConfirmationTitle" datatype="html">
+        <source>Password Reset Requested :: Agenstra</source>
+        <target>Passwort-Reset angefordert :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-resetPasswordTitle" datatype="html">
+        <source>Reset Password :: Agenstra</source>
+        <target>Passwort zurücksetzen :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-confirmEmailTitle" datatype="html">
+        <source>Confirm Email :: Agenstra</source>
+        <target>E-Mail bestätigen :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-usersTitle" datatype="html">
+        <source>User Management :: Agenstra</source>
+        <target>Benutzerverwaltung :: Agenstra</target>
+      </trans-unit>
       <trans-unit id="featureLogin-appName" datatype="html">
         <source>Agenstra</source>
         <target>Agenstra</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-appDescription" datatype="html">
         <source> Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers - all from one powerful dashboard. </source>
         <target> Zentrale Steuerung für verteilte KI-Agent-Infrastruktur. Verwalten Sie mehrere Agent-Manager-Instanzen, interagieren Sie in Echtzeit mit Agents und bearbeiten Sie Code direkt in deren Containern - alles von einem leistungsstarken Dashboard aus. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-featureDistributedAgent" datatype="html">
         <source>Distributed Agent Management</source>
         <target>Verteilte Agent-Verwaltung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-featureDistributedAgentDesc" datatype="html">
         <source>Connect to and manage multiple remote agent-manager services from a single console</source>
         <target>Verbinden und verwalten Sie mehrere Remote-Agent-Manager-Dienste von einer Konsole aus</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-featureRealtimeChat" datatype="html">
         <source>Real-time AI Chat</source>
         <target>Echtzeit-KI-Chat</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-featureRealtimeChatDesc" datatype="html">
         <source>WebSocket-based bidirectional communication with AI agents and instant responses</source>
         <target>WebSocket-basierte bidirektionale Kommunikation mit KI-Agents und sofortige Antworten</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-featureCodeEditor" datatype="html">
         <source>Integrated Code Editor</source>
         <target>Integrierter Code-Editor</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-featureCodeEditorDesc" datatype="html">
         <source>Edit files directly in agent containers with Monaco Editor - read, write, and manage code in real-time</source>
         <target>Bearbeiten Sie Dateien direkt in Agent-Containern mit Monaco Editor - lesen, schreiben und verwalten Sie Code in Echtzeit</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-featureContainer" datatype="html">
         <source>Container Integration</source>
         <target>Container-Integration</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-featureContainerDesc" datatype="html">
         <source>Docker-based agent execution with live log streaming and file system operations</source>
         <target>Docker-basierte Agent-Ausführung mit Live-Log-Streaming und Dateisystemoperationen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-title" datatype="html">
         <source>Login</source>
         <target>Anmelden</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-controllerApiHost" datatype="html">
         <source>Controller API Host</source>
         <target>Controller-API-Host</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-controllerApiKey" datatype="html">
         <source>Controller API Key</source>
         <target>Controller-API-Schlüssel</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-apiKeyPlaceholder" datatype="html">
         <source>Enter your API key</source>
         <target>API-Schlüssel eingeben</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-apiKeyRequired" datatype="html">
         <source>API key is required.</source>
         <target>API-Schlüssel ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-emailLabel" datatype="html">
         <source>Email</source>
         <target>E-Mail</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-emailPlaceholder" datatype="html">
         <source>Enter your email</source>
         <target>E-Mail eingeben</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-emailRequired" datatype="html">
         <source>Email is required.</source>
         <target>E-Mail ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-emailInvalid" datatype="html">
         <source>Please enter a valid email address.</source>
         <target>Bitte geben Sie eine gültige E-Mail-Adresse ein.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-passwordLabel" datatype="html">
         <source>Password</source>
         <target>Passwort</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-passwordPlaceholder" datatype="html">
         <source>Enter your password</source>
         <target>Passwort eingeben</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-passwordRequired" datatype="html">
         <source>Password is required.</source>
         <target>Passwort ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-createAccount" datatype="html">
         <source>Create an account</source>
         <target>Konto erstellen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-forgotPassword" datatype="html">
         <source>Forgot password?</source>
         <target>Passwort vergessen?</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-loggingIn" datatype="html">
         <source>Logging in...</source>
         <target>Anmelden...</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureLogin-submit" datatype="html">
         <source>Login</source>
         <target>Anmelden</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
-        <source>Character <x id="position" equiv-text="index + 1" /> of 6</source>
+        <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
         <target>Zeichen <x id="position" equiv-text="index + 1" /> von 6</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-title" datatype="html">
         <source>Create an Account</source>
         <target>Konto erstellen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-description" datatype="html">
         <source> Join Agenstra to manage your AI agent infrastructure. After registration, you will receive an email to confirm your account before you can log in. </source>
         <target> Treten Sie Agenstra bei, um Ihre KI-Agent-Infrastruktur zu verwalten. Nach der Registrierung erhalten Sie eine E-Mail zur Bestätigung Ihres Kontos, bevor Sie sich anmelden können. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-formTitle" datatype="html">
         <source>Register</source>
         <target>Registrieren</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-authNotAvailable" datatype="html">
         <source>User registration is not available for this authentication method.</source>
         <target>Benutzerregistrierung ist für diese Authentifizierungsmethode nicht verfügbar.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-returnToLogin" datatype="html">
         <source>Return to login</source>
         <target>Zurück zur Anmeldung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-emailLabel" datatype="html">
         <source>Email</source>
         <target>E-Mail</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-emailPlaceholder" datatype="html">
         <source>Enter your email</source>
         <target>E-Mail eingeben</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-emailRequired" datatype="html">
         <source>Email is required.</source>
         <target>E-Mail ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-emailInvalid" datatype="html">
         <source>Please enter a valid email address.</source>
         <target>Bitte geben Sie eine gültige E-Mail-Adresse ein.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-passwordLabel" datatype="html">
         <source>Password</source>
         <target>Passwort</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-passwordPlaceholder" datatype="html">
         <source>Enter your password (min. 8 characters)</source>
         <target>Passwort eingeben (mind. 8 Zeichen)</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-passwordRequired" datatype="html">
         <source>Password is required.</source>
         <target>Passwort ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-passwordMinLength" datatype="html">
         <source>Password must be at least 8 characters.</source>
         <target>Passwort muss mindestens 8 Zeichen haben.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-confirmPasswordLabel" datatype="html">
         <source>Confirm Password</source>
         <target>Passwort bestätigen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-confirmPasswordPlaceholder" datatype="html">
         <source>Confirm your password</source>
         <target>Passwort bestätigen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-confirmPasswordRequired" datatype="html">
         <source> Password confirmation is required. </source>
         <target> Passwortbestätigung ist erforderlich. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-passwordsMismatch" datatype="html">
         <source> Passwords do not match. </source>
         <target> Passwörter stimmen nicht überein. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-legalHintPrefix" datatype="html">
         <source>By registering, you acknowledge our</source>
         <target>Mit Ihrer Registrierung erkennen Sie unsere</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-termsLink" datatype="html">
         <source>Terms and Conditions</source>
         <target>Allgemeinen Geschäftsbedingungen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-privacyLink" datatype="html">
         <source>Privacy Policy</source>
         <target>Datenschutzerklärung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-registering" datatype="html">
         <source>Registering...</source>
         <target>Registrieren...</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-submit" datatype="html">
         <source>Register</source>
         <target>Registrieren</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRegister-alreadyHaveAccount" datatype="html">
         <source>Already have an account? Log in</source>
         <target>Bereits ein Konto? Anmelden</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-title" datatype="html">
         <source>Check Your Email</source>
         <target>Überprüfen Sie Ihre E-Mail</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-description" datatype="html">
         <source> If an account exists for the email you entered, you will receive a password reset code. Enter the code below and choose a new password. </source>
         <target> Wenn ein Konto für die eingegebene E-Mail existiert, erhalten Sie einen Passwort-Reset-Code. Geben Sie den Code unten ein und wählen Sie ein neues Passwort. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-formTitle" datatype="html">
         <source> Reset Password </source>
         <target> Passwort zurücksetzen </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-authNotAvailable" datatype="html">
         <source>Password reset is not available for this authentication method.</source>
         <target>Passwort-Reset ist für diese Authentifizierungsmethode nicht verfügbar.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-returnToLogin" datatype="html">
         <source>Return to login</source>
         <target>Zurück zur Anmeldung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-requestResetInfo" datatype="html">
         <source>Request a password reset to receive a code via email.</source>
         <target>Fordern Sie einen Passwort-Reset an, um einen Code per E-Mail zu erhalten.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-requestResetLink" datatype="html">
         <source>Request password reset</source>
         <target>Passwort-Reset anfordern</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-resettingA11y" datatype="html">
         <source>Resetting...</source>
         <target>Zurücksetzen...</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-resetting" datatype="html">
         <source> Resetting your password... </source>
         <target> Ihr Passwort wird zurückgesetzt... </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-emailLabel" datatype="html">
         <source>Email</source>
         <target>E-Mail</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-emailPlaceholder" datatype="html">
         <source>Enter your email address</source>
         <target>E-Mail-Adresse eingeben</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-emailRequired" datatype="html">
         <source>Email is required.</source>
         <target>E-Mail ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-emailInvalid" datatype="html">
         <source>Please enter a valid email address.</source>
         <target>Bitte geben Sie eine gültige E-Mail-Adresse ein.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-codeLabel" datatype="html">
         <source>Reset Code</source>
         <target>Reset-Code</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-codeRequired" datatype="html">
         <source>Reset code is required.</source>
         <target>Reset-Code ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-codePattern" datatype="html">
         <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
         <target>Code muss genau 6 Zeichen sein (Großbuchstaben und Zahlen).</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-newPasswordLabel" datatype="html">
         <source>New Password</source>
         <target>Neues Passwort</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-newPasswordPlaceholder" datatype="html">
         <source>Enter new password (min. 8 characters)</source>
         <target>Neues Passwort eingeben (mind. 8 Zeichen)</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-newPasswordRequired" datatype="html">
         <source>New password is required.</source>
         <target>Neues Passwort ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-passwordMinLength" datatype="html">
         <source>Password must be at least 8 characters.</source>
         <target>Passwort muss mindestens 8 Zeichen haben.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-confirmNewPasswordLabel" datatype="html">
         <source>Confirm New Password</source>
         <target>Neues Passwort bestätigen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-confirmNewPasswordPlaceholder" datatype="html">
         <source>Confirm new password</source>
         <target>Neues Passwort bestätigen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-confirmRequired" datatype="html">
         <source> Password confirmation is required. </source>
         <target> Passwortbestätigung ist erforderlich. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-passwordsMismatch" datatype="html">
         <source> Passwords do not match. </source>
         <target> Passwörter stimmen nicht überein. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-resettingButton" datatype="html">
         <source>Resetting...</source>
         <target>Zurücksetzen...</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-submit" datatype="html">
         <source>Reset Password</source>
         <target>Passwort zurücksetzen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-backToLogin" datatype="html">
         <source>Back to login</source>
         <target>Zurück zur Anmeldung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-title" datatype="html">
         <source>Reset Your Password</source>
         <target>Passwort zurücksetzen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-description" datatype="html">
         <source> Enter your email address and we will send you a link to reset your password. If an account exists for that email, you will receive instructions shortly. </source>
         <target> Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts. Wenn ein Konto für diese E-Mail existiert, erhalten Sie in Kürze Anweisungen. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-formTitle" datatype="html">
         <source> Request Password Reset </source>
         <target> Passwort-Reset anfordern </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-authNotAvailable" datatype="html">
         <source>Password reset is not available for this authentication method.</source>
         <target>Passwort-Reset ist für diese Authentifizierungsmethode nicht verfügbar.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-returnToLogin" datatype="html">
         <source>Return to login</source>
         <target>Zurück zur Anmeldung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-emailLabel" datatype="html">
         <source>Email</source>
         <target>E-Mail</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-emailPlaceholder" datatype="html">
         <source>Enter your email</source>
         <target>E-Mail eingeben</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-emailRequired" datatype="html">
         <source>Email is required.</source>
         <target>E-Mail ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-emailInvalid" datatype="html">
         <source>Please enter a valid email address.</source>
         <target>Bitte geben Sie eine gültige E-Mail-Adresse ein.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-sending" datatype="html">
         <source>Sending...</source>
         <target>Wird gesendet...</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-submit" datatype="html">
         <source>Send Reset Link</source>
         <target>Reset-Link senden</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-backToLogin" datatype="html">
         <source>Back to login</source>
         <target>Zurück zur Anmeldung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-title" datatype="html">
         <source>Set New Password</source>
         <target>Neues Passwort setzen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-description" datatype="html">
         <source> Enter the reset code you received via email and choose a new password. The code is typically sent when you request a password reset. </source>
         <target> Geben Sie den Reset-Code ein, den Sie per E-Mail erhalten haben, und wählen Sie ein neues Passwort. Der Code wird normalerweise gesendet, wenn Sie einen Passwort-Reset anfordern. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-formTitle" datatype="html">
         <source>Reset Password</source>
         <target>Passwort zurücksetzen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-authNotAvailable" datatype="html">
         <source>Password reset is not available for this authentication method.</source>
         <target>Passwort-Reset ist für diese Authentifizierungsmethode nicht verfügbar.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-returnToLogin" datatype="html">
         <source>Return to login</source>
         <target>Zurück zur Anmeldung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-emailLabel" datatype="html">
         <source>Email</source>
         <target>E-Mail</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-emailPlaceholder" datatype="html">
         <source>Enter your email address</source>
         <target>E-Mail-Adresse eingeben</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-emailRequired" datatype="html">
         <source>Email is required.</source>
         <target>E-Mail ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-emailInvalid" datatype="html">
         <source>Please enter a valid email address.</source>
         <target>Bitte geben Sie eine gültige E-Mail-Adresse ein.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-codeLabel" datatype="html">
         <source>Reset Code</source>
         <target>Reset-Code</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-codeRequired" datatype="html">
         <source>Reset code is required.</source>
         <target>Reset-Code ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-codePattern" datatype="html">
         <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
         <target>Code muss genau 6 Zeichen sein (Großbuchstaben und Zahlen).</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-newPasswordLabel" datatype="html">
         <source>New Password</source>
         <target>Neues Passwort</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-newPasswordPlaceholder" datatype="html">
         <source>Enter new password (min. 8 characters)</source>
         <target>Neues Passwort eingeben (mind. 8 Zeichen)</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-newPasswordRequired" datatype="html">
         <source>New password is required.</source>
         <target>Neues Passwort ist erforderlich.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-passwordMinLength" datatype="html">
         <source>Password must be at least 8 characters.</source>
         <target>Passwort muss mindestens 8 Zeichen haben.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-confirmNewPasswordLabel" datatype="html">
         <source>Confirm New Password</source>
         <target>Neues Passwort bestätigen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-confirmNewPasswordPlaceholder" datatype="html">
         <source>Confirm new password</source>
         <target>Neues Passwort bestätigen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-confirmRequired" datatype="html">
         <source> Password confirmation is required. </source>
         <target> Passwortbestätigung ist erforderlich. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-passwordsMismatch" datatype="html">
         <source> Passwords do not match. </source>
         <target> Passwörter stimmen nicht überein. </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-resetting" datatype="html">
         <source>Resetting...</source>
         <target>Zurücksetzen...</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-submit" datatype="html">
         <source>Reset Password</source>
         <target>Passwort zurücksetzen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureResetPassword-backToLogin" datatype="html">
         <source>Back to login</source>
         <target>Zurück zur Anmeldung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-title" datatype="html">
         <source>User Management</source>
         <target>Benutzerverwaltung</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-addUserTitle" datatype="html">
         <source>Add user</source>
         <target>Benutzer hinzufügen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-addUser" datatype="html">
         <source>Add</source>
         <target>Hinzufügen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-searchUsersPlaceholder" datatype="html">
         <source>Search users</source>
         <target>Benutzer suchen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-loadingUsers" datatype="html">
         <source>Loading users...</source>
         <target>Benutzer werden geladen...</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-noOtherUsers" datatype="html">
         <source>No other users found</source>
         <target>Keine weiteren Benutzer gefunden</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-locked" datatype="html">
         <source>Locked</source>
         <target>Gesperrt</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-unlocked" datatype="html">
         <source>Active</source>
         <target>Aktiv</target>
-        </trans-unit>
-      <trans-unit id="featureUserManager-unlockUserButtonTitle" datatype="html">
-        <source>Unlock user</source>
-        <target>Benutzer entsperren</target>
-        </trans-unit>
-      <trans-unit id="featureUserManager-lockUserButtonTitle" datatype="html">
-        <source>Lock user</source>
-        <target>Benutzer sperren</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-confirmed" datatype="html">
         <source>Confirmed</source>
         <target>Bestätigt</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-pending" datatype="html">
         <source>Pending</source>
         <target>Ausstehend</target>
-        </trans-unit>
+      </trans-unit>
+      <trans-unit id="featureUserManager-unlockUserButtonTitle" datatype="html">
+        <source>Unlock user</source>
+        <target>Benutzer entsperren</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-lockUserButtonTitle" datatype="html">
+        <source>Lock user</source>
+        <target>Benutzer sperren</target>
+      </trans-unit>
       <trans-unit id="featureUserManager-editUserButtonTitle" datatype="html">
         <source>Edit user</source>
         <target>Benutzer bearbeiten</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-deleteUserButtonTitle" datatype="html">
         <source>Delete user</source>
         <target>Benutzer löschen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-createUserTitle" datatype="html">
         <source>Create User</source>
         <target>Benutzer erstellen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-closeAriaLabel" datatype="html">
         <source>Close</source>
         <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailLabel" datatype="html">
-        <source>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
+        <source>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <target>E-Mail <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-emailPlaceholder" datatype="html">
         <source>user@example.com</source>
         <target>user@example.com</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-passwordLabel" datatype="html">
-        <source>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
+        <source>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <target>Passwort <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-passwordPlaceholder" datatype="html">
         <source>Min. 8 characters</source>
         <target>Mind. 8 Zeichen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-roleLabel" datatype="html">
         <source>Role</source>
         <target>Rolle</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-roleUser" datatype="html">
         <source>User</source>
         <target>Benutzer</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-roleAdmin" datatype="html">
         <source>Admin</source>
         <target>Admin</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-cancel" datatype="html">
         <source> Cancel </source>
         <target> Abbrechen </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-create" datatype="html">
         <source>Create</source>
         <target>Erstellen</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-editUserModalTitle" datatype="html">
         <source>Edit User</source>
         <target>Benutzer bearbeiten</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-newPasswordLabel" datatype="html">
         <source>New Password</source>
         <target>Neues Passwort</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-passwordKeepCurrentPlaceholder" datatype="html">
         <source>Leave empty to keep current</source>
         <target>Leer lassen, um aktuelles zu behalten</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-passwordKeepCurrentHint" datatype="html">
         <source>Leave empty to keep the current password</source>
         <target>Leer lassen, um das aktuelle Passwort zu behalten</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-update" datatype="html">
         <source>Update</source>
         <target>Aktualisieren</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-deleteUserModalTitle" datatype="html">
         <source> Delete User </source>
         <target> Benutzer löschen </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-deleteUserConfirm" datatype="html">
-        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" /><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}" /><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong             &gt;" />? </source>
+        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+            &gt;"/>? </source>
         <target> Sind Sie sicher, dass Sie den Benutzer <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" /><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}" /><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> löschen möchten? </target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
-        </trans-unit>
+      </trans-unit>
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
         <target>Löschen</target>
-        </trans-unit>
+      </trans-unit>
     </body>
   </file>
 </xliff>

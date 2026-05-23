@@ -64,6 +64,9 @@
       "@forepath/framework/frontend/util-docs-parser": [
         "libs/domains/framework/frontend/util-docs-parser/src/index.ts"
       ],
+      "@forepath/framework/frontend/util-meta": [
+        "libs/domains/framework/frontend/util-meta/src/index.ts"
+      ],
       "@forepath/framework/frontend/util-express-server": [
         "libs/domains/framework/frontend/util-express-server/src/index.ts"
       ],
