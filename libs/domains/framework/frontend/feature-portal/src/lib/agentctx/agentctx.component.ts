@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
+import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
+import { addPageMetaTags, buildPageMetaTags } from '@forepath/framework/frontend/util-meta';
 
 @Component({
   selector: 'framework-portal-agentctx',
@@ -14,6 +16,9 @@ import { RouterModule } from '@angular/router';
 export class PortalAgentCtxComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
+  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly locale = inject(LOCALE_ID);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly installCommand = 'curl -fsSL https://downloads.agenstra.com/agentctx/install.sh | bash';
   readonly runCommand = 'agentctx';
@@ -21,22 +26,27 @@ export class PortalAgentCtxComponent implements OnInit {
   copyRunFeedback = false;
 
   ngOnInit(): void {
-    this.titleService.setTitle(
-      $localize`:@@featurePortalAgentctx-metaTitle:One context for all your AI coding tools :: Agenstra`,
+    const metaTitle = $localize`:@@featurePortalAgentctx-metaTitle:One context for all your AI coding tools :: Agenstra`;
+    const metaDescription = $localize`:@@featurePortalAgentctx-metaDescription:Maintain project context once and generate aligned configs for Claude, Cursor, GitHub Copilot, and other AI coding tools your team already uses.`;
+
+    this.titleService.setTitle(metaTitle);
+    this.destroyRef.onDestroy(
+      addPageMetaTags(
+        this.metaService,
+        buildPageMetaTags({
+          description: metaDescription,
+          keywords: $localize`:@@featurePortalAgentctx-metaKeywords:AgentCTX, agentctx, .agenstra, AI coding tools, Cursor, OpenCode, GitHub Copilot, agent context, rules, commands, skills, MCP, single source of truth`,
+          author: 'IPvX UG (haftungsbeschränkt)',
+          robots: 'index, follow',
+          canonicalUrl: 'https://agenstra.com/agentctx',
+          socialTitle: metaTitle,
+          socialDescription: metaDescription,
+          socialImageUrl: this.environment.socialPreview.imageUrl,
+          localeId: this.locale,
+          localizeCanonicalUrl: this.environment.production,
+        }),
+      ),
     );
-    this.metaService.addTags([
-      {
-        name: 'description',
-        content: $localize`:@@featurePortalAgentctx-metaDescription:Maintain project context once and generate aligned configs for Claude, Cursor, GitHub Copilot, and other AI coding tools your team already uses.`,
-      },
-      {
-        name: 'keywords',
-        content: $localize`:@@featurePortalAgentctx-metaKeywords:AgentCTX, agentctx, .agenstra, AI coding tools, Cursor, OpenCode, GitHub Copilot, agent context, rules, commands, skills, MCP, single source of truth`,
-      },
-      { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
-      { name: 'robots', content: 'index, follow' },
-      { name: 'canonical', content: 'https://agenstra.com/agentctx' },
-    ]);
   }
 
   copyInstallCommand() {

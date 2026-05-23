@@ -1,7 +1,427 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template" target-language="de">
     <body>
+      <trans-unit id="featureAgentConsole-auditTitle" datatype="html">
+        <source>Audit :: Agenstra</source>
+        <target>Audit :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConsole-filtersTitle" datatype="html">
+        <source>Filters :: Agenstra</source>
+        <target>Filter :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConsole-atlassianImportTitle" datatype="html">
+        <source>Atlassian import :: Agenstra</source>
+        <target>Atlassian-Import :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConsole-ticketsTitle" datatype="html">
+        <source>Tickets :: Agenstra</source>
+        <target>Tickets :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConsole-knowledgeTitle" datatype="html">
+        <source>Knowledge :: Agenstra</source>
+        <target>Wissen :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConsole-managerTitle" datatype="html">
+        <source>Manager :: Agenstra</source>
+        <target>Manager :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-pageTitle" datatype="html">
+        <source> Atlassian import (Jira &amp; Confluence) </source>
+        <target> Atlassian-Import (Jira &amp; Confluence) </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-refresh" datatype="html">
+        <source> Refresh </source>
+        <target> Aktualisieren </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-dismiss" datatype="html">
+        <source> Dismiss </source>
+        <target> Ausblenden </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionTestLabel" datatype="html">
+        <source>Connection test:</source>
+        <target>Verbindungstest:</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionTestOk" datatype="html">
+        <source>OK</source>
+        <target>OK</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionTestFailed" datatype="html">
+        <source>Failed</source>
+        <target>Fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-add" datatype="html">
+        <source>Add</source>
+        <target>Hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-searchConnectionsLabel" datatype="html">
+        <source>Search site connections</source>
+        <target>Site-Verbindungen suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-searchConnectionsPlaceholder" datatype="html">
+        <source>Search connections</source>
+        <target>Verbindungen suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-loadingConnections" datatype="html">
+        <source>Loading connections…</source>
+        <target>Verbindungen werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-noConnectionsYet" datatype="html">
+        <source> No connections yet. </source>
+        <target> Noch keine Verbindungen. </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-noConnectionsMatchSearch" datatype="html">
+        <source> No connections match your search. </source>
+        <target> Keine Verbindungen entsprechen Ihrer Suche. </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionActionsAria" datatype="html">
+        <source>Connection actions</source>
+        <target>Verbindungsaktionen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-testConnectionTitle" datatype="html">
+        <source>Test connection</source>
+        <target>Verbindung testen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnectionTitle" datatype="html">
+        <source>Edit connection</source>
+        <target>Verbindung bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionTitle" datatype="html">
+        <source>Delete connection</source>
+        <target>Verbindung löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-searchConfigsLabel" datatype="html">
+        <source>Search import configs</source>
+        <target>Import-Konfigurationen suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-searchConfigsPlaceholder" datatype="html">
+        <source>Search import configs</source>
+        <target>Import-Konfigurationen suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-loadingConfigs" datatype="html">
+        <source>Loading configs…</source>
+        <target>Konfigurationen werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-noConfigsYet" datatype="html">
+        <source> No import configs yet. </source>
+        <target> Noch keine Import-Konfigurationen. </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-noConfigsMatchSearch" datatype="html">
+        <source> No import configs match your search. </source>
+        <target> Keine Import-Konfigurationen entsprechen Ihrer Suche. </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-badgeOn" datatype="html">
+        <source>On</source>
+        <target>Ein</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-badgeOff" datatype="html">
+        <source>Off</source>
+        <target>Aus</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-connectionToWorkspace" datatype="html">
+        <source>to</source>
+        <target>zu</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-neverRun" datatype="html">
+        <source>Never run</source>
+        <target>Nie ausgeführt</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-configActionsAria" datatype="html">
+        <source>Import config actions</source>
+        <target>Aktionen für Import-Konfiguration</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-runImportTitle" datatype="html">
+        <source>Run import now</source>
+        <target>Import jetzt ausführen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-runningImport" datatype="html">
+        <source>Running import…</source>
+        <target>Import läuft…</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-clearMarkersTitle" datatype="html">
+        <source>Clear sync markers</source>
+        <target>Synchronisations-Markierungen löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConfigTitle" datatype="html">
+        <source>Edit import config</source>
+        <target>Import-Konfiguration bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConfigTitle" datatype="html">
+        <source>Delete import config</source>
+        <target>Import-Konfiguration löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConnectionTitle" datatype="html">
+        <source> New connection </source>
+        <target>Neue Verbindung</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-closeAria" datatype="html">
+        <source>Close</source>
+        <target>Schließen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConnLabel" datatype="html">
+        <source>Label (optional)</source>
+        <target>Bezeichnung (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConnBaseUrl" datatype="html">
+        <source>Base URL</source>
+        <target>Basis-URL</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConnBaseUrlPlaceholder" datatype="html">
+        <source>https://your-site.atlassian.net</source>
+        <target>https://ihre-seite.atlassian.net</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConnAccountEmail" datatype="html">
+        <source>Account email</source>
+        <target>Konto-E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConnApiToken" datatype="html">
+        <source>API token</source>
+        <target>API-Token</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-cancel" datatype="html">
+        <source> Cancel </source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-save" datatype="html">
+        <source> Save </source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newConfigTitle" datatype="html">
+        <source> New import config </source>
+        <target>Neue Import-Konfiguration</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldConnection" datatype="html">
+        <source>Connection</source>
+        <target>Verbindung</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-selectPlaceholder" datatype="html">
+        <source>Select…</source>
+        <target>Auswählen…</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldWorkspace" datatype="html">
+        <source>Workspace</source>
+        <target>Arbeitsbereich</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldKind" datatype="html">
+        <source>Kind</source>
+        <target>Art</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-importKindJira" datatype="html">
+        <source>Jira</source>
+        <target>Jira</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-importKindConfluence" datatype="html">
+        <source>Confluence</source>
+        <target>Confluence</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldEnabled" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newBoardIdOptional" datatype="html">
+        <source>Board ID (optional)</source>
+        <target>Board-ID (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-boardIdExamplePlaceholder" datatype="html">
+        <source>e.g. 123</source>
+        <target>z. B. 123</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldJql" datatype="html">
+        <source>JQL</source>
+        <target>JQL</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-jqlHelp" datatype="html">
+        <source> Required. Imported issues are not capped per run. </source>
+        <target>Erforderlich. Die Anzahl importierter Vorgänge ist pro Lauf nicht begrenzt.</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldImportSwimlane" datatype="html">
+        <source>Import swimlane</source>
+        <target>Swimlane importieren</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newParentTicketOptional" datatype="html">
+        <source> Parent ticket (optional) </source>
+        <target>Übergeordnetes Ticket (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-searchParentTicketPlaceholder" datatype="html">
+        <source>Search by title or ID</source>
+        <target>Nach Titel oder ID suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-selectedParentTicket" datatype="html">
+        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentTicketId }}"/> </source>
+        <target>Ausgewählt: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentTicketId }}"/></target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-clearSelection" datatype="html">
+        <source> Clear </source>
+        <target>Zurücksetzen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newSpaceKeyOptional" datatype="html">
+        <source>Space key (optional)</source>
+        <target>Space-Schlüssel (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newRootPageIdOptional" datatype="html">
+        <source>Root page ID (optional)</source>
+        <target>Stamm-Seiten-ID (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-fieldCql" datatype="html">
+        <source>CQL</source>
+        <target>CQL</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-cqlHelp" datatype="html">
+        <source> Required. Matching pages are fetched in full (paginated against Confluence). </source>
+        <target>Erforderlich. Passende Seiten werden vollständig abgerufen (paginiert gegen Confluence).</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-newParentFolderOptional" datatype="html">
+        <source> Parent folder (optional) </source>
+        <target>Übergeordneter Ordner (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-searchParentFolderPlaceholder" datatype="html">
+        <source>Search folder title or SHA</source>
+        <target>Ordner-Titel oder SHA suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-folderSuggestRow" datatype="html">
+        <source> Folder · <x id="INTERPOLATION" equiv-text="{{ n.title }}"/> </source>
+        <target>Ordner · <x id="INTERPOLATION" equiv-text="{{ n.title }}"/></target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-selectedParentFolder" datatype="html">
+        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentFolderId }}"/> </source>
+        <target>Ausgewählt: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentFolderId }}"/></target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnectionTitleHeading" datatype="html">
+        <source> Edit connection </source>
+        <target>Verbindung bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnLabel" datatype="html">
+        <source>Label</source>
+        <target>Bezeichnung</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnBaseUrl" datatype="html">
+        <source>Base URL</source>
+        <target>Basis-URL</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnAccountEmail" datatype="html">
+        <source>Account email</source>
+        <target>Konto-E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConnNewApiTokenOptional" datatype="html">
+        <source> New API token (optional) </source>
+        <target>Neuer API-Token (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editConfigHeading" datatype="html">
+        <source> Edit import config (<x id="INTERPOLATION" equiv-text="{{ configToEdit.importKind }}"/>) </source>
+        <target>Import-Konfiguration bearbeiten (<x id="INTERPOLATION" equiv-text="{{ configToEdit.importKind }}"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editBoardId" datatype="html">
+        <source>Board ID</source>
+        <target>Board-ID</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editParentTicketOptional" datatype="html">
+        <source> Parent ticket (optional) </source>
+        <target>Übergeordnetes Ticket (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-selectedParentTicketEdit" datatype="html">
+        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentTicketId }}"/> </source>
+        <target>Ausgewählt: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentTicketId }}"/></target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editSpaceKey" datatype="html">
+        <source>Space key</source>
+        <target>Space-Schlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editRootPageId" datatype="html">
+        <source>Root page ID</source>
+        <target>Stamm-Seiten-ID</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-editParentFolderOptional" datatype="html">
+        <source> Parent folder (optional) </source>
+        <target>Übergeordneter Ordner (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-selectedParentFolderEdit" datatype="html">
+        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentFolderId }}"/> </source>
+        <target>Ausgewählt: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentFolderId }}"/></target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionHeading" datatype="html">
+        <source> Delete connection </source>
+        <target>Verbindung löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionBody" datatype="html">
+        <source> Delete connection &quot;<x id="INTERPOLATION" equiv-text="{{ connectionLabel(connectionPendingDelete) }}"/>&quot;? Related import configs may stop working. </source>
+        <target> Verbindung &quot;<x id="INTERPOLATION" equiv-text="{{ connectionLabel(connectionPendingDelete) }}"/>&quot; löschen? Zugehörige Import-Konfigurationen funktionieren möglicherweise nicht mehr. </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionConfirm" datatype="html">
+        <source> Delete connection </source>
+        <target> Verbindung löschen </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConfigHeading" datatype="html">
+        <source> Delete import config </source>
+        <target> Import-Konfiguration löschen </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConfigBody" datatype="html">
+        <source> Delete <x id="INTERPOLATION" equiv-text="{{ configPendingDelete.importKind }}"/> import config for workspace <x id="INTERPOLATION_1" equiv-text="{{ clientName(configPendingDelete.clientId) }}"/>? </source>
+        <target> <x id="INTERPOLATION" equiv-text="{{ configPendingDelete.importKind }}"/>-Import-Konfiguration für den Arbeitsbereich <x id="INTERPOLATION_1" equiv-text="{{ clientName(configPendingDelete.clientId) }}"/> löschen? </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-deleteConfigConfirm" datatype="html">
+        <source> Delete config </source>
+        <target> Konfiguration löschen </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-clearMarkersHeading" datatype="html">
+        <source> Clear sync markers </source>
+        <target> Synchronisations-Markierungen löschen </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-clearMarkersBody" datatype="html">
+        <source> Clear all sync markers for this <x id="INTERPOLATION" equiv-text="{{ configPendingClearMarkers.importKind }}"/> config? External items may be re-imported as duplicates. </source>
+        <target> Alle Synchronisations-Markierungen für diese <x id="INTERPOLATION" equiv-text="{{ configPendingClearMarkers.importKind }}"/>-Konfiguration löschen? Externe Elemente könnten erneut importiert und als Duplikate angelegt werden. </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-clearMarkersConfirm" datatype="html">
+        <source> Clear markers </source>
+        <target> Markierungen löschen </target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-swimlaneDraft" datatype="html">
+        <source>Draft</source>
+        <target>Entwurf</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-swimlaneTodo" datatype="html">
+        <source>To do</source>
+        <target>Zu erledigen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-swimlaneInProgress" datatype="html">
+        <source>In progress</source>
+        <target>In Bearbeitung</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-swimlanePrototype" datatype="html">
+        <source>Prototype</source>
+        <target>Prototyp</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-swimlaneDone" datatype="html">
+        <source>Done</source>
+        <target>Erledigt</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-swimlaneClosed" datatype="html">
+        <source>Closed</source>
+        <target>Geschlossen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-laneConnections" datatype="html">
+        <source>Site connections</source>
+        <target>Site-Verbindungen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-laneConfigs" datatype="html">
+        <source>Import configs</source>
+        <target>Import-Konfigurationen</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-unnamedConnection" datatype="html">
+        <source>Unnamed connection</source>
+        <target>Unbenannte Verbindung</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-emptyField" datatype="html">
+        <source>—</source>
+        <target>—</target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-ticketPick" datatype="html">
+        <source><x id="title" equiv-text="t.title"/> · <x id="sha" equiv-text="short"/></source>
+        <target><x id="title" equiv-text="t.title"/> · <x id="sha" equiv-text="short"/></target>
+      </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-folderPick" datatype="html">
+        <source><x id="title" equiv-text="n.title"/> · <x id="sha" equiv-text="n.shas.short"/></source>
+        <target><x id="title" equiv-text="n.title"/> · <x id="sha" equiv-text="n.shas.short"/></target>
+      </trans-unit>
       <trans-unit id="featureAudit-filtersTitle" datatype="html">
         <source>Filters</source>
         <target>Filter</target>
@@ -226,6 +646,118 @@
         <source>Deleted</source>
         <target>Gelöscht</target>
       </trans-unit>
+      <trans-unit id="featureChat-agentEventKindUser" datatype="html">
+        <source>User</source>
+        <target>Benutzer</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindThinking" datatype="html">
+        <source>Thinking</source>
+        <target>Denken</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindInteractionQuery" datatype="html">
+        <source>Interaction</source>
+        <target>Interaktion</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindDelta" datatype="html">
+        <source>Delta</source>
+        <target>Delta</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindAssistant" datatype="html">
+        <source>Assistant</source>
+        <target>Assistent</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindTool" datatype="html">
+        <source>Tool</source>
+        <target>Tool</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindResult" datatype="html">
+        <source>Result</source>
+        <target>Ergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindQuestion" datatype="html">
+        <source>Question</source>
+        <target>Frage</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventKindError" datatype="html">
+        <source>Error</source>
+        <target>Fehler</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryUserMessage" datatype="html">
+        <source>User message</source>
+        <target>Benutzernachricht</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryThinking" datatype="html">
+        <source>Agent is thinking</source>
+        <target>Agent denkt nach</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryInteractionQuery" datatype="html">
+        <source>Query</source>
+        <target>Abfrage</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryAssistantStreaming" datatype="html">
+        <source>Assistant (streaming)</source>
+        <target>Assistent (Streaming)</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryAssistantMessage" datatype="html">
+        <source>Assistant message</source>
+        <target>Assistentennachricht</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryEnrichment" datatype="html">
+        <source>Enrichment</source>
+        <target>Anreicherung</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryToolCall" datatype="html">
+        <source>Tool call · <x id="toolName" equiv-text="name"/></source>
+        <target>Tool-Aufruf · <x id="toolName" equiv-text="name"/></target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryEnrichmentResult" datatype="html">
+        <source>Enrichment result</source>
+        <target>Anreicherungsergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryToolResult" datatype="html">
+        <source>Tool result · <x id="toolName" equiv-text="name"/></source>
+        <target>Tool-Ergebnis · <x id="toolName" equiv-text="name"/></target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryErrorWithCode" datatype="html">
+        <source>Error (<x id="errorCode" equiv-text="code"/>)</source>
+        <target>Fehler (<x id="errorCode" equiv-text="code"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolInvocationPopover" datatype="html">
+        <source>Tool invocation</source>
+        <target>Tool-Aufruf</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolResultPopover" datatype="html">
+        <source>Tool result</source>
+        <target>Tool-Ergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolAwaitingResultTitle" datatype="html">
+        <source>Awaiting tool result</source>
+        <target>Warte auf Tool-Ergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolAwaitingResultBody" datatype="html">
+        <source>The tool has not returned a result yet.</source>
+        <target>Das Tool hat noch kein Ergebnis geliefert.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventDetailPopover" datatype="html">
+        <source>Show event details</source>
+        <target>Ereignisdetails anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolInvocationPopoverAria" datatype="html">
+        <source>Show tool invocation details</source>
+        <target>Details zum Tool-Aufruf anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolResultPopoverAria" datatype="html">
+        <source>Show tool result details</source>
+        <target>Details zum Tool-Ergebnis anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentToolAwaitingAria" datatype="html">
+        <source>Tool result not received yet</source>
+        <target>Tool-Ergebnis steht noch aus</target>
+      </trans-unit>
       <trans-unit id="featureChat-brandAlt" datatype="html">
         <source>Agenstra</source>
         <target>Agenstra</target>
@@ -289,6 +821,10 @@
       <trans-unit id="featureChat-noWorkspaces" datatype="html">
         <source>No workspaces available</source>
         <target>Keine Arbeitsbereiche verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentsAttention" datatype="html">
+        <source>Environments need attention</source>
+        <target>Umgebungen erfordern Aufmerksamkeit</target>
       </trans-unit>
       <trans-unit id="featureChat-manageClientUsersTitle" datatype="html">
         <source>Manage workspace users</source>
@@ -438,122 +974,6 @@
         <source>Waiting for response...</source>
         <target>Warte auf Antwort...</target>
       </trans-unit>
-      <trans-unit id="featureChat-agentThinking" datatype="html">
-        <source>Agent is thinking...</source>
-        <target>Agent denkt nach...</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventDetailPopover" datatype="html">
-        <source>Show event details</source>
-        <target>Ereignisdetails anzeigen</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolInvocationPopover" datatype="html">
-        <source>Tool invocation</source>
-        <target>Tool-Aufruf</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolInvocationPopoverAria" datatype="html">
-        <source>Show tool invocation details</source>
-        <target>Details zum Tool-Aufruf anzeigen</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolResultPopover" datatype="html">
-        <source>Tool result</source>
-        <target>Tool-Ergebnis</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolResultPopoverAria" datatype="html">
-        <source>Show tool result details</source>
-        <target>Details zum Tool-Ergebnis anzeigen</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolAwaitingResultTitle" datatype="html">
-        <source>Awaiting tool result</source>
-        <target>Warte auf Tool-Ergebnis</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolAwaitingResultBody" datatype="html">
-        <source>The tool has not returned a result yet.</source>
-        <target>Das Tool hat noch kein Ergebnis geliefert.</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolAwaitingAria" datatype="html">
-        <source>Tool result not received yet</source>
-        <target>Tool-Ergebnis steht noch aus</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindUser" datatype="html">
-        <source>User</source>
-        <target>Benutzer</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindThinking" datatype="html">
-        <source>Thinking</source>
-        <target>Denken</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindInteractionQuery" datatype="html">
-        <source>Interaction</source>
-        <target>Interaktion</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindDelta" datatype="html">
-        <source>Delta</source>
-        <target>Delta</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindAssistant" datatype="html">
-        <source>Assistant</source>
-        <target>Assistent</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindTool" datatype="html">
-        <source>Tool</source>
-        <target>Tool</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindResult" datatype="html">
-        <source>Result</source>
-        <target>Ergebnis</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindQuestion" datatype="html">
-        <source>Question</source>
-        <target>Frage</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindStatus" datatype="html">
-        <source>Status</source>
-        <target>Status</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindError" datatype="html">
-        <source>Error</source>
-        <target>Fehler</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryUserMessage" datatype="html">
-        <source>User message</source>
-        <target>Benutzernachricht</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryThinking" datatype="html">
-        <source>Agent is thinking</source>
-        <target>Agent denkt nach</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryInteractionQuery" datatype="html">
-        <source>Query</source>
-        <target>Abfrage</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryAssistantStreaming" datatype="html">
-        <source>Assistant (streaming)</source>
-        <target>Assistent (Streaming)</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryAssistantMessage" datatype="html">
-        <source>Assistant message</source>
-        <target>Assistentennachricht</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryEnrichment" datatype="html">
-        <source>Enrichment</source>
-        <target>Anreicherung</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryToolCall" datatype="html">
-        <source>Tool call · <x id="toolName" equiv-text="name"/></source>
-        <target>Tool-Aufruf · <x id="toolName" equiv-text="name"/></target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryEnrichmentResult" datatype="html">
-        <source>Enrichment result</source>
-        <target>Anreicherungsergebnis</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryToolResult" datatype="html">
-        <source>Tool result · <x id="toolName" equiv-text="name"/></source>
-        <target>Tool-Ergebnis · <x id="toolName" equiv-text="name"/></target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryErrorWithCode" datatype="html">
-        <source>Error (<x id="errorCode" equiv-text="code"/>)</source>
-        <target>Fehler (<x id="errorCode" equiv-text="code"/>)</target>
-      </trans-unit>
       <trans-unit id="featureChat-reconnectingToServer" datatype="html">
         <source>Reconnecting to server...</source>
         <target>Verbinde erneut mit Server...</target>
@@ -563,8 +983,7 @@
         <target>Verbinde erneut mit Arbeitsbereich...</target>
       </trans-unit>
       <trans-unit id="featureChat-workspaceConnectionFailed" datatype="html">
-        <source>Workspace connection failed: <x id="INTERPOLATION" equiv-text="{{ remoteError }}" />
-        </source>
+        <source>Workspace connection failed: <x id="INTERPOLATION" equiv-text="{{ remoteError }}"/></source>
         <target>Verbindung zum Arbeitsbereich fehlgeschlagen: </target>
       </trans-unit>
       <trans-unit id="featureChat-dismissEnhanceError" datatype="html">
@@ -628,7 +1047,7 @@
         <target> Schritt 1: OpenClaw-Konfiguration anlegen </target>
       </trans-unit>
       <trans-unit id="featureChat-gatewayQuickstartStep1Intro" datatype="html">
-        <source> Create the default OpenClaw configuration file in the container. This writes <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code class=&quot;text-primary border border-primary rounded px-1&quot;&gt;" />.openclaw/openclaw.json<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;" /> so the gateway can load its settings. </source>
+        <source> Create the default OpenClaw configuration file in the container. This writes <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code class=&quot;text-primary border border-primary rounded px-1&quot;&gt;"/>.openclaw/openclaw.json<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> so the gateway can load its settings. </source>
         <target> Legen Sie die Standard-OpenClaw-Konfigurationsdatei im Container an. Dabei wird .openclaw/openclaw.json geschrieben, damit das Gateway seine Einstellungen laden kann. </target>
       </trans-unit>
       <trans-unit id="featureChat-gatewayQuickstartCreateConfig" datatype="html">
@@ -748,8 +1167,7 @@
         <target>Server bereitstellen</target>
       </trans-unit>
       <trans-unit id="featureChat-nameLabel" datatype="html">
-        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
+        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <target>Name *</target>
       </trans-unit>
       <trans-unit id="featureChat-descriptionLabel" datatype="html">
@@ -757,8 +1175,7 @@
         <target>Beschreibung</target>
       </trans-unit>
       <trans-unit id="featureChat-providerLabel" datatype="html">
-        <source>Provider <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
+        <source>Provider <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <target>Anbieter *</target>
       </trans-unit>
       <trans-unit id="featureChat-selectProvider" datatype="html">
@@ -766,8 +1183,7 @@
         <target>Anbieter auswählen</target>
       </trans-unit>
       <trans-unit id="featureChat-serverTypeLabel" datatype="html">
-        <source>Server Type <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
+        <source>Server Type <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <target>Servertyp *</target>
       </trans-unit>
       <trans-unit id="featureChat-selectServerType" datatype="html">
@@ -775,8 +1191,7 @@
         <target>Servertyp auswählen</target>
       </trans-unit>
       <trans-unit id="featureChat-endpointLabel" datatype="html">
-        <source>Endpoint <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
+        <source>Endpoint <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <target>Endpunkt *</target>
       </trans-unit>
       <trans-unit id="featureChat-endpointPlaceholder" datatype="html">
@@ -784,8 +1199,7 @@
         <target>https://example.com</target>
       </trans-unit>
       <trans-unit id="featureChat-authTypeLabel" datatype="html">
-        <source>Authentication Type <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
+        <source>Authentication Type <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <target>Authentifizierungstyp *</target>
       </trans-unit>
       <trans-unit id="featureChat-apiKeyAutoGeneratePlaceholder" datatype="html">
@@ -803,6 +1217,30 @@
       <trans-unit id="featureChat-agentImagePlaceholder" datatype="html">
         <source>ghcr.io/forepath/agenstra-manager-worker:latest</source>
         <target>ghcr.io/forepath/agenstra-manager-worker:latest</target>
+      </trans-unit>
+      <trans-unit id="featureChat-provisionAutoEnrichLabel" datatype="html">
+        <source>Prompt auto-enrichment</source>
+        <target>Automatische Prompt-Anreicherung</target>
+      </trans-unit>
+      <trans-unit id="featureChat-provisionAutoEnrichEnabled" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureChat-provisionAutoEnrichDisabled" datatype="html">
+        <source>Disabled</source>
+        <target>Deaktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureChat-provisionAutoEnrichHint" datatype="html">
+        <source>Sets AUTO_ENRICH_ENABLED_GLOBAL on the new workspace agent-manager.</source>
+        <target>Setzt AUTO_ENRICH_ENABLED_GLOBAL im neuen Arbeitsbereich-Agent-Manager.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-provisionVectorMaxCosLabel" datatype="html">
+        <source>Vector auto-enrichment max cosine distance</source>
+        <target>Maximaler Kosinusabstand für Vektor-Anreicherung</target>
+      </trans-unit>
+      <trans-unit id="featureChat-provisionVectorMaxCosHint" datatype="html">
+        <source>0–2 (pgvector &lt;=&gt;). Only knowledge chunks at or below this distance are used; default 1.</source>
+        <target>0–2 (pgvector &lt;=&gt;). Es werden nur Wissensabschnitte mit diesem Abstand oder kleiner verwendet; Standard 1.</target>
       </trans-unit>
       <trans-unit id="featureChat-gitRepoPlaceholder" datatype="html">
         <source>https://github.com/user/repo.git</source>
@@ -872,6 +1310,14 @@
         <source>Workspace Configuration Settings</source>
         <target>Workspace-Konfigurationseinstellungen</target>
       </trans-unit>
+      <trans-unit id="featureChat-workspaceAutoEnrichEnabled" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceAutoEnrichDisabled" datatype="html">
+        <source>Disabled</source>
+        <target>Deaktiviert</target>
+      </trans-unit>
       <trans-unit id="featureChat-workspaceConfigurationValuePlaceholder" datatype="html">
         <source>Enter override value</source>
         <target>Override-Wert eingeben</target>
@@ -885,7 +1331,7 @@
         <target>Override löschen</target>
       </trans-unit>
       <trans-unit id="featureChat-envVarsWarning" datatype="html">
-        <source>Changing the environment variables will re-create the agent's container. Context may be lost.</source>
+        <source>Changing the environment variables will re-create the agent&apos;s container. Context may be lost.</source>
         <target>Das Ändern der Umgebungsvariablen erstellt den Container des Agents neu. Kontext kann verloren gehen.</target>
       </trans-unit>
       <trans-unit id="featureChat-close" datatype="html">
@@ -1037,13 +1483,11 @@
         <target>Workspace-Dateien und Metadaten einbeziehen</target>
       </trans-unit>
       <trans-unit id="featureChat-contextToolbarEnvTitle" datatype="html">
-        <source>Environment context: <x id="agentName" equiv-text="agent.name" />
-        </source>
+        <source>Environment context: <x id="agentName" equiv-text="agent.name"/></source>
         <target>Umgebungskontext: </target>
       </trans-unit>
       <trans-unit id="featureChat-contextToolbarEnvUnknownTitle" datatype="html">
-        <source>Environment: <x id="agentId" equiv-text="id" />
-        </source>
+        <source>Environment: <x id="agentId" equiv-text="id"/></source>
         <target>Umgebung: </target>
       </trans-unit>
       <trans-unit id="featureChat-hideFileTree" datatype="html">
@@ -1110,6 +1554,42 @@
         <source>Open Deployment Manager</source>
         <target>Deployment Manager öffnen</target>
       </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleGitRepo" datatype="html">
+        <source>Git repository URL</source>
+        <target>Git-Repository-URL</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleGitUsername" datatype="html">
+        <source>Git username</source>
+        <target>Git-Benutzername</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleGitToken" datatype="html">
+        <source>Git token</source>
+        <target>Git-Token</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleGitPassword" datatype="html">
+        <source>Git password</source>
+        <target>Git-Passwort</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleGitPrivateKey" datatype="html">
+        <source>Git private key (SSH)</source>
+        <target>Git-Privatschlüssel (SSH)</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleCursorApiKey" datatype="html">
+        <source>Cursor API key</source>
+        <target>Cursor-API-Schlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleAgentImage" datatype="html">
+        <source>Agent default image</source>
+        <target>Standard-Agent-Image</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleAutoEnrichGlobal" datatype="html">
+        <source>Prompt auto-enrichment (workspace)</source>
+        <target>Automatische Prompt-Anreicherung (Arbeitsbereich)</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleVectorMaxCosineDistance" datatype="html">
+        <source>Vector auto-enrichment max cosine distance</source>
+        <target>Maximaler Kosinusabstand für Vektor-Anreicherung</target>
+      </trans-unit>
       <trans-unit id="featureChat-workspaceConfigurationSourceLabel" datatype="html">
         <source>Override</source>
         <target>Überschreiben</target>
@@ -1149,6 +1629,10 @@
       <trans-unit id="featureContainer-spaces" datatype="html">
         <source>Spaces</source>
         <target>Bereiche</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-spacesAttention" datatype="html">
+        <source>Spaces need attention</source>
+        <target>Spaces erfordern Aufmerksamkeit</target>
       </trans-unit>
       <trans-unit id="featureContainer-ticketsTitle" datatype="html">
         <source>Tickets</source>
@@ -1190,9 +1674,12 @@
         <source>Filters</source>
         <target>Filterregeln</target>
       </trans-unit>
+      <trans-unit id="featureContainer-importTitle" datatype="html">
+        <source>Import</source>
+        <target>Import</target>
+      </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
-        <source>Role <x id="role" equiv-text="role" />
-        </source>
+        <source>Role <x id="role" equiv-text="role"/></source>
         <target>Rolle </target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-loadingConfig" datatype="html">
@@ -1488,13 +1975,11 @@
         <target>Keine Jobs verfügbar</target>
       </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-startedAt" datatype="html">
-        <source> Started: <x id="INTERPOLATION" equiv-text="{{ formatDate(job.startedAt) }}" />
-        </source>
+        <source> Started: <x id="INTERPOLATION" equiv-text="{{ formatDate(job.startedAt) }}"/> </source>
         <target> Gestartet:  </target>
       </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-completedAt" datatype="html">
-        <source> Completed: <x id="INTERPOLATION" equiv-text="{{ formatDate(job.completedAt) }}" />
-        </source>
+        <source> Completed: <x id="INTERPOLATION" equiv-text="{{ formatDate(job.completedAt) }}"/> </source>
         <target> Abgeschlossen:  </target>
       </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-loadingLogs" datatype="html">
@@ -1658,13 +2143,11 @@
         <target>Was möchten Sie tun?</target>
       </trans-unit>
       <trans-unit id="featureFileEditor-externalChangesAcceptOption" datatype="html">
-        <source>
-          <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Accept:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Reload the file from the server (your unsaved changes will be lost) </source>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Accept:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Reload the file from the server (your unsaved changes will be lost) </source>
         <target>Akzeptieren: Datei vom Server neu laden (Ihre ungespeicherten Änderungen gehen verloren) </target>
       </trans-unit>
       <trans-unit id="featureFileEditor-externalChangesRejectOption" datatype="html">
-        <source>
-          <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Reject:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Keep your local changes and override the external changes when you save </source>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Reject:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Keep your local changes and override the external changes when you save </source>
         <target>Ablehnen: Lokale Änderungen behalten und externe Änderungen beim Speichern überschreiben </target>
       </trans-unit>
       <trans-unit id="featureFileEditor-rejectButton" datatype="html">
@@ -1794,11 +2277,11 @@
         <target>Zielpfad</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveDestinationPlaceholder" datatype="html">
-        <source>Enter destination path (e.g., 'folder' or 'folder/subfolder')</source>
+        <source>Enter destination path (e.g., &apos;folder&apos; or &apos;folder/subfolder&apos;)</source>
         <target>Zielpfad eingeben (z.B. 'ordner' oder 'ordner/unterordner')</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveDestinationHint" datatype="html">
-        <source> Use '.' for root directory, or enter a relative path like 'folder' or 'folder/subfolder' </source>
+        <source> Use &apos;.&apos; for root directory, or enter a relative path like &apos;folder&apos; or &apos;folder/subfolder&apos; </source>
         <target> Verwenden Sie '.' für das Stammverzeichnis oder geben Sie einen relativen Pfad wie 'ordner' oder 'ordner/unterordner' ein </target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveButton" datatype="html">
@@ -1826,8 +2309,7 @@
         <target>Merge-Konflikte erkannt - Klicken zum Öffnen der Versionskontrolle</target>
       </trans-unit>
       <trans-unit id="featureFileTree-currentBranchTitle" datatype="html">
-        <source>Current branch: <x id="branch" equiv-text="branch" />
-        </source>
+        <source>Current branch: <x id="branch" equiv-text="branch"/></source>
         <target>Aktueller Branch: </target>
       </trans-unit>
       <trans-unit id="featureFileTree-deleteDirectoryTitle" datatype="html">
@@ -1839,21 +2321,19 @@
         <target>Datei löschen</target>
       </trans-unit>
       <trans-unit id="featureFileTree-deleteDirectoryMessage" datatype="html">
-        <source>Are you sure you want to delete the directory <x id="PH" equiv-text="path" />?:path:</source>
+        <source>Are you sure you want to delete the directory <x id="PH" equiv-text="path"/>?:path:</source>
         <target>Sind Sie sicher, dass Sie den Ordner  löschen möchten?:path:</target>
       </trans-unit>
       <trans-unit id="featureFileTree-deleteFileMessage" datatype="html">
-        <source>Are you sure you want to delete the file <x id="PH" equiv-text="path" />?:path:</source>
+        <source>Are you sure you want to delete the file <x id="PH" equiv-text="path"/>?:path:</source>
         <target>Sind Sie sicher, dass Sie die Datei  löschen möchten?:path:</target>
       </trans-unit>
       <trans-unit id="featureFileTree-renameDirectoryMessage" datatype="html">
-        <source>Enter a new name for the directory <x id="path" equiv-text="path" />
-        </source>
+        <source>Enter a new name for the directory <x id="path" equiv-text="path"/></source>
         <target>Geben Sie einen neuen Namen für den Ordner  ein</target>
       </trans-unit>
       <trans-unit id="featureFileTree-renameFileMessage" datatype="html">
-        <source>Enter a new name for the file <x id="path" equiv-text="path" />
-        </source>
+        <source>Enter a new name for the file <x id="path" equiv-text="path"/></source>
         <target>Geben Sie einen neuen Namen für die Datei  ein</target>
       </trans-unit>
       <trans-unit id="featureFileTree-renameDirectoryTitle" datatype="html">
@@ -1873,21 +2353,19 @@
         <target>Datei verschieben</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveDirectoryMessage" datatype="html">
-        <source>Move the directory <x id="PH" equiv-text="path" /> to::path:</source>
+        <source>Move the directory <x id="PH" equiv-text="path"/> to::path:</source>
         <target>Verschieben Sie den Ordner  nach::path:</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveFileMessage" datatype="html">
-        <source>Move the file <x id="PH" equiv-text="path" /> to::path:</source>
+        <source>Move the file <x id="PH" equiv-text="path"/> to::path:</source>
         <target>Verschieben Sie die Datei  nach::path:</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveDirectoryDestination" datatype="html">
-        <source>The directory will be moved to: <x id="result" equiv-text="result" />
-        </source>
+        <source>The directory will be moved to: <x id="result" equiv-text="result"/></source>
         <target>Der Ordner wird verschoben nach: </target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveFileDestination" datatype="html">
-        <source>The file will be moved to: <x id="result" equiv-text="result" />
-        </source>
+        <source>The file will be moved to: <x id="result" equiv-text="result"/></source>
         <target>Die Datei wird verschoben nach: </target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-header" datatype="html">
@@ -1907,7 +2385,7 @@
         <target>Schnell zu Branch wechseln</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-quickSwitchHint" datatype="html">
-        <source> Enter the name (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;" />feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;" />) or a remote ref (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;" />origin/feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;" />).</source>
+        <source> Enter the name (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>) or a remote ref (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>origin/feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>).</source>
         <target> Geben Sie den Namen ein (z.B. feature/new-ui) oder eine Remote-Referenz (z.B. origin/feature/new-ui).</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-branchNamePlaceholder" datatype="html">
@@ -2131,7 +2609,7 @@
         <target>Keine Terminal-Sitzung</target>
       </trans-unit>
       <trans-unit id="featureTerminal-createSessionHint" datatype="html">
-        <source>Click "New" to create a terminal session</source>
+        <source>Click &quot;New&quot; to create a terminal session</source>
         <target>Klicken Sie auf „Neu“, um eine Terminal-Sitzung zu erstellen</target>
       </trans-unit>
       <trans-unit id="featureTerminal-newTerminalButton" datatype="html">
@@ -2251,7 +2729,7 @@
         <target>Workspace wechseln</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-noWorkspaces" datatype="html">
-        <source> You don't have any workspaces yet. </source>
+        <source> You don&apos;t have any workspaces yet. </source>
         <target>Du hast noch keine Workspaces.</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-goToSpaces" datatype="html">
@@ -2723,7 +3201,7 @@
         <target>Workspaces werden geladen…</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherEmpty" datatype="html">
-        <source>You don't have any workspaces yet.</source>
+        <source>You don&apos;t have any workspaces yet.</source>
         <target>Sie haben noch keine Workspaces.</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherEmptyHint" datatype="html">
@@ -3019,13 +3497,11 @@
         <target> Freigabe aufheben </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationFailures" datatype="html">
-        <source> Consecutive failures: <x id="INTERPOLATION" equiv-text="{{ acfg.consecutiveFailureCount }}" />
-        </source>
+        <source> Consecutive failures: <x id="INTERPOLATION" equiv-text="{{ acfg.consecutiveFailureCount }}"/> </source>
         <target>Aufeinanderfolgende Fehler: </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationNextRetry" datatype="html">
-        <source> Next retry: <x id="INTERPOLATION" equiv-text="{{ acfg.nextRetryAt | date: activityOccurredAtFormat }}" />
-        </source>
+        <source> Next retry: <x id="INTERPOLATION" equiv-text="{{ acfg.nextRetryAt | date: activityOccurredAtFormat }}"/> </source>
         <target>Nächster Wiederholungsversuch: </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationRunsHeading" datatype="html">
@@ -3536,6 +4012,34 @@
         <source>Back to login</source>
         <target>Zurück zur Anmeldung</target>
       </trans-unit>
+      <trans-unit id="featureAuth-loginTitle" datatype="html">
+        <source>Login :: Agenstra</source>
+        <target>Anmelden :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-registerTitle" datatype="html">
+        <source>Register :: Agenstra</source>
+        <target>Registrieren :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-requestPasswordResetTitle" datatype="html">
+        <source>Request Password Reset :: Agenstra</source>
+        <target>Passwort zurücksetzen anfordern :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-requestPasswordResetConfirmationTitle" datatype="html">
+        <source>Password Reset Requested :: Agenstra</source>
+        <target>Passwort-Reset angefordert :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-resetPasswordTitle" datatype="html">
+        <source>Reset Password :: Agenstra</source>
+        <target>Passwort zurücksetzen :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-confirmEmailTitle" datatype="html">
+        <source>Confirm Email :: Agenstra</source>
+        <target>E-Mail bestätigen :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-usersTitle" datatype="html">
+        <source>User Management :: Agenstra</source>
+        <target>Benutzerverwaltung :: Agenstra</target>
+      </trans-unit>
       <trans-unit id="featureLogin-appName" datatype="html">
         <source>Agenstra</source>
         <target>Agenstra</target>
@@ -3641,7 +4145,7 @@
         <target>Anmelden</target>
       </trans-unit>
       <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
-        <source>Character <x id="position" equiv-text="index + 1" /> of 6</source>
+        <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
         <target>Zeichen  von 6</target>
       </trans-unit>
       <trans-unit id="featureRegister-title" datatype="html">
@@ -4049,8 +4553,7 @@
         <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailLabel" datatype="html">
-        <source>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
+        <source>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <target>E-Mail *</target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailPlaceholder" datatype="html">
@@ -4058,8 +4561,7 @@
         <target>user@example.com</target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordLabel" datatype="html">
-        <source>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
+        <source>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <target>Passwort *</target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordPlaceholder" datatype="html">
@@ -4123,474 +4625,6 @@
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
         <target>Löschen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-pageTitle" datatype="html">
-        <source> Atlassian import (Jira &amp; Confluence) </source>
-        <target> Atlassian-Import (Jira &amp; Confluence) </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-refresh" datatype="html">
-        <source> Refresh </source>
-        <target> Aktualisieren </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-dismiss" datatype="html">
-        <source> Dismiss </source>
-        <target> Ausblenden </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-connectionTestLabel" datatype="html">
-        <source>Connection test:</source>
-        <target>Verbindungstest:</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-connectionTestOk" datatype="html">
-        <source>OK</source>
-        <target>OK</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-connectionTestFailed" datatype="html">
-        <source>Failed</source>
-        <target>Fehlgeschlagen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-add" datatype="html">
-        <source>Add</source>
-        <target>Hinzufügen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-searchConnectionsLabel" datatype="html">
-        <source>Search site connections</source>
-        <target>Site-Verbindungen suchen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-searchConnectionsPlaceholder" datatype="html">
-        <source>Search connections</source>
-        <target>Verbindungen suchen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-loadingConnections" datatype="html">
-        <source>Loading connections…</source>
-        <target>Verbindungen werden geladen…</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-noConnectionsYet" datatype="html">
-        <source> No connections yet. </source>
-        <target> Noch keine Verbindungen. </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-noConnectionsMatchSearch" datatype="html">
-        <source> No connections match your search. </source>
-        <target> Keine Verbindungen entsprechen Ihrer Suche. </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-connectionActionsAria" datatype="html">
-        <source>Connection actions</source>
-        <target>Verbindungsaktionen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-testConnectionTitle" datatype="html">
-        <source>Test connection</source>
-        <target>Verbindung testen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editConnectionTitle" datatype="html">
-        <source>Edit connection</source>
-        <target>Verbindung bearbeiten</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionTitle" datatype="html">
-        <source>Delete connection</source>
-        <target>Verbindung löschen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-searchConfigsLabel" datatype="html">
-        <source>Search import configs</source>
-        <target>Import-Konfigurationen suchen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-searchConfigsPlaceholder" datatype="html">
-        <source>Search import configs</source>
-        <target>Import-Konfigurationen suchen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-loadingConfigs" datatype="html">
-        <source>Loading configs…</source>
-        <target>Konfigurationen werden geladen…</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-noConfigsYet" datatype="html">
-        <source> No import configs yet. </source>
-        <target> Noch keine Import-Konfigurationen. </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-noConfigsMatchSearch" datatype="html">
-        <source> No import configs match your search. </source>
-        <target> Keine Import-Konfigurationen entsprechen Ihrer Suche. </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-badgeOn" datatype="html">
-        <source>On</source>
-        <target>Ein</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-badgeOff" datatype="html">
-        <source>Off</source>
-        <target>Aus</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-connectionToWorkspace" datatype="html">
-        <source>to</source>
-        <target>zu</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-neverRun" datatype="html">
-        <source>Never run</source>
-        <target>Nie ausgeführt</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-configActionsAria" datatype="html">
-        <source>Import config actions</source>
-        <target>Aktionen für Import-Konfiguration</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-runImportTitle" datatype="html">
-        <source>Run import now</source>
-        <target>Import jetzt ausführen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-runningImport" datatype="html">
-        <source>Running import…</source>
-        <target>Import läuft…</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-clearMarkersTitle" datatype="html">
-        <source>Clear sync markers</source>
-        <target>Synchronisations-Markierungen löschen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editConfigTitle" datatype="html">
-        <source>Edit import config</source>
-        <target>Import-Konfiguration bearbeiten</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-deleteConfigTitle" datatype="html">
-        <source>Delete import config</source>
-        <target>Import-Konfiguration löschen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-newConnectionTitle" datatype="html">
-        <source> New connection </source>
-        <target>Neue Verbindung</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-closeAria" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-newConnLabel" datatype="html">
-        <source>Label (optional)</source>
-        <target>Bezeichnung (optional)</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-newConnBaseUrl" datatype="html">
-        <source>Base URL</source>
-        <target>Basis-URL</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-newConnBaseUrlPlaceholder" datatype="html">
-        <source>https://your-site.atlassian.net</source>
-        <target>https://ihre-seite.atlassian.net</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-newConnAccountEmail" datatype="html">
-        <source>Account email</source>
-        <target>Konto-E-Mail</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-newConnApiToken" datatype="html">
-        <source>API token</source>
-        <target>API-Token</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-cancel" datatype="html">
-        <source> Cancel </source>
-        <target>Abbrechen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-save" datatype="html">
-        <source> Save </source>
-        <target>Speichern</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-newConfigTitle" datatype="html">
-        <source> New import config </source>
-        <target>Neue Import-Konfiguration</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-fieldConnection" datatype="html">
-        <source>Connection</source>
-        <target>Verbindung</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-selectPlaceholder" datatype="html">
-        <source>Select…</source>
-        <target>Auswählen…</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-fieldWorkspace" datatype="html">
-        <source>Workspace</source>
-        <target>Arbeitsbereich</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-fieldKind" datatype="html">
-        <source>Kind</source>
-        <target>Art</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-importKindJira" datatype="html">
-        <source>Jira</source>
-        <target>Jira</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-importKindConfluence" datatype="html">
-        <source>Confluence</source>
-        <target>Confluence</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-fieldEnabled" datatype="html">
-        <source>Enabled</source>
-        <target>Aktiviert</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-newBoardIdOptional" datatype="html">
-        <source>Board ID (optional)</source>
-        <target>Board-ID (optional)</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-boardIdExamplePlaceholder" datatype="html">
-        <source>e.g. 123</source>
-        <target>z. B. 123</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-fieldJql" datatype="html">
-        <source>JQL</source>
-        <target>JQL</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-jqlHelp" datatype="html">
-        <source> Required. Imported issues are not capped per run. </source>
-        <target>Erforderlich. Die Anzahl importierter Vorgänge ist pro Lauf nicht begrenzt.</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-fieldImportSwimlane" datatype="html">
-        <source>Import swimlane</source>
-        <target>Swimlane importieren</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-newParentTicketOptional" datatype="html">
-        <source> Parent ticket (optional) </source>
-        <target>Übergeordnetes Ticket (optional)</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-searchParentTicketPlaceholder" datatype="html">
-        <source>Search by title or ID</source>
-        <target>Nach Titel oder ID suchen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-selectedParentTicket" datatype="html">
-        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentTicketId }}"/> </source>
-        <target>Ausgewählt: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentTicketId }}"/></target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-clearSelection" datatype="html">
-        <source> Clear </source>
-        <target>Zurücksetzen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-newSpaceKeyOptional" datatype="html">
-        <source>Space key (optional)</source>
-        <target>Space-Schlüssel (optional)</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-newRootPageIdOptional" datatype="html">
-        <source>Root page ID (optional)</source>
-        <target>Stamm-Seiten-ID (optional)</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-fieldCql" datatype="html">
-        <source>CQL</source>
-        <target>CQL</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-cqlHelp" datatype="html">
-        <source> Required. Matching pages are fetched in full (paginated against Confluence). </source>
-        <target>Erforderlich. Passende Seiten werden vollständig abgerufen (paginiert gegen Confluence).</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-newParentFolderOptional" datatype="html">
-        <source> Parent folder (optional) </source>
-        <target>Übergeordneter Ordner (optional)</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-searchParentFolderPlaceholder" datatype="html">
-        <source>Search folder title or SHA</source>
-        <target>Ordner-Titel oder SHA suchen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-folderSuggestRow" datatype="html">
-        <source> Folder · <x id="INTERPOLATION" equiv-text="{{ n.title }}"/> </source>
-        <target>Ordner · <x id="INTERPOLATION" equiv-text="{{ n.title }}"/></target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-selectedParentFolder" datatype="html">
-        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentFolderId }}"/> </source>
-        <target>Ausgewählt: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentFolderId }}"/></target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editConnectionTitleHeading" datatype="html">
-        <source> Edit connection </source>
-        <target>Verbindung bearbeiten</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editConnLabel" datatype="html">
-        <source>Label</source>
-        <target>Bezeichnung</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editConnBaseUrl" datatype="html">
-        <source>Base URL</source>
-        <target>Basis-URL</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editConnAccountEmail" datatype="html">
-        <source>Account email</source>
-        <target>Konto-E-Mail</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editConnNewApiTokenOptional" datatype="html">
-        <source> New API token (optional) </source>
-        <target>Neuer API-Token (optional)</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editConfigHeading" datatype="html">
-        <source> Edit import config (<x id="INTERPOLATION" equiv-text="{{ configToEdit.importKind }}"/>) </source>
-        <target>Import-Konfiguration bearbeiten (<x id="INTERPOLATION" equiv-text="{{ configToEdit.importKind }}"/>)</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editBoardId" datatype="html">
-        <source>Board ID</source>
-        <target>Board-ID</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editParentTicketOptional" datatype="html">
-        <source> Parent ticket (optional) </source>
-        <target>Übergeordnetes Ticket (optional)</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-selectedParentTicketEdit" datatype="html">
-        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentTicketId }}"/> </source>
-        <target>Ausgewählt: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentTicketId }}"/></target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editSpaceKey" datatype="html">
-        <source>Space key</source>
-        <target>Space-Schlüssel</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editRootPageId" datatype="html">
-        <source>Root page ID</source>
-        <target>Stamm-Seiten-ID</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-editParentFolderOptional" datatype="html">
-        <source> Parent folder (optional) </source>
-        <target>Übergeordneter Ordner (optional)</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-selectedParentFolderEdit" datatype="html">
-        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentFolderId }}"/> </source>
-        <target>Ausgewählt: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentFolderId }}"/></target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionHeading" datatype="html">
-        <source> Delete connection </source>
-        <target>Verbindung löschen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionBody" datatype="html">
-        <source> Delete connection &quot;<x id="INTERPOLATION" equiv-text="{{ connectionLabel(connectionPendingDelete) }}"/>&quot;? Related import configs may stop working. </source>
-        <target> Verbindung &quot;<x id="INTERPOLATION" equiv-text="{{ connectionLabel(connectionPendingDelete) }}"/>&quot; löschen? Zugehörige Import-Konfigurationen funktionieren möglicherweise nicht mehr. </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionConfirm" datatype="html">
-        <source> Delete connection </source>
-        <target> Verbindung löschen </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-deleteConfigHeading" datatype="html">
-        <source> Delete import config </source>
-        <target> Import-Konfiguration löschen </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-deleteConfigBody" datatype="html">
-        <source> Delete <x id="INTERPOLATION" equiv-text="{{ configPendingDelete.importKind }}"/> import config for workspace <x id="INTERPOLATION_1" equiv-text="{{ clientName(configPendingDelete.clientId) }}"/>? </source>
-        <target> <x id="INTERPOLATION" equiv-text="{{ configPendingDelete.importKind }}"/>-Import-Konfiguration für den Arbeitsbereich <x id="INTERPOLATION_1" equiv-text="{{ clientName(configPendingDelete.clientId) }}"/> löschen? </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-deleteConfigConfirm" datatype="html">
-        <source> Delete config </source>
-        <target> Konfiguration löschen </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-clearMarkersHeading" datatype="html">
-        <source> Clear sync markers </source>
-        <target> Synchronisations-Markierungen löschen </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-clearMarkersBody" datatype="html">
-        <source> Clear all sync markers for this <x id="INTERPOLATION" equiv-text="{{ configPendingClearMarkers.importKind }}"/> config? External items may be re-imported as duplicates. </source>
-        <target> Alle Synchronisations-Markierungen für diese <x id="INTERPOLATION" equiv-text="{{ configPendingClearMarkers.importKind }}"/>-Konfiguration löschen? Externe Elemente könnten erneut importiert und als Duplikate angelegt werden. </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-clearMarkersConfirm" datatype="html">
-        <source> Clear markers </source>
-        <target> Markierungen löschen </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-swimlaneDraft" datatype="html">
-        <source>Draft</source>
-        <target>Entwurf</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-swimlaneTodo" datatype="html">
-        <source>To do</source>
-        <target>Zu erledigen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-swimlaneInProgress" datatype="html">
-        <source>In progress</source>
-        <target>In Bearbeitung</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-swimlanePrototype" datatype="html">
-        <source>Prototype</source>
-        <target>Prototyp</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-swimlaneDone" datatype="html">
-        <source>Done</source>
-        <target>Erledigt</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-swimlaneClosed" datatype="html">
-        <source>Closed</source>
-        <target>Geschlossen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-laneConnections" datatype="html">
-        <source>Site connections</source>
-        <target>Site-Verbindungen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-laneConfigs" datatype="html">
-        <source>Import configs</source>
-        <target>Import-Konfigurationen</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-unnamedConnection" datatype="html">
-        <source>Unnamed connection</source>
-        <target>Unbenannte Verbindung</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-emptyField" datatype="html">
-        <source>—</source>
-        <target>—</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-ticketPick" datatype="html">
-        <source><x id="title" equiv-text="t.title"/> · <x id="sha" equiv-text="short"/></source>
-        <target><x id="title" equiv-text="t.title"/> · <x id="sha" equiv-text="short"/></target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-folderPick" datatype="html">
-        <source><x id="title" equiv-text="n.title"/> · <x id="sha" equiv-text="n.shas.short"/></source>
-        <target><x id="title" equiv-text="n.title"/> · <x id="sha" equiv-text="n.shas.short"/></target>
-      </trans-unit>
-      <trans-unit id="featureChat-provisionAutoEnrichLabel" datatype="html">
-        <source>Prompt auto-enrichment</source>
-        <target>Automatische Prompt-Anreicherung</target>
-      </trans-unit>
-      <trans-unit id="featureChat-provisionAutoEnrichEnabled" datatype="html">
-        <source>Enabled</source>
-        <target>Aktiviert</target>
-      </trans-unit>
-      <trans-unit id="featureChat-provisionAutoEnrichDisabled" datatype="html">
-        <source>Disabled</source>
-        <target>Deaktiviert</target>
-      </trans-unit>
-      <trans-unit id="featureChat-provisionAutoEnrichHint" datatype="html">
-        <source>Sets AUTO_ENRICH_ENABLED_GLOBAL on the new workspace agent-manager.</source>
-        <target>Setzt AUTO_ENRICH_ENABLED_GLOBAL im neuen Arbeitsbereich-Agent-Manager.</target>
-      </trans-unit>
-      <trans-unit id="featureChat-provisionVectorMaxCosLabel" datatype="html">
-        <source>Vector auto-enrichment max cosine distance</source>
-        <target>Maximaler Kosinusabstand für Vektor-Anreicherung</target>
-      </trans-unit>
-      <trans-unit id="featureChat-provisionVectorMaxCosHint" datatype="html">
-        <source>0–2 (pgvector &lt;=&gt;). Only knowledge chunks at or below this distance are used; default 1.</source>
-        <target>0–2 (pgvector &lt;=&gt;). Es werden nur Wissensabschnitte mit diesem Abstand oder kleiner verwendet; Standard 1.</target>
-      </trans-unit>
-      <trans-unit id="featureChat-workspaceAutoEnrichEnabled" datatype="html">
-        <source>Enabled</source>
-        <target>Aktiviert</target>
-      </trans-unit>
-      <trans-unit id="featureChat-workspaceAutoEnrichDisabled" datatype="html">
-        <source>Disabled</source>
-        <target>Deaktiviert</target>
-      </trans-unit>
-      <trans-unit id="featureChat-workspaceSettingTitleGitRepo" datatype="html">
-        <source>Git repository URL</source>
-        <target>Git-Repository-URL</target>
-      </trans-unit>
-      <trans-unit id="featureChat-workspaceSettingTitleGitUsername" datatype="html">
-        <source>Git username</source>
-        <target>Git-Benutzername</target>
-      </trans-unit>
-      <trans-unit id="featureChat-workspaceSettingTitleGitToken" datatype="html">
-        <source>Git token</source>
-        <target>Git-Token</target>
-      </trans-unit>
-      <trans-unit id="featureChat-workspaceSettingTitleGitPassword" datatype="html">
-        <source>Git password</source>
-        <target>Git-Passwort</target>
-      </trans-unit>
-      <trans-unit id="featureChat-workspaceSettingTitleGitPrivateKey" datatype="html">
-        <source>Git private key (SSH)</source>
-        <target>Git-Privatschlüssel (SSH)</target>
-      </trans-unit>
-      <trans-unit id="featureChat-workspaceSettingTitleCursorApiKey" datatype="html">
-        <source>Cursor API key</source>
-        <target>Cursor-API-Schlüssel</target>
-      </trans-unit>
-      <trans-unit id="featureChat-workspaceSettingTitleAgentImage" datatype="html">
-        <source>Agent default image</source>
-        <target>Standard-Agent-Image</target>
-      </trans-unit>
-      <trans-unit id="featureChat-workspaceSettingTitleAutoEnrichGlobal" datatype="html">
-        <source>Prompt auto-enrichment (workspace)</source>
-        <target>Automatische Prompt-Anreicherung (Arbeitsbereich)</target>
-      </trans-unit>
-      <trans-unit id="featureChat-workspaceSettingTitleVectorMaxCosineDistance" datatype="html">
-        <source>Vector auto-enrichment max cosine distance</source>
-        <target>Maximaler Kosinusabstand für Vektor-Anreicherung</target>
-      </trans-unit>
-      <trans-unit id="featureContainer-importTitle" datatype="html">
-        <source>Import</source>
-        <target>Import</target>
       </trans-unit>
     </body>
   </file>

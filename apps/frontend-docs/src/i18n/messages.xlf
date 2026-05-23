@@ -50,12 +50,6 @@
       <trans-unit id="featureDocsPage-metaKeywords" datatype="html">
         <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
         </trans-unit>
-      <trans-unit id="featureDocsSearchPage-metaTitle" datatype="html">
-        <source>Search Documentation :: Agenstra</source>
-        </trans-unit>
-      <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
-        <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
-        </trans-unit>
       <trans-unit id="featureDocsSearchPage-title" datatype="html">
         <source>Search Documentation</source>
         </trans-unit>
@@ -67,6 +61,12 @@
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-enterQueryHint" datatype="html">
         <source>Enter a search query above to find documentation.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaTitle" datatype="html">
+        <source>Search Documentation :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
+        <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-foundOneResult" datatype="html">
         <source>Found <x id="PH" equiv-text="count"/> result for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>

@@ -2,6 +2,24 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featureAgentConsole-auditTitle" datatype="html">
+        <source>Audit :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConsole-filtersTitle" datatype="html">
+        <source>Filters :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConsole-atlassianImportTitle" datatype="html">
+        <source>Atlassian import :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConsole-ticketsTitle" datatype="html">
+        <source>Tickets :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConsole-knowledgeTitle" datatype="html">
+        <source>Knowledge :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConsole-managerTitle" datatype="html">
+        <source>Manager :: Agenstra</source>
+        </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-pageTitle" datatype="html">
         <source> Atlassian import (Jira &amp; Confluence) </source>
         </trans-unit>
@@ -467,6 +485,90 @@
       <trans-unit id="featureAudit-eventTypeDeleted" datatype="html">
         <source>Deleted</source>
         </trans-unit>
+      <trans-unit id="featureChat-agentEventKindUser" datatype="html">
+        <source>User</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventKindThinking" datatype="html">
+        <source>Thinking</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventKindInteractionQuery" datatype="html">
+        <source>Interaction</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventKindDelta" datatype="html">
+        <source>Delta</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventKindAssistant" datatype="html">
+        <source>Assistant</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventKindTool" datatype="html">
+        <source>Tool</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventKindResult" datatype="html">
+        <source>Result</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventKindQuestion" datatype="html">
+        <source>Question</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventKindStatus" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventKindError" datatype="html">
+        <source>Error</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryUserMessage" datatype="html">
+        <source>User message</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryThinking" datatype="html">
+        <source>Agent is thinking</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryInteractionQuery" datatype="html">
+        <source>Query</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryAssistantStreaming" datatype="html">
+        <source>Assistant (streaming)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryAssistantMessage" datatype="html">
+        <source>Assistant message</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryEnrichment" datatype="html">
+        <source>Enrichment</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryToolCall" datatype="html">
+        <source>Tool call · <x id="toolName" equiv-text="name"/></source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryEnrichmentResult" datatype="html">
+        <source>Enrichment result</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryToolResult" datatype="html">
+        <source>Tool result · <x id="toolName" equiv-text="name"/></source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventSummaryErrorWithCode" datatype="html">
+        <source>Error (<x id="errorCode" equiv-text="code"/>)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentToolInvocationPopover" datatype="html">
+        <source>Tool invocation</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentToolResultPopover" datatype="html">
+        <source>Tool result</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentToolAwaitingResultTitle" datatype="html">
+        <source>Awaiting tool result</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentToolAwaitingResultBody" datatype="html">
+        <source>The tool has not returned a result yet.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventDetailPopover" datatype="html">
+        <source>Show event details</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentToolInvocationPopoverAria" datatype="html">
+        <source>Show tool invocation details</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentToolResultPopoverAria" datatype="html">
+        <source>Show tool result details</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentToolAwaitingAria" datatype="html">
+        <source>Tool result not received yet</source>
+        </trans-unit>
       <trans-unit id="featureChat-brandAlt" datatype="html">
         <source>Agenstra</source>
         </trans-unit>
@@ -514,6 +616,9 @@
         </trans-unit>
       <trans-unit id="featureChat-noWorkspaces" datatype="html">
         <source>No workspaces available</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentsAttention" datatype="html">
+        <source>Environments need attention</source>
         </trans-unit>
       <trans-unit id="featureChat-manageClientUsersTitle" datatype="html">
         <source>Manage workspace users</source>
@@ -626,93 +731,6 @@
       <trans-unit id="featureChat-waitingForResponse" datatype="html">
         <source>Waiting for response...</source>
         </trans-unit>
-      <trans-unit id="featureChat-agentThinking" datatype="html">
-        <source>Agent is thinking...</source>
-        </trans-unit>
-      <trans-unit id="featureChat-agentEventDetailPopover" datatype="html">
-        <source>Show event details</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolInvocationPopover" datatype="html">
-        <source>Tool invocation</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolInvocationPopoverAria" datatype="html">
-        <source>Show tool invocation details</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolResultPopover" datatype="html">
-        <source>Tool result</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolResultPopoverAria" datatype="html">
-        <source>Show tool result details</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolAwaitingResultTitle" datatype="html">
-        <source>Awaiting tool result</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolAwaitingResultBody" datatype="html">
-        <source>The tool has not returned a result yet.</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentToolAwaitingAria" datatype="html">
-        <source>Tool result not received yet</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindUser" datatype="html">
-        <source>User</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindThinking" datatype="html">
-        <source>Thinking</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindInteractionQuery" datatype="html">
-        <source>Interaction</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindDelta" datatype="html">
-        <source>Delta</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindAssistant" datatype="html">
-        <source>Assistant</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindTool" datatype="html">
-        <source>Tool</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindResult" datatype="html">
-        <source>Result</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindQuestion" datatype="html">
-        <source>Question</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindStatus" datatype="html">
-        <source>Status</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventKindError" datatype="html">
-        <source>Error</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryUserMessage" datatype="html">
-        <source>User message</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryThinking" datatype="html">
-        <source>Agent is thinking</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryInteractionQuery" datatype="html">
-        <source>Query</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryAssistantStreaming" datatype="html">
-        <source>Assistant (streaming)</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryAssistantMessage" datatype="html">
-        <source>Assistant message</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryEnrichment" datatype="html">
-        <source>Enrichment</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryToolCall" datatype="html">
-        <source>Tool call · <x id="toolName" equiv-text="name"/></source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryEnrichmentResult" datatype="html">
-        <source>Enrichment result</source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryToolResult" datatype="html">
-        <source>Tool result · <x id="toolName" equiv-text="name"/></source>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryErrorWithCode" datatype="html">
-        <source>Error (<x id="errorCode" equiv-text="code"/>)</source>
-      </trans-unit>
       <trans-unit id="featureChat-reconnectingToServer" datatype="html">
         <source>Reconnecting to server...</source>
         </trans-unit>
@@ -1202,6 +1220,9 @@
         </trans-unit>
       <trans-unit id="featureContainer-spaces" datatype="html">
         <source>Spaces</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-spacesAttention" datatype="html">
+        <source>Spaces need attention</source>
         </trans-unit>
       <trans-unit id="featureContainer-ticketsTitle" datatype="html">
         <source>Tickets</source>
@@ -2983,6 +3004,27 @@
         </trans-unit>
       <trans-unit id="featureConfirmEmail-backToLogin" datatype="html">
         <source>Back to login</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-loginTitle" datatype="html">
+        <source>Login :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-registerTitle" datatype="html">
+        <source>Register :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-requestPasswordResetTitle" datatype="html">
+        <source>Request Password Reset :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-requestPasswordResetConfirmationTitle" datatype="html">
+        <source>Password Reset Requested :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-resetPasswordTitle" datatype="html">
+        <source>Reset Password :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-confirmEmailTitle" datatype="html">
+        <source>Confirm Email :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-usersTitle" datatype="html">
+        <source>User Management :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featureLogin-appName" datatype="html">
         <source>Agenstra</source>

@@ -2,6 +2,21 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featureContainer-overviewTitle" datatype="html">
+        <source>Overview :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-subscriptionsTitle" datatype="html">
+        <source>Plans :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-invoicesTitle" datatype="html">
+        <source>Invoices :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-serviceTypesTitle" datatype="html">
+        <source>Service Types :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-servicePlansTitle" datatype="html">
+        <source>Service Plans :: Agenstra</source>
+        </trans-unit>
       <trans-unit id="featureBilling-subscriptionStatusEmpty" datatype="html">
         <source>Unknown</source>
         </trans-unit>
@@ -56,32 +71,17 @@
       <trans-unit id="featureContainer-logout" datatype="html">
         <source>Logout</source>
         </trans-unit>
-      <trans-unit id="featureContainer-overviewTitle" datatype="html">
-        <source>Overview</source>
-        </trans-unit>
       <trans-unit id="featureContainer-overview" datatype="html">
         <source>Overview</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-subscriptionsTitle" datatype="html">
-        <source>Subscriptions</source>
         </trans-unit>
       <trans-unit id="featureContainer-subscriptions" datatype="html">
         <source>Plans</source>
         </trans-unit>
-      <trans-unit id="featureContainer-invoicesTitle" datatype="html">
-        <source>Invoices</source>
-        </trans-unit>
       <trans-unit id="featureContainer-invoices" datatype="html">
         <source>Billing</source>
         </trans-unit>
-      <trans-unit id="featureContainer-serviceTypesTitle" datatype="html">
-        <source>Providers</source>
-        </trans-unit>
       <trans-unit id="featureContainer-serviceTypes" datatype="html">
         <source>Providers</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-servicePlansTitle" datatype="html">
-        <source>Plans</source>
         </trans-unit>
       <trans-unit id="featureContainer-servicePlans" datatype="html">
         <source>Plans</source>
@@ -256,6 +256,9 @@
         </trans-unit>
       <trans-unit id="featureOverview-serverRestart" datatype="html">
         <source>Restart</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-serverStatusUpdating" datatype="html">
+        <source>Server status updating…</source>
         </trans-unit>
       <trans-unit id="featureOverview-openConsole" datatype="html">
         <source>Console</source>
@@ -811,6 +814,27 @@
         </trans-unit>
       <trans-unit id="featureConfirmEmail-backToLogin" datatype="html">
         <source>Back to login</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-loginTitle" datatype="html">
+        <source>Login :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-registerTitle" datatype="html">
+        <source>Register :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-requestPasswordResetTitle" datatype="html">
+        <source>Request Password Reset :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-requestPasswordResetConfirmationTitle" datatype="html">
+        <source>Password Reset Requested :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-resetPasswordTitle" datatype="html">
+        <source>Reset Password :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-confirmEmailTitle" datatype="html">
+        <source>Confirm Email :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-usersTitle" datatype="html">
+        <source>User Management :: Agenstra</source>
         </trans-unit>
       <trans-unit id="featureLogin-appName" datatype="html">
         <source>Agenstra</source>

@@ -41,4 +41,7 @@ export interface Environment {
     privacyPolicyUrl: string;
     termsUrl: string;
   };
+  socialPreview: {
+    imageUrl: string;
+  };
 }

@@ -1,14 +1,19 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, effect, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, LOCALE_ID, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
+import { ENVIRONMENT, type Environment } from '@forepath/framework/frontend/util-configuration';
+import { DocMetadata, NavigationNode } from '@forepath/framework/frontend/util-docs-parser';
 import {
-  DocMetadata,
+  addPageMetaTags,
+  applySocialPreviewMeta,
+  DOCS_PAGE_DYNAMIC_META_TAG_STUBS,
   formatAgenstraMetaDescription,
   formatAgenstraMetaTitle,
-  NavigationNode,
-} from '@forepath/framework/frontend/util-docs-parser';
+  removePageMetaTags,
+  resolveSocialCanonicalUrl,
+} from '@forepath/framework/frontend/util-meta';
 import { catchError, filter, map, Observable, of, startWith, switchMap } from 'rxjs';
 
 import { DocsBreadcrumbsComponent, DocsContentComponent, DocsTableOfContentsComponent } from '../../components';
@@ -29,9 +34,20 @@ export class DocsPageComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
+  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly locale = inject(LOCALE_ID);
 
   private readonly metaTitleFallback = $localize`:@@featureDocsPage-metaTitleFallback:Documentation :: Agenstra`;
   private readonly metaDescriptionFallback = $localize`:@@featureDocsPage-metaDescriptionFallback:Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.`;
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly docsStaticMetaTags = [
+    {
+      name: 'keywords',
+      content: $localize`:@@featureDocsPage-metaKeywords:Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents`,
+    },
+    { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
+    { name: 'robots', content: 'index, follow' },
+  ];
 
   constructor() {
     // Update active path whenever currentPath changes
@@ -127,14 +143,8 @@ export class DocsPageComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    this.metaService.addTags([
-      {
-        name: 'keywords',
-        content: $localize`:@@featureDocsPage-metaKeywords:Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents`,
-      },
-      { name: 'author', content: 'IPvX UG (haftungsbeschränkt)' },
-      { name: 'robots', content: 'index, follow' },
-    ]);
+    this.destroyRef.onDestroy(addPageMetaTags(this.metaService, this.docsStaticMetaTags));
+    this.destroyRef.onDestroy(() => removePageMetaTags(this.metaService, DOCS_PAGE_DYNAMIC_META_TAG_STUBS));
 
     // During SSR, skip content loading to avoid loops and timeout issues
     // Content will be loaded on the client side
@@ -253,12 +263,24 @@ export class DocsPageComponent implements OnInit {
     this.titleService.setTitle(title);
 
     const summary = metadata?.summary?.trim();
-    const description = formatAgenstraMetaDescription(summary || this.metaDescriptionFallback);
+    const descriptionSource = summary || this.metaDescriptionFallback;
+    const description = formatAgenstraMetaDescription(descriptionSource);
+    const canonicalUrl = resolveSocialCanonicalUrl(
+      `https://docs.agenstra.com${path}`,
+      this.locale,
+      this.environment.production,
+    );
 
     this.metaService.updateTag({ name: 'description', content: description });
-    this.metaService.updateTag({
-      name: 'canonical',
-      content: `https://docs.agenstra.com${path}`,
+    this.metaService.updateTag({ name: 'canonical', content: canonicalUrl });
+    applySocialPreviewMeta((tag) => this.metaService.updateTag(tag), {
+      title,
+      description: descriptionSource,
+      canonicalUrl: `https://docs.agenstra.com${path}`,
+      imageUrl: this.environment.socialPreview.imageUrl,
+      localeId: this.locale,
+      localizeCanonicalUrl: this.environment.production,
+      type: 'article',
     });
   }
 
