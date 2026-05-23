@@ -312,8 +312,8 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     },
     cookieConsent: {
       domain: `.${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
-      privacyPolicyUrl: 'https://www.agenstra.com/legal/privacy',
-      termsUrl: 'https://www.agenstra.com/legal/terms',
+      privacyPolicyUrl: 'https://agenstra.com/legal/privacy',
+      termsUrl: 'https://agenstra.com/legal/terms',
     },
   };
   const dockerCompose = `services:
