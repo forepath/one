@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.4.1](https://github.com/forepath/agenstra/compare/v2.4.0...v2.4.1) (2026-05-23)
+
+
+### Bug Fixes
+
+* remove www subdomain ([#383](https://github.com/forepath/agenstra/issues/383)) ([7148892](https://github.com/forepath/agenstra/commit/7148892fb9409caa71200893b0ff93bb09a4cbc7))
+
 ## [2.4.0](https://github.com/forepath/agenstra/compare/v2.3.0...v2.4.0) (2026-05-23)
 
 
