@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.4.0](https://github.com/forepath/agenstra/compare/v2.3.0...v2.4.0) (2026-05-23)
+
+
+### Features
+
+* social media meta tags ([#382](https://github.com/forepath/agenstra/issues/382)) ([4ae234a](https://github.com/forepath/agenstra/commit/4ae234ae22b6f3592e574cf90eb8a9278e51b760))
+
 ## [2.3.0](https://github.com/forepath/agenstra/compare/v2.2.1...v2.3.0) (2026-05-22)
 
 
