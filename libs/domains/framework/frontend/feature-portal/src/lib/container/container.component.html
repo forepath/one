@@ -1,6 +1,11 @@
-<header class="header sticky-top bg-dark text-white" [class.shadow]="isScrolled()">
+<header
+  class="header sticky-top bg-dark text-white grid-section grid-section--navigation"
+  [class.shadow]="isScrolled()"
+>
   <nav class="navbar navbar-expand-md navbar-dark p-0">
-    <div class="container d-flex align-items-center justify-content-between gap-2 navbar-content">
+    <div
+      class="container grid-section__container grid-section__container--shadow d-flex align-items-center justify-content-between gap-2 navbar-content"
+    >
       <div class="d-flex align-items-center">
         <a routerLink="/" class="brand-icon-container fs-3 bg-primary p-3">
           <img
@@ -166,8 +171,8 @@
   </nav>
 </header>
 <router-outlet></router-outlet>
-<footer class="footer bg-dark text-white position-relative overflow-hidden">
-  <div class="container">
+<footer class="footer bg-dark text-white position-relative overflow-hidden grid-section pt-10">
+  <div class="container grid-section__container">
     <div class="row">
       <div class="col-md-4 mb-3 mb-md-0">
         <img src="assets/images/favicon.svg" i18n-alt="@@featurePortal-brandAlt" alt="Agenstra" class="brand-icon" />
@@ -363,7 +368,7 @@
     </div>
   </div>
   <div class="text-white py-5">
-    <div class="container">
+    <div class="container grid-section__container grid-section__container--dark">
       <div class="row">
         <div class="col-md-12 text-center">
           <p class="mb-0 small" i18n="@@featurePortal-footerCopyright">
