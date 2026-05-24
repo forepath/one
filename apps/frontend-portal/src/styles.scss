@@ -233,3 +233,229 @@ html {
     --bs-gutter-x: 4rem;
   }
 }
+
+.grid-section {
+  border-top: 1px solid var(--bs-border-color);
+  overflow: hidden;
+
+  &.grid-section--navigation {
+    --bs-border-color: rgb(28, 28, 31);
+    border-bottom: 1px solid var(--bs-border-color);
+    border-top: none;
+    overflow: visible;
+
+    .grid-section__container {
+      &::before,
+      &::after {
+        height: 100%;
+        top: 0;
+      }
+    }
+  }
+
+  &.bg-dark {
+    --bs-border-color: rgb(28, 28, 31);
+
+    > .grid-section__container {
+      --bs-border-color: rgb(28, 28, 31);
+    }
+  }
+
+  &#hero {
+    border-top: 0;
+  }
+
+  .grid-section__container {
+    position: relative;
+
+    &.grid-section__container--dark {
+      --bs-border-color: rgb(28, 28, 31);
+    }
+
+    &.grid-section__container--shadow {
+      margin-bottom: -1px;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -2rem;
+      left: -2rem;
+      width: 1px;
+      height: calc(100% + 4rem);
+      background-color: var(--bs-border-color);
+
+      @media (min-width: 576px) {
+        height: calc(100% + 6rem);
+        top: -3rem;
+      }
+
+      @media (min-width: 768px) {
+        height: calc(100% + 12rem);
+        top: -6rem;
+      }
+
+      @media (max-width: 635px) {
+        display: none;
+      }
+
+      // Safe fallbacks when side margin is tighter than *-10 offsets
+      @media (min-width: 576px) {
+        left: calc((100% - 540px) / 2 - 9px);
+      }
+
+      @media (min-width: 768px) {
+        left: calc((100% - 720px) / 2 - 12px);
+      }
+
+      @media (min-width: 992px) {
+        left: calc((100% - 960px) / 2 - 8px);
+      }
+
+      @media (min-width: 1200px) {
+        left: calc((100% - 1140px) / 2 - 15px);
+      }
+
+      @media (min-width: 1400px) {
+        left: calc((100% - 1320px) / 2 - 20px);
+      }
+
+      // Prefer *-10 horizontal offsets when side margin fits (scoped per container max-width)
+      // sm — 540px container
+      @media (min-width: 636px) and (max-width: 731.98px) {
+        left: -3rem;
+      }
+
+      @media (min-width: 732px) and (max-width: 767.98px) {
+        left: -6rem;
+      }
+
+      // md — 720px container
+      @media (min-width: 816px) and (max-width: 911.98px) {
+        left: -3rem;
+      }
+
+      @media (min-width: 912px) and (max-width: 991.98px) {
+        left: -6rem;
+      }
+
+      // lg — 960px container
+      @media (min-width: 1056px) and (max-width: 1151.98px) {
+        left: -3rem;
+      }
+
+      @media (min-width: 1152px) and (max-width: 1199.98px) {
+        left: -6rem;
+      }
+
+      // xl — 1140px container
+      @media (min-width: 1236px) and (max-width: 1331.98px) {
+        left: -3rem;
+      }
+
+      @media (min-width: 1332px) and (max-width: 1399.98px) {
+        left: -6rem;
+      }
+
+      // xxl — 1320px container
+      @media (min-width: 1416px) and (max-width: 1511.98px) {
+        left: -3rem;
+      }
+
+      @media (min-width: 1512px) {
+        left: -6rem;
+      }
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: -2rem;
+      right: -2rem;
+      width: 1px;
+      height: calc(100% + 4rem);
+      background-color: var(--bs-border-color);
+
+      @media (min-width: 576px) {
+        height: calc(100% + 6rem);
+        top: -3rem;
+      }
+
+      @media (min-width: 768px) {
+        height: calc(100% + 12rem);
+        top: -6rem;
+      }
+
+      @media (max-width: 635px) {
+        display: none;
+      }
+
+      // Safe fallbacks when side margin is tighter than *-10 offsets
+      @media (min-width: 576px) {
+        right: calc((100% - 540px) / 2 - 9px);
+      }
+
+      @media (min-width: 768px) {
+        right: calc((100% - 720px) / 2 - 12px);
+      }
+
+      @media (min-width: 992px) {
+        right: calc((100% - 960px) / 2 - 8px);
+      }
+
+      @media (min-width: 1200px) {
+        right: calc((100% - 1140px) / 2 - 15px);
+      }
+
+      @media (min-width: 1400px) {
+        right: calc((100% - 1320px) / 2 - 20px);
+      }
+
+      // Prefer *-10 horizontal offsets when side margin fits (scoped per container max-width)
+      // sm — 540px container
+      @media (min-width: 636px) and (max-width: 731.98px) {
+        right: -3rem;
+      }
+
+      @media (min-width: 732px) and (max-width: 767.98px) {
+        right: -6rem;
+      }
+
+      // md — 720px container
+      @media (min-width: 816px) and (max-width: 911.98px) {
+        right: -3rem;
+      }
+
+      @media (min-width: 912px) and (max-width: 991.98px) {
+        right: -6rem;
+      }
+
+      // lg — 960px container
+      @media (min-width: 1056px) and (max-width: 1151.98px) {
+        right: -3rem;
+      }
+
+      @media (min-width: 1152px) and (max-width: 1199.98px) {
+        right: -6rem;
+      }
+
+      // xl — 1140px container
+      @media (min-width: 1236px) and (max-width: 1331.98px) {
+        right: -3rem;
+      }
+
+      @media (min-width: 1332px) and (max-width: 1399.98px) {
+        right: -6rem;
+      }
+
+      // xxl — 1320px container
+      @media (min-width: 1416px) and (max-width: 1511.98px) {
+        right: -3rem;
+      }
+
+      @media (min-width: 1512px) {
+        right: -6rem;
+      }
+    }
+  }
+}
