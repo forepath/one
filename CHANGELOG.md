@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.5.0](https://github.com/forepath/agenstra/compare/v2.4.1...v2.5.0) (2026-05-24)
+
+
+### Features
+
+* grid-like section separation ([#384](https://github.com/forepath/agenstra/issues/384)) ([9e68b55](https://github.com/forepath/agenstra/commit/9e68b5576ff60392732d7ba4aac5cd2ec1f5bc8d))
+
+
+### Bug Fixes
+
+* grid-like section separation ([#385](https://github.com/forepath/agenstra/issues/385)) ([eed37d0](https://github.com/forepath/agenstra/commit/eed37d0a177fac541ca1953dc36650f641ee2af9))
+
 ## [2.4.1](https://github.com/forepath/agenstra/compare/v2.4.0...v2.4.1) (2026-05-23)
 
 
