@@ -254,10 +254,10 @@ html {
   }
 
   &.bg-dark {
-    --bs-border-color: rgb(28, 28, 31);
+    --bs-border-color: rgba(255, 255, 255, 0.08);
 
     > .grid-section__container {
-      --bs-border-color: rgb(28, 28, 31);
+      --bs-border-color: rgba(255, 255, 255, 0.08);
     }
   }
 
@@ -269,11 +269,52 @@ html {
     position: relative;
 
     &.grid-section__container--dark {
-      --bs-border-color: rgb(28, 28, 31);
+      --bs-border-color: rgba(255, 255, 255, 0.08);
     }
 
     &.grid-section__container--shadow {
       margin-bottom: -1px;
+    }
+
+    &.grid-section__container--hero-top,
+    &.grid-section__container--footer-top {
+      &::before,
+      &::after {
+        @media (min-width: 576px) {
+          height: calc(100% + 3rem);
+          top: -3rem;
+        }
+
+        @media (min-width: 768px) {
+          height: calc(100% + 6rem);
+          top: -6rem;
+        }
+      }
+    }
+
+    &.grid-section__container--hero-bottom {
+      &::before,
+      &::after {
+        @media (min-width: 576px) {
+          height: calc(100% + 3rem);
+          top: 0;
+        }
+
+        @media (min-width: 768px) {
+          height: calc(100% + 6rem);
+          top: 0;
+        }
+      }
+    }
+
+    &.grid-section__container--footer-bottom {
+      &::before,
+      &::after {
+        @media (min-width: 576px) {
+          height: calc(100% + 6rem);
+          top: -3rem;
+        }
+      }
     }
 
     &::before {
