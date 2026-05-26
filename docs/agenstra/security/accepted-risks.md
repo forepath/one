@@ -1,6 +1,6 @@
 # Accepted risks (register)
 
-This register records **explicit risk acceptance** for product and deployment constraints that deviate from stricter security baselines. It supports **BSI / ISMS-style** traceability and **CRA-oriented** technical documentation (risk treatment and transparency). A compact summary table may also be published at the repository root in `SECURITY.md` for hosts that surface that file. For vulnerability reporting, SBOM paths, and desktop checksum verification, see **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**.
+This register records **explicit risk acceptance** for product and deployment constraints that deviate from stricter security baselines. It supports **BSI / ISMS-style** traceability and **CRA-oriented** technical documentation (risk treatment and transparency). Scored risks and threats are documented in **[Risk profile](./risk-profile.md)** and **[Threat model](./threat-model.md)**. A compact summary table may also be published at the repository root in `SECURITY.md` for hosts that surface that file. For vulnerability reporting, SBOM paths, and desktop checksum verification, see **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**.
 
 **Review cadence:** entries use acceptance **2026-05-06** and next review **2027-05-06** unless a row states otherwise; trigger an early review if the relevant templates, packaging, CSP integration, authentication resolution, or Electron shell policy change materially.
 
@@ -151,6 +151,7 @@ New windows are **allowed** by design. Risk is **lower** than in a general-purpo
 
 ## Related documentation
 
+- **[Threat model](./threat-model.md)** and **[Risk profile](./risk-profile.md)**
 - **[Compliance and standards](./compliance-and-standards.md)**
 - **[Operational hardening](./operational-hardening.md)**
 - **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**

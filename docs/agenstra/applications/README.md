@@ -90,6 +90,8 @@ graph TB
 
 ## Related Documentation
 
+- **[Security — Threat model](../security/threat-model.md)** - Per-application threats and trust boundaries
+- **[Security — Risk profile](../security/risk-profile.md)** - Scored risks per application
 - **[Architecture Overview](../architecture/system-overview.md)** - System architecture
 - **[Getting Started](../getting-started.md)** - Setup and configuration
 - **[Deployment Guide](../deployment/README.md)** - Deployment documentation

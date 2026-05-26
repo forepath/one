@@ -83,7 +83,9 @@ Deployment guides and configuration:
 Public security and compliance-oriented documentation:
 
 - [Compliance and standards](./security/compliance-and-standards.md) - EU CRA and BSI IT-Grundschutz documentation themes (informative)
-- [Accepted risks](./security/accepted-risks.md) - Register AR-001 through AR-005 with mitigations and review dates
+- [Threat model](./security/threat-model.md) - Per-service threats and trust boundaries (monorepo `apps/*`)
+- [Risk profile](./security/risk-profile.md) - Probability × impact scoring (LOW / MEDIUM / HIGH / CRITICAL)
+- [Accepted risks](./security/accepted-risks.md) - Register AR-001 through AR-006 with mitigations and review dates
 - [Container image security](./security/container-images.md) - Non-root users, bind mounts, restricted sudo
 - [Operational hardening](./security/operational-hardening.md) - Implemented controls (including container image hardening) and operator notes
 - [Vulnerability reporting and artifacts](./security/vulnerability-reporting-and-artifacts.md) - Disclosure process, SBOM paths, desktop integrity

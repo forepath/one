@@ -92,7 +92,7 @@ This framework includes several built-in security features:
 
 ## Documented security deviations (accepted risks)
 
-The product intentionally departs from stricter baselines in a few places. Each item below is **accepted** with compensating measures and a **review cadence**. Expanded register entries (BSI / ISMS-style fields, operator summaries, and withdrawal paths) live in **[docs/agenstra/security/accepted-risks.md](./docs/agenstra/security/accepted-risks.md)**. Additional threat context and backlog items may appear in [`thread-analysis.md`](./thread-analysis.md) (internal analysis note).
+The product intentionally departs from stricter baselines in a few places. Each item below is **accepted** with compensating measures and a **review cadence**. Expanded register entries (BSI / ISMS-style fields, operator summaries, and withdrawal paths) live in **[docs/agenstra/security/accepted-risks.md](./docs/agenstra/security/accepted-risks.md)**. CRA-oriented **threat modeling** and **risk profiling** (per-service, probability × impact) are in **[docs/agenstra/security/threat-model.md](./docs/agenstra/security/threat-model.md)** and **[docs/agenstra/security/risk-profile.md](./docs/agenstra/security/risk-profile.md)**.
 
 | ID         | Area                                                                                                                                             | What we accept                                                                                                                                                                                                                                                                                                                                     | Mitigations (short)                                                                                                                                                                                                                                                                                                                                                 | Next review                                                                            |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -127,7 +127,9 @@ Details: **[Software Bill of Materials (SBOM)](./docs/agenstra/security/vulnerab
 ### Documentation
 
 - [Project overview and docs](./docs/agenstra/README.md) - Architecture, deployment, and setup
-- [Security documentation](./docs/agenstra/security/README.md) - CRA- and BSI-oriented transparency, accepted-risk register, hardening, SBOM, disclosure, and CI scanning (Trivy)
+- [Security documentation](./docs/agenstra/security/README.md) - CRA threat model and risk profile, accepted-risk register, hardening, SBOM, disclosure, and CI scanning (Trivy)
+- [Threat model](./docs/agenstra/security/threat-model.md) - Trust boundaries and per-service threats
+- [Risk profile](./docs/agenstra/security/risk-profile.md) - Probability × impact risk register
 
 ### External Resources
 

@@ -108,7 +108,7 @@ Agenstra uses a three-tier architecture:
 - **Secure Communication** - HTTPS and WSS in production
 - **Credential Management** - Secure storage and encryption
 
-See **[Security documentation](../security/README.md)** for the accepted-risk register, CRA- and BSI-oriented transparency notes, and operational controls.
+See **[Security documentation](../security/README.md)** for the **[threat model](../security/threat-model.md)**, **[risk profile](../security/risk-profile.md)**, accepted-risk register, CRA- and BSI-oriented transparency notes, and operational controls.
 
 ### Reliability
 
