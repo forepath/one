@@ -16,13 +16,13 @@ jobs:
       new_release_version: ${{ steps.semantic-release.outputs.new_release_version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Set nx shas
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
@@ -35,7 +35,7 @@ jobs:
           private_key: ${{ secrets.SEMANTIC_RELEASE_KEY_PEM }}
 
       - name: Semantic release
-        uses: cycjimmy/semantic-release-action@v5
+        uses: cycjimmy/semantic-release-action@v6
         id: semantic-release
         with:
           semantic_version: 22.0.5
@@ -61,7 +61,7 @@ jobs:
         run: npx nx run-many --target=sbom --parallel=1 || echo "No projects for sbom generation"
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: steps.semantic-release.outputs.new_release_published == 'true'
         with:
           name: build-artifacts
@@ -82,16 +82,16 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Set nx shas
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: .
@@ -100,7 +100,7 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: 'Login to container registry'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -129,16 +129,16 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Set nx shas
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: .
@@ -147,7 +147,7 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: 'Login to container registry'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -176,16 +176,16 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Set nx shas
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: .
@@ -194,7 +194,7 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: 'Login to container registry'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -223,16 +223,16 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Set nx shas
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: .
@@ -241,7 +241,7 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: 'Login to container registry'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -270,16 +270,16 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Set nx shas
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: .
@@ -288,7 +288,7 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: 'Login to container registry'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -317,16 +317,16 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Set nx shas
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: .
@@ -335,7 +335,7 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: 'Login to container registry'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -364,16 +364,16 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Set nx shas
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: .
@@ -408,16 +408,16 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Set nx shas
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: .
@@ -433,7 +433,7 @@ jobs:
           xvfb-run -a npx nx run-many --target=package --configuration=production-linux --parallel=3 || echo "No projects for native applications build"
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: binary-artifacts-linux
           path: |
@@ -454,16 +454,16 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Set nx shas
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: .
@@ -482,7 +482,7 @@ jobs:
           xvfb-run -a npx nx run-many --target=package --configuration=production-windows --parallel=3 || echo "No projects for native applications build"
 
       - name: Upload Windows Electron bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-electron-bundle
           path: dist/apps/native-agent-console/out/native-agent-console-win32-x64
@@ -490,7 +490,7 @@ jobs:
           retention-days: 1
 
       - name: Upload Windows zip artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: binary-artifacts-windows
           path: dist/**/out/make/**/win32/**/*.zip
@@ -507,7 +507,7 @@ jobs:
     if: needs.publish.outputs.new_release_published == 'true'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -516,7 +516,7 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: Download Windows Electron bundle
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           name: windows-electron-bundle
@@ -529,7 +529,7 @@ jobs:
         run: ./tools/ci/build-windows-installer.ps1
 
       - name: Upload Windows installer artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: binary-artifacts-windows-installer
           path: apps/native-agent-console/installer-out/*.exe
@@ -549,19 +549,19 @@ jobs:
     environment: production
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Set nx shas
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
 
       - name: Download binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           path: artifacts
@@ -609,7 +609,7 @@ jobs:
     environment: production
     steps:
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: .
@@ -640,16 +640,16 @@ jobs:
     environment: production
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: .
 
       - name: Download container image SBOM artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           pattern: sbom-container-images-*
@@ -812,10 +812,10 @@ jobs:
       has_entries: ${{ steps.set-matrix.outputs.has_entries }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download container image SBOM artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           pattern: sbom-container-images-*
@@ -850,7 +850,7 @@ jobs:
 
       - name: Upload container image SBOM artifact
         if: steps.set-matrix.outputs.has_entries == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: container-image-sboms-for-dt
           path: dist/sboms/container-*.cdx.json
@@ -872,7 +872,7 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-container-image-sbom-uploads.outputs.matrix) }}
     steps:
       - name: Download container image SBOMs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: container-image-sboms-for-dt
           path: .
