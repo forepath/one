@@ -4,6 +4,7 @@ import {
   ContainerType,
   CreateAgentDto,
   CreateAgentResponseDto,
+  GitRepositorySetupMode,
   UpdateAgentDto,
 } from '@forepath/framework/backend/feature-agent-manager';
 import { AuthenticationType, ClientAgentCredentialsService, ClientEntity } from '@forepath/identity/backend';
@@ -301,6 +302,30 @@ describe('ClientAgentProxyService', () => {
         'client-uuid',
         mockCreateAgentResponse.id,
         mockCreateAgentResponse.password,
+      );
+    });
+    it('should forward gitRepositorySetupMode when creating an agent', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'Empty Agent',
+        gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
+      };
+
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        data: mockCreateAgentResponse,
+        status: 201,
+        statusText: 'Created',
+        headers: {},
+        config: {} as any,
+      });
+
+      await service.createClientAgent('client-uuid', createDto);
+
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'POST',
+          data: createDto,
+        }),
       );
     });
   });

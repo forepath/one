@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto';
 
+import { GitRepositorySetupMode } from '@forepath/framework/backend/feature-agent-manager';
 import { AuthenticationType, UserRole } from '@forepath/identity/backend';
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 
@@ -62,7 +63,14 @@ export class ProvisioningService {
     authenticationType: AuthenticationType,
     apiKey?: string,
     keycloakConfig?: { clientId: string; clientSecret: string; realm?: string; authServerUrl?: string },
-    gitConfig?: { repositoryUrl?: string; username?: string; token?: string; password?: string; privateKey?: string },
+    gitConfig?: {
+      setupMode?: GitRepositorySetupMode;
+      repositoryUrl?: string;
+      username?: string;
+      token?: string;
+      password?: string;
+      privateKey?: string;
+    },
     cursorApiKey?: string,
     agentDefaultImage?: string,
     autoEnrichEnabledGlobal?: string,
@@ -94,24 +102,28 @@ export class ProvisioningService {
     // Build GIT environment variables
     const gitEnvVars: string[] = [];
 
-    if (gitConfig?.repositoryUrl) {
-      gitEnvVars.push(`GIT_REPOSITORY_URL: ${gitConfig.repositoryUrl}`);
-    }
+    if (gitConfig?.setupMode === GitRepositorySetupMode.EMPTY) {
+      gitEnvVars.push(`GIT_REPOSITORY_SETUP_MODE: ${GitRepositorySetupMode.EMPTY}`);
+    } else if (gitConfig) {
+      if (gitConfig.repositoryUrl) {
+        gitEnvVars.push(`GIT_REPOSITORY_URL: ${gitConfig.repositoryUrl}`);
+      }
 
-    if (gitConfig?.username) {
-      gitEnvVars.push(`GIT_USERNAME: ${gitConfig.username}`);
-    }
+      if (gitConfig.username) {
+        gitEnvVars.push(`GIT_USERNAME: ${gitConfig.username}`);
+      }
 
-    if (gitConfig?.token) {
-      gitEnvVars.push(`GIT_TOKEN: ${gitConfig.token}`);
-    }
+      if (gitConfig.token) {
+        gitEnvVars.push(`GIT_TOKEN: ${gitConfig.token}`);
+      }
 
-    if (gitConfig?.password) {
-      gitEnvVars.push(`GIT_PASSWORD: ${gitConfig.password}`);
-    }
+      if (gitConfig.password) {
+        gitEnvVars.push(`GIT_PASSWORD: ${gitConfig.password}`);
+      }
 
-    if (gitConfig?.privateKey) {
-      gitEnvVars.push(`GIT_PRIVATE_KEY: ${gitConfig.privateKey}`);
+      if (gitConfig.privateKey) {
+        gitEnvVars.push(`GIT_PRIVATE_KEY: ${gitConfig.privateKey}`);
+      }
     }
 
     // Build cursor agent environment variables (only add if provided)
@@ -363,19 +375,22 @@ DOCKER_COMPOSE_EOF
             authServerUrl: provisionServerDto.keycloakAuthServerUrl,
           }
         : undefined,
-      provisionServerDto.gitRepositoryUrl ||
-        provisionServerDto.gitUsername ||
-        provisionServerDto.gitToken ||
-        provisionServerDto.gitPassword ||
-        provisionServerDto.gitPrivateKey
-        ? {
-            repositoryUrl: provisionServerDto.gitRepositoryUrl,
-            username: provisionServerDto.gitUsername,
-            token: provisionServerDto.gitToken,
-            password: provisionServerDto.gitPassword,
-            privateKey: provisionServerDto.gitPrivateKey,
-          }
-        : undefined,
+      provisionServerDto.gitRepositorySetupMode === GitRepositorySetupMode.EMPTY
+        ? { setupMode: GitRepositorySetupMode.EMPTY }
+        : provisionServerDto.gitRepositoryUrl ||
+            provisionServerDto.gitUsername ||
+            provisionServerDto.gitToken ||
+            provisionServerDto.gitPassword ||
+            provisionServerDto.gitPrivateKey
+          ? {
+              setupMode: GitRepositorySetupMode.CLONE,
+              repositoryUrl: provisionServerDto.gitRepositoryUrl,
+              username: provisionServerDto.gitUsername,
+              token: provisionServerDto.gitToken,
+              password: provisionServerDto.gitPassword,
+              privateKey: provisionServerDto.gitPrivateKey,
+            }
+          : undefined,
       provisionServerDto.cursorApiKey,
       provisionServerDto.agentDefaultImage,
       provisionServerDto.autoEnrichEnabledGlobal,

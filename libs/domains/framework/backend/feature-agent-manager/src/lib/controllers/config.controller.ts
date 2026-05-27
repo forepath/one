@@ -19,6 +19,7 @@ export class ConfigController {
   async getConfig(): Promise<ConfigResponseDto> {
     return {
       gitRepositoryUrl: this.configService.getGitRepositoryUrl(),
+      gitRepositorySetupMode: this.configService.getGitRepositorySetupMode(),
       agentTypes: this.configService.getAvailableAgentTypes(),
     };
   }

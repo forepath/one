@@ -160,6 +160,18 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
   }
 
+  onGitSetupModeChange(value: 'clone' | 'empty'): void {
+    this.orderRequestedConfig = {
+      ...this.orderRequestedConfig,
+      git: { ...this.orderRequestedConfig.git, setupMode: value },
+    };
+    this.cdr.detectChanges();
+  }
+
+  isOrderGitCloneMode(): boolean {
+    return (this.orderRequestedConfig.git?.setupMode ?? 'clone') === 'clone';
+  }
+
   orderRequestedConfig: {
     service: 'controller' | 'manager';
     authenticationMethod: 'users' | 'api-key' | 'keycloak';
@@ -170,6 +182,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     hetznerApiToken: string;
     digitaloceanApiToken: string;
     git: {
+      setupMode: 'clone' | 'empty';
       repositoryUrl: string;
       username: string;
       token: string;
@@ -201,6 +214,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     hetznerApiToken: '',
     digitaloceanApiToken: '',
     git: {
+      setupMode: 'clone',
       repositoryUrl: '',
       username: '',
       token: '',
@@ -495,7 +509,8 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     }
 
     if (cfg.service === 'manager') {
-      const hasGit =
+      const gitSetupMode = cfg.git?.setupMode ?? 'clone';
+      const hasGitCloneFields =
         (cfg.git?.repositoryUrl?.trim() ?? '') !== '' ||
         (cfg.git?.username?.trim() ?? '') !== '' ||
         (cfg.git?.token?.trim() ?? '') !== '' ||
@@ -504,15 +519,20 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
         (cfg.git?.commitAuthorName?.trim() ?? '') !== '' ||
         (cfg.git?.commitAuthorEmail?.trim() ?? '') !== '';
 
-      if (hasGit) {
+      if (gitSetupMode === 'empty' || hasGitCloneFields) {
         requestedConfig['git'] = {
-          repositoryUrl: (cfg.git?.repositoryUrl ?? '').trim() || undefined,
-          username: (cfg.git?.username ?? '').trim() || undefined,
-          token: (cfg.git?.token ?? '').trim() || undefined,
-          password: (cfg.git?.password ?? '').trim() || undefined,
-          privateKey: (cfg.git?.privateKey ?? '').trim() || undefined,
-          commitAuthorName: (cfg.git?.commitAuthorName ?? '').trim() || undefined,
-          commitAuthorEmail: (cfg.git?.commitAuthorEmail ?? '').trim() || undefined,
+          setupMode: gitSetupMode,
+          ...(gitSetupMode === 'clone'
+            ? {
+                repositoryUrl: (cfg.git?.repositoryUrl ?? '').trim() || undefined,
+                username: (cfg.git?.username ?? '').trim() || undefined,
+                token: (cfg.git?.token ?? '').trim() || undefined,
+                password: (cfg.git?.password ?? '').trim() || undefined,
+                privateKey: (cfg.git?.privateKey ?? '').trim() || undefined,
+                commitAuthorName: (cfg.git?.commitAuthorName ?? '').trim() || undefined,
+                commitAuthorEmail: (cfg.git?.commitAuthorEmail ?? '').trim() || undefined,
+              }
+            : {}),
         };
       }
 
@@ -649,6 +669,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       hetznerApiToken: '',
       digitaloceanApiToken: '',
       git: {
+        setupMode: 'clone',
         repositoryUrl: '',
         username: '',
         token: '',

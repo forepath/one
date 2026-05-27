@@ -203,7 +203,7 @@
                               <i class="bi bi-globe me-1"></i>
                               {{ getHostname(client.endpoint) }}
                             </small>
-                            @if (parseGitRepository(client.config?.gitRepositoryUrl); as repo) {
+                            @if (getClientGitRepositoryLabel(client); as repo) {
                               <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
                                 <i class="bi bi-git me-1"></i>
                                 {{ repo }}
@@ -402,20 +402,12 @@
                                   <i class="bi bi-robot me-1"></i>
                                   {{ getAgentTypeDisplayName(agent.agentType, activeClient) }}
                                 </small>
-                                @if (!agent.git?.repositoryUrl) {
-                                  @if (parseGitRepository(activeClient.config?.gitRepositoryUrl); as repo) {
-                                    <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
-                                      <i class="bi bi-git me-1"></i>
-                                      {{ repo }}
-                                    </small>
-                                  }
+                                @if (getAgentGitRepositoryLabel(agent, activeClient); as repo) {
+                                  <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
+                                    <i class="bi bi-git me-1"></i>
+                                    {{ repo }}
+                                  </small>
                                 }
-                              }
-                              @if (agent.git?.repositoryUrl) {
-                                <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
-                                  <i class="bi bi-git me-1"></i>
-                                  {{ parseGitRepository(agent.git?.repositoryUrl) }}
-                                </small>
                               }
                               @if (agent.vnc?.port) {
                                 <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
@@ -1699,10 +1691,9 @@
                     />
                     <label class="form-check-label" [for]="'contextEnvironment-' + agent.id">
                       {{ agent.name }}
-                      @if (
-                        parseGitRepository(agent.git?.repositoryUrl ?? activeClient.config?.gitRepositoryUrl);
-                        as repo
-                      ) {
+                      @if (isLocalGitRepository(agent, activeClient)) {
+                        <span class="text-muted small ms-1">(Local repository)</span>
+                      } @else if (getAgentGitRepositoryLabel(agent, activeClient); as repo) {
                         <span class="text-muted small ms-1">({{ repo }})</span>
                       }
                     </label>
@@ -2423,85 +2414,105 @@
 
               <!-- GIT Repository Configuration -->
               <div class="mb-3">
-                <label for="clientGitRepositoryUrl" class="form-label">Git Repository URL</label>
-                <input
-                  type="url"
-                  class="form-control"
-                  id="clientGitRepositoryUrl"
-                  name="gitRepositoryUrl"
-                  [ngModel]="newClient().gitRepositoryUrl"
-                  (ngModelChange)="updateClientField('gitRepositoryUrl', $event)"
-                  i18n-placeholder="@@featureChat-gitRepoPlaceholder"
-                  placeholder="https://github.com/user/repo.git"
+                <label for="clientGitRepositorySetupMode" class="form-label">Repository setup</label>
+                <select
+                  class="form-select"
+                  id="clientGitRepositorySetupMode"
+                  name="gitRepositorySetupMode"
+                  [ngModel]="newClient().gitRepositorySetupMode ?? 'clone'"
+                  (ngModelChange)="onClientGitSetupModeChange($event)"
                   [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
-                />
-                <small class="form-text text-muted">Git repository URL for agent workspace</small>
+                >
+                  <option value="clone">Clone from remote</option>
+                  <option value="empty">Empty repository (git init)</option>
+                </select>
+                <small class="form-text text-muted"
+                  >Choose whether to clone an existing repository or start with a new local Git repository.</small
+                >
               </div>
 
-              <div class="mb-3">
-                <label for="clientGitUsername" class="form-label">Git Username</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="clientGitUsername"
-                  name="gitUsername"
-                  [ngModel]="newClient().gitUsername"
-                  (ngModelChange)="updateClientField('gitUsername', $event)"
-                  i18n-placeholder="@@featureChat-optionalPlaceholder"
-                  placeholder="Optional"
-                  [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
-                />
-                <small class="form-text text-muted">Git username for repository access</small>
-              </div>
+              @if (isClientGitCloneMode()) {
+                <div class="mb-3">
+                  <label for="clientGitRepositoryUrl" class="form-label">Git Repository URL</label>
+                  <input
+                    type="url"
+                    class="form-control"
+                    id="clientGitRepositoryUrl"
+                    name="gitRepositoryUrl"
+                    [ngModel]="newClient().gitRepositoryUrl"
+                    (ngModelChange)="updateClientField('gitRepositoryUrl', $event)"
+                    i18n-placeholder="@@featureChat-gitRepoPlaceholder"
+                    placeholder="https://github.com/user/repo.git"
+                    [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
+                  />
+                  <small class="form-text text-muted">Git repository URL for agent workspace</small>
+                </div>
 
-              <div class="mb-3">
-                <label for="clientGitToken" class="form-label">Git Token</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  id="clientGitToken"
-                  name="gitToken"
-                  [ngModel]="newClient().gitToken"
-                  (ngModelChange)="updateClientField('gitToken', $event)"
-                  i18n-placeholder="@@featureChat-optionalPlaceholder"
-                  placeholder="Optional"
-                  [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
-                />
-                <small class="form-text text-muted">Git token/personal access token for repository access</small>
-              </div>
+                <div class="mb-3">
+                  <label for="clientGitUsername" class="form-label">Git Username</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="clientGitUsername"
+                    name="gitUsername"
+                    [ngModel]="newClient().gitUsername"
+                    (ngModelChange)="updateClientField('gitUsername', $event)"
+                    i18n-placeholder="@@featureChat-optionalPlaceholder"
+                    placeholder="Optional"
+                    [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
+                  />
+                  <small class="form-text text-muted">Git username for repository access</small>
+                </div>
 
-              <div class="mb-3">
-                <label for="clientGitPassword" class="form-label">Git Password</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  id="clientGitPassword"
-                  name="gitPassword"
-                  [ngModel]="newClient().gitPassword"
-                  (ngModelChange)="updateClientField('gitPassword', $event)"
-                  i18n-placeholder="@@featureChat-optionalPlaceholder"
-                  placeholder="Optional"
-                  [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
-                />
-                <small class="form-text text-muted">Git password for repository access (alternative to token)</small>
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="clientGitPrivateKey" class="form-label">Git Private Key (SSH)</label>
-              <textarea
-                class="form-control"
-                id="clientGitPrivateKey"
-                name="gitPrivateKey"
-                rows="6"
-                [ngModel]="newClient().gitPrivateKey"
-                (ngModelChange)="updateClientField('gitPrivateKey', $event)"
-                i18n-placeholder="@@featureChat-gitPrivateKeyPlaceholder"
-                placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"
-                [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
-              ></textarea>
-              <small class="form-text text-muted"
-                >SSH private key for cloning repositories via SSH (alternative to username/token)</small
-              >
+                <div class="mb-3">
+                  <label for="clientGitToken" class="form-label">Git Token</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="clientGitToken"
+                    name="gitToken"
+                    [ngModel]="newClient().gitToken"
+                    (ngModelChange)="updateClientField('gitToken', $event)"
+                    i18n-placeholder="@@featureChat-optionalPlaceholder"
+                    placeholder="Optional"
+                    [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
+                  />
+                  <small class="form-text text-muted">Git token/personal access token for repository access</small>
+                </div>
+
+                <div class="mb-3">
+                  <label for="clientGitPassword" class="form-label">Git Password</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="clientGitPassword"
+                    name="gitPassword"
+                    [ngModel]="newClient().gitPassword"
+                    (ngModelChange)="updateClientField('gitPassword', $event)"
+                    i18n-placeholder="@@featureChat-optionalPlaceholder"
+                    placeholder="Optional"
+                    [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
+                  />
+                  <small class="form-text text-muted">Git password for repository access (alternative to token)</small>
+                </div>
+                <div class="mb-3">
+                  <label for="clientGitPrivateKey" class="form-label">Git Private Key (SSH)</label>
+                  <textarea
+                    class="form-control"
+                    id="clientGitPrivateKey"
+                    name="gitPrivateKey"
+                    rows="6"
+                    [ngModel]="newClient().gitPrivateKey"
+                    (ngModelChange)="updateClientField('gitPrivateKey', $event)"
+                    i18n-placeholder="@@featureChat-gitPrivateKeyPlaceholder"
+                    placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"
+                    [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
+                  ></textarea>
+                  <small class="form-text text-muted"
+                    >SSH private key for cloning repositories via SSH (alternative to username/token)</small
+                  >
+                </div>
+              }
             </div>
           }
         </div>
@@ -2626,22 +2637,48 @@
             >
           </div>
           <div class="mb-3">
-            <label for="agentGitRepositoryUrl" class="form-label">Git Repository URL</label>
-            <input
-              type="url"
-              class="form-control"
-              id="agentGitRepositoryUrl"
-              name="gitRepositoryUrl"
-              [ngModel]="newAgent().gitRepositoryUrl"
-              (ngModelChange)="updateAgentField('gitRepositoryUrl', $event)"
-              i18n-placeholder="@@featureChat-gitRepoPlaceholder"
-              placeholder="https://github.com/user/repo.git"
+            <label for="agentGitRepositorySetupMode" class="form-label">Repository setup</label>
+            <select
+              class="form-select"
+              id="agentGitRepositorySetupMode"
+              name="gitRepositorySetupMode"
+              [ngModel]="newAgent().gitRepositorySetupMode ?? 'clone'"
+              (ngModelChange)="onAgentGitSetupModeChange($event)"
               [disabled]="(agentsCreating$ | async) === true"
-            />
-            <small class="form-text text-muted"
-              >Optional. Defaults to workspace Git repository URL if not specified.</small
             >
+              <option value="clone">Clone from remote</option>
+              <option value="empty">Empty repository (git init)</option>
+            </select>
+            <small class="form-text text-muted"
+              >Choose whether to clone a repository or initialize an empty local Git repository.</small
+            >
+            @if (activeClient$ | async; as activeClient) {
+              @if (activeClient.config?.gitRepositorySetupMode; as workspaceGitMode) {
+                <small class="form-text text-muted d-block"
+                  >Workspace default: {{ getWorkspaceGitSetupModeDefaultLabel(workspaceGitMode) }}</small
+                >
+              }
+            }
           </div>
+          @if (isAgentGitCloneMode()) {
+            <div class="mb-3">
+              <label for="agentGitRepositoryUrl" class="form-label">Git Repository URL</label>
+              <input
+                type="url"
+                class="form-control"
+                id="agentGitRepositoryUrl"
+                name="gitRepositoryUrl"
+                [ngModel]="newAgent().gitRepositoryUrl"
+                (ngModelChange)="updateAgentField('gitRepositoryUrl', $event)"
+                i18n-placeholder="@@featureChat-gitRepoPlaceholder"
+                placeholder="https://github.com/user/repo.git"
+                [disabled]="(agentsCreating$ | async) === true"
+              />
+              <small class="form-text text-muted"
+                >Optional. Defaults to workspace Git repository URL if not specified.</small
+              >
+            </div>
+          }
           <div class="p-3 border border-warning rounded">
             <label class="form-label mb-2 text-warning">Danger Zone</label>
             <p class="small text-warning mb-3" i18n="@@featureChat-dangerZoneDescription">
@@ -3045,107 +3082,138 @@
               </div>
             } @else {
               @if (workspaceConfigurationSettings$ | async; as settings) {
-                <div class="list-group list-group-flush">
-                  @for (setting of settings; track setting.settingKey) {
-                    <div class="list-group-item border-bottom">
-                      <div class="mb-2 d-flex justify-content-between align-items-center">
-                        <div class="fw-semibold">{{ getWorkspaceConfigurationSettingTitle(setting.settingKey) }}</div>
-                        <span class="badge rounded-pill" [class]="getWorkspaceConfigurationSourceBadgeClass(setting)">
-                          {{ getWorkspaceConfigurationSourceLabel(setting) }}
-                        </span>
-                      </div>
-                      <div class="text-muted small mb-2">
-                        <code>{{ setting.envVarName }}</code>
-                      </div>
-                      <div class="d-flex align-items-center gap-2">
-                        <div class="input-group input-group-sm">
-                          @if (setting.settingKey === 'autoEnrichEnabledGlobal') {
-                            <select
-                              class="form-select"
-                              [name]="'wc-autoEnrich-' + setting.settingKey"
-                              [ngModel]="getEditingWorkspaceConfigurationValue(setting)"
-                              (ngModelChange)="onWorkspaceConfigurationValueChange(setting.settingKey, $event)"
-                              [attr.aria-label]="getWorkspaceConfigurationSettingTitle(setting.settingKey)"
+                @if (managingWorkspaceConfigurationClient(); as managedClient) {
+                  <div class="list-group list-group-flush">
+                    @for (setting of settings; track setting.settingKey) {
+                      @if (isWorkspaceConfigurationSettingVisible(setting.settingKey, settings, managedClient.config)) {
+                        <div class="list-group-item border-bottom">
+                          <div class="mb-2 d-flex justify-content-between align-items-center">
+                            <div class="fw-semibold">
+                              {{ getWorkspaceConfigurationSettingTitle(setting.settingKey) }}
+                            </div>
+                            <span
+                              class="badge rounded-pill"
+                              [class]="getWorkspaceConfigurationSourceBadgeClass(setting)"
                             >
-                              <option value="true" i18n="@@featureChat-workspaceAutoEnrichEnabled">Enabled</option>
-                              <option value="false" i18n="@@featureChat-workspaceAutoEnrichDisabled">Disabled</option>
-                            </select>
-                          } @else if (setting.settingKey === 'autoEnrichVectorMaxCosineDistance') {
-                            <input
-                              type="number"
-                              class="form-control"
-                              [name]="'wc-vectorMaxCos-' + setting.settingKey"
-                              min="0"
-                              max="2"
-                              step="0.01"
-                              [ngModel]="getEditingWorkspaceConfigurationValue(setting)"
-                              (ngModelChange)="onWorkspaceConfigurationValueChange(setting.settingKey, $event)"
-                              [attr.aria-label]="getWorkspaceConfigurationSettingTitle(setting.settingKey)"
-                            />
-                          } @else if (setting.settingKey === 'gitPrivateKey') {
-                            <textarea
-                              class="form-control"
-                              rows="5"
-                              [value]="getEditingWorkspaceConfigurationValue(setting)"
-                              (input)="
-                                onWorkspaceConfigurationValueChange(setting.settingKey, $any($event.target).value)
-                              "
-                              i18n-placeholder="@@featureChat-workspaceConfigurationValuePlaceholder"
-                              placeholder="Enter override value"
-                            ></textarea>
-                          } @else {
-                            <input
-                              type="text"
-                              class="form-control"
-                              [value]="getEditingWorkspaceConfigurationValue(setting)"
-                              (input)="
-                                onWorkspaceConfigurationValueChange(setting.settingKey, $any($event.target).value)
-                              "
-                              i18n-placeholder="@@featureChat-workspaceConfigurationValuePlaceholder"
-                              placeholder="Enter override value"
-                            />
-                          }
+                              {{ getWorkspaceConfigurationSourceLabel(setting) }}
+                            </span>
+                          </div>
+                          <div class="text-muted small mb-2">
+                            <code>{{ setting.envVarName }}</code>
+                          </div>
+                          <div class="d-flex align-items-center gap-2">
+                            <div class="input-group input-group-sm">
+                              @if (setting.settingKey === 'autoEnrichEnabledGlobal') {
+                                <select
+                                  class="form-select"
+                                  [name]="'wc-autoEnrich-' + setting.settingKey"
+                                  [ngModel]="getEditingWorkspaceConfigurationValue(setting)"
+                                  (ngModelChange)="onWorkspaceConfigurationValueChange(setting.settingKey, $event)"
+                                  [attr.aria-label]="getWorkspaceConfigurationSettingTitle(setting.settingKey)"
+                                >
+                                  <option value="true" i18n="@@featureChat-workspaceAutoEnrichEnabled">Enabled</option>
+                                  <option value="false" i18n="@@featureChat-workspaceAutoEnrichDisabled">
+                                    Disabled
+                                  </option>
+                                </select>
+                              } @else if (setting.settingKey === 'gitRepositorySetupMode') {
+                                <select
+                                  class="form-select"
+                                  [name]="'wc-gitSetupMode-' + setting.settingKey"
+                                  [ngModel]="getEditingWorkspaceConfigurationValue(setting) || 'clone'"
+                                  (ngModelChange)="onWorkspaceConfigurationValueChange(setting.settingKey, $event)"
+                                  [attr.aria-label]="getWorkspaceConfigurationSettingTitle(setting.settingKey)"
+                                >
+                                  <option value="clone">Clone from remote</option>
+                                  <option value="empty">Empty repository (git init)</option>
+                                </select>
+                              } @else if (setting.settingKey === 'autoEnrichVectorMaxCosineDistance') {
+                                <input
+                                  type="number"
+                                  class="form-control"
+                                  [name]="'wc-vectorMaxCos-' + setting.settingKey"
+                                  min="0"
+                                  max="2"
+                                  step="0.01"
+                                  [ngModel]="getEditingWorkspaceConfigurationValue(setting)"
+                                  (ngModelChange)="onWorkspaceConfigurationValueChange(setting.settingKey, $event)"
+                                  [attr.aria-label]="getWorkspaceConfigurationSettingTitle(setting.settingKey)"
+                                />
+                              } @else if (setting.settingKey === 'gitPrivateKey') {
+                                <textarea
+                                  class="form-control"
+                                  rows="5"
+                                  [value]="getEditingWorkspaceConfigurationValue(setting)"
+                                  (input)="
+                                    onWorkspaceConfigurationValueChange(setting.settingKey, $any($event.target).value)
+                                  "
+                                  i18n-placeholder="@@featureChat-workspaceConfigurationValuePlaceholder"
+                                  placeholder="Enter override value"
+                                ></textarea>
+                              } @else {
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  [value]="getEditingWorkspaceConfigurationValue(setting)"
+                                  (input)="
+                                    onWorkspaceConfigurationValueChange(setting.settingKey, $any($event.target).value)
+                                  "
+                                  i18n-placeholder="@@featureChat-workspaceConfigurationValuePlaceholder"
+                                  placeholder="Enter override value"
+                                />
+                              }
+                            </div>
+                            @let isSaving =
+                              (getWorkspaceConfigurationSettingSaving$(setting.settingKey) | async) === true;
+                            @let isDeleting =
+                              (getWorkspaceConfigurationSettingDeleting$(setting.settingKey) | async) === true;
+                            @let saveDisabled =
+                              mutationInProgress || getEditingWorkspaceConfigurationValue(setting).trim().length === 0;
+                            @let deleteDisabled = mutationInProgress || !setting.hasOverride;
+                            <div class="btn-group">
+                              <button
+                                type="button"
+                                class="btn btn-outline-primary btn-sm"
+                                [disabled]="saveDisabled"
+                                (click)="onSaveWorkspaceConfigurationOverride(setting)"
+                                i18n-title="@@featureChat-saveWorkspaceConfigurationTitle"
+                                title="Save override"
+                              >
+                                @if (isSaving) {
+                                  <span
+                                    class="spinner-border spinner-border-sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                  ></span>
+                                } @else {
+                                  <i class="bi bi-check-lg"></i>
+                                }
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-outline-danger btn-sm"
+                                [disabled]="deleteDisabled"
+                                (click)="onDeleteWorkspaceConfigurationOverride(setting.settingKey)"
+                                i18n-title="@@featureChat-deleteWorkspaceConfigurationOverrideTitle"
+                                title="Delete override"
+                              >
+                                @if (isDeleting) {
+                                  <span
+                                    class="spinner-border spinner-border-sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                  ></span>
+                                } @else {
+                                  <i class="bi bi-trash"></i>
+                                }
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        @let isSaving = (getWorkspaceConfigurationSettingSaving$(setting.settingKey) | async) === true;
-                        @let isDeleting =
-                          (getWorkspaceConfigurationSettingDeleting$(setting.settingKey) | async) === true;
-                        @let saveDisabled =
-                          mutationInProgress || getEditingWorkspaceConfigurationValue(setting).trim().length === 0;
-                        @let deleteDisabled = mutationInProgress || !setting.hasOverride;
-                        <div class="btn-group">
-                          <button
-                            type="button"
-                            class="btn btn-outline-primary btn-sm"
-                            [disabled]="saveDisabled"
-                            (click)="onSaveWorkspaceConfigurationOverride(setting)"
-                            i18n-title="@@featureChat-saveWorkspaceConfigurationTitle"
-                            title="Save override"
-                          >
-                            @if (isSaving) {
-                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            } @else {
-                              <i class="bi bi-check-lg"></i>
-                            }
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-outline-danger btn-sm"
-                            [disabled]="deleteDisabled"
-                            (click)="onDeleteWorkspaceConfigurationOverride(setting.settingKey)"
-                            i18n-title="@@featureChat-deleteWorkspaceConfigurationOverrideTitle"
-                            title="Delete override"
-                          >
-                            @if (isDeleting) {
-                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            } @else {
-                              <i class="bi bi-trash"></i>
-                            }
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </div>
+                      }
+                    }
+                  </div>
+                }
               }
             }
           </div>

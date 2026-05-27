@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { GitRepositorySetupMode, resolveGitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 
 /**
@@ -16,6 +17,14 @@ export class ConfigService {
    */
   getGitRepositoryUrl(): string | undefined {
     return process.env.GIT_REPOSITORY_URL;
+  }
+
+  /**
+   * Get the Git repository setup mode from environment variables.
+   * @returns Resolved setup mode (defaults to clone when unset)
+   */
+  getGitRepositorySetupMode(): GitRepositorySetupMode {
+    return resolveGitRepositorySetupMode(undefined, process.env.GIT_REPOSITORY_SETUP_MODE);
   }
 
   /**

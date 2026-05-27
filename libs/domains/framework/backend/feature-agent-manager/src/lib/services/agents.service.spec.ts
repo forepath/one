@@ -3,6 +3,7 @@ import { BadRequestException, Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as sshpk from 'sshpk';
 
+import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
@@ -134,6 +135,7 @@ describe('AgentsService', () => {
     delete process.env.GIT_TOKEN;
     delete process.env.GIT_PASSWORD;
     delete process.env.GIT_REPOSITORY_URL;
+    delete process.env.GIT_REPOSITORY_SETUP_MODE;
     delete process.env.GIT_PRIVATE_KEY;
     delete process.env.CURSOR_API_KEY;
   });
@@ -151,6 +153,7 @@ describe('AgentsService', () => {
       // Tests may delete optional provider methods; restore defaults for isolation
       mockAgentProvider.getBasePath = jest.fn().mockReturnValue('/app');
       mockAgentProvider.getConfigBasePath = jest.fn().mockReturnValue('~/.cursor');
+      delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
     });
 
     it('should create new agent with auto-generated password and container', async () => {
@@ -894,6 +897,147 @@ describe('AgentsService', () => {
       await expect(service.create(createDto)).rejects.toThrow(
         'Git repository URL not configured. Please set GIT_REPOSITORY_URL or provide a gitRepositoryUrl in the createAgentDto.',
       );
+    });
+
+    it('should initialize empty repository with git init when mode is empty', async () => {
+      delete process.env.GIT_REPOSITORY_URL;
+      delete process.env.GIT_REPOSITORY_SETUP_MODE;
+
+      const createDto: CreateAgentDto = {
+        name: 'Empty Agent',
+        gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
+        createVirtualWorkspace: false,
+        createSshConnection: false,
+      };
+      const hashedPassword = 'hashed-password';
+      const containerId = 'container-id-empty';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        hashedPassword,
+        containerId,
+        gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
+      };
+
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(createdAgent);
+
+      const result = await service.create(createDto);
+
+      expect(result.git).toEqual({ setupMode: GitRepositorySetupMode.EMPTY });
+      expect(dockerService.createContainer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          env: expect.objectContaining({
+            GIT_REPOSITORY_SETUP_MODE: GitRepositorySetupMode.EMPTY,
+          }),
+        }),
+      );
+      expect(dockerService.createContainer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          env: expect.not.objectContaining({
+            GIT_REPOSITORY_URL: expect.anything(),
+          }),
+        }),
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
+        containerId,
+        expect.stringMatching(/sh -c "git init -- '\/app'"/),
+      );
+      expect(dockerService.sendCommandToContainer).not.toHaveBeenCalledWith(
+        containerId,
+        expect.stringMatching(/git clone/),
+      );
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
+          gitRepositoryUrl: undefined,
+        }),
+      );
+    });
+
+    it('should throw BadRequestException when gitRepositoryUrl is set in empty mode', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'Invalid Empty Agent',
+        gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
+        gitRepositoryUrl: 'https://github.com/user/repo.git',
+      };
+
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue('hashed-password');
+
+      await expect(service.create(createDto)).rejects.toThrow(BadRequestException);
+      await expect(service.create(createDto)).rejects.toThrow(
+        'Git repository URL must not be set when git repository setup mode is empty',
+      );
+    });
+
+    it('should use GIT_REPOSITORY_SETUP_MODE env default for empty repository', async () => {
+      delete process.env.GIT_REPOSITORY_URL;
+      process.env.GIT_REPOSITORY_SETUP_MODE = GitRepositorySetupMode.EMPTY;
+
+      const createDto: CreateAgentDto = {
+        name: 'Empty Agent Env Default',
+        createVirtualWorkspace: false,
+        createSshConnection: false,
+      };
+
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue('hashed-password');
+      dockerService.createContainer.mockResolvedValue('container-id-empty-env');
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue({
+        ...mockAgent,
+        name: createDto.name,
+        gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
+      });
+
+      await service.create(createDto);
+
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
+        'container-id-empty-env',
+        expect.stringMatching(/git init/),
+      );
+      expect(dockerService.sendCommandToContainer).not.toHaveBeenCalledWith(
+        'container-id-empty-env',
+        expect.stringMatching(/git clone/),
+      );
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
+        }),
+      );
+    });
+
+    it('should clean up container when git init fails', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'Empty Agent Failure',
+        gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
+        createVirtualWorkspace: false,
+        createSshConnection: false,
+      };
+      const containerId = 'container-id-init-fail';
+
+      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
+      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue('hashed-password');
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Git init failed'));
+      dockerService.deleteContainer.mockResolvedValue(undefined);
+
+      await expect(service.create(createDto)).rejects.toThrow('Git init failed');
+      expect(dockerService.deleteContainer).toHaveBeenCalledWith(containerId);
+      expect(repository.create).not.toHaveBeenCalled();
     });
 
     it('should clean up container when SSH configuration fails', async () => {

@@ -1,3 +1,4 @@
+import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { ContainerType } from '../entities/agent.entity';
 
 /**
@@ -19,7 +20,8 @@ export class AgentResponseDto {
     password: string;
   };
   git?: {
-    repositoryUrl: string;
+    repositoryUrl?: string;
+    setupMode: GitRepositorySetupMode;
   };
   createdAt!: Date;
   updatedAt!: Date;

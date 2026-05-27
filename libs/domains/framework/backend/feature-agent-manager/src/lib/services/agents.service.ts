@@ -5,12 +5,14 @@ import { BadRequestException, forwardRef, Inject, Injectable, Logger, OnApplicat
 import * as sshpk from 'sshpk';
 import { v4 as uuidv4 } from 'uuid';
 
+import { GitRepositorySetupMode, resolveGitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { AgentResponseDto } from '../dto/agent-response.dto';
 import { CreateAgentResponseDto } from '../dto/create-agent-response.dto';
 import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
+import { AgentProvider } from '../providers/agent-provider.interface';
 import { AgentProviderModels } from '../providers/agent-provider.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
@@ -280,6 +282,78 @@ export class AgentsService implements OnApplicationBootstrap {
   }
 
   /**
+   * Build Git-related container environment variables for agent/VNC containers.
+   */
+  private buildGitContainerEnv(
+    setupMode: GitRepositorySetupMode,
+    repositoryUrl?: string,
+  ): Record<string, string | undefined> {
+    if (setupMode === GitRepositorySetupMode.EMPTY) {
+      return {
+        GIT_REPOSITORY_SETUP_MODE: GitRepositorySetupMode.EMPTY,
+      };
+    }
+
+    return {
+      GIT_REPOSITORY_URL: repositoryUrl,
+      GIT_USERNAME: process.env.GIT_USERNAME,
+      GIT_TOKEN: process.env.GIT_TOKEN,
+      GIT_PASSWORD: process.env.GIT_PASSWORD,
+      GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
+    };
+  }
+
+  /**
+   * Resolve the repository path used for clone or git init inside the agent container.
+   */
+  private getRepositoryPath(provider: AgentProvider, basePath: string): string {
+    return provider.getRepositoryPath ? basePath + provider.getRepositoryPath() : basePath;
+  }
+
+  /**
+   * Initialize the agent workspace repository (clone remote or git init locally).
+   */
+  private async setupAgentRepository(
+    containerId: string,
+    agentType: string,
+    setupMode: GitRepositorySetupMode,
+    repositoryUrl: string | undefined,
+    provider: AgentProvider,
+    basePath: string,
+  ): Promise<void> {
+    const repositoryPath = this.getRepositoryPath(provider, basePath);
+    const escapedRepositoryPath = this.escapeForShell(repositoryPath);
+
+    if (setupMode === GitRepositorySetupMode.EMPTY) {
+      await this.ensureProviderConfigBaseDirectoryExists(containerId, agentType);
+      await this.dockerService.sendCommandToContainer(containerId, `sh -c "git init -- ${escapedRepositoryPath}"`);
+
+      return;
+    }
+
+    if (!repositoryUrl) {
+      throw new BadRequestException(
+        'Git repository URL not configured. Please set GIT_REPOSITORY_URL or provide a gitRepositoryUrl in the createAgentDto.',
+      );
+    }
+
+    if (this.isSshRepository(repositoryUrl)) {
+      await this.configureSshAccess(containerId, repositoryUrl, process.env.GIT_PRIVATE_KEY);
+    } else {
+      await this.createNetrcFile(containerId, repositoryUrl);
+    }
+
+    await this.ensureProviderConfigBaseDirectoryExists(containerId, agentType);
+
+    const escapedUrl = this.escapeForShell(repositoryUrl);
+
+    await this.dockerService.sendCommandToContainer(
+      containerId,
+      `sh -c "git clone ${escapedUrl} ${escapedRepositoryPath}"`,
+    );
+  }
+
+  /**
    * Create a new agent with auto-generated password.
    * @param createAgentDto - Data transfer object for creating an agent
    * @returns The created agent response DTO with generated password
@@ -299,15 +373,26 @@ export class AgentsService implements OnApplicationBootstrap {
     const hashedPassword = await this.passwordService.hashPassword(generatedPassword);
     // Define a folder name for the agent
     const agentVolumePath = `/opt/agents/${uuidv4()}`;
-    const repositoryUrl = createAgentDto.gitRepositoryUrl || process.env.GIT_REPOSITORY_URL;
+    const gitRepositorySetupMode = resolveGitRepositorySetupMode(
+      createAgentDto.gitRepositorySetupMode,
+      process.env.GIT_REPOSITORY_SETUP_MODE,
+    );
 
-    if (!repositoryUrl) {
+    if (gitRepositorySetupMode === GitRepositorySetupMode.EMPTY && createAgentDto.gitRepositoryUrl?.trim()) {
+      throw new BadRequestException('Git repository URL must not be set when git repository setup mode is empty');
+    }
+
+    const repositoryUrl =
+      gitRepositorySetupMode === GitRepositorySetupMode.CLONE
+        ? createAgentDto.gitRepositoryUrl || process.env.GIT_REPOSITORY_URL
+        : undefined;
+
+    if (gitRepositorySetupMode === GitRepositorySetupMode.CLONE && !repositoryUrl) {
       throw new BadRequestException(
         'Git repository URL not configured. Please set GIT_REPOSITORY_URL or provide a gitRepositoryUrl in the createAgentDto.',
       );
     }
 
-    const sshRepository = this.isSshRepository(repositoryUrl);
     // Determine agent type (default to 'cursor' for backward compatibility)
     const agentType = createAgentDto.agentType || 'cursor';
     // Get the provider for this agent type to retrieve the Docker image
@@ -326,11 +411,7 @@ export class AgentsService implements OnApplicationBootstrap {
       env: {
         AGENT_NAME: createAgentDto.name,
         CURSOR_API_KEY: process.env.CURSOR_API_KEY,
-        GIT_REPOSITORY_URL: repositoryUrl,
-        GIT_USERNAME: process.env.GIT_USERNAME,
-        GIT_TOKEN: process.env.GIT_TOKEN,
-        GIT_PASSWORD: process.env.GIT_PASSWORD,
-        GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
+        ...this.buildGitContainerEnv(gitRepositorySetupMode, repositoryUrl),
         ...(provider.getEnvironmentVariables ? provider.getEnvironmentVariables() : {}),
       },
       volumes: [
@@ -348,23 +429,13 @@ export class AgentsService implements OnApplicationBootstrap {
     });
 
     try {
-      if (sshRepository) {
-        await this.configureSshAccess(containerId, repositoryUrl, process.env.GIT_PRIVATE_KEY);
-      } else {
-        // Create .netrc file for git authentication
-        await this.createNetrcFile(containerId, repositoryUrl);
-      }
-
-      await this.ensureProviderConfigBaseDirectoryExists(containerId, agentType);
-
-      const escapedUrl = this.escapeForShell(repositoryUrl);
-      const repositoryPath = provider.getRepositoryPath ? basePath + provider.getRepositoryPath() : basePath;
-      const escapedRepositoryPath = this.escapeForShell(repositoryPath);
-
-      // Clone the repository to the agent volume
-      await this.dockerService.sendCommandToContainer(
+      await this.setupAgentRepository(
         containerId,
-        `sh -c "git clone ${escapedUrl} ${escapedRepositoryPath}"`,
+        agentType,
+        gitRepositorySetupMode,
+        repositoryUrl,
+        provider,
+        basePath,
       );
 
       // Create SSH connection container
@@ -435,11 +506,7 @@ export class AgentsService implements OnApplicationBootstrap {
           env: {
             AGENT_NAME: createAgentDto.name,
             CURSOR_API_KEY: process.env.CURSOR_API_KEY,
-            GIT_REPOSITORY_URL: repositoryUrl,
-            GIT_USERNAME: process.env.GIT_USERNAME,
-            GIT_TOKEN: process.env.GIT_TOKEN,
-            GIT_PASSWORD: process.env.GIT_PASSWORD,
-            GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
+            ...this.buildGitContainerEnv(gitRepositorySetupMode, repositoryUrl),
             VNC_PASSWORD: virtualWorkspacePassword,
           },
           volumes: [
@@ -505,7 +572,12 @@ export class AgentsService implements OnApplicationBootstrap {
               sshHostPort: sshConnection.hostPort,
               sshPassword: sshConnection.password,
             }),
-          gitRepositoryUrl: createAgentDto.gitRepositoryUrl,
+          gitRepositoryUrl:
+            gitRepositorySetupMode === GitRepositorySetupMode.CLONE ? createAgentDto.gitRepositoryUrl : undefined,
+          gitRepositorySetupMode:
+            gitRepositorySetupMode === GitRepositorySetupMode.EMPTY
+              ? GitRepositorySetupMode.EMPTY
+              : createAgentDto.gitRepositorySetupMode,
         });
 
         // Create deployment configuration if provided
@@ -863,6 +935,24 @@ export class AgentsService implements OnApplicationBootstrap {
   }
 
   /**
+   * Map agent Git metadata for API responses.
+   */
+  private mapAgentGit(agent: AgentEntity): AgentResponseDto['git'] | undefined {
+    if (agent.gitRepositorySetupMode === GitRepositorySetupMode.EMPTY) {
+      return { setupMode: GitRepositorySetupMode.EMPTY };
+    }
+
+    if (agent.gitRepositoryUrl) {
+      return {
+        repositoryUrl: agent.gitRepositoryUrl,
+        setupMode: GitRepositorySetupMode.CLONE,
+      };
+    }
+
+    return undefined;
+  }
+
+  /**
    * Map agent entity to response DTO.
    * Excludes sensitive information like password hash.
    * @param agent - The agent entity to map
@@ -887,11 +977,7 @@ export class AgentsService implements OnApplicationBootstrap {
             password: agent.sshPassword,
           }
         : undefined,
-      git: agent.gitRepositoryUrl
-        ? {
-            repositoryUrl: agent.gitRepositoryUrl,
-          }
-        : undefined,
+      git: this.mapAgentGit(agent),
       createdAt: agent.createdAt,
       updatedAt: agent.updatedAt,
     };

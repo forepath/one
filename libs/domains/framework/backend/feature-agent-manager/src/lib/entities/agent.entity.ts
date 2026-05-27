@@ -1,6 +1,8 @@
 import { createAes256GcmTransformer } from '@forepath/shared/backend';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
+import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
+
 /**
  * Container type enum representing the type of container.
  * This is used to identify what type of content the container contains.
@@ -78,6 +80,9 @@ export class AgentEntity {
 
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'git_repository_url' })
   gitRepositoryUrl?: string;
+
+  @Column({ type: 'varchar', length: 16, nullable: true, name: 'git_repository_setup_mode' })
+  gitRepositorySetupMode?: GitRepositorySetupMode;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

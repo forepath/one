@@ -52,6 +52,7 @@ export * from './lib/services/docker.service';
 export * from './lib/services/workspace-configuration-overrides.service';
 export * from './lib/utils/agent-file-manager-context';
 export * from './lib/utils/regex-filter-rule.utils';
+export * from './lib/constants/git-repository-setup-mode';
 export * from './lib/constants/workspace-configuration-settings';
 
 // Re-export PasswordService from identity for backward compatibility

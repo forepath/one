@@ -1,4 +1,5 @@
 export const WORKSPACE_CONFIGURATION_SETTINGS = [
+  { settingKey: 'gitRepositorySetupMode', envVarName: 'GIT_REPOSITORY_SETUP_MODE' },
   { settingKey: 'gitRepositoryUrl', envVarName: 'GIT_REPOSITORY_URL' },
   { settingKey: 'gitUsername', envVarName: 'GIT_USERNAME' },
   { settingKey: 'gitToken', envVarName: 'GIT_TOKEN' },

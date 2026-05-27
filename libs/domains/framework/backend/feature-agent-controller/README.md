@@ -295,7 +295,8 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
 - `keycloakRealm` - Keycloak realm (optional, defaults to environment variable)
 - `keycloakAuthServerUrl` - Keycloak auth server URL (optional, defaults to environment variable)
 - `agentWsPort` - Agent WebSocket port (defaults to 8080)
-- `gitRepositoryUrl` - Git repository URL for agent workspace
+- `gitRepositorySetupMode` - `clone` (default) or `empty` (git init without remote)
+- `gitRepositoryUrl` - Git repository URL for agent workspace (clone mode)
 - `gitUsername` - Git username for repository access
 - `gitToken` - Git token/personal access token for repository access
 - `gitPassword` - Git password for repository access (alternative to token)
@@ -341,7 +342,8 @@ Values are securely passed from the frontend through the backend to the user dat
 
 Client responses include a `config` field that is automatically fetched from the remote agent-manager service. This configuration includes:
 
-- `gitRepositoryUrl` - The Git repository URL configured on the agent-manager instance (if set)
+- `gitRepositoryUrl` - The Git repository URL configured on the agent-manager instance (if set, clone mode)
+- `gitRepositorySetupMode` - Default setup mode for new agents (`clone` or `empty`)
 - `agentTypes` - Array of available agent provider types registered on the agent-manager instance (e.g., `['cursor']`, `['cursor', 'opencode']`)
 
 The config field is optional and may be `undefined` if:

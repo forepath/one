@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
+import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { ConfigService } from '../services/config.service';
 
 import { ConfigController } from './config.controller';
@@ -9,6 +10,7 @@ describe('ConfigController', () => {
   let service: jest.Mocked<ConfigService>;
   const mockConfigService = {
     getGitRepositoryUrl: jest.fn(),
+    getGitRepositorySetupMode: jest.fn(),
     getAvailableAgentTypes: jest.fn(),
   };
 
@@ -37,12 +39,14 @@ describe('ConfigController', () => {
       const agentTypes = [{ type: 'cursor', displayName: 'Cursor' }];
 
       service.getGitRepositoryUrl.mockReturnValue(gitRepositoryUrl);
+      service.getGitRepositorySetupMode.mockReturnValue(GitRepositorySetupMode.CLONE);
       service.getAvailableAgentTypes.mockReturnValue(agentTypes);
 
       const result = await controller.getConfig();
 
       expect(result).toEqual({
         gitRepositoryUrl,
+        gitRepositorySetupMode: GitRepositorySetupMode.CLONE,
         agentTypes,
       });
       expect(service.getGitRepositoryUrl).toHaveBeenCalled();
@@ -53,12 +57,14 @@ describe('ConfigController', () => {
       const agentTypes = [{ type: 'cursor', displayName: 'Cursor' }];
 
       service.getGitRepositoryUrl.mockReturnValue(undefined);
+      service.getGitRepositorySetupMode.mockReturnValue(GitRepositorySetupMode.CLONE);
       service.getAvailableAgentTypes.mockReturnValue(agentTypes);
 
       const result = await controller.getConfig();
 
       expect(result).toEqual({
         gitRepositoryUrl: undefined,
+        gitRepositorySetupMode: GitRepositorySetupMode.CLONE,
         agentTypes,
       });
       expect(service.getGitRepositoryUrl).toHaveBeenCalled();
@@ -73,6 +79,7 @@ describe('ConfigController', () => {
       ];
 
       service.getGitRepositoryUrl.mockReturnValue(undefined);
+      service.getGitRepositorySetupMode.mockReturnValue(GitRepositorySetupMode.CLONE);
       service.getAvailableAgentTypes.mockReturnValue(agentTypes);
 
       const result = await controller.getConfig();

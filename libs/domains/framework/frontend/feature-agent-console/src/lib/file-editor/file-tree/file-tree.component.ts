@@ -15,6 +15,7 @@ import {
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
+  AgentsFacade,
   ClientsFacade,
   FilesFacade,
   VcsFacade,
@@ -24,6 +25,7 @@ import {
 } from '@forepath/framework/frontend/data-access-agent-console';
 import { combineLatest, filter, map, Observable, of, Subscription, switchMap, take } from 'rxjs';
 
+import { getGitRepositoryDisplayLabel } from '../../git-repository-display';
 import { GitBranchModalComponent } from '../git-branch-modal/git-branch-modal.component';
 
 interface TreeNode {
@@ -47,6 +49,7 @@ interface TreeNode {
 export class FileTreeComponent implements OnInit {
   private readonly filesFacade = inject(FilesFacade);
   private readonly clientsFacade = inject(ClientsFacade);
+  private readonly agentsFacade = inject(AgentsFacade);
   private readonly vcsFacade = inject(VcsFacade);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -165,15 +168,22 @@ export class FileTreeComponent implements OnInit {
     }),
   );
 
-  readonly clientRepositoryName$: Observable<string | null> = toObservable(this.clientId).pipe(
-    switchMap((clientId) => {
-      if (!clientId) {
+  readonly clientRepositoryName$: Observable<string | null> = combineLatest([
+    toObservable(this.clientId),
+    toObservable(this.agentId),
+  ]).pipe(
+    switchMap(([clientId, agentId]) => {
+      if (!clientId || !agentId) {
         return of(null);
       }
 
-      return this.clientsFacade.getClientById$(clientId);
+      return combineLatest([
+        this.clientsFacade.getClientById$(clientId),
+        this.agentsFacade
+          .getClientAgents$(clientId)
+          .pipe(map((agents) => agents.find((agent) => agent.id === agentId) ?? null)),
+      ]).pipe(map(([client, agent]) => getGitRepositoryDisplayLabel(agent, client?.config ?? null)));
     }),
-    map((client) => this.parseGitRepository(client?.config?.gitRepositoryUrl)),
   );
 
   // Git status observables

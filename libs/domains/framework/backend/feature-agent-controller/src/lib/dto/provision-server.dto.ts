@@ -1,3 +1,4 @@
+import { GitRepositorySetupMode } from '@forepath/framework/backend/feature-agent-manager';
 import { AuthenticationType } from '@forepath/identity/backend';
 import { Type } from 'class-transformer';
 import { IsEnum, IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
@@ -55,6 +56,12 @@ export class ProvisionServerDto {
   @Min(1)
   @Max(65535)
   agentWsPort?: number;
+
+  @IsOptional()
+  @IsEnum(GitRepositorySetupMode, {
+    message: 'Git repository setup mode must be one of: clone, empty',
+  })
+  gitRepositorySetupMode?: GitRepositorySetupMode;
 
   @IsOptional()
   @IsString({ message: 'Git repository URL must be a string' })

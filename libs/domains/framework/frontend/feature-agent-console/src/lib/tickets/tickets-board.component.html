@@ -907,13 +907,9 @@
                                         [for]="'ticketAutomationContextEnvironment' + a.id"
                                       >
                                         <span class="fw-medium">{{ a.name }}</span>
-                                        @if (
-                                          parseGitRepository(
-                                            a.git?.repositoryUrl ??
-                                              effectiveWorkspace()?.client?.config?.gitRepositoryUrl
-                                          );
-                                          as repo
-                                        ) {
+                                        @if (isAutomationContextEnvironmentLocalRepo(a)) {
+                                          <small class="text-muted small ms-1">(Local repository)</small>
+                                        } @else if (getAutomationContextEnvironmentGitLabel(a); as repo) {
                                           <small class="text-muted small ms-1">({{ repo }})</small>
                                         }
                                       </label>

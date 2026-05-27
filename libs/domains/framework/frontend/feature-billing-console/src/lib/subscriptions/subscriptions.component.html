@@ -674,114 +674,140 @@
                             Git (optional)
                           </legend>
                           <p class="form-text text-body-secondary small mb-2" i18n="@@featureSubscriptions-gitHelp">
-                            Git configuration for the agent manager (repository URL, credentials, commit author). Leave
-                            empty if not using Git-backed agents.
+                            Git configuration for the agent manager (repository setup, credentials, commit author).
+                            Leave clone fields empty if not using a remote repository.
                           </p>
                           <div class="mb-2">
-                            <label for="orderGitRepositoryUrl" class="form-label visually-hidden"
-                              >Git repository URL</label
+                            <label for="orderGitSetupMode" class="form-label" i18n="@@featureSubscriptions-gitSetupMode"
+                              >Repository setup</label
                             >
-                            <input
-                              type="url"
-                              id="orderGitRepositoryUrl"
-                              name="gitRepositoryUrl"
-                              class="form-control"
-                              [(ngModel)]="orderRequestedConfig.git.repositoryUrl"
-                              placeholder="https://github.com/org/repo.git or git@github.com:org/repo.git"
+                            <select
+                              id="orderGitSetupMode"
+                              name="gitSetupMode"
+                              class="form-select"
+                              [ngModel]="orderRequestedConfig.git.setupMode"
+                              (ngModelChange)="onGitSetupModeChange($event)"
                               [disabled]="(subscriptionsCreating$ | async) === true"
-                              aria-label="Git repository URL"
-                            />
+                              aria-label="Git repository setup mode"
+                            >
+                              <option value="clone" i18n="@@featureSubscriptions-gitSetupModeClone">
+                                Clone from remote
+                              </option>
+                              <option value="empty" i18n="@@featureSubscriptions-gitSetupModeEmpty">
+                                Empty repository (git init)
+                              </option>
+                            </select>
+                            <span class="form-text text-body-secondary" i18n="@@featureSubscriptions-gitSetupModeHelp">
+                              Choose whether agent workspaces start from a cloned remote or a new local Git repository.
+                            </span>
                           </div>
-                          <div class="row g-2 mb-2">
-                            <div class="col-md-6">
-                              <label for="orderGitUsername" class="form-label visually-hidden">Git username</label>
+                          @if (isOrderGitCloneMode()) {
+                            <div class="mb-2">
+                              <label for="orderGitRepositoryUrl" class="form-label visually-hidden"
+                                >Git repository URL</label
+                              >
                               <input
-                                type="text"
-                                id="orderGitUsername"
-                                name="gitUsername"
+                                type="url"
+                                id="orderGitRepositoryUrl"
+                                name="gitRepositoryUrl"
                                 class="form-control"
-                                [(ngModel)]="orderRequestedConfig.git.username"
-                                placeholder="Username (HTTPS)"
+                                [(ngModel)]="orderRequestedConfig.git.repositoryUrl"
+                                placeholder="https://github.com/org/repo.git or git@github.com:org/repo.git"
                                 [disabled]="(subscriptionsCreating$ | async) === true"
-                                aria-label="Git username"
+                                aria-label="Git repository URL"
                               />
                             </div>
-                            <div class="col-md-6">
-                              <label for="orderGitToken" class="form-label visually-hidden">Git token</label>
+                            <div class="row g-2 mb-2">
+                              <div class="col-md-6">
+                                <label for="orderGitUsername" class="form-label visually-hidden">Git username</label>
+                                <input
+                                  type="text"
+                                  id="orderGitUsername"
+                                  name="gitUsername"
+                                  class="form-control"
+                                  [(ngModel)]="orderRequestedConfig.git.username"
+                                  placeholder="Username (HTTPS)"
+                                  [disabled]="(subscriptionsCreating$ | async) === true"
+                                  aria-label="Git username"
+                                />
+                              </div>
+                              <div class="col-md-6">
+                                <label for="orderGitToken" class="form-label visually-hidden">Git token</label>
+                                <input
+                                  type="password"
+                                  id="orderGitToken"
+                                  name="gitToken"
+                                  class="form-control"
+                                  [(ngModel)]="orderRequestedConfig.git.token"
+                                  placeholder="Token / PAT"
+                                  [disabled]="(subscriptionsCreating$ | async) === true"
+                                  aria-label="Git token"
+                                  autocomplete="off"
+                                />
+                              </div>
+                            </div>
+                            <div class="mb-2">
+                              <label for="orderGitPassword" class="form-label visually-hidden">Git password</label>
                               <input
                                 type="password"
-                                id="orderGitToken"
-                                name="gitToken"
+                                id="orderGitPassword"
+                                name="gitPassword"
                                 class="form-control"
-                                [(ngModel)]="orderRequestedConfig.git.token"
-                                placeholder="Token / PAT"
+                                [(ngModel)]="orderRequestedConfig.git.password"
+                                placeholder="Password (alternative to token)"
                                 [disabled]="(subscriptionsCreating$ | async) === true"
-                                aria-label="Git token"
+                                aria-label="Git password"
                                 autocomplete="off"
                               />
                             </div>
-                          </div>
-                          <div class="mb-2">
-                            <label for="orderGitPassword" class="form-label visually-hidden">Git password</label>
-                            <input
-                              type="password"
-                              id="orderGitPassword"
-                              name="gitPassword"
-                              class="form-control"
-                              [(ngModel)]="orderRequestedConfig.git.password"
-                              placeholder="Password (alternative to token)"
-                              [disabled]="(subscriptionsCreating$ | async) === true"
-                              aria-label="Git password"
-                              autocomplete="off"
-                            />
-                          </div>
-                          <div class="mb-2">
-                            <label for="orderGitPrivateKey" class="form-label visually-hidden"
-                              >Git SSH private key</label
-                            >
-                            <textarea
-                              id="orderGitPrivateKey"
-                              name="gitPrivateKey"
-                              class="form-control font-monospace small"
-                              rows="4"
-                              [(ngModel)]="orderRequestedConfig.git.privateKey"
-                              placeholder="-----BEGIN OPENSSH PRIVATE KEY----- ... (for git@ URLs)"
-                              [disabled]="(subscriptionsCreating$ | async) === true"
-                              aria-label="Git SSH private key"
-                            ></textarea>
-                          </div>
-                          <div class="row g-2 mb-2">
-                            <div class="col-md-6">
-                              <label for="orderGitCommitAuthorName" class="form-label visually-hidden"
-                                >Commit author name</label
+                            <div class="mb-2">
+                              <label for="orderGitPrivateKey" class="form-label visually-hidden"
+                                >Git SSH private key</label
                               >
-                              <input
-                                type="text"
-                                id="orderGitCommitAuthorName"
-                                name="gitCommitAuthorName"
-                                class="form-control"
-                                [(ngModel)]="orderRequestedConfig.git.commitAuthorName"
-                                placeholder="Author name"
+                              <textarea
+                                id="orderGitPrivateKey"
+                                name="gitPrivateKey"
+                                class="form-control font-monospace small"
+                                rows="4"
+                                [(ngModel)]="orderRequestedConfig.git.privateKey"
+                                placeholder="-----BEGIN OPENSSH PRIVATE KEY----- ... (for git@ URLs)"
                                 [disabled]="(subscriptionsCreating$ | async) === true"
-                                aria-label="Commit author name"
-                              />
+                                aria-label="Git SSH private key"
+                              ></textarea>
                             </div>
-                            <div class="col-md-6">
-                              <label for="orderGitCommitAuthorEmail" class="form-label visually-hidden"
-                                >Commit author email</label
-                              >
-                              <input
-                                type="email"
-                                id="orderGitCommitAuthorEmail"
-                                name="gitCommitAuthorEmail"
-                                class="form-control"
-                                [(ngModel)]="orderRequestedConfig.git.commitAuthorEmail"
-                                placeholder="author@example.com"
-                                [disabled]="(subscriptionsCreating$ | async) === true"
-                                aria-label="Commit author email"
-                              />
+                            <div class="row g-2 mb-2">
+                              <div class="col-md-6">
+                                <label for="orderGitCommitAuthorName" class="form-label visually-hidden"
+                                  >Commit author name</label
+                                >
+                                <input
+                                  type="text"
+                                  id="orderGitCommitAuthorName"
+                                  name="gitCommitAuthorName"
+                                  class="form-control"
+                                  [(ngModel)]="orderRequestedConfig.git.commitAuthorName"
+                                  placeholder="Author name"
+                                  [disabled]="(subscriptionsCreating$ | async) === true"
+                                  aria-label="Commit author name"
+                                />
+                              </div>
+                              <div class="col-md-6">
+                                <label for="orderGitCommitAuthorEmail" class="form-label visually-hidden"
+                                  >Commit author email</label
+                                >
+                                <input
+                                  type="email"
+                                  id="orderGitCommitAuthorEmail"
+                                  name="gitCommitAuthorEmail"
+                                  class="form-control"
+                                  [(ngModel)]="orderRequestedConfig.git.commitAuthorEmail"
+                                  placeholder="author@example.com"
+                                  [disabled]="(subscriptionsCreating$ | async) === true"
+                                  aria-label="Commit author email"
+                                />
+                              </div>
                             </div>
-                          </div>
+                          }
                         </fieldset>
                       }
                       @if (orderRequestedConfig.service === 'controller') {

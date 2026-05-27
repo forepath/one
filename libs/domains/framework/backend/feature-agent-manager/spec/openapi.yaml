@@ -1468,9 +1468,15 @@ components:
           type: string
           enum: [cursor, opencode, openclaw]
           description: Agent provider type (defaults to 'cursor' if not provided)
+        gitRepositorySetupMode:
+          type: string
+          enum: [clone, empty]
+          description: |
+            How to initialize the agent workspace Git repository. `clone` (default) clones a remote;
+            `empty` runs `git init` with no remote. When `empty`, do not send `gitRepositoryUrl`.
         gitRepositoryUrl:
           type: [string, 'null']
-          description: Git repository URL to clone when creating the agent
+          description: Git repository URL to clone when creating the agent (required for clone mode unless GIT_REPOSITORY_URL is set on the instance)
         createVirtualWorkspace:
           type: boolean
           default: true
@@ -1560,8 +1566,12 @@ components:
           properties:
             repositoryUrl:
               type: string
-              description: Git repository URL associated with the agent
-          description: Git information (only present if gitRepositoryUrl is set)
+              description: Git repository URL associated with the agent (clone mode only)
+            setupMode:
+              type: string
+              enum: [clone, empty]
+              description: How the workspace repository was initialized
+          description: Git information when the agent has an associated repository or empty local repo
         createdAt:
           type: string
           format: date-time
@@ -1592,7 +1602,11 @@ components:
       properties:
         gitRepositoryUrl:
           type: [string, 'null']
-          description: Git repository URL used for cloning repositories when creating agents
+          description: Git repository URL used for cloning repositories when creating agents (clone mode)
+        gitRepositorySetupMode:
+          type: string
+          enum: [clone, empty]
+          description: Default setup mode for new agents on this instance (defaults to clone)
         agentTypes:
           type: array
           items:

@@ -18,15 +18,22 @@ sequenceDiagram
         Service->>Service: generatePassword()
         Service->>Service: hashPassword(password)
         Service->>Service: generateVolumePath()
-        Service->>Service: isSshRepository(GIT_REPOSITORY_URL)
-        alt HTTPS Repository
+        Service->>Service: resolve gitRepositorySetupMode
+        alt Empty repository (git init)
+            Service->>Docker: createContainer(name, env, volumes)
+            Note over Docker: GIT_REPOSITORY_SETUP_MODE=empty<br/>no GIT_REPOSITORY_URL
+            Docker-->>Service: containerId
+            Service->>Docker: sendCommandToContainer(containerId, "git init {path}")
+            Docker-->>Service: repository initialized
+        else Clone - HTTPS Repository
+            Service->>Service: isSshRepository(GIT_REPOSITORY_URL)
             Service->>Docker: createContainer(name, env, volumes)
             Note over Docker: Container created with:<br/>- GIT_REPOSITORY_URL<br/>- GIT_USERNAME<br/>- GIT_TOKEN/GIT_PASSWORD<br/>- CURSOR_API_KEY<br/>- Volume: /opt/agents/{uuid} -> /app
             Docker-->>Service: containerId
             Service->>Docker: createNetrcFile(containerId)
             Note over Docker: Creates $HOME/.netrc<br/>(worker: /home/agenstra/.netrc)<br/>machine {domain}<br/>  login {username}<br/>  password {token}
             Docker-->>Service: .netrc created
-        else SSH Repository
+        else Clone - SSH Repository
             Service->>Service: prepareSshKeyPair(GIT_PRIVATE_KEY)
             alt GIT_PRIVATE_KEY not set or invalid
                 Service-->>HTTP: BadRequestException

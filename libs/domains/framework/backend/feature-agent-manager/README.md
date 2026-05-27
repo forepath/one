@@ -711,9 +711,15 @@ nx test framework-backend-feature-agent-manager --coverage
 
 ### Git Repository Environment Variables
 
-These environment variables are required for git repository cloning when creating agents:
+When creating agents, the workspace Git repository is initialized in one of two modes (see `gitRepositorySetupMode` on `CreateAgentDto` or `GIT_REPOSITORY_SETUP_MODE`):
 
-- `GIT_REPOSITORY_URL` - HTTPS or SSH URL of the git repository to clone (e.g., `https://github.com/user/repo.git` or `git@github.com:user/repo.git`)
+- **`clone` (default)** — clone a remote repository (requires URL and credentials below).
+- **`empty`** — run `git init` in the provider workspace path with no remote attached.
+
+Per-agent `gitRepositorySetupMode` on `CreateAgentDto` overrides the instance default (`GIT_REPOSITORY_SETUP_MODE`). If the field is omitted, the instance default applies (for example, a workspace provisioned or configured with `empty`).
+
+- `GIT_REPOSITORY_SETUP_MODE` - Optional instance default: `clone` or `empty` (defaults to `clone` when unset)
+- `GIT_REPOSITORY_URL` - HTTPS or SSH URL of the git repository to clone (required for clone mode unless provided per agent)
 - `GIT_USERNAME` - Git username for authentication (**required for HTTPS URLs**)
 - `GIT_TOKEN` - Git personal access token for authentication (preferred for HTTPS, or use `GIT_PASSWORD`)
 - `GIT_PASSWORD` - Git password or token (alternative to `GIT_TOKEN` for HTTPS)
