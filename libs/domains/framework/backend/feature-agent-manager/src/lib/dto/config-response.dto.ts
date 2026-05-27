@@ -13,11 +13,14 @@ export class AgentTypeInfo {
   displayName!: string;
 }
 
+import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
+
 /**
  * DTO for configuration API responses.
  * Contains configuration parameters exposed to clients.
  */
 export class ConfigResponseDto {
   gitRepositoryUrl?: string;
+  gitRepositorySetupMode?: GitRepositorySetupMode;
   agentTypes!: AgentTypeInfo[];
 }

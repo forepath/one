@@ -100,6 +100,20 @@ describe('agent-manager.utils', () => {
       expect(config.backend.git?.token).toBe('pat');
       expect(config.backend.git?.commitAuthorName).toBe('Bot');
       expect(config.backend.git?.commitAuthorEmail).toBe('bot@example.com');
+      expect(config.backend.git?.setupMode).toBe('clone');
+    });
+
+    it('includes git setupMode empty when request specifies empty repository', () => {
+      const config = buildAgentManagerCloudInitConfigFromRequest(
+        {
+          authenticationMethod: 'api-key',
+          git: { setupMode: 'empty' },
+        },
+        'host1',
+      );
+
+      expect(config.backend.git?.setupMode).toBe('empty');
+      expect(config.backend.git?.repositoryUrl).toBe('');
     });
 
     it('omits backend.git when request has no git', () => {
@@ -279,6 +293,39 @@ describe('agent-manager.utils', () => {
       expect(script).toContain('GIT_TOKEN: secret');
       expect(script).toContain('GIT_COMMIT_AUTHOR_NAME: Agent');
       expect(script).toContain('GIT_COMMIT_AUTHOR_EMAIL: agent@example.com');
+    });
+
+    it('emits only GIT_REPOSITORY_SETUP_MODE when git setupMode is empty', () => {
+      const config: AgentManagerCloudInitConfig = {
+        ssh: { publicKey: '' },
+        host: { hostname: 'test', fqdn: 'test.spirde.com' },
+        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        backend: {
+          host: '0.0.0.0',
+          port: 3000,
+          websocketPort: 8080,
+          nodeEnv: 'production',
+          database: {
+            host: 'postgres',
+            port: 5432,
+            username: 'postgres',
+            password: 'postgres',
+            database: 'postgres',
+          },
+          authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
+          encryption: { encryptionKey: 'enc', jwtSecret: 'jwt' },
+          smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
+          cors: { origin: 'https://test.spirde.com' },
+          git: { setupMode: 'empty' },
+        },
+      };
+      const b64 = buildAgentManagerCloudInitUserData(config);
+      const script = Buffer.from(b64, 'base64').toString('utf-8');
+
+      expect(script).toContain('GIT_REPOSITORY_SETUP_MODE: empty');
+      expect(script).not.toContain('GIT_REPOSITORY_URL');
+      expect(script).not.toContain('GIT_USERNAME');
+      expect(script).not.toContain('GIT_TOKEN');
     });
 
     it('omits GIT_* env vars when config.backend.git is absent', () => {

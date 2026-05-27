@@ -1,5 +1,6 @@
 import { IsBoolean, IsEnum, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
+import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { ContainerType } from '../entities/agent.entity';
 
 /**
@@ -23,6 +24,12 @@ export class CreateAgentDto {
   @IsOptional()
   @IsEnum(ContainerType, { message: 'Container type must be one of: generic, docker, terraform, kubernetes' })
   containerType?: ContainerType = ContainerType.GENERIC;
+
+  @IsOptional()
+  @IsEnum(GitRepositorySetupMode, {
+    message: 'Git repository setup mode must be one of: clone, empty',
+  })
+  gitRepositorySetupMode?: GitRepositorySetupMode;
 
   @IsOptional()
   @IsString({ message: 'Git repository URL must be a string' })

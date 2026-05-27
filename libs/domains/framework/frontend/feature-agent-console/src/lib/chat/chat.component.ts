@@ -45,6 +45,7 @@ import {
   type ClientResponseDto,
   type ClientUserResponseDto,
   type ClientUserRole,
+  type ConfigResponseDto,
   type CreateAgentDto,
   type CreateClientDto,
   type CreateEnvironmentVariableDto,
@@ -90,6 +91,12 @@ import {
 import { DeploymentManagerComponent } from '../deployment-manager/deployment-manager.component';
 import { ContainerStatsStatusBarComponent } from '../file-editor/container-stats-status-bar/container-stats-status-bar.component';
 import { FileEditorComponent } from '../file-editor/file-editor.component';
+import {
+  getGitRepositoryDisplayLabel,
+  isLocalGitRepository as isLocalGitRepositoryMode,
+  parseGitRepository as parseGitRepositoryLabel,
+  resolveGitRepositorySetupMode,
+} from '../git-repository-display';
 import { readAndClearAgentConsoleChatDraft } from '../tickets/chat-draft-storage';
 import {
   ticketAutomationRunPhaseLabel as ticketAutomationRunPhaseLabelFn,
@@ -579,6 +586,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     initialValue: null as string | null,
   });
 
+  private readonly activeClientSignal = toSignal(this.activeClient$, {
+    initialValue: null as ClientResponseDto | null,
+  });
+
   /** Tickets the user may use as chat context: current board only, with SHA materialized. */
   readonly ticketContextPermittedTickets = computed(() => {
     const clientId = this.activeClientIdSignal();
@@ -949,6 +960,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     description: '',
     agentType: undefined,
     containerType: undefined,
+    gitRepositorySetupMode: 'clone',
     gitRepositoryUrl: undefined,
     createVirtualWorkspace: false,
     createSshConnection: false,
@@ -1048,7 +1060,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   );
 
   readonly managingWorkspaceConfigurationClientId = signal<string | null>(null);
+  readonly managingWorkspaceConfigurationClient = signal<ClientResponseDto | null>(null);
   readonly editingWorkspaceConfigurationValues = signal<Partial<Record<WorkspaceConfigurationSettingKey, string>>>({});
+  /** Workspace configuration overrides for the active client (used for git display). */
+  readonly activeWorkspaceSettings = signal<WorkspaceConfigurationSettingResponseDto[]>([]);
   readonly managingWorkspaceConfigurationClientId$ = toObservable(this.managingWorkspaceConfigurationClientId);
   readonly workspaceConfigurationSettings$: Observable<WorkspaceConfigurationSettingResponseDto[]> =
     this.managingWorkspaceConfigurationClientId$.pipe(
@@ -1248,6 +1263,23 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         this.activeClientId = clientId;
       }
     });
+
+    this.activeClientId$
+      .pipe(
+        switchMap((clientId) => {
+          this.activeWorkspaceSettings.set([]);
+
+          if (!clientId) {
+            return of([] as WorkspaceConfigurationSettingResponseDto[]);
+          }
+
+          this.workspaceConfigFacade.loadSettings(clientId);
+
+          return this.workspaceConfigFacade.getSettings$(clientId);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((settings) => this.activeWorkspaceSettings.set(settings));
 
     // Load provider model catalog when client + selected agent are set (includes deep-link and reducer-driven selection).
     combineLatest([this.activeClientId$, this.selectedAgent$])
@@ -3461,6 +3493,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       keycloakRealm: undefined,
       keycloakAuthServerUrl: undefined,
       agentWsPort: undefined,
+      gitRepositorySetupMode: 'clone',
       gitRepositoryUrl: undefined,
       gitUsername: undefined,
       gitToken: undefined,
@@ -3481,12 +3514,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   onAddAgentClick(): void {
-    // Reset form
+    // Reset form; inherit workspace git setup default from agent-manager config
     this.newAgent.set({
       name: '',
       description: '',
       agentType: undefined,
       containerType: undefined,
+      gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
       gitRepositoryUrl: undefined,
     });
     this.showModal(this.addAgentModal);
@@ -3601,24 +3635,30 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
 
       // GIT configuration
-      if (clientData.gitRepositoryUrl) {
-        provisionDto.gitRepositoryUrl = clientData.gitRepositoryUrl;
-      }
+      const gitSetupMode = clientData.gitRepositorySetupMode ?? 'clone';
 
-      if (clientData.gitUsername) {
-        provisionDto.gitUsername = clientData.gitUsername;
-      }
+      provisionDto.gitRepositorySetupMode = gitSetupMode;
 
-      if (clientData.gitToken) {
-        provisionDto.gitToken = clientData.gitToken;
-      }
+      if (gitSetupMode === 'clone') {
+        if (clientData.gitRepositoryUrl) {
+          provisionDto.gitRepositoryUrl = clientData.gitRepositoryUrl;
+        }
 
-      if (clientData.gitPassword) {
-        provisionDto.gitPassword = clientData.gitPassword;
-      }
+        if (clientData.gitUsername) {
+          provisionDto.gitUsername = clientData.gitUsername;
+        }
 
-      if (clientData.gitPrivateKey) {
-        provisionDto.gitPrivateKey = clientData.gitPrivateKey;
+        if (clientData.gitToken) {
+          provisionDto.gitToken = clientData.gitToken;
+        }
+
+        if (clientData.gitPassword) {
+          provisionDto.gitPassword = clientData.gitPassword;
+        }
+
+        if (clientData.gitPrivateKey) {
+          provisionDto.gitPrivateKey = clientData.gitPrivateKey;
+        }
       }
 
       // Cursor agent configuration
@@ -3751,7 +3791,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       createDto.agentType = agentData.agentType;
     }
 
-    if (agentData.gitRepositoryUrl) {
+    const workspaceMode = this.activeClientSignal()?.config?.gitRepositorySetupMode;
+    const gitSetupMode = agentData.gitRepositorySetupMode ?? workspaceMode ?? 'clone';
+
+    createDto.gitRepositorySetupMode = gitSetupMode;
+
+    if (gitSetupMode === 'clone' && agentData.gitRepositoryUrl) {
       createDto.gitRepositoryUrl = agentData.gitRepositoryUrl;
     }
 
@@ -3780,11 +3825,20 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           description: '',
           agentType: undefined,
           containerType: undefined,
+          gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
           gitRepositoryUrl: undefined,
           createVirtualWorkspace: false,
           createSshConnection: false,
         });
       });
+  }
+
+  private getDefaultAgentGitRepositorySetupMode(): 'clone' | 'empty' {
+    return this.activeClientSignal()?.config?.gitRepositorySetupMode ?? 'clone';
+  }
+
+  getWorkspaceGitSetupModeDefaultLabel(mode: 'clone' | 'empty'): string {
+    return mode === 'empty' ? 'Empty repository (git init)' : 'Clone from remote';
   }
 
   /**
@@ -4266,6 +4320,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   onManageWorkspaceConfigurationClick(client: ClientResponseDto): void {
+    this.managingWorkspaceConfigurationClient.set(client);
     this.managingWorkspaceConfigurationClientId.set(client.id);
     this.workspaceConfigFacade.loadSettings(client.id);
     this.showModal(this.workspaceConfigurationModal);
@@ -4277,6 +4332,16 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     if (fromOverride !== undefined) {
       return fromOverride;
+    }
+
+    if (setting.settingKey === 'gitRepositorySetupMode') {
+      const raw = setting.value?.trim();
+
+      if (raw === 'empty' || raw === 'clone') {
+        return raw;
+      }
+
+      return 'clone';
     }
 
     if (setting.settingKey === 'autoEnrichEnabledGlobal') {
@@ -4304,6 +4369,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   getWorkspaceConfigurationSettingTitle(settingKey: WorkspaceConfigurationSettingKey): string {
     switch (settingKey) {
+      case 'gitRepositorySetupMode':
+        return $localize`:@@featureChat-workspaceSettingTitleGitSetupMode:Git repository setup mode`;
       case 'gitRepositoryUrl':
         return $localize`:@@featureChat-workspaceSettingTitleGitRepo:Git repository URL`;
       case 'gitUsername':
@@ -4407,6 +4474,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
 
     this.managingWorkspaceConfigurationClientId.set(null);
+    this.managingWorkspaceConfigurationClient.set(null);
     this.editingWorkspaceConfigurationValues.set({});
   }
 
@@ -4684,50 +4752,94 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
   }
 
+  onClientGitSetupModeChange(mode: 'clone' | 'empty'): void {
+    if (mode === 'empty') {
+      this.newClient.set({
+        ...this.newClient(),
+        gitRepositorySetupMode: mode,
+        gitRepositoryUrl: undefined,
+        gitUsername: undefined,
+        gitToken: undefined,
+        gitPassword: undefined,
+        gitPrivateKey: undefined,
+      });
+
+      return;
+    }
+
+    this.updateClientField('gitRepositorySetupMode', mode);
+  }
+
+  onAgentGitSetupModeChange(mode: 'clone' | 'empty'): void {
+    if (mode === 'empty') {
+      this.newAgent.set({
+        ...this.newAgent(),
+        gitRepositorySetupMode: mode,
+        gitRepositoryUrl: undefined,
+      });
+
+      return;
+    }
+
+    this.updateAgentField('gitRepositorySetupMode', mode);
+  }
+
+  isClientGitCloneMode(): boolean {
+    return (this.newClient().gitRepositorySetupMode ?? 'clone') === 'clone';
+  }
+
+  isAgentGitCloneMode(): boolean {
+    return (this.newAgent().gitRepositorySetupMode ?? 'clone') === 'clone';
+  }
+
+  private readonly gitCloneOnlyWorkspaceSettings: WorkspaceConfigurationSettingKey[] = [
+    'gitRepositoryUrl',
+    'gitUsername',
+    'gitToken',
+    'gitPassword',
+    'gitPrivateKey',
+  ];
+
+  isWorkspaceConfigurationSettingVisible(
+    settingKey: WorkspaceConfigurationSettingKey,
+    settings: WorkspaceConfigurationSettingResponseDto[],
+    clientConfig?: ConfigResponseDto | null,
+  ): boolean {
+    if (!this.gitCloneOnlyWorkspaceSettings.includes(settingKey)) {
+      return true;
+    }
+
+    return this.resolveWorkspaceGitSetupMode(settings, clientConfig) === 'clone';
+  }
+
+  resolveWorkspaceGitSetupMode(
+    settings: WorkspaceConfigurationSettingResponseDto[],
+    clientConfig?: ConfigResponseDto | null,
+  ): 'clone' | 'empty' {
+    return resolveGitRepositorySetupMode(null, clientConfig, settings);
+  }
+
+  getClientGitRepositoryLabel(client: ClientResponseDto): string | null {
+    const settings = client.id === this.activeClientIdSignal() ? this.activeWorkspaceSettings() : null;
+
+    return getGitRepositoryDisplayLabel(null, client.config ?? null, settings);
+  }
+
+  getAgentGitRepositoryLabel(agent: AgentResponseDto, client?: ClientResponseDto | null): string | null {
+    return getGitRepositoryDisplayLabel(agent, client?.config ?? null, this.activeWorkspaceSettings());
+  }
+
+  isLocalGitRepository(agent: AgentResponseDto, client?: ClientResponseDto | null): boolean {
+    return isLocalGitRepositoryMode(agent, client?.config ?? null, this.activeWorkspaceSettings());
+  }
+
   /**
    * Parse git repository URL to extract owner/repo
    * @param gitUrl - The git repository URL (e.g., "https://github.com/owner/repo.git" or "git@github.com:owner/repo.git")
    * @returns The owner/repo string (e.g., "owner/repo") or null if parsing fails
    */
   parseGitRepository(gitUrl: string | null | undefined): string | null {
-    if (!gitUrl) {
-      return null;
-    }
-
-    try {
-      // Handle HTTPS/HTTP URLs: https://github.com/owner/repo.git
-      if (gitUrl.startsWith('http://') || gitUrl.startsWith('https://')) {
-        const urlObj = new URL(gitUrl);
-        const pathParts = urlObj.pathname.split('/').filter((part) => part.length > 0);
-
-        if (pathParts.length >= 2) {
-          const owner = pathParts[0];
-          const repo = pathParts[1].replace(/\.git$/, '');
-
-          return `${owner}/${repo}`;
-        }
-      }
-
-      // Handle SSH URLs: git@github.com:owner/repo.git
-      if (gitUrl.startsWith('git@')) {
-        const match = gitUrl.match(/git@[^:]+:(.+?)(?:\.git)?$/);
-
-        if (match && match[1]) {
-          return match[1];
-        }
-      }
-
-      // Fallback: try to extract from any URL pattern
-      const match = gitUrl.match(/(?:[/:])([^/]+)\/([^/]+?)(?:\.git)?$/);
-
-      if (match && match[1] && match[2]) {
-        return `${match[1]}/${match[2]}`;
-      }
-
-      return null;
-    } catch {
-      return null;
-    }
+    return parseGitRepositoryLabel(gitUrl);
   }
 
   buildSSHCommand(clientEndpoint: string, port: number, username?: string, password?: string): string | null {

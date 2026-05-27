@@ -8,6 +8,7 @@ export interface AgentTypeInfo {
 
 export interface ConfigResponseDto {
   gitRepositoryUrl?: string | null;
+  gitRepositorySetupMode?: 'clone' | 'empty';
   agentTypes: AgentTypeInfo[];
 }
 
@@ -37,6 +38,7 @@ export interface CreateClientDto {
   keycloakRealm?: string;
   keycloakAuthServerUrl?: string;
   agentWsPort?: number;
+  gitRepositorySetupMode?: 'clone' | 'empty';
   gitRepositoryUrl?: string;
   gitUsername?: string;
   gitToken?: string;
@@ -101,6 +103,7 @@ export interface ProvisionServerDto {
   keycloakRealm?: string;
   keycloakAuthServerUrl?: string;
   agentWsPort?: number;
+  gitRepositorySetupMode?: 'clone' | 'empty';
   gitRepositoryUrl?: string;
   gitUsername?: string;
   gitToken?: string;

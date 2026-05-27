@@ -80,6 +80,8 @@ import {
   tap,
 } from 'rxjs';
 
+import { getGitRepositoryDisplayLabel, isLocalGitRepository } from '../git-repository-display';
+
 import { storeAgentConsoleChatDraft } from './chat-draft-storage';
 import {
   ticketAutomationCancellationReasonLabel,
@@ -1881,6 +1883,14 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     } catch {
       return String(value);
     }
+  }
+
+  isAutomationContextEnvironmentLocalRepo(agent: AgentResponseDto): boolean {
+    return isLocalGitRepository(agent, this.effectiveWorkspace()?.client?.config ?? null);
+  }
+
+  getAutomationContextEnvironmentGitLabel(agent: AgentResponseDto): string | null {
+    return getGitRepositoryDisplayLabel(agent, this.effectiveWorkspace()?.client?.config ?? null);
   }
 
   /**

@@ -1,3 +1,4 @@
+import { GitRepositorySetupMode } from '@forepath/framework/backend/feature-agent-manager';
 import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -232,6 +233,32 @@ describe('ProvisioningService', () => {
         undefined,
         false,
       );
+    });
+
+    it('should emit GIT_REPOSITORY_SETUP_MODE for empty git provisioning and omit clone credentials', async () => {
+      const emptyGitDto: ProvisionServerDto = {
+        ...provisionDto,
+        gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
+        gitRepositoryUrl: 'https://github.com/user/repo.git',
+        gitUsername: 'user',
+        gitToken: 'token',
+      };
+
+      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
+      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
+      mockClientsService.create.mockResolvedValue(mockClient);
+      mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
+
+      await service.provisionServer(emptyGitDto);
+
+      const provisionCall = (mockProvider.provisionServer as jest.Mock).mock.calls[0][0];
+      const userData = Buffer.from(provisionCall.userData, 'base64').toString('utf-8');
+
+      expect(userData).toContain('GIT_REPOSITORY_SETUP_MODE: empty');
+      expect(userData).not.toContain('GIT_REPOSITORY_URL:');
+      expect(userData).not.toContain('GIT_USERNAME:');
+      expect(userData).not.toContain('GIT_TOKEN:');
     });
 
     it('should use provided API key if given', async () => {

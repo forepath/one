@@ -1,3 +1,5 @@
+import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
+
 import { AgentEntity } from './agent.entity';
 
 describe('AgentEntity', () => {
@@ -66,5 +68,18 @@ describe('AgentEntity', () => {
     agent.updatedAt = new Date();
 
     expect(agent.gitRepositoryUrl).toBeNull();
+  });
+
+  it('should allow nullable gitRepositorySetupMode', () => {
+    const agent = new AgentEntity();
+
+    agent.id = 'test-uuid';
+    agent.name = 'Test Agent';
+    agent.hashedPassword = 'hashed-password';
+    agent.gitRepositorySetupMode = GitRepositorySetupMode.EMPTY;
+    agent.createdAt = new Date();
+    agent.updatedAt = new Date();
+
+    expect(agent.gitRepositorySetupMode).toBe(GitRepositorySetupMode.EMPTY);
   });
 });

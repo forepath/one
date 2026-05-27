@@ -14,7 +14,8 @@ export interface AgentResponseDto {
     password: string;
   };
   git?: {
-    repositoryUrl: string;
+    repositoryUrl?: string;
+    setupMode: 'clone' | 'empty';
   };
   createdAt: string;
   updatedAt: string;
@@ -25,6 +26,7 @@ export interface CreateAgentDto {
   description?: string;
   agentType?: string;
   containerType?: ContainerType;
+  gitRepositorySetupMode?: 'clone' | 'empty';
   gitRepositoryUrl?: string;
   createVirtualWorkspace?: boolean;
   createSshConnection?: boolean;

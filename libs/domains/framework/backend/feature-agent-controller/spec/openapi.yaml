@@ -4148,6 +4148,10 @@ components:
           type: string
         description:
           type: string
+        gitRepositorySetupMode:
+          type: string
+          enum: [clone, empty]
+          description: How to initialize the agent workspace Git repository
         gitRepositoryUrl:
           type: [string, 'null']
           description: Git repository URL to clone when creating the agent
@@ -4187,8 +4191,12 @@ components:
           properties:
             repositoryUrl:
               type: string
-              description: Git repository URL associated with the agent
-          description: Git information (only present if gitRepositoryUrl is set)
+              description: Git repository URL associated with the agent (clone mode only)
+            setupMode:
+              type: string
+              enum: [clone, empty]
+              description: How the workspace repository was initialized
+          description: Git information when the agent has an associated repository or empty local repo
         createdAt:
           type: string
           format: date-time
@@ -4220,6 +4228,10 @@ components:
         gitRepositoryUrl:
           type: [string, 'null']
           description: Git repository URL used for cloning repositories when creating agents
+        gitRepositorySetupMode:
+          type: string
+          enum: [clone, empty]
+          description: Default setup mode for new agents on this instance
         agentTypes:
           type: array
           items:
@@ -4540,9 +4552,15 @@ components:
           minimum: 1
           maximum: 65535
           description: Optional Socket.IO port for the client's agents gateway (defaults to 8080 if not set)
+        gitRepositorySetupMode:
+          type: string
+          enum: [clone, empty]
+          description: |
+            Default Git workspace setup for agents on the provisioned instance. `empty` runs `git init` without a remote;
+            omit git URL and credentials when using empty mode.
         gitRepositoryUrl:
           type: string
-          description: Optional Git repository URL for agent workspace
+          description: Optional Git repository URL for agent workspace (clone mode)
         gitUsername:
           type: string
         gitToken:

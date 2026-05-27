@@ -1,4 +1,5 @@
 export type WorkspaceConfigurationSettingKey =
+  | 'gitRepositorySetupMode'
   | 'gitRepositoryUrl'
   | 'gitUsername'
   | 'gitToken'

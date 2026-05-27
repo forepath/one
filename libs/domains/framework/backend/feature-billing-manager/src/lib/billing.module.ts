@@ -144,6 +144,11 @@ const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
       type: 'object',
       description: 'Optional Git configuration for manager instances (GIT_* env vars)',
       properties: {
+        setupMode: {
+          type: 'string',
+          description: 'Repository setup mode: clone from remote or empty local repository (git init)',
+          enum: ['clone', 'empty'],
+        },
         repositoryUrl: { type: 'string', description: 'Git repository URL' },
         username: { type: 'string', description: 'Git username (HTTPS)' },
         token: { type: 'string', description: 'Git token (e.g. PAT)' },
@@ -220,6 +225,11 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       type: 'object',
       description: 'Optional Git configuration for manager instances (GIT_* env vars)',
       properties: {
+        setupMode: {
+          type: 'string',
+          description: 'Repository setup mode: clone from remote or empty local repository (git init)',
+          enum: ['clone', 'empty'],
+        },
         repositoryUrl: { type: 'string', description: 'Git repository URL' },
         username: { type: 'string', description: 'Git username (HTTPS)' },
         token: { type: 'string', description: 'Git token (e.g. PAT)' },

@@ -59,6 +59,7 @@ export interface AgentManagerCloudInitConfig {
     };
     /** Git configuration for agent-manager (optional). Passed as GIT_* env vars. */
     git?: {
+      setupMode?: 'clone' | 'empty';
       repositoryUrl?: string;
       username?: string;
       token?: string;
@@ -149,6 +150,7 @@ export function buildAgentManagerCloudInitConfigFromRequest(
       cors: { origin: '*' },
       ...(git !== undefined && {
         git: {
+          setupMode: (git.setupMode as string) === 'empty' ? 'empty' : 'clone',
           repositoryUrl: (git.repositoryUrl as string) ?? '',
           username: (git.username as string) ?? '',
           token: (git.token as string) ?? '',
@@ -194,17 +196,24 @@ export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInit
     ...(config.backend?.cursorApiKey?.trim() ? [`CURSOR_API_KEY: ${config.backend.cursorApiKey.trim()}`] : []),
     ...(config.backend?.git
       ? [
-          ...(config.backend.git.repositoryUrl ? [`GIT_REPOSITORY_URL: ${config.backend.git.repositoryUrl}`] : []),
-          ...(config.backend.git.username ? [`GIT_USERNAME: ${config.backend.git.username}`] : []),
-          ...(config.backend.git.token ? [`GIT_TOKEN: ${config.backend.git.token}`] : []),
-          ...(config.backend.git.password ? [`GIT_PASSWORD: ${config.backend.git.password}`] : []),
-          ...(config.backend.git.privateKey ? [`GIT_PRIVATE_KEY: ${config.backend.git.privateKey}`] : []),
-          ...(config.backend.git.commitAuthorName
-            ? [`GIT_COMMIT_AUTHOR_NAME: ${config.backend.git.commitAuthorName}`]
-            : []),
-          ...(config.backend.git.commitAuthorEmail
-            ? [`GIT_COMMIT_AUTHOR_EMAIL: ${config.backend.git.commitAuthorEmail}`]
-            : []),
+          ...(config.backend.git.setupMode === 'empty'
+            ? [`GIT_REPOSITORY_SETUP_MODE: empty`]
+            : [
+                ...(config.backend.git.setupMode === 'clone' ? [`GIT_REPOSITORY_SETUP_MODE: clone`] : []),
+                ...(config.backend.git.repositoryUrl
+                  ? [`GIT_REPOSITORY_URL: ${config.backend.git.repositoryUrl}`]
+                  : []),
+                ...(config.backend.git.username ? [`GIT_USERNAME: ${config.backend.git.username}`] : []),
+                ...(config.backend.git.token ? [`GIT_TOKEN: ${config.backend.git.token}`] : []),
+                ...(config.backend.git.password ? [`GIT_PASSWORD: ${config.backend.git.password}`] : []),
+                ...(config.backend.git.privateKey ? [`GIT_PRIVATE_KEY: ${config.backend.git.privateKey}`] : []),
+                ...(config.backend.git.commitAuthorName
+                  ? [`GIT_COMMIT_AUTHOR_NAME: ${config.backend.git.commitAuthorName}`]
+                  : []),
+                ...(config.backend.git.commitAuthorEmail
+                  ? [`GIT_COMMIT_AUTHOR_EMAIL: ${config.backend.git.commitAuthorEmail}`]
+                  : []),
+              ]),
         ]
       : []),
   ]);
