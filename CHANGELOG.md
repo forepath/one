@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.0](https://github.com/forepath/agenstra/compare/v2.5.0...v2.6.0) (2026-05-27)
+
+
+### Features
+
+* container type hint in context ([#387](https://github.com/forepath/agenstra/issues/387)) ([285a1a7](https://github.com/forepath/agenstra/commit/285a1a7fb0e3d653a48939ad42a21e8a8ce5ad62))
+* empty git repository agents ([#386](https://github.com/forepath/agenstra/issues/386)) ([835a17f](https://github.com/forepath/agenstra/commit/835a17f3569beff34792566053b8dadc0868f15b))
+
+
+### Bug Fixes
+
+* default test runners in generators ([#388](https://github.com/forepath/agenstra/issues/388)) ([2a5c6af](https://github.com/forepath/agenstra/commit/2a5c6af5e123ab09b49b8f8ab6c3baa23dde77a4))
+
 ## [2.5.0](https://github.com/forepath/agenstra/compare/v2.4.1...v2.5.0) (2026-05-24)
 
 
