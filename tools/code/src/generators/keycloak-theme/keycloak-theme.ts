@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import { E2eTestRunner, applicationGenerator as generatorFn } from '@nx/angular/generators';
+import { E2eTestRunner, applicationGenerator as generatorFn, UnitTestRunner } from '@nx/angular/generators';
 import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from '@nx/devkit';
 
 import { KeycloakThemeGeneratorSchema } from './schema';
@@ -19,6 +19,7 @@ export async function keycloakThemeGenerator(tree: Tree, options: KeycloakThemeG
     prefix: appPrefix,
     style: 'scss',
     ssr: false,
+    unitTestRunner: UnitTestRunner.Jest,
     e2eTestRunner: E2eTestRunner.None,
     skipPackageJson: true,
   });

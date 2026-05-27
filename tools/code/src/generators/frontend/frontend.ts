@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import { applicationGenerator as generatorFn } from '@nx/angular/generators';
+import { E2eTestRunner, applicationGenerator as generatorFn, UnitTestRunner } from '@nx/angular/generators';
 import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from '@nx/devkit';
 import { setupDockerGenerator as setupDockerGeneratorFn } from '@nx/node/src/generators/setup-docker/setup-docker';
 
@@ -21,6 +21,8 @@ export async function frontendGenerator(tree: Tree, options: FrontendGeneratorSc
     style: 'scss',
     ssr: options.ssr || false,
     skipPackageJson: true,
+    unitTestRunner: UnitTestRunner.Jest,
+    e2eTestRunner: E2eTestRunner.Playwright,
   });
 
   updateJson(tree, '.eslintrc.json', (json) => {

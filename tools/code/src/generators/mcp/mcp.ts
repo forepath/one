@@ -13,6 +13,8 @@ export async function mcpGenerator(tree: Tree, options: McpGeneratorSchema) {
     directory: appRoot,
     tags: 'type:app,scope:backend',
     skipPackageJson: true,
+    unitTestRunner: 'jest',
+    e2eTestRunner: 'jest',
   });
 
   updateJson(tree, '.eslintrc.json', (json) => {

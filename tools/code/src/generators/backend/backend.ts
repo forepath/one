@@ -13,6 +13,8 @@ export async function backendGenerator(tree: Tree, options: BackendGeneratorSche
     directory: appRoot,
     tags: 'type:app,scope:backend',
     skipPackageJson: true,
+    unitTestRunner: 'jest',
+    e2eTestRunner: 'jest',
   });
 
   if (!tree.exists(`${appRoot}/package.json`)) {

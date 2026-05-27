@@ -1,4 +1,4 @@
-import { libraryGenerator as angularLibraryGenerator } from '@nx/angular/generators';
+import { libraryGenerator as angularLibraryGenerator, UnitTestRunner } from '@nx/angular/generators';
 import { formatFiles, GeneratorCallback, Tree, updateJson } from '@nx/devkit';
 import { libraryGenerator as jsLibraryGenerator } from '@nx/js';
 import { libraryGenerator as nodeLibraryGenerator } from '@nx/node';
@@ -35,6 +35,7 @@ export async function libGenerator(tree: Tree, options: LibGeneratorSchema) {
     prefix: options.domain,
     skipTsConfig: true,
     style: 'scss',
+    unitTestRunner: UnitTestRunner.Jest,
   });
 
   const domainIndex = `libs/domains/${options.domain}/${options.scope}/index.ts`;
