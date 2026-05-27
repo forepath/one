@@ -30,7 +30,9 @@ import { AgentSessionHydrationService } from '../services/agent-session-hydratio
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
+import { ContextInjectionPayload } from '../types/context-injection.types';
 import { PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX } from '../utils/chat-enhancement-prompt.utils';
+import { isNonGenericContainerType } from '../utils/context-injection-prompt.utils';
 import { finalizeStreamingTranscriptParts } from '../utils/materialize-streaming-deltas-for-transcript';
 import { PROMPT_TICKET_BODY_RESUME_SESSION_SUFFIX } from '../utils/ticket-body-prompt.utils';
 
@@ -65,16 +67,6 @@ interface GenerateTicketBodyPayload {
   /** Parent chain + subtasks (plain text), same convention as ticket prototype prompts. */
   hierarchyContext?: string;
   contextInjection?: ContextInjectionPayload;
-}
-
-interface ContextInjectionPayload {
-  includeWorkspace?: boolean;
-  environmentIds?: string[];
-  ticketShas?: string[];
-  ticketContexts?: string[];
-  knowledgeShas?: string[];
-  knowledgeContexts?: string[];
-  autoEnrichmentEnabled?: boolean;
 }
 
 interface ChatEnhanceSuccessData {
@@ -525,6 +517,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       includeWorkspace: contextInjection.includeWorkspace === true,
       autoEnrichmentEnabled: contextInjection.autoEnrichmentEnabled !== false,
       environmentIds: contextInjection.environmentIds ?? [],
+      workspaceContainerType: contextInjection.workspaceContainerType,
+      environmentContainerTypes: contextInjection.environmentContainerTypes ?? [],
       ticketShas: contextInjection.ticketShas ?? [],
       ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
       knowledgeShas: contextInjection.knowledgeShas ?? [],
@@ -548,6 +542,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
           includeWorkspace: contextInjection.includeWorkspace === true,
           autoEnrichmentEnabled: contextInjection.autoEnrichmentEnabled !== false,
           environmentIds: contextInjection.environmentIds ?? [],
+          workspaceContainerType: contextInjection.workspaceContainerType,
+          environmentContainerTypes: contextInjection.environmentContainerTypes ?? [],
           ticketShas: contextInjection.ticketShas ?? [],
           ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
           knowledgeShas: contextInjection.knowledgeShas ?? [],
@@ -718,10 +714,21 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       new Set((contextInjection.knowledgeContexts ?? []).map((ctx) => ctx.trim()).filter((ctx) => ctx.length > 0)),
     );
     const allowedIds: string[] = [];
+    const environmentContainerTypes: NonNullable<ContextInjectionPayload['environmentContainerTypes']> = [];
+    const needsAgentLookup = includeWorkspace || requestedIds.length > 0;
+    const currentAgent = needsAgentLookup ? await this.agentsRepository.findById(agentUuid) : null;
 
     for (const environmentId of requestedIds) {
       if (environmentId === agentUuid) {
         allowedIds.push(environmentId);
+
+        if (currentAgent && isNonGenericContainerType(currentAgent.containerType)) {
+          environmentContainerTypes.push({
+            id: environmentId,
+            containerType: currentAgent.containerType,
+          });
+        }
+
         continue;
       }
 
@@ -729,6 +736,13 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
       if (entity) {
         allowedIds.push(environmentId);
+
+        if (isNonGenericContainerType(entity.containerType)) {
+          environmentContainerTypes.push({
+            id: environmentId,
+            containerType: entity.containerType,
+          });
+        }
       }
     }
 
@@ -744,6 +758,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       return undefined;
     }
 
+    const workspaceContainerType =
+      includeWorkspace && currentAgent && isNonGenericContainerType(currentAgent.containerType)
+        ? currentAgent.containerType
+        : undefined;
+
     return {
       includeWorkspace,
       autoEnrichmentEnabled,
@@ -752,6 +771,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       ticketContexts,
       knowledgeShas,
       knowledgeContexts,
+      workspaceContainerType,
+      environmentContainerTypes,
     };
   }
 
@@ -1211,6 +1232,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
           args: {
             includeWorkspace: contextInjection.includeWorkspace === true,
             environmentIds: contextInjection.environmentIds ?? [],
+            workspaceContainerType: contextInjection.workspaceContainerType,
+            environmentContainerTypes: contextInjection.environmentContainerTypes ?? [],
             ticketShas: contextInjection.ticketShas ?? [],
             ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
             knowledgeShas: contextInjection.knowledgeShas ?? [],
@@ -1229,6 +1252,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
             applied: true,
             includeWorkspace: contextInjection.includeWorkspace === true,
             environmentIds: contextInjection.environmentIds ?? [],
+            workspaceContainerType: contextInjection.workspaceContainerType,
+            environmentContainerTypes: contextInjection.environmentContainerTypes ?? [],
             ticketShas: contextInjection.ticketShas ?? [],
             ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
             knowledgeShas: contextInjection.knowledgeShas ?? [],
