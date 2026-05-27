@@ -127,6 +127,20 @@ describe('HybridAuthGuard', () => {
       expect(result).toBe(true);
     });
 
+    it('should allow Bull Board paths without API key (HTTP Basic on board routes)', () => {
+      const mockRequest = {
+        originalUrl: '/admin/queues/api/queues/agent-controller/jobs/clean',
+        url: '/admin/queues/api/queues/agent-controller/jobs/clean',
+        headers: { authorization: 'Basic YWRtaW46YnVsbG1x' },
+      };
+
+      mockExecutionContext.switchToHttp = jest.fn().mockReturnValue({
+        getRequest: jest.fn().mockReturnValue(mockRequest),
+      });
+
+      expect(guard.canActivate(mockExecutionContext)).toBe(true);
+    });
+
     it('should throw UnauthorizedException when authorization header is missing', () => {
       const mockRequest = {
         headers: {},

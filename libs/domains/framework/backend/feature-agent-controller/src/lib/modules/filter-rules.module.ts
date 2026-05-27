@@ -7,7 +7,6 @@ import { AgentConsoleRegexFilterRuleClientEntity } from '../entities/agent-conso
 import { AgentConsoleRegexFilterRuleSyncTargetEntity } from '../entities/agent-console-regex-filter-rule-sync-target.entity';
 import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-regex-filter-rule.entity';
 import { AgentManagerFilterRulesClientService } from '../services/agent-manager-filter-rules-client.service';
-import { FilterRulesSyncScheduler } from '../services/filter-rules-sync.scheduler';
 import { FilterRulesSyncService } from '../services/filter-rules-sync.service';
 import { FilterRulesService } from '../services/filter-rules.service';
 
@@ -29,12 +28,7 @@ import { ClientsModule } from './clients.module';
     forwardRef(() => ClientsModule),
   ],
   controllers: [FilterRulesController],
-  providers: [
-    AgentManagerFilterRulesClientService,
-    FilterRulesService,
-    FilterRulesSyncService,
-    FilterRulesSyncScheduler,
-  ],
-  exports: [FilterRulesService],
+  providers: [AgentManagerFilterRulesClientService, FilterRulesService, FilterRulesSyncService],
+  exports: [FilterRulesService, FilterRulesSyncService],
 })
 export class FilterRulesModule {}

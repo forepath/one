@@ -1,5 +1,6 @@
 sequenceDiagram
-  participant Sched as FilterRulesSyncScheduler
+  participant Coord as FilterRulesSyncCoordinator
+  participant Worker as FilterRulesSyncWorker
   participant Sync as FilterRulesSyncService
   participant DB as SyncTargetsTable
   participant AM as AgentManager

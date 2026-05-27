@@ -37,6 +37,10 @@ export class InvoiceRefsRepository {
     });
   }
 
+  async findById(id: string): Promise<InvoiceRefEntity | null> {
+    return await this.repository.findOne({ where: { id } });
+  }
+
   async findBatchForSync(batchSize: number, offset: number): Promise<InvoiceRefEntity[]> {
     return await this.repository.find({
       order: { createdAt: 'ASC' },

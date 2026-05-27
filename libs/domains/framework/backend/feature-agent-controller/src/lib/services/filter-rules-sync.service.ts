@@ -29,10 +29,10 @@ export class FilterRulesSyncService {
   /**
    * @returns number of targets processed
    */
-  async processBatch(max: number): Promise<number> {
+  async findPendingTargetIds(max: number): Promise<string[]> {
     const rows = await this.targetsRepo
       .createQueryBuilder('t')
-      .innerJoinAndSelect('t.rule', 'rule')
+      .innerJoin('t.rule', 'rule')
       .where('t.sync_status IN (:...st)', { st: ['pending', 'failed'] })
       .andWhere(
         new Brackets((qb) => {
@@ -43,13 +43,34 @@ export class FilterRulesSyncService {
       )
       .orderBy('t.updatedAt', 'ASC')
       .take(max)
+      .select(['t.id', 't.updatedAt'])
       .getMany();
 
-    for (const t of rows) {
-      await this.processOne(t);
+    return rows.map((row) => row.id);
+  }
+
+  async processTargetById(targetId: string): Promise<void> {
+    const target = await this.targetsRepo
+      .createQueryBuilder('t')
+      .innerJoinAndSelect('t.rule', 'rule')
+      .where('t.id = :targetId', { targetId })
+      .getOne();
+
+    if (!target) {
+      return;
     }
 
-    return rows.length;
+    await this.processOne(target);
+  }
+
+  async processBatch(max: number): Promise<number> {
+    const ids = await this.findPendingTargetIds(max);
+
+    for (const targetId of ids) {
+      await this.processTargetById(targetId);
+    }
+
+    return ids.length;
   }
 
   private toCreateDto(rule: AgentConsoleRegexFilterRuleEntity): CreateRegexFilterRuleDto {

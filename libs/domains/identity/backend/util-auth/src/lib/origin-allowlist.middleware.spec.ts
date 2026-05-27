@@ -148,4 +148,18 @@ describe('createOriginAllowlistMiddleware', () => {
 
     expect(nextError).toBeUndefined();
   });
+
+  it('skips origin enforcement for Bull Board paths', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.CORS_ORIGIN = 'https://app.example.com';
+    delete process.env.QUEUE_BULL_BOARD_PATH;
+    const middleware = createOriginAllowlistMiddleware(new Logger('test'));
+    const { nextError } = run(middleware, {
+      method: 'DELETE',
+      originalUrl: '/admin/queues/api/queues/agent-controller/jobs/clean',
+      headers: { origin: 'http://localhost:3100' },
+    });
+
+    expect(nextError).toBeUndefined();
+  });
 });

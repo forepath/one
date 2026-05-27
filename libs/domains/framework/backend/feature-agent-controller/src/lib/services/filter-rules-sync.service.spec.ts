@@ -10,11 +10,12 @@ import { FilterRulesSyncService } from './filter-rules-sync.service';
 describe('FilterRulesSyncService', () => {
   it('processBatch returns 0 when query empty', async () => {
     const qb = {
-      innerJoinAndSelect: jest.fn().mockReturnThis(),
+      innerJoin: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
       andWhere: jest.fn().mockReturnThis(),
       orderBy: jest.fn().mockReturnThis(),
       take: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
       getMany: jest.fn().mockResolvedValue([]),
     };
     const targetsRepo = { createQueryBuilder: jest.fn().mockReturnValue(qb) };

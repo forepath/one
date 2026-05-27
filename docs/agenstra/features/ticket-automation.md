@@ -18,16 +18,16 @@ Automation only starts when **all** of the following hold:
 
 The controller picks candidates with a SQL query that joins `tickets`, `ticket_automation`, and `client_agent_autonomy` (`enabled = true`). If several agents have autonomy enabled and `allowed_agent_ids` is empty, the same ticket can appear as multiple candidates (one per agent); narrowing `allowed_agent_ids` pins the workload to specific agents.
 
-## Background scheduler
+## Background jobs (BullMQ)
 
-The **backend agent controller** runs an in-process scheduler (`AutonomousTicketScheduler`) that wakes on a fixed interval, processes at most **N** tickets per tick, and avoids overlapping ticks if a batch runs longer than the interval.
+The **backend agent controller** registers a repeatable **coordinator** job on Redis (BullMQ). Each coordinator tick enqueues at most **N** **unit** jobs (one per ticket candidate). Workers process unit jobs in parallel; BullMQ `jobId` deduplication and DB leases prevent double-starts.
 
-Operator environment variables (see [Environment configuration](../deployment/environment-configuration.md#autonomous-ticket-automation-scheduler)):
+Operator environment variables (see [Environment configuration](../deployment/environment-configuration.md) and [Background jobs](../deployment/background-jobs.md)):
 
-- `AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS` – Tick interval in milliseconds (default `60000`).
-- `AUTONOMOUS_TICKET_SCHEDULER_BATCH_SIZE` – Maximum candidates processed per tick (default `5`).
+- `AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS` – Coordinator repeat interval in milliseconds (default `60000`).
+- `AUTONOMOUS_TICKET_SCHEDULER_BATCH_SIZE` – Maximum candidates enqueued per coordinator tick (default `5`).
 
-There is no separate “start run” HTTP call for this path: eligible tickets are picked up automatically on the next successful scheduler tick.
+There is no separate “start run” HTTP call for this path: eligible tickets are picked up when a worker processes their unit job.
 
 ## Run phases (high level)
 
