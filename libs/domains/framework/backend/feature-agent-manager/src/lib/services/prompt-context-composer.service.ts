@@ -1,16 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
+import { ContextInjectionPayload } from '../types/context-injection.types';
 import { buildPromptEnhancementMessage } from '../utils/chat-enhancement-prompt.utils';
+import { formatEnvironmentContextLine, formatWorkspaceContextLine } from '../utils/context-injection-prompt.utils';
 import { buildTicketBodyFromTitleMessage } from '../utils/ticket-body-prompt.utils';
-
-interface ContextInjectionPayload {
-  includeWorkspace?: boolean;
-  environmentIds?: string[];
-  ticketShas?: string[];
-  ticketContexts?: string[];
-  knowledgeShas?: string[];
-  knowledgeContexts?: string[];
-}
 
 @Injectable()
 export class PromptContextComposerService {
@@ -22,7 +15,7 @@ export class PromptContextComposerService {
     const lines: string[] = [];
 
     if (contextInjection.includeWorkspace) {
-      lines.push('- Shared workspace context is mounted at /opt/workspace (read-only).');
+      lines.push(formatWorkspaceContextLine(contextInjection.workspaceContainerType));
     }
 
     const environmentIds = (contextInjection.environmentIds ?? []).filter((id) => id.trim().length > 0);
@@ -32,7 +25,14 @@ export class PromptContextComposerService {
     const knowledgeContexts = (contextInjection.knowledgeContexts ?? []).filter((ctx) => ctx.trim().length > 0);
 
     if (environmentIds.length > 0) {
-      lines.push(`- Relevant environment ids for context: ${environmentIds.join(', ')}`);
+      const environmentLine = formatEnvironmentContextLine(
+        environmentIds,
+        contextInjection.environmentContainerTypes ?? [],
+      );
+
+      if (environmentLine) {
+        lines.push(environmentLine);
+      }
     }
 
     if (ticketShas.length > 0) {

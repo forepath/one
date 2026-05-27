@@ -422,7 +422,10 @@ components:
             description: Optional suffix to isolate or resume session routing for this chat turn.
           contextInjection:
             type: object
-            description: Optional hidden context references for prompt enrichment.
+            description: >
+              Optional hidden context references for prompt enrichment. Agent-manager resolves each referenced
+              agent's repository/container type server-side when composing the hidden preamble (non-generic types
+              only); clients do not send type fields on the wire.
             properties:
               includeWorkspace:
                 type: boolean
@@ -464,7 +467,10 @@ components:
             description: Optional model override for this request
           contextInjection:
             type: object
-            description: Optional hidden context references for prompt enrichment.
+            description: >
+              Optional hidden context references for prompt enrichment. Agent-manager resolves each referenced
+              agent's repository/container type server-side when composing the hidden preamble (non-generic types
+              only); clients do not send type fields on the wire.
             properties:
               includeWorkspace:
                 type: boolean
@@ -548,7 +554,10 @@ components:
             description: Optional parent chain and subtask tree (plain text) for richer body generation
           contextInjection:
             type: object
-            description: Optional hidden context references for prompt enrichment.
+            description: >
+              Optional hidden context references for prompt enrichment. Agent-manager resolves each referenced
+              agent's repository/container type server-side when composing the hidden preamble (non-generic types
+              only); clients do not send type fields on the wire.
             properties:
               includeWorkspace:
                 type: boolean

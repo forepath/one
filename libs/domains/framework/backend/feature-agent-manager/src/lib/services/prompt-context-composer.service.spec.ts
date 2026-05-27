@@ -1,3 +1,5 @@
+import { ContainerType } from '../entities/agent.entity';
+
 import { PromptContextComposerService } from './prompt-context-composer.service';
 
 describe('PromptContextComposerService', () => {
@@ -19,8 +21,50 @@ describe('PromptContextComposerService', () => {
 
     expect(result).toContain('<hidden-context>');
     expect(result).toContain('/opt/workspace');
-    expect(result).toContain('env-1');
+    expect(result).toContain('Relevant environment context: env-1.');
     expect(result).toContain('Implement this');
+  });
+
+  it('should include workspace repository type when enriched', () => {
+    const result = service.composeChatMessage('Implement this', {
+      includeWorkspace: true,
+      workspaceContainerType: ContainerType.DOCKER,
+    });
+
+    expect(result).toContain('Repository type: docker.');
+    expect(result).not.toContain('Repository type: generic');
+  });
+
+  it('should omit workspace repository type when generic or not enriched', () => {
+    const withoutEnrichment = service.composeChatMessage('Implement this', {
+      includeWorkspace: true,
+    });
+    const genericEnrichment = service.composeChatMessage('Implement this', {
+      includeWorkspace: true,
+      workspaceContainerType: ContainerType.GENERIC,
+    });
+
+    expect(withoutEnrichment).not.toContain('Repository type:');
+    expect(genericEnrichment).not.toContain('Repository type:');
+  });
+
+  it('should annotate environment context with repository type when enriched', () => {
+    const result = service.composeChatMessage('Implement this', {
+      environmentIds: ['env-1', 'env-2'],
+      environmentContainerTypes: [{ id: 'env-2', containerType: ContainerType.TERRAFORM }],
+    });
+
+    expect(result).toContain('Relevant environment context: env-1, env-2 (repository type: terraform).');
+  });
+
+  it('should keep generic-only environment ids without type annotation', () => {
+    const result = service.composeChatMessage('Implement this', {
+      environmentIds: ['env-1'],
+      environmentContainerTypes: [],
+    });
+
+    expect(result).toContain('Relevant environment context: env-1.');
+    expect(result).not.toContain('repository type:');
   });
 
   it('should include ticket sha references in hidden context', () => {
