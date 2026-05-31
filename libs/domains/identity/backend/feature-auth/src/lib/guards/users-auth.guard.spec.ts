@@ -113,4 +113,15 @@ describe('UsersAuthGuard', () => {
     expect(jwtService.verifyAsync).not.toHaveBeenCalled();
     expect(usersRepository.findById).not.toHaveBeenCalled();
   });
+
+  it('allows Bull Board paths without JWT (HTTP Basic on board routes)', async () => {
+    const request = {
+      originalUrl: '/admin/queues/api/queues/agent-controller/jobs/clean',
+      headers: { authorization: 'Basic YWRtaW46YnVsbG1x' },
+    };
+    const ok = await guard.canActivate(createExecutionContext(request));
+
+    expect(ok).toBe(true);
+    expect(jwtService.verifyAsync).not.toHaveBeenCalled();
+  });
 });

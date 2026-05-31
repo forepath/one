@@ -1,7 +1,11 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
-import { AuthGuard, ResourceGuard, RoleGuard } from 'nest-keycloak-connect';
 
+import {
+  BullBoardSkippingAuthGuard,
+  BullBoardSkippingResourceGuard,
+  BullBoardSkippingRoleGuard,
+} from './bull-board-keycloak.guards';
 import { getAuthenticationMethod, getHybridAuthGuards, HybridAuthGuard } from './hybrid-auth.guard';
 
 describe('HybridAuthGuard', () => {
@@ -406,15 +410,15 @@ describe('getHybridAuthGuards', () => {
       });
       expect(guards[1]).toEqual({
         provide: APP_GUARD,
-        useClass: AuthGuard,
+        useClass: BullBoardSkippingAuthGuard,
       });
       expect(guards[2]).toEqual({
         provide: APP_GUARD,
-        useClass: ResourceGuard,
+        useClass: BullBoardSkippingResourceGuard,
       });
       expect(guards[3]).toEqual({
         provide: APP_GUARD,
-        useClass: RoleGuard,
+        useClass: BullBoardSkippingRoleGuard,
       });
     });
   });
@@ -469,7 +473,7 @@ describe('getHybridAuthGuards', () => {
       });
       expect(guards[1]).toEqual({
         provide: APP_GUARD,
-        useClass: AuthGuard,
+        useClass: BullBoardSkippingAuthGuard,
       });
     });
   });

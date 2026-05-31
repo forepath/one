@@ -30,7 +30,7 @@ x-backend-agent-controller-environment: &backend-agent-controller-environment
   REDIS_DB: ${REDIS_DB:-0}
   REDIS_KEY_PREFIX: ${REDIS_KEY_PREFIX:-agenstra-controller}
   QUEUE_WORKER_CONCURRENCY: ${QUEUE_WORKER_CONCURRENCY:-5}
-  QUEUE_BULL_BOARD_ENABLED: ${QUEUE_BULL_BOARD_ENABLED:-true}
+  QUEUE_BULL_BOARD_ENABLED: ${QUEUE_BULL_BOARD_ENABLED:-false}
   QUEUE_BULL_BOARD_PATH: ${QUEUE_BULL_BOARD_PATH:-/admin/queues}
   QUEUE_BULL_BOARD_USERNAME: ${QUEUE_BULL_BOARD_USERNAME:-admin}
   QUEUE_BULL_BOARD_PASSWORD: ${QUEUE_BULL_BOARD_PASSWORD:-bullmq}
@@ -104,6 +104,7 @@ services:
     environment:
       <<: *backend-agent-controller-environment
       QUEUE_ROLE: ${QUEUE_ROLE:-api}
+      QUEUE_BULL_BOARD_ENABLED: ${QUEUE_BULL_BOARD_ENABLED:-true}
     ports:
       - '${PORT:-3100}:${PORT:-3100}'
       - '${WEBSOCKET_PORT:-8081}:${WEBSOCKET_PORT:-8081}'
@@ -125,7 +126,10 @@ services:
     environment:
       <<: *backend-agent-controller-environment
       QUEUE_ROLE: worker
+      QUEUE_BULL_BOARD_ENABLED: false
     depends_on:
+      backend-agent-controller:
+        condition: service_healthy
       postgres:
         condition: service_healthy
       redis:
@@ -143,7 +147,10 @@ services:
     environment:
       <<: *backend-agent-controller-environment
       QUEUE_ROLE: scheduler
+      QUEUE_BULL_BOARD_ENABLED: false
     depends_on:
+      backend-agent-controller:
+        condition: service_healthy
       postgres:
         condition: service_healthy
       redis:

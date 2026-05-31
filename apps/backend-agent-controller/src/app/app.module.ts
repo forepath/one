@@ -1,5 +1,6 @@
 import { ClientsModule, IdentityStatisticsBridgeModule, MonitoringModule } from '@forepath/framework/backend';
 import {
+  BullBoardSkippingThrottlerGuard,
   getAuthenticationMethod,
   getHybridAuthGuards,
   getRateLimitConfig,
@@ -11,7 +12,7 @@ import {
 import { getTypeOrmOptionsForQueueRole } from '@forepath/shared/backend';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
@@ -39,7 +40,7 @@ const authMethod = getAuthenticationMethod();
     // Apply rate limiting globally to all routes
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: BullBoardSkippingThrottlerGuard,
     },
   ],
 })

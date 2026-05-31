@@ -247,6 +247,15 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `REDIS_DB: 0`,
     `REDIS_KEY_PREFIX: agenstra-controller`,
     `QUEUE_WORKER_CONCURRENCY: 5`,
+    // Coordinator / worker scheduler intervals (shared across api, worker, scheduler)
+    `FILTER_RULES_SYNC_INTERVAL_MS: 30000`,
+    `FILTER_RULES_SYNC_BATCH_SIZE: 10`,
+    `CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS: 120000`,
+    `CONTEXT_IMPORT_SCHEDULER_CONFIG_BATCH: 3`,
+    `CONTEXT_IMPORT_ITEM_BUDGET: 25`,
+    `KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS: 3600000`,
+    `AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS: 60000`,
+    `AUTONOMOUS_TICKET_SCHEDULER_BATCH_SIZE: 5`,
     // Bull Board (disabled by default for provisioned stacks; set to true + credentials if needed)
     `QUEUE_BULL_BOARD_ENABLED: false`,
     `QUEUE_BULL_BOARD_PATH: /admin/queues`,

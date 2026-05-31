@@ -1,4 +1,11 @@
-import { getAuthenticationMethod, IS_PUBLIC_KEY, USERS_ROLES_KEY, UserRole } from '@forepath/identity/backend';
+import {
+  getAuthenticationMethod,
+  getHttpRequestPath,
+  isBullBoardRequestPath,
+  IS_PUBLIC_KEY,
+  USERS_ROLES_KEY,
+  UserRole,
+} from '@forepath/identity/backend';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
@@ -17,6 +24,10 @@ export class UsersRolesGuard implements CanActivate {
     }
 
     if (getAuthenticationMethod() !== 'users') {
+      return true;
+    }
+
+    if (isBullBoardRequestPath(getHttpRequestPath(context))) {
       return true;
     }
 

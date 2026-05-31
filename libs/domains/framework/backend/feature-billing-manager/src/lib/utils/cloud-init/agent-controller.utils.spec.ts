@@ -239,6 +239,9 @@ describe('cloud-init.utils', () => {
 
       expect(script).toContain('REDIS_HOST: redis');
       expect(script).toContain('REDIS_PORT: 6379');
+      expect(script).toContain('FILTER_RULES_SYNC_INTERVAL_MS: 30000');
+      expect(script).toContain('CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS: 120000');
+      expect(script).toContain('KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS: 3600000');
     });
 
     it('embeds custom CLIENT_ENDPOINT_ALLOWED_HOSTS in backend-agent-controller environment', () => {
