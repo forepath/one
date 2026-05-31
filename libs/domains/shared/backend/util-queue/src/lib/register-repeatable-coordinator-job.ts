@@ -1,5 +1,7 @@
 import type { JobsOptions, Queue } from 'bullmq';
 
+import { defaultRemoveOnComplete, defaultRemoveOnFail } from './job-retention';
+
 export interface RegisterRepeatableCoordinatorJobOptions {
   queue: Queue;
   name: string;
@@ -31,8 +33,8 @@ export async function registerRepeatableCoordinatorJob(
     {
       jobId: options.coordinatorJobId,
       repeat: { every: options.everyMs },
-      removeOnComplete: options.removeOnComplete ?? true,
-      removeOnFail: options.removeOnFail ?? 100,
+      removeOnComplete: options.removeOnComplete ?? defaultRemoveOnComplete,
+      removeOnFail: options.removeOnFail ?? defaultRemoveOnFail,
     },
   );
 }

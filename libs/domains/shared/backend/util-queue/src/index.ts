@@ -4,6 +4,7 @@ export * from './lib/bull-board-global-prefix';
 export * from './lib/enqueue-unit-job';
 export * from './lib/is-duplicate-job-enqueue-error';
 export * from './lib/job-id.util';
+export * from './lib/job-retention';
 export * from './lib/register-repeatable-coordinator-job';
 export * from './lib/queue-connection.config';
 export * from './lib/queue-role';

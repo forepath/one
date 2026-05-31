@@ -1,6 +1,7 @@
 import type { JobsOptions, Queue } from 'bullmq';
 
 import { isDuplicateJobEnqueueError } from './is-duplicate-job-enqueue-error';
+import { defaultRemoveOnComplete, defaultRemoveOnFail } from './job-retention';
 import { buildJobId } from './job-id.util';
 
 export interface EnqueueUnitJobOptions<T> {
@@ -19,8 +20,8 @@ export async function enqueueUnitJob<T>(options: EnqueueUnitJobOptions<T>): Prom
   try {
     await options.queue.add(options.jobName, options.payload, {
       jobId,
-      removeOnComplete: { age: 3600, count: 1000 },
-      removeOnFail: { age: 86400, count: 5000 },
+      removeOnComplete: defaultRemoveOnComplete,
+      removeOnFail: defaultRemoveOnFail,
       attempts: 3,
       backoff: { type: 'exponential', delay: 5000 },
       ...options.opts,

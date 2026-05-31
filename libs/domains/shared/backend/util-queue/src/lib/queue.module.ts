@@ -6,6 +6,7 @@ import { DynamicModule, Module } from '@nestjs/common';
 import type { QueueOptions } from 'bullmq';
 
 import { createBullBoardAuthMiddlewareFromEnv } from './bull-board-auth';
+import { defaultRemoveOnComplete, defaultRemoveOnFail } from './job-retention';
 import { shouldEnableBullBoard, shouldRegisterRepeatableJobs, shouldRunQueueWorkers } from './queue-role';
 import {
   readBullBoardPath,
@@ -32,8 +33,8 @@ export class SharedQueueModule {
     const concurrency = options.workerConcurrency ?? readQueueWorkerConcurrency();
 
     const defaultJobOptions: QueueOptions['defaultJobOptions'] = {
-      removeOnComplete: { age: 3600, count: 1000 },
-      removeOnFail: { age: 86400, count: 5000 },
+      removeOnComplete: defaultRemoveOnComplete,
+      removeOnFail: defaultRemoveOnFail,
       attempts: 3,
       backoff: { type: 'exponential', delay: 5000 },
     };

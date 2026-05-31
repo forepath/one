@@ -63,6 +63,8 @@ When enabled on the API container (`QUEUE_BULL_BOARD_ENABLED=true`, default in c
 
 Bull Board uses **HTTP Basic authentication** (`QUEUE_BULL_BOARD_USERNAME` / `QUEUE_BULL_BOARD_PASSWORD`). Local compose defaults to `admin` / `bullmq`; override in production. Startup fails in production if the board is enabled without a password.
 
+Completed and failed jobs are **not auto-removed** (`removeOnComplete: false`, `removeOnFail: false`) so run history stays in Bull Board. Treat the **last three runs** and **48 hours** as the minimum retention before any manual cleanup via Bull Board or ops.
+
 Bull Board routes bypass the API **origin allowlist**, **HybridAuthGuard**, and **Keycloak guards** (when `AUTHENTICATION_METHOD=keycloak`) so dashboard actions (retry, delete, clean) are not blocked with `403 Forbidden` when the UI sends browser `Origin` headers or `Authorization: Basic` instead of the API key or OIDC token.
 
 Worker and scheduler containers set `QUEUE_BULL_BOARD_ENABLED=false` so they do not start an HTTP server solely for Bull Board.
