@@ -227,7 +227,7 @@ export function buildAgentControllerCloudInitConfigFromRequest(
 }
 
 export function buildAgentControllerCloudInitUserData(config: AgentControllerCloudInitConfig): string {
-  const backendEnv = formatEnv([
+  const backendEnvBaseLines = [
     // Backend web server configuration
     `HOST: ${config.backend?.host ?? '0.0.0.0'}`,
     `PORT: ${config.backend?.port ?? '3100'}`,
@@ -240,6 +240,27 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `DB_USERNAME: ${config.backend?.database?.username ?? 'postgres'}`,
     `DB_PASSWORD: ${config.backend?.database?.password ?? 'postgres'}`,
     `DB_DATABASE: ${config.backend?.database?.database ?? 'postgres'}`,
+    // Redis / BullMQ configuration
+    `REDIS_HOST: redis`,
+    `REDIS_PORT: 6379`,
+    `REDIS_PASSWORD: `,
+    `REDIS_DB: 0`,
+    `REDIS_KEY_PREFIX: agenstra-controller`,
+    `QUEUE_WORKER_CONCURRENCY: 5`,
+    // Coordinator / worker scheduler intervals (shared across api, worker, scheduler)
+    `FILTER_RULES_SYNC_INTERVAL_MS: 30000`,
+    `FILTER_RULES_SYNC_BATCH_SIZE: 10`,
+    `CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS: 120000`,
+    `CONTEXT_IMPORT_SCHEDULER_CONFIG_BATCH: 3`,
+    `CONTEXT_IMPORT_ITEM_BUDGET: 25`,
+    `KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS: 3600000`,
+    `AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS: 60000`,
+    `AUTONOMOUS_TICKET_SCHEDULER_BATCH_SIZE: 5`,
+    // Bull Board (disabled by default for provisioned stacks; set to true + credentials if needed)
+    `QUEUE_BULL_BOARD_ENABLED: false`,
+    `QUEUE_BULL_BOARD_PATH: /admin/queues`,
+    `QUEUE_BULL_BOARD_USERNAME: admin`,
+    `QUEUE_BULL_BOARD_PASSWORD: `,
     // Authentication method configuration
     `AUTHENTICATION_METHOD: ${config.backend?.authentication?.authenticationMethod ?? 'api-key'}`,
     `STATIC_API_KEY: ${config.backend?.authentication?.staticApiKey ?? ''}`,
@@ -275,7 +296,10 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `CLIENT_ENDPOINT_ALLOWED_HOSTS: ${
       config.backend?.clientEndpoint?.allowedHosts?.trim() ? config.backend.clientEndpoint.allowedHosts : '*'
     }`,
-  ]);
+  ];
+  const backendApiEnv = formatEnv([...backendEnvBaseLines, `QUEUE_ROLE: api`]);
+  const backendWorkerEnv = formatEnv([...backendEnvBaseLines, `QUEUE_ROLE: worker`]);
+  const backendSchedulerEnv = formatEnv([...backendEnvBaseLines, `QUEUE_ROLE: scheduler`]);
   const frontendEnv = formatEnv([
     // Frontend web server configuration
     `HOST: ${config.frontend?.host ?? '0.0.0.0'}`,
@@ -335,17 +359,64 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
       - agent-controller-network
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    container_name: agent-controller-redis
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agent-controller-network
+    restart: unless-stopped
+
   backend-agent-controller:
     image: ghcr.io/forepath/agenstra-controller-api:latest
     pull_policy: always
     container_name: agent-controller-api
     environment:
-${backendEnv}
+${backendApiEnv}
     ports:
       - '${config.backend?.port ?? '3100'}:${config.backend?.port ?? '3100'}'
       - '${config.backend?.websocketPort ?? '8081'}:${config.backend?.websocketPort ?? '8081'}'
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - agent-controller-network
+    restart: unless-stopped
+
+  backend-agent-controller-worker:
+    image: ghcr.io/forepath/agenstra-controller-api:latest
+    pull_policy: always
+    container_name: agent-controller-worker
+    environment:
+${backendWorkerEnv}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - agent-controller-network
+    restart: unless-stopped
+
+  backend-agent-controller-scheduler:
+    image: ghcr.io/forepath/agenstra-controller-api:latest
+    pull_policy: always
+    container_name: agent-controller-scheduler
+    environment:
+${backendSchedulerEnv}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - agent-controller-network
@@ -385,6 +456,7 @@ ${frontendEnv}
 
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   agent-controller-network:

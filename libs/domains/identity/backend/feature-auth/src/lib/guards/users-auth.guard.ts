@@ -1,4 +1,9 @@
-import { getAuthenticationMethod, IS_PUBLIC_KEY } from '@forepath/identity/backend';
+import {
+  getAuthenticationMethod,
+  getHttpRequestPath,
+  isBullBoardRequestPath,
+  IS_PUBLIC_KEY,
+} from '@forepath/identity/backend';
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
@@ -31,6 +36,11 @@ export class UsersAuthGuard implements CanActivate {
     }
 
     if (getAuthenticationMethod() !== 'users') {
+      return true;
+    }
+
+    // Bull Board uses HTTP Basic auth (QUEUE_BULL_BOARD_*), not JWT
+    if (isBullBoardRequestPath(getHttpRequestPath(context))) {
       return true;
     }
 

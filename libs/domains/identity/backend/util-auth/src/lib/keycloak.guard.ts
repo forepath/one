@@ -1,17 +1,22 @@
 import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard, ResourceGuard, RoleGuard } from 'nest-keycloak-connect';
+
+import {
+  BullBoardSkippingAuthGuard,
+  BullBoardSkippingResourceGuard,
+  BullBoardSkippingRoleGuard,
+} from './bull-board-keycloak.guards';
 
 export const KeycloakGuard = [
   {
     provide: APP_GUARD,
-    useClass: AuthGuard,
+    useClass: BullBoardSkippingAuthGuard,
   },
   {
     provide: APP_GUARD,
-    useClass: ResourceGuard,
+    useClass: BullBoardSkippingResourceGuard,
   },
   {
     provide: APP_GUARD,
-    useClass: RoleGuard,
+    useClass: BullBoardSkippingRoleGuard,
   },
 ];

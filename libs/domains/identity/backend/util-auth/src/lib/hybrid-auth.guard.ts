@@ -1,7 +1,12 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
-import { AuthGuard, ResourceGuard, RoleGuard } from 'nest-keycloak-connect';
 
+import {
+  BullBoardSkippingAuthGuard,
+  BullBoardSkippingResourceGuard,
+  BullBoardSkippingRoleGuard,
+} from './bull-board-keycloak.guards';
+import { isBullBoardRequestPath } from './bull-board-request-path';
 import { IS_PUBLIC_KEY } from './decorators/public.decorator';
 
 /** Supported authentication methods. */
@@ -52,6 +57,11 @@ export class HybridAuthGuard implements CanActivate {
 
     // Allow health check endpoint without authentication
     if (path === '/api/health' || path === '/health') {
+      return true;
+    }
+
+    // Bull Board uses its own HTTP Basic auth (QUEUE_BULL_BOARD_*), not API key / Keycloak
+    if (isBullBoardRequestPath(path)) {
       return true;
     }
 
@@ -136,15 +146,15 @@ export function getHybridAuthGuards() {
     guards.push(
       {
         provide: APP_GUARD,
-        useClass: AuthGuard,
+        useClass: BullBoardSkippingAuthGuard,
       },
       {
         provide: APP_GUARD,
-        useClass: ResourceGuard,
+        useClass: BullBoardSkippingResourceGuard,
       },
       {
         provide: APP_GUARD,
-        useClass: RoleGuard,
+        useClass: BullBoardSkippingRoleGuard,
       },
     );
   }

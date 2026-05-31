@@ -1,6 +1,8 @@
 import { ForbiddenException, Logger } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 
+import { isBullBoardRequestPath } from './bull-board-request-path';
+
 /**
  * Comma-separated allowlist parsing (trim, lowercase, drop empties).
  * Intentionally matches {@link parseAllowedHosts} in `@forepath/shared/shared/util-network-address`;
@@ -48,6 +50,14 @@ export function createOriginAllowlistMiddleware(
   logger: Logger,
 ): (req: Request, res: Response, next: NextFunction) => void {
   return (req, _res, next) => {
+    const requestPath = (req.originalUrl ?? req.url ?? '').split('?')[0] ?? '';
+
+    if (isBullBoardRequestPath(requestPath)) {
+      next();
+
+      return;
+    }
+
     if (!isOriginAllowlistEnforced()) {
       next();
 

@@ -233,6 +233,26 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 - `KEYCLOAK_REALM` - Keycloak realm
 - `KEYCLOAK_CLIENT_ID` - Keycloak client ID
 
+## Redis and BullMQ (background jobs)
+
+Used by **backend agent controller** and **backend billing manager**. See [Background jobs](./background-jobs.md).
+
+| Variable                    | Description                            | Default                                    |
+| --------------------------- | -------------------------------------- | ------------------------------------------ |
+| `REDIS_HOST`                | Redis host                             | `localhost` (compose: `redis`)             |
+| `REDIS_PORT`                | Redis port                             | `6379`                                     |
+| `REDIS_PASSWORD`            | Optional password                      | empty                                      |
+| `REDIS_DB`                  | Redis DB index                         | `0`                                        |
+| `REDIS_KEY_PREFIX`          | Key prefix                             | `agenstra-controller` / `agenstra-billing` |
+| `QUEUE_ROLE`                | `api`, `scheduler`, `worker`, or `all` | `all` locally; `api` for API container     |
+| `QUEUE_WORKER_CONCURRENCY`  | Worker concurrency                     | `5`                                        |
+| `QUEUE_BULL_BOARD_ENABLED`  | Enable Bull Board                      | `true` in dev for `all`/`scheduler`        |
+| `QUEUE_BULL_BOARD_PATH`     | Bull Board path                        | `/admin/queues`                            |
+| `QUEUE_BULL_BOARD_USERNAME` | Bull Board HTTP Basic user             | `admin`                                    |
+| `QUEUE_BULL_BOARD_PASSWORD` | Bull Board HTTP Basic password         | required; `bullmq` in local compose        |
+
+Scheduler interval variables (e.g. `BILLING_SCHEDULER_INTERVAL`, `AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS`) configure **coordinator** repeat intervals in BullMQ.
+
 ## Environment-Specific Defaults
 
 ### Development
@@ -254,6 +274,7 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 - **[Local Development](./local-development.md)** - Local setup
 - **[Docker Deployment](./docker-deployment.md)** - Containerized deployment
 - **[Production Checklist](./production-checklist.md)** - Production deployment
+- **[Background jobs](./background-jobs.md)** - BullMQ roles, Redis, and coordinators
 - **[Atlassian import](../features/atlassian-import.md)** - Import feature, markers, and console entry points
 
 ---

@@ -85,15 +85,23 @@ export class AutonomousRunOrchestratorService {
   async processBatch(batchSize: number): Promise<void> {
     const candidates = await this.findCandidates(batchSize);
 
-    for (const c of candidates) {
-      try {
-        await this.tryStartRun(c);
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : String(error);
-        const stack = error instanceof Error ? error.stack : undefined;
+    for (const candidate of candidates) {
+      await this.tryStartRunForCandidate(candidate);
+    }
+  }
 
-        this.logger.warn(`Orchestrator skip ticket ${c.ticket_id}: ${message}`, stack);
-      }
+  async findCandidateIds(batchSize: number): Promise<RunnableCandidate[]> {
+    return this.findCandidates(batchSize);
+  }
+
+  async tryStartRunForCandidate(candidate: RunnableCandidate): Promise<void> {
+    try {
+      await this.tryStartRun(candidate);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
+
+      this.logger.warn(`Orchestrator skip ticket ${candidate.ticket_id}: ${message}`, stack);
     }
   }
 

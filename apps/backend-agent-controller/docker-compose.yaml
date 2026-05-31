@@ -1,3 +1,66 @@
+x-backend-agent-controller-environment: &backend-agent-controller-environment
+  HOST: ${HOST:-0.0.0.0}
+  PORT: ${PORT:-3100}
+  WEBSOCKET_PORT: ${WEBSOCKET_PORT:-8081}
+  WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-clients}
+  WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
+  NODE_ENV: ${NODE_ENV:-development}
+  AUTO_ENRICH_ENABLED_GLOBAL: ${AUTO_ENRICH_ENABLED_GLOBAL:-true}
+  AUTO_ENRICH_VECTOR_ENABLED: ${AUTO_ENRICH_VECTOR_ENABLED:-true}
+  AUTO_ENRICH_MAX_SECTIONS: ${AUTO_ENRICH_MAX_SECTIONS:-6}
+  AUTO_ENRICH_MAX_CHARS: ${AUTO_ENRICH_MAX_CHARS:-12000}
+  AUTO_ENRICH_VECTOR_TOP_K: ${AUTO_ENRICH_VECTOR_TOP_K:-20}
+  AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE: ${AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE:-1}
+  KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS: ${KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS:-3600000}
+  CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS: ${CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS:-120000}
+  CONTEXT_IMPORT_SCHEDULER_CONFIG_BATCH: ${CONTEXT_IMPORT_SCHEDULER_CONFIG_BATCH:-3}
+  CONTEXT_IMPORT_ITEM_BUDGET: ${CONTEXT_IMPORT_ITEM_BUDGET:-25}
+  FILTER_RULES_SYNC_INTERVAL_MS: ${FILTER_RULES_SYNC_INTERVAL_MS:-30000}
+  FILTER_RULES_SYNC_BATCH_SIZE: ${FILTER_RULES_SYNC_BATCH_SIZE:-10}
+  AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS: ${AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS:-60000}
+  AUTONOMOUS_TICKET_SCHEDULER_BATCH_SIZE: ${AUTONOMOUS_TICKET_SCHEDULER_BATCH_SIZE:-5}
+  DB_HOST: ${DB_HOST:-postgres}
+  DB_PORT: ${DB_PORT:-5432}
+  DB_USERNAME: ${DB_USERNAME:-postgres}
+  DB_PASSWORD: ${DB_PASSWORD:-postgres}
+  DB_DATABASE: ${DB_DATABASE:-postgres}
+  REDIS_HOST: ${REDIS_HOST:-redis}
+  REDIS_PORT: ${REDIS_PORT:-6379}
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+  REDIS_DB: ${REDIS_DB:-0}
+  REDIS_KEY_PREFIX: ${REDIS_KEY_PREFIX:-agenstra-controller}
+  QUEUE_WORKER_CONCURRENCY: ${QUEUE_WORKER_CONCURRENCY:-5}
+  QUEUE_BULL_BOARD_ENABLED: ${QUEUE_BULL_BOARD_ENABLED:-false}
+  QUEUE_BULL_BOARD_PATH: ${QUEUE_BULL_BOARD_PATH:-/admin/queues}
+  QUEUE_BULL_BOARD_USERNAME: ${QUEUE_BULL_BOARD_USERNAME:-admin}
+  QUEUE_BULL_BOARD_PASSWORD: ${QUEUE_BULL_BOARD_PASSWORD:-bullmq}
+  HETZNER_API_TOKEN: ${HETZNER_API_TOKEN:-}
+  DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN:-}
+  AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-api-key}
+  DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
+  STATIC_API_KEY: ${STATIC_API_KEY:-}
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+  CORS_ORIGIN: ${CORS_ORIGIN:-}
+  RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
+  RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}
+  RATE_LIMIT_LIMIT: ${RATE_LIMIT_LIMIT:-100}
+  KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL:-}
+  KEYCLOAK_AUTH_SERVER_URL: ${KEYCLOAK_AUTH_SERVER_URL:-}
+  KEYCLOAK_REALM: ${KEYCLOAK_REALM:-}
+  KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-}
+  KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
+  KEYCLOAK_TOKEN_VALIDATION: ${KEYCLOAK_TOKEN_VALIDATION:-online}
+  JWT_SECRET: ${JWT_SECRET:-}
+  SMTP_HOST: ${SMTP_HOST:-mailhog}
+  SMTP_PORT: ${SMTP_PORT:-1025}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  EMAIL_FROM: ${EMAIL_FROM:-noreply@localhost}
+  CLIENT_ENDPOINT_ALLOWED_HOSTS: ${CLIENT_ENDPOINT_ALLOWED_HOSTS:-}
+  CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: ${CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP:-true}
+  CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: ${CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED:-false}
+  CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST: ${CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST:-true}
+
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -17,78 +80,80 @@ services:
       - agent-controller-network
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    container_name: agent-controller-redis
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '${REDIS_HOST_PORT:-6379}:6379'
+    networks:
+      - agent-controller-network
+    restart: unless-stopped
+
   backend-agent-controller:
     image: ghcr.io/forepath/agenstra-controller-api:latest
     pull_policy: never
     container_name: agent-controller-api
     environment:
-      # Backend API configuration
-      HOST: ${HOST:-0.0.0.0}
-      PORT: ${PORT:-3100}
-      WEBSOCKET_PORT: ${WEBSOCKET_PORT:-8081}
-      WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-clients}
-      WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
-      NODE_ENV: ${NODE_ENV:-development}
-      # Prompt auto-enrichment (Socket.IO → agent-manager; vector path uses controller env)
-      AUTO_ENRICH_ENABLED_GLOBAL: ${AUTO_ENRICH_ENABLED_GLOBAL:-true}
-      AUTO_ENRICH_VECTOR_ENABLED: ${AUTO_ENRICH_VECTOR_ENABLED:-true}
-      AUTO_ENRICH_MAX_SECTIONS: ${AUTO_ENRICH_MAX_SECTIONS:-6}
-      AUTO_ENRICH_MAX_CHARS: ${AUTO_ENRICH_MAX_CHARS:-12000}
-      AUTO_ENRICH_VECTOR_TOP_K: ${AUTO_ENRICH_VECTOR_TOP_K:-20}
-      # Max pgvector cosine distance (<=>) for knowledge chunks in vector auto-enrichment (0–2; default 1)
-      AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE: ${AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE:-1}
-      # Full knowledge-embedding reindex interval (ms); set <= 0 to disable scheduler
-      KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS: ${KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS:-3600000}
-      # Database configuration
-      DB_HOST: ${DB_HOST:-postgres}
-      DB_PORT: ${DB_PORT:-5432}
-      DB_USERNAME: ${DB_USERNAME:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_DATABASE: ${DB_DATABASE:-postgres}
-      # Environment variables for the provisioning providers
-      HETZNER_API_TOKEN: ${HETZNER_API_TOKEN:-}
-      DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN:-}
-      # Authentication method configuration
-      AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-api-key}
-      # Environment variables for disabling signup
-      DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
-      # Static API key authentication configuration
-      STATIC_API_KEY: ${STATIC_API_KEY:-}
-      # Environment variables for encryption
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
-      # CORS configuration (comma-separated list of allowed origins)
-      # In production: CORS is disabled by default. Set CORS_ORIGIN to allow specific origins.
-      # In development: CORS allows all origins by default.
-      CORS_ORIGIN: ${CORS_ORIGIN:-}
-      # Rate limiting configuration
-      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
-      RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}
-      RATE_LIMIT_LIMIT: ${RATE_LIMIT_LIMIT:-100}
-      # Keycloak configuration
-      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL:-}
-      KEYCLOAK_AUTH_SERVER_URL: ${KEYCLOAK_AUTH_SERVER_URL:-}
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-}
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
-      KEYCLOAK_TOKEN_VALIDATION: ${KEYCLOAK_TOKEN_VALIDATION:-online}
-      # Environment variables for users authentication (when AUTHENTICATION_METHOD=users)
-      JWT_SECRET: ${JWT_SECRET:-}
-      # SMTP / MailHog configuration (for email confirmation and password reset)
-      SMTP_HOST: ${SMTP_HOST:-mailhog}
-      SMTP_PORT: ${SMTP_PORT:-1025}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      EMAIL_FROM: ${EMAIL_FROM:-noreply@localhost}
-      # Client workspace endpoint configuration
-      CLIENT_ENDPOINT_ALLOWED_HOSTS: ${CLIENT_ENDPOINT_ALLOWED_HOSTS:-}
-      CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: ${CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP:-true}
-      CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: ${CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED:-false}
-      CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST: ${CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST:-true}
+      <<: *backend-agent-controller-environment
+      QUEUE_ROLE: ${QUEUE_ROLE:-api}
+      QUEUE_BULL_BOARD_ENABLED: ${QUEUE_BULL_BOARD_ENABLED:-true}
     ports:
       - '${PORT:-3100}:${PORT:-3100}'
       - '${WEBSOCKET_PORT:-8081}:${WEBSOCKET_PORT:-8081}'
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - agent-controller-network
+    restart: unless-stopped
+
+  backend-agent-controller-worker:
+    image: ghcr.io/forepath/agenstra-controller-api:latest
+    pull_policy: never
+    container_name: agent-controller-worker
+    environment:
+      <<: *backend-agent-controller-environment
+      QUEUE_ROLE: worker
+      QUEUE_BULL_BOARD_ENABLED: false
+    depends_on:
+      backend-agent-controller:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - agent-controller-network
+    restart: unless-stopped
+
+  backend-agent-controller-scheduler:
+    image: ghcr.io/forepath/agenstra-controller-api:latest
+    pull_policy: never
+    container_name: agent-controller-scheduler
+    environment:
+      <<: *backend-agent-controller-environment
+      QUEUE_ROLE: scheduler
+      QUEUE_BULL_BOARD_ENABLED: false
+    depends_on:
+      backend-agent-controller:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       mailhog:
         condition: service_started
@@ -108,6 +173,7 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   agent-controller-network:

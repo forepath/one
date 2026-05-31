@@ -1,7 +1,11 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
-import { AuthGuard, ResourceGuard, RoleGuard } from 'nest-keycloak-connect';
 
+import {
+  BullBoardSkippingAuthGuard,
+  BullBoardSkippingResourceGuard,
+  BullBoardSkippingRoleGuard,
+} from './bull-board-keycloak.guards';
 import { getAuthenticationMethod, getHybridAuthGuards, HybridAuthGuard } from './hybrid-auth.guard';
 
 describe('HybridAuthGuard', () => {
@@ -125,6 +129,20 @@ describe('HybridAuthGuard', () => {
       const result = guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(true);
+    });
+
+    it('should allow Bull Board paths without API key (HTTP Basic on board routes)', () => {
+      const mockRequest = {
+        originalUrl: '/admin/queues/api/queues/agent-controller/jobs/clean',
+        url: '/admin/queues/api/queues/agent-controller/jobs/clean',
+        headers: { authorization: 'Basic YWRtaW46YnVsbG1x' },
+      };
+
+      mockExecutionContext.switchToHttp = jest.fn().mockReturnValue({
+        getRequest: jest.fn().mockReturnValue(mockRequest),
+      });
+
+      expect(guard.canActivate(mockExecutionContext)).toBe(true);
     });
 
     it('should throw UnauthorizedException when authorization header is missing', () => {
@@ -392,15 +410,15 @@ describe('getHybridAuthGuards', () => {
       });
       expect(guards[1]).toEqual({
         provide: APP_GUARD,
-        useClass: AuthGuard,
+        useClass: BullBoardSkippingAuthGuard,
       });
       expect(guards[2]).toEqual({
         provide: APP_GUARD,
-        useClass: ResourceGuard,
+        useClass: BullBoardSkippingResourceGuard,
       });
       expect(guards[3]).toEqual({
         provide: APP_GUARD,
-        useClass: RoleGuard,
+        useClass: BullBoardSkippingRoleGuard,
       });
     });
   });
@@ -455,7 +473,7 @@ describe('getHybridAuthGuards', () => {
       });
       expect(guards[1]).toEqual({
         provide: APP_GUARD,
-        useClass: AuthGuard,
+        useClass: BullBoardSkippingAuthGuard,
       });
     });
   });

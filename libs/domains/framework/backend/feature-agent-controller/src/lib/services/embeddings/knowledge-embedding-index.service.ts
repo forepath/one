@@ -64,6 +64,32 @@ export class KnowledgeEmbeddingIndexService {
     await this.embeddingRepo.delete({ knowledgeNodeId });
   }
 
+  async findPageIdsBatch(
+    offset: number,
+    limit: number,
+    clientId?: string,
+  ): Promise<Array<{ clientId: string; nodeId: string; title: string; content: string }>> {
+    const where = clientId
+      ? { clientId, nodeType: KnowledgeNodeType.PAGE }
+      : {
+          nodeType: KnowledgeNodeType.PAGE,
+        };
+    const pages = await this.knowledgeNodeRepo.find({
+      where,
+      select: ['id', 'clientId', 'title', 'content'],
+      order: { updatedAt: 'DESC' },
+      skip: offset,
+      take: limit,
+    });
+
+    return pages.map((page) => ({
+      clientId: page.clientId,
+      nodeId: page.id,
+      title: page.title,
+      content: page.content ?? '',
+    }));
+  }
+
   async reindexAllPages(clientId?: string): Promise<{ processed: number }> {
     const where = clientId
       ? { clientId, nodeType: KnowledgeNodeType.PAGE }

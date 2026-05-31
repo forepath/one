@@ -42,12 +42,10 @@ import { TicketEntity } from '../entities/ticket.entity';
 import { UserEnvironmentReadStateEntity } from '../entities/user-environment-read-state.entity';
 import { ClientsGateway } from '../gateways/clients.gateway';
 import { ClientsRepository } from '../repositories/clients.repository';
-import { AutonomousTicketScheduler } from '../services/autonomous-ticket.scheduler';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { ExternalImportSyncMarkerService } from '../services/external-import-sync-marker.service';
-import { KnowledgeEmbeddingIndexScheduler } from '../services/knowledge-embedding-index.scheduler';
 
 import { ClientsModule } from './clients.module';
 import { ContextImportModule } from './context-import.module';
@@ -181,19 +179,7 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(UserEnvironmentReadStateEntity))
       .useValue(mockRepository)
       .overrideProvider(UsersRepository)
-      .useValue(mockRepository)
-      .overrideProvider(AutonomousTicketScheduler)
-      .useValue({
-        onModuleInit: jest.fn(),
-        onModuleDestroy: jest.fn(),
-        tick: jest.fn().mockResolvedValue(undefined),
-      })
-      .overrideProvider(KnowledgeEmbeddingIndexScheduler)
-      .useValue({
-        onModuleInit: jest.fn(),
-        onModuleDestroy: jest.fn(),
-        tick: jest.fn().mockResolvedValue(undefined),
-      });
+      .useValue(mockRepository);
 
     // Mock Keycloak providers if auth method is keycloak
     if (authMethod === 'keycloak') {

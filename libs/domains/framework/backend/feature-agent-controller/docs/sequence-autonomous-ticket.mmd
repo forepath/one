@@ -1,5 +1,6 @@
 sequenceDiagram
-    participant Sched as AutonomousTicketScheduler
+    participant Coord as QueueCoordinator
+    participant Worker as QueueWorker
     participant Orch as AutonomousRunOrchestrator
     participant DB as Postgres
     participant Vcs as ClientAgentVcsProxy

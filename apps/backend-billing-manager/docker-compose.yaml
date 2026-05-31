@@ -1,3 +1,67 @@
+x-backend-billing-manager-environment: &backend-billing-manager-environment
+  HOST: ${HOST:-0.0.0.0}
+  PORT: ${PORT:-3200}
+  WEBSOCKET_PORT: ${WEBSOCKET_PORT:-8082}
+  WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-billing}
+  WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
+  NODE_ENV: ${NODE_ENV:-development}
+  DB_HOST: ${DB_HOST:-postgres}
+  DB_PORT: ${DB_PORT:-5432}
+  DB_USERNAME: ${DB_USERNAME:-postgres}
+  DB_PASSWORD: ${DB_PASSWORD:-postgres}
+  DB_DATABASE: ${DB_DATABASE:-postgres}
+  REDIS_HOST: ${REDIS_HOST:-redis}
+  REDIS_PORT: ${REDIS_PORT:-6379}
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+  REDIS_DB: ${REDIS_DB:-0}
+  REDIS_KEY_PREFIX: ${REDIS_KEY_PREFIX:-agenstra-billing}
+  QUEUE_WORKER_CONCURRENCY: ${QUEUE_WORKER_CONCURRENCY:-5}
+  QUEUE_BULL_BOARD_ENABLED: ${QUEUE_BULL_BOARD_ENABLED:-false}
+  QUEUE_BULL_BOARD_PATH: ${QUEUE_BULL_BOARD_PATH:-/admin/queues}
+  QUEUE_BULL_BOARD_USERNAME: ${QUEUE_BULL_BOARD_USERNAME:-admin}
+  QUEUE_BULL_BOARD_PASSWORD: ${QUEUE_BULL_BOARD_PASSWORD:-bullmq}
+  HETZNER_API_TOKEN: ${HETZNER_API_TOKEN:-}
+  DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN:-}
+  AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-api-key}
+  DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
+  STATIC_API_KEY: ${STATIC_API_KEY:-}
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+  CORS_ORIGIN: ${CORS_ORIGIN:-}
+  RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
+  RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}
+  RATE_LIMIT_LIMIT: ${RATE_LIMIT_LIMIT:-100}
+  KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL:-}
+  KEYCLOAK_AUTH_SERVER_URL: ${KEYCLOAK_AUTH_SERVER_URL:-}
+  KEYCLOAK_REALM: ${KEYCLOAK_REALM:-}
+  KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-}
+  KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
+  KEYCLOAK_TOKEN_VALIDATION: ${KEYCLOAK_TOKEN_VALIDATION:-online}
+  JWT_SECRET: ${JWT_SECRET:-}
+  SMTP_HOST: ${SMTP_HOST:-mailhog}
+  SMTP_PORT: ${SMTP_PORT:-1025}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  EMAIL_FROM: ${EMAIL_FROM:-noreply@localhost}
+  INVOICE_NINJA_BASE_URL: ${INVOICE_NINJA_BASE_URL:-}
+  INVOICE_NINJA_API_TOKEN: ${INVOICE_NINJA_API_TOKEN:-}
+  BILLING_SCHEDULER_INTERVAL: ${BILLING_SCHEDULER_INTERVAL:-60000}
+  BILLING_SCHEDULER_BATCH_SIZE: ${BILLING_SCHEDULER_BATCH_SIZE:-100}
+  EXPIRATION_SCHEDULER_INTERVAL: ${EXPIRATION_SCHEDULER_INTERVAL:-60000}
+  EXPIRATION_SCHEDULER_BATCH_SIZE: ${EXPIRATION_SCHEDULER_BATCH_SIZE:-100}
+  REMINDER_SCHEDULER_INTERVAL: ${REMINDER_SCHEDULER_INTERVAL:-3600000}
+  REMINDER_SCHEDULER_BATCH_SIZE: ${REMINDER_SCHEDULER_BATCH_SIZE:-100}
+  REMINDER_DAYS: ${REMINDER_DAYS:-3}
+  BACKORDER_RETRY_INTERVAL_MS: ${BACKORDER_RETRY_INTERVAL_MS:-60000}
+  BACKORDER_RETRY_BATCH_SIZE: ${BACKORDER_RETRY_BATCH_SIZE:-100}
+  INVOICE_SYNC_SCHEDULER_INTERVAL: ${INVOICE_SYNC_SCHEDULER_INTERVAL:-60000}
+  INVOICE_SYNC_SCHEDULER_BATCH_SIZE: ${INVOICE_SYNC_SCHEDULER_BATCH_SIZE:-100}
+  OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL: ${OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL:-86400000}
+  SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL: ${SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL:-86400000}
+  STATUS_POLL_INTERVAL: ${STATUS_POLL_INTERVAL:-15000}
+  CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
+  CLOUDFLARE_ZONE_ID: ${CLOUDFLARE_ZONE_ID:-}
+  DNS_BASE_DOMAIN: ${DNS_BASE_DOMAIN:-spirde.com}
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -17,82 +81,80 @@ services:
       - billing-network
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    container_name: billing-manager-redis
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '${REDIS_HOST_PORT:-6380}:6379'
+    networks:
+      - billing-network
+    restart: unless-stopped
+
   backend-billing-manager:
     image: ghcr.io/forepath/agenstra-billing-api:latest
     pull_policy: never
     container_name: billing-manager-api
     environment:
-      # Backend API configuration
-      HOST: ${HOST:-0.0.0.0}
-      PORT: ${PORT:-3200}
-      WEBSOCKET_PORT: ${WEBSOCKET_PORT:-8082}
-      WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-billing}
-      WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
-      NODE_ENV: ${NODE_ENV:-development}
-      # Database configuration
-      DB_HOST: ${DB_HOST:-postgres}
-      DB_PORT: ${DB_PORT:-5432}
-      DB_USERNAME: ${DB_USERNAME:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_DATABASE: ${DB_DATABASE:-postgres}
-      # Environment variables for the provisioning providers
-      HETZNER_API_TOKEN: ${HETZNER_API_TOKEN:-}
-      DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN:-}
-      # Authentication method configuration
-      AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-api-key}
-      # Environment variables for disabling signup
-      DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
-      # Static API key authentication configuration
-      STATIC_API_KEY: ${STATIC_API_KEY:-}
-      # Environment variables for encryption
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
-      # CORS configuration (comma-separated list of allowed origins)
-      # In production: CORS is disabled by default. Set CORS_ORIGIN to allow specific origins.
-      # In development: CORS allows all origins by default.
-      CORS_ORIGIN: ${CORS_ORIGIN:-}
-      # Rate limiting configuration
-      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
-      RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}
-      RATE_LIMIT_LIMIT: ${RATE_LIMIT_LIMIT:-100}
-      # Keycloak configuration
-      KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL:-}
-      KEYCLOAK_AUTH_SERVER_URL: ${KEYCLOAK_AUTH_SERVER_URL:-}
-      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-}
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
-      KEYCLOAK_TOKEN_VALIDATION: ${KEYCLOAK_TOKEN_VALIDATION:-online}
-      # Environment variables for users authentication (when AUTHENTICATION_METHOD=users)
-      JWT_SECRET: ${JWT_SECRET:-}
-      # SMTP / MailHog configuration (for email confirmation and password reset)
-      SMTP_HOST: ${SMTP_HOST:-mailhog}
-      SMTP_PORT: ${SMTP_PORT:-1025}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      EMAIL_FROM: ${EMAIL_FROM:-noreply@localhost}
-      # InvoiceNinja configuration
-      INVOICE_NINJA_BASE_URL: ${INVOICE_NINJA_BASE_URL:-}
-      INVOICE_NINJA_API_TOKEN: ${INVOICE_NINJA_API_TOKEN:-}
-      # Scheduler intervals (in milliseconds)
-      BILLING_SCHEDULER_INTERVAL: ${BILLING_SCHEDULER_INTERVAL:-60000}
-      BILLING_SCHEDULER_BATCH_SIZE: ${BILLING_SCHEDULER_BATCH_SIZE:-100}
-      EXPIRATION_SCHEDULER_INTERVAL: ${EXPIRATION_SCHEDULER_INTERVAL:-60000}
-      EXPIRATION_SCHEDULER_BATCH_SIZE: ${EXPIRATION_SCHEDULER_BATCH_SIZE:-100}
-      REMINDER_SCHEDULER_INTERVAL: ${REMINDER_SCHEDULER_INTERVAL:-60000}
-      REMINDER_SCHEDULER_BATCH_SIZE: ${REMINDER_SCHEDULER_BATCH_SIZE:-100}
-      REMINDER_DAYS: ${REMINDER_DAYS:-3}
-      BACKORDER_RETRY_INTERVAL: ${BACKORDER_RETRY_INTERVAL:-60000}
-      BACKORDER_RETRY_BATCH_SIZE: ${BACKORDER_RETRY_BATCH_SIZE:-100}
-      SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL: ${SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL:-86400000}
-      STATUS_POLL_INTERVAL: ${STATUS_POLL_INTERVAL:-15000}
-      # DNS settings
-      CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
-      CLOUDFLARE_ZONE_ID: ${CLOUDFLARE_ZONE_ID:-}
-      DNS_BASE_DOMAIN: ${DNS_BASE_DOMAIN:-spirde.com}
+      <<: *backend-billing-manager-environment
+      QUEUE_ROLE: ${QUEUE_ROLE:-api}
+      QUEUE_BULL_BOARD_ENABLED: ${QUEUE_BULL_BOARD_ENABLED:-true}
     ports:
       - '${PORT:-3200}:${PORT:-3200}'
       - '${WEBSOCKET_PORT:-8082}:${WEBSOCKET_PORT:-8082}'
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - billing-network
+    restart: unless-stopped
+
+  backend-billing-manager-worker:
+    image: ghcr.io/forepath/agenstra-billing-api:latest
+    pull_policy: never
+    container_name: billing-manager-worker
+    environment:
+      <<: *backend-billing-manager-environment
+      QUEUE_ROLE: worker
+      QUEUE_BULL_BOARD_ENABLED: false
+    depends_on:
+      backend-billing-manager:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - billing-network
+    restart: unless-stopped
+
+  backend-billing-manager-scheduler:
+    image: ghcr.io/forepath/agenstra-billing-api:latest
+    pull_policy: never
+    container_name: billing-manager-scheduler
+    environment:
+      <<: *backend-billing-manager-environment
+      QUEUE_ROLE: scheduler
+      QUEUE_BULL_BOARD_ENABLED: false
+    depends_on:
+      backend-billing-manager:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       mailhog:
         condition: service_started
@@ -112,6 +174,7 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   billing-network:

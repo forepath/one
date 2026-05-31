@@ -27,17 +27,17 @@ Non-admin interactive users receive **403** from the API and cannot open the adm
 
 Exact field matrices and validation rules are defined in the OpenAPI DTOs (`CreateExternalImportConfigDto`, `UpdateExternalImportConfigDto`, etc.).
 
-## Scheduler and manual runs
+## Queue jobs and manual runs
 
-The **Context import scheduler** runs on an interval in the controller process. Relevant environment variables (defaults shown where applicable):
+**Context import** uses BullMQ: a repeatable coordinator enqueues one unit job per enabled config (see [Background jobs](../deployment/background-jobs.md)). Relevant environment variables (defaults shown where applicable):
 
-| Variable                                | Role                                                                                                        |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS`  | Interval between ticks in milliseconds (`120000` default). Set to `0` or less to **disable** the scheduler. |
-| `CONTEXT_IMPORT_SCHEDULER_CONFIG_BATCH` | Maximum number of enabled configs considered per tick (`3` default).                                        |
-| `CONTEXT_IMPORT_ITEM_BUDGET`            | Soft cap on work items processed per config per run (`25` default).                                         |
+| Variable                                | Role                                                                                                               |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS`  | Coordinator repeat interval in milliseconds (`120000` default). Set to `0` or less to **disable** the coordinator. |
+| `CONTEXT_IMPORT_SCHEDULER_CONFIG_BATCH` | Maximum enabled configs enqueued per coordinator tick (`3` default).                                               |
+| `CONTEXT_IMPORT_ITEM_BUDGET`            | Soft cap on work items processed per config per unit job (`25` default).                                           |
 
-Admins may trigger **`POST /api/imports/atlassian/configs/{id}/run`** (HTTP 202) to enqueue work for one config without waiting for the next scheduler tick.
+Admins may trigger **`POST /api/imports/atlassian/configs/{id}/run`** (HTTP 202) to run one config immediately without waiting for the next coordinator tick.
 
 To disable import execution entirely (for example in a staging environment), set **`ATLASSIAN_IMPORT_DISABLED=true`**. The provider then returns a no-op result for import runs while connections and configs remain manageable via the API.
 

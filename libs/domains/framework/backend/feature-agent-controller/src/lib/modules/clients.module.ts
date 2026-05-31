@@ -59,7 +59,6 @@ import { AgentConsoleStatusRealtimeService } from '../services/agent-console-sta
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { AutonomousRunOrchestratorService } from '../services/autonomous-run-orchestrator.service';
-import { AutonomousTicketScheduler } from '../services/autonomous-ticket.scheduler';
 import { ClientAgentAutonomyService } from '../services/client-agent-autonomy.service';
 import { ClientAgentDeploymentsProxyService } from '../services/client-agent-deployments-proxy.service';
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
@@ -73,7 +72,6 @@ import { ClientsService } from '../services/clients.service';
 import { KnowledgeEmbeddingIndexService } from '../services/embeddings/knowledge-embedding-index.service';
 import { LocalEmbeddingProvider } from '../services/embeddings/local-embedding.provider';
 import { KnowledgeBoardRealtimeService } from '../services/knowledge-board-realtime.service';
-import { KnowledgeEmbeddingIndexScheduler } from '../services/knowledge-embedding-index.scheduler';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { ProvisioningService } from '../services/provisioning.service';
 import { RemoteAgentsSessionService } from '../services/remote-agents-session.service';
@@ -142,13 +140,11 @@ const authMethod = getAuthenticationMethod();
     KnowledgeTreeService,
     AutoContextResolverService,
     KnowledgeEmbeddingIndexService,
-    KnowledgeEmbeddingIndexScheduler,
     LocalEmbeddingProvider,
     TicketAutomationService,
     ClientAgentAutonomyService,
     RemoteAgentsSessionService,
     AutonomousRunOrchestratorService,
-    AutonomousTicketScheduler,
     ClientsRepository,
     ClientUsersRepository,
     ClientUsersService,
@@ -216,6 +212,8 @@ const authMethod = getAuthenticationMethod();
     ProvisioningProviderFactory,
     TicketsService,
     KnowledgeTreeService,
+    KnowledgeEmbeddingIndexService,
+    AutonomousRunOrchestratorService,
   ],
 })
 export class ClientsModule {}

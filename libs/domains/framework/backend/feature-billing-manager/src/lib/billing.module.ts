@@ -48,7 +48,7 @@ import { SubscriptionsRepository } from './repositories/subscriptions.repository
 import { UsageRecordsRepository } from './repositories/usage-records.repository';
 import { UsersBillingDayRepository } from './repositories/users-billing-day.repository';
 import { AvailabilityService } from './services/availability.service';
-import { BackorderRetryService } from './services/backorder-retry.service';
+import { BackorderRetryJobHandler } from './services/backorder-retry.job-handler';
 import { BackorderService } from './services/backorder.service';
 import { BillingScheduleService } from './services/billing-schedule.service';
 import { CancellationPolicyService } from './services/cancellation-policy.service';
@@ -59,19 +59,19 @@ import { HetznerProvisioningService } from './services/hetzner-provisioning.serv
 import { HostnameReservationService } from './services/hostname-reservation.service';
 import { InvoiceCreationService } from './services/invoice-creation.service';
 import { InvoiceNinjaService } from './services/invoice-ninja.service';
-import { InvoiceSyncScheduler } from './services/invoice-sync.scheduler';
-import { OpenPositionInvoiceScheduler } from './services/open-position-invoice.scheduler';
+import { InvoiceSyncJobHandler } from './services/invoice-sync.job-handler';
+import { OpenPositionInvoiceJobHandler } from './services/open-position-invoice.job-handler';
 import { PricingService } from './services/pricing.service';
 import { ProviderPricingService } from './services/provider-pricing.service';
 import { ProviderRegistryService } from './services/provider-registry.service';
 import { ProviderServerTypesService } from './services/provider-server-types.service';
 import { ProvisioningService } from './services/provisioning.service';
 import { SshExecutorService } from './services/ssh-executor.service';
-import { SubscriptionBillingScheduler } from './services/subscription-billing.scheduler';
-import { SubscriptionExpirationScheduler } from './services/subscription-expiration.scheduler';
+import { SubscriptionBillingJobHandler } from './services/subscription-billing.job-handler';
+import { SubscriptionExpirationJobHandler } from './services/subscription-expiration.job-handler';
 import { SubscriptionItemServerService } from './services/subscription-item-server.service';
-import { SubscriptionItemUpdateScheduler } from './services/subscription-item-update.scheduler';
-import { SubscriptionRenewalReminderScheduler } from './services/subscription-renewal-reminder.scheduler';
+import { SubscriptionItemUpdateJobHandler } from './services/subscription-item-update.job-handler';
+import { SubscriptionRenewalReminderJobHandler } from './services/subscription-renewal-reminder.job-handler';
 import { SubscriptionService } from './services/subscription.service';
 import { UsageService } from './services/usage.service';
 
@@ -281,7 +281,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
   providers: [
     AvailabilityService,
     BackorderService,
-    BackorderRetryService,
+    BackorderRetryJobHandler,
     BillingScheduleService,
     CancellationPolicyService,
     CloudflareDnsService,
@@ -299,11 +299,12 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionService,
     UsageService,
     CustomerProfilesService,
-    InvoiceSyncScheduler,
-    SubscriptionBillingScheduler,
-    SubscriptionExpirationScheduler,
-    SubscriptionRenewalReminderScheduler,
-    OpenPositionInvoiceScheduler,
+    InvoiceSyncJobHandler,
+    SubscriptionBillingJobHandler,
+    SubscriptionExpirationJobHandler,
+    SubscriptionRenewalReminderJobHandler,
+    OpenPositionInvoiceJobHandler,
+    SubscriptionItemUpdateJobHandler,
     EmailService,
     AvailabilitySnapshotsRepository,
     BackordersRepository,
@@ -318,7 +319,6 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionsRepository,
     UsageRecordsRepository,
     CustomerProfilesRepository,
-    SubscriptionItemUpdateScheduler,
     SshExecutorService,
     UsersRepository,
     SocketAuthService,
@@ -327,7 +327,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
   exports: [
     AvailabilityService,
     BackorderService,
-    BackorderRetryService,
+    BackorderRetryJobHandler,
     BillingScheduleService,
     CancellationPolicyService,
     CloudflareDnsService,
@@ -343,11 +343,12 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionService,
     UsageService,
     CustomerProfilesService,
-    InvoiceSyncScheduler,
-    SubscriptionBillingScheduler,
-    SubscriptionExpirationScheduler,
-    SubscriptionRenewalReminderScheduler,
-    OpenPositionInvoiceScheduler,
+    InvoiceSyncJobHandler,
+    SubscriptionBillingJobHandler,
+    SubscriptionExpirationJobHandler,
+    SubscriptionRenewalReminderJobHandler,
+    OpenPositionInvoiceJobHandler,
+    SubscriptionItemUpdateJobHandler,
     EmailService,
     AvailabilitySnapshotsRepository,
     BackordersRepository,
