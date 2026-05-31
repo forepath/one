@@ -1,5 +1,6 @@
 import type { Queue } from 'bullmq';
 
+import { defaultRemoveOnComplete, defaultRemoveOnFail } from './job-retention';
 import { registerRepeatableCoordinatorJob } from './register-repeatable-coordinator-job';
 
 describe('registerRepeatableCoordinatorJob', () => {
@@ -30,6 +31,8 @@ describe('registerRepeatableCoordinatorJob', () => {
       expect.objectContaining({
         jobId: 'coordinator.filter-rules-sync',
         repeat: { every: 30_000 },
+        removeOnComplete: defaultRemoveOnComplete,
+        removeOnFail: defaultRemoveOnFail,
       }),
     );
   });
@@ -50,6 +53,13 @@ describe('registerRepeatableCoordinatorJob', () => {
     });
 
     expect(queue.removeRepeatableByKey).not.toHaveBeenCalled();
-    expect(add).toHaveBeenCalledTimes(1);
+    expect(add).toHaveBeenCalledWith(
+      'billing.coordinator',
+      {},
+      expect.objectContaining({
+        removeOnComplete: defaultRemoveOnComplete,
+        removeOnFail: defaultRemoveOnFail,
+      }),
+    );
   });
 });

@@ -1,5 +1,6 @@
 import type { Queue } from 'bullmq';
 
+import { defaultRemoveOnComplete, defaultRemoveOnFail } from './job-retention';
 import { enqueueUnitJob } from './enqueue-unit-job';
 
 describe('enqueueUnitJob', () => {
@@ -18,7 +19,11 @@ describe('enqueueUnitJob', () => {
     expect(add).toHaveBeenCalledWith(
       'billing.subscription.unit',
       { subscriptionId: 'abc' },
-      expect.objectContaining({ jobId: 'billing.subscription.abc' }),
+      expect.objectContaining({
+        jobId: 'billing.subscription.abc',
+        removeOnComplete: defaultRemoveOnComplete,
+        removeOnFail: defaultRemoveOnFail,
+      }),
     );
   });
 
