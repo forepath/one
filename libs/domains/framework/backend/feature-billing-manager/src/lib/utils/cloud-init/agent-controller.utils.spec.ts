@@ -196,6 +196,51 @@ describe('cloud-init.utils', () => {
       expect(script).toContain('CSP_ENFORCE: true');
     });
 
+    it('generates a compose stack with redis + api/worker/scheduler split', () => {
+      const config: CloudInitConfig = {
+        ssh: { publicKey: '' },
+        host: { hostname: 'test', fqdn: 'test.spirde.com' },
+        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
+        backend: {
+          host: '0.0.0.0',
+          port: 3100,
+          websocketPort: 8081,
+          websocketNamespace: 'websocket',
+          nodeEnv: 'production',
+          defaultLocale: 'en',
+          database: {
+            host: 'postgres',
+            port: 5432,
+            username: 'postgres',
+            password: 'postgres',
+            database: 'postgres',
+          },
+          authentication: {
+            authenticationMethod: 'users',
+            disableSignup: false,
+          },
+          encryption: { encryptionKey: 'key', jwtSecret: 'secret' },
+          smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
+          cors: { origin: 'https://test.spirde.com' },
+          rateLimit: { enabled: false, ttl: 60, limit: 100 },
+        },
+      };
+      const b64 = buildBillingCloudInitUserData(config);
+      const script = Buffer.from(b64, 'base64').toString('utf-8');
+
+      expect(script).toContain('redis:');
+      expect(script).toContain('backend-agent-controller-worker:');
+      expect(script).toContain('backend-agent-controller-scheduler:');
+
+      expect(script).toContain('QUEUE_ROLE: api');
+      expect(script).toContain('QUEUE_ROLE: worker');
+      expect(script).toContain('QUEUE_ROLE: scheduler');
+
+      expect(script).toContain('REDIS_HOST: redis');
+      expect(script).toContain('REDIS_PORT: 6379');
+    });
+
     it('embeds custom CLIENT_ENDPOINT_ALLOWED_HOSTS in backend-agent-controller environment', () => {
       const config: CloudInitConfig = {
         ssh: { publicKey: '' },
