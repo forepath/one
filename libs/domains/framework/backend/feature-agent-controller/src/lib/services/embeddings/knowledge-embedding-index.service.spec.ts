@@ -126,6 +126,38 @@ describe('KnowledgeEmbeddingIndexService', () => {
     reindexSpy.mockRestore();
   });
 
+  it('findPageIdsBatch maps pages with empty content fallback', async () => {
+    const pages = [
+      { id: 'p1', clientId: 'c1', title: 'A', content: 'one' },
+      { id: 'p2', clientId: 'c2', title: 'B', content: null },
+    ];
+    const knowledgeNodeRepo: any = {
+      find: jest.fn().mockResolvedValue(pages),
+    };
+    const service = new KnowledgeEmbeddingIndexService(knowledgeNodeRepo, {} as never, {} as never);
+
+    await expect(service.findPageIdsBatch(5, 10)).resolves.toEqual([
+      { clientId: 'c1', nodeId: 'p1', title: 'A', content: 'one' },
+      { clientId: 'c2', nodeId: 'p2', title: 'B', content: '' },
+    ]);
+
+    expect(knowledgeNodeRepo.find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { nodeType: KnowledgeNodeType.PAGE },
+        skip: 5,
+        take: 10,
+      }),
+    );
+
+    await service.findPageIdsBatch(0, 5, 'c1');
+
+    expect(knowledgeNodeRepo.find).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        where: { clientId: 'c1', nodeType: KnowledgeNodeType.PAGE },
+      }),
+    );
+  });
+
   it('splits long lines into multiple chunks when line exceeds chunk max', async () => {
     process.env.EMBEDDING_CHUNK_MAX_CHARS = '10';
     const embeddingRepo: any = {
