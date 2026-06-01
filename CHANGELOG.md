@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.5](https://github.com/forepath/agenstra/compare/v2.7.4...v2.7.5) (2026-06-01)
+
+
+### Bug Fixes
+
+* updated docker-login action ([#401](https://github.com/forepath/agenstra/issues/401)) ([042cb99](https://github.com/forepath/agenstra/commit/042cb990c04aadcaad6f22a218b7c1e173ffae87))
+
 ## [2.7.4](https://github.com/forepath/agenstra/compare/v2.7.3...v2.7.4) (2026-06-01)
 
 
