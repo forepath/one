@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.3](https://github.com/forepath/agenstra/compare/v2.7.2...v2.7.3) (2026-06-01)
+
+
+### Bug Fixes
+
+* pin trivy version ([#399](https://github.com/forepath/agenstra/issues/399)) ([be8b70c](https://github.com/forepath/agenstra/commit/be8b70c797dd4e4ecbd68b3a2ca867b6d0782417))
+
 ## [2.7.2](https://github.com/forepath/agenstra/compare/v2.7.1...v2.7.2) (2026-06-01)
 
 
