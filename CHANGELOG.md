@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.4](https://github.com/forepath/agenstra/compare/v2.7.3...v2.7.4) (2026-06-01)
+
+
+### Bug Fixes
+
+* updated gh-upload-sbom action ([#400](https://github.com/forepath/agenstra/issues/400)) ([84dba53](https://github.com/forepath/agenstra/commit/84dba537c1e852f08b1eda9a2932693fb936677e))
+
 ## [2.7.3](https://github.com/forepath/agenstra/compare/v2.7.2...v2.7.3) (2026-06-01)
 
 
