@@ -10,17 +10,44 @@ PROJECT_VERSION="${PROJECT_VERSION:-}"
 CYCLONEDX_SPEC_VERSION="${CYCLONEDX_SPEC_VERSION:-1.6}"
 CYCLONEDX_SCHEMA_URL="http://cyclonedx.org/schema/bom-${CYCLONEDX_SPEC_VERSION}.schema.json"
 
-normalize_container_cyclonedx_spec() {
+normalize_container_cyclonedx_for_dependency_track() {
   local bom_path="$1"
   if ! command -v jq >/dev/null 2>&1; then
-    echo "jq is required to normalize CycloneDX specVersion in ${bom_path}" >&2
+    echo "jq is required to normalize CycloneDX output in ${bom_path}" >&2
     exit 1
   fi
   local tmp
   tmp="$(mktemp)"
+  # Dependency-Track validates against CycloneDX 1.6 + SPDX id enum. Trivy often emits
+  # empty license objects, non-SPDX ids, or mixes expression + license entries.
   jq --arg spec "$CYCLONEDX_SPEC_VERSION" --arg schema "$CYCLONEDX_SCHEMA_URL" '
+    def fix_component_licenses:
+      if (.licenses | type) != "array" then .
+      else
+        [.licenses[]
+          | if (.license | type) == "object" then
+              if .license == {} then empty
+              elif .license.id != null then {license: {name: .license.id}}
+              elif .license.name != null then .
+              else empty
+              end
+            elif .expression != null then .
+            else empty
+            end
+        ] as $cleaned
+        | if ($cleaned | length) == 0 then del(.licenses)
+          elif ($cleaned | all(has("expression"))) and ($cleaned | length) > 1 then
+            .licenses = [{expression: ($cleaned | map(.expression) | join(" AND "))}]
+          elif ($cleaned | all(has("expression"))) then .licenses = $cleaned
+          elif ($cleaned | all(has("license"))) then .licenses = $cleaned
+          else
+            .licenses = [$cleaned[] | if has("expression") then {license: {name: .expression}} else . end]
+          end
+      end;
+
     .specVersion = $spec
     | if has("$schema") then .["$schema"] = $schema else . end
+    | .components = ((.components // []) | map(fix_component_licenses))
   ' "$bom_path" >"$tmp"
   mv "$tmp" "$bom_path"
 }
@@ -89,7 +116,7 @@ for image in "${filtered_images[@]}"; do
     --output "$bom_path" \
     --exit-code 0
 
-  normalize_container_cyclonedx_spec "$bom_path"
+  normalize_container_cyclonedx_for_dependency_track "$bom_path"
 done
 
 echo "Wrote ${#filtered_images[@]} container image SBOM file(s) under ${SBOM_OUTPUT_DIR}"
