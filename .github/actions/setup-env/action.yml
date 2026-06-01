@@ -5,7 +5,7 @@ runs:
   using: 'composite'
   steps:
     - name: Setup Node from .nvmrc
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version-file: .nvmrc
 
@@ -43,7 +43,7 @@ runs:
         echo "CYPRESS_CACHE_FOLDER=$CYPRESS_CACHE" >> $GITHUB_ENV
 
     - name: Restore Cypress cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ${{ steps.cypress-cache.outputs.folder }}

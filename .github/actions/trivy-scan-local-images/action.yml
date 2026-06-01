@@ -44,7 +44,7 @@ runs:
 
     - name: Upload SARIF artifact (fallback)
       if: inputs.upload-github-security == 'true' && steps.scan.outputs.sarif_exists == 'true' && steps.upload-sarif.outcome == 'failure'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: trivy-sarif-${{ inputs.sarif-category }}
         path: trivy-results-${{ inputs.sarif-category }}.sarif
