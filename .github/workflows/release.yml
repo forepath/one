@@ -664,7 +664,7 @@ jobs:
           fi
 
       - name: Upload agent-console SBOM
-        uses: DependencyTrack/gh-upload-sbom@v3
+        uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
@@ -676,7 +676,7 @@ jobs:
           bomfilename: 'dist/sboms/frontend-agent-console.cdx.json'
 
       - name: Upload agent-controller SBOM
-        uses: DependencyTrack/gh-upload-sbom@v3
+        uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
@@ -688,7 +688,7 @@ jobs:
           bomfilename: 'dist/sboms/backend-agent-controller.cdx.json'
 
       - name: Upload agent-manager SBOM
-        uses: DependencyTrack/gh-upload-sbom@v3
+        uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
@@ -700,7 +700,7 @@ jobs:
           bomfilename: 'dist/sboms/backend-agent-manager.cdx.json'
 
       - name: Upload billing-console SBOM
-        uses: DependencyTrack/gh-upload-sbom@v3
+        uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
@@ -712,7 +712,7 @@ jobs:
           bomfilename: 'dist/sboms/frontend-billing-console.cdx.json'
 
       - name: Upload billing-manager SBOM
-        uses: DependencyTrack/gh-upload-sbom@v3
+        uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
@@ -724,7 +724,7 @@ jobs:
           bomfilename: 'dist/sboms/backend-billing-manager.cdx.json'
 
       - name: Upload desktop SBOM
-        uses: DependencyTrack/gh-upload-sbom@v3
+        uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
@@ -736,7 +736,7 @@ jobs:
           bomfilename: 'dist/sboms/native-agent-console.cdx.json'
 
       - name: Upload docs SBOM
-        uses: DependencyTrack/gh-upload-sbom@v3
+        uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
@@ -748,7 +748,7 @@ jobs:
           bomfilename: 'dist/sboms/frontend-docs.cdx.json'
 
       - name: Upload mcp-devkit SBOM
-        uses: DependencyTrack/gh-upload-sbom@v3
+        uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
@@ -760,7 +760,7 @@ jobs:
           bomfilename: 'dist/sboms/mcp-devkit.cdx.json'
 
       - name: Upload mcp-proxy SBOM
-        uses: DependencyTrack/gh-upload-sbom@v3
+        uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
@@ -772,7 +772,7 @@ jobs:
           bomfilename: 'dist/sboms/mcp-proxy.cdx.json'
 
       - name: Upload portal SBOM
-        uses: DependencyTrack/gh-upload-sbom@v3
+        uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
@@ -878,7 +878,7 @@ jobs:
           path: .
 
       - name: Upload container image SBOM
-        uses: DependencyTrack/gh-upload-sbom@v3
+        uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
