@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.0](https://github.com/forepath/agenstra/compare/v2.6.0...v2.7.0) (2026-06-01)
+
+
+### Features
+
+* bullmq support ([#389](https://github.com/forepath/agenstra/issues/389)) ([7b4e265](https://github.com/forepath/agenstra/commit/7b4e26597669b427d173d145c04d3f39a045472b))
+
+
+### Bug Fixes
+
+* job history retention ([#395](https://github.com/forepath/agenstra/issues/395)) ([e09b7c1](https://github.com/forepath/agenstra/commit/e09b7c16c04412a94b2b11547d5a651fcfb9a29f))
+
 ## [2.6.0](https://github.com/forepath/agenstra/compare/v2.5.0...v2.6.0) (2026-05-27)
 
 
