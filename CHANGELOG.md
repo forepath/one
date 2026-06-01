@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.2](https://github.com/forepath/agenstra/compare/v2.7.1...v2.7.2) (2026-06-01)
+
+
+### Bug Fixes
+
+* updated github-app-token action ([#398](https://github.com/forepath/agenstra/issues/398)) ([f0f5649](https://github.com/forepath/agenstra/commit/f0f564921018730e4968cd1baac8a0ba82fe9f49))
+
 ## [2.7.1](https://github.com/forepath/agenstra/compare/v2.7.0...v2.7.1) (2026-06-01)
 
 
