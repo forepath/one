@@ -7,6 +7,23 @@ cd "$REPO_ROOT"
 
 SBOM_OUTPUT_DIR="${SBOM_OUTPUT_DIR:-dist/sboms}"
 PROJECT_VERSION="${PROJECT_VERSION:-}"
+CYCLONEDX_SPEC_VERSION="${CYCLONEDX_SPEC_VERSION:-1.6}"
+CYCLONEDX_SCHEMA_URL="http://cyclonedx.org/schema/bom-${CYCLONEDX_SPEC_VERSION}.schema.json"
+
+normalize_container_cyclonedx_spec() {
+  local bom_path="$1"
+  if ! command -v jq >/dev/null 2>&1; then
+    echo "jq is required to normalize CycloneDX specVersion in ${bom_path}" >&2
+    exit 1
+  fi
+  local tmp
+  tmp="$(mktemp)"
+  jq --arg spec "$CYCLONEDX_SPEC_VERSION" --arg schema "$CYCLONEDX_SCHEMA_URL" '
+    .specVersion = $spec
+    | if has("$schema") then .["$schema"] = $schema else . end
+  ' "$bom_path" >"$tmp"
+  mv "$tmp" "$bom_path"
+}
 
 IMAGE_REGISTRY_PATTERN='^ghcr\.io/forepath/|^registry\.forenet\.internal/forepath/'
 
@@ -71,6 +88,8 @@ for image in "${filtered_images[@]}"; do
     --format cyclonedx \
     --output "$bom_path" \
     --exit-code 0
+
+  normalize_container_cyclonedx_spec "$bom_path"
 done
 
 echo "Wrote ${#filtered_images[@]} container image SBOM file(s) under ${SBOM_OUTPUT_DIR}"
