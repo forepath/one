@@ -31,7 +31,7 @@ runs:
 
     - name: Upload container image SBOM artifact
       if: inputs.artifact-name != ''
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.artifact-name }}
         path: dist/sboms/container-*.cdx.json
