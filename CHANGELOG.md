@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.6](https://github.com/forepath/agenstra/compare/v2.7.5...v2.7.6) (2026-06-01)
+
+
+### Bug Fixes
+
+* normalize package licenses ([#403](https://github.com/forepath/agenstra/issues/403)) ([69e7982](https://github.com/forepath/agenstra/commit/69e7982d43eb1e28c605cea251de5bea433d1489))
+
 ## [2.7.5](https://github.com/forepath/agenstra/compare/v2.7.4...v2.7.5) (2026-06-01)
 
 
