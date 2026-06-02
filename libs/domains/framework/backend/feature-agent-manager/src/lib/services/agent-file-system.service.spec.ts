@@ -11,12 +11,10 @@ import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentFileSystemService } from './agent-file-system.service';
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
-import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
 
 describe('AgentFileSystemService', () => {
   let service: AgentFileSystemService;
-  let agentsService: jest.Mocked<AgentsService>;
   let agentsRepository: jest.Mocked<AgentsRepository>;
   let dockerService: jest.Mocked<DockerService>;
   let agentProviderFactory: jest.Mocked<AgentProviderFactory>;
@@ -36,9 +34,6 @@ describe('AgentFileSystemService', () => {
     containerId: mockContainerId,
     hashedPassword: 'hashed-password',
     volumePath: '/opt/agents/test-uuid',
-  };
-  const mockAgentsService = {
-    findOne: jest.fn(),
   };
   const mockAgentsRepository = {
     findByIdOrThrow: jest.fn(),
@@ -65,10 +60,6 @@ describe('AgentFileSystemService', () => {
       providers: [
         AgentFileSystemService,
         {
-          provide: AgentsService,
-          useValue: mockAgentsService,
-        },
-        {
           provide: AgentsRepository,
           useValue: mockAgentsRepository,
         },
@@ -88,7 +79,6 @@ describe('AgentFileSystemService', () => {
     }).compile();
 
     service = module.get<AgentFileSystemService>(AgentFileSystemService);
-    agentsService = module.get(AgentsService);
     agentsRepository = module.get(AgentsRepository);
     dockerService = module.get(DockerService);
     agentProviderFactory = module.get(AgentProviderFactory);
@@ -110,7 +100,6 @@ describe('AgentFileSystemService', () => {
       const base64Content = Buffer.from(fileContent, 'utf-8').toString('base64');
 
       // Setup mocks
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -128,7 +117,7 @@ describe('AgentFileSystemService', () => {
 
       expect(result.content).toBe(base64Content);
       expect(result.encoding).toBe('utf-8');
-      expect(agentsService.findOne).toHaveBeenCalledWith(mockAgentId);
+      expect(agentsRepository.findByIdOrThrow).toHaveBeenCalledWith(mockAgentId);
       expect(dockerService.copyFileFromContainer).toHaveBeenCalledWith(
         mockContainerId,
         expect.stringContaining('/app/test-file.txt'),
@@ -141,7 +130,6 @@ describe('AgentFileSystemService', () => {
       const fileContent = '# Agents\n\nThis is a markdown file.';
       const base64Content = Buffer.from(fileContent, 'utf-8').toString('base64');
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -166,7 +154,6 @@ describe('AgentFileSystemService', () => {
       const fileContent = 'fun main() {\n    println("Hello")\n}';
       const base64Content = Buffer.from(fileContent, 'utf-8').toString('base64');
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -191,7 +178,6 @@ describe('AgentFileSystemService', () => {
       const fileContent = 'name: test\nversion: 1.0.0';
       const base64Content = Buffer.from(fileContent, 'utf-8').toString('base64');
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -217,7 +203,6 @@ describe('AgentFileSystemService', () => {
       const fileContent = '\x01\x02\x03\x04\x05'.repeat(20) + 'normal text'.repeat(10);
       const base64Content = Buffer.from(fileContent, 'utf-8').toString('base64');
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -243,7 +228,6 @@ describe('AgentFileSystemService', () => {
       const binaryContent = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
       const base64Content = binaryContent.toString('base64');
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -260,17 +244,16 @@ describe('AgentFileSystemService', () => {
 
       expect(result.content).toBe(base64Content);
       expect(result.encoding).toBe('base64');
-      expect(agentsService.findOne).toHaveBeenCalledWith(mockAgentId);
+      expect(agentsRepository.findByIdOrThrow).toHaveBeenCalledWith(mockAgentId);
     });
 
     it('should throw NotFoundException when agent not found', async () => {
-      agentsService.findOne.mockRejectedValue(new NotFoundException('Agent not found'));
+      agentsRepository.findByIdOrThrow.mockRejectedValue(new NotFoundException('Agent not found'));
 
       await expect(service.readFile(mockAgentId, 'test.txt')).rejects.toThrow(NotFoundException);
     });
 
     it('should throw NotFoundException when file not found', async () => {
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockRejectedValue(
         new NotFoundException('File not found in container: /app/nonexistent.txt'),
@@ -289,7 +272,6 @@ describe('AgentFileSystemService', () => {
       const fileContent = 'fallback content';
       const base64Content = Buffer.from(fileContent, 'utf-8').toString('base64');
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -323,7 +305,6 @@ describe('AgentFileSystemService', () => {
       // Use printable characters to ensure it's treated as text (not binary)
       const largeTextContent = 'x'.repeat(11 * 1024 * 1024); // 11MB
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -343,7 +324,6 @@ describe('AgentFileSystemService', () => {
       // Create binary content that exceeds 10MB
       const largeBinaryContent = Buffer.alloc(11 * 1024 * 1024); // 11MB
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -365,13 +345,12 @@ describe('AgentFileSystemService', () => {
       const textContent = 'Hello, World!';
       const base64Content = Buffer.from(textContent, 'utf-8').toString('base64');
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer.mockResolvedValue('');
 
       await service.writeFile(mockAgentId, filePath, base64Content, 'utf-8');
 
-      expect(agentsService.findOne).toHaveBeenCalledWith(mockAgentId);
+      expect(agentsRepository.findByIdOrThrow).toHaveBeenCalledWith(mockAgentId);
       expect(dockerService.sendCommandToContainer).toHaveBeenCalled();
       expect(mockGitStateBroadcast.notifyGitStateMayHaveChanged).toHaveBeenCalledWith(mockAgentId);
     });
@@ -382,13 +361,12 @@ describe('AgentFileSystemService', () => {
       const binaryContent = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
       const base64Content = binaryContent.toString('base64');
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer.mockResolvedValue('');
 
       await service.writeFile(mockAgentId, filePath, base64Content, 'base64');
 
-      expect(agentsService.findOne).toHaveBeenCalledWith(mockAgentId);
+      expect(agentsRepository.findByIdOrThrow).toHaveBeenCalledWith(mockAgentId);
       expect(dockerService.sendCommandToContainer).toHaveBeenCalled();
     });
 
@@ -419,7 +397,6 @@ file2.txt`;
 directory|dir1|0|1704067200
 file|file2.txt|2048|1704067200`;
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       // Mock both calls: first ls, then processing
       dockerService.sendCommandToContainer.mockResolvedValueOnce(mockLsOutput).mockResolvedValueOnce(mockProcessOutput);
@@ -438,12 +415,11 @@ file|file2.txt|2048|1704067200`;
         path: 'file1.txt',
         size: 1024,
       });
-      expect(agentsService.findOne).toHaveBeenCalledWith(mockAgentId);
+      expect(agentsRepository.findByIdOrThrow).toHaveBeenCalledWith(mockAgentId);
       expect(dockerService.sendCommandToContainer).toHaveBeenCalled();
     });
 
     it('should use default path when not provided', async () => {
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer.mockResolvedValue('');
 
@@ -453,7 +429,6 @@ file|file2.txt|2048|1704067200`;
     });
 
     it('should throw NotFoundException when directory not found', async () => {
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer.mockRejectedValue(new Error('No such file'));
 
@@ -465,13 +440,12 @@ file|file2.txt|2048|1704067200`;
     it('should create directory successfully', async () => {
       const path = 'new-directory';
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer.mockResolvedValue('');
 
       await service.createFileOrDirectory(mockAgentId, path, 'directory');
 
-      expect(agentsService.findOne).toHaveBeenCalledWith(mockAgentId);
+      expect(agentsRepository.findByIdOrThrow).toHaveBeenCalledWith(mockAgentId);
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
         expect.stringContaining('mkdir -p'),
@@ -483,20 +457,18 @@ file|file2.txt|2048|1704067200`;
       const textContent = 'File content';
       const base64Content = Buffer.from(textContent, 'utf-8').toString('base64');
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer.mockResolvedValue('');
 
       await service.createFileOrDirectory(mockAgentId, path, 'file', base64Content);
 
-      expect(agentsService.findOne).toHaveBeenCalledWith(mockAgentId);
+      expect(agentsRepository.findByIdOrThrow).toHaveBeenCalledWith(mockAgentId);
       expect(dockerService.sendCommandToContainer).toHaveBeenCalled();
     });
 
     it('should create empty file when no content provided', async () => {
       const path = 'empty-file.txt';
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer.mockResolvedValue('');
 
@@ -513,13 +485,12 @@ file|file2.txt|2048|1704067200`;
     it('should delete file successfully', async () => {
       const path = 'file-to-delete.txt';
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer.mockResolvedValue('');
 
       await service.deleteFileOrDirectory(mockAgentId, path);
 
-      expect(agentsService.findOne).toHaveBeenCalledWith(mockAgentId);
+      expect(agentsRepository.findByIdOrThrow).toHaveBeenCalledWith(mockAgentId);
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
         expect.stringContaining('rm -rf'),
@@ -527,7 +498,6 @@ file|file2.txt|2048|1704067200`;
     });
 
     it('should throw NotFoundException when file not found', async () => {
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer.mockRejectedValue(new Error('No such file'));
 
@@ -540,13 +510,12 @@ file|file2.txt|2048|1704067200`;
       const sourcePath = 'source-file.txt';
       const destinationPath = 'destination-file.txt';
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer.mockResolvedValue('');
 
       await service.moveFileOrDirectory(mockAgentId, sourcePath, destinationPath);
 
-      expect(agentsService.findOne).toHaveBeenCalledWith(mockAgentId);
+      expect(agentsRepository.findByIdOrThrow).toHaveBeenCalledWith(mockAgentId);
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(mockContainerId, expect.stringContaining('mv'));
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
@@ -562,18 +531,17 @@ file|file2.txt|2048|1704067200`;
       const sourcePath = 'source-directory';
       const destinationPath = 'destination-directory';
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer.mockResolvedValue('');
 
       await service.moveFileOrDirectory(mockAgentId, sourcePath, destinationPath);
 
-      expect(agentsService.findOne).toHaveBeenCalledWith(mockAgentId);
+      expect(agentsRepository.findByIdOrThrow).toHaveBeenCalledWith(mockAgentId);
       expect(dockerService.sendCommandToContainer).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when agent not found', async () => {
-      agentsService.findOne.mockRejectedValue(new NotFoundException('Agent not found'));
+      agentsRepository.findByIdOrThrow.mockRejectedValue(new NotFoundException('Agent not found'));
 
       await expect(service.moveFileOrDirectory(mockAgentId, 'source.txt', 'dest.txt')).rejects.toThrow(
         NotFoundException,
@@ -581,7 +549,6 @@ file|file2.txt|2048|1704067200`;
     });
 
     it('should throw NotFoundException when source file not found', async () => {
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer.mockRejectedValue(new Error('No such file'));
 
@@ -611,7 +578,6 @@ file|file2.txt|2048|1704067200`;
     it('should accept valid paths', async () => {
       const fileContent = 'test content';
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -639,7 +605,6 @@ file|file2.txt|2048|1704067200`;
       const filePath = 'test-file.txt';
       const fileContent = 'Hello, World!';
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -671,7 +636,6 @@ file|file2.txt|2048|1704067200`;
       const filePath = 'test-file.txt';
       const fileContent = 'Hello, World!';
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -699,7 +663,6 @@ file|file2.txt|2048|1704067200`;
       const filePath = 'test-file.txt';
       const fileContent = 'Hello, World!';
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -729,7 +692,6 @@ file|file2.txt|2048|1704067200`;
       const filePath = 'test-file.txt';
       const fileContent = 'Hello, World!';
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -757,7 +719,6 @@ file|file2.txt|2048|1704067200`;
       const filePath = 'settings.json';
       const fileContent = '{}';
 
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.copyFileFromContainer.mockResolvedValue(undefined);
 
@@ -784,7 +745,6 @@ file|file2.txt|2048|1704067200`;
       const noConfig = { getBasePath: () => '/app' };
 
       mockAgentProviderFactory.getProvider.mockReturnValue(noConfig as never);
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
 
       await expect(service.readFile(mockAgentId, 'x', 'config')).rejects.toThrow(BadRequestException);

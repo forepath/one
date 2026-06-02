@@ -21,6 +21,11 @@ import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
+import { AcpAgentMessagingService } from '../providers/acp/acp-agent-messaging.service';
+import { AcpClientHostFactory } from '../providers/acp/acp-client-host';
+import { AcpNotificationMapper } from '../providers/acp/acp-notification-mapper';
+import { AcpSessionService } from '../providers/acp/acp-session.service';
+import { DockerAcpTransportFactory } from '../providers/acp/docker-acp-transport';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { CursorAgentProvider } from '../providers/agents/cursor-agent.provider';
 import { OpenClawAgentProvider } from '../providers/agents/openclaw-agent.provider';
@@ -113,6 +118,11 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
     DeploymentRunsRepository,
     DockerService,
     AgentProviderFactory,
+    AcpNotificationMapper,
+    AcpClientHostFactory,
+    DockerAcpTransportFactory,
+    AcpSessionService,
+    AcpAgentMessagingService,
     CursorAgentProvider,
     OpenCodeAgentProvider,
     OpenClawAgentProvider,

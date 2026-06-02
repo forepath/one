@@ -141,7 +141,8 @@ This document provides a detailed breakdown of all system components, their resp
 - `AgentsGateway` - WebSocket gateway
 - `DockerService` - Container management
 - `AgentProvider` - Plugin interface for agent providers
-- `CursorAgentProvider` - Cursor-agent implementation
+- `AcpSessionService` / `DockerAcpTransport` - Agent Client Protocol (stdio) to worker agents
+- `CursorAgentProvider`, `OpenCodeAgentProvider`, `OpenClawAgentProvider`
 
 **Implementation**: Backend Agent Manager library
 

@@ -12,7 +12,6 @@ import type { AgentFileManagerContext } from '../utils/agent-file-manager-contex
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
-import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
 
 /**
@@ -27,7 +26,6 @@ export class AgentFileSystemService {
   private static readonly CONFIG_NOT_SUPPORTED = 'Agent provider does not support agent-wide configuration file access';
 
   constructor(
-    private readonly agentsService: AgentsService,
     private readonly agentsRepository: AgentsRepository,
     private readonly dockerService: DockerService,
     private readonly agentProviderFactory: AgentProviderFactory,
@@ -166,7 +164,7 @@ export class AgentFileSystemService {
    * @throws BadRequestException if path is invalid or file is too large
    */
   async readFile(agentId: string, filePath: string, context: AgentFileManagerContext = 'app'): Promise<FileContentDto> {
-    await this.agentsService.findOne(agentId);
+    await this.agentsRepository.findByIdOrThrow(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
 
     if (!agentEntity.containerId) {
@@ -325,7 +323,7 @@ export class AgentFileSystemService {
     encoding?: 'utf-8' | 'base64',
     context: AgentFileManagerContext = 'app',
   ): Promise<void> {
-    await this.agentsService.findOne(agentId);
+    await this.agentsRepository.findByIdOrThrow(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
 
     if (!agentEntity.containerId) {
@@ -383,7 +381,7 @@ export class AgentFileSystemService {
     directoryPath = '.',
     context: AgentFileManagerContext = 'app',
   ): Promise<FileNodeDto[]> {
-    await this.agentsService.findOne(agentId);
+    await this.agentsRepository.findByIdOrThrow(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
 
     if (!agentEntity.containerId) {
@@ -545,7 +543,7 @@ export class AgentFileSystemService {
     content?: string,
     context: AgentFileManagerContext = 'app',
   ): Promise<void> {
-    await this.agentsService.findOne(agentId);
+    await this.agentsRepository.findByIdOrThrow(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
 
     if (!agentEntity.containerId) {
@@ -606,7 +604,7 @@ export class AgentFileSystemService {
     filePath: string,
     context: AgentFileManagerContext = 'app',
   ): Promise<void> {
-    await this.agentsService.findOne(agentId);
+    await this.agentsRepository.findByIdOrThrow(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
 
     if (!agentEntity.containerId) {
@@ -656,7 +654,7 @@ export class AgentFileSystemService {
     destinationPath: string,
     context: AgentFileManagerContext = 'app',
   ): Promise<void> {
-    await this.agentsService.findOne(agentId);
+    await this.agentsRepository.findByIdOrThrow(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
 
     if (!agentEntity.containerId) {

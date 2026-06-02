@@ -94,6 +94,7 @@
     "vitest": "4.1.2"
   },
   "dependencies": {
+    "@agentclientprotocol/sdk": "^0.23.0",
     "@angular/animations": "21.2.6",
     "@angular/common": "21.2.6",
     "@angular/compiler": "21.2.6",
@@ -166,6 +167,7 @@
     "turndown-plugin-gfm": "1.0.2",
     "typeorm": "0.3.27",
     "uuid": "11.1.1",
+    "zod": "^3.25.0",
     "zone.js": "0.16.1"
   },
   "overrides": {

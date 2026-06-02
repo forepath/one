@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { DockerService } from '../../services/docker.service';
+import { AcpAgentMessagingService } from '../acp/acp-agent-messaging.service';
 
 import { CursorAgentProvider } from './cursor-agent.provider';
 
@@ -11,6 +12,12 @@ describe('CursorAgentProvider', () => {
     sendCommandToContainer: jest.fn(),
     execCommandStream: jest.fn(),
   };
+  const mockAcpMessaging = {
+    sendMessage: jest.fn(),
+    sendMessageStream: jest.fn(),
+    sendInitialization: jest.fn(),
+    streamChatEvents: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -19,6 +26,10 @@ describe('CursorAgentProvider', () => {
         {
           provide: DockerService,
           useValue: mockDockerService,
+        },
+        {
+          provide: AcpAgentMessagingService,
+          useValue: mockAcpMessaging,
         },
       ],
     }).compile();
@@ -47,6 +58,7 @@ describe('CursorAgentProvider', () => {
   describe('getCapabilities', () => {
     it('should report chat and streaming capabilities', () => {
       expect(provider.getCapabilities()).toEqual({
+        transport: 'legacy',
         supportsChat: true,
         supportsStreaming: true,
         supportsToolEvents: true,

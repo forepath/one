@@ -7,6 +7,7 @@ import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
+import { AcpSessionService } from '../providers/acp/acp-session.service';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProvider, AgentProviderModels } from '../providers/agent-provider.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
@@ -116,6 +117,10 @@ describe('AgentsService', () => {
         {
           provide: DeploymentsService,
           useValue: mockDeploymentsService,
+        },
+        {
+          provide: AcpSessionService,
+          useValue: { closeSessionsForAgent: jest.fn() },
         },
       ],
     }).compile();
@@ -1678,6 +1683,10 @@ describe('AgentsService', () => {
           {
             provide: DeploymentsService,
             useValue: undefined,
+          },
+          {
+            provide: AcpSessionService,
+            useValue: { closeSessionsForAgent: jest.fn() },
           },
         ],
       }).compile();

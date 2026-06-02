@@ -11,7 +11,14 @@ export interface AgentResponseObject {
   [key: string]: unknown; // Allow additional properties
 }
 
+export type AgentProviderTransportKind = 'legacy' | 'acp';
+
 export interface AgentProviderCapabilities {
+  /**
+   * Wire transport used for agent messaging (CLI NDJSON vs Agent Client Protocol).
+   */
+  transport?: AgentProviderTransportKind;
+
   /**
    * Provider supports the chat flow (`chat` websocket event).
    * Providers like `openclaw` intentionally do not support chat and should keep it disabled.
@@ -177,6 +184,16 @@ export interface AgentProvider {
    * @returns The unified response object
    */
   toUnifiedResponse(response: string): AgentResponseObject | undefined;
+
+  /**
+   * Optional ACP-native event stream (used when {@link AgentProviderCapabilities.transport} is `acp`).
+   */
+  streamChatEvents?(
+    agentId: string,
+    containerId: string,
+    message: string,
+    options?: AgentProviderOptions,
+  ): AsyncIterable<AgentResponseObject>;
 }
 
 /**

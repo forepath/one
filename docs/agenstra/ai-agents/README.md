@@ -99,6 +99,7 @@ Output is written under `outputDir/` using standard directory names: `outputDir/
 
 ## Related documentation
 
+- **[Agent Client Protocol (ACP) in Agenstra](./agent-client-protocol.md)** – Runtime transport for agent manager ↔ worker agents
 - **[Applications](../applications/README.md)** – Backend and frontend applications
 
 ---

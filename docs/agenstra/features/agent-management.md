@@ -97,13 +97,21 @@ Agenstra uses a plugin-based agent provider system. Each agent has an `agentType
 
 ### Available Types
 
-- **`cursor`** (default) - Cursor-agent binary running in Docker containers
+- **`cursor`** (default) — Cursor agent in worker containers
+- **`opencode`** — OpenCode agent
+- **`openclaw`** — workspace/infra only (no chat)
+
+### Agent Client Protocol (ACP)
+
+When `AGENT_PROVIDER_TRANSPORT=acp`, the manager speaks the [Agent Client Protocol](https://agentclientprotocol.com) to the agent process inside the container (`cursor-agent acp`, `opencode acp`). WebSocket and REST APIs exposed to the console are unchanged.
+
+See [Agent Client Protocol](../ai-agents/agent-client-protocol.md) for environment variables and troubleshooting. This is separate from **MCP** (tool servers) and from IBM’s agent-to-agent “Communication Protocol”.
 
 ### Adding New Agent Types
 
 To add a new agent type, implement the `AgentProvider` interface:
 
-1. Create a provider class implementing `AgentProvider`
+1. Create a provider class implementing `AgentProvider` (optionally wire `AcpAgentMessagingService` and an `AcpLaunchSpec`)
 2. Register the provider in `AgentsModule`
 3. Update DTO validation to include the new type
 

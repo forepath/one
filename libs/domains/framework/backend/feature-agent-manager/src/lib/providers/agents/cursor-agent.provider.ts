@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { DockerService } from '../../services/docker.service';
+import { AcpAgentMessagingService } from '../acp/acp-agent-messaging.service';
+import { CURSOR_ACP_LAUNCH_SPEC } from '../acp/acp-provider.config';
+import { isAcpTransport, resolveAgentProviderTransport } from '../acp/agent-provider-transport.util';
 import {
   AgentProvider,
   AgentProviderCapabilities,
@@ -19,7 +22,10 @@ export class CursorAgentProvider implements AgentProvider {
   private static readonly TYPE = 'cursor';
   private static readonly LIST_MODELS_COMMAND = 'cursor-agent --list-models';
 
-  constructor(private readonly dockerService: DockerService) {}
+  constructor(
+    private readonly dockerService: DockerService,
+    private readonly acpMessaging: AcpAgentMessagingService,
+  ) {}
 
   /**
    * Get the unique type identifier for this provider.
@@ -38,7 +44,10 @@ export class CursorAgentProvider implements AgentProvider {
   }
 
   getCapabilities(): AgentProviderCapabilities {
+    const transport = resolveAgentProviderTransport(CursorAgentProvider.TYPE);
+
     return {
+      transport,
       supportsChat: true,
       supportsStreaming: true,
       supportsToolEvents: true,
@@ -155,12 +164,35 @@ export class CursorAgentProvider implements AgentProvider {
    * @param options - Optional configuration (e.g., model name)
    * @returns The agent's response as a string
    */
+  async *streamChatEvents(
+    agentId: string,
+    containerId: string,
+    message: string,
+    options?: AgentProviderOptions,
+  ): AsyncIterable<AgentResponseObject> {
+    yield* this.acpMessaging.streamChatEvents(
+      { agentId, containerId, resumeSessionSuffix: options?.resumeSessionSuffix },
+      CURSOR_ACP_LAUNCH_SPEC,
+      message,
+      options,
+    );
+  }
+
   async sendMessage(
     agentId: string,
     containerId: string,
     message: string,
     options?: AgentProviderOptions,
   ): Promise<string> {
+    if (isAcpTransport(CursorAgentProvider.TYPE)) {
+      return this.acpMessaging.sendMessage(
+        { agentId, containerId, resumeSessionSuffix: options?.resumeSessionSuffix },
+        CURSOR_ACP_LAUNCH_SPEC,
+        message,
+        options,
+      );
+    }
+
     const resumeId = `${agentId}-${containerId}${options?.resumeSessionSuffix ?? ''}`;
     // Build command: cursor-agent with prompt mode and JSON output
     let command = `cursor-agent --print --approve-mcps --force --output-format json --resume ${resumeId}`;
@@ -181,6 +213,17 @@ export class CursorAgentProvider implements AgentProvider {
     message: string,
     options?: AgentProviderOptions,
   ): AsyncIterable<string> {
+    if (isAcpTransport(CursorAgentProvider.TYPE)) {
+      yield* this.acpMessaging.sendMessageStream(
+        { agentId, containerId, resumeSessionSuffix: options?.resumeSessionSuffix },
+        CURSOR_ACP_LAUNCH_SPEC,
+        message,
+        options,
+      );
+
+      return;
+    }
+
     const resumeId = `${agentId}-${containerId}${options?.resumeSessionSuffix ?? ''}`;
     let command = `cursor-agent --print --approve-mcps --force --output-format stream-json --stream-partial-output --resume ${resumeId}`;
 
@@ -203,15 +246,6 @@ export class CursorAgentProvider implements AgentProvider {
    * @param options - Optional configuration (e.g., model name)
    */
   async sendInitialization(agentId: string, containerId: string, options?: AgentProviderOptions): Promise<void> {
-    const resumeId = `${agentId}-${containerId}${options?.resumeSessionSuffix ?? ''}`;
-    // Build command: cursor-agent with prompt mode and JSON output
-    let command = `cursor-agent --print --approve-mcps --force --output-format json --resume ${resumeId}`;
-
-    if (options?.model) {
-      command += ` --model ${options.model}`;
-    }
-
-    // Send dummy message to container stdin (not persisted or broadcast)
     const instructions = `You are operating in a codebase with a structured command and rules system. Follow these guidelines:
 
 COMMAND SYSTEM:
@@ -236,6 +270,32 @@ MESSAGE HANDLING:
 - You **MUST** treat all messages after this initialization as user requests, tasks, or questions
 - You **SHALL** respond to user messages as you would in a normal conversation, applying the command and rules system guidelines above`;
 
+    if (isAcpTransport(CursorAgentProvider.TYPE)) {
+      try {
+        await this.acpMessaging.sendInitialization(
+          { agentId, containerId, resumeSessionSuffix: options?.resumeSessionSuffix },
+          CURSOR_ACP_LAUNCH_SPEC,
+          instructions,
+          options,
+        );
+        this.logger.debug(`Sent ACP initialization message to agent ${agentId}`);
+      } catch (error) {
+        const err = error as { message?: string; stack?: string };
+
+        this.logger.warn(`Failed to send ACP initialization message to agent ${agentId}: ${err.message}`, err.stack);
+        throw error;
+      }
+
+      return;
+    }
+
+    const resumeId = `${agentId}-${containerId}${options?.resumeSessionSuffix ?? ''}`;
+    let command = `cursor-agent --print --approve-mcps --force --output-format json --resume ${resumeId}`;
+
+    if (options?.model) {
+      command += ` --model ${options.model}`;
+    }
+
     try {
       await this.dockerService.sendCommandToContainer(containerId, command, instructions);
       this.logger.debug(`Sent initialization message to agent ${agentId}`);
@@ -255,6 +315,13 @@ MESSAGE HANDLING:
    * @returns The parseable strings
    */
   toParseableStrings(response: string): string[] {
+    if (isAcpTransport(CursorAgentProvider.TYPE)) {
+      return response
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+    }
+
     // Extract the response object from the response
     const lines = response.split('\n');
 
@@ -289,6 +356,14 @@ MESSAGE HANDLING:
    * @returns The unified response object
    */
   toUnifiedResponse(response: string): AgentResponseObject | undefined {
+    if (isAcpTransport(CursorAgentProvider.TYPE)) {
+      try {
+        return JSON.parse(response) as AgentResponseObject;
+      } catch {
+        return undefined;
+      }
+    }
+
     const parsed = JSON.parse(response) as Record<string, unknown>;
     const topLevelType = typeof parsed.type === 'string' ? parsed.type : undefined;
     const normalized = this.normalizeCursorCliOutput(parsed);

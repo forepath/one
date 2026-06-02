@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { DockerService } from '../../services/docker.service';
+import { AcpAgentMessagingService } from '../acp/acp-agent-messaging.service';
 
 import { OpenCodeAgentProvider } from './opencode-agent.provider';
 
@@ -11,6 +12,11 @@ describe('OpenCodeAgentProvider', () => {
     sendCommandToContainer: jest.fn(),
     execCommandStream: jest.fn(),
   };
+  const mockAcpMessaging = {
+    sendMessage: jest.fn(),
+    sendMessageStream: jest.fn(),
+    streamChatEvents: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -19,6 +25,10 @@ describe('OpenCodeAgentProvider', () => {
         {
           provide: DockerService,
           useValue: mockDockerService,
+        },
+        {
+          provide: AcpAgentMessagingService,
+          useValue: mockAcpMessaging,
         },
       ],
     }).compile();
@@ -49,6 +59,7 @@ describe('OpenCodeAgentProvider', () => {
   describe('getCapabilities', () => {
     it('should report chat and streaming capabilities', () => {
       expect(provider.getCapabilities()).toEqual({
+        transport: 'legacy',
         supportsChat: true,
         supportsStreaming: true,
         supportsToolEvents: true,

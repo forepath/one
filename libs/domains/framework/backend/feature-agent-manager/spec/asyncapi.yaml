@@ -7,6 +7,7 @@ info:
     listen port from env `WEBSOCKET_PORT` (default 8080). CORS for the gateway from `WEBSOCKET_CORS_ORIGIN` (default `*`).
     Connection state recovery uses `SOCKET_MAX_DISCONNECTION_DURATION` ms (default 120000) per NestJS `connectionStateRecovery`.
     The REST API runs on a separate HTTP port (`PORT`, default 3000); see the Agent Manager OpenAPI spec.
+    Agent runtimes may use the Agent Client Protocol (ACP) internally when `AGENT_PROVIDER_TRANSPORT=acp`; WebSocket payloads are unchanged.
 servers:
   local:
     host: localhost:8080

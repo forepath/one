@@ -11,11 +11,36 @@ import { v4 as uuidv4 } from 'uuid';
 
 const execAsync = promisify(exec);
 
+function drainExecStdoutLines(buffer: string, chunk: string, queue: string[]): string {
+  let remaining = buffer + chunk;
+  const parts = remaining.split('\n');
+
+  remaining = parts.pop() ?? '';
+
+  for (const line of parts) {
+    const trimmed = line.trim();
+
+    if (trimmed) {
+      queue.push(trimmed);
+    }
+  }
+
+  return remaining;
+}
+
 interface TerminalSession {
   exec: Docker.Exec;
   stream: NodeJS.ReadWriteStream;
   containerId: string;
   sessionId: string;
+}
+
+/** Long-lived docker exec with open stdin for ACP JSON-RPC over stdio. */
+export interface DockerExecSession {
+  writeLine(line: string): void;
+  closeStdin(): void;
+  stdoutLines(): AsyncIterable<string>;
+  close(): Promise<void>;
 }
 
 @Injectable()
@@ -1458,6 +1483,142 @@ export class DockerService {
       this.logger.error(`Error resolving HOME in container: ${err.message}`, err.stack);
       throw error;
     }
+  }
+
+  /**
+   * Start a long-lived exec in a container with stdin left open for ACP stdio transport.
+   */
+  async createExecSession(containerId: string, command: string): Promise<DockerExecSession> {
+    const container = this.docker.getContainer(containerId);
+
+    try {
+      await container.inspect();
+    } catch (error: unknown) {
+      const dockerError = error as { statusCode?: number };
+
+      if (dockerError.statusCode === 404) {
+        throw new NotFoundException(`Container with ID '${containerId}' not found`);
+      }
+
+      throw error;
+    }
+
+    const commandParts = this.parseShellCommand(command.trim());
+    const executable = commandParts[0];
+    const args = commandParts.slice(1);
+    const execInstance = await container.exec({
+      Cmd: [executable, ...args],
+      AttachStdin: true,
+      AttachStdout: true,
+      AttachStderr: true,
+      Tty: false,
+    });
+    const stream = (await execInstance.start({
+      hijack: true,
+      stdin: true,
+    })) as NodeJS.ReadWriteStream;
+    const stdoutStream = new PassThrough();
+    const stderrStream = new PassThrough();
+
+    container.modem.demuxStream(stream, stdoutStream, stderrStream);
+
+    let closed = false;
+    let lineBuffer = '';
+
+    type QueueItem = string;
+    const queue: QueueItem[] = [];
+    let done = false;
+    let streamError: unknown | null = null;
+    const notify = (() => {
+      let resolve: (() => void) | null = null;
+      const wait = () =>
+        new Promise<void>((r) => {
+          resolve = r;
+        });
+      const signal = () => {
+        resolve?.();
+        resolve = null;
+      };
+
+      return { wait, signal };
+    })();
+    const pushLines = (chunk: string) => {
+      lineBuffer = drainExecStdoutLines(lineBuffer, chunk, queue);
+      notify.signal();
+    };
+
+    stdoutStream.on('data', (chunk: Buffer) => pushLines(chunk.toString('utf-8')));
+    stderrStream.on('data', (chunk: Buffer) => {
+      const text = chunk.toString('utf-8').trim();
+
+      if (text) {
+        this.logger.debug(`ACP exec stderr (${containerId}): ${text}`);
+      }
+    });
+    stdoutStream.on('end', () => {
+      if (lineBuffer.trim()) {
+        queue.push(lineBuffer.trim());
+        lineBuffer = '';
+      }
+
+      done = true;
+      notify.signal();
+    });
+    stream.on('error', (err) => {
+      streamError = err;
+      done = true;
+      notify.signal();
+    });
+
+    return {
+      writeLine: (line: string) => {
+        if (closed) {
+          return;
+        }
+
+        const payload = line.endsWith('\n') ? line : `${line}\n`;
+
+        stream.write(payload);
+      },
+      closeStdin: () => {
+        if (!closed) {
+          stream.end();
+        }
+      },
+      stdoutLines: async function* stdoutLines() {
+        while (!done || queue.length > 0) {
+          if (streamError) {
+            throw streamError;
+          }
+
+          const item = queue.shift();
+
+          if (item) {
+            yield item;
+            continue;
+          }
+
+          if (done) {
+            break;
+          }
+
+          await notify.wait();
+        }
+      },
+      close: async () => {
+        if (closed) {
+          return;
+        }
+
+        closed = true;
+
+        try {
+          stream.end();
+        } catch {
+          // ignore
+        }
+      },
+    };
   }
 
   /**

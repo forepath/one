@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
 import { DockerService } from '../../services/docker.service';
+import { AcpAgentMessagingService } from '../acp/acp-agent-messaging.service';
+import { OPENCODE_ACP_LAUNCH_SPEC } from '../acp/acp-provider.config';
+import { isAcpTransport, resolveAgentProviderTransport } from '../acp/agent-provider-transport.util';
 import {
   AgentProvider,
   AgentProviderCapabilities,
@@ -18,7 +21,10 @@ export class OpenCodeAgentProvider implements AgentProvider {
   private static readonly TYPE = 'opencode';
   private static readonly LIST_MODELS_COMMAND = 'opencode models';
 
-  constructor(private readonly dockerService: DockerService) {}
+  constructor(
+    private readonly dockerService: DockerService,
+    private readonly acpMessaging: AcpAgentMessagingService,
+  ) {}
 
   /**
    * Get the unique type identifier for this provider.
@@ -38,11 +44,26 @@ export class OpenCodeAgentProvider implements AgentProvider {
 
   getCapabilities(): AgentProviderCapabilities {
     return {
+      transport: resolveAgentProviderTransport(OpenCodeAgentProvider.TYPE),
       supportsChat: true,
       supportsStreaming: true,
       supportsToolEvents: true,
       supportsQuestions: true,
     };
+  }
+
+  async *streamChatEvents(
+    agentId: string,
+    containerId: string,
+    message: string,
+    options?: AgentProviderOptions,
+  ): AsyncIterable<AgentResponseObject> {
+    yield* this.acpMessaging.streamChatEvents(
+      { agentId, containerId, resumeSessionSuffix: options?.resumeSessionSuffix },
+      OPENCODE_ACP_LAUNCH_SPEC,
+      message,
+      options,
+    );
   }
 
   /**
@@ -151,6 +172,28 @@ export class OpenCodeAgentProvider implements AgentProvider {
     message: string,
     options?: AgentProviderOptions,
   ): Promise<string> {
+    if (isAcpTransport(OpenCodeAgentProvider.TYPE)) {
+      try {
+        return await this.acpMessaging.sendMessage(
+          { agentId, containerId, resumeSessionSuffix: options?.resumeSessionSuffix },
+          OPENCODE_ACP_LAUNCH_SPEC,
+          message,
+          options,
+        );
+      } catch (error) {
+        const err = error as { message?: string };
+
+        if (err.message?.includes('Session not found') && this.wantsSessionContinue(options)) {
+          return this.sendMessage(agentId, containerId, message, {
+            ...options,
+            continue: false,
+          });
+        }
+
+        throw error;
+      }
+    }
+
     const command = this.buildRunCommand(options);
     const response = await this.dockerService.sendCommandToContainer(containerId, command, message);
 
@@ -165,11 +208,22 @@ export class OpenCodeAgentProvider implements AgentProvider {
   }
 
   async *sendMessageStream(
-    _agentId: string,
+    agentId: string,
     containerId: string,
     message: string,
     options?: AgentProviderOptions,
   ): AsyncIterable<string> {
+    if (isAcpTransport(OpenCodeAgentProvider.TYPE)) {
+      yield* this.acpMessaging.sendMessageStream(
+        { agentId, containerId, resumeSessionSuffix: options?.resumeSessionSuffix },
+        OPENCODE_ACP_LAUNCH_SPEC,
+        message,
+        options,
+      );
+
+      return;
+    }
+
     const streamOnce = (opts?: AgentProviderOptions): AsyncIterable<{ stream: 'stdout' | 'stderr'; chunk: string }> =>
       this.dockerService.execCommandStream(containerId, this.buildRunCommand(opts), message);
     const chunks: string[] = [];
@@ -211,6 +265,13 @@ export class OpenCodeAgentProvider implements AgentProvider {
    * @returns Array of parseable strings with only valid UTF-8 characters
    */
   toParseableStrings(response: string): string[] {
+    if (isAcpTransport(OpenCodeAgentProvider.TYPE)) {
+      return response
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0);
+    }
+
     const lines = response.split('\n');
 
     if (lines.length === 0) {
@@ -314,6 +375,14 @@ export class OpenCodeAgentProvider implements AgentProvider {
    * @returns The unified response object
    */
   toUnifiedResponse(response: string): AgentResponseObject | undefined {
+    if (isAcpTransport(OpenCodeAgentProvider.TYPE)) {
+      try {
+        return JSON.parse(response) as AgentResponseObject;
+      } catch {
+        return undefined;
+      }
+    }
+
     const responseObject = JSON.parse(response) as {
       type: string;
       timestamp?: number;

@@ -11,6 +11,7 @@ import { CreateAgentResponseDto } from '../dto/create-agent-response.dto';
 import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
+import { AcpSessionService } from '../providers/acp/acp-session.service';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProvider } from '../providers/agent-provider.interface';
 import { AgentProviderModels } from '../providers/agent-provider.interface';
@@ -38,6 +39,7 @@ export class AgentsService implements OnApplicationBootstrap {
     private readonly dockerService: DockerService,
     private readonly passwordService: PasswordService,
     private readonly agentProviderFactory: AgentProviderFactory,
+    private readonly acpSessionService: AcpSessionService,
     @Inject(forwardRef(() => DeploymentsService))
     private readonly deploymentsService?: DeploymentsService,
   ) {}
@@ -826,6 +828,8 @@ export class AgentsService implements OnApplicationBootstrap {
    */
   async stop(id: string): Promise<AgentResponseDto> {
     const agent = await this.agentsRepository.findByIdOrThrow(id);
+
+    await this.acpSessionService.closeSessionsForAgent(id);
 
     if (agent.containerId) {
       try {

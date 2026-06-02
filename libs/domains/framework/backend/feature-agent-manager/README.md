@@ -444,9 +444,22 @@ The `AgentEnvironmentVariableEntity` includes:
 
 The library uses a plugin-based architecture to support multiple agent implementations. Each agent has an `agentType` field that determines which provider implementation is used for communication.
 
+#### Transport: legacy CLI vs ACP
+
+Messaging uses either:
+
+- **legacy** (default) — vendor CLI flags and NDJSON (`cursor-agent --output-format json`, `opencode run --format json`)
+- **acp** — [Agent Client Protocol](https://agentclientprotocol.com) via `cursor-agent acp` / `opencode acp` and `@agentclientprotocol/sdk`
+
+Set `AGENT_PROVIDER_TRANSPORT=acp` or per-type `CURSOR_AGENT_TRANSPORT` / `OPENCODE_AGENT_TRANSPORT`. See [docs/agenstra/ai-agents/agent-client-protocol.md](../../../docs/agenstra/ai-agents/agent-client-protocol.md).
+
+ACP modules live under `src/lib/providers/acp/` (`AcpSessionService`, `DockerAcpTransport`, `AcpClientHostFactory`).
+
 #### Available Providers
 
-- **cursor** (default) - Cursor-agent binary running in Docker containers
+- **cursor** (default) — Cursor agent in worker containers
+- **opencode** — OpenCode agent
+- **openclaw** — infrastructure only (`supportsChat: false`)
 
 #### Adding New Providers
 
