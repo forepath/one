@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.7](https://github.com/forepath/agenstra/compare/v2.7.6...v2.7.7) (2026-06-02)
+
+
+### Bug Fixes
+
+* agent-manager dependencies ([#404](https://github.com/forepath/agenstra/issues/404)) ([1c3b764](https://github.com/forepath/agenstra/commit/1c3b764d332f84f7ba29ebb3cb4b84d0349111a9))
+
 ## [2.7.6](https://github.com/forepath/agenstra/compare/v2.7.5...v2.7.6) (2026-06-01)
 
 
