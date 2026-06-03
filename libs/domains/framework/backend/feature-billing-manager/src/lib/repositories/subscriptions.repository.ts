@@ -68,6 +68,10 @@ export class SubscriptionsRepository {
       .getMany();
   }
 
+  async countByStatus(status: string): Promise<number> {
+    return await this.repository.count({ where: { status: status as SubscriptionEntity['status'] } });
+  }
+
   async findUpcomingRenewals(withinDays: number, now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
     const futureDate = new Date(now);
 

@@ -8,6 +8,7 @@
 # Build:      npx nx run backend-billing-manager:api-container-image
 # Run:        nx docker:run backend-billing-manager -p 3200:3200 -p 8082:8082
 # Notes:      Configure via runtime env; see docs/agenstra/deployment/
+#             Playwright Chromium is baked in for HTML invoice PDF rendering.
 # -----------------------------------------------------------------------------
 #
 FROM docker.io/debian:trixie-slim
@@ -22,6 +23,7 @@ ENV NVM_DIR=/home/agenstra/.nvm
 ENV NODE_VERSION=24.14.1
 ENV HOME=/home/agenstra
 ENV PATH="/home/agenstra/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 WORKDIR /app
 
@@ -49,21 +51,27 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | P
 
 COPY --chown=agenstra:agenstra package*.json ./
 
-RUN . "${NVM_DIR}/nvm.sh" && npm i && npm cache clean --force && \
-    chown -R agenstra:agenstra /app
+RUN . "${NVM_DIR}/nvm.sh" && \
+    npm i && \
+    npm cache clean --force && \
+    npx playwright install --with-deps chromium && \
+    chown -R agenstra:agenstra /app "${PLAYWRIGHT_BROWSERS_PATH}"
 
 COPY --chown=agenstra:agenstra . /app
+
+RUN mkdir -p /data/invoices && \
+    chown -R agenstra:agenstra /data
 
 RUN printf '%s\n' \
     '#!/bin/bash' \
     'set -euo pipefail' \
+    'storage_path="${BILLING_INVOICE_PDF_STORAGE_PATH:-/data/invoices}"' \
+    'mkdir -p "${storage_path}"' \
+    'chown -R agenstra:agenstra /data "${storage_path}"' \
     '. "${NVM_DIR}/nvm.sh"' \
-    'exec node main.js' \
+    'exec runuser -u agenstra -g agenstra -- node main.js' \
     > /usr/local/bin/docker-entrypoint.sh && \
-    chmod 755 /usr/local/bin/docker-entrypoint.sh && \
-    chown agenstra:agenstra /usr/local/bin/docker-entrypoint.sh
-
-USER ${APP_UID}:${APP_GID}
+    chmod 755 /usr/local/bin/docker-entrypoint.sh
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD curl -f "http://localhost:${PORT}/api/health" || exit 1

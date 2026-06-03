@@ -1,40 +1,46 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 
-import { InvoiceRefsRepository } from '../repositories/invoice-refs.repository';
+import { InvoiceStatus } from '../constants/invoice-status.constants';
+import { InvoicesRepository } from '../repositories/invoices.repository';
+import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { UsersBillingDayRepository } from '../repositories/users-billing-day.repository';
 import { InvoiceCreationService } from '../services/invoice-creation.service';
-import { InvoiceNinjaService } from '../services/invoice-ninja.service';
+import { InvoiceService } from '../services/invoice.service';
+import { PaymentOrchestrationService } from '../services/payment-orchestration.service';
 import { SubscriptionService } from '../services/subscription.service';
 
 import { InvoicesController } from './invoices.controller';
 
 describe('InvoicesController', () => {
   let controller: InvoicesController;
-  let invoiceNinjaService: jest.Mocked<
-    Pick<InvoiceNinjaService, 'syncCustomerProfile' | 'listInvoices' | 'getInvoiceClientLink'>
+  let invoicesRepository: jest.Mocked<
+    Pick<InvoicesRepository, 'findBySubscription' | 'findOpenOverdueSummaryByUserId'>
   >;
-  let invoiceRefsRepository: jest.Mocked<
-    Pick<InvoiceRefsRepository, 'findByIdAndSubscriptionId' | 'findOpenOverdueSummaryByUserId' | 'update'>
-  >;
+  let invoiceService: jest.Mocked<Pick<InvoiceService, 'mapToResponse' | 'getDetail'>>;
   let usersBillingDayRepository: jest.Mocked<Pick<UsersBillingDayRepository, 'getEffectiveBillingDayForUser'>>;
   let invoiceCreationService: jest.Mocked<Pick<InvoiceCreationService, 'getUnbilledTotalForUser'>>;
   let subscriptionService: jest.Mocked<Pick<SubscriptionService, 'getSubscription'>>;
+  let subscriptionsRepository: jest.Mocked<Pick<SubscriptionsRepository, 'findByIdOrThrow'>>;
   const subscriptionId = '11111111-1111-4111-8111-111111111111';
-  const invoiceRefId = '22222222-2222-4222-8222-222222222222';
   const userId = 'user-1';
   const reqWithUser = { user: { id: userId, roles: ['user'] } };
 
   beforeEach(async () => {
-    invoiceNinjaService = {
-      syncCustomerProfile: jest.fn().mockResolvedValue(undefined),
-      listInvoices: jest.fn().mockResolvedValue([]),
-      getInvoiceClientLink: jest.fn(),
-    };
-    invoiceRefsRepository = {
-      findByIdAndSubscriptionId: jest.fn(),
+    invoicesRepository = {
+      findBySubscription: jest.fn().mockResolvedValue([]),
       findOpenOverdueSummaryByUserId: jest.fn().mockResolvedValue({ count: 0, totalBalance: 0 }),
-      update: jest.fn().mockResolvedValue({}),
+    };
+    invoiceService = {
+      mapToResponse: jest.fn((inv) => ({
+        id: inv.id,
+        subscriptionId: inv.subscriptionId,
+        createdAt: inv.createdAt ?? new Date(),
+        canPay: true,
+        canDownload: true,
+        canPreview: true,
+      })),
+      getDetail: jest.fn(),
     };
     usersBillingDayRepository = {
       getEffectiveBillingDayForUser: jest.fn().mockResolvedValue(10),
@@ -45,15 +51,20 @@ describe('InvoicesController', () => {
     subscriptionService = {
       getSubscription: jest.fn().mockResolvedValue({ id: subscriptionId, userId }),
     };
+    subscriptionsRepository = {
+      findByIdOrThrow: jest.fn().mockResolvedValue({ id: subscriptionId, userId }),
+    };
 
     const moduleRef = await Test.createTestingModule({
       controllers: [InvoicesController],
       providers: [
-        { provide: InvoiceNinjaService, useValue: invoiceNinjaService },
+        { provide: InvoiceService, useValue: invoiceService },
         { provide: InvoiceCreationService, useValue: invoiceCreationService },
-        { provide: InvoiceRefsRepository, useValue: invoiceRefsRepository },
+        { provide: InvoicesRepository, useValue: invoicesRepository },
         { provide: UsersBillingDayRepository, useValue: usersBillingDayRepository },
         { provide: SubscriptionService, useValue: subscriptionService },
+        { provide: PaymentOrchestrationService, useValue: { initiatePayment: jest.fn() } },
+        { provide: SubscriptionsRepository, useValue: subscriptionsRepository },
       ],
     }).compile();
 
@@ -61,105 +72,41 @@ describe('InvoicesController', () => {
   });
 
   describe('getSummary', () => {
-    it('returns openOverdueCount, openOverdueTotal, billingDayOfMonth and unbilledTotal for authenticated user', async () => {
-      invoiceRefsRepository.findOpenOverdueSummaryByUserId = jest
-        .fn()
-        .mockResolvedValue({ count: 3, totalBalance: 150.5 });
-      usersBillingDayRepository.getEffectiveBillingDayForUser = jest.fn().mockResolvedValue(15);
-      invoiceCreationService.getUnbilledTotalForUser = jest.fn().mockResolvedValue(42.75);
+    it('returns summary for authenticated user', async () => {
+      invoicesRepository.findOpenOverdueSummaryByUserId.mockResolvedValue({ count: 2, totalBalance: 50 });
+      usersBillingDayRepository.getEffectiveBillingDayForUser.mockResolvedValue(12);
+      invoiceCreationService.getUnbilledTotalForUser.mockResolvedValue(10);
 
       const result = await controller.getSummary(reqWithUser as never);
 
       expect(result).toEqual({
-        openOverdueCount: 3,
-        openOverdueTotal: 150.5,
-        billingDayOfMonth: 15,
-        unbilledTotal: 42.75,
+        openOverdueCount: 2,
+        openOverdueTotal: 50,
+        billingDayOfMonth: 12,
+        unbilledTotal: 10,
       });
-      expect(invoiceRefsRepository.findOpenOverdueSummaryByUserId).toHaveBeenCalledWith(userId);
-      expect(usersBillingDayRepository.getEffectiveBillingDayForUser).toHaveBeenCalledWith(userId);
-      expect(invoiceCreationService.getUnbilledTotalForUser).toHaveBeenCalledWith(userId);
     });
 
-    it('throws BadRequestException when user not authenticated', async () => {
+    it('throws when user not authenticated', async () => {
       await expect(controller.getSummary({} as never)).rejects.toThrow(BadRequestException);
-      expect(invoiceRefsRepository.findOpenOverdueSummaryByUserId).not.toHaveBeenCalled();
-      expect(usersBillingDayRepository.getEffectiveBillingDayForUser).not.toHaveBeenCalled();
-      expect(invoiceCreationService.getUnbilledTotalForUser).not.toHaveBeenCalled();
     });
   });
 
-  describe('refreshInvoiceLink', () => {
-    it('returns new preAuthUrl and updates ref when ref exists and provider returns link', async () => {
-      const ref = {
-        id: invoiceRefId,
-        subscriptionId,
-        invoiceNinjaId: 'ninja-1',
-        preAuthUrl: 'https://old.example/link',
-      };
-      const newLink = 'https://new.example/link';
+  describe('list', () => {
+    it('lists invoices for subscription', async () => {
+      invoicesRepository.findBySubscription.mockResolvedValue([
+        {
+          id: 'inv-1',
+          subscriptionId,
+          userId,
+          status: InvoiceStatus.ISSUED,
+        } as never,
+      ]);
 
-      invoiceRefsRepository.findByIdAndSubscriptionId.mockResolvedValue(ref as never);
-      invoiceNinjaService.getInvoiceClientLink.mockResolvedValue(newLink);
+      const result = await controller.list(subscriptionId, reqWithUser as never);
 
-      const result = await controller.refreshInvoiceLink(subscriptionId, invoiceRefId, reqWithUser as never);
-
-      expect(result).toEqual({ preAuthUrl: newLink });
+      expect(result).toHaveLength(1);
       expect(subscriptionService.getSubscription).toHaveBeenCalledWith(subscriptionId, userId);
-      expect(invoiceNinjaService.syncCustomerProfile).toHaveBeenCalledWith(userId);
-      expect(invoiceRefsRepository.findByIdAndSubscriptionId).toHaveBeenCalledWith(invoiceRefId, subscriptionId);
-      expect(invoiceNinjaService.getInvoiceClientLink).toHaveBeenCalledWith('ninja-1');
-      expect(invoiceRefsRepository.update).toHaveBeenCalledWith(invoiceRefId, {
-        preAuthUrl: newLink,
-      });
-    });
-
-    it('throws BadRequestException when user not authenticated', async () => {
-      await expect(controller.refreshInvoiceLink(subscriptionId, invoiceRefId, {} as never)).rejects.toThrow(
-        BadRequestException,
-      );
-      expect(subscriptionService.getSubscription).not.toHaveBeenCalled();
-      expect(invoiceRefsRepository.findByIdAndSubscriptionId).not.toHaveBeenCalled();
-    });
-
-    it('throws BadRequestException when subscription does not belong to user', async () => {
-      subscriptionService.getSubscription.mockRejectedValue(
-        new BadRequestException('Subscription does not belong to user'),
-      );
-
-      await expect(controller.refreshInvoiceLink(subscriptionId, invoiceRefId, reqWithUser as never)).rejects.toThrow(
-        BadRequestException,
-      );
-
-      expect(invoiceRefsRepository.findByIdAndSubscriptionId).not.toHaveBeenCalled();
-    });
-
-    it('throws NotFoundException when invoice ref not found', async () => {
-      invoiceRefsRepository.findByIdAndSubscriptionId.mockResolvedValue(null);
-
-      await expect(controller.refreshInvoiceLink(subscriptionId, invoiceRefId, reqWithUser as never)).rejects.toThrow(
-        NotFoundException,
-      );
-
-      expect(invoiceNinjaService.getInvoiceClientLink).not.toHaveBeenCalled();
-    });
-
-    it('throws NotFoundException when provider returns no link', async () => {
-      const ref = {
-        id: invoiceRefId,
-        subscriptionId,
-        invoiceNinjaId: 'ninja-1',
-        preAuthUrl: 'https://old.example/link',
-      };
-
-      invoiceRefsRepository.findByIdAndSubscriptionId.mockResolvedValue(ref as never);
-      invoiceNinjaService.getInvoiceClientLink.mockResolvedValue(null);
-
-      await expect(controller.refreshInvoiceLink(subscriptionId, invoiceRefId, reqWithUser as never)).rejects.toThrow(
-        NotFoundException,
-      );
-
-      expect(invoiceRefsRepository.update).not.toHaveBeenCalled();
     });
   });
 });

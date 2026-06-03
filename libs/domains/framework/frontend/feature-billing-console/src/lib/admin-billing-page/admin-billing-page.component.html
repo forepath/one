@@ -1,0 +1,521 @@
+<div class="admin-billing-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminBilling-title">Billing administration</h5>
+    <button
+      type="button"
+      class="btn btn-primary btn-sm"
+      (click)="openBillNowModal()"
+      i18n="@@featureAdminBilling-billNow"
+    >
+      Bill now
+    </button>
+  </div>
+
+  <div class="p-3 flex-grow-1 overflow-auto">
+    @if (summaryError$ | async; as err) {
+      <div class="alert alert-danger" role="alert">{{ err }}</div>
+    }
+    @if (openOverdueError$ | async; as err) {
+      <div class="alert alert-danger" role="alert">{{ err }}</div>
+    }
+    @if (statisticsError$ | async; as err) {
+      <div class="alert alert-danger" role="alert">{{ err }}</div>
+    }
+
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminBilling-activeSubscriptions">
+              Active subscriptions
+            </h6>
+            @if (summaryLoading$ | async) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            } @else if (summary$ | async; as summary) {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ summary.activeSubscriptionsCount }}</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminBilling-openOverdueCount">
+              Open and overdue invoices
+            </h6>
+            @if (summaryLoading$ | async) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            } @else if (summary$ | async; as summary) {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openOverdueCount }}</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminBilling-openOverdueTotal">
+              Open total amount
+            </h6>
+            @if (summaryLoading$ | async) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            } @else if (summary$ | async; as summary) {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openOverdueTotal | number: '1.2-2' }}€</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card h-100">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminBilling-unbilledTotal">
+              Unbilled amount
+            </h6>
+            @if (summaryLoading$ | async) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            } @else if (summary$ | async; as summary) {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ summary.unbilledTotal | number: '1.2-2' }}€</p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="border rounded mb-4 bg-body-tertiary">
+      <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-semibold" i18n="@@featureAdminBilling-statisticsTitle">Statistics</h6>
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary d-md-none"
+          data-bs-toggle="collapse"
+          data-bs-target="#adminBillingFilters"
+          (click)="onToggleFilters()"
+        >
+          <i class="bi" [class.bi-chevron-down]="filtersCollapsed()" [class.bi-chevron-up]="!filtersCollapsed()"></i>
+        </button>
+      </div>
+      <div class="collapse d-md-block p-3" id="adminBillingFilters">
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-3">
+            <label class="form-label small" for="adminBillingUser" i18n="@@featureAdminBilling-userFilter">User</label>
+            <select
+              id="adminBillingUser"
+              class="form-select form-select-sm"
+              [ngModel]="selectedUserId()"
+              (ngModelChange)="selectedUserId.set($event)"
+            >
+              <option [ngValue]="null" i18n="@@featureAdminBilling-allUsers">All users</option>
+              @for (user of users(); track user.id) {
+                <option [ngValue]="user.id">{{ user.email }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-12 col-md-2">
+            <label class="form-label small" for="adminBillingFrom" i18n="@@featureAdminBilling-fromDate">From</label>
+            <input
+              id="adminBillingFrom"
+              type="date"
+              class="form-control form-control-sm"
+              [ngModel]="fromDate()"
+              (ngModelChange)="fromDate.set($event)"
+            />
+          </div>
+          <div class="col-12 col-md-2">
+            <label class="form-label small" for="adminBillingTo" i18n="@@featureAdminBilling-toDate">To</label>
+            <input
+              id="adminBillingTo"
+              type="date"
+              class="form-control form-control-sm"
+              [ngModel]="toDate()"
+              (ngModelChange)="toDate.set($event)"
+            />
+          </div>
+          <div class="col-12 col-md-2">
+            <label class="form-label small" for="adminBillingGroupBy" i18n="@@featureAdminBilling-groupBy"
+              >Group by</label
+            >
+            <select
+              id="adminBillingGroupBy"
+              class="form-select form-select-sm"
+              [ngModel]="groupBy()"
+              (ngModelChange)="groupBy.set($event)"
+            >
+              <option value="day" i18n="@@featureAdminBilling-groupByDay">Day</option>
+              <option value="month" i18n="@@featureAdminBilling-groupByMonth">Month</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-3 d-flex align-items-end gap-2">
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              (click)="onApplyFilters()"
+              i18n="@@featureAdminBilling-apply"
+            >
+              Apply
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              (click)="onResetFilters()"
+              i18n="@@featureAdminBilling-reset"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+        <div class="row g-3">
+          <div class="col-12 col-lg-8">
+            <div class="card">
+              <div class="card-body">
+                @if (seriesChartOptions(); as chart) {
+                  <apx-chart
+                    [series]="chart.series"
+                    [chart]="chart.chart"
+                    [colors]="chart.colors"
+                    [stroke]="chart.stroke"
+                    [fill]="chart.fill"
+                    [dataLabels]="chart.dataLabels"
+                    [xaxis]="chart.xaxis"
+                    [yaxis]="chart.yaxis"
+                    [grid]="chart.grid"
+                    [title]="chart.title"
+                  ></apx-chart>
+                } @else if (statisticsSummaryLoading$ | async) {
+                  <div class="text-center py-4"><span class="spinner-border spinner-border-sm"></span></div>
+                } @else {
+                  <p class="text-muted small mb-0" i18n="@@featureAdminBilling-noChartData">
+                    No turnover data for selected period.
+                  </p>
+                }
+              </div>
+            </div>
+          </div>
+          <div class="col-12" [class.col-lg-4]="seriesChartOptions()">
+            <div class="card">
+              <div class="card-body">
+                @if (donutChartOptions(); as chart) {
+                  <apx-chart
+                    [series]="chart.series"
+                    [chart]="chart.chart"
+                    [labels]="chart.labels"
+                    [colors]="chart.colors"
+                    [legend]="chart.legend"
+                    [title]="chart.title"
+                  ></apx-chart>
+                } @else if (statisticsByProductLoading$ | async) {
+                  <div class="text-center py-4"><span class="spinner-border spinner-border-sm"></span></div>
+                } @else {
+                  <p class="text-muted small mb-0" i18n="@@featureAdminBilling-noProductData">
+                    No product breakdown for selected period.
+                  </p>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h6 class="mb-0 fw-semibold" i18n="@@featureAdminBilling-invoicesTitle">Invoices</h6>
+      <input
+        type="search"
+        class="form-control form-control-sm"
+        style="max-width: 320px"
+        [ngModel]="invoiceSearch()"
+        (ngModelChange)="invoiceSearch.set($event)"
+        (keyup.enter)="onInvoiceSearch()"
+        placeholder="Search invoice #, subscription #, or user"
+        i18n-placeholder="@@featureAdminBilling-searchPlaceholder"
+      />
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover align-middle">
+        <thead>
+          <tr>
+            <th i18n="@@featureAdminBilling-colInvoice">Invoice</th>
+            <th i18n="@@featureAdminBilling-colUser">User</th>
+            <th i18n="@@featureAdminBilling-colSubscription">Subscription</th>
+            <th i18n="@@featureAdminBilling-colStatus">Status</th>
+            <th i18n="@@featureAdminBilling-colBalance">Balance</th>
+            <th i18n="@@featureAdminBilling-colDueDate">Due date</th>
+            <th i18n="@@featureAdminBilling-colActions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (openOverdueLoading$ | async) {
+            <tr>
+              <td colspan="7" class="text-center py-4">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              </td>
+            </tr>
+          } @else {
+            @for (invoice of openOverdueItems(); track invoice.id) {
+              <tr>
+                <td>{{ invoice.invoiceNumber ?? invoice.id }}</td>
+                <td>{{ invoice.userEmail ?? invoice.userId }}</td>
+                <td>{{ invoice.subscriptionNumber ?? invoice.subscriptionId }}</td>
+                <td>
+                  <span class="badge text-bg-secondary">{{ invoice.status }}</span>
+                </td>
+                <td>{{ invoice.balance | number: '1.2-2' }}€</td>
+                <td>{{ invoice.dueDate ? (invoice.dueDate | date: 'mediumDate') : '—' }}</td>
+                <td>
+                  <div class="btn-group btn-group-sm">
+                    @if (canVoid(invoice)) {
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger"
+                        (click)="openActionModal('void', invoice)"
+                        i18n="@@featureAdminBilling-void"
+                      >
+                        Void
+                      </button>
+                    }
+                    @if (canMarkPaid(invoice)) {
+                      <button
+                        type="button"
+                        class="btn btn-outline-success"
+                        (click)="openActionModal('markPaid', invoice)"
+                        i18n="@@featureAdminBilling-markPaid"
+                      >
+                        Mark paid
+                      </button>
+                    }
+                    @if (canMarkUnpaid(invoice)) {
+                      <button
+                        type="button"
+                        class="btn btn-outline-warning"
+                        (click)="openActionModal('markUnpaid', invoice)"
+                        i18n="@@featureAdminBilling-markUnpaid"
+                      >
+                        Mark unpaid
+                      </button>
+                    }
+                    @if (invoice.canDownload) {
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        (click)="downloadInvoice(invoice)"
+                        i18n="@@featureAdminBilling-download"
+                      >
+                        Download
+                      </button>
+                    }
+                    @if (invoice.canDownloadVoidDocument) {
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        (click)="downloadVoidDocument(invoice)"
+                        i18n="@@featureAdminBilling-downloadCreditNote"
+                      >
+                        Credit note
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      (click)="openAuditHistory(invoice)"
+                      i18n="@@featureAdminBilling-history"
+                    >
+                      History
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="text-muted text-center py-4" i18n="@@featureAdminBilling-noInvoices">
+                  No invoices found.
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <nav aria-label="Invoice pagination" class="d-flex justify-content-between align-items-center">
+      <span class="small text-muted">{{ openOverdueTotal() }} total</span>
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item" [class.disabled]="invoicesPage() === 0">
+          <button type="button" class="page-link" (click)="onInvoicesPageChange(invoicesPage() - 1)">‹</button>
+        </li>
+        <li class="page-item disabled">
+          <span class="page-link">{{ invoicesPage() + 1 }} / {{ totalInvoicePages() }}</span>
+        </li>
+        <li class="page-item" [class.disabled]="invoicesPage() + 1 >= totalInvoicePages()">
+          <button type="button" class="page-link" (click)="onInvoicesPageChange(invoicesPage() + 1)">›</button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="billNowModal"
+  tabindex="-1"
+  aria-labelledby="billNowModalLabel"
+  aria-hidden="true"
+  #billNowModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="billNowModalLabel" i18n="@@featureAdminBilling-billNowTitle">Bill now</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-check mb-2">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="billNowScope"
+            id="billNowAll"
+            [checked]="billNowScope() === 'all'"
+            (change)="billNowScope.set('all')"
+          />
+          <label class="form-check-label" for="billNowAll" i18n="@@featureAdminBilling-billNowAll"
+            >All users with unbilled positions</label
+          >
+        </div>
+        <div class="form-check mb-3">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="billNowScope"
+            id="billNowUser"
+            [checked]="billNowScope() === 'user'"
+            (change)="billNowScope.set('user')"
+          />
+          <label class="form-check-label" for="billNowUser" i18n="@@featureAdminBilling-billNowUser"
+            >Specific user</label
+          >
+        </div>
+        @if (billNowScope() === 'user') {
+          <input
+            type="search"
+            class="form-control form-control-sm mb-2"
+            [ngModel]="billNowUserSearch()"
+            (ngModelChange)="billNowUserSearch.set($event)"
+            placeholder="Search by email or ID"
+            i18n-placeholder="@@featureAdminBilling-userSearchPlaceholder"
+          />
+          <div class="list-group list-group-flush border rounded" style="max-height: 200px; overflow-y: auto">
+            @for (user of filteredBillNowUsers(); track user.id) {
+              <button
+                type="button"
+                class="list-group-item list-group-item-action"
+                [class.active]="billNowUserId() === user.id"
+                (click)="billNowUserId.set(user.id)"
+              >
+                {{ user.email }}
+              </button>
+            } @empty {
+              <div class="list-group-item text-muted small" i18n="@@featureAdminBilling-noUsers">No users found.</div>
+            }
+          </div>
+        }
+        @if (billNowError$ | async; as err) {
+          <div class="alert alert-danger mt-3 mb-0" role="alert">{{ err }}</div>
+        }
+        @if (billNowResult$ | async; as result) {
+          <div class="alert alert-info mt-3 mb-0" role="status">
+            <span i18n="@@featureAdminBilling-billNowResult"
+              >Processed {{ result.usersProcessed }} users, created {{ result.invoicesCreated }} invoices.</span
+            >
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureAdminBilling-cancel">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitBillNow()"
+          [disabled]="(billNowLoading$ | async) === true || (billNowScope() === 'user' && !billNowUserId())"
+        >
+          @if (billNowLoading$ | async) {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          } @else {
+            <span i18n="@@featureAdminBilling-confirmBillNow">Bill now</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="actionConfirmModal" tabindex="-1" aria-hidden="true" #actionConfirmModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminBilling-confirmActionTitle">Confirm action</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label small" for="actionReason" i18n="@@featureAdminBilling-reasonOptional"
+          >Reason (optional)</label
+        >
+        <textarea
+          id="actionReason"
+          class="form-control form-control-sm"
+          rows="2"
+          [ngModel]="actionReason()"
+          (ngModelChange)="actionReason.set($event)"
+        ></textarea>
+        @if (actionError$ | async; as err) {
+          <div class="alert alert-danger mt-2 mb-0" role="alert">{{ err }}</div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureAdminBilling-cancel">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="confirmAction()"
+          [disabled]="(actionLoading$ | async) === true"
+          i18n="@@featureAdminBilling-confirm"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="auditHistoryModal" tabindex="-1" aria-hidden="true" #auditHistoryModal>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminBilling-auditHistoryTitle">Audit history</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (auditLogsLoading$ | async) {
+          <div class="text-center py-3"><span class="spinner-border spinner-border-sm"></span></div>
+        } @else {
+          <ul class="list-group list-group-flush">
+            @for (log of selectedAuditLogs(); track log.id) {
+              <li class="list-group-item px-0">
+                <div class="d-flex justify-content-between">
+                  <strong>{{ log.process }}</strong>
+                  <span class="text-muted small">{{ log.createdAt | date: 'medium' }}</span>
+                </div>
+                <div class="small">{{ log.message }}</div>
+              </li>
+            } @empty {
+              <li class="list-group-item text-muted" i18n="@@featureAdminBilling-noAuditLogs">No audit entries.</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  </div>
+</div>

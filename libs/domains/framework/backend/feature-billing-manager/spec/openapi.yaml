@@ -1414,11 +1414,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /invoices/{subscriptionId}/ref/{invoiceRefId}/refresh-link:
-    post:
-      summary: Refresh invoice invite link
-      operationId: refreshInvoiceLink
-      description: Fetches a fresh client/invite URL for the invoice (e.g. after the previous link expired) and returns it.
+  /invoices/{subscriptionId}/ref/{invoiceRefId}:
+    get:
+      summary: Get invoice details (preview)
+      operationId: getInvoiceDetails
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
         - name: invoiceRefId
@@ -1427,20 +1426,13 @@ paths:
           schema:
             type: string
             format: uuid
-          description: Invoice ref ID
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
       responses:
         '200':
-          description: New invite link
+          description: Invoice detail with line items and tax breakdown
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RefreshInvoiceLinkResponse'
+                $ref: '#/components/schemas/InvoiceDetailResponse'
         '401':
           description: Unauthorized
           content:
@@ -1448,11 +1440,115 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Invoice not found or link unavailable
+          description: Invoice not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /invoices/{subscriptionId}/ref/{invoiceRefId}/pdf:
+    get:
+      summary: Download invoice PDF
+      operationId: downloadInvoicePdf
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: PDF file with embedded e-invoice XML
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '404':
+          description: Invoice PDF not found
+  /invoices/{subscriptionId}/ref/{invoiceRefId}/void-document/pdf:
+    get:
+      summary: Download void credit note PDF
+      operationId: downloadInvoiceVoidDocumentPdf
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Credit note PDF with embedded e-invoice XML (type 381)
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invoice is not voided
+        '401':
+          description: Unauthorized
+        '404':
+          description: Invoice not found
+  /invoices/{subscriptionId}/ref/{invoiceRefId}/pay:
+    post:
+      summary: Initiate payment (Stripe Checkout)
+      operationId: initiateInvoicePayment
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Checkout session URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiatePaymentResponse'
+        '400':
+          description: Invoice not payable
+        '401':
+          description: Unauthorized
+  /invoices/{subscriptionId}/ref/{invoiceRefId}/void:
+    post:
+      summary: Void invoice (admin only)
+      operationId: voidInvoice
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Voided invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+  /webhooks/payments/stripe:
+    post:
+      summary: Stripe payment webhook
+      operationId: stripePaymentWebhook
+      security: []
+      responses:
+        '200':
+          description: Webhook received
   /usage/summary/{subscriptionId}:
     get:
       summary: Usage summary
@@ -1501,6 +1597,222 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /admin/billing/summary:
+    get:
+      tags: [Admin Billing]
+      summary: Global billing KPI summary (admin only)
+      operationId: getAdminBillingSummary
+      responses:
+        '200':
+          description: Global KPI cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminBillingSummaryResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+  /admin/billing/bill-now:
+    post:
+      tags: [Admin Billing]
+      summary: Bill unbilled open positions now (admin only)
+      operationId: adminBillNow
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminBillNowDto'
+      responses:
+        '200':
+          description: Bill-now result summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminBillNowResponse'
+  /admin/billing/invoices:
+    get:
+      tags: [Admin Billing]
+      summary: List all invoices (admin only)
+      operationId: listAdminInvoices
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: search
+          in: query
+          description: Filter by invoice number, subscription number, user email, or user id
+          schema: { type: string }
+        - name: userId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Paginated invoice list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminInvoicesResponse'
+  /admin/billing/invoices/open-overdue:
+    get:
+      tags: [Admin Billing]
+      summary: List all invoices (deprecated alias)
+      deprecated: true
+      operationId: listAdminOpenOverdueInvoices
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: userId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Paginated invoice list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminInvoicesResponse'
+  /admin/billing/invoices/{invoiceRefId}/void:
+    post:
+      tags: [Admin Billing]
+      summary: Void invoice (admin only)
+      operationId: adminVoidInvoice
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Voided invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInvoiceListItem'
+  /admin/billing/invoices/{invoiceRefId}/mark-paid:
+    post:
+      tags: [Admin Billing]
+      summary: Mark invoice paid manually (admin only)
+      operationId: adminMarkInvoicePaid
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkInvoicePaymentStatusDto'
+      responses:
+        '200':
+          description: Updated invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInvoiceListItem'
+  /admin/billing/invoices/{invoiceRefId}/mark-unpaid:
+    post:
+      tags: [Admin Billing]
+      summary: Mark invoice unpaid manually (admin only)
+      operationId: adminMarkInvoiceUnpaid
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkInvoicePaymentStatusDto'
+      responses:
+        '200':
+          description: Updated invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminInvoiceListItem'
+  /admin/billing/invoices/{invoiceRefId}/audit-logs:
+    get:
+      tags: [Admin Billing]
+      summary: Audit history for invoice (admin only)
+      operationId: listAdminInvoiceAuditLogs
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Paginated audit logs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBillingAuditLogsResponse'
+  /admin/billing/statistics/summary:
+    get:
+      tags: [Admin Billing]
+      summary: Turnover time series (admin only)
+      operationId: getAdminBillingStatisticsSummary
+      parameters:
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+        - name: groupBy
+          in: query
+          schema: { type: string, enum: [day, month], default: day }
+        - name: userId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Statistics summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingStatisticsSummary'
+  /admin/billing/statistics/by-product:
+    get:
+      tags: [Admin Billing]
+      summary: Turnover by service plan (admin only)
+      operationId: getAdminBillingStatisticsByProduct
+      parameters:
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+        - name: userId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Turnover by product
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingStatisticsByProduct'
 components:
   securitySchemes:
     bearerAuth:
@@ -2201,7 +2513,7 @@ components:
         country: { type: string, nullable: true }
         email: { type: string, format: email, nullable: true }
         phone: { type: string, nullable: true }
-        invoiceNinjaClientId: { type: string, nullable: true }
+        stripeCustomerId: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     CreateInvoiceDto:
@@ -2213,31 +2525,71 @@ components:
       properties:
         id: { type: string, format: uuid }
         subscriptionId: { type: string, format: uuid }
-        invoiceNinjaId: { type: string }
         invoiceNumber: { type: string, nullable: true }
-        preAuthUrl: { type: string }
         status: { type: string, nullable: true }
-        balance:
-          { type: number, nullable: true, description: Invoice balance due }
-        subscriptionNumber:
-          {
-            type: string,
-            nullable: true,
-            description: Subscription number when listing across subscriptions,
-          }
+        balance: { type: number, nullable: true, description: Balance due }
+        subscriptionNumber: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
-        dueDate:
-          {
-            type: string,
-            format: date,
-            nullable: true,
-            description: Invoice due date from provider,
-          }
+        dueDate: { type: string, format: date, nullable: true }
+        canPay: { type: boolean }
+        canDownload: { type: boolean }
+        canPreview: { type: boolean }
+        canDownloadVoidDocument: { type: boolean, nullable: true }
+        voidDocumentNumber: { type: string, nullable: true }
+    InvoiceDetailResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        subscriptionId: { type: string, format: uuid }
+        invoiceNumber: { type: string, nullable: true }
+        status: { type: string }
+        currency: { type: string }
+        subtotalNet: { type: number }
+        taxTotal: { type: number }
+        totalGross: { type: number }
+        balanceDue: { type: number }
+        lineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceLineItemResponse'
+        taxBreakdown:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceTaxBreakdown'
+        issuedAt: { type: string, format: date-time, nullable: true }
+        dueDate: { type: string, format: date, nullable: true }
+        createdAt: { type: string, format: date-time }
+        canPay: { type: boolean }
+        canDownload: { type: boolean }
+        canPreview: { type: boolean }
+        canDownloadVoidDocument: { type: boolean, nullable: true }
+        voidDocumentNumber: { type: string, nullable: true }
+    InvoiceLineItemResponse:
+      type: object
+      properties:
+        description: { type: string }
+        quantity: { type: number }
+        unitPriceNet: { type: number }
+        taxCategory: { type: string, enum: [standard, reduced] }
+        taxRate: { type: number }
+        lineNet: { type: number }
+        lineTax: { type: number }
+        lineGross: { type: number }
+    InvoiceTaxBreakdown:
+      type: object
+      properties:
+        taxCategory: { type: string, enum: [standard, reduced] }
+        taxRate: { type: number }
+        taxAmount: { type: number }
     CreateInvoiceResponse:
       type: object
       properties:
-        invoiceId: { type: string }
-        preAuthUrl: { type: string }
+        invoiceRefId: { type: string, format: uuid }
+        invoiceNumber: { type: string, nullable: true }
+    InitiatePaymentResponse:
+      type: object
+      properties:
+        checkoutUrl: { type: string, format: uri }
     InvoicesSummaryResponse:
       type: object
       description: Count and total balance of open and overdue invoices for the current user, plus the user's billing day.
@@ -2259,10 +2611,6 @@ components:
           type: number
           minimum: 0
           description: Total amount of unbilled open positions (to be invoiced on the next billing day)
-    RefreshInvoiceLinkResponse:
-      type: object
-      properties:
-        preAuthUrl: { type: string }
     UsageSummary:
       type: object
       properties:
@@ -2282,3 +2630,109 @@ components:
       type: object
       properties:
         id: { type: string, format: uuid }
+    AdminBillingSummaryResponse:
+      type: object
+      properties:
+        activeSubscriptionsCount: { type: integer, minimum: 0 }
+        openOverdueCount: { type: integer, minimum: 0 }
+        openOverdueTotal: { type: number, minimum: 0 }
+        unbilledTotal: { type: number, minimum: 0 }
+    AdminBillNowDto:
+      type: object
+      properties:
+        userId:
+          {
+            type: string,
+            format: uuid,
+            description: Omit to bill all users with unbilled positions,
+          }
+    AdminBillNowError:
+      type: object
+      properties:
+        userId: { type: string, format: uuid }
+        message: { type: string }
+    AdminBillNowResponse:
+      type: object
+      properties:
+        usersProcessed: { type: integer }
+        invoicesCreated: { type: integer }
+        usersSkipped: { type: integer }
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminBillNowError'
+    AdminInvoiceListItem:
+      allOf:
+        - $ref: '#/components/schemas/InvoiceResponse'
+        - type: object
+          properties:
+            userId: { type: string, format: uuid }
+            userEmail: { type: string, format: email, nullable: true }
+    PaginatedAdminInvoicesResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminInvoiceListItem'
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+    MarkInvoicePaymentStatusDto:
+      type: object
+      properties:
+        reason: { type: string }
+    BillingAuditLogResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        process: { type: string }
+        level: { type: string }
+        message: { type: string }
+        invoiceId: { type: string, format: uuid, nullable: true }
+        userId: { type: string, format: uuid, nullable: true }
+        context: { type: object }
+        createdAt: { type: string, format: date-time }
+    PaginatedBillingAuditLogsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingAuditLogResponse'
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+    BillingStatisticsSeriesPoint:
+      type: object
+      properties:
+        period: { type: string }
+        totalGross: { type: number }
+    BillingStatisticsSummary:
+      type: object
+      properties:
+        series:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingStatisticsSeriesPoint'
+        totalGross: { type: number }
+        paidCount: { type: integer }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        groupBy: { type: string, enum: [day, month] }
+    BillingStatisticsByProductItem:
+      type: object
+      properties:
+        planId: { type: string, format: uuid }
+        planName: { type: string }
+        totalGross: { type: number }
+    BillingStatisticsByProduct:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingStatisticsByProductItem'
+        totalGross: { type: number }
+        from: { type: string, format: date }
+        to: { type: string, format: date }

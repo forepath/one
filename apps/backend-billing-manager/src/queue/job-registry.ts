@@ -9,8 +9,8 @@ export const BillingJobName = {
   SUBSCRIPTION_BILLING_UNIT: 'subscription-billing.unit',
   SUBSCRIPTION_EXPIRATION_COORDINATOR: 'subscription-expiration.coordinator',
   SUBSCRIPTION_EXPIRATION_UNIT: 'subscription-expiration.unit',
-  INVOICE_SYNC_COORDINATOR: 'invoice-sync.coordinator',
-  INVOICE_SYNC_UNIT: 'invoice-sync.unit',
+  INVOICE_OVERDUE_COORDINATOR: 'invoice-overdue.coordinator',
+  INVOICE_OVERDUE_UNIT: 'invoice-overdue.unit',
   OPEN_POSITION_INVOICE_COORDINATOR: 'open-position-invoice.coordinator',
   OPEN_POSITION_INVOICE_UNIT: 'open-position-invoice.unit',
   RENEWAL_REMINDER_COORDINATOR: 'renewal-reminder.coordinator',
@@ -49,9 +49,9 @@ export function getBillingRepeatableJobs(): BillingRepeatableJobDefinition[] {
       everyMs: parseIntervalMs('EXPIRATION_SCHEDULER_INTERVAL', 60_000),
     },
     {
-      name: BillingJobName.INVOICE_SYNC_COORDINATOR,
-      coordinatorJobId: buildCoordinatorJobId('invoice-sync'),
-      everyMs: parseIntervalMs('INVOICE_SYNC_SCHEDULER_INTERVAL', 60_000),
+      name: BillingJobName.INVOICE_OVERDUE_COORDINATOR,
+      coordinatorJobId: buildCoordinatorJobId('invoice-overdue'),
+      everyMs: parseIntervalMs('INVOICE_OVERDUE_SCHEDULER_INTERVAL', 86_400_000),
     },
     {
       name: BillingJobName.OPEN_POSITION_INVOICE_COORDINATOR,

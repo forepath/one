@@ -1,9 +1,8 @@
 /**
- * Alpha-2 country codes supported by InvoiceNinja (country_id list).
- * Must match backend: feature-billing-manager maps/invoice-ninja-country-id.map.ts
+ * Alpha-2 country codes supported for customer billing profiles.
  * Used to filter the country dropdown to only supported values.
  */
-export const INVOICE_NINJA_SUPPORTED_ALPHA2_CODES: readonly string[] = [
+export const BILLING_SUPPORTED_ALPHA2_CODES: readonly string[] = [
   'AD',
   'AE',
   'AF',

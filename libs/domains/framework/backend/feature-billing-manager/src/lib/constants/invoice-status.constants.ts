@@ -1,5 +1,25 @@
-/**
- * Invoice Ninja status_id values considered "open" or "overdue" (not paid, not cancelled).
- * 1=draft, 2=sent, 3=viewed, 4=partial, 5=paid, 6=overdue.
- */
-export const OPEN_OVERDUE_INVOICE_STATUS_IDS = ['1', '2', '3', '4', '6'] as const;
+export enum InvoiceStatus {
+  DRAFT = 'draft',
+  ISSUED = 'issued',
+  PAID = 'paid',
+  PARTIALLY_PAID = 'partially_paid',
+  OVERDUE = 'overdue',
+  VOID = 'void',
+}
+
+export const OPEN_OVERDUE_INVOICE_STATUSES: InvoiceStatus[] = [
+  InvoiceStatus.ISSUED,
+  InvoiceStatus.PARTIALLY_PAID,
+  InvoiceStatus.OVERDUE,
+];
+
+/** Issued invoices included in admin billing turnover charts (excludes draft/void). */
+export const BILLED_INVOICE_STATUSES: InvoiceStatus[] = [
+  InvoiceStatus.ISSUED,
+  InvoiceStatus.PARTIALLY_PAID,
+  InvoiceStatus.OVERDUE,
+  InvoiceStatus.PAID,
+];
+
+/** @deprecated Use OPEN_OVERDUE_INVOICE_STATUSES */
+export const OPEN_OVERDUE_INVOICE_STATUS_IDS = OPEN_OVERDUE_INVOICE_STATUSES;

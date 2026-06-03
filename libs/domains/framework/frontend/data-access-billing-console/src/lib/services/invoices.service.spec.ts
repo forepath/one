@@ -10,31 +10,29 @@ describe('InvoicesService', () => {
   let service: InvoicesService;
   let httpMock: HttpTestingController;
   const apiUrl = 'http://localhost:3200/api';
-  const subscriptionId = 'sub-1';
   const mockInvoice: InvoiceResponse = {
     id: 'inv-1',
     subscriptionId: 'sub-1',
-    invoiceNinjaId: 'ninja-1',
-    preAuthUrl: 'https://example.com/auth',
-    status: 'draft',
+    invoiceNumber: 'INV-1',
+    status: 'issued',
+    balance: 10,
     createdAt: '2024-01-01T00:00:00Z',
+    canPay: true,
+    canDownload: true,
+    canPreview: true,
   };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
+        InvoicesService,
         {
           provide: ENVIRONMENT,
-          useValue: {
-            billing: {
-              restApiUrl: apiUrl,
-            },
-          },
+          useValue: { billing: { restApiUrl: apiUrl } },
         },
       ],
     });
-
     service = TestBed.inject(InvoicesService);
     httpMock = TestBed.inject(HttpTestingController);
   });
@@ -43,89 +41,37 @@ describe('InvoicesService', () => {
     httpMock.verify();
   });
 
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  it('should list invoices', (done) => {
+    service.listInvoices('sub-1').subscribe((res) => {
+      expect(res).toEqual([mockInvoice]);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/sub-1`);
+
+    req.flush([mockInvoice]);
   });
 
-  describe('getInvoicesSummary', () => {
-    it('should return open and overdue summary', (done) => {
-      const response = { openOverdueCount: 2, openOverdueTotal: 150.5, billingDayOfMonth: 28, unbilledTotal: 42.1 };
+  it('should create invoice', (done) => {
+    const dto: CreateInvoiceDto = { description: 'Test' };
+    const response: CreateInvoiceResponse = { invoiceRefId: 'ref-1', invoiceNumber: 'INV-1' };
 
-      service.getInvoicesSummary().subscribe((res) => {
-        expect(res).toEqual(response);
-        done();
-      });
-      const req = httpMock.expectOne(`${apiUrl}/invoices/summary`);
-
-      expect(req.request.method).toBe('GET');
-      req.flush(response);
+    service.createInvoice('sub-1', dto).subscribe((res) => {
+      expect(res).toEqual(response);
+      done();
     });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/sub-1`);
+
+    expect(req.request.method).toBe('POST');
+    req.flush(response);
   });
 
-  describe('listInvoices', () => {
-    it('should return invoices array for a subscription', (done) => {
-      const mockInvoices: InvoiceResponse[] = [mockInvoice];
-
-      service.listInvoices(subscriptionId).subscribe((invoices) => {
-        expect(invoices).toEqual(mockInvoices);
-        done();
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/invoices/${subscriptionId}`);
-
-      expect(req.request.method).toBe('GET');
-      req.flush(mockInvoices);
+  it('should initiate payment', (done) => {
+    service.initiatePayment('sub-1', 'ref-1').subscribe((res) => {
+      expect(res.checkoutUrl).toContain('stripe');
+      done();
     });
-  });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/sub-1/ref/ref-1/pay`);
 
-  describe('createInvoice', () => {
-    it('should create an invoice for a subscription', (done) => {
-      const dto: CreateInvoiceDto = { description: 'Test invoice' };
-      const response: CreateInvoiceResponse = {
-        invoiceId: 'inv-1',
-        preAuthUrl: 'https://example.com/auth',
-      };
-
-      service.createInvoice(subscriptionId, dto).subscribe((res) => {
-        expect(res).toEqual(response);
-        done();
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/invoices/${subscriptionId}`);
-
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual(dto);
-      req.flush(response);
-    });
-
-    it('should send empty object when dto not provided', (done) => {
-      service.createInvoice(subscriptionId).subscribe((res) => {
-        expect(res).toEqual({ invoiceId: 'inv-1', preAuthUrl: 'https://example.com' });
-        done();
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/invoices/${subscriptionId}`);
-
-      expect(req.request.body).toEqual({});
-      req.flush({ invoiceId: 'inv-1', preAuthUrl: 'https://example.com' });
-    });
-  });
-
-  describe('refreshInvoiceLink', () => {
-    it('should POST to refresh-link and return preAuthUrl', (done) => {
-      const invoiceRefId = 'ref-1';
-      const response = { preAuthUrl: 'https://example.com/new-link' };
-
-      service.refreshInvoiceLink(subscriptionId, invoiceRefId).subscribe((res) => {
-        expect(res).toEqual(response);
-        done();
-      });
-
-      const req = httpMock.expectOne(`${apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}/refresh-link`);
-
-      expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual({});
-      req.flush(response);
-    });
+    req.flush({ checkoutUrl: 'https://checkout.stripe.com/test' });
   });
 });

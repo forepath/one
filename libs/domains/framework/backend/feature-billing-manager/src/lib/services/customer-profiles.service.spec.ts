@@ -11,6 +11,7 @@ describe('CustomerProfilesService', () => {
       lastName: 'Doe',
       email: 'john@example.com',
       addressLine1: '123 Main St',
+      postalCode: '10115',
       city: 'Berlin',
       country: 'DE',
     }) as CustomerProfileEntity;

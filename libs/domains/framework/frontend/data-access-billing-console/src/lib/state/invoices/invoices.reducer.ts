@@ -1,12 +1,18 @@
 import { createReducer, on } from '@ngrx/store';
 
-import type { InvoiceResponse, InvoicesSummaryResponse } from '../../types/billing.types';
+import type { InvoiceDetailResponse, InvoiceResponse, InvoicesSummaryResponse } from '../../types/billing.types';
 
 import {
   clearInvoices,
   createInvoice,
   createInvoiceFailure,
   createInvoiceSuccess,
+  initiatePayment,
+  initiatePaymentFailure,
+  initiatePaymentSuccess,
+  loadInvoiceDetails,
+  loadInvoiceDetailsFailure,
+  loadInvoiceDetailsSuccess,
   loadInvoices,
   loadInvoicesFailure,
   loadInvoicesSuccess,
@@ -16,16 +22,15 @@ import {
   loadOpenOverdueInvoices,
   loadOpenOverdueInvoicesFailure,
   loadOpenOverdueInvoicesSuccess,
-  refreshInvoiceLink,
-  refreshInvoiceLinkFailure,
-  refreshInvoiceLinkSuccess,
 } from './invoices.actions';
 
 export interface InvoicesState {
   entities: Record<string, InvoiceResponse[]>;
   loading: boolean;
   creating: boolean;
-  refreshingInvoiceRefId: string | null;
+  payingInvoiceRefId: string | null;
+  invoiceDetails: Record<string, InvoiceDetailResponse>;
+  detailsLoading: boolean;
   summary: InvoicesSummaryResponse | null;
   summaryLoading: boolean;
   summaryError: string | null;
@@ -39,7 +44,9 @@ export const initialInvoicesState: InvoicesState = {
   entities: {},
   loading: false,
   creating: false,
-  refreshingInvoiceRefId: null,
+  payingInvoiceRefId: null,
+  invoiceDetails: {},
+  detailsLoading: false,
   summary: null,
   summaryLoading: false,
   summaryError: null,
@@ -114,32 +121,34 @@ export const invoicesReducer = createReducer(
     creating: false,
     error,
   })),
-  on(refreshInvoiceLink, (state, { invoiceRefId }) => ({
+  on(loadInvoiceDetails, (state) => ({
     ...state,
-    refreshingInvoiceRefId: invoiceRefId,
+    detailsLoading: true,
     error: null,
   })),
-  on(refreshInvoiceLinkSuccess, (state, { subscriptionId, invoiceRefId, preAuthUrl }) => {
-    const list = state.entities[subscriptionId] ?? [];
-    const entities = {
-      ...state.entities,
-      [subscriptionId]: list.map((inv) => (inv.id === invoiceRefId ? { ...inv, preAuthUrl } : inv)),
-    };
-    const openOverdueList = state.openOverdueList.map((inv) =>
-      inv.id === invoiceRefId ? { ...inv, preAuthUrl } : inv,
-    );
-
-    return {
-      ...state,
-      entities,
-      openOverdueList,
-      refreshingInvoiceRefId: null,
-      error: null,
-    };
-  }),
-  on(refreshInvoiceLinkFailure, (state, { error }) => ({
+  on(loadInvoiceDetailsSuccess, (state, { invoiceRefId, detail }) => ({
     ...state,
-    refreshingInvoiceRefId: null,
+    invoiceDetails: { ...state.invoiceDetails, [invoiceRefId]: detail },
+    detailsLoading: false,
+    error: null,
+  })),
+  on(loadInvoiceDetailsFailure, (state, { error }) => ({
+    ...state,
+    detailsLoading: false,
+    error,
+  })),
+  on(initiatePayment, (state, { invoiceRefId }) => ({
+    ...state,
+    payingInvoiceRefId: invoiceRefId,
+    error: null,
+  })),
+  on(initiatePaymentSuccess, (state) => ({
+    ...state,
+    payingInvoiceRefId: null,
+  })),
+  on(initiatePaymentFailure, (state, { error }) => ({
+    ...state,
+    payingInvoiceRefId: null,
     error,
   })),
   on(clearInvoices, () => initialInvoicesState),

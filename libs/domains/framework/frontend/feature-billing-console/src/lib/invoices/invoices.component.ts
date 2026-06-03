@@ -2,15 +2,17 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { AuthenticationFacade } from '@forepath/framework/frontend/data-access-agent-console';
 import {
   InvoicesFacade,
   ServicePlansFacade,
   SubscriptionsFacade,
   type CreateInvoiceDto,
+  type InvoiceDetailResponse,
   type InvoiceResponse,
   type ServicePlanResponse,
 } from '@forepath/framework/frontend/data-access-billing-console';
-import { BehaviorSubject, combineLatest, filter, map, of, pairwise, switchMap } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, of, pairwise, switchMap } from 'rxjs';
 
 import { getSubscriptionStatusLabel } from '../billing-status-labels';
 import { NextBillingDayPipe } from '../pipes/next-billing-day.pipe';
@@ -26,18 +28,27 @@ const PAGE_SIZE = 10;
 })
 export class InvoicesComponent implements OnInit {
   @ViewChild('createInvoiceModal', { static: false }) private createInvoiceModal!: ElementRef<HTMLDivElement>;
+  @ViewChild('previewInvoiceModal', { static: false }) private previewInvoiceModal!: ElementRef<HTMLDivElement>;
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly invoicesFacade = inject(InvoicesFacade);
   private readonly subscriptionsFacade = inject(SubscriptionsFacade);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
+  private readonly authFacade = inject(AuthenticationFacade);
+
+  readonly isAdmin$ = this.authFacade.canAccessBillingAdministration$;
 
   readonly subscriptions$ = this.subscriptionsFacade.getSubscriptions$();
   readonly servicePlans$ = this.servicePlansFacade.getServicePlans$();
 
   readonly selectedSubscriptionId$ = new BehaviorSubject<string>('');
-  readonly selectedSubscription$ = combineLatest([this.subscriptions$, this.selectedSubscriptionId$]).pipe(
-    map(([subscriptions, id]) => subscriptions.find((s) => s.id === id) ?? null),
+  readonly previewInvoiceRefId$ = new BehaviorSubject<string | null>(null);
+  readonly previewSubscriptionId$ = new BehaviorSubject<string | null>(null);
+
+  readonly previewDetail$ = combineLatest([this.previewInvoiceRefId$, this.previewSubscriptionId$]).pipe(
+    switchMap(([refId, subId]) =>
+      refId && subId ? this.invoicesFacade.getInvoiceDetail$(refId) : of(null as InvoiceDetailResponse | null),
+    ),
   );
 
   readonly allInvoices = toSignal(
@@ -60,21 +71,24 @@ export class InvoicesComponent implements OnInit {
   readonly invoicesLoading$ = this.invoicesFacade.getInvoicesLoading$();
   readonly invoicesCreating$ = this.invoicesFacade.getInvoicesCreating$();
   readonly invoicesError$ = this.invoicesFacade.getInvoicesError$();
-  readonly refreshingInvoiceRefId$ = this.invoicesFacade.getRefreshingInvoiceRefId$();
+  readonly payingInvoiceRefId$ = this.invoicesFacade.getPayingInvoiceRefId$();
+  readonly invoiceDetailsLoading$ = this.invoicesFacade.getInvoiceDetailsLoading$();
   readonly invoicesSummary$ = this.invoicesFacade.getInvoicesSummary$();
   readonly invoicesSummaryLoading$ = this.invoicesFacade.getInvoicesSummaryLoading$();
   readonly openOverdueList$ = this.invoicesFacade.getOpenOverdueList$();
   readonly openOverdueListLoading$ = this.invoicesFacade.getOpenOverdueListLoading$();
   readonly openOverdueListError$ = this.invoicesFacade.getOpenOverdueListError$();
 
-  /** True when the selected subscription is finalized (canceled), so no further invoices can be created. */
+  readonly selectedSubscription$ = combineLatest([this.subscriptions$, this.selectedSubscriptionId$]).pipe(
+    map(([subscriptions, id]) => subscriptions.find((s) => s.id === id) ?? null),
+  );
+
   readonly isCreateInvoiceDisabled$ = combineLatest([this.invoicesCreating$, this.selectedSubscription$]).pipe(
     map(([creating, sub]) => creating === true || (sub?.status === 'canceled' && sub?.nextBillingAt !== null)),
   );
 
   createInvoiceDescription = '';
 
-  /** Shown when Create invoice is disabled because the subscription is finalized (canceled). */
   readonly createInvoiceDisabledTitle = $localize`:@@featureInvoices-createInvoiceDisabledFinalized:Subscription is finalized; no further invoices can be created.`;
 
   planNameByPlanId(planId: string, plans: ServicePlanResponse[] | null): string {
@@ -146,32 +160,47 @@ export class InvoicesComponent implements OnInit {
     this.onSelectSubscription(value ?? '');
   }
 
-  /**
-   * Fetches a fresh invite link (the previous one may have expired) then opens it in a new tab.
-   * Use when the subscription context is the selected subscription (subscription-specific table).
-   */
-  openInvoiceLink(inv: InvoiceResponse): void {
-    const subscriptionId = this.selectedSubscriptionId$.value;
-
-    if (!subscriptionId || !inv.id) return;
-
-    this.openInvoiceLinkForRef(subscriptionId, inv);
+  openPreview(subscriptionId: string, inv: InvoiceResponse): void {
+    this.previewSubscriptionId$.next(subscriptionId);
+    this.previewInvoiceRefId$.next(inv.id);
+    this.invoicesFacade.loadInvoiceDetails(subscriptionId, inv.id);
+    this.showModal(this.previewInvoiceModal);
   }
 
-  /**
-   * Same as openInvoiceLink but uses the given subscriptionId (e.g. for open-overdue list where each row has its own subscriptionId).
-   */
-  openInvoiceLinkForRef(subscriptionId: string, inv: InvoiceResponse): void {
-    if (!subscriptionId || !inv.id) return;
+  payInvoice(subscriptionId: string, inv: InvoiceResponse): void {
+    if (!inv.canPay) return;
 
-    this.invoicesFacade.refreshInvoiceLink(subscriptionId, inv.id).subscribe({
-      next: (preAuthUrl) => {
-        if (preAuthUrl) {
-          window.open(preAuthUrl, '_blank', 'noopener,noreferrer');
-        }
-      },
-      error: () => {
-        // Error is already stored and shown via invoicesError$
+    this.invoicesFacade.initiatePayment(subscriptionId, inv.id);
+  }
+
+  downloadInvoice(subscriptionId: string, inv: InvoiceResponse): void {
+    if (!inv.canDownload) return;
+
+    this.downloadPdfBlob(
+      this.invoicesFacade.downloadInvoicePdf(subscriptionId, inv.id),
+      `${inv.invoiceNumber ?? inv.id}.pdf`,
+    );
+  }
+
+  downloadVoidDocument(subscriptionId: string, inv: InvoiceResponse): void {
+    if (!inv.canDownloadVoidDocument) return;
+
+    this.downloadPdfBlob(
+      this.invoicesFacade.downloadVoidDocumentPdf(subscriptionId, inv.id),
+      `${inv.voidDocumentNumber ?? `${inv.invoiceNumber ?? inv.id}-void`}.pdf`,
+    );
+  }
+
+  private downloadPdfBlob(source: Observable<Blob>, filename: string): void {
+    source.subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.click();
+        URL.revokeObjectURL(url);
       },
     });
   }
@@ -206,24 +235,20 @@ export class InvoicesComponent implements OnInit {
 
   getInvoiceStatus(status: string | null | undefined): string {
     switch (status) {
-      case '1':
+      case 'draft':
         return $localize`:@@featureInvoices-statusDraft:Draft`;
-      case '2':
-        return $localize`:@@featureInvoices-statusSent:Sent`;
-      case '3':
+      case 'issued':
+        return $localize`:@@featureInvoices-statusIssued:Issued`;
+      case 'partially_paid':
         return $localize`:@@featureInvoices-statusPartiallyPaid:Partially paid`;
-      case '4':
+      case 'paid':
         return $localize`:@@featureInvoices-statusPaid:Paid`;
-      case '5':
-        return $localize`:@@featureInvoices-statusCancelled:Cancelled`;
-      case '6':
-        return $localize`:@@featureInvoices-statusReversed:Reversed`;
-      case '-1':
-        return $localize`:@@featureInvoices-statusFailed:Failed`;
-      case '-2':
-        return $localize`:@@featureInvoices-statusUnpaid:Unpaid`;
+      case 'overdue':
+        return $localize`:@@featureInvoices-statusOverdue:Overdue`;
+      case 'void':
+        return $localize`:@@featureInvoices-statusVoid:Void`;
       default:
-        return $localize`:@@featureInvoices-statusUnknown:Unknown (${status})`;
+        return status ?? '—';
     }
   }
 }

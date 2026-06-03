@@ -1,7 +1,6 @@
 import { Test } from '@nestjs/testing';
 
 import { CustomerProfilesService } from '../services/customer-profiles.service';
-import { InvoiceNinjaService } from '../services/invoice-ninja.service';
 
 import { CustomerProfilesController } from './customer-profiles.controller';
 
@@ -14,14 +13,10 @@ describe('CustomerProfilesController', () => {
           provide: CustomerProfilesService,
           useValue: { getByUserId: jest.fn().mockResolvedValue(null), upsert: jest.fn() },
         },
-        {
-          provide: InvoiceNinjaService,
-          useValue: { syncCustomerProfile: jest.fn() },
-        },
       ],
     }).compile();
     const controller = moduleRef.get(CustomerProfilesController);
-    const result = await controller.get({ user: { id: 'user-1', roles: ['user'] } } as any);
+    const result = await controller.get({ user: { id: 'user-1', roles: ['user'] } } as never);
 
     expect(result).toBeNull();
   });

@@ -312,7 +312,7 @@ export interface CustomerProfileResponse {
   country?: string | null;
   email?: string | null;
   phone?: string | null;
-  invoiceNinjaClientId?: string | null;
+  stripeCustomerId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -332,17 +332,63 @@ export interface CustomerProfileDto {
 }
 
 // Invoices
+export type InvoiceStatus = 'draft' | 'issued' | 'paid' | 'partially_paid' | 'overdue' | 'void';
+
+export type TaxCategory = 'standard' | 'reduced';
+
 export interface InvoiceResponse {
   id: string;
   subscriptionId: string;
-  invoiceNinjaId: string;
   invoiceNumber?: string | null;
-  preAuthUrl: string;
-  status?: string | null;
+  status?: InvoiceStatus | string | null;
   balance?: number | null;
   subscriptionNumber?: string | null;
   createdAt: string;
   dueDate?: string | null;
+  canPay: boolean;
+  canDownload: boolean;
+  canPreview: boolean;
+  canDownloadVoidDocument?: boolean;
+  voidDocumentNumber?: string | null;
+}
+
+export interface InvoiceLineItemResponse {
+  description: string;
+  quantity: number;
+  unitPriceNet: number;
+  taxCategory: TaxCategory;
+  taxRate: number;
+  lineNet: number;
+  lineTax: number;
+  lineGross: number;
+}
+
+export interface InvoiceTaxBreakdown {
+  taxCategory: TaxCategory;
+  taxRate: number;
+  taxAmount: number;
+}
+
+export interface InvoiceDetailResponse {
+  id: string;
+  subscriptionId: string;
+  invoiceNumber?: string | null;
+  status: InvoiceStatus | string;
+  currency: string;
+  subtotalNet: number;
+  taxTotal: number;
+  totalGross: number;
+  balanceDue: number;
+  lineItems: InvoiceLineItemResponse[];
+  taxBreakdown: InvoiceTaxBreakdown[];
+  issuedAt?: string | null;
+  dueDate?: string | null;
+  createdAt: string;
+  canPay: boolean;
+  canDownload: boolean;
+  canPreview: boolean;
+  canDownloadVoidDocument?: boolean;
+  voidDocumentNumber?: string | null;
 }
 
 export interface CreateInvoiceDto {
@@ -350,12 +396,12 @@ export interface CreateInvoiceDto {
 }
 
 export interface CreateInvoiceResponse {
-  invoiceId: string;
-  preAuthUrl: string;
+  invoiceRefId: string;
+  invoiceNumber?: string;
 }
 
-export interface RefreshInvoiceLinkResponse {
-  preAuthUrl: string;
+export interface InitiatePaymentResponse {
+  checkoutUrl: string;
 }
 
 export interface InvoicesSummaryResponse {
@@ -471,4 +517,103 @@ export interface MessageResponse {
 export interface ListParams {
   limit?: number;
   offset?: number;
+}
+
+// Admin Billing
+export interface AdminBillingSummaryResponse {
+  activeSubscriptionsCount: number;
+  openOverdueCount: number;
+  openOverdueTotal: number;
+  unbilledTotal: number;
+}
+
+export interface AdminBillNowDto {
+  userId?: string;
+}
+
+export interface AdminBillNowError {
+  userId: string;
+  message: string;
+}
+
+export interface AdminBillNowResponse {
+  usersProcessed: number;
+  invoicesCreated: number;
+  usersSkipped: number;
+  errors: AdminBillNowError[];
+}
+
+export interface AdminInvoiceListItem extends InvoiceResponse {
+  userId: string;
+  userEmail?: string;
+}
+
+export interface PaginatedAdminInvoicesResponse {
+  items: AdminInvoiceListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface MarkInvoicePaymentStatusDto {
+  reason?: string;
+}
+
+export interface BillingAuditLogResponse {
+  id: string;
+  process: string;
+  level: string;
+  message: string;
+  invoiceId?: string;
+  userId?: string;
+  context: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface PaginatedBillingAuditLogsResponse {
+  items: BillingAuditLogResponse[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface BillingStatisticsSeriesPoint {
+  period: string;
+  totalGross: number;
+}
+
+export interface BillingStatisticsSummary {
+  series: BillingStatisticsSeriesPoint[];
+  totalGross: number;
+  paidCount: number;
+  from: string;
+  to: string;
+  groupBy: 'day' | 'month';
+}
+
+export interface BillingStatisticsByProductItem {
+  planId: string;
+  planName: string;
+  totalGross: number;
+}
+
+export interface BillingStatisticsByProduct {
+  items: BillingStatisticsByProductItem[];
+  totalGross: number;
+  from: string;
+  to: string;
+}
+
+export interface AdminBillingStatisticsParams {
+  from?: string;
+  to?: string;
+  groupBy?: 'day' | 'month';
+  userId?: string;
+}
+
+export interface AdminOpenOverdueListParams {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  userId?: string;
 }

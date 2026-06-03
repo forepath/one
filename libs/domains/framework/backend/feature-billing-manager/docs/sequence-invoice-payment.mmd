@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant User
+    participant BillingAPI
+    participant Stripe
+    participant Database
+
+    User->>BillingAPI: POST /invoices/:subscriptionId/ref/:invoiceRefId/pay
+    BillingAPI->>Database: Load invoice + customer profile
+    BillingAPI->>Stripe: Create Checkout Session
+    Stripe-->>BillingAPI: checkoutUrl
+    BillingAPI->>Database: Record payment attempt
+    BillingAPI-->>User: 200 InitiatePaymentResponse
+
+    User->>Stripe: Complete checkout
+    Stripe->>BillingAPI: POST /webhooks/payments/stripe
+    BillingAPI->>Database: Idempotent webhook event + mark paid
+    BillingAPI-->>Stripe: 200

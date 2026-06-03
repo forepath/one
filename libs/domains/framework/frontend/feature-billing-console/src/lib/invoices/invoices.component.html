@@ -114,7 +114,7 @@
                     <th scope="col" i18n="@@featureInvoices-date">Date</th>
                     <th scope="col" i18n="@@featureInvoices-dueDate">Due date</th>
                     <th scope="col" i18n="@@featureInvoices-amount">Amount</th>
-                    <th scope="col" i18n="@@featureInvoices-link">Link</th>
+                    <th scope="col" i18n="@@featureInvoices-actions">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -134,20 +134,46 @@
                             : '—'
                         }}
                       </td>
-                      <td>
-                        @if ((refreshingInvoiceRefId$ | async) === inv.id) {
-                          <span class="d-inline-flex align-items-center gap-1" aria-busy="true">
-                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            <span i18n="@@featureInvoices-opening">Opening…</span>
-                          </span>
-                        } @else {
+                      <td class="d-flex flex-wrap gap-1">
+                        @if (inv.canPreview) {
+                          <button
+                            type="button"
+                            class="btn btn-outline-secondary btn-sm"
+                            (click)="openPreview(inv.subscriptionId, inv)"
+                            i18n="@@featureInvoices-preview"
+                          >
+                            Preview
+                          </button>
+                        }
+                        @if (inv.canPay) {
                           <button
                             type="button"
                             class="btn btn-primary btn-sm"
-                            (click)="openInvoiceLinkForRef(inv.subscriptionId, inv)"
-                            i18n="@@featureInvoices-openLink"
+                            [disabled]="(payingInvoiceRefId$ | async) === inv.id"
+                            (click)="payInvoice(inv.subscriptionId, inv)"
+                            i18n="@@featureInvoices-pay"
                           >
-                            Open
+                            Pay
+                          </button>
+                        }
+                        @if (inv.canDownload) {
+                          <button
+                            type="button"
+                            class="btn btn-outline-primary btn-sm"
+                            (click)="downloadInvoice(inv.subscriptionId, inv)"
+                            i18n="@@featureInvoices-download"
+                          >
+                            Download
+                          </button>
+                        }
+                        @if (inv.canDownloadVoidDocument) {
+                          <button
+                            type="button"
+                            class="btn btn-outline-primary btn-sm"
+                            (click)="downloadVoidDocument(inv.subscriptionId, inv)"
+                            i18n="@@featureInvoices-downloadCreditNote"
+                          >
+                            Credit note
                           </button>
                         }
                       </td>
@@ -215,7 +241,7 @@
                     <th scope="col" i18n="@@featureInvoices-date">Date</th>
                     <th scope="col" i18n="@@featureInvoices-dueDate">Due date</th>
                     <th scope="col" i18n="@@featureInvoices-amount">Amount</th>
-                    <th scope="col" i18n="@@featureInvoices-link">Link</th>
+                    <th scope="col" i18n="@@featureInvoices-actions">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -234,20 +260,46 @@
                             : '—'
                         }}
                       </td>
-                      <td>
-                        @if ((refreshingInvoiceRefId$ | async) === inv.id) {
-                          <span class="d-inline-flex align-items-center gap-1" aria-busy="true">
-                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            <span i18n="@@featureInvoices-opening">Opening…</span>
-                          </span>
-                        } @else {
+                      <td class="d-flex flex-wrap gap-1">
+                        @if (inv.canPreview) {
+                          <button
+                            type="button"
+                            class="btn btn-outline-secondary btn-sm"
+                            (click)="openPreview(selectedSubscriptionId, inv)"
+                            i18n="@@featureInvoices-preview"
+                          >
+                            Preview
+                          </button>
+                        }
+                        @if (inv.canPay) {
                           <button
                             type="button"
                             class="btn btn-primary btn-sm"
-                            (click)="openInvoiceLink(inv)"
-                            i18n="@@featureInvoices-openLink"
+                            [disabled]="(payingInvoiceRefId$ | async) === inv.id"
+                            (click)="payInvoice(selectedSubscriptionId, inv)"
+                            i18n="@@featureInvoices-pay"
                           >
-                            Open
+                            Pay
+                          </button>
+                        }
+                        @if (inv.canDownload) {
+                          <button
+                            type="button"
+                            class="btn btn-outline-primary btn-sm"
+                            (click)="downloadInvoice(selectedSubscriptionId, inv)"
+                            i18n="@@featureInvoices-download"
+                          >
+                            Download
+                          </button>
+                        }
+                        @if (inv.canDownloadVoidDocument) {
+                          <button
+                            type="button"
+                            class="btn btn-outline-primary btn-sm"
+                            (click)="downloadVoidDocument(selectedSubscriptionId, inv)"
+                            i18n="@@featureInvoices-downloadCreditNote"
+                          >
+                            Credit note
                           </button>
                         }
                       </td>
@@ -300,5 +352,123 @@
     } @else {
       <p class="text-body-secondary" i18n="@@featureInvoices-selectFirst">Select a subscription to view invoices.</p>
     }
+  </div>
+</div>
+
+<div
+  #previewInvoiceModal
+  class="modal fade"
+  tabindex="-1"
+  aria-labelledby="previewInvoiceModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="previewInvoiceModalLabel" i18n="@@featureInvoices-previewTitle">Invoice preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (invoiceDetailsLoading$ | async) {
+          <div class="d-flex align-items-center gap-2">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span i18n="@@featureInvoices-loadingDetails">Loading invoice details…</span>
+          </div>
+        } @else {
+          @if (previewDetail$ | async; as detail) {
+            <p class="mb-2">
+              <strong>{{ detail.invoiceNumber ?? detail.id }}</strong>
+              <span class="badge bg-secondary ms-2">{{ getInvoiceStatus(detail.status) }}</span>
+            </p>
+            <div class="table-responsive">
+              <table class="table table-sm table-striped mb-3">
+                <thead>
+                  <tr>
+                    <th scope="col" i18n="@@featureInvoices-lineDescription">Description</th>
+                    <th scope="col" class="text-end" i18n="@@featureInvoices-lineQty">Qty</th>
+                    <th scope="col" class="text-end" i18n="@@featureInvoices-lineNet">Net</th>
+                    <th scope="col" class="text-end" i18n="@@featureInvoices-lineTax">Tax %</th>
+                    <th scope="col" class="text-end" i18n="@@featureInvoices-lineTaxAmt">Tax</th>
+                    <th scope="col" class="text-end" i18n="@@featureInvoices-lineGross">Gross</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (line of detail.lineItems; track line.description) {
+                    <tr>
+                      <td>{{ line.description }}</td>
+                      <td class="text-end">{{ line.quantity | number: '1.0-2' }}</td>
+                      <td class="text-end">{{ line.lineNet | number: '1.2-2' }} €</td>
+                      <td class="text-end">{{ line.taxRate | number: '1.0-1' }}%</td>
+                      <td class="text-end">{{ line.lineTax | number: '1.2-2' }} €</td>
+                      <td class="text-end">{{ line.lineGross | number: '1.2-2' }} €</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="border-top pt-2">
+              <div class="d-flex justify-content-between">
+                <span i18n="@@featureInvoices-subtotalNet">Subtotal (net)</span>
+                <span>{{ detail.subtotalNet | number: '1.2-2' }} €</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span i18n="@@featureInvoices-taxTotal">Tax total</span>
+                <span>{{ detail.taxTotal | number: '1.2-2' }} €</span>
+              </div>
+              <div class="d-flex justify-content-between fw-semibold">
+                <span i18n="@@featureInvoices-totalGross">Total</span>
+                <span>{{ detail.totalGross | number: '1.2-2' }} €</span>
+              </div>
+              <div class="d-flex justify-content-between text-muted">
+                <span i18n="@@featureInvoices-balanceDue">Balance due</span>
+                <span>{{ detail.balanceDue | number: '1.2-2' }} €</span>
+              </div>
+            </div>
+          }
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureInvoices-close">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #createInvoiceModal class="modal fade" tabindex="-1" aria-labelledby="createInvoiceModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createInvoiceModalLabel" i18n="@@featureInvoices-createTitle">Create invoice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label for="createInvoiceDescription" class="form-label" i18n="@@featureInvoices-description"
+          >Description</label
+        >
+        <input
+          id="createInvoiceDescription"
+          type="text"
+          class="form-control"
+          [(ngModel)]="createInvoiceDescription"
+          name="createInvoiceDescription"
+        />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureInvoices-cancel">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="isCreateInvoiceDisabled$ | async"
+          (click)="onSubmitCreateInvoice()"
+          i18n="@@featureInvoices-createSubmit"
+        >
+          Create
+        </button>
+      </div>
+    </div>
   </div>
 </div>

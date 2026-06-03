@@ -24,6 +24,16 @@ export class OpenPositionsRepository {
     });
   }
 
+  async findDistinctUserIdsWithUnbilled(): Promise<string[]> {
+    const rows = await this.repository
+      .createQueryBuilder('pos')
+      .select('DISTINCT pos.user_id', 'userId')
+      .where('pos.invoice_ref_id IS NULL')
+      .getRawMany<{ userId: string }>();
+
+    return rows.map((row) => row.userId);
+  }
+
   async markBilled(id: string, invoiceRefId: string): Promise<OpenPositionEntity> {
     const entity = await this.repository.findOne({ where: { id } });
 

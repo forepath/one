@@ -10,10 +10,12 @@ export const selectInvoicesLoading = createSelector(selectInvoicesState, (state)
 
 export const selectInvoicesCreating = createSelector(selectInvoicesState, (state) => state.creating);
 
-export const selectRefreshingInvoiceRefId = createSelector(
-  selectInvoicesState,
-  (state) => state.refreshingInvoiceRefId,
-);
+export const selectPayingInvoiceRefId = createSelector(selectInvoicesState, (state) => state.payingInvoiceRefId);
+
+export const selectInvoiceDetailsLoading = createSelector(selectInvoicesState, (state) => state.detailsLoading);
+
+export const selectInvoiceDetailByRefId = (invoiceRefId: string) =>
+  createSelector(selectInvoicesState, (state) => state.invoiceDetails[invoiceRefId] ?? null);
 
 export const selectInvoicesSummary = createSelector(selectInvoicesState, (state) => state.summary);
 export const selectInvoicesSummaryLoading = createSelector(selectInvoicesState, (state) => state.summaryLoading);

@@ -22,11 +22,11 @@ export class OpenPositionInvoiceJobHandler {
     return this.usersBillingDayRepository.findUserIdsWithBillingDay(todayDay);
   }
 
-  async processUserOpenPositions(userId: string): Promise<void> {
+  async processUserOpenPositions(userId: string): Promise<{ invoiceRefId?: string; skipped: boolean }> {
     const positions = await this.openPositionsRepository.findUnbilledByUserId(userId);
 
     if (positions.length === 0) {
-      return;
+      return { skipped: true };
     }
 
     try {
@@ -36,7 +36,11 @@ export class OpenPositionInvoiceJobHandler {
         this.logger.log(
           `Created accumulated invoice for user ${userId}, ${positions.length} position(s), ref ${result.invoiceRefId}`,
         );
+
+        return { invoiceRefId: result.invoiceRefId, skipped: false };
       }
+
+      return { skipped: true };
     } catch (error) {
       this.logger.error(`Failed to create accumulated invoice for user ${userId}: ${(error as Error).message}`);
       throw error;

@@ -17,7 +17,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   BackordersFacade,
   CustomerProfileFacade,
-  INVOICE_NINJA_SUPPORTED_ALPHA2_CODES,
+  BILLING_SUPPORTED_ALPHA2_CODES,
   ServicePlansFacade,
   ServiceTypesFacade,
   SubscriptionsFacade,
@@ -46,7 +46,7 @@ export interface CountryOption {
 }
 
 const COUNTRY_OPTIONS: CountryOption[] = (() => {
-  const supported = new Set(INVOICE_NINJA_SUPPORTED_ALPHA2_CODES);
+  const supported = new Set(BILLING_SUPPORTED_ALPHA2_CODES);
   const names = getNames('en', { select: 'official' });
 
   return Object.entries(names)

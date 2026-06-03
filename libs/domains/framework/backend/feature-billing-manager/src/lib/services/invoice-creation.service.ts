@@ -1,30 +1,22 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
+import { TaxCategory } from '../constants/tax-category.constants';
 import type { OpenPositionEntity } from '../entities/open-position.entity';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
-import { InvoiceRefsRepository } from '../repositories/invoice-refs.repository';
+import { InvoicesRepository } from '../repositories/invoices.repository';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { UsageRecordsRepository } from '../repositories/usage-records.repository';
 
 import { BillingScheduleService } from './billing-schedule.service';
-import { InvoiceNinjaService } from './invoice-ninja.service';
+import { InvoiceService } from './invoice.service';
 import { PricingService } from './pricing.service';
 
 interface InvoiceCreationOptions {
-  /**
-   * Bill usage from the last invoice (or subscription start) up to this timestamp.
-   * Defaults to the current time when not provided.
-   */
   billUntil?: Date;
-  /**
-   * When true, no invoice will be created if there is nothing billable
-   * (base amount and usage are both zero or negative, or below the minimum billable amount).
-   * Useful for schedulers.
-   */
   skipIfNoBillableAmount?: boolean;
 }
 
@@ -36,11 +28,11 @@ export class InvoiceCreationService {
     private readonly subscriptionsRepository: SubscriptionsRepository,
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly pricingService: PricingService,
-    private readonly invoiceNinjaService: InvoiceNinjaService,
+    private readonly invoiceService: InvoiceService,
     private readonly usageRecordsRepository: UsageRecordsRepository,
     private readonly billingScheduleService: BillingScheduleService,
-    private readonly invoiceRefsRepository: InvoiceRefsRepository,
     private readonly openPositionsRepository: OpenPositionsRepository,
+    private readonly invoicesRepository: InvoicesRepository,
   ) {}
 
   async createInvoice(subscriptionId: string, userId: string, description?: string, options?: InvoiceCreationOptions) {
@@ -72,21 +64,21 @@ export class InvoiceCreationService {
     }
 
     const roundedTotal = Math.round(total * 100) / 100;
-    const result = await this.invoiceNinjaService.createInvoiceForSubscription(
+
+    return await this.invoiceService.createAndIssue({
       subscriptionId,
       userId,
-      roundedTotal,
-      description,
-    );
-
-    return result ?? undefined;
+      lineInputs: [
+        {
+          description: description || 'Subscription charge',
+          quantity: 1,
+          unitPriceNet: roundedTotal,
+          taxCategory: TaxCategory.STANDARD,
+        },
+      ],
+    });
   }
 
-  /**
-   * Creates one accumulated invoice for all of the user's unbilled open positions.
-   * Each position becomes a line item; positions with no billable amount are skipped (when skipIfNoBillableAmount).
-   * If the total is below the minimum billable amount, returns undefined and no positions are marked.
-   */
   async createAccumulatedInvoice(
     userId: string,
     positions: OpenPositionEntity[],
@@ -114,12 +106,18 @@ export class InvoiceCreationService {
       return undefined;
     }
 
-    const lineItems = billable.map((p) => ({
+    const lineInputs = billable.map((p) => ({
       description: p.position.description ?? 'Subscription',
-      amount: Math.round(p.amount * 100) / 100,
+      quantity: 1,
+      unitPriceNet: Math.round(p.amount * 100) / 100,
+      taxCategory: TaxCategory.STANDARD,
     }));
     const primarySubscriptionId = billable[0].position.subscriptionId;
-    const result = await this.invoiceNinjaService.createInvoiceWithLineItems(userId, lineItems, primarySubscriptionId);
+    const result = await this.invoiceService.createAndIssue({
+      subscriptionId: primarySubscriptionId,
+      userId,
+      lineInputs,
+    });
 
     for (const { position } of billable) {
       await this.openPositionsRepository.markBilled(position.id, result.invoiceRefId);
@@ -128,10 +126,6 @@ export class InvoiceCreationService {
     return { invoiceRefId: result.invoiceRefId };
   }
 
-  /**
-   * Returns the total unbilled amount for the user (sum of billable amounts for unbilled open positions).
-   * Uses the same logic as createAccumulatedInvoice: only positions with amount >= MIN_BILLABLE_AMOUNT are included.
-   */
   async getUnbilledTotalForUser(userId: string): Promise<number> {
     const positions = await this.openPositionsRepository.findUnbilledByUserId(userId);
     let total = 0;
@@ -147,9 +141,6 @@ export class InvoiceCreationService {
     return Math.round(total * 100) / 100;
   }
 
-  /**
-   * Returns the billable amount for one open position. Returns 0 if below minimum and position.skipIfNoBillableAmount.
-   */
   private async getBillableAmountForPosition(position: OpenPositionEntity): Promise<number> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(position.subscriptionId);
 
@@ -231,7 +222,7 @@ export class InvoiceCreationService {
       return 0;
     }
 
-    const latestInvoice = await this.invoiceRefsRepository.findLatestBySubscription(subscription.id);
+    const latestInvoice = await this.invoicesRepository.findLatestBySubscription(subscription.id);
     let lastBillingAt: Date | undefined = latestInvoice?.createdAt;
 
     if (!lastBillingAt) {
@@ -239,7 +230,6 @@ export class InvoiceCreationService {
     }
 
     if (!lastBillingAt) {
-      // Fallback: if we somehow have no timestamps, charge one full period.
       return fullPeriodPrice;
     }
 
@@ -269,7 +259,6 @@ export class InvoiceCreationService {
       const cycleEnd = schedule.currentPeriodEnd;
 
       if (!cycleEnd || cycleEnd <= cursor) {
-        // Safety fallback: bill remaining time as a full period.
         amount += fullPeriodPrice;
         break;
       }

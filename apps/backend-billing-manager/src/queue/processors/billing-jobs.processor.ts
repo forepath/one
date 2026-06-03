@@ -1,6 +1,6 @@
 import {
   BackorderRetryJobHandler,
-  InvoiceSyncJobHandler,
+  InvoiceOverdueJobHandler,
   OpenPositionInvoiceJobHandler,
   SubscriptionBillingJobHandler,
   SubscriptionExpirationJobHandler,
@@ -22,7 +22,7 @@ export class BillingJobsProcessor extends WorkerHost {
     @InjectQueue(BILLING_QUEUE_NAME) private readonly billingQueue: Queue,
     private readonly subscriptionBilling: SubscriptionBillingJobHandler,
     private readonly subscriptionExpiration: SubscriptionExpirationJobHandler,
-    private readonly invoiceSync: InvoiceSyncJobHandler,
+    private readonly invoiceOverdue: InvoiceOverdueJobHandler,
     private readonly openPositionInvoice: OpenPositionInvoiceJobHandler,
     private readonly renewalReminder: SubscriptionRenewalReminderJobHandler,
     private readonly subscriptionItemUpdate: SubscriptionItemUpdateJobHandler,
@@ -47,11 +47,11 @@ export class BillingJobsProcessor extends WorkerHost {
           (job.data as { subscriptionId: string }).subscriptionId,
         );
         break;
-      case BillingJobName.INVOICE_SYNC_COORDINATOR:
-        await this.runInvoiceSyncCoordinator();
+      case BillingJobName.INVOICE_OVERDUE_COORDINATOR:
+        await this.runInvoiceOverdueCoordinator();
         break;
-      case BillingJobName.INVOICE_SYNC_UNIT:
-        await this.invoiceSync.syncInvoiceRef((job.data as { invoiceRefId: string }).invoiceRefId);
+      case BillingJobName.INVOICE_OVERDUE_UNIT:
+        await this.invoiceOverdue.markOverdueIfNeeded((job.data as { invoiceRefId: string }).invoiceRefId);
         break;
       case BillingJobName.OPEN_POSITION_INVOICE_COORDINATOR:
         await this.runOpenPositionInvoiceCoordinator();
@@ -110,12 +110,12 @@ export class BillingJobsProcessor extends WorkerHost {
     }
   }
 
-  private async runInvoiceSyncCoordinator(): Promise<void> {
+  private async runInvoiceOverdueCoordinator(): Promise<void> {
     let offset = 0;
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const ids = await this.invoiceSync.findInvoiceRefIdsPage(offset);
+      const ids = await this.invoiceOverdue.findInvoiceIdsPage(offset);
 
       if (ids.length === 0) {
         break;
@@ -124,16 +124,16 @@ export class BillingJobsProcessor extends WorkerHost {
       for (const invoiceRefId of ids) {
         await enqueueUnitJob({
           queue: this.billingQueue,
-          jobName: BillingJobName.INVOICE_SYNC_UNIT,
+          jobName: BillingJobName.INVOICE_OVERDUE_UNIT,
           payload: { invoiceRefId },
-          jobIdNamespace: 'invoice-sync:ref',
+          jobIdNamespace: 'invoice-overdue:ref',
           jobIdParts: [invoiceRefId],
         });
       }
 
       offset += ids.length;
 
-      if (ids.length < this.invoiceSync.batchSizeLimit) {
+      if (ids.length < this.invoiceOverdue.batchSizeLimit) {
         break;
       }
     }

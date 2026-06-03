@@ -10,6 +10,12 @@ import {
   createInvoice,
   createInvoiceFailure,
   createInvoiceSuccess,
+  initiatePayment,
+  initiatePaymentFailure,
+  initiatePaymentSuccess,
+  loadInvoiceDetails,
+  loadInvoiceDetailsFailure,
+  loadInvoiceDetailsSuccess,
   loadInvoices,
   loadInvoicesFailure,
   loadInvoicesSuccess,
@@ -20,7 +26,14 @@ import {
   loadOpenOverdueInvoicesFailure,
   loadOpenOverdueInvoicesSuccess,
 } from './invoices.actions';
-import { createInvoice$, loadInvoices$, loadInvoicesSummary$, loadOpenOverdueInvoices$ } from './invoices.effects';
+import {
+  createInvoice$,
+  initiatePaymentRedirect$,
+  loadInvoiceDetails$,
+  loadInvoices$,
+  loadInvoicesSummary$,
+  loadOpenOverdueInvoices$,
+} from './invoices.effects';
 
 describe('InvoicesEffects', () => {
   let actions$: Actions;
@@ -29,9 +42,10 @@ describe('InvoicesEffects', () => {
   const mockInvoice: InvoiceResponse = {
     id: 'inv-1',
     subscriptionId: 'sub-1',
-    invoiceNinjaId: 'ninja-1',
-    preAuthUrl: 'https://example.com/auth',
     createdAt: '2024-01-01T00:00:00Z',
+    canPay: true,
+    canDownload: true,
+    canPreview: true,
   };
 
   beforeEach(() => {
@@ -40,6 +54,8 @@ describe('InvoicesEffects', () => {
       createInvoice: jest.fn(),
       getInvoicesSummary: jest.fn(),
       getOpenOverdueInvoices: jest.fn(),
+      getInvoiceDetails: jest.fn(),
+      initiatePayment: jest.fn(),
     } as never;
 
     TestBed.configureTestingModule({
@@ -126,7 +142,7 @@ describe('InvoicesEffects', () => {
 
   describe('createInvoice$', () => {
     it('should return createInvoiceSuccess on success', (done) => {
-      const response = { invoiceId: 'inv-1', preAuthUrl: 'https://example.com' };
+      const response = { invoiceRefId: 'inv-1', invoiceNumber: 'INV-001' };
 
       actions$ = of(createInvoice({ subscriptionId, dto: {} }));
       invoicesService.createInvoice.mockReturnValue(of(response));
@@ -143,6 +159,69 @@ describe('InvoicesEffects', () => {
 
       createInvoice$(actions$, invoicesService).subscribe((result) => {
         expect(result).toEqual(createInvoiceFailure({ error: 'Create failed' }));
+        done();
+      });
+    });
+  });
+
+  describe('loadInvoiceDetails$', () => {
+    it('should return loadInvoiceDetailsSuccess on success', (done) => {
+      const detail = {
+        id: 'inv-1',
+        subscriptionId,
+        invoiceNumber: 'INV-001',
+        status: 'issued',
+        currency: 'EUR',
+        subtotalNet: 100,
+        taxTotal: 19,
+        totalGross: 119,
+        balanceDue: 119,
+        lineItems: [],
+        taxBreakdown: [],
+        createdAt: '2024-01-01T00:00:00Z',
+        canPay: true,
+        canDownload: true,
+        canPreview: true,
+      };
+
+      actions$ = of(loadInvoiceDetails({ subscriptionId, invoiceRefId: 'inv-1' }));
+      invoicesService.getInvoiceDetails.mockReturnValue(of(detail));
+
+      loadInvoiceDetails$(actions$, invoicesService).subscribe((result) => {
+        expect(result).toEqual(loadInvoiceDetailsSuccess({ invoiceRefId: 'inv-1', detail }));
+        done();
+      });
+    });
+
+    it('should return loadInvoiceDetailsFailure on error', (done) => {
+      actions$ = of(loadInvoiceDetails({ subscriptionId, invoiceRefId: 'inv-1' }));
+      invoicesService.getInvoiceDetails.mockReturnValue(throwError(() => new Error('Details failed')));
+
+      loadInvoiceDetails$(actions$, invoicesService).subscribe((result) => {
+        expect(result).toEqual(loadInvoiceDetailsFailure({ error: 'Details failed' }));
+        done();
+      });
+    });
+  });
+
+  describe('initiatePaymentRedirect$', () => {
+    it('should return initiatePaymentSuccess on success', (done) => {
+      actions$ = of(initiatePayment({ subscriptionId, invoiceRefId: 'inv-1' }));
+      invoicesService.initiatePayment.mockReturnValue(of({ checkoutUrl: 'https://checkout.stripe.com/pay' }));
+
+      initiatePaymentRedirect$(actions$, invoicesService).subscribe((result) => {
+        expect(invoicesService.initiatePayment).toHaveBeenCalledWith(subscriptionId, 'inv-1');
+        expect(result).toEqual(initiatePaymentSuccess());
+        done();
+      });
+    });
+
+    it('should return initiatePaymentFailure on error', (done) => {
+      actions$ = of(initiatePayment({ subscriptionId, invoiceRefId: 'inv-1' }));
+      invoicesService.initiatePayment.mockReturnValue(throwError(() => new Error('Payment failed')));
+
+      initiatePaymentRedirect$(actions$, invoicesService).subscribe((result) => {
+        expect(result).toEqual(initiatePaymentFailure({ error: 'Payment failed' }));
         done();
       });
     });
