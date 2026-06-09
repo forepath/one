@@ -51,6 +51,9 @@ describe('InvoiceService', () => {
       country: 'DE',
     }),
   };
+  const invoiceEmailService = {
+    notifyVoidDocument: jest.fn(),
+  };
   const auditLog = {
     log: jest.fn(),
   };
@@ -64,6 +67,7 @@ describe('InvoiceService', () => {
     invoiceIssuanceService as never,
     invoicePdfService as never,
     invoiceVoidDocumentsRepository as never,
+    invoiceEmailService as never,
     billingIssuerConfig as never,
     auditLog as never,
   );
@@ -142,6 +146,32 @@ describe('InvoiceService', () => {
         pdfStorageKey: 'sub-1/inv-1-void.pdf',
       });
       expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ process: 'invoice.void' }));
+      expect(invoiceEmailService.notifyVoidDocument).toHaveBeenCalledWith(
+        invoice,
+        'sub-1/inv-1-void.pdf',
+        'INV-2026-00001-CN',
+      );
+    });
+
+    it('does not resend void document email when void document already exists', async () => {
+      const invoice = {
+        id: 'inv-1',
+        subscriptionId,
+        userId,
+        invoiceNumber: 'INV-2026-00001',
+        status: InvoiceStatus.ISSUED,
+      } as InvoiceEntity;
+
+      invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue(invoice);
+      invoiceVoidDocumentsRepository.findByInvoiceId.mockResolvedValue({
+        documentNumber: 'INV-2026-00001-CN',
+        pdfStorageKey: 'sub-1/inv-1-void.pdf',
+      });
+      invoicesRepository.update.mockResolvedValue({ ...invoice, status: InvoiceStatus.VOID });
+
+      await service.voidInvoice('inv-1', subscriptionId);
+
+      expect(invoiceEmailService.notifyVoidDocument).not.toHaveBeenCalled();
     });
 
     it('throws when invoice not found', async () => {

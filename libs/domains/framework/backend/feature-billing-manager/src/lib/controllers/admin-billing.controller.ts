@@ -23,6 +23,7 @@ import type {
   PaginatedBillingAuditLogsResponseDto,
 } from '../dto/admin-billing.dto';
 import type { AdminInvoiceListItemDto } from '../dto/admin-billing.dto';
+import { AdminBillNowService } from '../services/admin-bill-now.service';
 import { BillingAdminService } from '../services/billing-admin.service';
 import { BillingAuditLogService } from '../services/billing-audit-log.service';
 import { BillingStatisticsQueryService } from '../services/billing-statistics-query.service';
@@ -35,6 +36,7 @@ import { getUserFromRequest, type RequestWithUser } from '../utils/billing-acces
 export class AdminBillingController {
   constructor(
     private readonly billingAdminService: BillingAdminService,
+    private readonly adminBillNowService: AdminBillNowService,
     private readonly invoiceAdminService: InvoiceAdminService,
     private readonly statisticsQueryService: BillingStatisticsQueryService,
     private readonly auditLogService: BillingAuditLogService,
@@ -53,7 +55,7 @@ export class AdminBillingController {
       throw new BadRequestException('User not authenticated');
     }
 
-    return await this.billingAdminService.billNow(userInfo.userId, dto);
+    return await this.adminBillNowService.queueBillNow(userInfo.userId, dto);
   }
 
   @Get('invoices')

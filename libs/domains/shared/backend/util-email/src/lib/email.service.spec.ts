@@ -119,6 +119,23 @@ describe('EmailService', () => {
       );
     });
 
+    it('should include attachments when provided', async () => {
+      const attachment = { filename: 'invoice.pdf', content: Buffer.from('pdf') };
+
+      await service.send({
+        to: 'recipient@example.com',
+        subject: 'Invoice',
+        text: 'Please find your invoice attached.',
+        attachments: [attachment],
+      });
+
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachments: [attachment],
+        }),
+      );
+    });
+
     it('should convert newlines to br when html not provided', async () => {
       await service.send({
         to: 'recipient@example.com',

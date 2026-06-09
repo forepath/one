@@ -64,7 +64,7 @@ describe('AdminBillingEffects', () => {
   });
 
   it('billNow$ emits success', (done) => {
-    const result = { usersProcessed: 1, invoicesCreated: 1, usersSkipped: 0, errors: [] };
+    const result = { queued: true, requestId: 'req-1', userCount: 1 };
 
     service.billNow.mockReturnValue(of(result));
     actions$ = of(billNow({ dto: {} }));

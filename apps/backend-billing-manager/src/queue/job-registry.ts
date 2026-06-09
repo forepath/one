@@ -1,3 +1,4 @@
+import { AdminBillNowJobName } from '@forepath/framework/backend';
 import { buildCoordinatorJobId } from '@forepath/shared/backend';
 
 /** Central registry for billing-manager BullMQ queues, job names, and coordinator schedules. */
@@ -19,6 +20,8 @@ export const BillingJobName = {
   SUBSCRIPTION_ITEM_UPDATE_UNIT: 'subscription-item-update.unit',
   BACKORDER_RETRY_COORDINATOR: 'backorder-retry.coordinator',
   BACKORDER_RETRY_UNIT: 'backorder-retry.unit',
+  ADMIN_BILL_NOW_COORDINATOR: AdminBillNowJobName.COORDINATOR,
+  ADMIN_BILL_NOW_UNIT: AdminBillNowJobName.UNIT,
 } as const;
 
 export type BillingJobName = (typeof BillingJobName)[keyof typeof BillingJobName];

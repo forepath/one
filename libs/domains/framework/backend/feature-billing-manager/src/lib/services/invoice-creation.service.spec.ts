@@ -306,7 +306,7 @@ describe('InvoiceCreationService', () => {
       const usageRecordsRepository = { findLatestForSubscription: jest.fn().mockResolvedValue(null) } as any;
       const billingScheduleService = new BillingScheduleService();
       const invoicesRepository = { findLatestBySubscription: jest.fn().mockResolvedValue(null) } as any;
-      const openPositionsRepository = { markBilled: jest.fn().mockResolvedValue({}) } as any;
+      const openPositionsRepository = { markManyBilled: jest.fn().mockResolvedValue(undefined) } as any;
       const service = new InvoiceCreationService(
         subscriptionsRepository,
         plansRepository,
@@ -329,12 +329,66 @@ describe('InvoiceCreationService', () => {
           expect.objectContaining({ description: 'Subscription 456' }),
         ]),
       });
-      expect(openPositionsRepository.markBilled).toHaveBeenCalledWith('pos-1', 'ref-1');
-      expect(openPositionsRepository.markBilled).toHaveBeenCalledWith('pos-2', 'ref-1');
+      expect(openPositionsRepository.markManyBilled).toHaveBeenCalledWith(['pos-1', 'pos-2'], 'ref-1');
+    });
+
+    it('creates one line item per subscription when duplicate open positions exist', async () => {
+      const positions = [
+        {
+          id: 'pos-1',
+          subscriptionId: 'sub-1',
+          userId: 'user-1',
+          description: 'Subscription 123',
+          billUntil: new Date('2024-01-01'),
+          skipIfNoBillableAmount: true,
+        },
+        {
+          id: 'pos-2',
+          subscriptionId: 'sub-1',
+          userId: 'user-1',
+          description: 'Subscription 123',
+          billUntil: new Date('2024-02-01'),
+          skipIfNoBillableAmount: true,
+        },
+      ] as any;
+      const subscriptionsRepository = {
+        findByIdOrThrow: jest.fn().mockResolvedValue({ ...subscriptionBase, id: 'sub-1' }),
+      } as any;
+      const plansRepository = { findByIdOrThrow: jest.fn().mockResolvedValue(planBase) } as any;
+      const pricingService = { calculate: jest.fn().mockReturnValue({ totalPrice: 10 }) } as any;
+      const invoiceService = {
+        createAndIssue: jest.fn().mockResolvedValue({ invoiceRefId: 'ref-1' }),
+      } as any;
+      const usageRecordsRepository = { findLatestForSubscription: jest.fn().mockResolvedValue(null) } as any;
+      const billingScheduleService = new BillingScheduleService();
+      const invoicesRepository = { findLatestBySubscription: jest.fn().mockResolvedValue(null) } as any;
+      const openPositionsRepository = { markManyBilled: jest.fn().mockResolvedValue(undefined) } as any;
+      const service = new InvoiceCreationService(
+        subscriptionsRepository,
+        plansRepository,
+        pricingService,
+        invoiceService,
+        usageRecordsRepository,
+        billingScheduleService,
+        openPositionsRepository,
+        invoicesRepository,
+      );
+
+      (service as any).getBillableAmountForPosition = jest.fn().mockResolvedValue(10);
+
+      await service.createAccumulatedInvoice('user-1', positions);
+
+      expect(invoiceService.createAndIssue).toHaveBeenCalledWith(
+        expect.objectContaining({
+          lineInputs: [expect.objectContaining({ unitPriceNet: 10 })],
+        }),
+      );
+      expect(invoiceService.createAndIssue.mock.calls[0][0].lineInputs).toHaveLength(1);
+      expect(openPositionsRepository.markManyBilled).toHaveBeenCalledWith(['pos-1', 'pos-2'], 'ref-1');
     });
 
     it('returns undefined when no positions', async () => {
-      const openPositionsRepository = { markBilled: jest.fn() } as any;
+      const openPositionsRepository = { markManyBilled: jest.fn() } as any;
       const service = new InvoiceCreationService(
         {} as any,
         {} as any,
@@ -348,7 +402,7 @@ describe('InvoiceCreationService', () => {
       const result = await service.createAccumulatedInvoice('user-1', []);
 
       expect(result).toBeUndefined();
-      expect(openPositionsRepository.markBilled).not.toHaveBeenCalled();
+      expect(openPositionsRepository.markManyBilled).not.toHaveBeenCalled();
     });
 
     it('returns undefined when total below minimum and all positions skip', async () => {
@@ -369,7 +423,7 @@ describe('InvoiceCreationService', () => {
       const usageRecordsRepository = { findLatestForSubscription: jest.fn().mockResolvedValue(null) } as any;
       const billingScheduleService = new BillingScheduleService();
       const invoicesRepository = { findLatestBySubscription: jest.fn().mockResolvedValue(null) } as any;
-      const openPositionsRepository = { markBilled: jest.fn() } as any;
+      const openPositionsRepository = { markManyBilled: jest.fn() } as any;
       const service = new InvoiceCreationService(
         subscriptionsRepository,
         plansRepository,
@@ -387,7 +441,7 @@ describe('InvoiceCreationService', () => {
 
       expect(result).toBeUndefined();
       expect(invoiceService.createAndIssue).not.toHaveBeenCalled();
-      expect(openPositionsRepository.markBilled).not.toHaveBeenCalled();
+      expect(openPositionsRepository.markManyBilled).not.toHaveBeenCalled();
     });
   });
 

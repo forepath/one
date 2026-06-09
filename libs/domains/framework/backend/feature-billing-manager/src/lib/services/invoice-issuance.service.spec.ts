@@ -38,6 +38,9 @@ describe('InvoiceIssuanceService', () => {
   const invoicePdfService = {
     generateAndStore: jest.fn(),
   };
+  const invoiceEmailService = {
+    notifyInvoiceIssued: jest.fn(),
+  };
   const auditLog = {
     log: jest.fn(),
   };
@@ -50,6 +53,7 @@ describe('InvoiceIssuanceService', () => {
     servicePlansRepository as never,
     billingIssuerConfig as never,
     invoicePdfService as never,
+    invoiceEmailService as never,
     auditLog as never,
   );
   const draftInvoice = {
@@ -152,6 +156,10 @@ describe('InvoiceIssuanceService', () => {
       expect.objectContaining({ process: 'invoice.issue', invoiceId: 'inv-1' }),
     );
     expect(result.pdfStorageKey).toBe('sub-1/inv-1.pdf');
+    expect(invoiceEmailService.notifyInvoiceIssued).toHaveBeenCalledWith(
+      expect.objectContaining({ pdfStorageKey: 'sub-1/inv-1.pdf' }),
+      'sub-1/inv-1.pdf',
+    );
   });
 
   it('throws when invoice is not a draft', async () => {

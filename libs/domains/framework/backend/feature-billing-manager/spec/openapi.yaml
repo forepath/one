@@ -1625,7 +1625,7 @@ paths:
               $ref: '#/components/schemas/AdminBillNowDto'
       responses:
         '200':
-          description: Bill-now result summary
+          description: Bill-now job queued
           content:
             application/json:
               schema:
@@ -2653,14 +2653,11 @@ components:
         message: { type: string }
     AdminBillNowResponse:
       type: object
+      required: [queued, requestId, userCount]
       properties:
-        usersProcessed: { type: integer }
-        invoicesCreated: { type: integer }
-        usersSkipped: { type: integer }
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/AdminBillNowError'
+        queued: { type: boolean }
+        requestId: { type: string, format: uuid }
+        userCount: { type: integer }
     AdminInvoiceListItem:
       allOf:
         - $ref: '#/components/schemas/InvoiceResponse'

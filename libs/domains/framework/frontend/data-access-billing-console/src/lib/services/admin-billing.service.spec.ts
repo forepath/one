@@ -35,14 +35,15 @@ describe('AdminBillingService', () => {
 
   it('posts bill-now', (done) => {
     service.billNow({ userId: 'user-1' }).subscribe((res) => {
-      expect(res.invoicesCreated).toBe(1);
+      expect(res.queued).toBe(true);
+      expect(res.userCount).toBe(1);
       done();
     });
     const req = httpMock.expectOne(`${apiUrl}/admin/billing/bill-now`);
 
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ userId: 'user-1' });
-    req.flush({ usersProcessed: 1, invoicesCreated: 1, usersSkipped: 0, errors: [] });
+    req.flush({ queued: true, requestId: 'req-1', userCount: 1 });
   });
 
   it('lists invoices with query params', (done) => {

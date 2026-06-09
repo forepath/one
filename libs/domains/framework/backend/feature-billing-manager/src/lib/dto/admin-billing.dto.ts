@@ -13,16 +13,10 @@ export class AdminBillNowDto {
   userId?: string;
 }
 
-export class AdminBillNowErrorDto {
-  userId!: string;
-  message!: string;
-}
-
 export class AdminBillNowResponseDto {
-  usersProcessed!: number;
-  invoicesCreated!: number;
-  usersSkipped!: number;
-  errors!: AdminBillNowErrorDto[];
+  queued!: boolean;
+  requestId!: string;
+  userCount!: number;
 }
 
 export class AdminInvoiceListItemDto extends InvoiceResponseDto {

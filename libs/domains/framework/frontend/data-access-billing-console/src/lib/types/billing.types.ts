@@ -531,16 +531,10 @@ export interface AdminBillNowDto {
   userId?: string;
 }
 
-export interface AdminBillNowError {
-  userId: string;
-  message: string;
-}
-
 export interface AdminBillNowResponse {
-  usersProcessed: number;
-  invoicesCreated: number;
-  usersSkipped: number;
-  errors: AdminBillNowError[];
+  queued: boolean;
+  requestId: string;
+  userCount: number;
 }
 
 export interface AdminInvoiceListItem extends InvoiceResponse {

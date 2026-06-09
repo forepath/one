@@ -15,6 +15,7 @@ import { SubscriptionsRepository } from '../repositories/subscriptions.repositor
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
 import { buildCreditNoteNumber } from './e-invoice-document-options';
+import { InvoiceEmailService } from './invoice-email.service';
 import { InvoiceIssuanceService } from './invoice-issuance.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
@@ -41,6 +42,7 @@ export class InvoiceService {
     private readonly invoiceIssuanceService: InvoiceIssuanceService,
     private readonly invoicePdfService: InvoicePdfService,
     private readonly invoiceVoidDocumentsRepository: InvoiceVoidDocumentsRepository,
+    private readonly invoiceEmailService: InvoiceEmailService,
     private readonly billingIssuerConfig: BillingIssuerConfigService,
     private readonly auditLog: BillingAuditLogService,
   ) {}
@@ -120,7 +122,13 @@ export class InvoiceService {
     const existingVoidDocument = await this.invoiceVoidDocumentsRepository.findByInvoiceId(invoiceId);
 
     if (!existingVoidDocument) {
-      await this.ensureVoidDocumentStored(invoice, voidedAt);
+      const voidDocumentStorageKey = await this.ensureVoidDocumentStored(invoice, voidedAt);
+
+      await this.invoiceEmailService.notifyVoidDocument(
+        invoice,
+        voidDocumentStorageKey,
+        buildCreditNoteNumber(invoice.invoiceNumber),
+      );
     }
 
     const voided = await this.invoicesRepository.update(invoiceId, {

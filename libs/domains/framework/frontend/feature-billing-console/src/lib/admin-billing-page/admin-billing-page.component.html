@@ -1,13 +1,9 @@
 <div class="admin-billing-container border-top d-flex flex-column h-100">
   <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminBilling-title">Billing administration</h5>
-    <button
-      type="button"
-      class="btn btn-primary btn-sm"
-      (click)="openBillNowModal()"
-      i18n="@@featureAdminBilling-billNow"
-    >
-      Bill now
+    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminBilling-title">Billing Administration</h5>
+    <button type="button" class="btn btn-primary btn-sm" (click)="openBillNowModal()">
+      <i class="bi bi-cash-coin me-1"></i>
+      <span i18n="@@featureAdminBilling-billNow">Bill now</span>
     </button>
   </div>
 
@@ -424,7 +420,7 @@
         @if (billNowResult$ | async; as result) {
           <div class="alert alert-info mt-3 mb-0" role="status">
             <span i18n="@@featureAdminBilling-billNowResult"
-              >Processed {{ result.usersProcessed }} users, created {{ result.invoicesCreated }} invoices.</span
+              >Billing queued for {{ result.userCount }} user(s). Request ID: {{ result.requestId }}.</span
             >
           </div>
         }

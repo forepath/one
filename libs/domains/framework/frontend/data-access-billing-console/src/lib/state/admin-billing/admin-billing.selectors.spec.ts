@@ -7,7 +7,7 @@ describe('adminBillingSelectors', () => {
     summaryLoading: false,
     summaryError: null,
     billNowLoading: false,
-    billNowResult: { usersProcessed: 1, invoicesCreated: 1, usersSkipped: 0, errors: [] },
+    billNowResult: { queued: true, requestId: 'req-1', userCount: 1 },
     billNowError: null,
     openOverdueItems: [],
     openOverdueTotal: 0,
@@ -33,7 +33,7 @@ describe('adminBillingSelectors', () => {
   });
 
   it('selectBillNowResult', () => {
-    expect(selectBillNowResult.projector(state)?.invoicesCreated).toBe(1);
+    expect(selectBillNowResult.projector(state)?.userCount).toBe(1);
   });
 
   it('selectAdminOpenOverdueItems', () => {

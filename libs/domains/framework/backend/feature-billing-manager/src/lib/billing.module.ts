@@ -45,6 +45,8 @@ import { UsageRecordEntity } from './entities/usage-record.entity';
 import { BillingStatusGateway } from './gateways/billing-status.gateway';
 import { PaymentProcessorFactory } from './payment-processors/payment-processor.factory';
 import { StripePaymentProcessor } from './payment-processors/processors/stripe-payment.processor';
+import { AdminBillNowEnqueueAdapter } from './queue/admin-bill-now-enqueue.adapter';
+import { ADMIN_BILL_NOW_ENQUEUE } from './queue/admin-bill-now-enqueue.token';
 import { AvailabilitySnapshotsRepository } from './repositories/availability-snapshots.repository';
 import { BackordersRepository } from './repositories/backorders.repository';
 import { BillingAuditLogsRepository } from './repositories/billing-audit-logs.repository';
@@ -64,6 +66,7 @@ import { SubscriptionItemsRepository } from './repositories/subscription-items.r
 import { SubscriptionsRepository } from './repositories/subscriptions.repository';
 import { UsageRecordsRepository } from './repositories/usage-records.repository';
 import { UsersBillingDayRepository } from './repositories/users-billing-day.repository';
+import { AdminBillNowService } from './services/admin-bill-now.service';
 import { AvailabilityService } from './services/availability.service';
 import { BackorderRetryJobHandler } from './services/backorder-retry.job-handler';
 import { BackorderService } from './services/backorder.service';
@@ -82,6 +85,7 @@ import { HetznerProvisioningService } from './services/hetzner-provisioning.serv
 import { HostnameReservationService } from './services/hostname-reservation.service';
 import { InvoiceAdminService } from './services/invoice-admin.service';
 import { InvoiceCreationService } from './services/invoice-creation.service';
+import { InvoiceEmailService } from './services/invoice-email.service';
 import { InvoiceIssuanceService } from './services/invoice-issuance.service';
 import { InvoiceOverdueJobHandler } from './services/invoice-overdue.job-handler';
 import { InvoicePdfHtmlRendererService } from './services/invoice-pdf-html-renderer.service';
@@ -332,6 +336,12 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     TaxRateConfigService,
     TaxCalculationService,
     BillingIssuerConfigService,
+    AdminBillNowEnqueueAdapter,
+    {
+      provide: ADMIN_BILL_NOW_ENQUEUE,
+      useExisting: AdminBillNowEnqueueAdapter,
+    },
+    AdminBillNowService,
     BillingAdminService,
     BillingAuditLogService,
     BillingStatisticsQueryService,
@@ -341,6 +351,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     InvoicePdfTemplateService,
     InvoicePdfHtmlRendererService,
     InvoicePdfService,
+    InvoiceEmailService,
     InvoiceService,
     InvoiceIssuanceService,
     InvoiceCreationService,
@@ -395,6 +406,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     BillingStatusGateway,
   ],
   exports: [
+    AdminBillNowService,
     AvailabilityService,
     BackorderService,
     BackorderRetryJobHandler,

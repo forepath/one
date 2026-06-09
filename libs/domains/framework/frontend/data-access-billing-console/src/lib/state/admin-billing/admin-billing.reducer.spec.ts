@@ -21,7 +21,7 @@ describe('adminBillingReducer', () => {
   });
 
   it('stores bill-now result', () => {
-    const result = { usersProcessed: 1, invoicesCreated: 1, usersSkipped: 0, errors: [] };
+    const result = { queued: true, requestId: 'req-1', userCount: 1 };
     const state = adminBillingReducer(initialAdminBillingState, billNowSuccess({ result }));
 
     expect(state.billNowResult).toEqual(result);

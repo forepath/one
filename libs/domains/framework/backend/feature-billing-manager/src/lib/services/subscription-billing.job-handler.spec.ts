@@ -15,6 +15,7 @@ describe('SubscriptionBillingJobHandler', () => {
   const billingScheduleService = new BillingScheduleService();
   const openPositionsRepository = {
     create: jest.fn(),
+    hasUnbilledForSubscription: jest.fn(),
   } as any;
   const handler = new SubscriptionBillingJobHandler(
     subscriptionsRepository,
@@ -33,7 +34,17 @@ describe('SubscriptionBillingJobHandler', () => {
     await expect(handler.findDueSubscriptionIds()).resolves.toEqual(['sub-1']);
   });
 
+  it('processSubscription skips when an unbilled open position already exists', async () => {
+    openPositionsRepository.hasUnbilledForSubscription.mockResolvedValue(true);
+
+    await handler.processSubscription('sub-1');
+
+    expect(openPositionsRepository.create).not.toHaveBeenCalled();
+    expect(subscriptionsRepository.update).not.toHaveBeenCalled();
+  });
+
   it('processSubscription creates open position and updates schedule', async () => {
+    openPositionsRepository.hasUnbilledForSubscription.mockResolvedValue(false);
     subscriptionsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'sub-1',
       userId: 'user-1',

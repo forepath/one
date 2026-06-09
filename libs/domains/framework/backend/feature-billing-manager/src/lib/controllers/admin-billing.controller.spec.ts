@@ -5,7 +5,8 @@ import { KEYCLOAK_ROLES_KEY, USERS_ROLES_KEY, UserRole } from '@forepath/identit
 import { AdminBillingController } from './admin-billing.controller';
 
 describe('AdminBillingController', () => {
-  const billingAdminService = { getGlobalSummary: jest.fn(), billNow: jest.fn() };
+  const billingAdminService = { getGlobalSummary: jest.fn() };
+  const adminBillNowService = { queueBillNow: jest.fn() };
   const invoiceAdminService = {
     listInvoices: jest.fn(),
     voidInvoice: jest.fn(),
@@ -16,6 +17,7 @@ describe('AdminBillingController', () => {
   const auditLogService = { listForInvoice: jest.fn() };
   const controller = new AdminBillingController(
     billingAdminService as never,
+    adminBillNowService as never,
     invoiceAdminService as never,
     statisticsQueryService as never,
     auditLogService as never,
@@ -42,15 +44,14 @@ describe('AdminBillingController', () => {
   });
 
   it('billNow passes admin user id', async () => {
-    billingAdminService.billNow.mockResolvedValue({
-      usersProcessed: 1,
-      invoicesCreated: 0,
-      usersSkipped: 1,
-      errors: [],
+    adminBillNowService.queueBillNow.mockResolvedValue({
+      queued: true,
+      requestId: 'req-1',
+      userCount: 2,
     });
 
     await controller.billNow({}, { user: { id: 'admin-1', roles: ['admin'] } } as never);
 
-    expect(billingAdminService.billNow).toHaveBeenCalledWith('admin-1', {});
+    expect(adminBillNowService.queueBillNow).toHaveBeenCalledWith('admin-1', {});
   });
 });

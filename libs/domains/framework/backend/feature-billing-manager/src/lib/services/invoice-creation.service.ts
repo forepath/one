@@ -10,6 +10,7 @@ import { OpenPositionsRepository } from '../repositories/open-positions.reposito
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { UsageRecordsRepository } from '../repositories/usage-records.repository';
+import { groupOpenPositionsBySubscription } from '../utils/open-position-grouping.util';
 
 import { BillingScheduleService } from './billing-schedule.service';
 import { InvoiceService } from './invoice.service';
@@ -87,51 +88,56 @@ export class InvoiceCreationService {
       return undefined;
     }
 
-    const positionAmounts: { position: OpenPositionEntity; amount: number }[] = [];
+    const groups = groupOpenPositionsBySubscription(positions);
+    const billableGroups: {
+      group: (typeof groups)[number];
+      amount: number;
+    }[] = [];
 
-    for (const position of positions) {
-      if (position.userId !== userId) {
+    for (const group of groups) {
+      if (group.representative.userId !== userId) {
         throw new BadRequestException('Position does not belong to user');
       }
 
-      const amount = await this.getBillableAmountForPosition(position);
+      const amount = await this.getBillableAmountForPosition(group.representative);
 
-      positionAmounts.push({ position, amount });
+      if (amount >= MIN_BILLABLE_AMOUNT) {
+        billableGroups.push({ group, amount });
+      }
     }
 
-    const billable = positionAmounts.filter((p) => p.amount >= MIN_BILLABLE_AMOUNT);
-    const total = billable.reduce((sum, p) => sum + p.amount, 0);
+    const total = billableGroups.reduce((sum, entry) => sum + entry.amount, 0);
 
     if (total < MIN_BILLABLE_AMOUNT) {
       return undefined;
     }
 
-    const lineInputs = billable.map((p) => ({
-      description: p.position.description ?? 'Subscription',
+    const lineInputs = billableGroups.map(({ group, amount }) => ({
+      description: group.representative.description ?? 'Subscription',
       quantity: 1,
-      unitPriceNet: Math.round(p.amount * 100) / 100,
+      unitPriceNet: Math.round(amount * 100) / 100,
       taxCategory: TaxCategory.STANDARD,
     }));
-    const primarySubscriptionId = billable[0].position.subscriptionId;
+    const primarySubscriptionId = billableGroups[0].group.subscriptionId;
     const result = await this.invoiceService.createAndIssue({
       subscriptionId: primarySubscriptionId,
       userId,
       lineInputs,
     });
+    const positionIds = billableGroups.flatMap(({ group }) => group.positions.map((position) => position.id));
 
-    for (const { position } of billable) {
-      await this.openPositionsRepository.markBilled(position.id, result.invoiceRefId);
-    }
+    await this.openPositionsRepository.markManyBilled(positionIds, result.invoiceRefId);
 
     return { invoiceRefId: result.invoiceRefId };
   }
 
   async getUnbilledTotalForUser(userId: string): Promise<number> {
     const positions = await this.openPositionsRepository.findUnbilledByUserId(userId);
+    const groups = groupOpenPositionsBySubscription(positions);
     let total = 0;
 
-    for (const position of positions) {
-      const amount = await this.getBillableAmountForPosition(position);
+    for (const group of groups) {
+      const amount = await this.getBillableAmountForPosition(group.representative);
 
       if (amount >= MIN_BILLABLE_AMOUNT) {
         total += amount;
