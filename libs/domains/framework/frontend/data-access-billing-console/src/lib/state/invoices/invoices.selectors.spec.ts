@@ -1,7 +1,10 @@
-import type { InvoiceResponse } from '../../types/billing.types';
+import type { InvoiceDetailResponse, InvoiceResponse } from '../../types/billing.types';
 
 import { initialInvoicesState, type InvoicesState } from './invoices.reducer';
 import {
+  selectHasInvoicesBySubscriptionId,
+  selectInvoiceDetailByRefId,
+  selectInvoiceDetailsLoading,
   selectInvoicesBySubscriptionId,
   selectInvoicesCountBySubscriptionId,
   selectInvoicesCreating,
@@ -10,11 +13,10 @@ import {
   selectInvoicesLoading,
   selectInvoicesLoadingAny,
   selectInvoicesState,
-  selectHasInvoicesBySubscriptionId,
-  selectRefreshingInvoiceRefId,
   selectInvoicesSummary,
-  selectInvoicesSummaryLoading,
   selectInvoicesSummaryError,
+  selectInvoicesSummaryLoading,
+  selectPayingInvoiceRefId,
 } from './invoices.selectors';
 
 describe('Invoices Selectors', () => {
@@ -22,9 +24,27 @@ describe('Invoices Selectors', () => {
   const mockInvoice: InvoiceResponse = {
     id: 'inv-1',
     subscriptionId: 'sub-1',
-    invoiceNinjaId: 'ninja-1',
-    preAuthUrl: 'https://example.com/auth',
     createdAt: '2024-01-01T00:00:00Z',
+    canPay: true,
+    canDownload: true,
+    canPreview: true,
+  };
+  const mockDetail: InvoiceDetailResponse = {
+    id: 'inv-1',
+    subscriptionId: 'sub-1',
+    invoiceNumber: 'INV-001',
+    status: 'issued',
+    currency: 'EUR',
+    subtotalNet: 100,
+    taxTotal: 19,
+    totalGross: 119,
+    balanceDue: 119,
+    lineItems: [],
+    taxBreakdown: [],
+    createdAt: '2024-01-01T00:00:00Z',
+    canPay: true,
+    canDownload: true,
+    canPreview: true,
   };
   const createState = (overrides?: Partial<InvoicesState>): InvoicesState => ({
     ...initialInvoicesState,
@@ -69,18 +89,46 @@ describe('Invoices Selectors', () => {
     });
   });
 
-  describe('selectRefreshingInvoiceRefId', () => {
-    it('should return refreshingInvoiceRefId', () => {
-      const state = createState({ refreshingInvoiceRefId: 'ref-1' });
+  describe('selectPayingInvoiceRefId', () => {
+    it('should return payingInvoiceRefId', () => {
+      const state = createState({ payingInvoiceRefId: 'ref-1' });
       const rootState = { invoices: state };
 
-      expect(selectRefreshingInvoiceRefId(rootState as never)).toBe('ref-1');
+      expect(selectPayingInvoiceRefId(rootState as never)).toBe('ref-1');
     });
-    it('should return null when not refreshing', () => {
+    it('should return null when not paying', () => {
       const state = createState();
       const rootState = { invoices: state };
 
-      expect(selectRefreshingInvoiceRefId(rootState as never)).toBeNull();
+      expect(selectPayingInvoiceRefId(rootState as never)).toBeNull();
+    });
+  });
+
+  describe('selectInvoiceDetailsLoading', () => {
+    it('should return detailsLoading', () => {
+      const state = createState({ detailsLoading: true });
+      const rootState = { invoices: state };
+
+      expect(selectInvoiceDetailsLoading(rootState as never)).toBe(true);
+    });
+  });
+
+  describe('selectInvoiceDetailByRefId', () => {
+    it('should return stored detail for ref id', () => {
+      const state = createState({
+        invoiceDetails: { 'inv-1': mockDetail },
+      });
+      const rootState = { invoices: state };
+      const selector = selectInvoiceDetailByRefId('inv-1');
+
+      expect(selector(rootState as never)).toEqual(mockDetail);
+    });
+    it('should return null when detail not loaded', () => {
+      const state = createState();
+      const rootState = { invoices: state };
+      const selector = selectInvoiceDetailByRefId('inv-1');
+
+      expect(selector(rootState as never)).toBeNull();
     });
   });
 

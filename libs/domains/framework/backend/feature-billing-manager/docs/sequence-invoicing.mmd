@@ -2,8 +2,8 @@ sequenceDiagram
     participant User
     participant BillingAPI
     participant UsageStore
-    participant InvoiceNinja
     participant Database
+    participant PdfService
 
     User->>BillingAPI: POST /usage/record
     BillingAPI->>UsageStore: Store usage record
@@ -12,13 +12,12 @@ sequenceDiagram
 
     Note over User,Database: Manual invoice create (POST /invoices/:subscriptionId)
     User->>BillingAPI: POST /invoices/:subscriptionId
-    BillingAPI->>Database: Fetch subscription + plan
-    BillingAPI->>Database: Fetch latest usage
-    BillingAPI->>InvoiceNinja: Sync customer profile
-    InvoiceNinja-->>BillingAPI: clientId
-    BillingAPI->>InvoiceNinja: POST /invoices
-    InvoiceNinja-->>BillingAPI: invoice id + preAuthUrl
-    BillingAPI->>Database: Insert invoice ref
+    BillingAPI->>Database: Fetch subscription + plan + open positions
+    BillingAPI->>Database: Fetch latest usage (optional)
+    BillingAPI->>Database: Issue invoice (line items, tax, number sequence)
+    BillingAPI->>PdfService: Generate PDF + ZUGFeRD XML embed
+    PdfService-->>BillingAPI: pdf path
+    BillingAPI->>Database: Update invoice status + pdf path
     BillingAPI-->>User: 200 CreateInvoiceResponse
 
     Note over User,Database: Scheduled invoice create from open positions (see sequence-open-positions-billing-day.mmd)

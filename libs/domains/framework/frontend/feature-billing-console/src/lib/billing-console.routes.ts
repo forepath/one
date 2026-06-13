@@ -1,5 +1,16 @@
 import { Route } from '@angular/router';
 import {
+  AdminBillingFacade,
+  adminMarkPaid$,
+  adminMarkUnpaid$,
+  adminVoidInvoice$,
+  adminBillingReducer,
+  billNow$,
+  loadAdminAuditLogs$,
+  loadAdminBillingSummary$,
+  loadAdminOpenOverdue$,
+  loadAdminStatisticsByProduct$,
+  loadAdminStatisticsSummary$,
   AvailabilityFacade,
   availabilityReducer,
   BackordersFacade,
@@ -29,7 +40,10 @@ import {
   loadCustomerProfile$,
   loadInvoices$,
   loadInvoicesSummary$,
+  loadInvoiceDetails$,
   loadOpenOverdueInvoices$,
+  reloadInvoicesAfterCreate$,
+  initiatePaymentRedirect$,
   loadOverviewServerInfo$,
   loadProviderDetails$,
   loadServicePlan$,
@@ -63,6 +77,7 @@ import { authGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 
+import { AdminBillingPageComponent } from './admin-billing-page/admin-billing-page.component';
 import { BillingConsoleContainerComponent } from './container/container.component';
 import { billingAdminGuard } from './guards/billing-admin.guard';
 import { InvoicesComponent } from './invoices/invoices.component';
@@ -117,6 +132,12 @@ export const billingConsoleRoutes: Route[] = [
             component: ServicePlansPageComponent,
             title: $localize`:@@featureContainer-servicePlansTitle:Service Plans :: Agenstra`,
           },
+          {
+            path: 'billing',
+            canActivate: [authGuard, billingAdminGuard],
+            component: AdminBillingPageComponent,
+            title: $localize`:@@featureContainer-adminBillingTitle:Billing :: Agenstra`,
+          },
         ],
       },
       {
@@ -132,6 +153,7 @@ export const billingConsoleRoutes: Route[] = [
       ServicePlansFacade,
       ServiceTypesFacade,
       InvoicesFacade,
+      AdminBillingFacade,
       BackordersFacade,
       CustomerProfileFacade,
       AvailabilityFacade,
@@ -139,6 +161,7 @@ export const billingConsoleRoutes: Route[] = [
       provideState('servicePlans', servicePlansReducer),
       provideState('serviceTypes', serviceTypesReducer),
       provideState('invoices', invoicesReducer),
+      provideState('adminBilling', adminBillingReducer),
       provideState('backorders', backordersReducer),
       provideState('customerProfile', customerProfileReducer),
       provideState('availability', availabilityReducer),
@@ -168,6 +191,9 @@ export const billingConsoleRoutes: Route[] = [
         loadInvoicesSummary$,
         loadOpenOverdueInvoices$,
         createInvoice$,
+        reloadInvoicesAfterCreate$,
+        loadInvoiceDetails$,
+        initiatePaymentRedirect$,
         loadBackorders$,
         loadBackordersBatch$,
         retryBackorder$,
@@ -185,6 +211,15 @@ export const billingConsoleRoutes: Route[] = [
         disconnectBillingDashboardSocket$,
         connectBillingDashboardSocketFailureFallback$,
         billingDashboardSocketApplicationErrorFallback$,
+        loadAdminBillingSummary$,
+        billNow$,
+        loadAdminOpenOverdue$,
+        adminVoidInvoice$,
+        adminMarkPaid$,
+        adminMarkUnpaid$,
+        loadAdminStatisticsSummary$,
+        loadAdminStatisticsByProduct$,
+        loadAdminAuditLogs$,
       }),
     ],
   },

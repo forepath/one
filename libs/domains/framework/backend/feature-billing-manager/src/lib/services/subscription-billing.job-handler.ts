@@ -27,6 +27,12 @@ export class SubscriptionBillingJobHandler {
   }
 
   async processSubscription(subscriptionId: string): Promise<void> {
+    if (await this.openPositionsRepository.hasUnbilledForSubscription(subscriptionId)) {
+      this.logger.debug(`Subscription ${subscriptionId} already has an unbilled open position, skipping`);
+
+      return;
+    }
+
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
 

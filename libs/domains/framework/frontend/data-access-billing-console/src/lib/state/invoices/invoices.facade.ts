@@ -1,26 +1,31 @@
 import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
 
 import { InvoicesService } from '../../services/invoices.service';
-import type { CreateInvoiceDto, InvoiceResponse, InvoicesSummaryResponse } from '../../types/billing.types';
+import type {
+  CreateInvoiceDto,
+  InvoiceDetailResponse,
+  InvoiceResponse,
+  InvoicesSummaryResponse,
+} from '../../types/billing.types';
 
 import {
   clearInvoices,
   createInvoice,
+  initiatePayment,
+  loadInvoiceDetails,
   loadInvoices,
   loadInvoicesSummary as loadInvoicesSummaryAction,
   loadOpenOverdueInvoices,
-  refreshInvoiceLink as refreshInvoiceLinkAction,
-  refreshInvoiceLinkFailure,
-  refreshInvoiceLinkSuccess,
 } from './invoices.actions';
 import {
   selectHasInvoicesBySubscriptionId,
+  selectInvoiceDetailByRefId,
+  selectInvoiceDetailsLoading,
   selectInvoicesBySubscriptionId,
-  selectInvoicesCreating,
   selectInvoicesCountBySubscriptionId,
+  selectInvoicesCreating,
   selectInvoicesError,
   selectInvoicesLoading,
   selectInvoicesLoadingAny,
@@ -30,7 +35,7 @@ import {
   selectOpenOverdueList,
   selectOpenOverdueListError,
   selectOpenOverdueListLoading,
-  selectRefreshingInvoiceRefId,
+  selectPayingInvoiceRefId,
 } from './invoices.selectors';
 
 @Injectable({
@@ -60,8 +65,16 @@ export class InvoicesFacade {
     return this.store.select(selectInvoicesError);
   }
 
-  getRefreshingInvoiceRefId$(): Observable<string | null> {
-    return this.store.select(selectRefreshingInvoiceRefId);
+  getPayingInvoiceRefId$(): Observable<string | null> {
+    return this.store.select(selectPayingInvoiceRefId);
+  }
+
+  getInvoiceDetailsLoading$(): Observable<boolean> {
+    return this.store.select(selectInvoiceDetailsLoading);
+  }
+
+  getInvoiceDetail$(invoiceRefId: string): Observable<InvoiceDetailResponse | null> {
+    return this.store.select(selectInvoiceDetailByRefId(invoiceRefId));
   }
 
   getInvoicesSummary$(): Observable<InvoicesSummaryResponse | null> {
@@ -112,31 +125,24 @@ export class InvoicesFacade {
     this.store.dispatch(createInvoice({ subscriptionId, dto }));
   }
 
-  /**
-   * Fetches a fresh invite link for the invoice and updates the store. Returns an observable that
-   * emits the new preAuthUrl on success (e.g. for opening in a new tab) or throws on error.
-   */
-  refreshInvoiceLink(subscriptionId: string, invoiceRefId: string): Observable<string> {
-    this.store.dispatch(refreshInvoiceLinkAction({ subscriptionId, invoiceRefId }));
+  loadInvoiceDetails(subscriptionId: string, invoiceRefId: string): void {
+    this.store.dispatch(loadInvoiceDetails({ subscriptionId, invoiceRefId }));
+  }
 
-    return this.invoicesService.refreshInvoiceLink(subscriptionId, invoiceRefId).pipe(
-      tap((response) =>
-        this.store.dispatch(
-          refreshInvoiceLinkSuccess({
-            subscriptionId,
-            invoiceRefId,
-            preAuthUrl: response.preAuthUrl,
-          }),
-        ),
-      ),
-      map((response) => response.preAuthUrl),
-      catchError((error) => {
-        const message = error?.error?.message ?? error?.message ?? 'Failed to refresh invoice link';
+  initiatePayment(subscriptionId: string, invoiceRefId: string): void {
+    this.store.dispatch(initiatePayment({ subscriptionId, invoiceRefId }));
+  }
 
-        this.store.dispatch(refreshInvoiceLinkFailure({ error: message }));
-        throw error;
-      }),
-    );
+  downloadInvoicePdf(subscriptionId: string, invoiceRefId: string): Observable<Blob> {
+    return this.invoicesService.downloadInvoicePdf(subscriptionId, invoiceRefId);
+  }
+
+  downloadVoidDocumentPdf(subscriptionId: string, invoiceRefId: string): Observable<Blob> {
+    return this.invoicesService.downloadVoidDocumentPdf(subscriptionId, invoiceRefId);
+  }
+
+  voidInvoice(subscriptionId: string, invoiceRefId: string): Observable<InvoiceResponse> {
+    return this.invoicesService.voidInvoice(subscriptionId, invoiceRefId);
   }
 
   clearInvoices(): void {

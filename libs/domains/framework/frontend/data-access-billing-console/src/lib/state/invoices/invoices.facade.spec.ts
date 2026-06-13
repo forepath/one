@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 
 import { InvoicesService } from '../../services/invoices.service';
 import type { CreateInvoiceDto, InvoiceResponse } from '../../types/billing.types';
@@ -8,31 +8,36 @@ import type { CreateInvoiceDto, InvoiceResponse } from '../../types/billing.type
 import {
   clearInvoices,
   createInvoice,
+  initiatePayment,
+  loadInvoiceDetails,
   loadInvoices,
   loadInvoicesSummary as loadInvoicesSummaryAction,
-  refreshInvoiceLink as refreshInvoiceLinkAction,
-  refreshInvoiceLinkFailure,
-  refreshInvoiceLinkSuccess,
+  loadOpenOverdueInvoices,
 } from './invoices.actions';
 import { InvoicesFacade } from './invoices.facade';
 
 describe('InvoicesFacade', () => {
   let facade: InvoicesFacade;
   let store: jest.Mocked<Store>;
-  let invoicesService: jest.Mocked<Pick<InvoicesService, 'refreshInvoiceLink'>>;
+  let invoicesService: jest.Mocked<
+    Pick<InvoicesService, 'downloadInvoicePdf' | 'downloadVoidDocumentPdf' | 'voidInvoice'>
+  >;
   const subscriptionId = 'sub-1';
   const mockInvoice: InvoiceResponse = {
     id: 'inv-1',
     subscriptionId: 'sub-1',
-    invoiceNinjaId: 'ninja-1',
-    preAuthUrl: 'https://example.com/auth',
     createdAt: '2024-01-01T00:00:00Z',
+    canPay: true,
+    canDownload: true,
+    canPreview: true,
   };
 
   beforeEach(() => {
     store = { select: jest.fn(), dispatch: jest.fn() } as never;
     invoicesService = {
-      refreshInvoiceLink: jest.fn(),
+      downloadInvoicePdf: jest.fn(),
+      downloadVoidDocumentPdf: jest.fn(),
+      voidInvoice: jest.fn(),
     };
 
     TestBed.configureTestingModule({
@@ -71,9 +76,9 @@ describe('InvoicesFacade', () => {
       });
     });
 
-    it('should return refreshingInvoiceRefId observable', (done) => {
+    it('should return payingInvoiceRefId observable', (done) => {
       store.select.mockReturnValue(of('ref-1'));
-      facade.getRefreshingInvoiceRefId$().subscribe((result) => {
+      facade.getPayingInvoiceRefId$().subscribe((result) => {
         expect(result).toBe('ref-1');
         done();
       });
@@ -113,34 +118,55 @@ describe('InvoicesFacade', () => {
       expect(store.dispatch).toHaveBeenCalledWith(loadInvoicesSummaryAction());
     });
 
-    it('refreshInvoiceLink should dispatch request then success and return preAuthUrl', (done) => {
+    it('should dispatch loadInvoiceDetails', () => {
       const invoiceRefId = 'ref-1';
-      const preAuthUrl = 'https://example.com/new-link';
 
-      invoicesService.refreshInvoiceLink.mockReturnValue(of({ preAuthUrl }));
+      facade.loadInvoiceDetails(subscriptionId, invoiceRefId);
+      expect(store.dispatch).toHaveBeenCalledWith(loadInvoiceDetails({ subscriptionId, invoiceRefId }));
+    });
 
-      facade.refreshInvoiceLink(subscriptionId, invoiceRefId).subscribe({
-        next: (url) => {
-          expect(url).toBe(preAuthUrl);
-          expect(store.dispatch).toHaveBeenCalledWith(refreshInvoiceLinkAction({ subscriptionId, invoiceRefId }));
-          expect(store.dispatch).toHaveBeenCalledWith(
-            refreshInvoiceLinkSuccess({ subscriptionId, invoiceRefId, preAuthUrl }),
-          );
-          done();
-        },
+    it('should dispatch loadOpenOverdueInvoices', () => {
+      facade.loadOpenOverdueInvoices();
+      expect(store.dispatch).toHaveBeenCalledWith(loadOpenOverdueInvoices());
+    });
+
+    it('should dispatch initiatePayment', () => {
+      const invoiceRefId = 'ref-1';
+
+      facade.initiatePayment(subscriptionId, invoiceRefId);
+      expect(store.dispatch).toHaveBeenCalledWith(initiatePayment({ subscriptionId, invoiceRefId }));
+    });
+  });
+
+  describe('Service Methods', () => {
+    it('should delegate downloadInvoicePdf to service', (done) => {
+      const blob = new Blob(['pdf']);
+
+      invoicesService.downloadInvoicePdf.mockReturnValue(of(blob));
+      facade.downloadInvoicePdf(subscriptionId, 'inv-1').subscribe((result) => {
+        expect(result).toBe(blob);
+        expect(invoicesService.downloadInvoicePdf).toHaveBeenCalledWith(subscriptionId, 'inv-1');
+        done();
       });
     });
 
-    it('refreshInvoiceLink should dispatch failure on error', (done) => {
-      const invoiceRefId = 'ref-1';
+    it('should delegate downloadVoidDocumentPdf to service', (done) => {
+      const blob = new Blob(['void']);
 
-      invoicesService.refreshInvoiceLink.mockReturnValue(throwError(() => ({ message: 'Network error' })));
+      invoicesService.downloadVoidDocumentPdf.mockReturnValue(of(blob));
+      facade.downloadVoidDocumentPdf(subscriptionId, 'inv-1').subscribe((result) => {
+        expect(result).toBe(blob);
+        expect(invoicesService.downloadVoidDocumentPdf).toHaveBeenCalledWith(subscriptionId, 'inv-1');
+        done();
+      });
+    });
 
-      facade.refreshInvoiceLink(subscriptionId, invoiceRefId).subscribe({
-        error: () => {
-          expect(store.dispatch).toHaveBeenCalledWith(refreshInvoiceLinkFailure({ error: 'Network error' }));
-          done();
-        },
+    it('should delegate voidInvoice to service', (done) => {
+      invoicesService.voidInvoice.mockReturnValue(of({ ...mockInvoice, status: 'voided' }));
+      facade.voidInvoice(subscriptionId, 'inv-1').subscribe((result) => {
+        expect(result.status).toBe('voided');
+        expect(invoicesService.voidInvoice).toHaveBeenCalledWith(subscriptionId, 'inv-1');
+        done();
       });
     });
   });

@@ -8,6 +8,7 @@ const REQUIRED_PROFILE_FIELDS: (keyof CustomerProfileEntity)[] = [
   'lastName',
   'email',
   'addressLine1',
+  'postalCode',
   'city',
   'country',
 ];
@@ -22,7 +23,7 @@ export class CustomerProfilesService {
 
   /**
    * Returns true if the profile exists and all required fields for ordering are non-null and non-empty.
-   * Required: firstName, lastName, email, addressLine1, city, country.
+   * Required: firstName, lastName, email, addressLine1, postalCode, city, country.
    */
   isProfileComplete(profile: CustomerProfileEntity | null): boolean {
     if (profile === null) {
@@ -49,13 +50,13 @@ export class CustomerProfilesService {
     });
   }
 
-  async updateInvoiceNinjaClientId(userId: string, invoiceNinjaClientId: string): Promise<CustomerProfileEntity> {
+  async updateStripeCustomerId(userId: string, stripeCustomerId: string): Promise<CustomerProfileEntity> {
     const profile = await this.customerProfilesRepository.findByUserId(userId);
 
     if (!profile) {
       throw new BadRequestException('Customer profile not found');
     }
 
-    return await this.customerProfilesRepository.update(profile.id, { invoiceNinjaClientId });
+    return await this.customerProfilesRepository.update(profile.id, { stripeCustomerId });
   }
 }

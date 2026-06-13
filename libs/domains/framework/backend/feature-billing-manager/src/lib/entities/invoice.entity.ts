@@ -1,0 +1,70 @@
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+
+import { InvoiceStatus } from '../constants/invoice-status.constants';
+
+import { InvoiceLineItemEntity } from './invoice-line-item.entity';
+import { SubscriptionEntity } from './subscription.entity';
+
+@Entity('billing_invoices')
+export class InvoiceEntity {
+  @PrimaryGeneratedColumn('uuid', { name: 'id' })
+  id!: string;
+
+  @Column({ type: 'uuid', name: 'subscription_id' })
+  subscriptionId!: string;
+
+  @ManyToOne(() => SubscriptionEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'subscription_id' })
+  subscription?: SubscriptionEntity;
+
+  @Column({ type: 'uuid', name: 'user_id' })
+  userId!: string;
+
+  @Column({ type: 'varchar', length: 64, nullable: true, name: 'invoice_number' })
+  invoiceNumber?: string;
+
+  @Column({ type: 'enum', enum: InvoiceStatus, enumName: 'invoice_status_enum', default: InvoiceStatus.DRAFT })
+  status!: InvoiceStatus;
+
+  @Column({ type: 'varchar', length: 10, default: 'EUR', name: 'currency' })
+  currency!: string;
+
+  @Column({ type: 'decimal', precision: 12, scale: 4, default: 0, name: 'subtotal_net' })
+  subtotalNet!: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 4, default: 0, name: 'tax_total' })
+  taxTotal!: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 4, default: 0, name: 'total_gross' })
+  totalGross!: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 4, default: 0, name: 'balance_due' })
+  balanceDue!: number;
+
+  @Column({ type: 'timestamp', nullable: true, name: 'issued_at' })
+  issuedAt?: Date;
+
+  @Column({ type: 'date', nullable: true, name: 'due_date' })
+  dueDate?: Date;
+
+  @Column({ type: 'timestamp', nullable: true, name: 'voided_at' })
+  voidedAt?: Date;
+
+  @Column({ type: 'varchar', length: 512, nullable: true, name: 'pdf_storage_key' })
+  pdfStorageKey?: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: true, name: 'payment_processor' })
+  paymentProcessor?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'external_payment_id' })
+  externalPaymentId?: string;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt!: Date;
+
+  @OneToMany(() => InvoiceLineItemEntity, (line) => line.invoice)
+  lineItems?: InvoiceLineItemEntity[];
+}
+
+/** @deprecated Use InvoiceEntity */
+export { InvoiceEntity as InvoiceRefEntity };

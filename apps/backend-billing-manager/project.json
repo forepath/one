@@ -21,7 +21,12 @@
         "tsConfig": "apps/backend-billing-manager/tsconfig.app.json",
         "assets": [
           "apps/backend-billing-manager/src/assets",
-          "apps/backend-billing-manager/src/migrations"
+          "apps/backend-billing-manager/src/migrations",
+          {
+            "glob": "invoice-pdf.template.html",
+            "input": "libs/domains/framework/backend/feature-billing-manager/src/lib/templates",
+            "output": "templates"
+          }
         ],
         "webpackConfig": "apps/backend-billing-manager/webpack.config.cjs",
         "generatePackageJson": true

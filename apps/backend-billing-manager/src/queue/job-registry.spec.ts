@@ -10,7 +10,7 @@ describe('billing job-registry', () => {
     const jobs = getBillingRepeatableJobs();
 
     expect(jobs).toHaveLength(7);
-    expect(jobs.map((job) => job.name)).toContain(BillingJobName.INVOICE_SYNC_COORDINATOR);
+    expect(jobs.map((job) => job.name)).toContain(BillingJobName.INVOICE_OVERDUE_COORDINATOR);
   });
 
   it('coordinator job ids are valid for BullMQ (no colons)', () => {

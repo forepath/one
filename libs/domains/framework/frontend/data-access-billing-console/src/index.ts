@@ -15,6 +15,7 @@ export * from './lib/services/backorders.service';
 export * from './lib/services/availability.service';
 export * from './lib/services/customer-profile.service';
 export * from './lib/services/invoices.service';
+export * from './lib/services/admin-billing.service';
 export * from './lib/services/usage.service';
 export * from './lib/services/subscription-items.service';
 
@@ -73,6 +74,13 @@ export * from './lib/state/invoices/invoices.effects';
 export * from './lib/state/invoices/invoices.facade';
 export * from './lib/state/invoices/invoices.reducer';
 export * from './lib/state/invoices/invoices.selectors';
+
+// Admin Billing State
+export * from './lib/state/admin-billing/admin-billing.actions';
+export * from './lib/state/admin-billing/admin-billing.effects';
+export * from './lib/state/admin-billing/admin-billing.facade';
+export * from './lib/state/admin-billing/admin-billing.reducer';
+export * from './lib/state/admin-billing/admin-billing.selectors';
 
 // Availability State
 export * from './lib/state/availability/availability.actions';

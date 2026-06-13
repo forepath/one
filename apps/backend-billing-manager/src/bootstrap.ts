@@ -19,6 +19,7 @@ import {
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import axios from 'axios';
+import * as express from 'express';
 
 import { AppModule } from './app/app.module';
 import { typeormConfig } from './typeorm.config';
@@ -46,8 +47,13 @@ export async function bootstrap(): Promise<void> {
     return;
   }
 
-  const app = await NestFactory.create(AppModule, { logger: appLogger });
+  const app = await NestFactory.create(AppModule, { logger: appLogger, rawBody: true });
   const httpLogger = new Logger('HTTP');
+
+  app.use('/api/webhooks/payments/stripe', express.raw({ type: 'application/json' }), (req, _res, next) => {
+    (req as express.Request & { rawBody?: Buffer }).rawBody = req.body as Buffer;
+    next();
+  });
 
   app.use(
     createCorrelationIdMiddleware({

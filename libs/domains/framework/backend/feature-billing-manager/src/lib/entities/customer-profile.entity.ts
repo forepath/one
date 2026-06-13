@@ -41,8 +41,8 @@ export class CustomerProfileEntity {
   @Column({ type: 'varchar', length: 50, nullable: true, name: 'phone' })
   phone?: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true, name: 'invoice_ninja_client_id' })
-  invoiceNinjaClientId?: string;
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'stripe_customer_id' })
+  stripeCustomerId?: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

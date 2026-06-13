@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-import { InvoiceRefEntity } from './invoice-ref.entity';
+import { InvoiceEntity } from './invoice.entity';
 import { SubscriptionEntity } from './subscription.entity';
 
 @Entity('billing_open_positions')
@@ -33,7 +33,7 @@ export class OpenPositionEntity {
   @Column({ type: 'uuid', nullable: true, name: 'invoice_ref_id' })
   invoiceRefId?: string;
 
-  @ManyToOne(() => InvoiceRefEntity, { onDelete: 'SET NULL' })
+  @ManyToOne(() => InvoiceEntity, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'invoice_ref_id' })
-  invoiceRef?: InvoiceRefEntity;
+  invoice?: InvoiceEntity;
 }

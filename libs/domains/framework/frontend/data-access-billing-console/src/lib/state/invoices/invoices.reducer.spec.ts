@@ -1,10 +1,16 @@
-import type { InvoiceResponse } from '../../types/billing.types';
+import type { InvoiceDetailResponse, InvoiceResponse } from '../../types/billing.types';
 
 import {
   clearInvoices,
   createInvoice,
   createInvoiceFailure,
   createInvoiceSuccess,
+  initiatePayment,
+  initiatePaymentFailure,
+  initiatePaymentSuccess,
+  loadInvoiceDetails,
+  loadInvoiceDetailsFailure,
+  loadInvoiceDetailsSuccess,
   loadInvoices,
   loadInvoicesFailure,
   loadInvoicesSuccess,
@@ -14,9 +20,6 @@ import {
   loadOpenOverdueInvoices,
   loadOpenOverdueInvoicesFailure,
   loadOpenOverdueInvoicesSuccess,
-  refreshInvoiceLink,
-  refreshInvoiceLinkFailure,
-  refreshInvoiceLinkSuccess,
 } from './invoices.actions';
 import { invoicesReducer, initialInvoicesState, type InvoicesState } from './invoices.reducer';
 
@@ -25,10 +28,28 @@ describe('invoicesReducer', () => {
   const mockInvoice: InvoiceResponse = {
     id: 'inv-1',
     subscriptionId: 'sub-1',
-    invoiceNinjaId: 'ninja-1',
-    preAuthUrl: 'https://example.com/auth',
     status: 'draft',
     createdAt: '2024-01-01T00:00:00Z',
+    canPay: false,
+    canDownload: false,
+    canPreview: true,
+  };
+  const mockDetail: InvoiceDetailResponse = {
+    id: 'inv-1',
+    subscriptionId: 'sub-1',
+    invoiceNumber: 'INV-001',
+    status: 'issued',
+    currency: 'EUR',
+    subtotalNet: 100,
+    taxTotal: 19,
+    totalGross: 119,
+    balanceDue: 119,
+    lineItems: [],
+    taxBreakdown: [],
+    createdAt: '2024-01-01T00:00:00Z',
+    canPay: true,
+    canDownload: true,
+    canPreview: true,
   };
 
   describe('initial state', () => {
@@ -105,7 +126,7 @@ describe('invoicesReducer', () => {
         state,
         createInvoiceSuccess({
           subscriptionId,
-          response: { invoiceId: 'inv-1', preAuthUrl: 'https://example.com' },
+          response: { invoiceRefId: 'inv-1', invoiceNumber: 'INV-001' },
         }),
       );
 
@@ -121,6 +142,72 @@ describe('invoicesReducer', () => {
 
       expect(newState.error).toBe('Create failed');
       expect(newState.creating).toBe(false);
+    });
+  });
+
+  describe('loadInvoiceDetails', () => {
+    it('should set detailsLoading to true and clear error', () => {
+      const state: InvoicesState = { ...initialInvoicesState, error: 'Previous error' };
+      const newState = invoicesReducer(state, loadInvoiceDetails({ subscriptionId, invoiceRefId: 'inv-1' }));
+
+      expect(newState.detailsLoading).toBe(true);
+      expect(newState.error).toBeNull();
+    });
+  });
+
+  describe('loadInvoiceDetailsSuccess', () => {
+    it('should store detail by ref id and clear detailsLoading', () => {
+      const state: InvoicesState = { ...initialInvoicesState, detailsLoading: true };
+      const newState = invoicesReducer(state, loadInvoiceDetailsSuccess({ invoiceRefId: 'inv-1', detail: mockDetail }));
+
+      expect(newState.invoiceDetails['inv-1']).toEqual(mockDetail);
+      expect(newState.detailsLoading).toBe(false);
+      expect(newState.error).toBeNull();
+    });
+  });
+
+  describe('loadInvoiceDetailsFailure', () => {
+    it('should set error and clear detailsLoading', () => {
+      const state: InvoicesState = { ...initialInvoicesState, detailsLoading: true };
+      const newState = invoicesReducer(state, loadInvoiceDetailsFailure({ error: 'Details failed' }));
+
+      expect(newState.detailsLoading).toBe(false);
+      expect(newState.error).toBe('Details failed');
+    });
+  });
+
+  describe('initiatePayment', () => {
+    it('should set payingInvoiceRefId and clear error', () => {
+      const state: InvoicesState = { ...initialInvoicesState, error: 'Previous error' };
+      const newState = invoicesReducer(state, initiatePayment({ subscriptionId, invoiceRefId: 'ref-1' }));
+
+      expect(newState.payingInvoiceRefId).toBe('ref-1');
+      expect(newState.error).toBeNull();
+    });
+  });
+
+  describe('initiatePaymentSuccess', () => {
+    it('should clear payingInvoiceRefId', () => {
+      const state: InvoicesState = {
+        ...initialInvoicesState,
+        payingInvoiceRefId: 'ref-1',
+      };
+      const newState = invoicesReducer(state, initiatePaymentSuccess());
+
+      expect(newState.payingInvoiceRefId).toBeNull();
+    });
+  });
+
+  describe('initiatePaymentFailure', () => {
+    it('should set error and clear payingInvoiceRefId', () => {
+      const state: InvoicesState = {
+        ...initialInvoicesState,
+        payingInvoiceRefId: 'ref-1',
+      };
+      const newState = invoicesReducer(state, initiatePaymentFailure({ error: 'Payment failed' }));
+
+      expect(newState.payingInvoiceRefId).toBeNull();
+      expect(newState.error).toBe('Payment failed');
     });
   });
 
@@ -185,94 +272,6 @@ describe('invoicesReducer', () => {
 
       expect(newState.openOverdueListLoading).toBe(false);
       expect(newState.openOverdueListError).toBe('Open overdue load failed');
-    });
-  });
-
-  describe('refreshInvoiceLink', () => {
-    it('should set refreshingInvoiceRefId and clear error', () => {
-      const state: InvoicesState = { ...initialInvoicesState, error: 'Previous error' };
-      const newState = invoicesReducer(state, refreshInvoiceLink({ subscriptionId, invoiceRefId: 'ref-1' }));
-
-      expect(newState.refreshingInvoiceRefId).toBe('ref-1');
-      expect(newState.error).toBeNull();
-    });
-  });
-
-  describe('refreshInvoiceLinkSuccess', () => {
-    it('should update invoice preAuthUrl and clear refreshingInvoiceRefId', () => {
-      const state: InvoicesState = {
-        ...initialInvoicesState,
-        entities: { [subscriptionId]: [mockInvoice] },
-        refreshingInvoiceRefId: 'inv-1',
-      };
-      const newState = invoicesReducer(
-        state,
-        refreshInvoiceLinkSuccess({
-          subscriptionId,
-          invoiceRefId: 'inv-1',
-          preAuthUrl: 'https://example.com/new-link',
-        }),
-      );
-
-      expect(newState.entities[subscriptionId][0].preAuthUrl).toBe('https://example.com/new-link');
-      expect(newState.refreshingInvoiceRefId).toBeNull();
-      expect(newState.error).toBeNull();
-    });
-
-    it('should not mutate other invoices', () => {
-      const otherInvoice: InvoiceResponse = {
-        ...mockInvoice,
-        id: 'inv-2',
-        preAuthUrl: 'https://other.com',
-      };
-      const state: InvoicesState = {
-        ...initialInvoicesState,
-        entities: { [subscriptionId]: [mockInvoice, otherInvoice] },
-        refreshingInvoiceRefId: 'inv-1',
-      };
-      const newState = invoicesReducer(
-        state,
-        refreshInvoiceLinkSuccess({
-          subscriptionId,
-          invoiceRefId: 'inv-1',
-          preAuthUrl: 'https://example.com/new-link',
-        }),
-      );
-
-      expect(newState.entities[subscriptionId][0].preAuthUrl).toBe('https://example.com/new-link');
-      expect(newState.entities[subscriptionId][1].preAuthUrl).toBe('https://other.com');
-    });
-
-    it('should update preAuthUrl in openOverdueList when matching ref', () => {
-      const state: InvoicesState = {
-        ...initialInvoicesState,
-        entities: { [subscriptionId]: [mockInvoice] },
-        openOverdueList: [mockInvoice],
-        refreshingInvoiceRefId: 'inv-1',
-      };
-      const newState = invoicesReducer(
-        state,
-        refreshInvoiceLinkSuccess({
-          subscriptionId,
-          invoiceRefId: 'inv-1',
-          preAuthUrl: 'https://example.com/new-link',
-        }),
-      );
-
-      expect(newState.openOverdueList[0].preAuthUrl).toBe('https://example.com/new-link');
-    });
-  });
-
-  describe('refreshInvoiceLinkFailure', () => {
-    it('should set error and clear refreshingInvoiceRefId', () => {
-      const state: InvoicesState = {
-        ...initialInvoicesState,
-        refreshingInvoiceRefId: 'ref-1',
-      };
-      const newState = invoicesReducer(state, refreshInvoiceLinkFailure({ error: 'Refresh failed' }));
-
-      expect(newState.refreshingInvoiceRefId).toBeNull();
-      expect(newState.error).toBe('Refresh failed');
     });
   });
 

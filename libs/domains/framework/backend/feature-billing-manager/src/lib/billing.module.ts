@@ -10,10 +10,13 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
+import { PAYMENT_PROCESSOR_INIT } from './constants/payment-processor-init.token';
+import { AdminBillingController } from './controllers/admin-billing.controller';
 import { AvailabilityController } from './controllers/availability.controller';
 import { BackordersController } from './controllers/backorders.controller';
 import { CustomerProfilesController } from './controllers/customer-profiles.controller';
 import { InvoicesController } from './controllers/invoices.controller';
+import { PaymentsWebhookController } from './controllers/payments-webhook.controller';
 import { PricingController } from './controllers/pricing.controller';
 import { PublicServicePlanOfferingsController } from './controllers/public-service-plan-offerings.controller';
 import { ServicePlansController } from './controllers/service-plans.controller';
@@ -23,9 +26,15 @@ import { SubscriptionsController } from './controllers/subscriptions.controller'
 import { UsageController } from './controllers/usage.controller';
 import { AvailabilitySnapshotEntity } from './entities/availability-snapshot.entity';
 import { BackorderEntity } from './entities/backorder.entity';
+import { BillingAuditLogEntity } from './entities/billing-audit-log.entity';
 import { CustomerProfileEntity } from './entities/customer-profile.entity';
-import { InvoiceRefEntity } from './entities/invoice-ref.entity';
+import { InvoiceLineItemEntity } from './entities/invoice-line-item.entity';
+import { InvoiceNumberSequenceEntity } from './entities/invoice-number-sequence.entity';
+import { InvoiceVoidDocumentEntity } from './entities/invoice-void-document.entity';
+import { InvoiceEntity } from './entities/invoice.entity';
 import { OpenPositionEntity } from './entities/open-position.entity';
+import { PaymentAttemptEntity } from './entities/payment-attempt.entity';
+import { PaymentWebhookEventEntity } from './entities/payment-webhook-event.entity';
 import { ProviderPriceSnapshotEntity } from './entities/provider-price-snapshot.entity';
 import { ReservedHostnameEntity } from './entities/reserved-hostname.entity';
 import { ServicePlanEntity } from './entities/service-plan.entity';
@@ -34,11 +43,21 @@ import { SubscriptionItemEntity } from './entities/subscription-item.entity';
 import { SubscriptionEntity } from './entities/subscription.entity';
 import { UsageRecordEntity } from './entities/usage-record.entity';
 import { BillingStatusGateway } from './gateways/billing-status.gateway';
+import { PaymentProcessorFactory } from './payment-processors/payment-processor.factory';
+import { StripePaymentProcessor } from './payment-processors/processors/stripe-payment.processor';
+import { AdminBillNowEnqueueAdapter } from './queue/admin-bill-now-enqueue.adapter';
+import { ADMIN_BILL_NOW_ENQUEUE } from './queue/admin-bill-now-enqueue.token';
 import { AvailabilitySnapshotsRepository } from './repositories/availability-snapshots.repository';
 import { BackordersRepository } from './repositories/backorders.repository';
+import { BillingAuditLogsRepository } from './repositories/billing-audit-logs.repository';
 import { CustomerProfilesRepository } from './repositories/customer-profiles.repository';
-import { InvoiceRefsRepository } from './repositories/invoice-refs.repository';
+import { InvoiceLineItemsRepository } from './repositories/invoice-line-items.repository';
+import { InvoiceNumberSequencesRepository } from './repositories/invoice-number-sequences.repository';
+import { InvoiceVoidDocumentsRepository } from './repositories/invoice-void-documents.repository';
+import { InvoicesRepository } from './repositories/invoices.repository';
 import { OpenPositionsRepository } from './repositories/open-positions.repository';
+import { PaymentAttemptsRepository } from './repositories/payment-attempts.repository';
+import { PaymentWebhookEventsRepository } from './repositories/payment-webhook-events.repository';
 import { ProviderPriceSnapshotsRepository } from './repositories/provider-price-snapshots.repository';
 import { ReservedHostnamesRepository } from './repositories/reserved-hostnames.repository';
 import { ServicePlansRepository } from './repositories/service-plans.repository';
@@ -47,20 +66,34 @@ import { SubscriptionItemsRepository } from './repositories/subscription-items.r
 import { SubscriptionsRepository } from './repositories/subscriptions.repository';
 import { UsageRecordsRepository } from './repositories/usage-records.repository';
 import { UsersBillingDayRepository } from './repositories/users-billing-day.repository';
+import { AdminBillNowService } from './services/admin-bill-now.service';
 import { AvailabilityService } from './services/availability.service';
 import { BackorderRetryJobHandler } from './services/backorder-retry.job-handler';
 import { BackorderService } from './services/backorder.service';
+import { BillingAdminService } from './services/billing-admin.service';
+import { BillingAuditLogService } from './services/billing-audit-log.service';
+import { BillingIssuerConfigService } from './services/billing-issuer-config.service';
 import { BillingScheduleService } from './services/billing-schedule.service';
+import { BillingStatisticsQueryService } from './services/billing-statistics-query.service';
 import { CancellationPolicyService } from './services/cancellation-policy.service';
 import { CloudflareDnsService } from './services/cloudflare-dns.service';
 import { CustomerProfilesService } from './services/customer-profiles.service';
 import { DigitaloceanProvisioningService } from './services/digitalocean-provisioning.service';
+import { EInvoiceEmbedService } from './services/e-invoice-embed.service';
+import { EInvoiceXmlService } from './services/e-invoice-xml.service';
 import { HetznerProvisioningService } from './services/hetzner-provisioning.service';
 import { HostnameReservationService } from './services/hostname-reservation.service';
+import { InvoiceAdminService } from './services/invoice-admin.service';
 import { InvoiceCreationService } from './services/invoice-creation.service';
-import { InvoiceNinjaService } from './services/invoice-ninja.service';
-import { InvoiceSyncJobHandler } from './services/invoice-sync.job-handler';
+import { InvoiceEmailService } from './services/invoice-email.service';
+import { InvoiceIssuanceService } from './services/invoice-issuance.service';
+import { InvoiceOverdueJobHandler } from './services/invoice-overdue.job-handler';
+import { InvoicePdfHtmlRendererService } from './services/invoice-pdf-html-renderer.service';
+import { InvoicePdfTemplateService } from './services/invoice-pdf-template.service';
+import { InvoicePdfService } from './services/invoice-pdf.service';
+import { InvoiceService } from './services/invoice.service';
 import { OpenPositionInvoiceJobHandler } from './services/open-position-invoice.job-handler';
+import { PaymentOrchestrationService } from './services/payment-orchestration.service';
 import { PricingService } from './services/pricing.service';
 import { ProviderPricingService } from './services/provider-pricing.service';
 import { ProviderRegistryService } from './services/provider-registry.service';
@@ -73,6 +106,8 @@ import { SubscriptionItemServerService } from './services/subscription-item-serv
 import { SubscriptionItemUpdateJobHandler } from './services/subscription-item-update.job-handler';
 import { SubscriptionRenewalReminderJobHandler } from './services/subscription-renewal-reminder.job-handler';
 import { SubscriptionService } from './services/subscription.service';
+import { TaxCalculationService } from './services/tax-calculation.service';
+import { TaxRateConfigService } from './services/tax-rate-config.service';
 import { UsageService } from './services/usage.service';
 
 const authMethod = getAuthenticationMethod();
@@ -255,7 +290,13 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       SubscriptionItemEntity,
       ReservedHostnameEntity,
       UsageRecordEntity,
-      InvoiceRefEntity,
+      InvoiceEntity,
+      InvoiceVoidDocumentEntity,
+      InvoiceLineItemEntity,
+      InvoiceNumberSequenceEntity,
+      PaymentAttemptEntity,
+      PaymentWebhookEventEntity,
+      BillingAuditLogEntity,
       OpenPositionEntity,
       ProviderPriceSnapshotEntity,
       BackorderEntity,
@@ -275,6 +316,8 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     BackordersController,
     PricingController,
     InvoicesController,
+    AdminBillingController,
+    PaymentsWebhookController,
     UsageController,
     CustomerProfilesController,
   ],
@@ -288,10 +331,42 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     DigitaloceanProvisioningService,
     HostnameReservationService,
     HetznerProvisioningService,
-    InvoiceNinjaService,
     ProviderRegistryService,
     ProviderServerTypesService,
+    TaxRateConfigService,
+    TaxCalculationService,
+    BillingIssuerConfigService,
+    AdminBillNowEnqueueAdapter,
+    {
+      provide: ADMIN_BILL_NOW_ENQUEUE,
+      useExisting: AdminBillNowEnqueueAdapter,
+    },
+    AdminBillNowService,
+    BillingAdminService,
+    BillingAuditLogService,
+    BillingStatisticsQueryService,
+    InvoiceAdminService,
+    EInvoiceXmlService,
+    EInvoiceEmbedService,
+    InvoicePdfTemplateService,
+    InvoicePdfHtmlRendererService,
+    InvoicePdfService,
+    InvoiceEmailService,
+    InvoiceService,
+    InvoiceIssuanceService,
     InvoiceCreationService,
+    PaymentProcessorFactory,
+    StripePaymentProcessor,
+    PaymentOrchestrationService,
+    {
+      provide: PAYMENT_PROCESSOR_INIT,
+      useFactory: (factory: PaymentProcessorFactory, stripe: StripePaymentProcessor) => {
+        factory.registerProcessor(stripe);
+
+        return true;
+      },
+      inject: [PaymentProcessorFactory, StripePaymentProcessor],
+    },
     ProvisioningService,
     SubscriptionItemServerService,
     PricingService,
@@ -299,7 +374,6 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionService,
     UsageService,
     CustomerProfilesService,
-    InvoiceSyncJobHandler,
     SubscriptionBillingJobHandler,
     SubscriptionExpirationJobHandler,
     SubscriptionRenewalReminderJobHandler,
@@ -308,7 +382,13 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     EmailService,
     AvailabilitySnapshotsRepository,
     BackordersRepository,
-    InvoiceRefsRepository,
+    InvoicesRepository,
+    InvoiceLineItemsRepository,
+    InvoiceVoidDocumentsRepository,
+    InvoiceNumberSequencesRepository,
+    PaymentAttemptsRepository,
+    PaymentWebhookEventsRepository,
+    BillingAuditLogsRepository,
     OpenPositionsRepository,
     UsersBillingDayRepository,
     ProviderPriceSnapshotsRepository,
@@ -319,12 +399,14 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionsRepository,
     UsageRecordsRepository,
     CustomerProfilesRepository,
+    InvoiceOverdueJobHandler,
     SshExecutorService,
     UsersRepository,
     SocketAuthService,
     BillingStatusGateway,
   ],
   exports: [
+    AdminBillNowService,
     AvailabilityService,
     BackorderService,
     BackorderRetryJobHandler,
@@ -334,8 +416,10 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     DigitaloceanProvisioningService,
     HostnameReservationService,
     HetznerProvisioningService,
-    InvoiceNinjaService,
     InvoiceCreationService,
+    InvoiceService,
+    InvoiceOverdueJobHandler,
+    PaymentOrchestrationService,
     ProvisioningService,
     SubscriptionItemServerService,
     PricingService,
@@ -343,7 +427,6 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionService,
     UsageService,
     CustomerProfilesService,
-    InvoiceSyncJobHandler,
     SubscriptionBillingJobHandler,
     SubscriptionExpirationJobHandler,
     SubscriptionRenewalReminderJobHandler,
@@ -352,7 +435,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     EmailService,
     AvailabilitySnapshotsRepository,
     BackordersRepository,
-    InvoiceRefsRepository,
+    InvoicesRepository,
     OpenPositionsRepository,
     UsersBillingDayRepository,
     ProviderPriceSnapshotsRepository,

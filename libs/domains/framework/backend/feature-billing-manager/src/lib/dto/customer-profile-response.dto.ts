@@ -12,7 +12,7 @@ export class CustomerProfileResponseDto {
   country?: string;
   email?: string;
   phone?: string;
-  invoiceNinjaClientId?: string;
+  stripeCustomerId?: string;
   createdAt!: Date;
   updatedAt!: Date;
 }

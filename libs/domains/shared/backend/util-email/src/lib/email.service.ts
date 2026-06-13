@@ -2,11 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { Transporter } from 'nodemailer';
 import * as nodemailer from 'nodemailer';
 
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+}
+
 export interface EmailOptions {
   to: string;
   subject: string;
   text: string;
   html?: string;
+  attachments?: EmailAttachment[];
 }
 
 /**
@@ -62,6 +68,7 @@ export class EmailService {
         subject: options.subject,
         text: options.text,
         html: options.html ?? options.text.replace(/\n/g, '<br>'),
+        ...(options.attachments?.length ? { attachments: options.attachments } : {}),
       });
       this.logger.debug(`Email sent: ${options.subject} to ${options.to}`);
 

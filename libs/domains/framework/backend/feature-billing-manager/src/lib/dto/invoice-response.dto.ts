@@ -1,14 +1,21 @@
+import { InvoiceStatus } from '../constants/invoice-status.constants';
+
 export class InvoiceResponseDto {
   id!: string;
   subscriptionId!: string;
-  invoiceNinjaId!: string;
   invoiceNumber?: string;
-  preAuthUrl!: string;
-  status?: string;
+  status?: InvoiceStatus | string;
   balance?: number;
-  /** Subscription number (e.g. SUB-000001) when listing across subscriptions. */
   subscriptionNumber?: string;
   createdAt!: Date;
-  /** Invoice due date (from provider). */
   dueDate?: Date;
+  canPay!: boolean;
+  canDownload!: boolean;
+  canPreview!: boolean;
+  canDownloadVoidDocument?: boolean;
+  voidDocumentNumber?: string;
+}
+
+export class InitiatePaymentResponseDto {
+  checkoutUrl!: string;
 }

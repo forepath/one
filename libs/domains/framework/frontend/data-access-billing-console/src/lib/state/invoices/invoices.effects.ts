@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { catchError, map, of, switchMap, tap } from 'rxjs';
 
 import { InvoicesService } from '../../services/invoices.service';
 
@@ -8,6 +8,12 @@ import {
   createInvoice,
   createInvoiceFailure,
   createInvoiceSuccess,
+  initiatePayment,
+  initiatePaymentFailure,
+  initiatePaymentSuccess,
+  loadInvoiceDetails,
+  loadInvoiceDetailsFailure,
+  loadInvoiceDetailsSuccess,
   loadInvoices,
   loadInvoicesFailure,
   loadInvoicesSuccess,
@@ -82,6 +88,51 @@ export const createInvoice$ = createEffect(
         invoicesService.createInvoice(subscriptionId, dto).pipe(
           map((response) => createInvoiceSuccess({ subscriptionId, response })),
           catchError((error) => of(createInvoiceFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const reloadInvoicesAfterCreate$ = createEffect(
+  (actions$ = inject(Actions)) => {
+    return actions$.pipe(
+      ofType(createInvoiceSuccess),
+      map(({ subscriptionId }) => loadInvoices({ subscriptionId })),
+    );
+  },
+  { functional: true },
+);
+
+export const loadInvoiceDetails$ = createEffect(
+  (actions$ = inject(Actions), invoicesService = inject(InvoicesService)) => {
+    return actions$.pipe(
+      ofType(loadInvoiceDetails),
+      switchMap(({ subscriptionId, invoiceRefId }) =>
+        invoicesService.getInvoiceDetails(subscriptionId, invoiceRefId).pipe(
+          map((detail) => loadInvoiceDetailsSuccess({ invoiceRefId, detail })),
+          catchError((error) => of(loadInvoiceDetailsFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const initiatePaymentRedirect$ = createEffect(
+  (actions$ = inject(Actions), invoicesService = inject(InvoicesService)) => {
+    return actions$.pipe(
+      ofType(initiatePayment),
+      switchMap(({ subscriptionId, invoiceRefId }) =>
+        invoicesService.initiatePayment(subscriptionId, invoiceRefId).pipe(
+          tap((response) => {
+            if (response.checkoutUrl) {
+              window.location.href = response.checkoutUrl;
+            }
+          }),
+          map(() => initiatePaymentSuccess()),
+          catchError((error) => of(initiatePaymentFailure({ error: normalizeError(error) }))),
         ),
       ),
     );

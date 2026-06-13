@@ -4,15 +4,11 @@ import { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto
 import { CustomerProfileDto } from '../dto/customer-profile.dto';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { CustomerProfilesService } from '../services/customer-profiles.service';
-import { InvoiceNinjaService } from '../services/invoice-ninja.service';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
 @Controller('customer-profile')
 export class CustomerProfilesController {
-  constructor(
-    private readonly customerProfilesService: CustomerProfilesService,
-    private readonly invoiceNinjaService: InvoiceNinjaService,
-  ) {}
+  constructor(private readonly customerProfilesService: CustomerProfilesService) {}
 
   @Get()
   async get(@Req() req?: RequestWithUser): Promise<CustomerProfileResponseDto | null> {
@@ -37,8 +33,6 @@ export class CustomerProfilesController {
 
     const profile = await this.customerProfilesService.upsert(userInfo.userId, dto);
 
-    await this.invoiceNinjaService.syncCustomerProfile(userInfo.userId);
-
     return this.mapToResponse(profile);
   }
 
@@ -57,7 +51,7 @@ export class CustomerProfilesController {
       country: row.country,
       email: row.email,
       phone: row.phone,
-      invoiceNinjaClientId: row.invoiceNinjaClientId,
+      stripeCustomerId: row.stripeCustomerId,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

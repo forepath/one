@@ -1,6 +1,8 @@
 import {
+  AdminBillNowService,
   BackorderRetryJobHandler,
-  InvoiceSyncJobHandler,
+  type AdminBillNowCoordinatorPayload,
+  InvoiceOverdueJobHandler,
   OpenPositionInvoiceJobHandler,
   SubscriptionBillingJobHandler,
   SubscriptionExpirationJobHandler,
@@ -22,11 +24,12 @@ export class BillingJobsProcessor extends WorkerHost {
     @InjectQueue(BILLING_QUEUE_NAME) private readonly billingQueue: Queue,
     private readonly subscriptionBilling: SubscriptionBillingJobHandler,
     private readonly subscriptionExpiration: SubscriptionExpirationJobHandler,
-    private readonly invoiceSync: InvoiceSyncJobHandler,
+    private readonly invoiceOverdue: InvoiceOverdueJobHandler,
     private readonly openPositionInvoice: OpenPositionInvoiceJobHandler,
     private readonly renewalReminder: SubscriptionRenewalReminderJobHandler,
     private readonly subscriptionItemUpdate: SubscriptionItemUpdateJobHandler,
     private readonly backorderRetry: BackorderRetryJobHandler,
+    private readonly adminBillNow: AdminBillNowService,
   ) {
     super();
   }
@@ -47,17 +50,24 @@ export class BillingJobsProcessor extends WorkerHost {
           (job.data as { subscriptionId: string }).subscriptionId,
         );
         break;
-      case BillingJobName.INVOICE_SYNC_COORDINATOR:
-        await this.runInvoiceSyncCoordinator();
+      case BillingJobName.INVOICE_OVERDUE_COORDINATOR:
+        await this.runInvoiceOverdueCoordinator();
         break;
-      case BillingJobName.INVOICE_SYNC_UNIT:
-        await this.invoiceSync.syncInvoiceRef((job.data as { invoiceRefId: string }).invoiceRefId);
+      case BillingJobName.INVOICE_OVERDUE_UNIT:
+        await this.invoiceOverdue.markOverdueIfNeeded((job.data as { invoiceRefId: string }).invoiceRefId);
         break;
       case BillingJobName.OPEN_POSITION_INVOICE_COORDINATOR:
         await this.runOpenPositionInvoiceCoordinator();
         break;
       case BillingJobName.OPEN_POSITION_INVOICE_UNIT:
-        await this.openPositionInvoice.processUserOpenPositions((job.data as { userId: string }).userId);
+        await this.runOpenPositionInvoiceUnit(
+          job.data as {
+            userId: string;
+            triggeredBy?: string;
+            scope?: 'all' | 'user';
+            requestId?: string;
+          },
+        );
         break;
       case BillingJobName.RENEWAL_REMINDER_COORDINATOR:
         await this.runRenewalReminderCoordinator();
@@ -76,6 +86,12 @@ export class BillingJobsProcessor extends WorkerHost {
         break;
       case BillingJobName.BACKORDER_RETRY_UNIT:
         await this.backorderRetry.retryBackorder((job.data as { backorderId: string }).backorderId);
+        break;
+      case BillingJobName.ADMIN_BILL_NOW_COORDINATOR:
+        await this.runAdminBillNowCoordinator(job.data as AdminBillNowCoordinatorPayload);
+        break;
+      case BillingJobName.ADMIN_BILL_NOW_UNIT:
+        await this.runOpenPositionInvoiceUnit(job.data as AdminBillNowCoordinatorPayload & { userId: string });
         break;
       default:
         this.logger.warn(`Unknown billing job name: ${job.name}`);
@@ -110,12 +126,12 @@ export class BillingJobsProcessor extends WorkerHost {
     }
   }
 
-  private async runInvoiceSyncCoordinator(): Promise<void> {
+  private async runInvoiceOverdueCoordinator(): Promise<void> {
     let offset = 0;
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const ids = await this.invoiceSync.findInvoiceRefIdsPage(offset);
+      const ids = await this.invoiceOverdue.findInvoiceIdsPage(offset);
 
       if (ids.length === 0) {
         break;
@@ -124,16 +140,16 @@ export class BillingJobsProcessor extends WorkerHost {
       for (const invoiceRefId of ids) {
         await enqueueUnitJob({
           queue: this.billingQueue,
-          jobName: BillingJobName.INVOICE_SYNC_UNIT,
+          jobName: BillingJobName.INVOICE_OVERDUE_UNIT,
           payload: { invoiceRefId },
-          jobIdNamespace: 'invoice-sync:ref',
+          jobIdNamespace: 'invoice-overdue:ref',
           jobIdParts: [invoiceRefId],
         });
       }
 
       offset += ids.length;
 
-      if (ids.length < this.invoiceSync.batchSizeLimit) {
+      if (ids.length < this.invoiceOverdue.batchSizeLimit) {
         break;
       }
     }
@@ -197,5 +213,37 @@ export class BillingJobsProcessor extends WorkerHost {
         jobIdParts: [backorderId],
       });
     }
+  }
+
+  private async runAdminBillNowCoordinator(data: AdminBillNowCoordinatorPayload): Promise<void> {
+    const userIds = await this.adminBillNow.resolveTargetUserIds({ userId: data.userId });
+
+    for (const userId of userIds) {
+      await enqueueUnitJob({
+        queue: this.billingQueue,
+        jobName: BillingJobName.OPEN_POSITION_INVOICE_UNIT,
+        payload: {
+          userId,
+          triggeredBy: data.adminUserId,
+          scope: data.scope,
+          requestId: data.requestId,
+        },
+        jobIdNamespace: 'open-position-invoice:user',
+        jobIdParts: [userId],
+      });
+    }
+  }
+
+  private async runOpenPositionInvoiceUnit(data: {
+    userId: string;
+    triggeredBy?: string;
+    scope?: 'all' | 'user';
+    requestId?: string;
+  }): Promise<void> {
+    await this.openPositionInvoice.processUserOpenPositions(data.userId, {
+      triggeredBy: data.triggeredBy,
+      scope: data.scope,
+      requestId: data.requestId,
+    });
   }
 }

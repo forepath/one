@@ -1,6 +1,6 @@
 # Billing Feature
 
-Backend billing module providing subscription management, backorders, availability checks, and InvoiceNinja integration.
+Backend billing module providing subscription management, backorders, availability checks, and custom invoicing with ZUGFeRD PDFs and Stripe payments.
 
 ## Contents
 
@@ -9,7 +9,7 @@ Backend billing module providing subscription management, backorders, availabili
 - Subscription ordering, cancel, resume for authenticated users.
 - Backorder management for provider capacity failures.
 - Availability snapshots and pricing previews.
-- Invoice listing via stored InvoiceNinja pre-auth links.
+- Invoice issuance in Postgres with ZUGFeRD-style PDFs (EN 16931 XML embedded), preview, download, void, and Stripe checkout.
 - **Open positions and user billing day:** Recurring and final subscription charges are recorded as open positions.
   On each user's billing day (default: day of month of registration, capped at 28), one accumulated invoice per user
   is created with all of that user's unbilled positions as line items. This reduces the number of invoices (one per
@@ -28,8 +28,9 @@ API key auth is supported through the shared HybridAuthGuard at the app level.
 
 ## Environment
 
-- INVOICE_NINJA_BASE_URL
-- INVOICE_NINJA_API_TOKEN
+- BILLING*ISSUER*\* (name, VAT ID, address, email, IBAN) and BILLING_TAX_RATE_STANDARD / BILLING_TAX_RATE_REDUCED
+- BILLING_INVOICE_PDF_STORAGE_PATH, BILLING_DEFAULT_PAYMENT_PROCESSOR
+- STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_CHECKOUT_SUCCESS_URL, STRIPE_CHECKOUT_CANCEL_URL
 - DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE
 - HETZNER_API_TOKEN
 - DIGITALOCEAN_API_TOKEN
@@ -49,8 +50,7 @@ The migration `apps/backend-billing-manager/src/migrations/1767101000000_CreateU
 
 ## Customer Profile
 
-Use `GET /customer-profile` to retrieve the profile and `POST /customer-profile` to update it. The profile is synced
-to InvoiceNinja on invoice list requests.
+Use `GET /customer-profile` to retrieve the profile and `POST /customer-profile` to update it. Stripe customer IDs are stored on the profile when payments are initiated.
 
 **Required for ordering (step 0):** Subscription creation (`POST /subscriptions`) requires a complete customer billing
 profile. The backend returns 400 if the profile is missing or incomplete. Required fields: first name, last name, email,
@@ -141,6 +141,6 @@ the latest images and recreates containers so updates are applied. Failures are 
 - docs/provisioning-architecture.mmd
 - docs/subscription-lifecycle.mmd
 - docs/auth-flow.mmd
-- docs/sequence-invoice-ninja-sync.mmd
+- docs/sequence-invoice-payment.mmd (Stripe checkout + webhook)
 - docs/config-validation-flow.mmd
 - docs/customer-location-selection.md (plan flag, customer override rules, backorder retry)
