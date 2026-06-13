@@ -10,10 +10,11 @@ export const cookieConfig: NgcCookieConsentConfig = {
   theme: 'classic',
   palette: {
     popup: {
-      background: '#212529',
+      background: 'var(--bs-dark)',
     },
     button: {
-      background: '#7a3fff',
+      background: 'var(--bs-primary)',
+      text: 'var(--bs-white)',
     },
   },
   type: 'opt-in',

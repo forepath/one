@@ -1,0 +1,209 @@
+@import '../page.component.scss';
+
+.dev-build-section {
+  overflow: visible;
+}
+
+.dev-build-visual-col {
+  @media (min-width: 992px) {
+    position: relative;
+    min-height: 0;
+    align-self: stretch;
+  }
+}
+
+.dev-build-cards-col {
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: var(--bs-gutter-x, 0.75rem);
+  padding-right: var(--bs-gutter-x, 0.75rem);
+
+  @media (min-width: 992px) {
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 2.5rem;
+    padding-right: var(--bs-gutter-x, 0.75rem);
+  }
+}
+
+.dev-code-skeleton {
+  --dev-code-badge-size: 2.75rem;
+  --dev-code-badge-logo-size: 1.75rem;
+  --dev-code-badge-logo-size-compact: 1.25rem;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  overflow: hidden;
+
+  @media (min-width: 992px) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent 0%, #fff 100%);
+  }
+}
+
+@mixin dev-lang-badge($color, $emphasis) {
+  background-color: color-mix(in srgb, $color 24%, var(--bs-tertiary-bg)) !important;
+  color: $emphasis !important;
+}
+
+.dev-code-skeleton__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--dev-code-badge-size);
+  height: var(--dev-code-badge-size);
+  aspect-ratio: 1 / 1;
+  padding: 0.5rem;
+  line-height: 1;
+}
+
+.dev-code-skeleton__badge-logo {
+  width: var(--dev-code-badge-logo-size);
+  height: var(--dev-code-badge-logo-size);
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.dev-code-skeleton__badge--typescript,
+.dev-code-skeleton__badge--java {
+  .dev-code-skeleton__badge-logo {
+    width: var(--dev-code-badge-logo-size-compact);
+    height: var(--dev-code-badge-logo-size-compact);
+  }
+}
+
+.dev-code-skeleton__badge--php {
+  @include dev-lang-badge(#777bb4, #4a4f8f);
+}
+
+.dev-code-skeleton__badge--typescript {
+  @include dev-lang-badge(#3178c6, #1f5f9b);
+}
+
+.dev-code-skeleton__badge--java {
+  @include dev-lang-badge(#ed8b00, #9a5a00);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dev-code-skeleton__badge {
+    transition: none;
+  }
+}
+
+.dev-code-skeleton__line {
+  flex-shrink: 0;
+  border-radius: 0.25rem;
+  background: rgba(15, 15, 17, 0.07);
+  transition: width 0.65s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dev-code-skeleton__line {
+    transition: none;
+  }
+}
+
+.dev-code-skeleton__line--long {
+  width: 92%;
+  height: 0.5rem;
+}
+
+.dev-code-skeleton__line--medium {
+  width: 72%;
+  height: 0.5rem;
+}
+
+.dev-code-skeleton__line--short {
+  width: 46%;
+  height: 0.5rem;
+}
+
+.dev-code-skeleton__line--indent {
+  margin-left: 1.25rem;
+}
+
+.dev-delivery-copy {
+  padding-left: var(--bs-gutter-x, 0.75rem);
+  padding-right: var(--bs-gutter-x, 0.75rem);
+
+  @media (min-width: 992px) {
+    padding-right: 2.5rem;
+    padding-left: 0;
+  }
+}
+
+.dev-stack-grid-col {
+  min-height: 16rem;
+
+  @media (min-width: 992px) {
+    min-height: 0;
+  }
+}
+
+.dev-stack-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  width: 100%;
+  border-top: 1px solid var(--bs-border-color);
+  border-bottom: 1px solid var(--bs-border-color);
+  border-left: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  overflow: hidden;
+
+  @media (min-width: 992px) {
+    border-top: 0;
+    border-bottom: 0;
+    border-radius: 0;
+    overflow: visible;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    right: var(--grid-section-line-right);
+    width: auto;
+  }
+}
+
+.dev-stack-grid__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 1rem;
+  border-right: 1px solid var(--bs-border-color);
+  border-bottom: 1px solid var(--bs-border-color);
+
+  &:nth-child(n + 4) {
+    border-bottom: 0;
+  }
+}
+
+.dev-stack-grid__logo {
+  max-height: 1.75rem;
+  max-width: 5.5rem;
+  width: auto;
+  object-fit: contain;
+}
+
+@media (min-width: 992px) {
+  .dev-stack-grid__logo {
+    max-height: 2rem;
+    max-width: 6.5rem;
+  }
+}

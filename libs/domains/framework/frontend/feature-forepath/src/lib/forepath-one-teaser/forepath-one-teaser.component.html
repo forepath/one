@@ -1,0 +1,112 @@
+<div class="container grid-section__container">
+  <div class="row g-0 align-items-stretch forepath-one-teaser-row">
+    <div class="col-lg-6 forepath-one-teaser-copy py-10 order-lg-1">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathOneTeaser-title">Connect the dots</h2>
+      <ng-content />
+      <ul class="list-unstyled mb-4">
+        <li class="mb-2 d-flex gap-2">
+          <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+          ><span i18n="@@featureForepathOneTeaser-item1"
+            >One partner from architecture through steady state operations</span
+          >
+        </li>
+        <li class="mb-2 d-flex gap-2">
+          <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+          ><span i18n="@@featureForepathOneTeaser-item2">Shared standards across services and ForePath products</span>
+        </li>
+        <li class="d-flex gap-2">
+          <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+          ><span i18n="@@featureForepathOneTeaser-item3"
+            >Less drift when strategy, delivery, and operations stay aligned</span
+          >
+        </li>
+      </ul>
+      <a
+        routerLink="/one"
+        class="small fw-semibold text-primary text-decoration-none"
+        i18n="@@featureForepathOneTeaser-link"
+        >Explore ForePath One <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+      ></a>
+    </div>
+    <div class="col-lg-6 forepath-one-thread-grid-col order-lg-2">
+      <div
+        class="forepath-one-thread-grid"
+        role="list"
+        i18n-aria-label="@@featureForepathOneTeaser-gridLabel"
+        aria-label="ForePath One threads"
+      >
+        <a
+          routerLink="/consulting"
+          class="forepath-one-thread-grid__cell text-decoration-none"
+          [class.bg-primary]="activeThread === 'consulting'"
+          role="listitem"
+        >
+          <i
+            class="bi bi-compass forepath-one-thread-grid__icon"
+            [class.text-white]="activeThread === 'consulting'"
+            [class.text-primary]="activeThread !== 'consulting'"
+            aria-hidden="true"
+          ></i>
+          <span
+            class="forepath-one-thread-grid__label"
+            [class.text-white]="activeThread === 'consulting'"
+            i18n="@@featureForepathOneTeaser-nodeConsulting"
+            >Consulting</span
+          >
+        </a>
+        <a
+          routerLink="/software-development"
+          class="forepath-one-thread-grid__cell text-decoration-none"
+          [class.bg-primary]="activeThread === 'development'"
+          role="listitem"
+        >
+          <i
+            class="bi bi-code-slash forepath-one-thread-grid__icon"
+            [class.text-white]="activeThread === 'development'"
+            [class.text-primary]="activeThread !== 'development'"
+            aria-hidden="true"
+          ></i>
+          <span
+            class="forepath-one-thread-grid__label"
+            [class.text-white]="activeThread === 'development'"
+            i18n="@@featureForepathOneTeaser-nodeDevelopment"
+            >Development</span
+          >
+        </a>
+        <a
+          routerLink="/it-systems"
+          class="forepath-one-thread-grid__cell text-decoration-none"
+          [class.bg-primary]="activeThread === 'it-systems'"
+          role="listitem"
+        >
+          <i
+            class="bi bi-hdd-stack forepath-one-thread-grid__icon"
+            [class.text-white]="activeThread === 'it-systems'"
+            [class.text-primary]="activeThread !== 'it-systems'"
+            aria-hidden="true"
+          ></i>
+          <span
+            class="forepath-one-thread-grid__label"
+            [class.text-white]="activeThread === 'it-systems'"
+            i18n="@@featureForepathOneTeaser-nodeIt"
+            >IT systems</span
+          >
+        </a>
+        <div class="forepath-one-thread-grid__cell" [class.bg-primary]="activeThread === 'community'" role="listitem">
+          <i
+            class="bi bi-people forepath-one-thread-grid__icon"
+            [class.text-white]="activeThread === 'community'"
+            [class.text-primary]="activeThread !== 'community'"
+            aria-hidden="true"
+          ></i>
+          <span
+            class="forepath-one-thread-grid__label"
+            [class.text-white]="activeThread === 'community'"
+            i18n="@@featureForepathOneTeaser-nodeCommunity"
+            >Community</span
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -136,6 +136,11 @@ html {
   scroll-behavior: smooth;
 }
 
+// Prevent horizontal scroll on mobile
+body {
+  overflow-x: hidden;
+}
+
 // Responsive py-10 utility (double py-5)
 .py-10 {
   padding-top: 2rem;
