@@ -41,6 +41,28 @@ describe('InvoicesService', () => {
     httpMock.verify();
   });
 
+  it('should get invoices summary', (done) => {
+    const summary = { openOverdueCount: 1, openOverdueTotal: 10, billingDayOfMonth: 5, unbilledTotal: 20 };
+
+    service.getInvoicesSummary().subscribe((res) => {
+      expect(res).toEqual(summary);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/summary`);
+
+    req.flush(summary);
+  });
+
+  it('should get open overdue invoices', (done) => {
+    service.getOpenOverdueInvoices().subscribe((res) => {
+      expect(res).toEqual([mockInvoice]);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/open-overdue`);
+
+    req.flush([mockInvoice]);
+  });
+
   it('should list invoices', (done) => {
     service.listInvoices('sub-1').subscribe((res) => {
       expect(res).toEqual([mockInvoice]);
@@ -49,6 +71,53 @@ describe('InvoicesService', () => {
     const req = httpMock.expectOne(`${apiUrl}/invoices/sub-1`);
 
     req.flush([mockInvoice]);
+  });
+
+  it('should get invoice details', (done) => {
+    const detail = {
+      ...mockInvoice,
+      currency: 'EUR',
+      subtotalNet: 10,
+      taxTotal: 1.9,
+      totalGross: 11.9,
+      balanceDue: 11.9,
+      lineItems: [],
+      taxBreakdown: [],
+    };
+
+    service.getInvoiceDetails('sub-1', 'inv-1').subscribe((res) => {
+      expect(res.id).toBe('inv-1');
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/sub-1/ref/inv-1`);
+
+    req.flush(detail);
+  });
+
+  it('should download invoice pdf', (done) => {
+    const blob = new Blob(['pdf']);
+
+    service.downloadInvoicePdf('sub-1', 'inv-1').subscribe((res) => {
+      expect(res).toEqual(blob);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/sub-1/ref/inv-1/pdf`);
+
+    expect(req.request.responseType).toBe('blob');
+    req.flush(blob);
+  });
+
+  it('should download void document pdf', (done) => {
+    const blob = new Blob(['void-pdf']);
+
+    service.downloadVoidDocumentPdf('sub-1', 'inv-1').subscribe((res) => {
+      expect(res).toEqual(blob);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/sub-1/ref/inv-1/void-document/pdf`);
+
+    expect(req.request.responseType).toBe('blob');
+    req.flush(blob);
   });
 
   it('should create invoice', (done) => {
@@ -65,6 +134,14 @@ describe('InvoicesService', () => {
     req.flush(response);
   });
 
+  it('should create invoice with empty body when dto omitted', (done) => {
+    service.createInvoice('sub-1').subscribe(() => done());
+    const req = httpMock.expectOne(`${apiUrl}/invoices/sub-1`);
+
+    expect(req.request.body).toEqual({});
+    req.flush({ invoiceRefId: 'ref-1' });
+  });
+
   it('should initiate payment', (done) => {
     service.initiatePayment('sub-1', 'ref-1').subscribe((res) => {
       expect(res.checkoutUrl).toContain('stripe');
@@ -73,5 +150,16 @@ describe('InvoicesService', () => {
     const req = httpMock.expectOne(`${apiUrl}/invoices/sub-1/ref/ref-1/pay`);
 
     req.flush({ checkoutUrl: 'https://checkout.stripe.com/test' });
+  });
+
+  it('should void invoice', (done) => {
+    service.voidInvoice('sub-1', 'inv-1').subscribe((res) => {
+      expect(res.status).toBe('voided');
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/sub-1/ref/inv-1/void`);
+
+    expect(req.request.method).toBe('POST');
+    req.flush({ ...mockInvoice, status: 'voided' });
   });
 });

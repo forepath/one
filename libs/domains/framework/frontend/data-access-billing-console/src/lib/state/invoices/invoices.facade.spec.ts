@@ -12,13 +12,16 @@ import {
   loadInvoiceDetails,
   loadInvoices,
   loadInvoicesSummary as loadInvoicesSummaryAction,
+  loadOpenOverdueInvoices,
 } from './invoices.actions';
 import { InvoicesFacade } from './invoices.facade';
 
 describe('InvoicesFacade', () => {
   let facade: InvoicesFacade;
   let store: jest.Mocked<Store>;
-  let invoicesService: jest.Mocked<Pick<InvoicesService, 'downloadInvoicePdf' | 'voidInvoice'>>;
+  let invoicesService: jest.Mocked<
+    Pick<InvoicesService, 'downloadInvoicePdf' | 'downloadVoidDocumentPdf' | 'voidInvoice'>
+  >;
   const subscriptionId = 'sub-1';
   const mockInvoice: InvoiceResponse = {
     id: 'inv-1',
@@ -33,6 +36,7 @@ describe('InvoicesFacade', () => {
     store = { select: jest.fn(), dispatch: jest.fn() } as never;
     invoicesService = {
       downloadInvoicePdf: jest.fn(),
+      downloadVoidDocumentPdf: jest.fn(),
       voidInvoice: jest.fn(),
     };
 
@@ -121,11 +125,49 @@ describe('InvoicesFacade', () => {
       expect(store.dispatch).toHaveBeenCalledWith(loadInvoiceDetails({ subscriptionId, invoiceRefId }));
     });
 
+    it('should dispatch loadOpenOverdueInvoices', () => {
+      facade.loadOpenOverdueInvoices();
+      expect(store.dispatch).toHaveBeenCalledWith(loadOpenOverdueInvoices());
+    });
+
     it('should dispatch initiatePayment', () => {
       const invoiceRefId = 'ref-1';
 
       facade.initiatePayment(subscriptionId, invoiceRefId);
       expect(store.dispatch).toHaveBeenCalledWith(initiatePayment({ subscriptionId, invoiceRefId }));
+    });
+  });
+
+  describe('Service Methods', () => {
+    it('should delegate downloadInvoicePdf to service', (done) => {
+      const blob = new Blob(['pdf']);
+
+      invoicesService.downloadInvoicePdf.mockReturnValue(of(blob));
+      facade.downloadInvoicePdf(subscriptionId, 'inv-1').subscribe((result) => {
+        expect(result).toBe(blob);
+        expect(invoicesService.downloadInvoicePdf).toHaveBeenCalledWith(subscriptionId, 'inv-1');
+        done();
+      });
+    });
+
+    it('should delegate downloadVoidDocumentPdf to service', (done) => {
+      const blob = new Blob(['void']);
+
+      invoicesService.downloadVoidDocumentPdf.mockReturnValue(of(blob));
+      facade.downloadVoidDocumentPdf(subscriptionId, 'inv-1').subscribe((result) => {
+        expect(result).toBe(blob);
+        expect(invoicesService.downloadVoidDocumentPdf).toHaveBeenCalledWith(subscriptionId, 'inv-1');
+        done();
+      });
+    });
+
+    it('should delegate voidInvoice to service', (done) => {
+      invoicesService.voidInvoice.mockReturnValue(of({ ...mockInvoice, status: 'voided' }));
+      facade.voidInvoice(subscriptionId, 'inv-1').subscribe((result) => {
+        expect(result.status).toBe('voided');
+        expect(invoicesService.voidInvoice).toHaveBeenCalledWith(subscriptionId, 'inv-1');
+        done();
+      });
     });
   });
 });
