@@ -6,7 +6,7 @@
 # User:       node (APP_UID / APP_GID, default 1000)
 # Exposes:    4500 (Express static server)
 # Build:      npx nx run frontend-billing-console:server-container-image
-# Run:        nx docker:run frontend-billing-console -p 4500:4500
+# Run:        nx docker:run agenstra-frontend-billing-console -p 4500:4500
 # Notes:      Optional runtime env CONFIG=<url> for GET /config JSON merge
 # -----------------------------------------------------------------------------
 #

@@ -6,7 +6,7 @@
 # User:       agenstra (APP_UID / APP_GID, default 10001)
 # Exposes:    3200 (HTTP API), 8082 (WebSocket)
 # Build:      npx nx run backend-billing-manager:api-container-image
-# Run:        nx docker:run backend-billing-manager -p 3200:3200 -p 8082:8082
+# Run:        nx docker:run agenstra-backend-billing-manager -p 3200:3200 -p 8082:8082
 # Notes:      Configure via runtime env; see docs/agenstra/deployment/
 #             Playwright Chromium is baked in for HTML invoice PDF rendering.
 # -----------------------------------------------------------------------------

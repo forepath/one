@@ -6,7 +6,7 @@
 # User:       agenstra (APP_UID / APP_GID, default 10001); member of `docker` group
 # Exposes:    3100 (HTTP API), 8081 (WebSocket)
 # Build:      npx nx run backend-agent-controller:api-container-image
-# Run:        nx docker:run backend-agent-controller -p 3100:3100 -p 8081:8081
+# Run:        nx docker:run agenstra-backend-agent-controller -p 3100:3100 -p 8081:8081
 # Notes:      Mount Docker socket: -v /var/run/docker.sock:/var/run/docker.sock
 #              Entrypoint (agenstra) uses sudo to sync socket GID, then sg docker for socket access
 # -----------------------------------------------------------------------------

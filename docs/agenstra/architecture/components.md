@@ -6,7 +6,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 ### Backend Agent Controller
 
-**Location**: `apps/backend-agent-controller`
+**Location**: `apps/agenstra/backend-agent-controller`
 
 **Purpose**: Centralized control plane for managing multiple distributed agent-manager instances.
 
@@ -36,7 +36,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 ### Backend Agent Manager
 
-**Location**: `apps/backend-agent-manager`
+**Location**: `apps/agenstra/backend-agent-manager`
 
 **Purpose**: Agent management system with HTTP REST API and WebSocket gateway.
 
@@ -68,7 +68,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 ### Frontend Agent Console
 
-**Location**: `apps/frontend-agent-console`
+**Location**: `apps/agenstra/frontend-agent-console`
 
 **Purpose**: Web-based IDE and chat interface for interacting with agents.
 

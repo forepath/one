@@ -100,7 +100,7 @@ export const typeormConfig: DataSourceOptions = {
   ],
   migrations: [
     'src/migrations/*.js',
-    'apps/backend-agent-controller/src/migrations/*.ts',
+    'apps/agenstra/backend-agent-controller/src/migrations/*.ts',
     'libs/domains/identity/backend/util-auth/src/lib/migrations/*.ts',
   ],
   synchronize: false,

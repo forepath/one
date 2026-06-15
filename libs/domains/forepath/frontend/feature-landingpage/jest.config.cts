@@ -1,9 +1,9 @@
 module.exports = {
-  displayName: 'forepath-frontend-feature-forepath',
+  displayName: 'forepath-frontend-feature-landingpage',
   preset: '../../../../../jest.preset.cjs',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   coverageDirectory:
-    '../../../../../coverage/libs/domains/forepath/frontend/feature-forepath',
+    '../../../../../coverage/libs/domains/forepath/frontend/feature-landingpage',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',

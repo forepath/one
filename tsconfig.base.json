@@ -97,8 +97,8 @@
       "@forepath/agenstra/frontend/util-docs-parser": [
         "libs/domains/agenstra/frontend/util-docs-parser/src/index.ts"
       ],
-      "@forepath/forepath/frontend/feature-forepath": [
-        "libs/domains/forepath/frontend/feature-forepath/src/index.ts"
+      "@forepath/forepath/frontend/feature-landingpage": [
+        "libs/domains/forepath/frontend/feature-landingpage/src/index.ts"
       ]
     }
   },

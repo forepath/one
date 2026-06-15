@@ -10,11 +10,11 @@ View application logs:
 
 ```bash
 # Backend Agent Controller
-nx serve backend-agent-controller
+nx serve agenstra-backend-agent-controller
 # Logs appear in console
 
 # Backend Agent Manager
-nx serve backend-agent-manager
+nx serve agenstra-backend-agent-manager
 # Logs appear in console
 
 # Docker containers

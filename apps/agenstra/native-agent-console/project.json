@@ -13,17 +13,17 @@
       },
       "outputs": [
         "{workspaceRoot}/dist/apps/agenstra/native-agent-console",
-        "{workspaceRoot}/dist/apps/frontend-agent-console"
+        "{workspaceRoot}/dist/apps/agenstra/frontend-agent-console"
       ],
       "configurations": {
         "development": {
           "commands": [
-            "nx build frontend-agent-console --configuration=development",
-            "nx run frontend-agent-console:prebuild-server --configuration=development",
-            "nx run frontend-agent-console:server",
+            "nx build agenstra-frontend-agent-console --configuration=development",
+            "nx run agenstra-frontend-agent-console:prebuild-server --configuration=development",
+            "nx run agenstra-frontend-agent-console:server",
             "tsc -p apps/agenstra/native-agent-console/tsconfig.json",
             "node -e \"require('fs').writeFileSync('dist/apps/agenstra/native-agent-console/package.json', JSON.stringify({type:'commonjs'}, null, 2))\"",
-            "cp -r dist/apps/frontend-agent-console/server dist/apps/agenstra/native-agent-console/server",
+            "cp -r dist/apps/agenstra/frontend-agent-console/server dist/apps/agenstra/native-agent-console/server",
             "cp apps/agenstra/native-agent-console/package-server.json dist/apps/agenstra/native-agent-console/server/package.json",
             "npm i --omit=dev --prefix dist/apps/agenstra/native-agent-console/server",
             "cp apps/agenstra/native-agent-console/public/assets/images/icon.ico dist/apps/agenstra/native-agent-console/icon.ico",
@@ -35,12 +35,12 @@
         },
         "production": {
           "commands": [
-            "nx build frontend-agent-console --configuration=production",
-            "nx run frontend-agent-console:prebuild-server --configuration=production",
-            "nx run frontend-agent-console:server",
+            "nx build agenstra-frontend-agent-console --configuration=production",
+            "nx run agenstra-frontend-agent-console:prebuild-server --configuration=production",
+            "nx run agenstra-frontend-agent-console:server",
             "tsc -p apps/agenstra/native-agent-console/tsconfig.json",
             "node -e \"require('fs').writeFileSync('dist/apps/agenstra/native-agent-console/package.json', JSON.stringify({type:'commonjs'}, null, 2))\"",
-            "cp -r dist/apps/frontend-agent-console/server dist/apps/agenstra/native-agent-console/server",
+            "cp -r dist/apps/agenstra/frontend-agent-console/server dist/apps/agenstra/native-agent-console/server",
             "cp apps/agenstra/native-agent-console/package-server.json dist/apps/agenstra/native-agent-console/server/package.json",
             "npm i --omit=dev --prefix dist/apps/agenstra/native-agent-console/server",
             "cp apps/agenstra/native-agent-console/public/assets/images/icon.ico dist/apps/agenstra/native-agent-console/icon.ico",
@@ -61,13 +61,13 @@
       "configurations": {
         "development": {
           "commands": [
-            "nx build native-agent-console --configuration=development",
+            "nx build agenstra-native-agent-console --configuration=development",
             "electron dist/apps/agenstra/native-agent-console/main.js"
           ]
         },
         "production": {
           "commands": [
-            "nx build native-agent-console --configuration=production",
+            "nx build agenstra-native-agent-console --configuration=production",
             "electron dist/apps/agenstra/native-agent-console/main.js"
           ]
         }
@@ -82,19 +82,19 @@
       "configurations": {
         "development-linux": {
           "commands": [
-            "nx build native-agent-console --configuration=development",
+            "nx build agenstra-native-agent-console --configuration=development",
             "cd dist/apps/agenstra/native-agent-console && npx electron-forge make --platform linux"
           ]
         },
         "development-windows": {
           "commands": [
-            "nx build native-agent-console --configuration=development",
+            "nx build agenstra-native-agent-console --configuration=development",
             "cd dist/apps/agenstra/native-agent-console && npx electron-forge make --platform win32"
           ]
         },
         "production-linux": {
           "commands": [
-            "nx build native-agent-console --configuration=production",
+            "nx build agenstra-native-agent-console --configuration=production",
             "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/apps/agenstra/native-agent-console/package.json",
             "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/apps/agenstra/native-agent-console/server/package.json",
             "cd dist/apps/agenstra/native-agent-console && npx electron-forge make --platform linux"
@@ -102,7 +102,7 @@
         },
         "production-windows": {
           "commands": [
-            "nx build native-agent-console --configuration=production",
+            "nx build agenstra-native-agent-console --configuration=production",
             "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/apps/agenstra/native-agent-console/package.json",
             "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/apps/agenstra/native-agent-console/server/package.json",
             "cd dist/apps/agenstra/native-agent-console && npx electron-forge make --platform win32"

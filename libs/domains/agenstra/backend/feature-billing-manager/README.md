@@ -46,7 +46,7 @@ API key auth is supported through the shared HybridAuthGuard at the app level.
 ## Users Authentication
 
 When AUTHENTICATION_METHOD=users, this service uses a local users table identical to the agent-controller schema.
-The migration `apps/backend-billing-manager/src/migrations/1767101000000_CreateUsersTable.ts` creates the required table.
+The migration `apps/agenstra/backend-billing-manager/src/migrations/1767101000000_CreateUsersTable.ts` creates the required table.
 
 ## Customer Profile
 

@@ -176,7 +176,7 @@ When building `Dockerfile.api` images that mount `/var/run/docker.sock`:
 
 ## Frontend applications (Express SSR)
 
-The Angular apps **frontend-agent-console**, **frontend-billing-console**, **frontend-portal**, and **frontend-docs** use the same Express layer for `GET /config` (runtime JSON proxy) and security headers. The variables below are written with the agent console in mind; they apply to all four apps unless an app-specific doc says otherwise.
+The Angular apps **agenstra-frontend-agent-console**, **agenstra-frontend-billing-console**, **agenstra-frontend-landingpage**, and **agenstra-frontend-docs** use the same Express layer for `GET /config` (runtime JSON proxy) and security headers. The variables below are written with the agent console in mind; they apply to all four apps unless an app-specific doc says otherwise.
 
 ### Billing manager (provisioned agent controller)
 

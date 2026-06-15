@@ -2,6 +2,14 @@
   "name": "@forepath/nx",
   "version": "0.0.0",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/forepath/one.git"
+  },
+  "bugs": {
+    "url": "https://github.com/forepath/one/issues"
+  },
+  "homepage": "https://github.com/forepath/one#readme",
   "scripts": {
     "prepare": "husky",
     "preinstall": "npx -y only-allow npm",

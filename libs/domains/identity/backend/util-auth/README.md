@@ -79,5 +79,5 @@ When using `localhost` or `host.docker.internal` in `KEYCLOAK_AUTH_SERVER_URL`, 
 ## Related Documentation
 
 - **[Environment Configuration](../../../../../docs/agenstra/deployment/environment-configuration.md)** - Complete environment variable reference
-- **[Backend Agent Controller README](../../../../../apps/backend-agent-controller/README.md)** - Application-specific usage
-- **[Backend Agent Manager README](../../../../../apps/backend-agent-manager/README.md)** - Application-specific usage
+- **[Backend Agent Controller README](../../../../../apps/agenstra/backend-agent-controller/README.md)** - Application-specific usage
+- **[Backend Agent Manager README](../../../../../apps/agenstra/backend-agent-manager/README.md)** - Application-specific usage

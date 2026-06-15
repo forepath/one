@@ -57,7 +57,7 @@ export const typeormConfig: DataSourceOptions = {
   migrations: [
     // Try production path first (compiled .js files), fallback to development path (.ts files)
     'src/migrations/*.js',
-    'apps/backend-agent-manager/src/migrations/*.ts',
+    'apps/agenstra/backend-agent-manager/src/migrations/*.ts',
   ],
   synchronize: false,
   logging:

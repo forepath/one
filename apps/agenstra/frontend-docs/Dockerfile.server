@@ -6,7 +6,7 @@
 # User:       node (APP_UID / APP_GID, default 1000)
 # Exposes:    4000 (Express static server)
 # Build:      npx nx run frontend-docs:server-container-image
-# Run:        nx docker:run frontend-docs -p 4000:4000
+# Run:        nx docker:run agenstra-frontend-docs -p 4000:4000
 # Notes:      —
 # -----------------------------------------------------------------------------
 #

@@ -26,8 +26,8 @@ We welcome contributions of all kinds:
 1. **Fork and Clone**
 
    ```bash
-   git clone https://github.com/your-username/devkit.git
-   cd devkit
+   git clone https://github.com/your-username/one.git
+   cd one
    ```
 
 2. **Install Dependencies**

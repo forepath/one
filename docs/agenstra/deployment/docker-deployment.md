@@ -21,7 +21,7 @@ Docker deployment provides:
 ### Backend Agent Controller
 
 ```bash
-cd apps/backend-agent-controller
+cd apps/agenstra/backend-agent-controller
 docker compose up -d
 ```
 
@@ -35,7 +35,7 @@ The `docker-compose.yaml` includes:
 ### Backend Agent Manager
 
 ```bash
-cd apps/backend-agent-manager
+cd apps/agenstra/backend-agent-manager
 docker compose up -d
 ```
 
@@ -49,7 +49,7 @@ The `docker-compose.yaml` includes:
 ### Frontend Agent Console
 
 ```bash
-cd apps/frontend-agent-console
+cd apps/agenstra/frontend-agent-console
 docker compose up -d
 ```
 
@@ -105,16 +105,16 @@ networks:
 
 ```bash
 # Agent Controller
-nx docker:api backend-agent-controller
+nx docker:api agenstra-backend-agent-controller
 
 # Agent Manager
-nx docker:api backend-agent-manager
+nx docker:api agenstra-backend-agent-manager
 ```
 
 ### Build Frontend Container
 
 ```bash
-nx docker:server frontend-agent-console
+nx docker:server agenstra-frontend-agent-console
 ```
 
 ### Frontend Container Configuration

@@ -6,7 +6,7 @@
 # User:       agenstra (APP_UID / APP_GID, default 10001); sudo: chown only (context bind mount)
 # Exposes:    6080 (noVNC / websockify; TigerVNC on display :1 internally)
 # Build:      npx nx run backend-agent-manager:vnc-container-image
-# Run:        nx docker:run backend-agent-manager -p 6080:6080
+# Run:        nx docker:run agenstra-backend-agent-manager -p 6080:6080
 # Notes:      Required runtime env: VNC_PASSWORD
 #              Optional: VNC_DISPLAY, VNC_RESOLUTION, VNC_DEPTH
 #              Agent workspace mount path: /home/agenstra/environment

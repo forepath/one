@@ -27,7 +27,8 @@ export const appConfig: ApplicationConfig = {
       [
         {
           path: '',
-          loadChildren: () => import('@forepath/forepath/frontend/feature-forepath').then((app) => app.forepathRoutes),
+          loadChildren: () =>
+            import('@forepath/forepath/frontend/feature-landingpage').then((app) => app.forepathRoutes),
         },
       ],
       withRouterConfig({ paramsInheritanceStrategy: 'always' }),

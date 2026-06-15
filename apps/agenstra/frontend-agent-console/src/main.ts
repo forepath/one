@@ -6,9 +6,9 @@ import { appConfig } from './app/app.config';
 
 // Create worker URLs that resolve to node_modules during build
 // Use import.meta.url as base and construct path to node_modules
-// From apps/frontend-agent-console/src/main.ts, go up 3 levels to workspace root, then into node_modules
+// From apps/agenstra/frontend-agent-console/src/main.ts, go up 4 levels to workspace root, then into node_modules
 const getWorkerUrl = (relativePath: string): URL => {
-  // Get the directory of the current file (apps/frontend-agent-console/src/)
+  // Get the directory of the current file (apps/agenstra/frontend-agent-console/src/)
   const currentDir = new URL('.', import.meta.url);
   // Go up to workspace root: ../../
   const workspaceRoot = new URL('../../', currentDir);

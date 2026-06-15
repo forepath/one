@@ -6,7 +6,7 @@
 # User:       node (APP_UID / APP_GID, default 1000)
 # Exposes:    4200 (Express static server)
 # Build:      npx nx run frontend-agent-console:server-container-image
-# Run:        nx docker:run frontend-agent-console -p 4200:4200
+# Run:        nx docker:run agenstra-frontend-agent-console -p 4200:4200
 # Notes:      —
 # -----------------------------------------------------------------------------
 #

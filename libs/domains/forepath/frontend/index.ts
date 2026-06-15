@@ -1,2 +1,2 @@
 // forepath domain frontend exports
-export * from './feature-forepath/src';
+export * from './feature-landingpage/src';

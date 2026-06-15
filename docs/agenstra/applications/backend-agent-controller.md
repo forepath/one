@@ -386,14 +386,14 @@ The application includes Dockerfiles for containerized deployment:
 
 ```bash
 # Build API container
-nx docker:api backend-agent-controller
+nx docker:api agenstra-backend-agent-controller
 ```
 
 ### Running the Container
 
 ```bash
 # Run with docker-compose (recommended)
-cd apps/backend-agent-controller
+cd apps/agenstra/backend-agent-controller
 docker compose up -d
 
 # Or run directly

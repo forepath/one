@@ -1,7 +1,7 @@
 {
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../../../dist/apps/native-agent-console",
+    "outDir": "../../../dist/apps/agenstra/native-agent-console",
     "rootDir": "src",
     "module": "commonjs",
     "target": "ES2022",

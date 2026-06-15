@@ -73,7 +73,7 @@ export const typeormConfig: DataSourceOptions = {
   ],
   migrations: [
     'src/migrations/*.js',
-    'apps/backend-billing-manager/src/migrations/*.ts',
+    'apps/agenstra/backend-billing-manager/src/migrations/*.ts',
     'libs/domains/identity/backend/util-auth/src/lib/migrations/*.ts',
   ],
   synchronize: false,
