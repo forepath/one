@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "Native",
+  "title": "Electron Native Application Generator",
+  "description": "Nx generator for creating a new Electron desktop application that bundles a domain frontend SSR server",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Application name without the native- prefix (for example agent-console)",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      },
+      "x-prompt": "What name would you like to use?"
+    },
+    "domain": {
+      "type": "string",
+      "default": "agenstra",
+      "description": "Product domain folder and Nx project name prefix",
+      "x-prompt": "Which domain should this app belong to?"
+    },
+    "frontendProject": {
+      "type": "string",
+      "description": "Nx project name of the frontend app to bundle (defaults to {domain}-frontend-{name})",
+      "x-prompt": "Which frontend Nx project should this native app bundle?"
+    },
+    "title": {
+      "type": "string",
+      "description": "Window and titlebar label shown in the desktop shell",
+      "x-prompt": "What title should the desktop window use?"
+    }
+  },
+  "required": ["name"]
+}

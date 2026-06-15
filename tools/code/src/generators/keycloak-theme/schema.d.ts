@@ -1,5 +1,5 @@
 export interface KeycloakThemeGeneratorSchema {
   name: string;
-  domain?: 'agenstra' | 'forepath' | 'shared';
+  domain?: string;
   prefix?: string;
 }

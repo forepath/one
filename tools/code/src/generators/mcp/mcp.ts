@@ -4,12 +4,10 @@ import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from 
 import { applicationGenerator as generatorFn } from '@nx/node';
 
 import { McpGeneratorSchema } from './schema';
+import { resolveDomainAppPaths } from '../utils/domain-app-paths';
 
 export async function mcpGenerator(tree: Tree, options: McpGeneratorSchema) {
-  const domain = options.domain ?? 'shared';
-  const roleName = `mcp-${options.name}`;
-  const projectName = `${domain}-${roleName}`;
-  const appRoot = `apps/${domain}/${roleName}`;
+  const { projectName, appRoot } = resolveDomainAppPaths(options.name, 'mcp', options, 'shared');
 
   await generatorFn(tree, {
     name: projectName,

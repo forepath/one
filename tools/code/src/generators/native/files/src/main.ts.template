@@ -1,0 +1,40 @@
+import { app, BrowserWindow } from 'electron';
+import * as path from 'node:path';
+
+const isDev = !app.isPackaged && process.env.NODE_ENV !== 'production';
+const port = Number(process.env.PORT ?? 4200);
+const appUrl = `http://127.0.0.1:${port}`;
+
+function createWindow(): void {
+  const window = new BrowserWindow({
+    width: 1280,
+    height: 800,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      sandbox: true,
+    },
+  });
+
+  window.loadURL(appUrl);
+}
+
+app.whenReady().then(() => {
+  if (isDev) {
+    console.log(`[<%= projectName %>] Loading ${appUrl}. Start <%= frontendProjectName %> SSR before launching.`);
+  }
+
+  createWindow();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});

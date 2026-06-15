@@ -4,12 +4,10 @@ import { E2eTestRunner, applicationGenerator as generatorFn, UnitTestRunner } fr
 import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from '@nx/devkit';
 
 import { KeycloakThemeGeneratorSchema } from './schema';
+import { resolveDomainAppPaths } from '../utils/domain-app-paths';
 
 export async function keycloakThemeGenerator(tree: Tree, options: KeycloakThemeGeneratorSchema) {
-  const domain = options.domain ?? 'shared';
-  const roleName = `keycloak-theme-${options.name}`;
-  const projectName = `${domain}-${roleName}`;
-  const appRoot = `apps/${domain}/${roleName}`;
+  const { projectName, appRoot } = resolveDomainAppPaths(options.name, 'keycloak-theme', options, 'shared');
   const appPrefix = options.prefix || options.name;
 
   await generatorFn(tree, {

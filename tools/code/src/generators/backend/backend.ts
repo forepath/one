@@ -3,12 +3,10 @@ import { applicationGenerator as generatorFn } from '@nx/nest';
 import { setupDockerGenerator as setupDockerGeneratorFn } from '@nx/node/src/generators/setup-docker/setup-docker';
 
 import { BackendGeneratorSchema } from './schema';
+import { resolveDomainAppPaths } from '../utils/domain-app-paths';
 
 export async function backendGenerator(tree: Tree, options: BackendGeneratorSchema) {
-  const domain = options.domain ?? 'agenstra';
-  const roleName = `backend-${options.name}`;
-  const projectName = `${domain}-${roleName}`;
-  const appRoot = `apps/${domain}/${roleName}`;
+  const { roleName, projectName, appRoot } = resolveDomainAppPaths(options.name, 'backend', options, 'agenstra');
 
   await generatorFn(tree, {
     name: projectName,

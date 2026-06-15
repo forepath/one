@@ -1,6 +1,6 @@
 export interface FrontendGeneratorSchema {
   name: string;
-  domain?: 'agenstra' | 'forepath' | 'shared';
+  domain?: string;
   prefix?: string;
   ssr: boolean;
   ui: 'bootstrap' | 'none';

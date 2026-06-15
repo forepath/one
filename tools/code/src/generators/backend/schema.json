@@ -16,9 +16,8 @@
     },
     "domain": {
       "type": "string",
-      "enum": ["agenstra", "forepath", "shared"],
       "default": "agenstra",
-      "description": "Product domain folder and Nx project name prefix",
+      "description": "Product domain folder and Nx project name prefix (for example agenstra, forepath, shared)",
       "x-prompt": "Which domain should this app belong to?"
     },
     "protected": {

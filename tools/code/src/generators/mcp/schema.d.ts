@@ -1,5 +1,5 @@
 export interface McpGeneratorSchema {
   name: string;
-  domain?: 'agenstra' | 'forepath' | 'shared';
+  domain?: string;
   protected: boolean;
 }

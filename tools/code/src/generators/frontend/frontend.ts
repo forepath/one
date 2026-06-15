@@ -5,12 +5,10 @@ import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from 
 import { setupDockerGenerator as setupDockerGeneratorFn } from '@nx/node/src/generators/setup-docker/setup-docker';
 
 import { FrontendGeneratorSchema } from './schema';
+import { resolveDomainAppPaths } from '../utils/domain-app-paths';
 
 export async function frontendGenerator(tree: Tree, options: FrontendGeneratorSchema) {
-  const domain = options.domain ?? 'agenstra';
-  const roleName = `frontend-${options.name}`;
-  const projectName = `${domain}-${roleName}`;
-  const appRoot = `apps/${domain}/${roleName}`;
+  const { projectName, appRoot } = resolveDomainAppPaths(options.name, 'frontend', options, 'agenstra');
   const appPrefix = options.prefix || options.name;
 
   await generatorFn(tree, {

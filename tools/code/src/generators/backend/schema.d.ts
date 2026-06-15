@@ -1,5 +1,5 @@
 export interface BackendGeneratorSchema {
   name: string;
-  domain?: 'agenstra' | 'forepath' | 'shared';
+  domain?: string;
   protected: boolean;
 }
