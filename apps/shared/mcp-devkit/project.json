@@ -1,0 +1,98 @@
+{
+  "name": "shared-mcp-devkit",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/shared/mcp-devkit/src",
+  "projectType": "application",
+  "tags": ["type:app", "scope:backend"],
+  "implicitDependencies": ["code"],
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/shared/mcp-devkit",
+        "format": ["cjs"],
+        "bundle": false,
+        "main": "apps/shared/mcp-devkit/src/main.ts",
+        "tsConfig": "apps/shared/mcp-devkit/tsconfig.app.json",
+        "assets": [],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
+      }
+    },
+    "prune-lockfile": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "executor": "@nx/js:prune-lockfile",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/shared/mcp-devkit/package.json",
+        "{workspaceRoot}/dist/apps/shared/mcp-devkit/package-lock.json"
+      ],
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "copy-workspace-modules": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "outputs": [
+        "{workspaceRoot}/dist/apps/shared/mcp-devkit/workspace_modules"
+      ],
+      "executor": "@nx/js:copy-workspace-modules",
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "prune": {
+      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
+      "executor": "nx:noop"
+    },
+    "watch": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx nx run shared-mcp-devkit:build --watch"
+      }
+    },
+    "debug": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "npx @modelcontextprotocol/inspector node ./dist/apps/shared/mcp-devkit/main.js"
+      },
+      "dependsOn": [
+        {
+          "target": "build"
+        }
+      ]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/shared/mcp-devkit/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "sbom": {
+      "executor": "@forepath/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
+    }
+  }
+}

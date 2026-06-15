@@ -1,6 +1,6 @@
 # AgentCTX
 
-**AgentCTX (Agent Context)** is the command-line binary that generates tool-specific agent config from a `.agenstra/` context. It is built from the `@agenstra/ai` package in `tools/ai` and provides the same transformation logic as the [Nx executor](./README.md#generating-tool-configs) and the programmatic API described in `tools/ai/README.md` in the repository—useful when you want to run the transform without Nx or from a standalone install.
+**AgentCTX (Agent Context)** is the command-line binary that generates tool-specific agent config from a `.agenstra/` context. It is built from the `@forepath/ai` package in `tools/ai` and provides the same transformation logic as the [Nx executor](./README.md#generating-tool-configs) and the programmatic API described in `tools/ai/README.md` in the repository—useful when you want to run the transform without Nx or from a standalone install.
 
 ## Purpose
 

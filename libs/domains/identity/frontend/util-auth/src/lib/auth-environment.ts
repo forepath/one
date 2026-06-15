@@ -68,7 +68,7 @@ export interface IdentityAuthEnvironment {
  * @example
  * ```typescript
  * import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
- * import { ENVIRONMENT } from '@forepath/framework/frontend/util-configuration';
+ * import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
  *
  * {
  *   provide: IDENTITY_AUTH_ENVIRONMENT,

@@ -1,0 +1,79 @@
+# -----------------------------------------------------------------------------
+# Image:      agenstra-billing-api
+# Project:    backend-billing-manager — Nx target `api-container-image`
+# Registry:   ghcr.io/forepath/agenstra-billing-api
+# Base:       debian:trixie-slim
+# User:       agenstra (APP_UID / APP_GID, default 10001)
+# Exposes:    3200 (HTTP API), 8082 (WebSocket)
+# Build:      npx nx run backend-billing-manager:api-container-image
+# Run:        nx docker:run agenstra-backend-billing-manager -p 3200:3200 -p 8082:8082
+# Notes:      Configure via runtime env; see docs/agenstra/deployment/
+#             Playwright Chromium is baked in for HTML invoice PDF rendering.
+# -----------------------------------------------------------------------------
+#
+FROM docker.io/debian:trixie-slim
+
+ARG APP_UID=10001
+ARG APP_GID=10001
+
+ENV HOST=0.0.0.0
+ENV PORT=3200
+ENV WEBSOCKET_PORT=8082
+ENV NVM_DIR=/home/agenstra/.nvm
+ENV NODE_VERSION=24.14.1
+ENV HOME=/home/agenstra
+ENV PATH="/home/agenstra/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+WORKDIR /app
+
+EXPOSE ${PORT}
+EXPOSE ${WEBSOCKET_PORT}
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    bash \
+    ca-certificates \
+    gnupg \
+    lsb-release && \
+    groupadd --gid "${APP_GID}" agenstra && \
+    useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --home-dir /home/agenstra --shell /bin/bash agenstra && \
+    chown agenstra:agenstra /app && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | PROFILE=/dev/null bash && \
+    . "${NVM_DIR}/nvm.sh" && \
+    nvm install "${NODE_VERSION}" && \
+    nvm alias default "${NODE_VERSION}" && \
+    chown -R agenstra:agenstra /home/agenstra
+
+COPY --chown=agenstra:agenstra package*.json ./
+
+RUN . "${NVM_DIR}/nvm.sh" && \
+    npm i && \
+    npm cache clean --force && \
+    npx playwright install --with-deps chromium && \
+    chown -R agenstra:agenstra /app "${PLAYWRIGHT_BROWSERS_PATH}"
+
+COPY --chown=agenstra:agenstra . /app
+
+RUN mkdir -p /data/invoices && \
+    chown -R agenstra:agenstra /data
+
+RUN printf '%s\n' \
+    '#!/bin/bash' \
+    'set -euo pipefail' \
+    'storage_path="${BILLING_INVOICE_PDF_STORAGE_PATH:-/data/invoices}"' \
+    'mkdir -p "${storage_path}"' \
+    'chown -R agenstra:agenstra /data "${storage_path}"' \
+    '. "${NVM_DIR}/nvm.sh"' \
+    'exec runuser -u agenstra -g agenstra -- node main.js' \
+    > /usr/local/bin/docker-entrypoint.sh && \
+    chmod 755 /usr/local/bin/docker-entrypoint.sh
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f "http://localhost:${PORT}/api/health" || exit 1
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

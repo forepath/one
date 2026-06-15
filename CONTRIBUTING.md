@@ -26,8 +26,8 @@ We welcome contributions of all kinds:
 1. **Fork and Clone**
 
    ```bash
-   git clone https://github.com/your-username/devkit.git
-   cd devkit
+   git clone https://github.com/your-username/one.git
+   cd one
    ```
 
 2. **Install Dependencies**
@@ -164,9 +164,9 @@ We value documentation improvements:
 
 ### Community Support
 
-- [GitHub Discussions](https://github.com/forepath/agenstra/discussions)
+- [GitHub Discussions](https://github.com/forepath/one/discussions)
 - [Project overview and docs](./docs/agenstra/README.md)
-- [Issue Tracker](https://github.com/forepath/agenstra/issues)
+- [Issue Tracker](https://github.com/forepath/one/issues)
 
 ### Direct Support
 

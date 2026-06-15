@@ -1,6 +1,7 @@
 {
-  "name": "@agenstra/code",
+  "name": "code",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "root": "tools/code",
   "sourceRoot": "tools/code/src",
   "projectType": "library",
   "tags": [],

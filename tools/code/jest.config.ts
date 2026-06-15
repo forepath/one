@@ -1,5 +1,5 @@
 export default {
-  displayName: 'devkit',
+  displayName: 'code',
   preset: '../../jest.preset.cjs',
   testEnvironment: 'node',
   transform: {

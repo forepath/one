@@ -41,8 +41,8 @@ This application is built using:
 
 The application integrates:
 
-- `@forepath/framework/frontend/feature-agent-console` - Feature components
-- `@forepath/framework/frontend/data-access-agent-console` - State management and data access
+- `@forepath/agenstra/frontend/feature-agent-console` - Feature components
+- `@forepath/agenstra/frontend/data-access-agent-console` - State management and data access
 
 ## State Management (NgRx)
 
@@ -127,7 +127,7 @@ The application uses NgRx for state management with the following state slices:
 
 ## Routing
 
-Routes are defined in the framework library `libs/domains/framework/frontend/feature-agent-console/src/lib/agent-console.routes.ts`. Highlights:
+Routes are defined in the framework library `libs/domains/agenstra/frontend/feature-agent-console/src/lib/agent-console.routes.ts`. Highlights:
 
 - ``(empty) → redirect to`clients`
 - **Identity** – `identityAuthRoutes` (login, register, password reset, email confirmation, user management) merged under the shell component
@@ -218,7 +218,7 @@ See [Authentication](../features/authentication.md) for environment variables an
 
 ## Environment Configuration
 
-Configure the application via environment variables. The **Express** runtime (`/config` proxy, CSP, and related variables) is shared with **frontend-billing-console**, **frontend-portal**, and **frontend-docs**; see [Environment configuration](../deployment/environment-configuration.md) for the full list and billing-manager provisioning defaults.
+Configure the application via environment variables. The **Express** runtime (`/config` proxy, CSP, and related variables) is shared with **agenstra-frontend-billing-console**, **agenstra-frontend-landingpage**, and **agenstra-frontend-docs**; see [Environment configuration](../deployment/environment-configuration.md) for the full list and billing-manager provisioning defaults.
 
 ### Runtime Configuration (Docker Containers)
 
@@ -273,10 +273,10 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 
 ```bash
 # Serve the application
-nx serve frontend-agent-console
+nx serve agenstra-frontend-agent-console
 
 # Build for production
-nx build frontend-agent-console
+nx build agenstra-frontend-agent-console
 
 # Run tests
 nx test frontend-agent-console
@@ -286,10 +286,10 @@ nx test frontend-agent-console
 
 ```bash
 # Build container
-nx docker:server frontend-agent-console
+nx docker:server agenstra-frontend-agent-console
 
 # Run with docker-compose
-cd apps/frontend-agent-console
+cd apps/agenstra/frontend-agent-console
 docker compose up -d
 ```
 
@@ -302,7 +302,7 @@ Before deploying to production:
 3. Set `WEBSOCKET_URL` to production controller WebSocket base (namespaces `clients` and `tickets` share this origin)
 4. Configure Keycloak client (or users auth) for the production domain
 5. (Optional) Set `CONFIG` environment variable to a remote JSON configuration URL for runtime configuration
-6. Build the application: `nx build frontend-agent-console --configuration=production`
+6. Build the application: `nx build agenstra-frontend-agent-console --configuration=production`
 7. Serve the built files using a web server (nginx, Apache, etc.)
 
 ## Related Documentation

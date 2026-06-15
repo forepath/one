@@ -6,14 +6,14 @@ import { InitGeneratorSchema } from './schema';
 
 export async function initGenerator(_: Tree, __: InitGeneratorSchema) {
   const runMcpProxyBuild = () => {
-    const result = spawnSync('npx', ['nx', 'run', 'mcp-proxy:build', '--skip-nx-cache'], {
+    const result = spawnSync('npx', ['nx', 'run', 'shared-mcp-proxy:build', '--skip-nx-cache'], {
       stdio: 'inherit',
       cwd: process.cwd(),
       env: process.env,
     });
 
     if (result.status !== 0) {
-      throw new Error('Failed to execute build for project "mcp-proxy"');
+      throw new Error('Failed to execute build for project "shared-mcp-proxy"');
     }
   };
 

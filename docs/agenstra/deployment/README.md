@@ -89,7 +89,7 @@ graph TB
 
 ```bash
 # Start all services
-cd apps/backend-agent-controller
+cd apps/agenstra/backend-agent-controller
 docker compose up -d
 
 cd ../backend-agent-manager
@@ -106,9 +106,9 @@ docker compose up -d
 npm install
 
 # Start services
-nx serve backend-agent-controller
-nx serve backend-agent-manager
-nx serve frontend-agent-console
+nx serve agenstra-backend-agent-controller
+nx serve agenstra-backend-agent-manager
+nx serve agenstra-frontend-agent-console
 ```
 
 ## Related Documentation

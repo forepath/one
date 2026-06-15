@@ -1,16 +1,16 @@
 blank_issues_enabled: false
 contact_links:
   - name: 📚 Documentation
-    url: https://github.com/forepath/agenstra/tree/main/docs
+    url: https://github.com/forepath/one/tree/main/docs
     about: Check our comprehensive documentation for guides and references
   - name: 💬 Community Discussions
-    url: https://github.com/forepath/agenstra/discussions
+    url: https://github.com/forepath/one/discussions
     about: Ask questions and share ideas with the community
   - name: 🐛 Bug Reports
-    url: https://github.com/forepath/agenstra/issues/new?template=bug_report.md
+    url: https://github.com/forepath/one/issues/new?template=bug_report.md
     about: Report bugs and issues with DevKit
   - name: ✨ Feature Requests
-    url: https://github.com/forepath/agenstra/issues/new?template=feature_request.md
+    url: https://github.com/forepath/one/issues/new?template=feature_request.md
     about: Suggest new features and improvements
   - name: 📞 Support
     url: https://forepath.io/kontakt

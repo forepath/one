@@ -1,0 +1,10 @@
+{
+  "name": "<%= roleName %>-server",
+  "version": "0.0.0",
+  "license": "MIT",
+  "description": "<%= displayTitle %> Server",
+  "private": true,
+  "dependencies": {
+    "express": "4.21.2"
+  }
+}

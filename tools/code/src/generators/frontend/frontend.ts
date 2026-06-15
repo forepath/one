@@ -5,14 +5,14 @@ import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from 
 import { setupDockerGenerator as setupDockerGeneratorFn } from '@nx/node/src/generators/setup-docker/setup-docker';
 
 import { FrontendGeneratorSchema } from './schema';
+import { resolveDomainAppPaths } from '../utils/domain-app-paths';
 
 export async function frontendGenerator(tree: Tree, options: FrontendGeneratorSchema) {
-  const appName = `frontend-${options.name}`;
-  const appRoot = `apps/${appName}`;
+  const { projectName, appRoot } = resolveDomainAppPaths(options.name, 'frontend', options, 'agenstra');
   const appPrefix = options.prefix || options.name;
 
   await generatorFn(tree, {
-    name: appName,
+    name: projectName,
     directory: appRoot,
     tags: 'type:app,scope:frontend',
     routing: true,
@@ -49,7 +49,7 @@ export async function frontendGenerator(tree: Tree, options: FrontendGeneratorSc
     });
 
     await setupDockerGeneratorFn(tree, {
-      project: appName,
+      project: projectName,
       outputPath: `dist/${appRoot}/server`,
       buildTarget: 'build',
     });
@@ -77,7 +77,7 @@ export async function frontendGenerator(tree: Tree, options: FrontendGeneratorSc
           executor: 'nx:run-commands',
           options: {
             cwd: `dist/${appRoot}/server`,
-            command: `docker build . -f ../../../../${appRoot}/Dockerfile --tag apps-${appName}`,
+            command: `docker build . -f ../../../../${appRoot}/Dockerfile --tag apps-${projectName}`,
           },
         };
       }

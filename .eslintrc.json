@@ -72,9 +72,17 @@
                 "onlyDependOnLibsWithTags": ["scope:keycloak", "domain:shared"]
               },
               {
-                "sourceTag": "domain:framework",
+                "sourceTag": "domain:agenstra",
                 "onlyDependOnLibsWithTags": [
-                  "domain:framework",
+                  "domain:agenstra",
+                  "domain:identity",
+                  "domain:shared"
+                ]
+              },
+              {
+                "sourceTag": "domain:forepath",
+                "onlyDependOnLibsWithTags": [
+                  "domain:forepath",
                   "domain:identity",
                   "domain:shared"
                 ]

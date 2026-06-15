@@ -47,13 +47,13 @@ Using **`*`** for **`CLIENT_ENDPOINT_ALLOWED_HOSTS`** intentionally **widens** t
 
 DNS validation resolves the endpoint hostname and rejects addresses in private/loopback space (unless skipped as above). Literal private IPs are rejected by URL validation.
 
-Code: `libs/domains/framework/backend/feature-agent-controller/src/lib/utils/client-endpoint-security.ts`.
+Code: `libs/domains/agenstra/backend/feature-agent-controller/src/lib/utils/client-endpoint-security.ts`.
 
 ## HTTP proxy to remote agent-manager — headers
 
 Outbound proxied HTTP requests **drop** caller-supplied credential-like headers (`Authorization`, cookies, `x-api-key`, and similar) and attach only the **service-computed** `Authorization` for the **client entity** (stored API key or token). This avoids forwarding the **portal user’s** JWT on HTTP proxy paths.
 
-Code: `libs/domains/framework/backend/feature-agent-controller/src/lib/utils/client-proxy-request-headers.ts` (used by `ClientAgentProxyService` and related `client-*-proxy` services).
+Code: `libs/domains/agenstra/backend/feature-agent-controller/src/lib/utils/client-proxy-request-headers.ts` (used by `ClientAgentProxyService` and related `client-*-proxy` services).
 
 WebSocket connections to **`/agents`** use **`getAuthHeader(clientId)`** from the same client credentials, not the browser handshake token alone.
 
@@ -62,13 +62,13 @@ WebSocket connections to **`/agents`** use **`getAuthHeader(clientId)`** from th
 - **Correlation ID middleware** runs **first** on the backends: accepts or generates `X-Correlation-Id` / `X-Request-Id`, binds AsyncLocalStorage, sets the response header, logs one **access line per request** with **path only** (no query string) and **`redactSecretsInString`** (Bearer, Basic, ApiKey-style fragments, email patterns).
 - **`CorrelationAwareConsoleLogger`** adds `[corr=…]` (text) or `correlationId` (JSON) to Nest framework logs inside the request async context.
 
-Code: `libs/domains/framework/backend/util-http-context/`.
+Code: `libs/domains/shared/backend/util-http-context/`.
 
-Structured error payloads logged from agent-controller proxies may pass through **`redactSensitive`**: `libs/domains/framework/backend/feature-agent-controller/src/lib/utils/redact-sensitive.ts`.
+Structured error payloads logged from agent-controller proxies may pass through **`redactSensitive`**: `libs/domains/agenstra/backend/feature-agent-controller/src/lib/utils/redact-sensitive.ts`.
 
 ## Frontend runtime configuration (`GET /config`)
 
-When **`CONFIG`** points to a remote JSON URL, Express servers validate fetches using **`@forepath/framework/frontend/util-runtime-config-server`**:
+When **`CONFIG`** points to a remote JSON URL, Express servers validate fetches using **`@forepath/shared/frontend/util-runtime-config-server`**:
 
 - Production: **HTTPS** unless **`CONFIG_ALLOW_INSECURE_HTTP=true`**; **`CONFIG_ALLOWED_HOSTS`** required when `CONFIG` is set.
 - Timeout, max bytes, JSON object shape, content-type, redirect blocking, optional key count/depth limits.

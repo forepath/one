@@ -34,7 +34,7 @@ This application is built using:
 - **Socket.IO** - WebSocket communication
 - **PostgreSQL** - Database for client and credential storage
 
-The thin Nest application composes **`ClientsModule`**, **`IdentityStatisticsBridgeModule`**, and **`MonitoringModule`** from `@forepath/framework/backend`, which bundle client management, ticket and proxy behavior, usage statistics bridging, and health endpoints from the framework agent-controller implementation.
+The thin Nest application composes **`ClientsModule`** and **`IdentityStatisticsBridgeModule`** from `@forepath/agenstra/backend` and **`MonitoringModule`** from `@forepath/shared/backend`, which bundle client management, ticket and proxy behavior, usage statistics bridging, and health endpoints from the agent-controller implementation.
 
 ## API Endpoints
 
@@ -386,14 +386,14 @@ The application includes Dockerfiles for containerized deployment:
 
 ```bash
 # Build API container
-nx docker:api backend-agent-controller
+nx docker:api agenstra-backend-agent-controller
 ```
 
 ### Running the Container
 
 ```bash
 # Run with docker-compose (recommended)
-cd apps/backend-agent-controller
+cd apps/agenstra/backend-agent-controller
 docker compose up -d
 
 # Or run directly

@@ -4,7 +4,7 @@ This section describes how to use the `.agenstra/` directory to configure AI cod
 
 ## Overview
 
-The `.agenstra/` context is a **single source of truth** for agent rules, commands, skills, agents, and tools. The `@agenstra/ai` transformer reads this directory and emits tool-specific configs so you can maintain one set of files and generate Cursor, OpenCode, and GitHub Copilot output as needed.
+The `.agenstra/` context is a **single source of truth** for agent rules, commands, skills, agents, and tools. The `@forepath/ai` transformer reads this directory and emits tool-specific configs so you can maintain one set of files and generate Cursor, OpenCode, and GitHub Copilot output as needed.
 
 **Key characteristics**:
 
@@ -85,7 +85,7 @@ nx run my-app:agenstra-transform --target=cursor,opencode,github-copilot --outpu
 **Via API**:
 
 ```ts
-import { transform } from '@agenstra/ai';
+import { transform } from '@forepath/ai';
 
 transform({
   source: '.agenstra',

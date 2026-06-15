@@ -1,0 +1,445 @@
+<!-- Hero -->
+<section id="hero" class="py-10 py-lg-6 bg-dark text-white position-relative overflow-hidden grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center">
+      <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featurePortalPricing-heroTitle">
+        Choose Your <span class="text-primary">License</span>
+      </h1>
+      <p class="lead mb-0 mx-auto hero-lead section-lead" i18n="@@featurePortalPricing-heroDescription">
+        Run Agenstra on your own infrastructure or let us host it with predictable pricing as you grow from experiments
+        to enterprise governance.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Path chooser -->
+<section id="paths" class="py-10 bg-white pricing-paths grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold text-dark mb-3" i18n="@@featurePortalPricing-pathsTitle">Two ways to run Agenstra</h2>
+      <p class="text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalPricing-pathsLead">
+        Most teams start self-hosted; move to managed cloud when you want us to operate the platform.
+      </p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <a routerLink="." fragment="self-hosted" class="text-decoration-none d-block h-100">
+          <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 pricing-path-card-subtle">
+            <i class="bi bi-hdd-stack text-primary icon-lg mb-3 d-block" aria-hidden="true"></i>
+            <h3 class="h5 fw-semibold text-dark mb-2" i18n="@@featurePortalPricing-pathSelfHostedTitle">Self-hosted</h3>
+            <p class="text-muted small mb-3" i18n="@@featurePortalPricing-pathSelfHostedDesc">
+              Open source through enterprise licenses. You control data, networking, and upgrades.
+            </p>
+            <span class="text-primary fw-semibold small" i18n="@@featurePortalPricing-pathSelfHostedCta"
+              >See license tiers <i class="bi bi-arrow-down ms-1" aria-hidden="true"></i
+            ></span>
+          </article>
+        </a>
+      </div>
+      <div class="col-md-6">
+        <a routerLink="." fragment="managed" class="text-decoration-none d-block h-100">
+          <article
+            class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 pricing-path-card pricing-path-card--cloud card-capability card-capability-primary-subtle"
+          >
+            <i class="bi bi-cloud-check text-primary icon-lg mb-3 d-block" aria-hidden="true"></i>
+            <h3 class="h5 fw-semibold text-dark mb-2" i18n="@@featurePortalPricing-pathManagedTitle">Agenstra Cloud</h3>
+            <p class="text-muted small mb-3" i18n="@@featurePortalPricing-pathManagedDesc">
+              Fully managed platform. We handle infrastructure, updates, and scaling.
+            </p>
+            <span class="text-primary fw-semibold small" i18n="@@featurePortalPricing-pathManagedCta"
+              >See cloud pricing <i class="bi bi-arrow-down ms-1" aria-hidden="true"></i
+            ></span>
+          </article>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Self-hosted tiers -->
+<section id="self-hosted" class="py-10 bg-body-tertiary pricing-tiers grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold text-dark mb-4" i18n="@@featurePortalPricing-tiersTitle">License tiers</h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalPricing-tiersLead">
+        Compare self-hosted plans from open source through enterprise. Swipe or use the arrows to review Startup,
+        Business, and Enterprise.
+      </p>
+    </div>
+    <div class="position-relative">
+      <div class="pricing-carousel-scroll-buttons d-none d-lg-flex justify-content-between align-items-center">
+        <button
+          type="button"
+          class="btn btn-primary pricing-carousel-scroll-button-left"
+          (click)="scrollPricingCarousel('left')"
+          [disabled]="!isLastCardVisible()"
+        >
+          <i class="bi bi-arrow-left" aria-hidden="true"></i>
+          <span class="visually-hidden" i18n="@@featurePortalPricing-scrollPrev">Previous plans</span>
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary pricing-carousel-scroll-button-right"
+          (click)="scrollPricingCarousel('right')"
+          [disabled]="isLastCardVisible()"
+        >
+          <i class="bi bi-arrow-right" aria-hidden="true"></i>
+          <span class="visually-hidden" i18n="@@featurePortalPricing-scrollNext">Next plans</span>
+        </button>
+      </div>
+      <div
+        class="row g-4 flex-lg-nowrap overflow-x-hidden position-relative pb-2 pb-lg-5 pricing-tiers-row"
+        #pricingCarousel
+      >
+        <div class="col-lg-4 flex-shrink-0 pricing-tier-col" style="min-width: min(100%, 300px)">
+          <article class="card h-100 border rounded-3 shadow-sm">
+            <div class="card-body p-4 p-lg-5 d-flex flex-column">
+              <div class="text-center mb-4">
+                <h3 class="h4 m-0" i18n="@@featurePortalPricing-openSourceTitle">Open Source</h3>
+                <span
+                  class="badge bg-secondary-subtle text-secondary px-3 py-2 my-2"
+                  i18n="@@featurePortalPricing-selfHostedBadge"
+                  >Self-Hosted</span
+                >
+                <div class="card border-0 rounded-3 bg-body-tertiary p-3 my-3">
+                  <div class="display-6 fw-bold text-primary mb-1" i18n="@@featurePortalPricing-openSourcePrice">
+                    Free
+                  </div>
+                  <p class="text-muted small mb-0" i18n="@@featurePortalPricing-openSourceLicense">AGPL-3.0 License</p>
+                </div>
+              </div>
+              <ul class="list-unstyled mb-4 flex-grow-1 small">
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-openSourceFeature1"
+                    ><strong>Agenstra Studio</strong> includes workspaces, tickets, and agent oversight</span
+                  >
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-openSourceFeature2">Single-machine agent runtime</span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-openSourceFeature3">Complete source code access</span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-openSourceFeature4">Modify and customize freely</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-info-circle-fill text-muted mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span class="text-muted" i18n="@@featurePortalPricing-openSourceNote"
+                    >Must share modifications if used as a service (AGPL requirement)</span
+                  >
+                </li>
+              </ul>
+              <div class="d-grid mt-auto">
+                <a
+                  href="https://github.com/forepath/one"
+                  class="btn btn-outline-primary py-2 px-4"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  i18n="@@featurePortalPricing-viewOnGitHub"
+                  >View on GitHub</a
+                >
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="col-lg-4 flex-shrink-0 pricing-tier-col" style="min-width: min(100%, 300px)">
+          <article class="card h-100 border rounded-3 shadow-sm">
+            <div class="card-body p-4 p-lg-5 d-flex flex-column">
+              <div class="text-center mb-4">
+                <h3 class="h4 m-0" i18n="@@featurePortalPricing-startupTitle">Startup</h3>
+                <span
+                  class="badge bg-secondary-subtle text-secondary px-3 py-2 my-2"
+                  i18n="@@featurePortalPricing-selfHostedBadge"
+                  >Self-Hosted</span
+                >
+                <div class="card border-0 rounded-3 bg-body-tertiary p-3 my-3">
+                  <div class="display-6 fw-bold text-primary mb-1" i18n="@@featurePortalPricing-startupPrice">Free</div>
+                  <p class="text-muted small mb-0" i18n="@@featurePortalPricing-startupLicense">
+                    BUSL-1.1 with Additional Use Grant
+                  </p>
+                </div>
+              </div>
+              <ul class="list-unstyled mb-4 flex-grow-1 small">
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-startupFeature1"><strong>Everything in Open Source</strong></span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-startupFeature2"
+                    ><strong>Multi-workspace operations</strong> provide centralized management and server
+                    provisioning</span
+                  >
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-startupFeature3">Multi-machine agent runtime orchestration</span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-startupFeature4">Full web console for agent management</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-info-circle-fill text-muted mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span class="text-muted" i18n="@@featurePortalPricing-startupNote"
+                    >For businesses with Total Finances &lt; €2,000,000/year</span
+                  >
+                </li>
+              </ul>
+              <div class="d-grid mt-auto">
+                <a
+                  href="https://github.com/forepath/one"
+                  class="btn btn-outline-primary py-2 px-4"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  i18n="@@featurePortalPricing-viewOnGitHub"
+                  >View on GitHub</a
+                >
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="col-lg-4 flex-shrink-0 pricing-tier-col" style="min-width: min(100%, 300px)">
+          <article class="card h-100 border-primary border-2 rounded-3 shadow position-relative">
+            <div class="position-absolute top-0 start-50 translate-middle">
+              <span
+                class="bg-primary text-white px-3 py-2 rounded-3 small fw-semibold"
+                i18n="@@featurePortalPricing-mostPopularBadge"
+                >Most Popular</span
+              >
+            </div>
+            <div class="card-body p-4 p-lg-5 d-flex flex-column">
+              <div class="text-center mb-4">
+                <h3 class="h4 m-0" i18n="@@featurePortalPricing-businessTitle">Business</h3>
+                <span
+                  class="badge bg-secondary-subtle text-secondary px-3 py-2 my-2"
+                  i18n="@@featurePortalPricing-selfHostedBadge"
+                  >Self-Hosted</span
+                >
+                <div class="card border-0 rounded-3 card-capability card-capability-primary p-3 my-3">
+                  <div class="display-6 fw-bold text-primary mb-1" i18n="@@featurePortalPricing-businessPrice">
+                    €499/mo
+                  </div>
+                  <p class="text-muted small mb-0" i18n="@@featurePortalPricing-businessLicense">
+                    BUSL-1.1 with Additional Use Grant
+                  </p>
+                </div>
+              </div>
+              <ul class="list-unstyled mb-4 flex-grow-1 small">
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-businessFeature1"><strong>Everything in Startup</strong></span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-businessFeature2">Personal onboarding</span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-businessFeature3">Standard support (E-Mail, Phone)</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-info-circle-fill text-muted mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span class="text-muted" i18n="@@featurePortalPricing-businessNote"
+                    >For businesses with Total Finances ≥ €2,000,000/year</span
+                  >
+                </li>
+              </ul>
+              <div class="d-grid mt-auto">
+                <a
+                  href="mailto:hi@agenstra.com"
+                  class="btn btn-primary py-2 px-4"
+                  i18n="@@featurePortalPricing-bookDemo"
+                  >Book a Demo</a
+                >
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="col-lg-4 flex-shrink-0 pricing-tier-col" style="min-width: min(100%, 300px)" #enterpriseCard>
+          <article class="card h-100 border rounded-3 shadow-sm">
+            <div class="card-body p-4 p-lg-5 d-flex flex-column">
+              <div class="text-center mb-4">
+                <h3 class="h4 m-0" i18n="@@featurePortalPricing-enterpriseTitle">Enterprise</h3>
+                <span
+                  class="badge bg-secondary-subtle text-secondary px-3 py-2 my-2"
+                  i18n="@@featurePortalPricing-selfHostedBadge"
+                  >Self-Hosted</span
+                >
+                <div class="card border-0 rounded-3 bg-body-tertiary p-3 my-3">
+                  <div class="display-6 fw-bold text-primary mb-1" i18n="@@featurePortalPricing-enterprisePrice">
+                    Ask Us
+                  </div>
+                  <p class="text-muted small mb-0" i18n="@@featurePortalPricing-enterpriseLicense">
+                    Commercial License
+                  </p>
+                </div>
+              </div>
+              <ul class="list-unstyled mb-4 flex-grow-1 small">
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-enterpriseFeature1"><strong>Everything in Business</strong></span>
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-enterpriseFeature2"
+                    >Priority support (Microsoft Teams) &amp; SLA</span
+                  >
+                </li>
+                <li class="mb-3 d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-enterpriseFeature3"
+                    >Expert-led module customization and development</span
+                  >
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                  <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+                  <span i18n="@@featurePortalPricing-enterpriseFeature4">Custom licensing terms</span>
+                </li>
+              </ul>
+              <div class="d-grid mt-auto">
+                <a
+                  href="mailto:hi@agenstra.com"
+                  class="btn btn-primary py-2 px-4"
+                  i18n="@@featurePortalPricing-contactSales"
+                  >Contact Sales</a
+                >
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Managed cloud -->
+<section id="managed" class="py-10 bg-white pricing-managed grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold text-dark mb-4" i18n="@@featurePortalPricing-managedTitle">Agenstra Cloud</h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalPricing-managedLead">
+        Fully managed hosting with predictable monthly pricing. We operate infrastructure, scaling, and updates so your
+        teams can focus on delivery.
+      </p>
+    </div>
+    <article class="card border rounded-3 shadow-sm overflow-hidden card-capability pricing-managed-card">
+      <div class="row g-0 align-items-stretch">
+        <div class="col-lg-8 p-4 p-lg-5">
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <h3 class="h5 fw-semibold mb-0" i18n="@@featurePortalPricing-cloudTitle">Agenstra Cloud</h3>
+            <span class="badge bg-primary text-white" i18n="@@featurePortalPricing-managedBadge">Managed</span>
+          </div>
+          <p class="text-muted mb-4" i18n="@@featurePortalPricing-cloudDescription">
+            Fully managed Agenstra platform hosted in the cloud. Made for any size of business. No infrastructure setup
+            required.
+          </p>
+          <div class="row row-cols-1 row-cols-sm-2 g-3">
+            <div class="col">
+              <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-cloud-check text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <span class="small text-muted mb-0" i18n="@@featurePortalPricing-cloudFeature1"
+                  ><strong class="text-body">Fully managed.</strong> We handle infrastructure, updates, and
+                  maintenance</span
+                >
+              </div>
+            </div>
+            <div class="col">
+              <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-grid text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <span class="small text-muted mb-0" i18n="@@featurePortalPricing-cloudFeature2"
+                  ><strong class="text-body">Full platform.</strong> Studio, web IDE, automation, and governance</span
+                >
+              </div>
+            </div>
+            <div class="col">
+              <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-graph-up-arrow text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <span class="small text-muted mb-0" i18n="@@featurePortalPricing-cloudFeature3"
+                  ><strong class="text-body">Automatic scaling.</strong> Capacity grows with your teams</span
+                >
+              </div>
+            </div>
+            <div class="col">
+              <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-shield-check text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <span class="small text-muted mb-0" i18n="@@featurePortalPricing-cloudFeature4"
+                  ><strong class="text-body">99.9% uptime SLA</strong> for enterprise-grade reliability</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="col-lg-4 p-4 p-lg-5 text-center card-capability-primary border-start pricing-managed-aside d-flex flex-column justify-content-center"
+        >
+          <p class="small text-muted mb-2" i18n="@@featurePortalPricing-cloudStartingAt">Starting at</p>
+          <div class="h2 fw-bold text-primary mb-4">
+            @if (cheapestOfferingLoading() || !cheapestLoaded()) {
+              <span class="text-muted" aria-hidden="true">…</span>
+            } @else {
+              @if (cheapestOffering(); as cloudPlan) {
+                €{{ cloudPlan.totalPrice | number: '1.2-2'
+                }}<span class="fs-6 text-muted fw-normal" i18n="@@featurePortalPricing-cloudPriceUnit">/month</span>
+              } @else {
+                <span class="text-muted" i18n="@@featurePortalPricing-cloudPriceUnavailable">Not available</span>
+              }
+            }
+          </div>
+          <a
+            [href]="billingBaseUrl"
+            class="btn btn-primary mb-2"
+            target="_blank"
+            rel="noopener noreferrer"
+            i18n="@@featurePortalPricing-getStartedNow"
+            >Get Started Now</a
+          >
+          <a
+            routerLink="/cloud"
+            class="text-primary fw-semibold small text-decoration-none"
+            i18n="@@featurePortalPricing-exploreCloud"
+            >Explore Cloud</a
+          >
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="py-10 bg-dark grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featurePortalPricing-ctaTitle">Ready to get started with Agenstra?</h2>
+      <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featurePortalPricing-ctaLead">
+        Whether you're starting with our open source version or need enterprise features, we're here to help you build
+        reliable agentic systems.
+      </p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a
+          href="https://github.com/forepath/one"
+          class="btn btn-light btn-lg px-5 py-3 rounded-3 fw-semibold cta-btn cta-btn-primary"
+          target="_blank"
+          rel="noopener noreferrer"
+          i18n="@@featurePortalPricing-ctaGetStarted"
+          >Get Started Free</a
+        >
+        <a
+          href="mailto:hi@agenstra.com"
+          class="btn btn-outline-light btn-lg px-5 py-3 rounded-3 cta-btn cta-btn-secondary"
+          i18n="@@featurePortalPricing-ctaTalkToSales"
+          >Talk to Sales</a
+        >
+      </div>
+    </div>
+  </div>
+</section>

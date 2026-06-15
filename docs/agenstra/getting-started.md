@@ -20,19 +20,19 @@ The easiest way to get started is using Docker Compose:
 
 ```bash
 # Clone the repository (if not already done)
-git clone <repository-url>
-cd agenstra
+git clone https://github.com/forepath/one.git
+cd one
 
 # Start all services
-cd apps/backend-agent-controller
+cd apps/agenstra/backend-agent-controller
 docker compose up -d
 
 # In another terminal, start agent-manager
-cd apps/backend-agent-manager
+cd apps/agenstra/backend-agent-manager
 docker compose up -d
 
 # In another terminal, start frontend
-cd apps/frontend-agent-console
+cd apps/agenstra/frontend-agent-console
 docker compose up -d
 ```
 
@@ -45,13 +45,13 @@ For local development:
 npm install
 
 # Start agent-controller
-nx serve backend-agent-controller
+nx serve agenstra-backend-agent-controller
 
 # In another terminal, start agent-manager
-nx serve backend-agent-manager
+nx serve agenstra-backend-agent-manager
 
 # In another terminal, start frontend
-nx serve frontend-agent-console
+nx serve agenstra-frontend-agent-console
 ```
 
 ## Configuration

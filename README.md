@@ -7,201 +7,182 @@
 [![Angular](https://img.shields.io/badge/Angular-DD0031?style=flat&logo=angular&logoColor=white)](https://angular.io)
 [![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=flat&logo=nestjs&logoColor=white)](https://nestjs.com/)
 
+[![GitHub](https://img.shields.io/badge/GitHub-forepath%2Fone-181717?style=flat&logo=github&logoColor=white)](https://github.com/forepath/one)
+
 </div>
 
-# Agenstra
+# ForePath One
 
-**A centralized control plane for managing distributed AI agent infrastructure.**
+**The central open source monorepo for ForePath products and shared platform code.**
 
-Agenstra is a full-stack platform that enables you to manage multiple AI agent instances from a single web-based console. Connect to remote agent-manager services, interact with AI agents in real-time, edit code directly in containers, and automate server provisioning - all from one unified interface.
+This repository hosts the software that powers [ForePath One](https://forepath.io/one), the umbrella for ForePath open source products. Today it contains the company website, the Agenstra agent governance platform, shared authentication and MCP tooling, and the Nx workspace infrastructure that ties them together. Each product lives in a named domain under `apps/` and `libs/domains/`, with per-component licenses where sublicensing applies.
 
-## What is Agenstra?
+## Repository overview
 
-Agenstra provides a complete solution for managing distributed AI agent infrastructure:
+Clone and install dependencies from the repository root:
 
-- **Centralized Management** - Connect to and control multiple remote agent-manager services from a single console
-- **Real-time AI Interaction** - WebSocket-based bidirectional communication with AI agents for instant responses
-- **Integrated Code Editor** - Edit files directly in agent containers with Monaco Editor - read, write, and manage code in real-time
-- **Automated Server Provisioning** - Provision cloud servers (Hetzner Cloud, DigitalOcean) with automated Docker and agent-manager deployment
-- **Version Control Integration** - Full Git operations (status, branches, commit, push, pull, rebase) directly from the web interface
-- **Container Management** - Monitor and interact with agent containers, view logs, and manage container lifecycle
-- **VNC Browser Access** - Graphical browser access via VNC with XFCE4 desktop and Chromium browser
-- **CI/CD Pipeline Management** - Configure, trigger, and monitor deployment pipelines from the console
+```bash
+git clone https://github.com/forepath/one.git
+cd one
+npm install
+```
 
-## Architecture
+Applications and libraries are grouped by product domain. Nx project names use a domain prefix (for example `agenstra-backend-agent-manager` or `forepath-frontend-landingpage`).
+
+| Domain     | Role                                                                                      | Applications (`apps/<domain>/`)                                                          | Libraries (`libs/domains/<domain>/`)                            |
+| ---------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `forepath` | ForePath company website and marketing features                                           | `frontend-landingpage`                                                                   | `frontend/feature-landingpage`                                  |
+| `agenstra` | Agent governance platform (console, controllers, managers, billing, docs, desktop client) | Agent console, controllers, managers, billing, docs, landing page, native desktop client | Feature, data-access, and utility libraries for Agenstra        |
+| `shared`   | Cross-product platform services                                                           | Platform authentication (Keycloak), MCP devkit, MCP proxy                                | Monitoring, configuration, Express SSR utilities, queue, crypto |
+| `identity` | Authentication shared across products                                                     | none                                                                                     | Keycloak integration for backend and frontend                   |
+
+Workspace tooling under `tools/` (`code`, `ai`, `sbom`, `release-integrity`) supports generators, agent context, and release automation. It is covered by the root MIT license unless noted otherwise in the component.
+
+## Projects
+
+### ForePath
+
+The ForePath domain contains the public company website at [forepath.io](https://forepath.io). It presents consulting, IT systems, software development services, and the ForePath One product portfolio. The site is an Angular SSR application with localized routes for home, services, pricing, legal pages, and the ForePath One overview.
+
+| Component                 | Nx project                              | Path                                                                                                          | Description                                                 |
+| ------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Landing page application  | `forepath-frontend-landingpage`         | [`apps/forepath/frontend-landingpage`](./apps/forepath/frontend-landingpage/)                                 | Angular SSR shell, Express server, Docker deployment        |
+| Marketing feature library | `forepath-frontend-feature-landingpage` | [`libs/domains/forepath/frontend/feature-landingpage`](./libs/domains/forepath/frontend/feature-landingpage/) | Pages, layout, routes, and content for the ForePath website |
+
+Run the site locally:
+
+```bash
+nx serve forepath-frontend-landingpage
+```
+
+### Agenstra
+
+[Agenstra](https://agenstra.com) is a centralized control plane for managing distributed AI agent infrastructure. It lets platform teams connect to remote agent-manager services, interact with agents in real time, edit code in containers, provision servers, and operate tickets, knowledge, and billing from a single web console or optional desktop client.
 
 Agenstra follows a three-tier distributed architecture:
 
-```
-┌─────────────────────┐
-│  Frontend Console   │  Angular application with NgRx state management
-│  (Web-based IDE)    │  Monaco Editor, Chat Interface, File Management
-└──────────┬──────────┘
-           │ HTTP REST API
-           │ WebSocket (Socket.IO)
-           ▼
-┌─────────────────────┐
-│ Agent Controller   │  Centralized control plane
-│ (Backend)           │  Client management, event forwarding
-└──────────┬──────────┘
-           │ HTTP REST API
-           │ WebSocket (Socket.IO)
-           ▼
-┌─────────────────────┐
-│ Agent Manager       │  Agent lifecycle management
-│ (Backend)           │  Container management, Docker integration
-└─────────────────────┘
+```mermaid
+flowchart TB
+  FE["Frontend Console<br/>(Web-based IDE)<br/>Angular, NgRx, Monaco Editor,<br/>Chat Interface, File Management"]
+  AC["Agent Controller<br/>(Backend)<br/>Centralized control plane<br/>Client management, event forwarding"]
+  AM["Agent Manager<br/>(Backend)<br/>Agent lifecycle management<br/>Container management, Docker integration"]
+
+  FE -->|"HTTP REST API<br/>WebSocket (Socket.IO)"| AC
+  AC -->|"HTTP REST API<br/>WebSocket (Socket.IO)"| AM
 ```
 
-### Components
+| Component                | Nx project                          | Path                                                                                  | Description                                                  |
+| ------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Frontend agent console   | `agenstra-frontend-agent-console`   | [`apps/agenstra/frontend-agent-console`](./apps/agenstra/frontend-agent-console/)     | Web-based IDE, chat, file management, tickets, knowledge     |
+| Native agent console     | `agenstra-native-agent-console`     | [`apps/agenstra/native-agent-console`](./apps/agenstra/native-agent-console/)         | Electron desktop shell around the agent console              |
+| Backend agent controller | `agenstra-backend-agent-controller` | [`apps/agenstra/backend-agent-controller`](./apps/agenstra/backend-agent-controller/) | Control plane for clients, tickets, proxying, and statistics |
+| Backend agent manager    | `agenstra-backend-agent-manager`    | [`apps/agenstra/backend-agent-manager`](./apps/agenstra/backend-agent-manager/)       | Agent lifecycle, Docker workloads, VNC, SSH, worker images   |
+| Backend billing manager  | `agenstra-backend-billing-manager`  | [`apps/agenstra/backend-billing-manager`](./apps/agenstra/backend-billing-manager/)   | Subscriptions, invoicing, Stripe integration                 |
+| Frontend billing console | `agenstra-frontend-billing-console` | [`apps/agenstra/frontend-billing-console`](./apps/agenstra/frontend-billing-console/) | Admin and customer billing UI                                |
+| Frontend docs            | `agenstra-frontend-docs`            | [`apps/agenstra/frontend-docs`](./apps/agenstra/frontend-docs/)                       | In-product documentation site                                |
+| Frontend landing page    | `agenstra-frontend-landingpage`     | [`apps/agenstra/frontend-landingpage`](./apps/agenstra/frontend-landingpage/)         | Public Agenstra marketing and pricing site                   |
 
-- **Frontend Agent Console** - Web-based IDE and chat interface built with Angular and NgRx
-- **Backend Agent Controller** - Centralized control plane for managing multiple agent-manager instances
-- **Backend Agent Manager** - Agent management system with HTTP REST API and WebSocket gateway
+Key Agenstra capabilities include centralized management of remote agent-manager instances, WebSocket-based agent chat, Monaco Editor file editing in containers, automated cloud server provisioning (Hetzner Cloud, DigitalOcean), Git operations from the browser, container monitoring and logs, VNC browser access, and CI/CD pipeline management from the console.
 
-## Key Features
+To get started with Agenstra:
 
-### ✅ Distributed Agent Management
+1. Follow the [Getting Started Guide](./docs/agenstra/getting-started.md) to install and configure the stack.
+2. Create your first client by connecting to an existing agent-manager or provisioning a new server.
+3. Create an agent and explore the integrated editor, Git tools, and chat interface.
 
-Connect to and manage multiple remote agent-manager services from a single console. Each client represents a remote agent-manager instance that can be provisioned automatically or connected manually.
+### Shared platform
 
-### ✅ Real-time AI Chat
+Shared applications and libraries are used by multiple ForePath products. They cover authentication, AI agent development tooling, monitoring, and common frontend server utilities.
 
-WebSocket-based bidirectional communication with AI agents. Send messages, receive instant responses, and maintain chat history across reconnections.
+| Component               | Nx project                       | Path                                                                            | Description                                                |
+| ----------------------- | -------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Platform authentication | `shared-platform-authentication` | [`apps/shared/platform-authentication`](./apps/shared/platform-authentication/) | Keycloak Docker Compose for local and shared auth          |
+| MCP devkit              | `shared-mcp-devkit`              | [`apps/shared/mcp-devkit`](./apps/shared/mcp-devkit/)                           | Model Context Protocol server for workspace and Nx tooling |
+| MCP proxy               | `shared-mcp-proxy`               | [`apps/shared/mcp-proxy`](./apps/shared/mcp-proxy/)                             | Proxy that routes MCP clients to the devkit                |
 
-### ✅ Integrated Code Editor
-
-Monaco Editor integration allows you to edit files directly in agent containers. Read, write, and manage code in real-time with syntax highlighting and code completion.
-
-### ✅ Automated Server Provisioning
-
-Provision cloud servers (Hetzner Cloud, DigitalOcean) with automated Docker installation and agent-manager deployment. Configure authentication, Git repositories, and agent settings during provisioning.
-
-### ✅ Version Control Integration
-
-Full Git operations directly from the web interface:
-
-- View git status and branches
-- Stage, commit, and push changes
-- Pull and rebase operations
-- Resolve merge conflicts
-
-### ✅ Container Management
-
-Monitor agent containers, view logs, and manage container lifecycle. Real-time container statistics and health monitoring.
-
-### ✅ VNC Browser Access
-
-Access a Chromium browser running in a virtual workspace container via VNC. XFCE4 desktop environment with auto-started browser, accessible through a web-based noVNC client.
-
-### ✅ CI/CD Pipeline Management
-
-Configure CI/CD providers (GitHub Actions), trigger pipeline runs, monitor their status, and view logs directly from the Agenstra console.
-
-## Quick Start
-
-### Getting Started
-
-1. **Set up your environment** - Follow the [Getting Started Guide](./docs/agenstra/getting-started.md) to install and configure Agenstra
-2. **Create your first client** - Connect to an existing agent-manager or provision a new server
-3. **Create an agent** - Set up your first AI agent and start interacting
-4. **Explore features** - Use the integrated code editor, Git operations, and chat interface
+Identity libraries under [`libs/domains/identity`](./libs/domains/identity/) provide Keycloak-backed authentication for NestJS backends and Angular frontends across Agenstra and future products.
 
 ## Documentation
 
-### Getting Started
+### ForePath and workspace
 
-- [Getting Started Guide](./docs/agenstra/getting-started.md) - Your entry point to Agenstra
-- [Local Development](./docs/agenstra/deployment/local-development.md) - Setting up for local development
+- [Contributing Guide](./CONTRIBUTING.md) applies to the whole monorepo.
 
-### Architecture
+### Agenstra
 
-- [System Overview](./docs/agenstra/architecture/system-overview.md) - High-level architecture and component relationships
-- [Components](./docs/agenstra/architecture/components.md) - Detailed breakdown of all system components
-- [Data Flow](./docs/agenstra/architecture/data-flow.md) - Communication patterns and data flow
+- [Getting Started Guide](./docs/agenstra/getting-started.md)
+- [Local Development](./docs/agenstra/deployment/local-development.md)
+- [System Overview](./docs/agenstra/architecture/system-overview.md)
+- [Components](./docs/agenstra/architecture/components.md)
+- [Docker Deployment](./docs/agenstra/deployment/docker-deployment.md)
+- [Environment Configuration](./docs/agenstra/deployment/environment-configuration.md)
+- [API Reference](./docs/agenstra/api-reference/README.md)
+- [Common Issues](./docs/agenstra/troubleshooting/common-issues.md)
+- [Debugging Guide](./docs/agenstra/troubleshooting/debugging-guide.md)
 
-### Features
-
-- [Client Management](./docs/agenstra/features/client-management.md) - Managing remote agent-manager instances
-- [Agent Management](./docs/agenstra/features/agent-management.md) - Agent lifecycle and container management
-- [Server Provisioning](./docs/agenstra/features/server-provisioning.md) - Automated cloud server provisioning
-- [WebSocket Communication](./docs/agenstra/features/websocket-communication.md) - Real-time bidirectional communication
-- [File Management](./docs/agenstra/features/file-management.md) - File system operations in agent containers
-- [Version Control](./docs/agenstra/features/version-control.md) - Git operations from the web interface
-- [Web IDE](./docs/agenstra/features/web-ide.md) - Monaco Editor integration
-- [Chat Interface](./docs/agenstra/features/chat-interface.md) - AI chat functionality
-- [VNC Browser Access](./docs/agenstra/features/vnc-browser-access.md) - Graphical browser access via VNC
-
-### Deployment
-
-- [Docker Deployment](./docs/agenstra/deployment/docker-deployment.md) - Containerized deployment guide
-- [Production Checklist](./docs/agenstra/deployment/production-checklist.md) - Production deployment guide
-- [Environment Configuration](./docs/agenstra/deployment/environment-configuration.md) - Complete environment variables reference
-
-### API Reference
-
-- [API Reference](./docs/agenstra/api-reference/README.md) - Complete OpenAPI and AsyncAPI specifications
-
-### Troubleshooting
-
-- [Common Issues](./docs/agenstra/troubleshooting/common-issues.md) - Common problems and solutions
-- [Debugging Guide](./docs/agenstra/troubleshooting/debugging-guide.md) - Debugging strategies and tools
+Feature guides (client management, agent management, server provisioning, WebSocket communication, file management, version control, web IDE, chat, VNC access) live under [`docs/agenstra/features/`](./docs/agenstra/features/).
 
 ## License
 
-This project is licensed under the **MIT License**.
+The repository default is the **MIT License**. See [LICENSE](./LICENSE) for the full text.
 
 Copyright (c) 2025 IPvX UG (haftungsbeschränkt)
 
 Portions of this software were originally Copyright (c) 2017-2025 Narwhal Technologies Inc.
 
-This program is free software: you can redistribute it and/or modify it under the terms of the MIT License. See the [LICENSE](./LICENSE) file for the full license text.
+Individual applications and libraries may be sublicensed. Always check the LICENSE file in each component before use, modification, or distribution.
 
-### Sublicensed Components
+### GNU Affero General Public License v3.0 (AGPL-3.0)
 
-The following components are sublicensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**:
+The following components are sublicensed under AGPL-3.0. Modifications and derivative works must remain under AGPL-3.0 and must be made available to users, including when accessed over a network.
 
-- [`apps/backend-agent-manager`](./apps/backend-agent-manager/) - Backend application for agent management
-- [`libs/domains/framework/backend/feature-agent-manager`](./libs/domains/framework/backend/feature-agent-manager/) - Agent management feature library
-- [`libs/domains/framework/backend/feature-monitoring`](./libs/domains/framework/backend/feature-monitoring/) - Monitoring feature library
-- [`apps/frontend-agent-console`](./apps/frontend-agent-console/) - Frontend application for agent console
-- [`libs/domains/framework/frontend/feature-agent-console`](./libs/domains/framework/frontend/feature-agent-console/) - Agent console feature library
-- [`libs/domains/framework/frontend/data-access-agent-console`](./libs/domains/framework/frontend/data-access-agent-console/) - Agent console data access library
-- [`libs/domains/framework/frontend/util-configuration`](./libs/domains/framework/frontend/util-configuration/) - Frontend configuration utility library
-- [`libs/domains/framework/frontend/util-cookie-consent`](./libs/domains/framework/frontend/util-cookie-consent/) - Cookie consent utility library
-- [`libs/domains/framework/frontend/util-docs-parser`](./libs/domains/framework/frontend/util-docs-parser/) - Documentation parser utility library
-- [`libs/domains/framework/frontend/util-runtime-config-server`](./libs/domains/framework/frontend/util-runtime-config-server/) - Frontend runtime config proxy utility library
+- [`apps/agenstra/backend-agent-manager`](./apps/agenstra/backend-agent-manager/) ([LICENSE](./apps/agenstra/backend-agent-manager/LICENSE))
+- [`libs/domains/agenstra/backend/feature-agent-manager`](./libs/domains/agenstra/backend/feature-agent-manager/) ([LICENSE](./libs/domains/agenstra/backend/feature-agent-manager/LICENSE))
+- [`libs/domains/shared/backend/feature-monitoring`](./libs/domains/shared/backend/feature-monitoring/) ([LICENSE](./libs/domains/shared/backend/feature-monitoring/LICENSE))
+- [`apps/agenstra/frontend-agent-console`](./apps/agenstra/frontend-agent-console/) ([LICENSE](./apps/agenstra/frontend-agent-console/LICENSE))
+- [`libs/domains/agenstra/frontend/feature-agent-console`](./libs/domains/agenstra/frontend/feature-agent-console/) ([LICENSE](./libs/domains/agenstra/frontend/feature-agent-console/LICENSE))
+- [`libs/domains/agenstra/frontend/data-access-agent-console`](./libs/domains/agenstra/frontend/data-access-agent-console/) ([LICENSE](./libs/domains/agenstra/frontend/data-access-agent-console/LICENSE))
+- [`libs/domains/shared/frontend/util-configuration`](./libs/domains/shared/frontend/util-configuration/) ([LICENSE](./libs/domains/shared/frontend/util-configuration/LICENSE))
+- [`libs/domains/shared/frontend/util-cookie-consent`](./libs/domains/shared/frontend/util-cookie-consent/) ([LICENSE](./libs/domains/shared/frontend/util-cookie-consent/LICENSE))
+- [`libs/domains/shared/frontend/util-express-server`](./libs/domains/shared/frontend/util-express-server/) ([LICENSE](./libs/domains/shared/frontend/util-express-server/LICENSE))
+- [`libs/domains/agenstra/frontend/util-docs-parser`](./libs/domains/agenstra/frontend/util-docs-parser/) ([LICENSE](./libs/domains/agenstra/frontend/util-docs-parser/LICENSE))
+- [`libs/domains/shared/frontend/util-runtime-config-server`](./libs/domains/shared/frontend/util-runtime-config-server/) ([LICENSE](./libs/domains/shared/frontend/util-runtime-config-server/LICENSE))
+- [`libs/domains/shared/frontend/util-meta`](./libs/domains/shared/frontend/util-meta/) ([LICENSE](./libs/domains/shared/frontend/util-meta/LICENSE))
+- [`libs/domains/shared/backend/util-http-context`](./libs/domains/shared/backend/util-http-context/) ([LICENSE](./libs/domains/shared/backend/util-http-context/LICENSE))
 
-These components are licensed under AGPL-3.0, which means that any modifications or derivative works must also be licensed under AGPL-3.0 and made available to users, including when accessed over a network. See the respective [backend-agent-manager application LICENSE](./apps/backend-agent-manager/LICENSE), [feature-agent-manager library LICENSE](./libs/domains/framework/backend/feature-agent-manager/LICENSE), [feature-monitoring library LICENSE](./libs/domains/framework/backend/feature-monitoring/LICENSE), [frontend-agent-console application LICENSE](./apps/frontend-agent-console/LICENSE), [feature-agent-console library LICENSE](./libs/domains/framework/frontend/feature-agent-console/LICENSE), [data-access-agent-console library LICENSE](./libs/domains/framework/frontend/data-access-agent-console/LICENSE), [util-configuration library LICENSE](./libs/domains/framework/frontend/util-configuration/LICENSE), [util-cookie-consent library LICENSE](./libs/domains/framework/frontend/util-cookie-consent/LICENSE), [util-docs-parser library LICENSE](./libs/domains/framework/frontend/util-docs-parser/LICENSE), and [util-runtime-config-server library LICENSE](./libs/domains/framework/frontend/util-runtime-config-server/LICENSE) files for the full AGPL-3.0 license text.
+### Business Source License 1.1 (BUSL-1.1)
 
-The following components are sublicensed under the **Business Source License 1.1 (BUSL-1.1)**:
+The following components are sublicensed under BUSL-1.1. They permit non-production use and limited production use subject to the Additional Use Grant. The license converts to AGPL-3.0 after the Change Date (three years from release date).
 
-- [`apps/backend-agent-controller`](./apps/backend-agent-controller/) - Backend application for agent controller
-- [`libs/domains/framework/backend/feature-agent-controller`](./libs/domains/framework/backend/feature-agent-controller/) - Agent controller feature library
+- [`apps/agenstra/backend-agent-controller`](./apps/agenstra/backend-agent-controller/) ([LICENSE](./apps/agenstra/backend-agent-controller/LICENSE))
+- [`libs/domains/agenstra/backend/feature-agent-controller`](./libs/domains/agenstra/backend/feature-agent-controller/) ([LICENSE](./libs/domains/agenstra/backend/feature-agent-controller/LICENSE))
 
-These components are licensed under BUSL-1.1, which permits non-production use and limited production use (subject to the Additional Use Grant terms). The license will convert to AGPL-3.0 after the Change Date (three years from release date). See the respective [backend-agent-controller application LICENSE](./apps/backend-agent-controller/LICENSE) and [feature-agent-controller library LICENSE](./libs/domains/framework/backend/feature-agent-controller/LICENSE) files for the full BUSL-1.1 license text.
+### Source-available license
 
-The following components are sublicensed under the **Source-Available License**:
+The following components are source-available. You may view the source code to understand how the software works. No other rights are granted, including copying, modifying, distributing, or running the software.
 
-- [`apps/frontend-portal`](./apps/frontend-portal/) - Frontend application for the public landing page
-- [`libs/domains/framework/frontend/feature-portal`](./libs/domains/framework/frontend/feature-portal/) - Portal feature library
-- [`apps/frontend-docs`](./apps/frontend-docs/) - Frontend application for documentation
-- [`libs/domains/framework/frontend/feature-docs`](./libs/domains/framework/frontend/feature-docs/) - Documentation feature library
-- [`apps/frontend-billing-console`](./apps/frontend-billing-console/) - Frontend application for billing console
-- [`libs/domains/framework/frontend/feature-billing-console`](./libs/domains/framework/frontend/feature-billing-console/) - Billing console feature library
-- [`libs/domains/framework/frontend/data-access-billing-console`](./libs/domains/framework/frontend/data-access-billing-console/) - Billing console data access library
-- [`libs/domains/framework/frontend/data-access-portal`](./libs/domains/framework/frontend/data-access-portal/) - Portal data access library
-- [`apps/backend-billing-manager`](./apps/backend-billing-manager/) - Backend application for billing management
-- [`libs/domains/framework/backend/feature-billing-manager`](./libs/domains/framework/backend/feature-billing-manager/) - Billing management feature library
+**ForePath domain**
 
-These components are licensed under a source-available license that grants only the right to view the source code. No other rights are granted, including copying, modifying, distributing, or using the software for any purpose. See the respective [frontend-portal application LICENSE](./apps/frontend-portal/LICENSE), [feature-portal library LICENSE](./libs/domains/framework/frontend/feature-portal/LICENSE), [frontend-docs application LICENSE](./apps/frontend-docs/LICENSE), [feature-docs library LICENSE](./libs/domains/framework/frontend/feature-docs/LICENSE), [frontend-billing-console application LICENSE](./apps/frontend-billing-console/LICENSE), [feature-billing-console library LICENSE](./libs/domains/framework/frontend/feature-billing-console/LICENSE), [data-access-billing-console library LICENSE](./libs/domains/framework/frontend/data-access-billing-console/LICENSE), [data-access-portal library LICENSE](./libs/domains/framework/frontend/data-access-portal/LICENSE), [backend-billing-manager application LICENSE](./apps/backend-billing-manager/LICENSE), and [feature-billing-manager library LICENSE](./libs/domains/framework/backend/feature-billing-manager/LICENSE) files for the full license text.
+- [`apps/forepath/frontend-landingpage`](./apps/forepath/frontend-landingpage/) ([LICENSE](./apps/forepath/frontend-landingpage/LICENSE))
+- [`libs/domains/forepath/frontend/feature-landingpage`](./libs/domains/forepath/frontend/feature-landingpage/) ([LICENSE](./libs/domains/forepath/frontend/feature-landingpage/LICENSE))
 
-## Contribution
+**Agenstra domain**
 
-We welcome contributions! Whether you're fixing bugs, adding features, or improving documentation, your input helps make Agenstra better for everyone.
+- [`apps/agenstra/frontend-landingpage`](./apps/agenstra/frontend-landingpage/) ([LICENSE](./apps/agenstra/frontend-landingpage/LICENSE))
+- [`libs/domains/agenstra/frontend/feature-landingpage`](./libs/domains/agenstra/frontend/feature-landingpage/) ([LICENSE](./libs/domains/agenstra/frontend/feature-landingpage/LICENSE))
+- [`apps/agenstra/frontend-docs`](./apps/agenstra/frontend-docs/) ([LICENSE](./apps/agenstra/frontend-docs/LICENSE))
+- [`libs/domains/agenstra/frontend/feature-docs`](./libs/domains/agenstra/frontend/feature-docs/) ([LICENSE](./libs/domains/agenstra/frontend/feature-docs/LICENSE))
+- [`apps/agenstra/frontend-billing-console`](./apps/agenstra/frontend-billing-console/) ([LICENSE](./apps/agenstra/frontend-billing-console/LICENSE))
+- [`libs/domains/agenstra/frontend/feature-billing-console`](./libs/domains/agenstra/frontend/feature-billing-console/) ([LICENSE](./libs/domains/agenstra/frontend/feature-billing-console/LICENSE))
+- [`libs/domains/agenstra/frontend/data-access-billing-console`](./libs/domains/agenstra/frontend/data-access-billing-console/) ([LICENSE](./libs/domains/agenstra/frontend/data-access-billing-console/LICENSE))
+- [`libs/domains/agenstra/frontend/data-access-portal`](./libs/domains/agenstra/frontend/data-access-portal/) ([LICENSE](./libs/domains/agenstra/frontend/data-access-portal/LICENSE))
+- [`apps/agenstra/backend-billing-manager`](./apps/agenstra/backend-billing-manager/) ([LICENSE](./apps/agenstra/backend-billing-manager/LICENSE))
+- [`libs/domains/agenstra/backend/feature-billing-manager`](./libs/domains/agenstra/backend/feature-billing-manager/) ([LICENSE](./libs/domains/agenstra/backend/feature-billing-manager/LICENSE))
 
-For detailed information on how to contribute, please see our [Contributing Guide](./CONTRIBUTING.md).
+## Contributing
 
----
+We welcome contributions across the monorepo, including bug fixes, features, documentation, tests, and design improvements for Agenstra, shared platform code, and workspace tooling.
 
-_Built with ❤️ for developers who want to manage AI agents at scale._
+Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions, coding standards, and the pull request process. Use [GitHub Discussions](https://github.com/forepath/one/discussions) for questions and [GitHub Issues](https://github.com/forepath/one/issues) for bugs and feature requests.
+
+When contributing to a sublicensed component, ensure your changes comply with that component's license terms.

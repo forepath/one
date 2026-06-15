@@ -17,8 +17,8 @@ Before you begin, ensure you have:
 ### Clone Repository
 
 ```bash
-git clone <repository-url>
-cd agenstra
+git clone https://github.com/forepath/one.git
+cd one
 ```
 
 ### Install Dependencies
@@ -55,7 +55,7 @@ docker run -d \
 
 ### Backend Agent Controller
 
-Create `.env` file in `apps/backend-agent-controller`:
+Create `.env` file in `apps/agenstra/backend-agent-controller`:
 
 ```bash
 # Database
@@ -88,7 +88,7 @@ RATE_LIMIT_ENABLED=false
 
 ### Backend Agent Manager
 
-Create `.env` file in `apps/backend-agent-manager`:
+Create `.env` file in `apps/agenstra/backend-agent-manager`:
 
 ```bash
 # Database
@@ -122,7 +122,7 @@ CURSOR_API_KEY=your-cursor-api-key
 
 ### Frontend Agent Console
 
-Create `.env` file in `apps/frontend-agent-console`:
+Create `.env` file in `apps/agenstra/frontend-agent-console`:
 
 ```bash
 API_URL=http://localhost:3100
@@ -138,20 +138,20 @@ KEYCLOAK_CLIENT_ID=agent-manager
 
 ```bash
 # Terminal 1: Agent Controller
-cd apps/backend-agent-controller
-nx serve backend-agent-controller
+cd apps/agenstra/backend-agent-controller
+nx serve agenstra-backend-agent-controller
 
 # Terminal 2: Agent Manager
-cd apps/backend-agent-manager
-nx serve backend-agent-manager
+cd apps/agenstra/backend-agent-manager
+nx serve agenstra-backend-agent-manager
 ```
 
 ### Start Frontend
 
 ```bash
 # Terminal 3: Frontend
-cd apps/frontend-agent-console
-nx serve frontend-agent-console
+cd apps/agenstra/frontend-agent-console
+nx serve agenstra-frontend-agent-console
 ```
 
 ## Development Workflow
@@ -185,9 +185,9 @@ nx test backend-agent-controller --coverage
 nx run-many -t build
 
 # Build specific project
-nx build backend-agent-controller
-nx build backend-agent-manager
-nx build frontend-agent-console
+nx build agenstra-backend-agent-controller
+nx build agenstra-backend-agent-manager
+nx build agenstra-frontend-agent-console
 ```
 
 ## Docker for Agent Containers

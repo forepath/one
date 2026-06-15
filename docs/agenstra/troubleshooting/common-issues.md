@@ -10,7 +10,7 @@ Common problems and their solutions in the Agenstra system.
 
 **Solutions**:
 
-- Verify backend is running: `nx serve backend-agent-controller`
+- Verify backend is running: `nx serve agenstra-backend-agent-controller`
 - Check API URL in frontend configuration: `API_URL=http://localhost:3100`
 - Verify CORS configuration allows frontend origin
 - Check firewall rules

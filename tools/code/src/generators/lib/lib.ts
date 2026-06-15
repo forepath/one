@@ -27,11 +27,13 @@ export async function libGenerator(tree: Tree, options: LibGeneratorSchema) {
       throw new Error(`Unsupported generator type: ${options.generator}`);
   }
 
+  const importPath = `@forepath/${options.domain}/${options.scope}/${libImportRoot}`;
+
   await generatorFn(tree, {
     name: libName,
     directory: libRoot,
     tags: `domain:${options.domain},scope:${options.scope},type:${options.type}`,
-    importPath: undefined,
+    importPath,
     prefix: options.domain,
     skipTsConfig: true,
     style: 'scss',
@@ -51,6 +53,13 @@ export async function libGenerator(tree: Tree, options: LibGeneratorSchema) {
   if (!current.includes(exportLine)) {
     tree.write(domainIndex, current + exportLine);
   }
+
+  updateJson(tree, 'tsconfig.base.json', (json) => {
+    json.compilerOptions.paths = json.compilerOptions.paths || {};
+    json.compilerOptions.paths[importPath] = [`${libRoot}/src/index.ts`];
+
+    return json;
+  });
 
   updateJson(tree, '.eslintrc.json', (json) => {
     const depConstraints = json.overrides[1].rules['@nx/enforce-module-boundaries'][1].depConstraints || [];

@@ -4,12 +4,13 @@ import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from 
 import { applicationGenerator as generatorFn } from '@nx/node';
 
 import { McpGeneratorSchema } from './schema';
+import { resolveDomainAppPaths } from '../utils/domain-app-paths';
 
 export async function mcpGenerator(tree: Tree, options: McpGeneratorSchema) {
-  const appRoot = `apps/mcp-${options.name}`;
+  const { projectName, appRoot } = resolveDomainAppPaths(options.name, 'mcp', options, 'shared');
 
   await generatorFn(tree, {
-    name: `mcp-${options.name}`,
+    name: projectName,
     directory: appRoot,
     tags: 'type:app,scope:backend',
     skipPackageJson: true,
@@ -44,7 +45,7 @@ export async function mcpGenerator(tree: Tree, options: McpGeneratorSchema) {
       projectJson.targets.debug = {
         executor: 'nx:run-commands',
         options: {
-          command: `npx @modelcontextprotocol/inspector node ./dist/apps/mcp-${options.name}/main.js`,
+          command: `npx @modelcontextprotocol/inspector node ./dist/${appRoot}/main.js`,
         },
         dependsOn: [{ target: 'build' }],
       };

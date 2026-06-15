@@ -1,0 +1,28 @@
+{
+  "name": "<%= roleName %>",
+  "version": "0.0.0",
+  "license": "MIT",
+  "description": "<%= displayTitle %>",
+  "main": "./main.js",
+  "private": true,
+  "scripts": {
+    "start": "NODE_ENV=development electron ./main.js",
+    "electron": "electron ./main.js",
+    "make": "electron-forge make",
+    "package": "electron-forge package"
+  },
+  "dependencies": {
+    "express": "4.21.2",
+    "tslib": "2.8.1"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "7.10.2",
+    "@electron-forge/maker-deb": "7.10.2",
+    "@electron-forge/maker-rpm": "7.10.2",
+    "@electron-forge/maker-zip": "7.10.2",
+    "@electron-forge/maker-squirrel": "7.10.2",
+    "@electron-forge/plugin-auto-unpack-natives": "7.10.2",
+    "electron": "39.2.7",
+    "electron-builder": "25.1.8"
+  }
+}

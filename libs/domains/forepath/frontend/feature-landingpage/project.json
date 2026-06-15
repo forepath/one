@@ -1,0 +1,21 @@
+{
+  "name": "forepath-frontend-feature-landingpage",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/forepath/frontend/feature-landingpage/src",
+  "prefix": "framework",
+  "projectType": "library",
+  "tags": ["domain:forepath", "scope:frontend", "type:feature"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/forepath/frontend/feature-landingpage/jest.config.cts",
+        "tsConfig": "libs/domains/forepath/frontend/feature-landingpage/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

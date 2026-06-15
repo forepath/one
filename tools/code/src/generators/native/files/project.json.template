@@ -1,0 +1,111 @@
+{
+  "name": "<%= projectName %>",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "<%= appRoot %>/src",
+  "tags": ["type:app", "scope:native", "domain:<%= domain %>"],
+  "implicitDependencies": ["<%= frontendProjectName %>"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false
+      },
+      "outputs": [
+        "{workspaceRoot}/dist/<%= appRoot %>",
+        "{workspaceRoot}/dist/<%= frontendAppRoot %>"
+      ],
+      "configurations": {
+        "development": {
+          "commands": [
+            "nx build <%= frontendProjectName %> --configuration=development",
+            "nx run <%= frontendProjectName %>:prebuild-server --configuration=development",
+            "nx run <%= frontendProjectName %>:server",
+            "tsc -p <%= appRoot %>/tsconfig.json",
+            "node -e \"require('fs').writeFileSync('dist/<%= appRoot %>/package.json', JSON.stringify({type:'commonjs'}, null, 2))\"",
+            "cp -r dist/<%= frontendAppRoot %>/server dist/<%= appRoot %>/server",
+            "cp <%= appRoot %>/package-server.json dist/<%= appRoot %>/server/package.json",
+            "npm i --omit=dev --prefix dist/<%= appRoot %>/server",
+            "cp <%= appRoot %>/package.json dist/<%= appRoot %>/package.json",
+            "cp <%= appRoot %>/forge.config.js dist/<%= appRoot %>/forge.config.js",
+            "npm i --omit=dev --prefix dist/<%= appRoot %>"
+          ]
+        },
+        "production": {
+          "commands": [
+            "nx build <%= frontendProjectName %> --configuration=production",
+            "nx run <%= frontendProjectName %>:prebuild-server --configuration=production",
+            "nx run <%= frontendProjectName %>:server",
+            "tsc -p <%= appRoot %>/tsconfig.json",
+            "node -e \"require('fs').writeFileSync('dist/<%= appRoot %>/package.json', JSON.stringify({type:'commonjs'}, null, 2))\"",
+            "cp -r dist/<%= frontendAppRoot %>/server dist/<%= appRoot %>/server",
+            "cp <%= appRoot %>/package-server.json dist/<%= appRoot %>/server/package.json",
+            "npm i --omit=dev --prefix dist/<%= appRoot %>/server",
+            "cp <%= appRoot %>/package.json dist/<%= appRoot %>/package.json",
+            "cp <%= appRoot %>/forge.config.js dist/<%= appRoot %>/forge.config.js",
+            "npm i --omit=dev --prefix dist/<%= appRoot %>"
+          ]
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false
+      },
+      "configurations": {
+        "development": {
+          "commands": [
+            "nx build <%= projectName %> --configuration=development",
+            "electron dist/<%= appRoot %>/main.js"
+          ]
+        },
+        "production": {
+          "commands": [
+            "nx build <%= projectName %> --configuration=production",
+            "electron dist/<%= appRoot %>/main.js"
+          ]
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "options": {
+        "parallel": false
+      },
+      "configurations": {
+        "development-linux": {
+          "commands": [
+            "nx build <%= projectName %> --configuration=development",
+            "cd dist/<%= appRoot %> && npx electron-forge make --platform linux"
+          ]
+        },
+        "development-windows": {
+          "commands": [
+            "nx build <%= projectName %> --configuration=development",
+            "cd dist/<%= appRoot %> && npx electron-forge make --platform win32"
+          ]
+        },
+        "production-linux": {
+          "commands": [
+            "nx build <%= projectName %> --configuration=production",
+            "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/<%= appRoot %>/package.json",
+            "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/<%= appRoot %>/server/package.json",
+            "cd dist/<%= appRoot %> && npx electron-forge make --platform linux"
+          ]
+        },
+        "production-windows": {
+          "commands": [
+            "nx build <%= projectName %> --configuration=production",
+            "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/<%= appRoot %>/package.json",
+            "sed -i \"s/0.0.0/${RELEASE_VERSION}/g\" dist/<%= appRoot %>/server/package.json",
+            "cd dist/<%= appRoot %> && npx electron-forge make --platform win32"
+          ]
+        }
+      },
+      "defaultConfiguration": "development"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+# -----------------------------------------------------------------------------
+# Image:      agenstra-console-server
+# Project:    frontend-agent-console — Nx target `server-container-image`
+# Registry:   ghcr.io/forepath/agenstra-console-server
+# Base:       node:24.14.1-alpine
+# User:       node (APP_UID / APP_GID, default 1000)
+# Exposes:    4200 (Express static server)
+# Build:      npx nx run frontend-agent-console:server-container-image
+# Run:        nx docker:run agenstra-frontend-agent-console -p 4200:4200
+# Notes:      —
+# -----------------------------------------------------------------------------
+#
+FROM docker.io/node:24.14.1-alpine
+
+ARG APP_UID=1000
+ARG APP_GID=1000
+
+ENV HOST=0.0.0.0
+ENV PORT=4200
+
+WORKDIR /app
+
+EXPOSE ${PORT}
+
+COPY --chown=${APP_UID}:${APP_GID} package*.json ./
+
+RUN npm i --omit=dev && npm cache clean --force && chown -R "${APP_UID}:${APP_GID}" /app
+
+COPY --chown=${APP_UID}:${APP_GID} . /app
+
+USER ${APP_UID}:${APP_GID}
+
+CMD [ "node", "server.cjs" ]

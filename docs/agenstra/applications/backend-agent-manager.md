@@ -4,7 +4,7 @@ NestJS backend application for managing and interacting with AI agents through H
 
 ## Purpose
 
-This application provides a complete agent management system by importing **`AgentsModule`** and **`MonitoringModule`** from `@forepath/framework/backend`, which bundle the agent-manager HTTP API, WebSocket gateway, Docker integration, and health endpoints.
+This application provides a complete agent management system by importing **`AgentsModule`** from `@forepath/agenstra/backend` and **`MonitoringModule`** from `@forepath/shared/backend`, which bundle the agent-manager HTTP API, WebSocket gateway, Docker integration, and health endpoints.
 
 ## Features
 
@@ -235,13 +235,13 @@ The application includes Dockerfiles for containerized deployment:
 
 ```bash
 # Build API container
-nx docker:api backend-agent-manager
+nx docker:api agenstra-backend-agent-manager
 
 # Build worker container
-nx docker:worker backend-agent-manager
+nx docker:worker agenstra-backend-agent-manager
 
 # Build VNC container
-nx docker:vnc-container-image backend-agent-manager
+nx docker:vnc-container-image agenstra-backend-agent-manager
 ```
 
 ### Running the Container
@@ -250,7 +250,7 @@ nx docker:vnc-container-image backend-agent-manager
 
 ```bash
 # Run with docker-compose (recommended)
-cd apps/backend-agent-manager
+cd apps/agenstra/backend-agent-manager
 docker compose up -d
 
 # Or run directly with Docker socket mount
@@ -260,7 +260,7 @@ docker run -v /var/run/docker.sock:/var/run/docker.sock \
   -e CORS_ORIGIN="https://agenstra.com" \
   -e RATE_LIMIT_ENABLED=true \
   -e RATE_LIMIT_LIMIT=100 \
-  backend-agent-manager:api
+  agenstra-backend-agent-manager:api
 ```
 
 The `/var/run/docker.sock` mount is required for the application to manage agent containers. Without this mount, the Docker CLI installed in the container will not be able to communicate with the host Docker daemon.
