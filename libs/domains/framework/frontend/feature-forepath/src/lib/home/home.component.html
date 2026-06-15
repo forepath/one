@@ -1,0 +1,286 @@
+<!-- Hero -->
+<section id="hero" class="py-10 py-lg-6 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="row justify-content-center">
+      <div class="col-12 text-center hero-container">
+        <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathHome-heroTitle">
+          <span class="text-primary">Pragmatic engineering</span> for teams that ship and operate with confidence
+        </h1>
+        <p class="hero-lead lead fs-5 mb-4 mx-auto" i18n="@@featureForepathHome-heroLead">
+          ForePath partners with organizations to modernize infrastructure, deliver software, and adopt AI without
+          trading away control, clarity, or long-term maintainability.
+        </p>
+        <p class="fs-6 fw-light mb-5 hero-cta-line" i18n="@@featureForepathHome-heroCtaLine">
+          From cloud foundations to product delivery, we work alongside your teams with transparent methods, open
+          standards, and outcomes you can sustain after the engagement ends.
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <a
+            href="mailto:hi@forepath.io"
+            class="btn btn-primary btn-lg px-4 py-3 rounded-3 cta-btn cta-btn-primary"
+            i18n="@@featureForepathHome-heroContact"
+          >
+            <i class="bi bi-envelope me-2" aria-hidden="true"></i>
+            Start a conversation
+          </a>
+          <a
+            routerLink="/"
+            fragment="proof"
+            class="btn btn-outline-primary btn-lg px-4 py-3 rounded-3 cta-btn"
+            i18n="@@featureForepathHome-heroExplore"
+          >
+            <i class="bi bi-arrow-down me-2" aria-hidden="true"></i>
+            See our experience
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Proof -->
+<section id="proof" class="py-10 bg-white grid-section">
+  <div class="container grid-section__container">
+    <div class="row align-items-center g-4 g-lg-5">
+      <div class="col-lg-4 text-center text-lg-start">
+        <p class="home-proof-stat fw-semibold text-primary mb-1" i18n="@@featureForepathHome-proofStat">10+</p>
+        <p class="h4 fw-semibold text-dark mb-0" i18n="@@featureForepathHome-proofStatLabel">years with IT systems</p>
+      </div>
+      <div class="col-lg-8">
+        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featureForepathHome-proofTitle">
+          Built in production, not in slide decks
+        </h2>
+        <p class="text-muted mb-4" i18n="@@featureForepathHome-proofStory">
+          ForePath grew out of years inside real IT estates. Datacenters that had to stay up, migrations that could not
+          slip, and teams that needed answers before the next release window closed. That background shapes how we work
+          with clients today.
+        </p>
+        <p class="text-muted mb-4" i18n="@@featureForepathHome-proofExperienceIntro">
+          Along the way we have designed, delivered, and operated systems across these areas:
+        </p>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <ul class="list-unstyled mb-0 home-proof-areas__list">
+              <li class="home-proof-areas__item">
+                <i class="bi bi-dot text-primary" aria-hidden="true"></i>
+                <span i18n="@@featureForepathHome-proofArea1">Cloud and platforms</span>
+              </li>
+              <li class="home-proof-areas__item">
+                <i class="bi bi-dot text-primary" aria-hidden="true"></i>
+                <span i18n="@@featureForepathHome-proofArea2">DevOps and delivery</span>
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-4">
+            <ul class="list-unstyled mb-0 home-proof-areas__list">
+              <li class="home-proof-areas__item">
+                <i class="bi bi-dot text-primary" aria-hidden="true"></i>
+                <span i18n="@@featureForepathHome-proofArea3">Managed IT operations</span>
+              </li>
+              <li class="home-proof-areas__item">
+                <i class="bi bi-dot text-primary" aria-hidden="true"></i>
+                <span i18n="@@featureForepathHome-proofArea4">Software development</span>
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-4">
+            <ul class="list-unstyled mb-0 home-proof-areas__list">
+              <li class="home-proof-areas__item">
+                <i class="bi bi-dot text-primary" aria-hidden="true"></i>
+                <span i18n="@@featureForepathHome-proofArea5">Security and compliance</span>
+              </li>
+              <li class="home-proof-areas__item">
+                <i class="bi bi-dot text-primary" aria-hidden="true"></i>
+                <span i18n="@@featureForepathHome-proofArea6">AI and automation</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Platform logos -->
+<section id="platform-logos" class="bg-white grid-section home-platform-section">
+  <div class="container grid-section__container">
+    <div
+      class="home-platform-grid"
+      role="list"
+      i18n-aria-label="@@featureForepathHome-platformGridLabel"
+      aria-label="Cloud platforms and operating systems we work with"
+    >
+      @for (logo of visiblePlatformLogos(); track logo.instanceKey) {
+        <div class="home-platform-grid__cell" role="listitem">
+          <img
+            [src]="logo.logoUrl"
+            [alt]="logo.name"
+            class="home-platform-grid__logo logo-partner"
+            [class.home-platform-grid__logo--compact]="logo.compact"
+            loading="lazy"
+          />
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Human meets machine -->
+<section id="human-meets-machine" class="bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="row g-0 align-items-stretch home-human-meets-row">
+      <div class="col-lg-6 home-human-meets-copy py-10 order-lg-1">
+        <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathHome-humanMeetsTitle">Where human meets machine</h2>
+        <p class="text-muted mb-4" i18n="@@featureForepathHome-humanMeetsHeadline">
+          We advise, build, and operate the systems organizations depend on. That spans cloud foundations, software
+          delivery, and day-to-day IT operations.
+        </p>
+        <ul class="list-unstyled mb-4">
+          <li class="mb-2 d-flex gap-2">
+            <i class="bi bi-check-circle-fill text-success flex-shrink-0" aria-hidden="true"></i>
+            <span i18n="@@featureForepathHome-humanMeetsItem1"
+              >Consulting spans infrastructure, cloud, DevOps, security, and AI adoption. Architecture is shaped so your
+              teams can implement it.</span
+            >
+          </li>
+          <li class="mb-2 d-flex gap-2">
+            <i class="bi bi-check-circle-fill text-success flex-shrink-0" aria-hidden="true"></i>
+            <span i18n="@@featureForepathHome-humanMeetsItem2"
+              >Software is delivered on modern stacks your engineers can own after handover.</span
+            >
+          </li>
+          <li class="mb-2 d-flex gap-2">
+            <i class="bi bi-check-circle-fill text-success flex-shrink-0" aria-hidden="true"></i>
+            <span i18n="@@featureForepathHome-humanMeetsItem3"
+              >IT systems and managed operations are built for on-call reality.</span
+            >
+          </li>
+          <li class="d-flex gap-2">
+            <i class="bi bi-check-circle-fill text-success flex-shrink-0" aria-hidden="true"></i>
+            <span i18n="@@featureForepathHome-humanMeetsItem4"
+              >Automation, CI/CD, and agent workflows remove toil where machines excel. Judgment stays with your
+              team.</span
+            >
+          </li>
+        </ul>
+        <p class="text-muted mb-4" i18n="@@featureForepathHome-humanMeetsClosing">
+          Human review, pairing, and explicit guardrails are part of every engagement. The goal is more capability with
+          the same control. You get faster delivery, clearer operations, and technology your team still understands.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a
+            routerLink="/consulting"
+            class="small fw-semibold text-primary text-decoration-none"
+            i18n="@@featureForepathHome-humanMeetsLinkConsulting"
+            >Consulting <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+          ></a>
+          <a
+            routerLink="/it-systems"
+            class="small fw-semibold text-primary text-decoration-none"
+            i18n="@@featureForepathHome-humanMeetsLinkItSystems"
+            >IT systems <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+          ></a>
+          <a
+            routerLink="/software-development"
+            class="small fw-semibold text-primary text-decoration-none"
+            i18n="@@featureForepathHome-humanMeetsLinkSoftwareDevelopment"
+            >Software development <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+          ></a>
+        </div>
+      </div>
+      <div class="col-lg-6 home-human-meets-visual-col order-lg-2">
+        <div
+          class="home-human-meets__photo"
+          role="img"
+          i18n-aria-label="@@featureForepathHome-humanMeetsPhotoAlt"
+          aria-label="Engineer at work with subtle AI interface elements, representing human judgment guiding technology"
+        ></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Regional roots -->
+<section id="roots" class="py-10 bg-white grid-section">
+  <div class="container grid-section__container">
+    <div class="row align-items-center g-4 g-lg-5">
+      <div class="col-lg-4 col-xl-3 text-center">
+        <figure class="home-roots-crest mb-0">
+          <img
+            src="/assets/images/nrw-buergerwappen.png"
+            width="1000"
+            height="1000"
+            class="home-roots-crest__image"
+            i18n-alt="@@featureForepathHome-rootsSymbolAlt"
+            alt="Nordrhein-Westfalen-Zeichen, the citizen emblem of North Rhine-Westphalia"
+            loading="lazy"
+          />
+        </figure>
+      </div>
+      <div class="col-lg-8 col-xl-9">
+        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featureForepathHome-rootsTitle">
+          Rooted in Ostwestfalen-Lippe
+        </h2>
+        <p class="text-muted mb-4" i18n="@@featureForepathHome-rootsStory">
+          Our company is based in Herford, a city in the heart of Ostwestfalen-Lippe. The region combines strong
+          mid-sized industry, export-driven manufacturing, and companies that invest in operations over the long term.
+          That is a strong fit for B2B digitalization, and the place where platforms, integrations, and automation meet
+          at scale.
+        </p>
+        <ul
+          class="list-unstyled d-flex flex-wrap gap-2 mb-0"
+          role="list"
+          i18n-aria-label="@@featureForepathHome-rootsCitiesLabel"
+          aria-label="Towns and cities in Ostwestfalen-Lippe where we often meet clients on site"
+        >
+          <li role="listitem">
+            <span class="badge rounded-pill home-roots-city px-3 py-2">Herford</span>
+          </li>
+          <li role="listitem">
+            <span class="badge rounded-pill home-roots-city px-3 py-2">Bielefeld</span>
+          </li>
+          <li role="listitem">
+            <span class="badge rounded-pill home-roots-city px-3 py-2">Rheda-Wiedenbrück</span>
+          </li>
+          <li role="listitem">
+            <span class="badge rounded-pill home-roots-city px-3 py-2">Gütersloh</span>
+          </li>
+          <li role="listitem">
+            <span class="badge rounded-pill home-roots-city px-3 py-2">Bad Salzuflen</span>
+          </li>
+          <li role="listitem">
+            <span class="badge rounded-pill home-roots-city px-3 py-2">Detmold</span>
+          </li>
+          <li role="listitem">
+            <span class="badge rounded-pill home-roots-city px-3 py-2">Lemgo</span>
+          </li>
+          <li role="listitem">
+            <span class="badge rounded-pill home-roots-city px-3 py-2">Minden</span>
+          </li>
+          <li role="listitem">
+            <span class="badge rounded-pill home-roots-city px-3 py-2">Paderborn</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathHome-ctaTitle">Ready to move your platform forward?</h2>
+      <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featureForepathHome-ctaLead">
+        Tell us where you are stuck. That might be migration, delivery, AI adoption, or all three. We will propose a
+        practical path and the team to execute it.
+      </p>
+      <a
+        href="mailto:hi@forepath.io"
+        class="btn btn-light btn-lg px-5 py-3 rounded-3 fw-semibold cta-btn"
+        i18n="@@featureForepathHome-ctaButton"
+        >Contact us</a
+      >
+    </div>
+  </div>
+</section>

@@ -1,0 +1,532 @@
+<section id="hero" class="py-10 py-lg-6 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center">
+      <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathConsulting-heroTitle">
+        Consulting that turns <span class="text-primary">strategy into systems</span>
+      </h1>
+      <p class="lead mx-auto hero-lead section-lead mb-0" i18n="@@featureForepathConsulting-heroLead">
+        We help engineering leaders design platforms, improve delivery, and adopt AI with architecture your teams can
+        implement and operate.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="consulting-value" class="py-10 bg-white grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 mx-auto consulting-value-title" i18n="@@featureForepathConsulting-valueTitle">
+        Professional advice pays off
+      </h2>
+      <p class="lead mx-auto text-muted section-lead mb-0" i18n="@@featureForepathConsulting-valueLead">
+        Good consulting turns uncertainty into decisions your teams can act on. We help you choose direction before
+        budget and momentum lock in the wrong path.
+      </p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 bg-white consulting-advantage-card">
+          <i class="bi bi-signpost-split text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureForepathConsulting-advantage1Title">
+            Fewer expensive detours
+          </h3>
+          <p class="text-muted small mb-0" i18n="@@featureForepathConsulting-advantage1Desc">
+            Independent review catches blind spots before they turn into multi-quarter rework.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 bg-white consulting-advantage-card">
+          <i class="bi bi-diagram-3 text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureForepathConsulting-advantage2Title">
+            Decisions teams can execute
+          </h3>
+          <p class="text-muted small mb-0" i18n="@@featureForepathConsulting-advantage2Desc">
+            We deliver architecture and roadmaps shaped for the people who will build and run them.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 bg-white consulting-advantage-card">
+          <i class="bi bi-people text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureForepathConsulting-advantage3Title">
+            Aligned stakeholders faster
+          </h3>
+          <p class="text-muted small mb-0" i18n="@@featureForepathConsulting-advantage3Desc">
+            We facilitate tradeoffs across engineering, security, and leadership so priorities stay coherent.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 bg-white consulting-advantage-card">
+          <i class="bi bi-bar-chart-line text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureForepathConsulting-advantage4Title">
+            Confidence before commitment
+          </h3>
+          <p class="text-muted small mb-0" i18n="@@featureForepathConsulting-advantage4Desc">
+            You get effort ranges, risks, and sequencing before major vendor or platform bets.
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="consulting-modules" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathConsulting-modulesTitle">Consulting modules</h2>
+      <p class="lead text-muted mx-auto section-lead mb-0" i18n="@@featureForepathConsulting-modulesLead">
+        Choose the modules you need today and combine them as your roadmap grows. Each area comes with clear outcomes
+        your team can track from first workshop to steady state.
+      </p>
+    </div>
+    <ul
+      class="nav nav-pills nav-fill flex-wrap gap-2 justify-content-center mb-4 portal-page-tabs consulting-module-tabs"
+      role="tablist"
+    >
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active px-3 py-2"
+          id="consulting-tab-infrastructure"
+          data-bs-toggle="tab"
+          data-bs-target="#consulting-pane-infrastructure"
+          type="button"
+          role="tab"
+          aria-controls="consulting-pane-infrastructure"
+          aria-selected="true"
+        >
+          <i class="bi bi-hdd-rack me-2" aria-hidden="true"></i>
+          <span i18n="@@featureForepathConsulting-moduleTabInfra">Infrastructure</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="consulting-tab-cloud"
+          data-bs-toggle="tab"
+          data-bs-target="#consulting-pane-cloud"
+          type="button"
+          role="tab"
+          aria-controls="consulting-pane-cloud"
+          aria-selected="false"
+        >
+          <i class="bi bi-cloud me-2" aria-hidden="true"></i>
+          <span i18n="@@featureForepathConsulting-moduleTabCloud">Cloud</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="consulting-tab-devops"
+          data-bs-toggle="tab"
+          data-bs-target="#consulting-pane-devops"
+          type="button"
+          role="tab"
+          aria-controls="consulting-pane-devops"
+          aria-selected="false"
+        >
+          <i class="bi bi-git me-2" aria-hidden="true"></i>
+          <span i18n="@@featureForepathConsulting-moduleTabDevops">DevOps</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="consulting-tab-ai"
+          data-bs-toggle="tab"
+          data-bs-target="#consulting-pane-ai"
+          type="button"
+          role="tab"
+          aria-controls="consulting-pane-ai"
+          aria-selected="false"
+        >
+          <i class="bi bi-stars me-2" aria-hidden="true"></i>
+          <span i18n="@@featureForepathConsulting-moduleTabAi">AI</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="consulting-tab-security"
+          data-bs-toggle="tab"
+          data-bs-target="#consulting-pane-security"
+          type="button"
+          role="tab"
+          aria-controls="consulting-pane-security"
+          aria-selected="false"
+        >
+          <i class="bi bi-shield-lock me-2" aria-hidden="true"></i>
+          <span i18n="@@featureForepathConsulting-moduleTabSecurity">Security</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content consulting-module-panels">
+      <div
+        class="tab-pane fade show active"
+        id="consulting-pane-infrastructure"
+        role="tabpanel"
+        aria-labelledby="consulting-tab-infrastructure"
+        tabindex="0"
+      >
+        <div
+          class="card border rounded-3 shadow-sm overflow-hidden consulting-module-panel card-capability card-capability-primary"
+          id="infrastructure"
+        >
+          <div class="consulting-module-panel__top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="consulting-module-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-hdd-rack text-primary icon-xl"></i>
+            </div>
+            <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureForepathConsulting-infraTitle">
+              Infrastructure &amp; platform
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureForepathConsulting-infraDesc">
+              Landing zone design, network segmentation, identity integration, and baseline automation for on-prem,
+              hybrid, and cloud environments. We focus on operability: backups, disaster recovery, and cost visibility
+              from day one.
+            </p>
+          </div>
+          <div class="consulting-module-panel__bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+              <div class="col">
+                <i class="bi bi-diagram-3 text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-infraItem1Title">
+                  Reference architectures
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-infraItem1Desc">
+                  Target platform designs your teams can implement without guesswork or hidden dependencies.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-signpost-split text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-infraItem2Title">
+                  Modernization roadmaps
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-infraItem2Desc">
+                  Migration steps ordered with effort ranges so leadership can commit before work starts.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-journal-text text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-infraItem3Title">SRE practices</p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-infraItem3Desc">
+                  Runbooks and on-call patterns that match how your engineers actually operate.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="consulting-pane-cloud"
+        role="tabpanel"
+        aria-labelledby="consulting-tab-cloud"
+        tabindex="0"
+      >
+        <div
+          class="card border rounded-3 shadow-sm overflow-hidden consulting-module-panel card-capability card-capability-primary"
+          id="cloud"
+        >
+          <div class="consulting-module-panel__top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="consulting-module-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-cloud text-primary icon-xl"></i>
+            </div>
+            <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureForepathConsulting-cloudTitle">
+              Cloud consulting
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureForepathConsulting-cloudDesc">
+              AWS, Azure, and GCP implementations with guardrails for finance, security, and engineering autonomy. We
+              help you choose managed services deliberately and keep escape hatches where sovereignty matters.
+            </p>
+          </div>
+          <div class="consulting-module-panel__bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+              <div class="col">
+                <i class="bi bi-diagram-2 text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-cloudItem1Title">
+                  Account strategy
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-cloudItem1Desc">
+                  Clear guardrails for finance, security, and engineering across accounts and subscriptions.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-boxes text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-cloudItem2Title">
+                  Container platforms
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-cloudItem2Desc">
+                  Kubernetes estates with networking, identity, and upgrades your operators can sustain.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-graph-up-arrow text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-cloudItem3Title">
+                  FinOps discipline
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-cloudItem3Desc">
+                  Predictable cloud costs as usage scales, backed by modeled spend and growth paths.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="consulting-pane-devops"
+        role="tabpanel"
+        aria-labelledby="consulting-tab-devops"
+        tabindex="0"
+      >
+        <div
+          class="card border rounded-3 shadow-sm overflow-hidden consulting-module-panel card-capability card-capability-primary"
+          id="devops"
+        >
+          <div class="consulting-module-panel__top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="consulting-module-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-git text-primary icon-xl"></i>
+            </div>
+            <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureForepathConsulting-devopsTitle">
+              DevOps &amp; delivery
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureForepathConsulting-devopsDesc">
+              Pipeline design, trunk-based workflows, environment promotion, and release automation that matches your
+              risk profile. We reduce toil without hiding complexity behind opaque tooling.
+            </p>
+          </div>
+          <div class="consulting-module-panel__bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+              <div class="col">
+                <i class="bi bi-arrow-repeat text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-devopsItem1Title">
+                  CI/CD foundations
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-devopsItem1Desc">
+                  Pipelines configured to fit your release risk and the toolchain your teams already rely on.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-braces text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-devopsItem2Title">GitOps and IaC</p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-devopsItem2Desc">
+                  Reviewable, repeatable environments with infrastructure defined as code over time.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-speedometer2 text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-devopsItem3Title">
+                  Delivery metrics
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-devopsItem3Desc">
+                  Quarter over quarter delivery gains tracked through DORA baselines and improvement cycles.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="consulting-pane-ai"
+        role="tabpanel"
+        aria-labelledby="consulting-tab-ai"
+        tabindex="0"
+      >
+        <div
+          class="card border rounded-3 shadow-sm overflow-hidden consulting-module-panel card-capability card-capability-primary"
+          id="ai"
+        >
+          <div class="consulting-module-panel__top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="consulting-module-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-stars text-primary icon-xl"></i>
+            </div>
+            <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureForepathConsulting-aiTitle">
+              AI consulting
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureForepathConsulting-aiDesc">
+              Use-case discovery, agent workflow design, model routing, and governance for coding and operational
+              agents. We help you pilot quickly while building the controls security and legal teams expect.
+            </p>
+          </div>
+          <div class="consulting-module-panel__bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+              <div class="col">
+                <i class="bi bi-robot text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-aiItem1Title">Agent rollout</p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-aiItem1Desc">
+                  Platform evaluations and pilots finished before agents roll out across the organization.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-shield-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-aiItem2Title">
+                  Policy and governance
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-aiItem2Desc">
+                  Governance patterns security and legal teams can review without slowing delivery.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-puzzle text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-aiItem3Title">Toolchain fit</p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-aiItem3Desc">
+                  Agents wired into the editors, trackers, and repos developers already use daily.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="consulting-pane-security"
+        role="tabpanel"
+        aria-labelledby="consulting-tab-security"
+        tabindex="0"
+      >
+        <div
+          class="card border rounded-3 shadow-sm overflow-hidden consulting-module-panel card-capability card-capability-primary"
+          id="security"
+        >
+          <div class="consulting-module-panel__top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="consulting-module-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-shield-lock text-primary icon-xl"></i>
+            </div>
+            <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureForepathConsulting-securityTitle">
+              Security &amp; compliance
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureForepathConsulting-securityDesc">
+              Threat modeling, hardening baselines, and compliance mapping for ISO 27001, SOC 2, and EU regulatory
+              contexts. Practical controls that engineers will actually maintain.
+            </p>
+          </div>
+          <div class="consulting-module-panel__bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+              <div class="col">
+                <i class="bi bi-binoculars text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-securityItem1Title">
+                  Architecture reviews
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-securityItem1Desc">
+                  Threat assessment on designs before they harden into expensive production debt.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-key text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-securityItem2Title">
+                  Identity and secrets
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-securityItem2Desc">
+                  Tighter issuance, rotation, and audit trails for credentials and access end to end.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-clipboard-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureForepathConsulting-securityItem3Title">
+                  Audit readiness
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureForepathConsulting-securityItem3Desc">
+                  Certification evidence organized so audits do not stall product delivery.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how-it-works" class="py-10 bg-white grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathConsulting-howTitle">How it works</h2>
+      <p class="lead text-muted mx-auto section-lead mb-0" i18n="@@featureForepathConsulting-howLead">
+        Engagements stay flexible, but the rhythm is consistent. We start with facts, agree on a path, and stay close
+        until your team can run with the outcome.
+      </p>
+    </div>
+    <div class="row g-4 consulting-how-steps">
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white consulting-how-step">
+          <span class="consulting-how-step__badge" aria-hidden="true">1</span>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathConsulting-howStep1Title">Understand your context</h3>
+          <p class="text-muted mb-0" i18n="@@featureForepathConsulting-howStep1Desc">
+            Systems, stakeholders, and constraints are mapped in a structured discovery sprint so every decision starts
+            from shared facts.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white consulting-how-step">
+          <span class="consulting-how-step__badge" aria-hidden="true">2</span>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathConsulting-howStep2Title">Define the path forward</h3>
+          <p class="text-muted mb-0" i18n="@@featureForepathConsulting-howStep2Desc">
+            Findings are turned into a prioritized roadmap with architecture guidance, effort estimates, and explicit
+            tradeoffs.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white consulting-how-step">
+          <span class="consulting-how-step__badge" aria-hidden="true">3</span>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathConsulting-howStep3Title">
+            Stay involved through delivery
+          </h3>
+          <p class="text-muted mb-0" i18n="@@featureForepathConsulting-howStep3Desc">
+            Hands-on support is provided from architecture forums to pairing sessions until your team owns the outcome.
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="forepath-one" class="bg-body-tertiary grid-section">
+  <framework-forepath-one-teaser activeThread="consulting">
+    <p class="text-muted mb-4" i18n="@@featureForepathConsulting-oneTeaserLead">
+      We help you shape strategy and architecture. ForePath One connects that consulting work with software delivery,
+      operations, and community we run ourselves. Same engineers, one thread, fewer handoffs between phases.
+    </p>
+  </framework-forepath-one-teaser>
+</section>
+
+<section id="cta" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathConsulting-ctaTitle">Do you only need consulting?</h2>
+      <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featureForepathConsulting-ctaLead">
+        If you want strategy and architecture guidance without delivery or operations on the same thread, tell us about
+        your goals and timeline. We will propose an engagement scoped to consulting alone.
+      </p>
+      <a
+        href="mailto:hi@forepath.io"
+        class="btn btn-light btn-lg px-5 py-3 rounded-3 cta-btn"
+        i18n="@@featureForepathConsulting-ctaButton"
+        >Contact us</a
+      >
+    </div>
+  </div>
+</section>

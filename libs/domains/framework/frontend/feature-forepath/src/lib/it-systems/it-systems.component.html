@@ -1,0 +1,394 @@
+<section id="hero" class="py-10 py-lg-6 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center">
+      <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathItSystems-heroTitle">
+        <span class="text-primary">IT systems</span> that keep platforms running
+      </h1>
+      <p class="lead mx-auto hero-lead section-lead mb-0" i18n="@@featureForepathItSystems-heroLead">
+        Extend your team with operators who know your stack, document what they change, and respond when alerts fire.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="bg-body-tertiary grid-section it-vendor-section">
+  <div class="container grid-section__container">
+    <div
+      class="it-vendor-grid"
+      role="list"
+      i18n-aria-label="@@featureForepathItSystems-vendorGridLabel"
+      aria-label="Technology vendors we work with"
+    >
+      @for (logo of visibleVendorLogos(); track logo.instanceKey) {
+        <div class="it-vendor-grid__cell" role="listitem">
+          <img
+            [src]="logo.logoUrl"
+            [alt]="logo.name"
+            class="it-vendor-grid__logo logo-partner"
+            [class.it-vendor-grid__logo--compact]="logo.compact"
+            loading="lazy"
+          />
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section id="managed-it" class="py-10 bg-white grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2
+        class="h2 fw-semibold mb-4 mx-auto it-offerings-title text-dark"
+        i18n="@@featureForepathItSystems-offeringsTitle"
+      >
+        Turn infrastructure complexity into IT you can rely on
+      </h2>
+      <p class="lead mx-auto text-muted section-lead mb-0" i18n="@@featureForepathItSystems-offeringsLead">
+        Reliable infrastructure comes from open technologies, clear processes, and partners who treat operations and
+        security as one discipline. We run the systems your business depends on, from the office floor to the data
+        centre, so your teams stay productive without constant firefighting.
+      </p>
+    </div>
+    <div class="row g-4 mb-4">
+      <div class="col-lg-6">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+          <i class="bi bi-hdd-network text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-catNetworkTitle">Network</h3>
+          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-catNetworkDesc">
+            We design, operate, and maintain your LAN, WAN, Wi-Fi, and firewall estate with documented changes and clear
+            capacity planning.
+          </p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catNetworkItem1"
+                >Firewall rule management with scheduled change windows</span
+              >
+            </li>
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catNetworkItem2"
+                >Wi-Fi coverage surveys and ongoing performance tuning</span
+              >
+            </li>
+            <li class="d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catNetworkItem3"
+                >WAN link monitoring with regular failover testing</span
+              >
+            </li>
+          </ul>
+        </article>
+      </div>
+      <div class="col-lg-6">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+          <i class="bi bi-server text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-catServersTitle">Servers</h3>
+          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-catServersDesc">
+            Physical and virtual servers stay patched, monitored, and rightsized throughout their full lifecycle.
+          </p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catServersItem1"
+                >Operating system patching and vulnerability remediation</span
+              >
+            </li>
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catServersItem2"
+                >Performance baselining with regular capacity reviews</span
+              >
+            </li>
+            <li class="d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catServersItem3"
+                >Hardware warranty tracking and lifecycle reporting</span
+              >
+            </li>
+          </ul>
+        </article>
+      </div>
+    </div>
+    <div class="row g-4 mb-4">
+      <div class="col-lg-6">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+          <i class="bi bi-pc-display text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-catWorkstationsTitle">Workstations</h3>
+          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-catWorkstationsDesc">
+            Laptops and desktops are provisioned consistently and supported through refresh cycles at every location.
+          </p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catWorkstationsItem1"
+                >Standardized imaging with approved software baselines</span
+              >
+            </li>
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catWorkstationsItem2"
+                >Remote and on-site support with defined response targets</span
+              >
+            </li>
+            <li class="d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catWorkstationsItem3"
+                >Asset tracking including lease return and disposal processes</span
+              >
+            </li>
+          </ul>
+        </article>
+      </div>
+      <div class="col-lg-6">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+          <i class="bi bi-door-open text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-catAccessTitle">
+            Access &amp; entry control
+          </h3>
+          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-catAccessDesc">
+            Digital and physical access policies are enforced so the right people reach the right resources at the right
+            time.
+          </p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catAccessItem1"
+                >Identity reviews and role based access administration</span
+              >
+            </li>
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catAccessItem2"
+                >Badge and door access provisioning with audit trails</span
+              >
+            </li>
+            <li class="d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catAccessItem3"
+                >Privileged account monitoring and periodic recertification</span
+              >
+            </li>
+          </ul>
+        </article>
+      </div>
+    </div>
+    <div class="row g-4 mb-4">
+      <div class="col-lg-6">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+          <i class="bi bi-telephone text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-catTelephonyTitle">
+            Telephony &amp; communication
+          </h3>
+          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-catTelephonyDesc">
+            Voice, Teams, and unified communication platforms stay integrated, correctly licensed, and ready for
+            everyday use.
+          </p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catTelephonyItem1"
+                >Number porting, trunk configuration, and dial plan maintenance</span
+              >
+            </li>
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catTelephonyItem2"
+                >Microsoft Teams policies plus meeting room support</span
+              >
+            </li>
+            <li class="d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catTelephonyItem3"
+                >Call quality monitoring with a clear escalation path</span
+              >
+            </li>
+          </ul>
+        </article>
+      </div>
+      <div class="col-lg-6">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+          <i class="bi bi-archive text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-catBackupTitle">Backup &amp; archiving</h3>
+          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-catBackupDesc">
+            Backup jobs, retention policies, and restore procedures are tested against your compliance and recovery
+            targets.
+          </p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catBackupItem1"
+                >Backup success monitoring with proactive alerting</span
+              >
+            </li>
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catBackupItem2"
+                >Scheduled restore drills with documented outcomes</span
+              >
+            </li>
+            <li class="d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catBackupItem3"
+                >Retention and archival policy enforcement across systems</span
+              >
+            </li>
+          </ul>
+        </article>
+      </div>
+    </div>
+    <div class="row g-4 mb-4">
+      <div class="col-lg-6">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+          <i class="bi bi-shield-lock text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-catSecurityTitle">
+            Security &amp; endpoint protection
+          </h3>
+          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-catSecurityDesc">
+            Endpoints and users are protected through layered controls and a documented response process.
+          </p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catSecurityItem1"
+                >Endpoint detection and antivirus policy management</span
+              >
+            </li>
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catSecurityItem2"
+                >Security patch compliance with regular reporting</span
+              >
+            </li>
+            <li class="d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catSecurityItem3"
+                >Phishing triage and incident response runbooks</span
+              >
+            </li>
+          </ul>
+        </article>
+      </div>
+      <div class="col-lg-6">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+          <i class="bi bi-laptop text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-catWorkplaceTitle">Digital workplace</h3>
+          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-catWorkplaceDesc">
+            Collaboration tools and productivity platforms are kept current so employees can work without daily IT
+            friction.
+          </p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catWorkplaceItem1"
+                >Microsoft 365 tenant administration and policy updates</span
+              >
+            </li>
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catWorkplaceItem2"
+                >License optimisation with periodic entitlement reviews</span
+              >
+            </li>
+            <li class="d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catWorkplaceItem3"
+                >Shared workspace and file access governance</span
+              >
+            </li>
+          </ul>
+        </article>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+          <i class="bi bi-boxes text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-catVirtualizationTitle">Virtualization</h3>
+          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-catVirtualizationDesc">
+            VMware, Hyper-V, Proxmox, and container hosts run with resilience planning and documented recovery steps.
+          </p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catVirtualizationItem1"
+                >Cluster health monitoring with coordinated patching</span
+              >
+            </li>
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catVirtualizationItem2"
+                >Snapshot, migration, and failover procedures</span
+              >
+            </li>
+            <li class="d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catVirtualizationItem3"
+                >Capacity planning for seasonal and project driven peaks</span
+              >
+            </li>
+          </ul>
+        </article>
+      </div>
+      <div class="col-lg-6">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+          <i class="bi bi-graph-up text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-catMonitoringTitle">
+            Monitoring &amp; management
+          </h3>
+          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-catMonitoringDesc">
+            Dashboards, alerts, and ticket workflows are tuned so issues surface early and teams resolve them faster.
+          </p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catMonitoringItem1"
+                >Alert threshold tuning to reduce noise and fatigue</span
+              >
+            </li>
+            <li class="mb-2 d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catMonitoringItem2"
+                >SLA aligned ticket routing with clear escalation paths</span
+              >
+            </li>
+            <li class="d-flex gap-2">
+              <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+              ><span i18n="@@featureForepathItSystems-catMonitoringItem3"
+                >Monthly operational health reports for stakeholders</span
+              >
+            </li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="forepath-one" class="bg-body-tertiary grid-section">
+  <framework-forepath-one-teaser activeThread="it-systems">
+    <p class="text-muted mb-4" i18n="@@featureForepathItSystems-oneTeaserLead">
+      We keep your environment stable. ForePath One connects that operations work with consulting, software delivery,
+      and community we run ourselves. Same engineers, one thread, fewer handoffs between phases.
+    </p>
+  </framework-forepath-one-teaser>
+</section>
+
+<section id="cta" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathItSystems-ctaTitle">Do you only need managed IT?</h2>
+      <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featureForepathItSystems-ctaLead">
+        Operational coverage does not have to come as part of a wider ForePath One engagement. If managed IT is what you
+        need right now, tell us about your environment and gaps. We will outline a service scope and SLA proposal for IT
+        systems alone.
+      </p>
+      <a
+        href="mailto:hi@forepath.io"
+        class="btn btn-light btn-lg px-5 py-3 rounded-3 cta-btn"
+        i18n="@@featureForepathItSystems-ctaButton"
+        >Contact us</a
+      >
+    </div>
+  </div>
+</section>

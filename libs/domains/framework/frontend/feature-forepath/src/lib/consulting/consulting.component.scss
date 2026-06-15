@@ -1,0 +1,69 @@
+@import '../page.component.scss';
+
+.consulting-value-title {
+  max-width: 800px;
+}
+
+.consulting-advantage-card {
+  border-color: var(--bs-border-color);
+}
+
+.consulting-module-icon {
+  width: 4.5rem;
+  height: 4.5rem;
+  background: rgba(255, 107, 53, 0.12);
+}
+
+.consulting-module-panel__top {
+  border-color: var(--bs-border-color) !important;
+}
+
+.consulting-module-tabs .nav-link.active {
+  background-color: var(--bs-primary);
+}
+
+.consulting-how-step {
+  position: relative;
+}
+
+.consulting-how-step__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  background: rgba(255, 107, 53, 0.12);
+  color: var(--bs-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+@media (min-width: 768px) {
+  .consulting-how-steps {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: calc(var(--bs-gutter-y, 1.5rem) * 0.5 + 1.5rem + 1rem + 0.75rem);
+      left: 16.666%;
+      right: 16.666%;
+      height: 1px;
+      background: var(--bs-border-color);
+      z-index: 0;
+    }
+
+    @media (min-width: 992px) {
+      &::before {
+        top: calc(var(--bs-gutter-y, 1.5rem) * 0.5 + 3rem + 1rem + 0.75rem);
+      }
+    }
+  }
+
+  .consulting-how-step {
+    z-index: 1;
+  }
+}

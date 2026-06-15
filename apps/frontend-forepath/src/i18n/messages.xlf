@@ -1,0 +1,1537 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="featureForepathConsulting-heroTitle" datatype="html">
+        <source> Consulting that turns <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>strategy into systems<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-heroLead" datatype="html">
+        <source> We help engineering leaders design platforms, improve delivery, and adopt AI with architecture your teams can implement and operate. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-valueTitle" datatype="html">
+        <source> Professional advice pays off </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-valueLead" datatype="html">
+        <source> Good consulting turns uncertainty into decisions your teams can act on. We help you choose direction before budget and momentum lock in the wrong path. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-advantage1Title" datatype="html">
+        <source> Fewer expensive detours </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-advantage1Desc" datatype="html">
+        <source> Independent review catches blind spots before they turn into multi-quarter rework. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-advantage2Title" datatype="html">
+        <source> Decisions teams can execute </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-advantage2Desc" datatype="html">
+        <source> We deliver architecture and roadmaps shaped for the people who will build and run them. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-advantage3Title" datatype="html">
+        <source> Aligned stakeholders faster </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-advantage3Desc" datatype="html">
+        <source> We facilitate tradeoffs across engineering, security, and leadership so priorities stay coherent. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-advantage4Title" datatype="html">
+        <source> Confidence before commitment </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-advantage4Desc" datatype="html">
+        <source> You get effort ranges, risks, and sequencing before major vendor or platform bets. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-modulesTitle" datatype="html">
+        <source>Consulting modules</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-modulesLead" datatype="html">
+        <source> Choose the modules you need today and combine them as your roadmap grows. Each area comes with clear outcomes your team can track from first workshop to steady state. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-moduleTabInfra" datatype="html">
+        <source>Infrastructure</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-moduleTabCloud" datatype="html">
+        <source>Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-moduleTabDevops" datatype="html">
+        <source>DevOps</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-moduleTabAi" datatype="html">
+        <source>AI</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-moduleTabSecurity" datatype="html">
+        <source>Security</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-infraTitle" datatype="html">
+        <source> Infrastructure &amp; platform </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-infraDesc" datatype="html">
+        <source> Landing zone design, network segmentation, identity integration, and baseline automation for on-prem, hybrid, and cloud environments. We focus on operability: backups, disaster recovery, and cost visibility from day one. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-infraItem1Title" datatype="html">
+        <source> Reference architectures </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-infraItem1Desc" datatype="html">
+        <source> Target platform designs your teams can implement without guesswork or hidden dependencies. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-infraItem2Title" datatype="html">
+        <source> Modernization roadmaps </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-infraItem2Desc" datatype="html">
+        <source> Migration steps ordered with effort ranges so leadership can commit before work starts. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-infraItem3Title" datatype="html">
+        <source>SRE practices</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-infraItem3Desc" datatype="html">
+        <source> Runbooks and on-call patterns that match how your engineers actually operate. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-cloudTitle" datatype="html">
+        <source> Cloud consulting </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-cloudDesc" datatype="html">
+        <source> AWS, Azure, and GCP implementations with guardrails for finance, security, and engineering autonomy. We help you choose managed services deliberately and keep escape hatches where sovereignty matters. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-cloudItem1Title" datatype="html">
+        <source> Account strategy </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-cloudItem1Desc" datatype="html">
+        <source> Clear guardrails for finance, security, and engineering across accounts and subscriptions. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-cloudItem2Title" datatype="html">
+        <source> Container platforms </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-cloudItem2Desc" datatype="html">
+        <source> Kubernetes estates with networking, identity, and upgrades your operators can sustain. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-cloudItem3Title" datatype="html">
+        <source> FinOps discipline </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-cloudItem3Desc" datatype="html">
+        <source> Predictable cloud costs as usage scales, backed by modeled spend and growth paths. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-devopsTitle" datatype="html">
+        <source> DevOps &amp; delivery </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-devopsDesc" datatype="html">
+        <source> Pipeline design, trunk-based workflows, environment promotion, and release automation that matches your risk profile. We reduce toil without hiding complexity behind opaque tooling. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-devopsItem1Title" datatype="html">
+        <source> CI/CD foundations </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-devopsItem1Desc" datatype="html">
+        <source> Pipelines configured to fit your release risk and the toolchain your teams already rely on. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-devopsItem2Title" datatype="html">
+        <source>GitOps and IaC</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-devopsItem2Desc" datatype="html">
+        <source> Reviewable, repeatable environments with infrastructure defined as code over time. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-devopsItem3Title" datatype="html">
+        <source> Delivery metrics </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-devopsItem3Desc" datatype="html">
+        <source> Quarter over quarter delivery gains tracked through DORA baselines and improvement cycles. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-aiTitle" datatype="html">
+        <source> AI consulting </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-aiDesc" datatype="html">
+        <source> Use-case discovery, agent workflow design, model routing, and governance for coding and operational agents. We help you pilot quickly while building the controls security and legal teams expect. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-aiItem1Title" datatype="html">
+        <source>Agent rollout</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-aiItem1Desc" datatype="html">
+        <source> Platform evaluations and pilots finished before agents roll out across the organization. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-aiItem2Title" datatype="html">
+        <source> Policy and governance </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-aiItem2Desc" datatype="html">
+        <source> Governance patterns security and legal teams can review without slowing delivery. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-aiItem3Title" datatype="html">
+        <source>Toolchain fit</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-aiItem3Desc" datatype="html">
+        <source> Agents wired into the editors, trackers, and repos developers already use daily. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-securityTitle" datatype="html">
+        <source> Security &amp; compliance </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-securityDesc" datatype="html">
+        <source> Threat modeling, hardening baselines, and compliance mapping for ISO 27001, SOC 2, and EU regulatory contexts. Practical controls that engineers will actually maintain. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-securityItem1Title" datatype="html">
+        <source> Architecture reviews </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-securityItem1Desc" datatype="html">
+        <source> Threat assessment on designs before they harden into expensive production debt. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-securityItem2Title" datatype="html">
+        <source> Identity and secrets </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-securityItem2Desc" datatype="html">
+        <source> Tighter issuance, rotation, and audit trails for credentials and access end to end. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-securityItem3Title" datatype="html">
+        <source> Audit readiness </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-securityItem3Desc" datatype="html">
+        <source> Certification evidence organized so audits do not stall product delivery. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-howTitle" datatype="html">
+        <source>How it works</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-howLead" datatype="html">
+        <source> Engagements stay flexible, but the rhythm is consistent. We start with facts, agree on a path, and stay close until your team can run with the outcome. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-howStep1Title" datatype="html">
+        <source>Understand your context</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-howStep1Desc" datatype="html">
+        <source> Systems, stakeholders, and constraints are mapped in a structured discovery sprint so every decision starts from shared facts. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-howStep2Title" datatype="html">
+        <source>Define the path forward</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-howStep2Desc" datatype="html">
+        <source> Findings are turned into a prioritized roadmap with architecture guidance, effort estimates, and explicit tradeoffs. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-howStep3Title" datatype="html">
+        <source> Stay involved through delivery </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-howStep3Desc" datatype="html">
+        <source> Hands-on support is provided from architecture forums to pairing sessions until your team owns the outcome. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-oneTeaserLead" datatype="html">
+        <source> We help you shape strategy and architecture. ForePath One connects that consulting work with software delivery, operations, and community we run ourselves. Same engineers, one thread, fewer handoffs between phases. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-ctaTitle" datatype="html">
+        <source>Do you only need consulting?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-ctaLead" datatype="html">
+        <source> If you want strategy and architecture guidance without delivery or operations on the same thread, tell us about your goals and timeline. We will propose an engagement scoped to consulting alone. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-ctaButton" datatype="html">
+        <source>Contact us</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-metaTitle" datatype="html">
+        <source>IT and platform consulting :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-metaDescription" datatype="html">
+        <source>ForePath consulting for cloud platforms, DevOps, AI adoption, security, and compliance. Practical architecture and delivery guidance for engineering teams.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathConsulting-metaKeywords" datatype="html">
+        <source>ForePath consulting, cloud architecture, DevOps, AI consulting, security compliance, platform engineering</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-socialLinksAriaLabel" datatype="html">
+        <source>ForePath on social media</source>
+        </trans-unit>
+      <trans-unit id="featurePortal-brandAlt" datatype="html">
+        <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-toggleNavAriaLabel" datatype="html">
+        <source>Toggle navigation</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navServices" datatype="html">
+        <source>Services</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navConsulting" datatype="html">
+        <source>Consulting</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navItSystems" datatype="html">
+        <source>IT Systems</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navSoftwareDevelopment" datatype="html">
+        <source>Software Development</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navProducts" datatype="html">
+        <source>Products</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navAgenstra" datatype="html">
+        <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navOne" datatype="html">
+        <source>One</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-contactUsButton" datatype="html">
+        <source>Contact us</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-brandAlt" datatype="html">
+        <source>ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-footerBrand" datatype="html">
+        <source>ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-footerTagline" datatype="html">
+        <source> Pragmatic consulting and engineering for teams that need reliable infrastructure, modern software delivery, and products they can operate with confidence. </source>
+        </trans-unit>
+      <trans-unit id="featureForepath-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-language" datatype="html">
+        <source>Language</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-footerServices" datatype="html">
+        <source>Services</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-footerProducts" datatype="html">
+        <source>Products</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-footerAgenstraLink" datatype="html">
+        <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-footerCompany" datatype="html">
+        <source>Company</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navPricing" datatype="html">
+        <source>Pricing</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-footerLegal" datatype="html">
+        <source>Legal</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-legalDisclosureLink" datatype="html">
+        <source>Legal Disclosure</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-termsOfServiceLink" datatype="html">
+        <source>Terms of Service</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-privacyPolicyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-footerCopyright" datatype="html">
+        <source> © 2025 IPvX UG (haftungsbeschränkt). All rights reserved. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-title" datatype="html">
+        <source>Connect the dots</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-item1" datatype="html">
+        <source>One partner from architecture through steady state operations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-item2" datatype="html">
+        <source>Shared standards across services and ForePath products</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-item3" datatype="html">
+        <source>Less drift when strategy, delivery, and operations stay aligned</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-link" datatype="html">
+        <source>Explore ForePath One <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+      &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-gridLabel" datatype="html">
+        <source>ForePath One threads</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-nodeConsulting" datatype="html">
+        <source>Consulting</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-nodeDevelopment" datatype="html">
+        <source>Development</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-nodeIt" datatype="html">
+        <source>IT systems</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-nodeCommunity" datatype="html">
+        <source>Community</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Pragmatic engineering<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for teams that ship and operate with confidence </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-heroLead" datatype="html">
+        <source> ForePath partners with organizations to modernize infrastructure, deliver software, and adopt AI without trading away control, clarity, or long-term maintainability. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-heroCtaLine" datatype="html">
+        <source> From cloud foundations to product delivery, we work alongside your teams with transparent methods, open standards, and outcomes you can sustain after the engagement ends. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-heroContact" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Start a conversation </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-heroExplore" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-down me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> See our experience </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-proofStat" datatype="html">
+        <source>10+</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-proofStatLabel" datatype="html">
+        <source>years with IT systems</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-proofTitle" datatype="html">
+        <source> Built in production, not in slide decks </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-proofStory" datatype="html">
+        <source> ForePath grew out of years inside real IT estates. Datacenters that had to stay up, migrations that could not slip, and teams that needed answers before the next release window closed. That background shapes how we work with clients today. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-proofExperienceIntro" datatype="html">
+        <source> Along the way we have designed, delivered, and operated systems across these areas: </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-proofArea1" datatype="html">
+        <source>Cloud and platforms</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-proofArea2" datatype="html">
+        <source>DevOps and delivery</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-proofArea3" datatype="html">
+        <source>Managed IT operations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-proofArea4" datatype="html">
+        <source>Software development</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-proofArea5" datatype="html">
+        <source>Security and compliance</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-proofArea6" datatype="html">
+        <source>AI and automation</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-platformGridLabel" datatype="html">
+        <source>Cloud platforms and operating systems we work with</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-humanMeetsTitle" datatype="html">
+        <source>Where human meets machine</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-humanMeetsHeadline" datatype="html">
+        <source> We advise, build, and operate the systems organizations depend on. That spans cloud foundations, software delivery, and day-to-day IT operations. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-humanMeetsItem1" datatype="html">
+        <source>Consulting spans infrastructure, cloud, DevOps, security, and AI adoption. Architecture is shaped so your teams can implement it.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-humanMeetsItem2" datatype="html">
+        <source>Software is delivered on modern stacks your engineers can own after handover.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-humanMeetsItem3" datatype="html">
+        <source>IT systems and managed operations are built for on-call reality.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-humanMeetsItem4" datatype="html">
+        <source>Automation, CI/CD, and agent workflows remove toil where machines excel. Judgment stays with your team.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-humanMeetsClosing" datatype="html">
+        <source> Human review, pairing, and explicit guardrails are part of every engagement. The goal is more capability with the same control. You get faster delivery, clearer operations, and technology your team still understands. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-humanMeetsLinkConsulting" datatype="html">
+        <source>Consulting <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+          &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-humanMeetsLinkItSystems" datatype="html">
+        <source>IT systems <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+          &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-humanMeetsLinkSoftwareDevelopment" datatype="html">
+        <source>Software development <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+          &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-humanMeetsPhotoAlt" datatype="html">
+        <source>Engineer at work with subtle AI interface elements, representing human judgment guiding technology</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-rootsSymbolAlt" datatype="html">
+        <source>Nordrhein-Westfalen-Zeichen, the citizen emblem of North Rhine-Westphalia</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-rootsTitle" datatype="html">
+        <source> Rooted in Ostwestfalen-Lippe </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-rootsStory" datatype="html">
+        <source> Our company is based in Herford, a city in the heart of Ostwestfalen-Lippe. The region combines strong mid-sized industry, export-driven manufacturing, and companies that invest in operations over the long term. That is a strong fit for B2B digitalization, and the place where platforms, integrations, and automation meet at scale. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-rootsCitiesLabel" datatype="html">
+        <source>Towns and cities in Ostwestfalen-Lippe where we often meet clients on site</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-ctaTitle" datatype="html">
+        <source>Ready to move your platform forward?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-ctaLead" datatype="html">
+        <source> Tell us where you are stuck. That might be migration, delivery, AI adoption, or all three. We will propose a practical path and the team to execute it. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-ctaButton" datatype="html">
+        <source>Contact us</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-metaTitle" datatype="html">
+        <source>Consulting and engineering for modern IT :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-metaDescription" datatype="html">
+        <source>ForePath helps organizations design infrastructure, deliver software, and adopt AI with pragmatic engineering, open standards, and systems you can operate long term.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathHome-metaKeywords" datatype="html">
+        <source>ForePath, IT consulting, cloud infrastructure, DevOps, software development, digital sovereignty, Germany</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>IT systems<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> that keep platforms running </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-heroLead" datatype="html">
+        <source> Extend your team with operators who know your stack, document what they change, and respond when alerts fire. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-vendorGridLabel" datatype="html">
+        <source>Technology vendors we work with</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-offeringsTitle" datatype="html">
+        <source> Turn infrastructure complexity into IT you can rely on </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-offeringsLead" datatype="html">
+        <source> Reliable infrastructure comes from open technologies, clear processes, and partners who treat operations and security as one discipline. We run the systems your business depends on, from the office floor to the data centre, so your teams stay productive without constant firefighting. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catNetworkTitle" datatype="html">
+        <source>Network</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catNetworkDesc" datatype="html">
+        <source> We design, operate, and maintain your LAN, WAN, Wi-Fi, and firewall estate with documented changes and clear capacity planning. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catNetworkItem1" datatype="html">
+        <source>Firewall rule management with scheduled change windows</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catNetworkItem2" datatype="html">
+        <source>Wi-Fi coverage surveys and ongoing performance tuning</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catNetworkItem3" datatype="html">
+        <source>WAN link monitoring with regular failover testing</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catServersTitle" datatype="html">
+        <source>Servers</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catServersDesc" datatype="html">
+        <source> Physical and virtual servers stay patched, monitored, and rightsized throughout their full lifecycle. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catServersItem1" datatype="html">
+        <source>Operating system patching and vulnerability remediation</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catServersItem2" datatype="html">
+        <source>Performance baselining with regular capacity reviews</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catServersItem3" datatype="html">
+        <source>Hardware warranty tracking and lifecycle reporting</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catWorkstationsTitle" datatype="html">
+        <source>Workstations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catWorkstationsDesc" datatype="html">
+        <source> Laptops and desktops are provisioned consistently and supported through refresh cycles at every location. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catWorkstationsItem1" datatype="html">
+        <source>Standardized imaging with approved software baselines</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catWorkstationsItem2" datatype="html">
+        <source>Remote and on-site support with defined response targets</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catWorkstationsItem3" datatype="html">
+        <source>Asset tracking including lease return and disposal processes</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catAccessTitle" datatype="html">
+        <source> Access &amp; entry control </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catAccessDesc" datatype="html">
+        <source> Digital and physical access policies are enforced so the right people reach the right resources at the right time. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catAccessItem1" datatype="html">
+        <source>Identity reviews and role based access administration</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catAccessItem2" datatype="html">
+        <source>Badge and door access provisioning with audit trails</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catAccessItem3" datatype="html">
+        <source>Privileged account monitoring and periodic recertification</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catTelephonyTitle" datatype="html">
+        <source> Telephony &amp; communication </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catTelephonyDesc" datatype="html">
+        <source> Voice, Teams, and unified communication platforms stay integrated, correctly licensed, and ready for everyday use. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catTelephonyItem1" datatype="html">
+        <source>Number porting, trunk configuration, and dial plan maintenance</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catTelephonyItem2" datatype="html">
+        <source>Microsoft Teams policies plus meeting room support</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catTelephonyItem3" datatype="html">
+        <source>Call quality monitoring with a clear escalation path</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catBackupTitle" datatype="html">
+        <source>Backup &amp; archiving</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catBackupDesc" datatype="html">
+        <source> Backup jobs, retention policies, and restore procedures are tested against your compliance and recovery targets. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catBackupItem1" datatype="html">
+        <source>Backup success monitoring with proactive alerting</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catBackupItem2" datatype="html">
+        <source>Scheduled restore drills with documented outcomes</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catBackupItem3" datatype="html">
+        <source>Retention and archival policy enforcement across systems</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catSecurityTitle" datatype="html">
+        <source> Security &amp; endpoint protection </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catSecurityDesc" datatype="html">
+        <source> Endpoints and users are protected through layered controls and a documented response process. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catSecurityItem1" datatype="html">
+        <source>Endpoint detection and antivirus policy management</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catSecurityItem2" datatype="html">
+        <source>Security patch compliance with regular reporting</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catSecurityItem3" datatype="html">
+        <source>Phishing triage and incident response runbooks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catWorkplaceTitle" datatype="html">
+        <source>Digital workplace</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catWorkplaceDesc" datatype="html">
+        <source> Collaboration tools and productivity platforms are kept current so employees can work without daily IT friction. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catWorkplaceItem1" datatype="html">
+        <source>Microsoft 365 tenant administration and policy updates</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catWorkplaceItem2" datatype="html">
+        <source>License optimisation with periodic entitlement reviews</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catWorkplaceItem3" datatype="html">
+        <source>Shared workspace and file access governance</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catVirtualizationTitle" datatype="html">
+        <source>Virtualization</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catVirtualizationDesc" datatype="html">
+        <source> VMware, Hyper-V, Proxmox, and container hosts run with resilience planning and documented recovery steps. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catVirtualizationItem1" datatype="html">
+        <source>Cluster health monitoring with coordinated patching</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catVirtualizationItem2" datatype="html">
+        <source>Snapshot, migration, and failover procedures</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catVirtualizationItem3" datatype="html">
+        <source>Capacity planning for seasonal and project driven peaks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catMonitoringTitle" datatype="html">
+        <source> Monitoring &amp; management </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catMonitoringDesc" datatype="html">
+        <source> Dashboards, alerts, and ticket workflows are tuned so issues surface early and teams resolve them faster. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catMonitoringItem1" datatype="html">
+        <source>Alert threshold tuning to reduce noise and fatigue</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catMonitoringItem2" datatype="html">
+        <source>SLA aligned ticket routing with clear escalation paths</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-catMonitoringItem3" datatype="html">
+        <source>Monthly operational health reports for stakeholders</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-oneTeaserLead" datatype="html">
+        <source> We keep your environment stable. ForePath One connects that operations work with consulting, software delivery, and community we run ourselves. Same engineers, one thread, fewer handoffs between phases. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-ctaTitle" datatype="html">
+        <source>Do you only need managed IT?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-ctaLead" datatype="html">
+        <source> Operational coverage does not have to come as part of a wider ForePath One engagement. If managed IT is what you need right now, tell us about your environment and gaps. We will outline a service scope and SLA proposal for IT systems alone. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-ctaButton" datatype="html">
+        <source>Contact us</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-metaTitle" datatype="html">
+        <source>Managed IT systems :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-metaDescription" datatype="html">
+        <source>ForePath Managed IT for network, servers, workplace, security, backup, and monitoring with documented processes and clear SLAs.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-metaKeywords" datatype="html">
+        <source>ForePath Managed IT, network operations, workplace IT, server management, endpoint security, backup</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-title" datatype="html">
+        <source>Legal Disclosure</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-ddgInfo" datatype="html">
+        <source> Information in accordance with Section 5 of the Digital Services Act (DDG) </source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-generalInfo" datatype="html">
+        <source>General Information</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-companyName" datatype="html">
+        <source>IPvX UG (haftungsbeschränkt)</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-streetAddress" datatype="html">
+        <source>Leopoldstraße 2-8</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-postalCity" datatype="html">
+        <source>32051 Herford</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-addressRegion" datatype="html">
+        <source>Nordrhein-Westfalen, Germany</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-commercialRegisterLabel" datatype="html">
+        <source>Commercial Register Number:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-registerCourtLabel" datatype="html">
+        <source>Register Court:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-representedByLabel" datatype="html">
+        <source>Represented by:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-contact" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-phoneLabel" datatype="html">
+        <source>Phone:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-faxLabel" datatype="html">
+        <source>Fax:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-emailLabel" datatype="html">
+        <source>Email:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-vatTitle" datatype="html">
+        <source>VAT Identification Number</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-vatId" datatype="html">
+        <source>DE361636567</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-vatNote" datatype="html">
+        <source> (in accordance with Section 27a of the German VAT Act) </source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-contentTitle" datatype="html">
+        <source>Content Responsibility</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-contentDesc" datatype="html">
+        <source> Responsible for content in accordance with Section 55, Paragraph 2 of the German Interstate Broadcasting Treaty (RStV): </source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-contentResponsibleName" datatype="html">
+        <source>Marcel Menk</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-addressNote" datatype="html">
+        <source>Address as stated above</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-liabilityContentTitle" datatype="html">
+        <source> Liability for Content </source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-liabilityContentDesc" datatype="html">
+        <source> As a service provider, we are responsible for our own content on these pages in accordance with general laws. However, according to Article 8 of the Digital Services Act (DSA), as a service provider, we are not obligated to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity. Obligations to remove or block the use of information in accordance with general laws remain unaffected. However, liability in this regard is only possible from the time of knowledge of a specific legal violation. Upon becoming aware of such legal violations, we will remove this content immediately. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-liabilityLinksTitle" datatype="html">
+        <source>Liability for Links</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-liabilityLinksDesc" datatype="html">
+        <source> Our website contains links to external third-party websites, over whose content we have no influence. Therefore, we cannot assume any liability for these external contents. The respective provider or operator of the linked pages is always responsible for the content of the linked pages. The linked pages were checked for possible legal violations at the time of linking. Illegal content was not recognizable at the time of linking. However, a permanent content control of the linked pages is not reasonable without concrete evidence of a legal violation. Upon becoming aware of legal violations, we will remove such links immediately. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-copyrightTitle" datatype="html">
+        <source>Copyright</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-copyrightDesc" datatype="html">
+        <source> The content and works created by the site operators on these pages are subject to German copyright law. The reproduction, processing, distribution and any kind of exploitation outside the limits of copyright require the written consent of the respective author or creator. Downloads and copies of this site are only permitted for private, non-commercial use. Insofar as the content on this site was not created by the operator, the copyrights of third parties are observed. In particular, third-party content is identified as such. Should you nevertheless become aware of a copyright infringement, please inform us accordingly. Upon becoming aware of legal violations, we will remove such content immediately. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-ctaTitle" datatype="html">
+        <source> Questions about our legal disclosure? </source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-ctaLead" datatype="html">
+        <source> If you have questions about our company information, registration details, or any other legal matters, we&apos;re happy to help. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-ctaContact" datatype="html">
+        <source> Contact us </source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-metaTitle" datatype="html">
+        <source>Legal Disclosure :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-metaDescription" datatype="html">
+        <source>Imprint and legal disclosure for ForePath by IPvX UG (haftungsbeschränkt). Company details, representation, and regulatory information for Germany.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathDisclosure-metaKeywords" datatype="html">
+        <source>ForePath, legal disclosure, imprint, IPvX</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalPrivacy-title" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-gdprInfo" datatype="html">
+        <source> Information in accordance with Section 13 of the GDPR </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalPrivacy-lastUpdated" datatype="html">
+        <source> Last updated: January 1, 2026 </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-generalInfo" datatype="html">
+        <source>General Information</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-companyName" datatype="html">
+        <source>IPvX UG (haftungsbeschränkt)</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-streetAddress" datatype="html">
+        <source>Leopoldstraße 2-8</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-postalCity" datatype="html">
+        <source>32051 Herford</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-addressRegion" datatype="html">
+        <source>Nordrhein-Westfalen, Germany</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-commercialRegisterLabel" datatype="html">
+        <source>Commercial Register Number:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-registerCourtLabel" datatype="html">
+        <source>Register Court:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-representedByLabel" datatype="html">
+        <source>Represented by:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-contact" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-phoneLabel" datatype="html">
+        <source>Phone:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-faxLabel" datatype="html">
+        <source>Fax:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-emailLabel" datatype="html">
+        <source>Email:</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-collectionTitle" datatype="html">
+        <source> Collection of General Information </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-collectionDesc" datatype="html">
+        <source> When you access our website, information of a general nature is automatically collected. This information (server log files) includes, for example, the type of web browser, the operating system used, the domain name of your Internet service provider, and similar information. This is exclusively information that does not allow any conclusions to be drawn about your person. This information is technically necessary to correctly deliver the content of websites requested by you and is mandatory when using the Internet. Anonymous information of this kind is statistically evaluated by us to optimize our Internet presence and the technology behind it. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-personalizedTitle" datatype="html">
+        <source>Personalized Services</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-personalizedDesc" datatype="html">
+        <source> When registering to use our personalized services, some personal data is collected, such as name, address, contact and communication data such as telephone number and email address. If you are registered with us, you can access content and services that we only offer to registered users. Registered users also have the option to change or delete the data provided during registration at any time if necessary. Of course, we will also provide you with information about the personal data we have stored about you at any time. We will be happy to correct or delete this data at your request, provided there are no legal retention obligations to the contrary. To contact us in this regard, please use the contact details provided at the end of this privacy policy. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-sslTitle" datatype="html">
+        <source>SSL Encryption</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-sslDesc" datatype="html">
+        <source> To protect the security of your data during transmission, we use state-of-the-art encryption methods (e.g., SSL) over HTTPS. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-emailTitle" datatype="html">
+        <source>Contact via Email</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-emailDesc" datatype="html">
+        <source> If you contact us by email or contact form, the information you provide will be stored for the purpose of processing your inquiry and for possible follow-up questions. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-rightsTitle" datatype="html">
+        <source> Right to Information, Correction, Blocking, Deletion, and Objection </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-rightsDesc1" datatype="html">
+        <source> You have the right to receive information about your personal data stored by us at any time. You also have the right to correction, blocking or, apart from the prescribed data storage for business processing, deletion of your personal data. Please contact our data protection officer for this purpose. You can find the contact details at the very bottom. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-rightsDesc2" datatype="html">
+        <source> For a data block to be taken into account at any time, this data must be kept in a lock file for control purposes. You can also request the deletion of the data, provided there is no legal archiving obligation. If such an obligation exists, we will block your data upon request. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-rightsDesc3" datatype="html">
+        <source> You can make changes or revoke consent by sending us a corresponding notification with effect for the future. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cookiesTitle" datatype="html">
+        <source>Cookies</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cookiesDesc1" datatype="html">
+        <source> Like many other websites, we also use so-called &quot;cookies&quot;. Cookies are small text files that are transferred from a website server to your hard drive. This automatically gives us certain data such as IP address, browser used, operating system about your computer and your connection to the Internet. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cookiesDesc2" datatype="html">
+        <source> Cookies cannot be used to launch programs or transfer viruses to a computer. Based on the information contained in cookies, we can make navigation easier for you and enable the correct display of our websites. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cookiesDesc3" datatype="html">
+        <source> Under no circumstances will the data we collect be passed on to third parties or linked to personal data without your consent. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cookiesDesc4" datatype="html">
+        <source> Of course, you can generally view our website without cookies. Internet browsers are regularly set to accept cookies. You can deactivate the use of cookies at any time via the settings of your browser. Please use the help functions of your Internet browser to find out how to change these settings. Please note that some functions of our website may not work if you have deactivated the use of cookies. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-newsletterTitle" datatype="html">
+        <source>Newsletter</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-newsletterDesc" datatype="html">
+        <source> For sending our newsletter, we use the open-source software Listmonk, which we operate independently on our servers within the European Union. No personal data is passed on to third parties. As part of the newsletter dispatch, we process in particular your email address as well as any other voluntarily provided information (e.g., name or preferences). The processing is carried out exclusively for the purpose of sending and analyzing our newsletter on the basis of your consent in accordance with Art. 6 para. 1 lit. a GDPR. You can revoke your consent at any time with effect for the future, e.g., via the unsubscribe link in the newsletter or by sending us a message. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-liveChatTitle" datatype="html">
+        <source> Live Chat and Support Communication </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-liveChatDesc" datatype="html">
+        <source> For processing support requests and providing a live chat on our website, we use the open-source software Chatwoot, which we operate ourselves on servers within the European Union. The data you provide in the chat, such as name, email address, and the content of the communication, are processed. The processing serves to efficiently process your request and is based on Art. 6 para. 1 lit. b GDPR (fulfillment of a contract or pre-contractual measures) or on the basis of our legitimate interest in accordance with Art. 6 para. 1 lit. f GDPR in user-friendly and fast customer communication. Your data will not be passed on to third parties. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-gtmTitle" datatype="html">
+        <source>Google Tag Manager</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-gtmDesc" datatype="html">
+        <source> We use Google Tag Manager, a service of Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland. Google Tag Manager is used to manage website tags via an interface. The tool itself (which implements the tags) does not process any personal data of users. Google Tag Manager only triggers other tags, which in turn may collect data. Google only receives information about the use of the Tag Manager itself. Further information can be found in Google&apos;s privacy policy at: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://policies.google.com/privacy&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; class=&quot;text-decoration-none&quot;
+                &gt;"/>https://policies.google.com/privacy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. The processing is based on our legitimate interest in accordance with Art. 6 para. 1 lit. f GDPR in an efficient and technically flawless integration of analysis and marketing services. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cloudflareCdnTitle" datatype="html">
+        <source>Cloudflare CDN</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cloudflareCdnDesc" datatype="html">
+        <source> We use the Content Delivery Network (CDN) of Cloudflare Germany GmbH, Rosental 7, c/o Mindspace, 80331 Munich, Germany (Cloudflare), to increase the security and delivery speed of our website. This corresponds to our legitimate interest (Art. 6 para. 1 lit. f GDPR). A CDN is a network of servers distributed worldwide that is able to deliver optimized content to website users. For this purpose, personal data may be processed in server log files by Cloudflare. Cloudflare is a recipient of your personal data and acts as a processor for us. Further information on objection and removal options against Cloudflare can be found at: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                href=&quot;https://www.cloudflare.com/resources/assets/slt3lc6tev37/1M1j5uuFDuLTYiZJJDPBag/770322411bcac7f8bcc350e31b1e8319/Customer_DPA_v.3_1_-_de-de_19_Oct_2020.pdf&quot;
+                target=&quot;_blank&quot;
+                rel=&quot;noopener&quot;
+                class=&quot;text-decoration-none&quot;
+                &gt;"/>Cloudflare DPA<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-plausibleTitle" datatype="html">
+        <source>Plausible Analytics</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-plausibleDesc" datatype="html">
+        <source> We use Plausible Analytics, a self-hosted open-source web analytics service running on our own EU-based infrastructure. Plausible collects aggregated, anonymized usage statistics about our website. It does not use cookies, local storage, or any persistent identifiers. Only anonymized data such as page views, referrers, approximate geographic location (country/region), device type, and browser information is processed. No individual user profiles or cross-site tracking occurs. The processing is based on our legitimate interest in accordance with Art. 6 para. 1 lit. f GDPR in understanding and improving the website experience for all visitors. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cloudflareAnalyticsTitle" datatype="html">
+        <source>Cloudflare Analytics</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cloudflareAnalyticsDesc" datatype="html">
+        <source> We use Cloudflare Analytics, a service of Cloudflare, Inc., 101 Townsend St, San Francisco, CA 94107, USA (EU representative: Cloudflare Ireland Limited, 5th Floor, One Albert Quay, Cork, Ireland). Cloudflare Analytics is only activated after explicit user consent. It collects aggregated website traffic data such as page views, unique visitors, referrers, and performance metrics. Data is processed in accordance with Cloudflare&apos;s privacy policy at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                href=&quot;https://www.cloudflare.com/privacypolicy/&quot;
+                target=&quot;_blank&quot;
+                rel=&quot;noopener&quot;
+                class=&quot;text-decoration-none&quot;
+                &gt;"/>https://www.cloudflare.com/privacypolicy/<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. The processing is based on user consent in accordance with Art. 6 para. 1 lit. a GDPR and § 25 para. 1 TTDSG. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-gaTitle" datatype="html">
+        <source>Google Analytics</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-gaDesc" datatype="html">
+        <source> We use Google Analytics, a service of Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland (US parent: Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA). Google Analytics is only activated after explicit user consent. It collects data on website usage including page views, sessions, user behavior, and demographics for optimization purposes. IP addresses are anonymized, and data is processed in accordance with Google&apos;s privacy policy at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://policies.google.com/privacy&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; class=&quot;text-decoration-none&quot;
+                &gt;"/>https://policies.google.com/privacy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. The processing is based on user consent in accordance with Art. 6 para. 1 lit. a GDPR and § 25 para. 1 TTDSG. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-mailgunTitle" datatype="html">
+        <source>Mailgun</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-mailgunDesc" datatype="html">
+        <source> For sending system-related emails (e.g., confirmation, notification, or transaction emails), we use the &quot;Mailgun&quot; service of the provider Mailgun Technologies, Inc., 112 E Pecan St. #1135, San Antonio, TX 78205, USA. The sending takes place via server locations within the European Union. Mailgun acts as a processor in accordance with Art. 28 GDPR. A corresponding data processing agreement has been concluded with Mailgun, which ensures compliance with European data protection standards. The processing includes in particular email addresses as well as the content of the sent emails. Further information on data processing by Mailgun can be found at: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                href=&quot;https://www.mailgun.com/de/legal/privacy-policy&quot;
+                target=&quot;_blank&quot;
+                rel=&quot;noopener&quot;
+                class=&quot;text-decoration-none&quot;
+                &gt;"/>https://www.mailgun.com/de/legal/privacy-policy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-changesTitle" datatype="html">
+        <source>Changes</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-changesDesc" datatype="html">
+        <source> We reserve the right to occasionally adapt this privacy policy so that it always complies with current legal requirements or to implement changes to our services in the privacy policy, e.g., when introducing new services. The new privacy policy will then apply to your next visit. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalPrivacy-ctaTitle" datatype="html">
+        <source> Questions about your privacy or data? </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPrivacy-ctaLead" datatype="html">
+        <source> We take data protection seriously. If you have questions about how we handle your data, want to exercise your rights, or need clarification on any aspect of our privacy policy, please reach out. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-ctaContact" datatype="html">
+        <source> Contact us </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalPrivacy-metaTitle" datatype="html">
+        <source>Privacy Policy :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalPrivacy-metaDescription" datatype="html">
+        <source>How ForePath and IPvX process personal data when you use our websites, services, and support. Cookies, retention, your rights, and how to contact us.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalPrivacy-metaKeywords" datatype="html">
+        <source>ForePath, privacy policy, GDPR, IPvX</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalTerms-title" datatype="html">
+        <source>Terms of Service</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-heroLead" datatype="html">
+        <source> Terms governing ForePath websites, consulting services, and Agenstra software licenses under German and European Union law. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalTerms-lastUpdated" datatype="html">
+        <source> Last updated: March 23, 2026 </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-scopeTitle" datatype="html">
+        <source>Scope and Definitions</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-scopeDesc1" datatype="html">
+        <source> These Terms of Service (&quot;Terms&quot;) apply to all contracts and legal relationships between IPvX UG (haftungsbeschränkt) (&quot;we&quot;, &quot;us&quot;) and you regarding the Agenstra software, related documentation, self-hosted license offerings, professional and support services, and our managed cloud offering including provision of the software on infrastructure operated or procured by us (&quot;Cloud Service&quot;), unless expressly agreed otherwise in writing (including individual enterprise agreements or separate order forms). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-scopeDesc2" datatype="html">
+        <source> &quot;Consumer&quot; means any natural person who enters into a legal transaction for purposes that are predominantly outside their trade, business, or profession (Section 13 of the German Civil Code, Bürgerliches Gesetzbuch - BGB). &quot;Entrepreneur&quot; means a natural or legal person or a partnership with legal personality who or which acts in exercise of their trade, business, or profession when entering into a legal transaction (Section 14 BGB). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-scopeDesc3" datatype="html">
+        <source> Conflicting or deviating terms of you shall not apply unless we have expressly agreed to their validity in writing. Individual agreements take precedence over these Terms (Section 305b BGB). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-offeringsTitle" datatype="html">
+        <source> Product Types, License Models, and Services </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-offeringsDesc1" datatype="html">
+        <source> We offer (a) self-hosted software under open-source and source-available license terms (including editions made available under the GNU Affero General Public License version 3 (&quot;AGPL-3.0&quot;) and under the Business Source License 1.1 with Additional Use Grant (&quot;BUSL-1.1&quot;)), (b) paid self-hosted subscriptions and commercial license arrangements (including the &quot;Business&quot; and &quot;Enterprise&quot; tiers described on our pricing pages), (c) ancillary services such as onboarding, support, training, and custom development agreed separately, and (d) the Cloud Service: operation of Agenstra on our or our subprocessors&apos; infrastructure, including server hosting, maintenance, scaling, and backup or monitoring measures as specified in the applicable service description or order. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-offeringsDesc2" datatype="html">
+        <source> The respective open-source or source-available license text supplied with the software governs your rights and obligations for the corresponding edition to the extent it is mandatory law or expressly designated as prevailing. Where you obtain a commercial license, subscription, or Cloud Service from us, these Terms supplement and, in case of conflict on commercial and operational matters, prevail over generic source-available terms only to the extent permitted by law and as expressly stated in your order or license grant. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-offeringsDesc3" datatype="html">
+        <source> Features, limits, support channels, and eligibility criteria (such as financial thresholds for specific self-hosted tiers) are as described on our website at the time of order unless otherwise agreed in writing. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-contractFormationTitle" datatype="html">
+        <source> Conclusion of Contract and Pre-Contractual Information </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-contractFormationDesc1" datatype="html">
+        <source> Presentations on our website, in demos, or in marketing materials constitute an invitation to treat (invitatio ad offerendum) and not a binding offer under Sections 145, 146 BGB, unless explicitly marked as binding. A contract is formed when we accept your order, when you accept our written or electronic offer, or when we grant access to paid or Cloud resources, whichever occurs first. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-contractFormationDesc2" datatype="html">
+        <source> For consumers and distance contracts, we comply with the statutory information duties for digital products and services under the BGB and the EU Directives implemented therein (including Articles 246a, 246b, 246c Einführungsgesetz zum BGB - EGBGB as applicable). You will receive confirmation of the contract on a durable medium where required by law. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-contractFormationDesc3" datatype="html">
+        <source> You are responsible for the accuracy of registration and billing data. Automated technical steps (e.g., provisioning of a tenant or license key) may constitute acceptance without a separate declaration if this is customary and you have been informed accordingly. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-pricingTitle" datatype="html">
+        <source>Prices, Taxes, and Payment</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-pricingDesc1" datatype="html">
+        <source> Prices are as stated in the order, checkout flow, or written offer, in euros unless otherwise specified. Statutory value-added tax (Umsatzsteuer) or other applicable taxes are added where required by law. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-pricingDesc2" datatype="html">
+        <source> Payment methods may include payment cards, direct debit where offered, bank transfer (e.g., for annual commitments or purchase orders), and other means we communicate at checkout. Recurring fees for subscriptions and Cloud Service are due in advance for each billing period unless agreed otherwise. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-pricingDesc3" datatype="html">
+        <source> If you default on payment, we may charge statutory default interest (Section 288 BGB) and suspend or terminate services in accordance with law and these Terms. Offsetting against our claims is permitted only with undisputed or legally established counterclaims. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-withdrawalTitle" datatype="html">
+        <source> Statutory Right of Withdrawal for Consumers (EU / Germany) </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-withdrawalDesc1" datatype="html">
+        <source> If you are a Consumer and the contract is a distance or off-premises contract, you generally have a right of withdrawal of fourteen (14) days without giving any reason, in accordance with Sections 355 et seq. BGB and Directive 2011/83/EU (Consumer Rights Directive) as transposed into German law. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-withdrawalDesc2" datatype="html">
+        <source> For contracts concerning digital content not supplied on a tangible medium, the right of withdrawal expires if we have begun performance with your prior express consent and you have acknowledged that you thereby lose your right of withdrawal once performance has begun (Section 356(5) BGB). Similar consequences may apply where you request immediate commencement of a service. We will provide the statutory withdrawal information and, where required, a model withdrawal form in a durable medium before or at contract conclusion. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-withdrawalDesc3" datatype="html">
+        <source> Entrepreneurs are not entitled to a statutory withdrawal right unless individually agreed. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-selfHostedTitle" datatype="html">
+        <source> Self-Hosted Software: Rights of Use and Compliance </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-selfHostedDesc1" datatype="html">
+        <source> Subject to payment (if applicable) and the applicable license text, we grant you a non-exclusive, non-transferable right to install and run the licensed software in your own environment within the agreed scope (e.g., number of instances, production vs. non-production, or organizational limits in enterprise agreements). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-selfHostedDesc2" datatype="html">
+        <source> You must comply with all applicable license conditions, including AGPL-3.0 and BUSL-1.1 obligations such as source-sharing, network-use, and additional-use-grant limits where they apply. You may not circumvent technical protection measures, remove proprietary notices, or sublicense beyond what the license permits. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-selfHostedDesc3" datatype="html">
+        <source> You operate the infrastructure and are responsible for backups, security hardening, regulatory compliance in your environment, and lawful use of third-party models, APIs, or data you connect to Agenstra. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cloudTitle" datatype="html">
+        <source> Cloud Service, Hosting, and Subprocessors </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cloudDesc1" datatype="html">
+        <source> For the Cloud Service we provide access to a managed instance of Agenstra, including hosting on servers operated by us or by qualified infrastructure providers (subprocessors). The primary place of processing, data residency options, and security measures will be described in the applicable order, product documentation, and our Privacy Policy. Processing of personal data is governed by Regulation (EU) 2016/679 (GDPR) and, where applicable, a data processing agreement (Art. 28 GDPR) concluded with you. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cloudDesc2" datatype="html">
+        <source> We strive to maintain service availability in line with any SLA expressly agreed in your contract. Unless otherwise stated, planned maintenance will, where reasonably practicable, be announced in advance. Temporary interruptions may occur for security, capacity, or legal reasons. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-cloudDesc3" datatype="html">
+        <source> You retain responsibility for the content and lawfulness of data and workloads you upload or configure, for user management within your organization, and for credentials and API keys you control. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-supportTitle" datatype="html">
+        <source> Support, Service Levels, and Individual Services </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-supportDesc1" datatype="html">
+        <source> Support channels (e.g., community, email, telephone, chat, or Microsoft Teams) and response targets depend on the purchased tier or enterprise agreement. Any uptime percentage or SLA applies only if and as expressly agreed in writing; otherwise statutory remedies remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-supportDesc2" datatype="html">
+        <source> Professional services such as onboarding, training, customization, or development are provided on the basis of separate written specifications, statements of work, or order forms. Unless agreed otherwise, we grant you the rights of use to deliverables as required for the intended use under the contract. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-supportDesc3" datatype="html">
+        <source> Credits or fee reductions for SLA failures, if any, are governed solely by the applicable SLA exhibit. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-conductTitle" datatype="html">
+        <source> Your Obligations and Acceptable Use </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-conductDesc1" datatype="html">
+        <source> You will use Agenstra and related services only in compliance with applicable law, including export control, sanctions, telecommunications, and AI-related regulations where relevant. You must not misuse the services (e.g., to distribute malware, infringe third-party rights, conduct illegal surveillance, or overload systems without authorization). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-conductDesc2" datatype="html">
+        <source> You are obliged to keep access credentials confidential, to inform us without undue delay of security incidents that may affect our systems, and to cooperate reasonably in troubleshooting. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-conductDesc3" datatype="html">
+        <source> We may take proportionate countermeasures, including suspension of access, if you materially breach these obligations or if continued provision would expose us to undue legal or security risk. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-updatesTitle" datatype="html">
+        <source> Updates, Maintenance, and Changes </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-updatesDesc1" datatype="html">
+        <source> We may provide updates, patches, and new versions of the software or Cloud Service. For self-hosted deployments, you decide when to apply updates unless security-critical measures are required by law or expressly mandated under your enterprise agreement. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-updatesDesc2" datatype="html">
+        <source> We may modify the Cloud Service for technical, security, or legal reasons if the contractual purpose remains substantially preserved. Material adverse changes will be communicated with reasonable notice where required by law; your statutory rights remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-updatesDesc3" datatype="html">
+        <source> Beta or preview features may be offered &quot;as is&quot; without warranty of any particular fitness until generally released. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-ipTitle" datatype="html">
+        <source> Intellectual Property and Third-Party Components </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-ipDesc1" datatype="html">
+        <source> We or our licensors retain all rights to Agenstra not expressly granted to you. The provisions of the German Act on Copyright and Related Rights (Urheberrechtsgesetz - UrhG) and EU copyright law remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-ipDesc2" datatype="html">
+        <source> The software may include third-party open-source components under their respective licenses. Corresponding notices and license texts are supplied with the software or in documentation. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-ipDesc3" datatype="html">
+        <source> Feedback you provide may be used by us without restriction or royalty, subject to applicable personal data rules. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-dataTitle" datatype="html">
+        <source>Data Protection</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-dataDesc" datatype="html">
+        <source> Processing of personal data in connection with our website, contractual relationship, and Cloud Service is described in our Privacy Policy. That policy explains categories of data, purposes, legal bases under the GDPR (including Art. 6 and, where relevant, Art. 28 GDPR for processing on your instructions), retention, and your data subject rights under Chapter III GDPR. In case of conflict between these Terms and the Privacy Policy on data-protection matters, the Privacy Policy prevails. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-liabilityTitle" datatype="html">
+        <source> Defects, Warranty, and Liability </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-liabilityDesc1" datatype="html">
+        <source> For contracts with Consumers, statutory rights regarding defects in digital products or services (including Sections 327 et seq. BGB and the remedies thereunder) apply without restriction, except where mandatory law permits limitation. For Entrepreneurs, warranty for defects is governed by Sections 434 et seq. BGB unless stricter individual agreements exist. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-liabilityDesc2" datatype="html">
+        <source> We are liable without limitation for intent (Vorsatz) and gross negligence (grobe Fahrlässigkeit), for injury to life, body, or health, under the German Product Liability Act (Produkthaftungsgesetz - ProdHaftG) where applicable, and under a guarantee (Garantie) if assumed. For simple negligence we are liable only for breach of material contractual obligations (Kardinalpflichten), limited to typical, foreseeable damage, except in the cases in the preceding sentence. The above does not imply a reversal of the burden of proof to your disadvantage. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-liabilityDesc3" datatype="html">
+        <source> Any further exclusion or limitation of liability must be measured against Sections 307 et seq. BGB (including transparency control and content control for standard terms, Section 309 BGB for Consumers). Invalid provisions are replaced by the statutory rule closest in economic purpose. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-termTitle" datatype="html">
+        <source>Term, Termination, and Notice</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-termDesc1" datatype="html">
+        <source> Subscriptions and Cloud Service run for the term selected at order (e.g., monthly or annual) and renew for equivalent periods unless terminated with notice. Unless otherwise agreed in your order, ordinary termination of recurring plans may require fourteen (14) days&apos; notice to the end of the current billing period, in line with the arrangements published on our pricing pages. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-termDesc2" datatype="html">
+        <source> Either party may terminate for cause (außerordentliche Kündigung) where good cause exists under Section 314 BGB or applicable special provisions. Good cause for us includes persistent payment default, serious acceptable-use violations, or legally required shutdown. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-termDesc3" datatype="html">
+        <source> Upon termination, your right to use the affected software or Cloud Service ceases; we may delete tenant data after any statutory or agreed retention period. Sections that by nature should survive (e.g., liability, confidentiality, applicable law) remain in effect. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-finalTitle" datatype="html">
+        <source> Amendments, Governing Law, Venue, and Dispute Resolution </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-changesDesc1" datatype="html">
+        <source> We may update these Terms to reflect legal requirements, technical developments, or changed service scope. For Consumers, amendments during an ongoing contract require consent unless the change is exclusively to your benefit, is purely ancillary, or is required by law with no disadvantage to you (Section 305c(2) BGB in conjunction with transparency requirements under Sections 307 et seq. BGB). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-changesDesc2" datatype="html">
+        <source> For Entrepreneurs, we may notify you of amended Terms with reasonable notice. If you do not object within the stated period, the amendments may be deemed accepted where legally permissible; we will highlight this consequence in the notice. Your statutory rights, including termination rights, remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-finalDesc1" datatype="html">
+        <source> These Terms and the contractual relationship are governed by the laws of the Federal Republic of Germany to the exclusion of the UN Convention on Contracts for the International Sale of Goods (CISG). Mandatory consumer protections of the state in which you habitually reside remain unaffected (Article 6(2) of Regulation (EU) No 593/2008 - Rome I). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-finalDesc2" datatype="html">
+        <source> If you are a merchant (Kaufmann) within the meaning of the German Commercial Code (Handelsgesetzbuch - HGB), a legal entity under public law, or a special fund (öffentlich-rechtliches Sondervermögen), the exclusive place of jurisdiction for all disputes arising from or in connection with these Terms is our registered seat, where permissible. We remain free to bring action at your general place of jurisdiction. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-finalDesc3" datatype="html">
+        <source> We are not obliged and not willing to participate in dispute resolution proceedings before a consumer arbitration board (Verbraucherschlichtungsstelle) within the meaning of the German Act on Alternative Dispute Resolution in Consumer Matters (Verbraucherstreitbeilegungsgesetz - VSBG), unless we are required to state a different participation status under mandatory law. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegal-finalDesc4" datatype="html">
+        <source> Should individual provisions of these Terms be or become invalid or unenforceable, the remaining provisions shall remain in effect. The invalid or unenforceable provision shall be replaced by a valid provision that comes closest to the economic purpose of the original, to the extent permitted by law (including Sections 306, 307 BGB for standard terms). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalTerms-ctaTitle" datatype="html">
+        <source>Questions about these terms?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathTerms-ctaLead" datatype="html">
+        <source> If you need clarification on licenses, the Cloud Service, or contractual conditions, please contact us using the details above. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalTerms-metaTitle" datatype="html">
+        <source>Terms of Service :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalTerms-metaDescription" datatype="html">
+        <source>Terms governing use of ForePath websites, consulting services, and related offerings including Agenstra software and managed cloud services.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalTerms-metaKeywords" datatype="html">
+        <source>ForePath, terms of service, Agenstra, IPvX</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>ForePath One<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> connects services and products into one thread </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-heroLead" datatype="html">
+        <source> We advise your platform, operate your systems, build your software, and ship products we run ourselves. Same engineers, same standards, less drift between strategy and production. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-alignmentTitle" datatype="html">
+        <source> Less handoff, more alignment </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-alignmentLead" datatype="html">
+        <source> Consulting sets direction, development delivers change, IT systems keep it running, and ForePath One products extend what your teams already operate. One thread, fewer gaps between phases. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-alignmentVisualBadge" datatype="html">
+        <source>One thread across services and products</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-alignmentVisualAlt" datatype="html">
+        <source> Diagram showing how ForePath consulting, software development, IT systems, and products connect on one platform thread. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-threadConsulting" datatype="html">
+        <source>Consulting</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-threadConsultingCaption" datatype="html">
+        <source>Direction and architecture</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-threadDevelopment" datatype="html">
+        <source>Development</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-threadDevelopmentCaption" datatype="html">
+        <source>Software your team can own</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-threadIt" datatype="html">
+        <source>IT systems</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-threadItCaption" datatype="html">
+        <source>Operations and steady state</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-threadProducts" datatype="html">
+        <source>Products</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-threadProductsCaption" datatype="html">
+        <source>Tooling we run in production</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-benefit1Title" datatype="html">
+        <source>One team thread</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-benefit1Desc" datatype="html">
+        <source> The people who review your architecture can operate your stack and extend your products. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-benefit2Title" datatype="html">
+        <source>Shared standards</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-benefit2Desc" datatype="html">
+        <source> Runbooks, delivery practices, and product design follow the same operator mindset. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-bentoConsultingTitle" datatype="html">
+        <source>Consulting</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-bentoConsultingDesc" datatype="html">
+        <source> Strategy, architecture, and roadmaps your team can execute. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-bentoConsultingLink" datatype="html">
+        <source>View consulting <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-bentoItTitle" datatype="html">
+        <source>IT systems</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-bentoItDesc" datatype="html">
+        <source> Monitoring, patching, incidents, and steady-state operations. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-bentoItLink" datatype="html">
+        <source>View IT systems <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-bentoDevTitle" datatype="html">
+        <source>Software development</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-bentoDevDesc" datatype="html">
+        <source> Platforms, integrations, and applications built to last. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-bentoDevLink" datatype="html">
+        <source>View development <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pathsTitle" datatype="html">
+        <source> Three common ways teams grow with ForePath </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pathsLead" datatype="html">
+        <source> Engagements rarely follow one straight line. These paths show how consulting, delivery, operations, and products combine depending on where the bottleneck sits today. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-path1Title" datatype="html">
+        <source>Architecture first</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-path1Step1" datatype="html">
+        <source>Consulting to clarify direction and constraints</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-path1Step2" datatype="html">
+        <source>Development to implement the agreed roadmap</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-path1Step3" datatype="html">
+        <source>IT systems for steady-state ownership</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-path2Title" datatype="html">
+        <source>Operations capacity</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-path2Step1" datatype="html">
+        <source>IT systems to cover on-call and recurring work</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-path2Step2" datatype="html">
+        <source>Consulting spot checks when change windows need design</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-path2Step3" datatype="html">
+        <source>Development for targeted fixes and integrations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-path3Title" datatype="html">
+        <source>Product adoption</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-path3Step1" datatype="html">
+        <source>ForePath One products such as Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-path3Step2" datatype="html">
+        <source>IT systems to host, monitor, and patch in your environment</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-path3Step3" datatype="html">
+        <source>Consulting to align rollout with your delivery model</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pricingTitle" datatype="html">
+        <source> Predictable pricing for long-term partnerships </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pricingLead" datatype="html">
+        <source> ForePath One spans consulting, operations, and delivery. Transparent rate cards keep planning honest so you commit to the work, not to deciphering the invoice. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pricingItem1" datatype="html">
+        <source>Published net rates and billing units before work starts, so budgets reflect reality</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pricingItem2" datatype="html">
+        <source>The same tariff structure across IT systems and software development, with fewer exceptions to track</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pricingItem3" datatype="html">
+        <source>Scope stays tied to outcomes when pricing is agreed upfront, not renegotiated mid-sprint</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pricingLink" datatype="html">
+        <source>View pricing <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+        &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pricingStartingLabel" datatype="html">
+        <source> Starting rate </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pricingStartingUnit" datatype="html">
+        <source> per 15 minutes, standard IT systems tariff </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pricingStartupDiscount" datatype="html">
+        <source> Up to 25% off for startups and SMEs </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pricingBasic2" datatype="html">
+        <source>15-minute billing units for IT systems and software development</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pricingBasic3" datatype="html">
+        <source>5% day-rate discount for up to 10 hours</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-pricingBasic4" datatype="html">
+        <source>Emergency surcharges published on the rate card</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-ctaTitle" datatype="html">
+        <source> Want to see how the pieces fit your roadmap? </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-ctaLead" datatype="html">
+        <source> Tell us where you are today and where you want to be. We will map which services and products make sense, and in what order. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-ctaButton" datatype="html">
+        <source>Contact us</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-metaTitle" datatype="html">
+        <source>ForePath One services and products :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-metaDescription" datatype="html">
+        <source>See how ForePath consulting, IT systems, software development, and ForePath One products connect. One thread from strategy to software you can operate.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathOne-metaKeywords" datatype="html">
+        <source>ForePath One, consulting, IT systems, software development, Agenstra, platform services</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-heroTitle" datatype="html">
+        <source> Transparent <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>service pricing<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for predictable IT investment </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-heroDescription" datatype="html">
+        <source> Clear structures build trust. See exactly what IT systems and software development cost before you commit. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-itSystemsTitle" datatype="html">
+        <source>IT systems</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-colTariff" datatype="html">
+        <source>Tariff</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-colPerUnit" datatype="html">
+        <source>Per billing unit</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-colPerUnitIt" datatype="html">
+        <source>15 minutes</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-colPerDay" datatype="html">
+        <source>Per day</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-colPerDayIt" datatype="html">
+        <source>Max. 10 hours, 5% discount</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-itNormalTitle" datatype="html">
+        <source>Standard rate</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-itEmergencyWeekTitle" datatype="html">
+        <source>Emergency rate</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-itEmergencyWeekDesc" datatype="html">
+        <source> Monday to Saturday, 50% surcharge </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-itEmergencySunTitle" datatype="html">
+        <source>Emergency rate</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-itEmergencySunDesc" datatype="html">
+        <source> Sunday, 100% surcharge </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-softwareTitle" datatype="html">
+        <source>Software development</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-softwareNormalTitle" datatype="html">
+        <source>Standard rate</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-otherTitle" datatype="html">
+        <source>Other charges</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-colItem" datatype="html">
+        <source>Item</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-colRate" datatype="html">
+        <source> Rate </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-travelKmTitle" datatype="html">
+        <source>Car mileage</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-travelKmDesc" datatype="html">
+        <source> Per kilometer started, plus travel time </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-travelShortTitle" datatype="html">
+        <source> Short-distance travel time </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-travelShortDesc" datatype="html">
+        <source> Flat rate within Herford district </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-travelShortRate" datatype="html">
+        <source> €48.23 flat </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-travelLongTitle" datatype="html">
+        <source>Long-distance travel time</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-travelLongDesc" datatype="html">
+        <source> Outside Herford district, per hour started </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-travelLongRate" datatype="html">
+        <source> €64.30 / hour </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-travelExpensesTitle" datatype="html">
+        <source>Travel expenses</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-travelExpensesDesc" datatype="html">
+        <source> Taxi, phone, public transport tickets, and similar costs </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-travelExpensesRate" datatype="html">
+        <source> Individual </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-startupTitle" datatype="html">
+        <source> Special conditions for startups and SMEs </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-startupDesc" datatype="html">
+        <source> Financial advantages for innovators and growing companies. Save up to 50% on all service offerings, plus selected software and hardware products. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-startupCta" datatype="html">
+        <source>Request free of charge</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-vatDisclaimer" datatype="html">
+        <source> All prices are <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>plus statutory VAT<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>. This offer is directed <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>exclusively at businesses, freelancers, and public institutions<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> within the meaning of Section 14 German Civil Code (BGB). </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-ctaTitle" datatype="html">
+        <source>Questions about our rates?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-ctaLead" datatype="html">
+        <source> We are happy to walk through your scenario and recommend the right engagement model before work begins. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-ctaButton" datatype="html">
+        <source>Contact us</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-metaTitle" datatype="html">
+        <source>Service pricing :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-metaDescription" datatype="html">
+        <source>Transparent ForePath rates for IT systems and software development. Clear billing units, emergency tariffs, and travel costs for predictable IT investment.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathPricing-metaKeywords" datatype="html">
+        <source>ForePath pricing, IT systems rates, software development pricing, managed IT, consulting rates Germany</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Software development<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> built to last </source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-heroLead" datatype="html">
+        <source> We ship features your teams can own: readable code, automated tests, and documentation that matches how you operate in production. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-capabilitiesTitle" datatype="html">
+        <source> What we build </source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-capabilitiesLead" datatype="html">
+        <source> We build platforms, integrations, web applications, and modernization programs for teams that need production-ready software. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-deliveryTitle" datatype="html">
+        <source> Modern technologies </source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-deliveryDesc" datatype="html">
+        <source> We build with production-ready frameworks and platforms that teams can maintain over the long term. We choose modern stacks for security, observability, and deployment, then align them with the standards and tooling you already use. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-deliveryItem1" datatype="html">
+        <source>Tech stack aligned to your standards</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-deliveryItem2" datatype="html">
+        <source>Pairing and knowledge transfer built in</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-deliveryItem3" datatype="html">
+        <source>Handover docs, runbooks, and ownership clarity</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-stackGridLabel" datatype="html">
+        <source>Technologies we commonly use</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-oneTeaserLead" datatype="html">
+        <source> We ship software your teams can own. ForePath One connects that delivery work with consulting, operations, and community we run ourselves. Same engineers, one thread, fewer handoffs between phases. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-ctaTitle" datatype="html">
+        <source> Do you only need software development? </source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-ctaLead" datatype="html">
+        <source> You can work with us on delivery alone without pulling in consulting or managed operations. Share your product goals and constraints, and we will propose a team shape and timeline scoped to development. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-ctaButton" datatype="html">
+        <source>Contact us</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-cap1Title" datatype="html">
+        <source>Internal platforms</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-cap1Desc" datatype="html">
+        <source>Developer portals, self-service environments, and workflow tools that reduce platform team bottlenecks.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-cap2Title" datatype="html">
+        <source>Integrations &amp; APIs</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-cap2Desc" datatype="html">
+        <source>Connect ERP, CRM, identity, and observability systems with reliable sync and clear error handling.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-cap3Title" datatype="html">
+        <source>Web applications</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-cap3Desc" datatype="html">
+        <source>Customer and partner-facing products with accessible UI, performance budgets, and secure defaults.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-cap4Title" datatype="html">
+        <source>Modernization</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-cap4Desc" datatype="html">
+        <source>Incremental rewrites, strangler patterns, and module extraction without big-bang releases.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-cap5Title" datatype="html">
+        <source>AI-enabled features</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-cap5Desc" datatype="html">
+        <source>Agent-assisted workflows embedded in your products with guardrails and observability.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-cap6Title" datatype="html">
+        <source>Quality engineering</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-cap6Desc" datatype="html">
+        <source>Test automation, contract tests, and CI pipelines that catch regressions before production.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-metaTitle" datatype="html">
+        <source>Software development services :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-metaDescription" datatype="html">
+        <source>ForePath builds internal platforms, integrations, and customer-facing applications with maintainable code, clear ownership, and production-ready delivery practices.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-metaKeywords" datatype="html">
+        <source>ForePath software development, platform engineering, integrations, custom applications</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-message" datatype="html">
+        <source>This website uses cookies to ensure you get the best experience on our website.</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-dismiss" datatype="html">
+        <source>Got it!</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-allow" datatype="html">
+        <source>Accept</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-deny" datatype="html">
+        <source>Decline</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-link" datatype="html">
+        <source>Learn more</source>
+        </trans-unit>
+    </body>
+  </file>
+</xliff>

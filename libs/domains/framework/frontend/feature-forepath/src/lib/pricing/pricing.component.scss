@@ -1,0 +1,38 @@
+@import '../page.component.scss';
+
+.pricing-table-wrapper {
+  --pricing-rate-col-width: 10.5rem;
+
+  .table {
+    --bs-table-bg: var(--bs-white);
+    --bs-table-hover-bg: rgba(255, 107, 53, 0.04);
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  thead th {
+    font-weight: 600;
+  }
+}
+
+.pricing-table-label {
+  width: auto;
+}
+
+.pricing-table-rate {
+  width: var(--pricing-rate-col-width);
+  min-width: var(--pricing-rate-col-width);
+  max-width: var(--pricing-rate-col-width);
+}
+
+.pricing-table-wrapper tbody .pricing-table-rate {
+  white-space: nowrap;
+}
+
+.pricing-tariff-term {
+  min-width: 10rem;
+}
+
+.pricing-disclaimer {
+  font-size: 0.875rem;
+}

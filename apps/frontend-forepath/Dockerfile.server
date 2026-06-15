@@ -1,0 +1,27 @@
+# -----------------------------------------------------------------------------
+# Image:      forepath-site-server
+# Project:    frontend-forepath — Nx target `server-container-image`
+# Registry:   ghcr.io/forepath/forepath-site-server
+# Base:       node:24.14.1-alpine
+# User:       node (APP_UID / APP_GID, default 1000)
+# Exposes:    4000 (Express static server)
+# Build:      npx nx run frontend-forepath:server-container-image
+# -----------------------------------------------------------------------------
+#
+FROM docker.io/node:24.14.1-alpine
+
+ARG APP_UID=1000
+ARG APP_GID=1000
+
+ENV HOST=0.0.0.0
+ENV PORT=4000
+
+WORKDIR /app
+
+EXPOSE ${PORT}
+
+COPY --chown=${APP_UID}:${APP_GID} . /app
+
+USER ${APP_UID}:${APP_GID}
+
+CMD [ "node", "server.mjs" ]

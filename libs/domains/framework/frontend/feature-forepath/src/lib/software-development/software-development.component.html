@@ -1,0 +1,153 @@
+<section id="hero" class="py-10 py-lg-6 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center">
+      <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathSoftwareDevelopment-heroTitle">
+        <span class="text-primary">Software development</span> built to last
+      </h1>
+      <p class="lead mx-auto hero-lead section-lead mb-0" i18n="@@featureForepathSoftwareDevelopment-heroLead">
+        We ship features your teams can own: readable code, automated tests, and documentation that matches how you
+        operate in production.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="py-10 bg-white grid-section dev-build-section">
+  <div class="container grid-section__container">
+    <h2 class="h2 fw-semibold mb-4 text-center" i18n="@@featureForepathSoftwareDevelopment-capabilitiesTitle">
+      What we build
+    </h2>
+    <p
+      class="lead text-center text-muted pb-10 mx-auto section-lead"
+      i18n="@@featureForepathSoftwareDevelopment-capabilitiesLead"
+    >
+      We build platforms, integrations, web applications, and modernization programs for teams that need
+      production-ready software.
+    </p>
+    <div class="row g-0 align-items-stretch dev-build-row">
+      <div class="col-lg-6 dev-build-visual-col order-2 order-lg-1">
+        <div
+          class="dev-code-skeleton card border rounded-3 shadow-sm p-4 card-capability card-capability-primary"
+          aria-hidden="true"
+        >
+          <span
+            class="badge dev-code-skeleton__badge d-inline-flex align-items-center mb-3"
+            [ngClass]="activeSkeletonLanguage().badgeClass"
+          >
+            <img
+              [src]="activeSkeletonLanguage().logoUrl"
+              [alt]="activeSkeletonLanguage().label"
+              class="dev-code-skeleton__badge-logo"
+              loading="lazy"
+            />
+          </span>
+          @for (line of visibleSkeletonLines(); track line.id) {
+            <div
+              class="dev-code-skeleton__line"
+              [class.dev-code-skeleton__line--long]="line.width === 'long'"
+              [class.dev-code-skeleton__line--medium]="line.width === 'medium'"
+              [class.dev-code-skeleton__line--short]="line.width === 'short'"
+              [class.dev-code-skeleton__line--indent]="line.indent"
+            ></div>
+          }
+        </div>
+      </div>
+      <div class="col-lg-6 dev-build-cards-col order-1 order-lg-2">
+        <div class="row g-3">
+          @for (capability of buildCapabilities; track capability.icon) {
+            <div class="col-sm-6">
+              <article class="card border rounded-3 shadow-sm h-100 p-4 bg-white">
+                <i class="bi text-primary icon-md mb-3" [ngClass]="capability.icon" aria-hidden="true"></i>
+                <h3 class="h6 fw-semibold mb-2">{{ capability.title }}</h3>
+                <p class="text-muted small mb-0">{{ capability.description }}</p>
+              </article>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-white grid-section dev-delivery-section">
+  <div class="container grid-section__container">
+    <div class="row g-0 align-items-stretch dev-delivery-row">
+      <div class="col-lg-6 dev-delivery-copy py-10">
+        <h2 class="h3 fw-semibold mb-3" i18n="@@featureForepathSoftwareDevelopment-deliveryTitle">
+          Modern technologies
+        </h2>
+        <p class="text-muted mb-4" i18n="@@featureForepathSoftwareDevelopment-deliveryDesc">
+          We build with production-ready frameworks and platforms that teams can maintain over the long term. We choose
+          modern stacks for security, observability, and deployment, then align them with the standards and tooling you
+          already use.
+        </p>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2 d-flex gap-2">
+            <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+            ><span i18n="@@featureForepathSoftwareDevelopment-deliveryItem1">Tech stack aligned to your standards</span>
+          </li>
+          <li class="mb-2 d-flex gap-2">
+            <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+            ><span i18n="@@featureForepathSoftwareDevelopment-deliveryItem2"
+              >Pairing and knowledge transfer built in</span
+            >
+          </li>
+          <li class="d-flex gap-2">
+            <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i
+            ><span i18n="@@featureForepathSoftwareDevelopment-deliveryItem3"
+              >Handover docs, runbooks, and ownership clarity</span
+            >
+          </li>
+        </ul>
+      </div>
+      <div class="col-lg-6 dev-stack-grid-col">
+        <div
+          class="dev-stack-grid"
+          role="list"
+          i18n-aria-label="@@featureForepathSoftwareDevelopment-stackGridLabel"
+          aria-label="Technologies we commonly use"
+        >
+          @for (technology of stackTechnologies; track technology.id) {
+            <div class="dev-stack-grid__cell" role="listitem">
+              <img
+                [src]="technology.logoUrl"
+                [alt]="technology.name"
+                class="dev-stack-grid__logo logo-partner"
+                loading="lazy"
+              />
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="forepath-one" class="bg-body-tertiary grid-section">
+  <framework-forepath-one-teaser activeThread="development">
+    <p class="text-muted mb-4" i18n="@@featureForepathSoftwareDevelopment-oneTeaserLead">
+      We ship software your teams can own. ForePath One connects that delivery work with consulting, operations, and
+      community we run ourselves. Same engineers, one thread, fewer handoffs between phases.
+    </p>
+  </framework-forepath-one-teaser>
+</section>
+
+<section id="cta" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathSoftwareDevelopment-ctaTitle">
+        Do you only need software development?
+      </h2>
+      <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featureForepathSoftwareDevelopment-ctaLead">
+        You can work with us on delivery alone without pulling in consulting or managed operations. Share your product
+        goals and constraints, and we will propose a team shape and timeline scoped to development.
+      </p>
+      <a
+        href="mailto:hi@forepath.io"
+        class="btn btn-light btn-lg px-5 py-3 rounded-3 cta-btn"
+        i18n="@@featureForepathSoftwareDevelopment-ctaButton"
+        >Contact us</a
+      >
+    </div>
+  </div>
+</section>

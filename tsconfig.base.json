@@ -55,6 +55,9 @@
       "@forepath/framework/frontend/feature-portal": [
         "libs/domains/framework/frontend/feature-portal/src/index.ts"
       ],
+      "@forepath/framework/frontend/feature-forepath": [
+        "libs/domains/framework/frontend/feature-forepath/src/index.ts"
+      ],
       "@forepath/framework/frontend/util-configuration": [
         "libs/domains/framework/frontend/util-configuration/src/index.ts"
       ],

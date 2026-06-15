@@ -87,6 +87,11 @@
         "{workspaceRoot}/package-lock.json"
       ],
       "outputs": ["{workspaceRoot}/dist/sboms/{projectName}.cdx.json"]
+    },
+    "@angular/build:application": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
   "generators": {

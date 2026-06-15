@@ -8,7 +8,7 @@
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-heroDescription" datatype="html">
         <source>Every AI coding tool wants its own configuration and instructions. Over time they drift apart and assistants start contradicting each other. AgentCTX lets you maintain project context once and generate aligned configs for every editor your team uses.</source>
-        <target> Jedes KI-Coding-Tool will eigene Konfiguration und Anweisungen. Mit der Zeit driften sie auseinander und Assistenten widersprechen sich. Mit AgentCTX pflegen Sie Projektkontext einmal und erzeugen abgestimmte Konfigurationen für jeden Editor, den Ihr Team nutzt. </target>
+        <target> Jedes KI-Coding-Tool bringt eigene Konfiguration und Anweisungen mit. Mit der Zeit driften sie auseinander und Assistenten widersprechen sich. Mit AgentCTX pflegen Sie Projektkontext einmal und erzeugen abgestimmte Konfigurationen für jeden Editor, den Ihr Team nutzt. </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-installCta" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Install AgentCTX</source>
@@ -20,23 +20,23 @@
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-partnersTagline" datatype="html">
         <source>Generates configs for the assistants your team already uses</source>
-        <target> Erzeugt Konfigurationen für die Assistenten, die Ihr Team bereits nutzt </target>
+        <target> Passende Konfigurationen für die Assistenten, die Ihr Team bereits nutzt </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-storyTitle" datatype="html">
         <source>End config sprawl. Keep every AI tool on the same page</source>
-        <target> Schluss mit Konfigurations-Chaos. Halten Sie jedes KI-Tool auf dem gleichen Stand </target>
+        <target> Schluss mit Konfigurationswildwuchs. Alle KI-Tools auf dem gleichen Stand </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-solutionLead" datatype="html">
         <source>AgentCTX is for teams that rely on more than one AI coding assistant. You define how the project should be described, built, and protected in one maintained context. AgentCTX generates what each tool expects so standards stick without copy and paste between editors.</source>
-        <target> AgentCTX ist für Teams, die auf mehr als einen KI-Coding-Assistenten setzen. Sie legen fest, wie das Projekt beschrieben, gebaut und geschützt werden soll, in einem gepflegten Kontext. AgentCTX erzeugt, was jedes Tool erwartet, damit Standards halten, ohne zwischen Editoren zu kopieren. </target>
+        <target> AgentCTX ist für Teams, die auf mehr als einen KI-Coding-Assistenten setzen. In einem gepflegten Kontext legen Sie fest, wie das Projekt beschrieben, gebaut und geschützt werden soll. AgentCTX erzeugt, was jedes Tool erwartet, damit Standards eingehalten werden, ohne zwischen Editoren hin und her zu kopieren. </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-solutionTitle" datatype="html">
         <source>A single source of truth that syncs everywhere</source>
-        <target> Eine Single Source of Truth, die überall synchronisiert </target>
+        <target> Eine zentrale Quelle, die überall synchron bleibt </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-solutionClosing" datatype="html">
         <source>Your context lives in one place you maintain. No more duplicating project rules in every AI editor. Just update your context, run AgentCTX, and each supported assistant stays aligned.</source>
-        <target> Ihr Kontext liegt an einem Ort, den Sie pflegen. Kein doppeltes Pflegen von Projektregeln in jedem KI-Editor mehr. Aktualisieren Sie Ihren Kontext, führen AgentCTX aus, und jeder unterstützte Assistent bleibt abgestimmt. </target>
+        <target> Ihr Kontext liegt an einem Ort, den Sie pflegen. Kein doppeltes Pflegen von Projektregeln in jedem KI-Editor mehr. Aktualisieren Sie Ihren Kontext, führen Sie AgentCTX aus, und jeder unterstützte Assistent bleibt abgestimmt. </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-solutionTagline" datatype="html">
         <source>One context. Every assistant.</source>
@@ -72,7 +72,7 @@
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-howLead" datatype="html">
         <source>Most repositories already repeat the same guidance in several tool-specific places. AgentCTX replaces that loop with a short workflow you can use in every project, from install to fresh configs in minutes.</source>
-        <target> Die meisten Repositories wiederholen dieselbe Anleitung an mehreren werkzeugspezifischen Stellen. AgentCTX ersetzt diese Schleife durch einen kurzen Workflow für jedes Projekt, von der Installation bis zu frischen Konfigurationen in Minuten. </target>
+        <target> In den meisten Repositories steht dieselbe Anleitung an mehreren toolspezifischen Stellen. AgentCTX ersetzt diese Schleife durch einen kurzen Workflow für jedes Projekt, von der Installation bis zu frischen Konfigurationen in Minuten. </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-step1Title" datatype="html">
         <source>Install AgentCTX</source>
@@ -96,7 +96,7 @@
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-step3Desc" datatype="html">
         <source>Run AgentCTX to generate tool specific config files for the AI coding tools you use.</source>
-        <target> Führen Sie AgentCTX aus, um werkzeugspezifische Konfigurationsdateien für die von Ihnen verwendeten KI-Coding-Tools zu generieren. </target>
+        <target> Führen Sie AgentCTX aus, um toolspezifische Konfigurationsdateien für die von Ihnen verwendeten KI-Coding-Tools zu generieren. </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-step4Title" datatype="html">
         <source>Commit or keep as artifacts</source>
@@ -108,11 +108,11 @@
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-contentTitle" datatype="html">
         <source>Less drift, more alignment</source>
-        <target> Weniger Drift, mehr Ausrichtung </target>
+        <target> Weniger Abweichung, mehr Ausrichtung </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-contentLead" datatype="html">
         <source>AgentCTX helps teams treat project context as a first class asset. You capture architecture, standards, security, and documentation as linked knowledge assistants can rely on. When it stays current, every tool follows the same rules, people onboard faster, and you can add or swap editors without starting over.</source>
-        <target> AgentCTX hilft Teams, Projektkontext als Asset erster Klasse zu behandeln. Sie erfassen Architektur, Standards, Sicherheit und Dokumentation als verknüpftes Wissen, auf das Assistenten vertrauen können. Bleibt er aktuell, folgen alle Tools denselben Regeln, Menschen werden schneller onboardet, und Sie können Editoren hinzufügen oder wechseln, ohne von vorn zu beginnen. </target>
+        <target> AgentCTX hilft Teams, Projektkontext als zentrales Gut zu behandeln. Sie erfassen Architektur, Standards, Sicherheit und Dokumentation als verknüpftes Wissen, auf das Assistenten vertrauen können. Bleibt er aktuell, folgen alle Tools denselben Regeln, neue Teammitglieder finden schneller hinein, und Sie können Editoren wechseln oder ergänzen, ohne von vorn zu beginnen. </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-contentMapAriaLabel" datatype="html">
         <source>How project context topics connect</source>
@@ -200,27 +200,27 @@
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-audienceItem1" datatype="html">
         <source>Uses multiple AI coding tools across different editors</source>
-        <target> Verwendet mehrere KI-Coding-Tools in verschiedenen Editoren </target>
+        <target> Mehrere KI-Coding-Tools in verschiedenen Editoren nutzen </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-audienceItem2" datatype="html">
         <source>Works in monorepos or large codebases with many contributors</source>
-        <target> Arbeitet in Monorepos oder großen Codebasen mit vielen Contributors </target>
+        <target> In Monorepos oder großen Codebasen mit vielen Mitwirkenden arbeiten </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-audienceItem3" datatype="html">
         <source>Cares about consistent standards and secure defaults</source>
-        <target> Legt Wert auf konsistente Standards und sichere Voreinstellungen </target>
+        <target> Wert auf konsistente Standards und sichere Voreinstellungen legen </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-audienceItem4" datatype="html">
         <source>Wants AI to feel like part of the engineering system, not a personal side tool</source>
-        <target> Möchte, dass sich KI wie ein Teil des Engineering-Systems anfühlt, nicht wie ein persönliches Nebenwerkzeug </target>
+        <target> Möchten, dass sich KI wie ein Teil des Engineering-Systems anfühlt, nicht wie ein persönliches Nebenwerkzeug </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona1" datatype="html">
         <source>Platform engineers</source>
-        <target> Plattform-Engineers </target>
+        <target> Plattform-Ingenieure </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona1Desc" datatype="html">
         <source>Standardize tool config across repos</source>
-        <target> Standardisierung der Tool-Konfiguration über Repositories hinweg </target>
+        <target> Tool-Konfiguration über alle Repositories hinweg standardisieren </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona2" datatype="html">
         <source>Dev leads</source>
@@ -228,7 +228,7 @@
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona2Desc" datatype="html">
         <source>Keep teams aligned on standards</source>
-        <target> Teams bei Standards ausrichten </target>
+        <target> Teams an gemeinsamen Standards ausrichten </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona3" datatype="html">
         <source>Security-conscious teams</source>
@@ -236,7 +236,7 @@
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona3Desc" datatype="html">
         <source>Govern what AI can see and do</source>
-        <target> Regeln Sie, was KI sehen und tun darf </target>
+        <target> Steuern Sie, was KI sehen und tun darf </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona4" datatype="html">
         <source>Open source maintainers</source>
@@ -244,7 +244,7 @@
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-persona4Desc" datatype="html">
         <source>One context for all contributors</source>
-        <target> Ein Kontext für alle Contributors </target>
+        <target> Ein Kontext für alle Mitwirkenden </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-ctaTitle" datatype="html">
         <source>Add AgentCTX to your next sprint</source>
@@ -252,7 +252,7 @@
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-ctaLead" datatype="html">
         <source>Start with one repository. Define enough context that assistants understand your architecture, standards, and how you ship. Generate configs for the tools your team already uses, gather feedback, and expand when the approach sticks.</source>
-        <target> Beginnen Sie mit einem Repository. Definieren Sie genug Kontext, damit Assistenten Ihre Architektur, Standards und Art der Auslieferung verstehen. Erzeugen Sie Konfigurationen für die Tools, die Ihr Team bereits nutzt, sammeln Sie Feedback und skalieren Sie, wenn der Ansatz trägt. </target>
+        <target> Beginnen Sie mit einem Repository. Definieren Sie genug Kontext, damit Assistenten Ihre Architektur, Standards und Art der Auslieferung verstehen. Erzeugen Sie Konfigurationen für die Tools, die Ihr Team bereits nutzt, sammeln Sie Feedback und weiten Sie aus, sobald der Ansatz trägt. </target>
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-ctaSub" datatype="html">
         <source>Once your team feels the difference, you can roll out AgentCTX across repositories to standardize how AI coding tools understand your systems.</source>
@@ -276,7 +276,7 @@
       </trans-unit>
       <trans-unit id="featurePortalAgentctx-metaKeywords" datatype="html">
         <source>AgentCTX, agentctx, .agenstra, AI coding tools, Cursor, OpenCode, GitHub Copilot, agent context, rules, commands, skills, MCP, single source of truth</source>
-        <target> AgentCTX, agentctx, .agenstra, KI-Coding-Tools, Cursor, OpenCode, GitHub Copilot, Agenten-Kontext, Regeln, Befehle, Skills, MCP, Single Source of Truth </target>
+        <target> AgentCTX, agentctx, .agenstra, KI-Coding-Tools, Cursor, OpenCode, GitHub Copilot, Agenten-Kontext, Regeln, Befehle, Skills, MCP, zentrale Wahrheitsquelle </target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Fully managed platform<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for your coding agents</source>
@@ -284,7 +284,7 @@
       </trans-unit>
       <trans-unit id="featurePortalCloud-heroLead" datatype="html">
         <source>Run Agenstra as a fully managed cloud service. Your agents stay in the tools, clouds, and environments you already use. You do not deploy infrastructure or operate the platform yourself.</source>
-        <target> Nutzen Sie Agenstra als vollständig verwalteten Cloud-Dienst. Ihre Agenten bleiben in den Tools, Clouds und Umgebungen, die Sie bereits einsetzen. Sie stellen keine Infrastruktur bereit und betreiben die Control Plane nicht selbst. </target>
+        <target> Nutzen Sie Agenstra als vollständig verwalteten Cloud-Dienst. Ihre Agenten bleiben in den Tools, Clouds und Umgebungen, die Sie bereits einsetzen. Updates, Skalierung und Betrieb übernehmen wir. </target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-heroFrom" datatype="html">
         <source>From</source>
@@ -312,11 +312,11 @@
       </trans-unit>
       <trans-unit id="featurePortalCloud-teaserTitle" datatype="html">
         <source>The same platform without running it yourself</source>
-        <target> Dieselbe Control Plane - ohne sie selbst zu betreiben! </target>
+        <target> Dieselbe Control Plane, ohne sie selbst zu betreiben </target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-teaserLead" datatype="html">
         <source>Agenstra Cloud is for teams that want governed agents in coding tools and environments they already use, with upgrades, scaling, and platform operations handled for you.</source>
-        <target> Agenstra Cloud richtet sich an Teams, die Agenten in Coding-Tools und Umgebungen steuern möchten, die sie bereits nutzen - inklusive Updates, Skalierung und Plattform-Betrieb durch uns. </target>
+        <target> Agenstra Cloud richtet sich an Teams, die Agenten in Coding-Tools und Umgebungen steuern möchten, die sie bereits nutzen. Updates, Skalierung und Plattform-Betrieb übernehmen wir für Sie. </target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-teaserVisualBadge" datatype="html">
         <source>Managed console + workspaces</source>
@@ -340,7 +340,7 @@
       </trans-unit>
       <trans-unit id="featurePortalCloud-teaserItem2" datatype="html">
         <source>Same workspaces, knowledge, policies, and environments as self-hosted Agenstra and is ready on day one.</source>
-        <target> Dieselben Konzepte wie bei selbst gehostetem Agenstra: verteilte Infrastruktur, gemeinsame Prompts, Tools, Richtlinien und Umgebungen. </target>
+        <target> Dieselben Workspaces, Wissensbasen, Richtlinien und Umgebungen wie bei selbst gehostetem Agenstra. Ab Tag eins einsatzbereit. </target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-teaserItem3Title" datatype="html">
         <source>Governed environments</source>
@@ -356,7 +356,7 @@
       </trans-unit>
       <trans-unit id="featurePortalCloud-teaserItem4" datatype="html">
         <source>Focus on agents and guardrails. We operate the platform and keep it current.</source>
-        <target> Konzentrieren Sie sich auf Agenten und Guardrails - wir betreiben die verwaltete Control Plane und halten sie aktuell. </target>
+        <target> Konzentrieren Sie sich auf Agenten und Leitplanken. Wir betreiben die verwaltete Control Plane und halten sie aktuell. </target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-plansTitle" datatype="html">
         <source>Cloud plans that match how you work</source>
@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="featurePortalCloud-plansLead" datatype="html">
         <source>Pick a managed plan with clear billing. Each tier reflects service type, interval, and what is included. Same storefront you use to subscribe and scale.</source>
-        <target> Wählen Sie einen verwalteten Tarif mit klarer Abrechnung. Jede Stufe spiegelt Servicetyp, Intervall und Leistungsumfang wider - im selben Shop, in dem Sie abonnieren und skalieren. </target>
+        <target> Wählen Sie einen verwalteten Tarif mit klarer Abrechnung. Jede Stufe spiegelt Servicetyp, Intervall und Leistungsumfang wider. Im selben Shop abonnieren und skalieren. </target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-plansScrollPrev" datatype="html">
         <source>Previous plans</source>
@@ -416,7 +416,7 @@
       </trans-unit>
       <trans-unit id="featurePortalCloud-infraLead" datatype="html">
         <source>We choose providers and regions deliberately. Security, latency, and your requirements shape the roadmap.</source>
-        <target> Technischer Überblick über die Infrastruktur hinter Agenstra Cloud. Wir ergänzen Anbieter und Regionen bewusst. Sicherheit, Latenz und Ihre Anforderungen bestimmen die Roadmap. </target>
+        <target> Wir wählen Anbieter und Regionen bewusst. Sicherheit, Latenz und Ihre Anforderungen prägen die Roadmap. </target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-infraLabelDc" datatype="html">
         <source>Datacenters</source>
@@ -488,7 +488,7 @@
       </trans-unit>
       <trans-unit id="featurePortalCloud-metaDescription" datatype="html">
         <source>Fully managed Agenstra control plane for distributed coding agents. Deploy, monitor, and govern agents across tools and environments without running your own ops stack.</source>
-        <target> Vollständig verwaltete Agenstra-Control-Plane für verteilte Coding-Agenten. Agenten deployen, überwachen und steuern, ohne einen eigenen Ops-Stack zu betreiben. </target>
+        <target> Vollständig verwaltete Agenstra-Control-Plane für verteilte Coding-Agenten. Agenten bereitstellen, überwachen und steuern, ohne einen eigenen Ops-Stack zu betreiben. </target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-metaKeywords" datatype="html">
         <source>Agenstra Cloud, Agenstra, AI agent platform, AI control plane, AI governance, AI observability, managed SaaS, agentic systems</source>
@@ -512,7 +512,7 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-codeium-metaDescription" datatype="html">
         <source>Compare Codeium and Windsurf with Agenstra’s multi-workspace agent control plane, browser IDE, ticket workflows, and self-hosted governance for platform teams.</source>
-        <target> Vergleichen Sie Codeium und Windsurf mit Agenstras mandantenfähiger Agenten-Steuerung und Browser-IDE. </target>
+        <target> Vergleichen Sie Codeium und Windsurf mit Agenstras Multi-Workspace-Steuerung für Agenten, Browser-IDE, Ticket-Workflows und Self-hosted-Governance für Platform-Teams. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-codeium-heroSubtitle" datatype="html">
         <source>Broad IDE coverage and optional self-hosted backends versus a dedicated agent operations console.</source>
@@ -524,15 +524,15 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-codeium-overviewAgenstra" datatype="html">
         <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
-        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Ihrer Infrastruktur zu betreiben und zu steuern. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattformteams Delivery und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
+        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Infrastruktur zu betreiben und zu steuern, die Sie kontrollieren. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattform-Teams Auslieferung und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-cursor-metaTitle" datatype="html">
         <source>Cursor vs Agenstra :: Agenstra</source>
-        <target> Cursor vs Agenstra :: Agenstra </target>
+        <target> Cursor vs. Agenstra. Vergleich von KI-Agentenplattformen </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-cursor-metaDescription" datatype="html">
         <source>Compare Cursor’s AI-native editor with Agenstra’s web console, multi-workspace agent hosts, tickets, governance, and self-hosted delivery options.</source>
-        <target> Vergleichen Sie Cursors KI-native Bearbeitung mit Agenstras Webkonsole und mandantenfähiger Agenten-Steuerung. </target>
+        <target> Vergleichen Sie Cursors KI-nativen Editor mit Agenstras Webkonsole, Multi-Workspace-Agent-Hosts, Tickets, Governance und Self-hosted-Auslieferungsoptionen. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-cursor-heroSubtitle" datatype="html">
         <source>IDE-first velocity versus an operations-focused console for distributed agent hosts.</source>
@@ -544,15 +544,15 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-cursor-overviewAgenstra" datatype="html">
         <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
-        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Ihrer Infrastruktur zu betreiben und zu steuern. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattformteams Delivery und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
+        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Infrastruktur zu betreiben und zu steuern, die Sie kontrollieren. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattform-Teams Auslieferung und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-devin-metaTitle" datatype="html">
         <source>Devin vs Agenstra :: Agenstra</source>
-        <target> Devin vs Agenstra :: Agenstra </target>
+        <target> Devin vs. Agenstra. Vergleich von KI-Agentenplattformen </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-devin-metaDescription" datatype="html">
         <source>Compare Devin’s cloud autonomous engineer with Agenstra’s self-hosted control plane: workspaces, tickets, team knowledge, releases, and governance on your infrastructure.</source>
-        <target> Vergleichen Sie Devins autonomen Cloud-Engineer mit Agenstras selbst gehosteter mandantenfähiger Steuerung, Tickets, Wissen und Deployments. </target>
+        <target> Vergleichen Sie Devins autonomen Cloud-Engineer mit Agenstras Self-hosted-Steuerung: Workspaces, Tickets, Teamwissen, Releases und Governance auf Ihrer Infrastruktur. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-devin-heroSubtitle" datatype="html">
         <source>Cloud sessions from Cognition versus a control plane you run for many Docker-backed coding agents.</source>
@@ -560,11 +560,11 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-devin-overviewCompetitor" datatype="html">
         <source>Devin gives you a cloud-hosted autonomous engineer that works in a browser with Git and connects to the tools your teams already use for issues and delivery. It fits when you want the vendor to run the workspace and you value a managed experience over operating your own agent infrastructure.</source>
-        <target> Devin liefert einen autonomen Engineer in der Cloud mit Git und Anbindung an die Tools Ihrer Teams für Issues und Delivery. Es passt, wenn der Anbieter den Workspace betreiben soll und Sie einen verwalteten Ansatz gegenüber eigener Agenten-Infrastruktur bevorzugen. </target>
+        <target> Devin liefert einen autonomen Engineer in der Cloud mit Git und Anbindung an die Tools Ihrer Teams für Tickets und Auslieferung. Geeignet, wenn der Anbieter den Workspace betreiben soll und Sie einen verwalteten Ansatz gegenüber eigener Agenten-Infrastruktur bevorzugen. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-devin-overviewAgenstra" datatype="html">
         <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
-        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Ihrer Infrastruktur zu betreiben und zu steuern. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattformteams Delivery und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
+        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Infrastruktur zu betreiben und zu steuern, die Sie kontrollieren. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattform-Teams Auslieferung und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-copilot-metaTitle" datatype="html">
         <source>GitHub Copilot vs Agenstra :: Agenstra</source>
@@ -580,11 +580,11 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-copilot-overviewCompetitor" datatype="html">
         <source>GitHub Copilot brings AI assistance into GitHub and popular editors, with enterprise-grade access controls aligned to repos and organizations you already manage there. It fits teams that want GitHub to stay the hub for review, identity, and automation while AI stays close to pull requests and CI.</source>
-        <target> GitHub Copilot bringt KI-Unterstützung in GitHub und gängige Editoren, mit Enterprise-Zugriffskontrollen passend zu Repos und Organisationen, die Sie dort bereits führen. Es passt zu Teams, die GitHub als Drehscheibe für Review, Identität und Automation behalten wollen, während die KI nah an Pull Requests und CI bleibt. </target>
+        <target> GitHub Copilot bringt KI-Unterstützung in GitHub und gängige Editoren, mit Enterprise-Zugriffskontrollen passend zu Repos und Organisationen, die Sie dort bereits führen. Geeignet für Teams, die GitHub als Drehscheibe für Review, Identität und Automation behalten wollen, während die KI nah an Pull Requests und CI bleibt. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-copilot-overviewAgenstra" datatype="html">
         <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
-        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Ihrer Infrastruktur zu betreiben und zu steuern. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattformteams Delivery und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
+        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Infrastruktur zu betreiben und zu steuern, die Sie kontrollieren. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattform-Teams Auslieferung und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-orq-metaTitle" datatype="html">
         <source>Orq.ai vs Agenstra :: Agenstra</source>
@@ -600,11 +600,11 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-orq-overviewCompetitor" datatype="html">
         <source>Orq.ai helps teams prototype, deploy, and monitor generative AI agents and experiments across projects with roles and workspaces built for collaboration. It appeals when you want a hosted lifecycle platform for many AI use cases and compliance-aware deployment options from the vendor.</source>
-        <target> Orq.ai hilft Teams, generative KI-Agenten und Experimente über Projekte hinweg zu prototypisieren, auszurollen und zu überwachen, mit Rollen und Workspaces für Zusammenarbeit. Es spricht Sie an, wenn Sie eine gehostete Lifecycle-Plattform für viele KI-Anwendungsfälle und complianceorientierte Bereitstellung beim Anbieter wollen. </target>
+        <target> Orq.ai hilft Teams, generative KI-Agenten und Experimente über Projekte hinweg zu prototypisieren, auszurollen und zu überwachen, mit Rollen und Workspaces für Zusammenarbeit. Sinnvoll, wenn Sie eine gehostete Lifecycle-Plattform für viele KI-Anwendungsfälle und complianceorientierte Bereitstellung beim Anbieter wollen. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-orq-overviewAgenstra" datatype="html">
         <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
-        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Ihrer Infrastruktur zu betreiben und zu steuern. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattformteams Delivery und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
+        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Infrastruktur zu betreiben und zu steuern, die Sie kontrollieren. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattform-Teams Auslieferung und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-portkey-metaTitle" datatype="html">
         <source>Portkey vs Agenstra :: Agenstra</source>
@@ -620,11 +620,11 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-portkey-overviewCompetitor" datatype="html">
         <source>Portkey gives you a central gateway for model and agent traffic so you can enforce guardrails, trace usage, and switch providers without rewriting every application. Its strength is unified governance of LLM calls rather than a full product surface for coding agents, Git, and delivery boards.</source>
-        <target> Portkey liefert ein zentrales Gateway für Modell- und Agenten-Traffic, damit Sie Guardrails durchsetzen, Nutzung nachvollziehen und Anbieter wechseln können, ohne jede Anwendung neu zu schreiben. Die Stärke ist einheitliche Governance für LLM-Aufrufe, nicht eine vollständige Oberfläche für Coding-Agenten, Git und Delivery-Boards. </target>
+        <target> Portkey liefert ein zentrales Gateway für Modell- und Agenten-Traffic, damit Sie Guardrails durchsetzen, Nutzung nachvollziehen und Anbieter wechseln können, ohne jede Anwendung neu zu schreiben. Die Stärke ist einheitliche Governance für LLM-Aufrufe, nicht eine vollständige Oberfläche für Coding-Agenten, Git und Auslieferungs-Boards. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-portkey-overviewAgenstra" datatype="html">
         <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
-        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Ihrer Infrastruktur zu betreiben und zu steuern. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattformteams Delivery und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
+        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Infrastruktur zu betreiben und zu steuern, die Sie kontrollieren. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattform-Teams Auslieferung und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-heroVs" datatype="html">
         <source>vs.</source>
@@ -632,7 +632,7 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-overviewHeading" datatype="html">
         <source>Two approaches to coding agents at scale</source>
-        <target> Zwei Ansätze für Coding-Agents im großen Maßstab </target>
+        <target> Zwei Ansätze für Coding-Agenten im großen Maßstab </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-overviewThemTitle" datatype="html">
         <source>What they optimize for</source>
@@ -648,7 +648,7 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-matrixIntro" datatype="html">
         <source>The same thirteen capabilities appear on every page. You can compare vendors without chasing different rubrics.</source>
-        <target> Dieselben dreizehn Fähigkeiten erscheinen auf jeder Seite. Sie können Anbieter vergleichen, ohne jeweils andere Raster zu jagen. </target>
+        <target> Dieselben dreizehn Kriterien erscheinen auf jeder Seite. So vergleichen Sie Anbieter ohne jedes Mal andere Maßstäbe. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-matrixLegend" datatype="html">
         <source>Hover an icon for a short rationale. Ratings follow a public research pass (Strong / Partial / Weak / N.A.) and are meant for orientation. They are not a substitute for your own procurement review.</source>
@@ -860,7 +860,7 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-devinT8" datatype="html">
         <source>API and GitHub Actions patterns for CI gating and delivery.</source>
-        <target> API- und GitHub-Actions-Muster für CI-Gates und Delivery. </target>
+        <target> API- und GitHub-Actions-Muster für CI-Gates und Auslieferung. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-devinT9" datatype="html">
         <source>Vendor provisions sandboxes; customers do not drive first-class “bring your own cloud host” automation.</source>
@@ -1024,7 +1024,7 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-codeiumT10" datatype="html">
         <source>Zero-retention and compliance emphasis; fewer policy-as-code gateways than LLM routers.</source>
-        <target> Null-Retention und Compliance im Fokus; weniger Policy-as-Code-Gateways als bei reinen LLM-Routern. </target>
+        <target> Null-Retention und Compliance im Fokus; weniger Richtlinien-as-Code-Gateways als bei reinen LLM-Routern. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-codeiumT11" datatype="html">
         <source>Usage dashboards; lighter agent lifecycle observability.</source>
@@ -1264,11 +1264,11 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-tabnine-overviewCompetitor" datatype="html">
         <source>Tabnine Enterprise keeps AI coding assistance inside your VPC or data center so completions and chat stay on infrastructure you operate. It suits teams whose priority is private assistant coverage in familiar editors rather than a full agent operations layer for remote workspaces.</source>
-        <target> Tabnine Enterprise hält KI-Coding-Unterstützung in Ihrer VPC oder im Rechenzentrum, sodass Vervollständigungen und Chat auf Ihrer Infrastruktur bleiben. Es passt zu Teams, die private Assistenten in gewohnten Editoren priorisieren statt einer vollen Agenten-Operations-Schicht für Remote-Workspaces. </target>
+        <target> Tabnine Enterprise hält KI-Coding-Unterstützung in Ihrer VPC oder im Rechenzentrum, sodass Vervollständigungen und Chat auf Ihrer Infrastruktur bleiben. Geeignet für Teams, die private Assistenten in gewohnten Editoren priorisieren statt einer vollen Agenten-Operations-Schicht für Remote-Workspaces. </target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-tabnine-overviewAgenstra" datatype="html">
         <source>Agenstra gives you one console to run and govern coding agents on infrastructure you control. It pairs agent workspaces with tickets, knowledge, and deployment workflows so platform teams can standardize delivery and oversight where data residency and operations matter.</source>
-        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Ihrer Infrastruktur zu betreiben und zu steuern. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattformteams Delivery und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
+        <target> Agenstra bietet eine Konsole, um Coding-Agenten auf Infrastruktur zu betreiben und zu steuern, die Sie kontrollieren. Agenten-Workspaces werden mit Tickets, Wissen und Deployment-Workflows verbunden, damit Plattform-Teams Auslieferung und Aufsicht dort standardisieren können, wo Datenstandort und Betrieb zählen. </target>
       </trans-unit>
       <trans-unit id="featurePortal-brandAlt" datatype="html">
         <source>Agenstra</source>
@@ -1388,11 +1388,11 @@
       </trans-unit>
       <trans-unit id="featurePortalDesktop-heroTitle" datatype="html">
         <source>A <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Local Control Center<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> For Your AI Agents</source>
-        <target> Ein lokales Kontrollzentrum für Ihre KI-Agenten </target>
+        <target> Ein <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>lokales Kontrollzentrum<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> für Ihre KI-Agenten</target>
       </trans-unit>
       <trans-unit id="featurePortalDesktop-heroDescription" datatype="html">
         <source>Agenstra Desktop brings the power of the Agenstra platform to your workstation. Connect to your agent infrastructure, inspect activity, and work with context from a focused desktop experience that fits into your daily tools.</source>
-        <target> Agenstra Desktop bringt die Leistung der Agenstra-Plattform zu Ihrer Workstation. Verbinden Sie sich mit Ihrer Agenten-Infrastruktur, inspizieren Sie Aktivitäten und arbeiten Sie mit Kontext aus einer fokussierten Desktop-Erfahrung, die sich in Ihre täglichen Tools einfügt. </target>
+        <target> Agenstra Desktop bringt die Agenstra-Plattform auf Ihren Arbeitsplatz. Verbinden Sie sich mit Ihrer Agenten-Infrastruktur, prüfen Sie Aktivitäten und arbeiten Sie mit Kontext in einer fokussierten Desktop-App, die in Ihren Entwickler-Alltag passt. </target>
       </trans-unit>
       <trans-unit id="featurePortalDesktop-downloadCtaHero" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Download Agenstra Desktop</source>
@@ -1416,11 +1416,11 @@
       </trans-unit>
       <trans-unit id="featurePortalDesktop-valueLead" datatype="html">
         <source>Web interfaces are great for administration, but many developers prefer a dedicated app that is always there when they are coding, testing, or debugging.</source>
-        <target> Web-Oberflächen sind großartig für die Verwaltung, aber viele Entwickler bevorzugen eine dedizierte App, die immer da ist, wenn sie coden, testen oder debuggen. </target>
+        <target> Web-Oberflächen eignen sich gut für die Verwaltung, aber viele Entwickler bevorzugen eine eigene App, die beim Coden, Testen oder Debuggen griffbereit ist. </target>
       </trans-unit>
       <trans-unit id="featurePortalDesktop-valueSub" datatype="html">
         <source>Agenstra Desktop is designed for that everyday workflow. It keeps you connected to your agent infrastructure without needing to dig through tabs or dashboards.</source>
-        <target> Agenstra Desktop ist für diesen alltäglichen Workflow konzipiert. Es hält Sie mit Ihrer Agenten-Infrastruktur verbunden, ohne dass Sie durch Tabs oder Dashboards wühlen müssen. </target>
+        <target> Agenstra Desktop ist für genau diesen Alltag gemacht. Sie bleiben mit Ihrer Agenten-Infrastruktur verbunden, ohne durch Tabs oder Dashboards zu suchen. </target>
       </trans-unit>
       <trans-unit id="featurePortalDesktop-webLabel" datatype="html">
         <source>Web Interface</source>
@@ -1444,7 +1444,7 @@
       </trans-unit>
       <trans-unit id="featurePortalDesktop-ideUse" datatype="html">
         <source>Coding</source>
-        <target> Coding </target>
+        <target> Programmieren </target>
       </trans-unit>
       <trans-unit id="featurePortalDesktop-featuresTitle" datatype="html">
         <source>Everything you need during a development day</source>
@@ -1476,7 +1476,7 @@
       </trans-unit>
       <trans-unit id="featurePortalDesktop-feature1Desc" datatype="html">
         <source>View and switch between agent environments linked to your Agenstra account</source>
-        <target> Anzeigen und Wechseln zwischen Agenten-Umgebungen, die mit Ihrem Agenstra-Konto verknüpft sind </target>
+        <target> Agenten-Umgebungen ansehen und zwischen den mit Ihrem Agenstra-Konto verknüpften Umgebungen wechseln </target>
       </trans-unit>
       <trans-unit id="featurePortalDesktop-feature2Title" datatype="html">
         <source>Inspect agent runs</source>
@@ -1484,7 +1484,7 @@
       </trans-unit>
       <trans-unit id="featurePortalDesktop-feature2Desc" datatype="html">
         <source>Inspect recent agent runs, inputs, and outputs while you work on related code</source>
-        <target> Aktuelle Agenten-Läufe, Eingaben und Ausgaben inspizieren, während Sie am zugehörigen Code arbeiten </target>
+        <target> Aktuelle Agenten-Läufe, Eingaben und Ausgaben prüfen, während Sie am zugehörigen Code arbeiten </target>
       </trans-unit>
       <trans-unit id="featurePortalDesktop-feature4Title" datatype="html">
         <source>Access context files</source>
@@ -1620,11 +1620,11 @@
       </trans-unit>
       <trans-unit id="featurePortalDesktop-ctaLead" datatype="html">
         <source>Start by connecting Agenstra Desktop to a non production environment. Let your developers and operators use it to explore existing agents, run tests, and see how your platform behaves.</source>
-        <target> Beginnen Sie damit, Agenstra Desktop mit einer Nicht-Produktionsumgebung zu verbinden. Lassen Sie Ihre Entwickler und Operatoren es nutzen, um vorhandene Agenten zu erkunden, Tests durchzuführen und zu verstehen, wie sich die Kontrollebene verhält. </target>
+        <target> Verbinden Sie Agenstra Desktop zunächst mit einer Nicht-Produktionsumgebung. Lassen Sie Entwickler und Operatoren vorhandene Agenten erkunden, Tests ausführen und nachvollziehen, wie sich die Plattform verhält. </target>
       </trans-unit>
       <trans-unit id="featurePortalDesktop-ctaSub" datatype="html">
         <source>Once the team is comfortable, you can add access to staging and production according to your organization&apos;s access policies.</source>
-        <target> Sobald das Team sich wohlfhlt, können Sie den Zugang zu Staging und Produktion gemäß den Zugriffsrichtlinien Ihrer Organisation hinzufügen. </target>
+        <target> Sobald das Team sich wohlfühlt, können Sie den Zugang zu Staging und Produktion gemäß den Zugriffsrichtlinien Ihrer Organisation hinzufügen. </target>
       </trans-unit>
       <trans-unit id="featurePortalDesktop-downloadCta" datatype="html">
         <source>Download Agenstra Desktop</source>
@@ -1644,47 +1644,47 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>One place<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> to run, govern, and ship with coding agents</source>
-        <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;" />Eine Control Plane<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /> für Coding-Agenten in Ihrer Software-Delivery-Kette</target>
+        <target> Ein Ort, um Coding-Agenten zu betreiben, zu steuern und auszuliefern </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroLead" datatype="html">
         <source>Agenstra brings workspaces, tickets, knowledge, coding, and releases together on infrastructure you own. Your team can trust agents from the first experiment through production.</source>
-        <target> Agenten sind in IDEs, Pipelines und internen Tools eingebunden und längst ein fester Teil der Softwareentwicklung geworden. Agenstra bietet Engineering- und Plattform-Teams einen Ort, um Richtlinien zu definieren, Verhalten zu beobachten und zu steuern, wie Agenten auf Code, Systeme und Umgebungen von der Entwicklung bis zur Produktion zugreifen. </target>
+        <target> Agenstra vereint Workspaces, Tickets, Wissen, Coding und Releases auf Infrastruktur, die Ihnen gehört. Ihr Team kann Agenten vom ersten Experiment bis in die Produktion vertrauen. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroCtaLine" datatype="html">
         <source>Keep agent-assisted work on the same bar as the rest of your practice: approvals, audit trails, and controls that match how you review changes and release software.</source>
-        <target> Halten Sie agentisch unterstützte Arbeit auf dem gleichen Niveau wie den Rest Ihrer Praxis: Guardrails, Observability und Kontrollen, die zu Ihrer Art passen, Änderungen zu prüfen, Zugriffe zu verwalten und Software auszurollen. </target>
+        <target> Halten Sie agentisch unterstützte Arbeit auf dem gleichen Qualitätsniveau wie der Rest Ihrer Praxis: Freigaben, Audit-Trails und Kontrollen, die zu Ihrer Art passen, Änderungen zu prüfen und Software auszuliefern. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge1" datatype="html">
         <source>Multi-workspace control</source>
-        <target> Einheitliches Agentenmanagement </target>
+        <target> Multi-Workspace-Steuerung </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge2" datatype="html">
         <source>Ticket automation</source>
-        <target> Prompt-Governance </target>
+        <target> Ticket-Automatisierung </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge3" datatype="html">
         <source>Policy &amp; audit trails</source>
-        <target> Audit &amp; Observability </target>
+        <target> Richtlinien &amp; Audit-Trails </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge4" datatype="html">
         <source>Code &amp; Git in the browser</source>
-        <target> Web-IDE </target>
+        <target> Code &amp; Git im Browser </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge5" datatype="html">
         <source>Deployments</source>
-        <target> Git-Versionskontrolle </target>
+        <target> Deployments </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge6" datatype="html">
         <source>Team knowledge</source>
-        <target> CI/CD-Deployment </target>
+        <target> Teamwissen </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge7" datatype="html">
         <source>Roles &amp; single sign-on</source>
-        <target> Auth &amp; Zugriffskontrolle </target>
+        <target> Rollen &amp; Single Sign-On </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroFeatureBadge8" datatype="html">
         <source>Your cloud or ours</source>
-        <target> Tickets, Wissen &amp; Workspaces </target>
+        <target> Ihre Cloud oder unsere </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-getStartedHero" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Get started</source>
@@ -1696,31 +1696,31 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-heroSlideSpaces" datatype="html">
         <source>Agenstra workspaces</source>
-        <target> Agenstra workspaces </target>
+        <target> Agenstra-Workspaces </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroSlideTickets" datatype="html">
         <source>Agenstra tickets board</source>
-        <target> Agenstra tickets board </target>
+        <target> Agenstra-Ticketboard </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroSlideIde" datatype="html">
         <source>Agenstra web IDE</source>
-        <target> Agenstra web IDE </target>
+        <target> Agenstra-Web-IDE </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-heroSlideAudit" datatype="html">
         <source>Agenstra audit and usage statistics</source>
-        <target> Agenstra audit and usage statistics </target>
+        <target> Agenstra-Audit und Nutzungsstatistiken </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-partnersTagline" datatype="html">
         <source>Runs with the coding agents your teams already use</source>
-        <target> Runs with the coding agents your teams already use </target>
+        <target> Läuft mit den Coding-Agenten, die Ihre Teams bereits nutzen </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionTitle" datatype="html">
         <source>Turn agent momentum into software you can trust</source>
-        <target> Eine Control Plane für agentische KI-Systeme </target>
+        <target> Aus Agenten-Schwung wird Software, der Sie vertrauen </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionLead" datatype="html">
         <source>Coding agents help teams move faster. Agenstra helps you keep that speed with visibility, guardrails, and a single place to run work from idea to release.</source>
-        <target> Agenstra verwandelt verstreute Agenten in eine verwaltete Plattform. Es verbindet sich mit Ihren bestehenden Agent-Managern und Laufzeitumgebungen und bietet eine zentrale Ebene für Konfiguration, Governance und Interaktion. </target>
+        <target> Coding-Agenten helfen Teams, schneller zu werden. Agenstra hilft Ihnen, dieses Tempo zu halten: mit Transparenz, Leitplanken und einem Ort, an dem Sie Arbeit von der Idee bis zum Release steuern. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionStudioTitle" datatype="html">
         <source>Meet Agenstra Studio</source>
@@ -1728,7 +1728,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionStudioLead" datatype="html">
         <source>Your organization’s home for agents: connect the tools you already use, manage workspaces, and keep delivery and oversight in one experience without pulling developers out of Cursor, OpenCode, or the editors they prefer.</source>
-        <target> Das Zuhause Ihrer Organisation für Agents: Binden Sie die Tools ein, die Sie bereits nutzen, verwalten Sie Workspaces und halten Sie Delivery und Oversight in einer Experience, ohne Entwicklerinnen und Entwickler aus Cursor, OpenCode oder den Editoren zu ziehen, die sie bevorzugen. </target>
+        <target> Das Zuhause Ihrer Organisation für Agenten: Binden Sie die Tools ein, die Sie bereits nutzen, verwalten Sie Workspaces und halten Sie Auslieferung und Aufsicht in einer Oberfläche, ohne Entwickler aus Cursor, OpenCode oder ihren bevorzugten Editoren zu ziehen. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionStudioTagline" datatype="html">
         <source>One platform. Many teams. Clear accountability.</source>
@@ -1748,11 +1748,11 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageTabTickets" datatype="html">
         <source>Delivery rhythm</source>
-        <target> Delivery-Rhythmus </target>
+        <target> Auslieferungsrhythmus </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageTabIde" datatype="html">
         <source>Builder focus</source>
-        <target> Fokus für Builder </target>
+        <target> Fokus für Entwickler </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageTabDeploy" datatype="html">
         <source>Release confidence</source>
@@ -1760,11 +1760,11 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesHeadline" datatype="html">
         <source>One trustworthy view across every squad</source>
-        <target> Eine verlässliche Sicht über jedes Squad </target>
+        <target> Eine verlässliche Sicht über jedes Team </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesLead" datatype="html">
         <source>Platform and engineering leaders see where agents run and who owns what, without micromanaging how each team works day to day.</source>
-        <target> Platform- und Engineering-Leads sehen, wo Agents laufen und wer was besitzt, ohne den Alltag jedes Teams zu mikromanagen. </target>
+        <target> Platform- und Engineering-Leads sehen, wo Agenten laufen und wer was verantwortet, ohne den Alltag jedes Teams zu mikromanagen. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit1Title" datatype="html">
         <source>Leadership clarity</source>
@@ -1772,7 +1772,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit1Desc" datatype="html">
         <source>Executives and platform teams share one map of agent activity instead of reconciling spreadsheets and chat threads.</source>
-        <target> Führung und Platform-Teams teilen eine Karte der Agent-Aktivität statt Tabellen und Chat-Threads abzugleichen. </target>
+        <target> Führung und Platform-Teams teilen eine Übersicht der Agenten-Aktivität statt Tabellen und Chat-Threads abzugleichen. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit2Title" datatype="html">
         <source>Team autonomy</source>
@@ -1780,7 +1780,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit2Desc" datatype="html">
         <source>Squads keep their editors and vendors while still fitting inside org-wide boundaries.</source>
-        <target> Squads behalten ihre Editoren und Anbieter und passen dennoch in unternehmensweite Grenzen. </target>
+        <target> Teams behalten ihre Editoren und Anbieter und passen dennoch in unternehmensweite Grenzen. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit3Title" datatype="html">
         <source>Safer scale</source>
@@ -1788,7 +1788,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageWorkspacesBenefit3Desc" datatype="html">
         <source>New workspaces inherit policy and access patterns so adoption does not create another shadow toolchain.</source>
-        <target> Neue Workspaces erben Policy- und Zugriffsmuster, sodass Adoption keine weitere Schatten-Toolchain schafft. </target>
+        <target> Neue Workspaces übernehmen Richtlinien- und Zugriffsmuster, sodass die Einführung keine weitere Schatten-Toolchain schafft. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeHeadline" datatype="html">
         <source>Context that survives handoffs</source>
@@ -1796,7 +1796,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeLead" datatype="html">
         <source>Operators and agents reason from the same curated knowledge instead of stale wikis, private notes, or whatever was last pasted into chat.</source>
-        <target> Operatoren und Agents arbeiten mit demselben kuratierten Wissen statt mit veralteten Wikis, privaten Notizen oder dem, was zuletzt in den Chat eingefügt wurde. </target>
+        <target> Operatoren und Agenten arbeiten mit demselben kuratierten Wissen statt mit veralteten Wikis, privaten Notizen oder dem, was zuletzt in den Chat eingefügt wurde. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeBenefit1Title" datatype="html">
         <source>Fewer repeated questions</source>
@@ -1812,7 +1812,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeBenefit2Desc" datatype="html">
         <source>New contributors and agents reach useful answers in minutes, not days of scavenger hunts.</source>
-        <target> Neue Mitwirkende und Agents finden in Minuten nützliche Antworten, nicht nach Tagen der Suche. </target>
+        <target> Neue Mitwirkende und Agenten finden in Minuten nützliche Antworten, nicht erst nach tagelanger Suche. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageKnowledgeBenefit3Title" datatype="html">
         <source>Decisions that stick</source>
@@ -1828,7 +1828,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantagePolicyLead" datatype="html">
         <source>Security and compliance partners get evidence for what agents sent, what was blocked, and who approved autonomous work.</source>
-        <target> Security- und Compliance-Partner erhalten Belege dafür, was Agents gesendet haben, was blockiert wurde und wer autonome Arbeit freigegeben hat. </target>
+        <target> Security- und Compliance-Partner erhalten Belege dafür, was Agenten gesendet haben, was blockiert wurde und wer autonome Arbeit freigegeben hat. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantagePolicyBenefit1Title" datatype="html">
         <source>Confidence to expand usage</source>
@@ -1844,7 +1844,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantagePolicyBenefit2Desc" datatype="html">
         <source>The same rules apply in every workspace, so policy does not depend on who configured which tool.</source>
-        <target> Dieselben Regeln gelten in jedem Workspace, sodass Policy nicht davon abhängt, wer welches Tool konfiguriert hat. </target>
+        <target> Dieselben Regeln gelten in jedem Workspace, unabhängig davon, wer welches Tool konfiguriert hat. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantagePolicyBenefit3Title" datatype="html">
         <source>Humans approve the blast radius</source>
@@ -1860,7 +1860,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageTicketsLead" datatype="html">
         <source>Agents accelerate tickets without bypassing the reviews and approvals your organization already expects from human contributors.</source>
-        <target> Agents beschleunigen Tickets, ohne Reviews und Freigaben zu umgehen, die Ihre Organisation von menschlichen Mitwirkenden bereits erwartet. </target>
+        <target> Agenten beschleunigen Tickets, ohne Reviews und Freigaben zu umgehen, die Ihre Organisation auch von menschlichen Mitwirkenden erwartet. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageTicketsBenefit1Title" datatype="html">
         <source>Predictable flow</source>
@@ -1868,7 +1868,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageTicketsBenefit1Desc" datatype="html">
         <source>Work moves through familiar stages instead of ad hoc agent side quests.</source>
-        <target> Arbeit durchläuft vertraute Phasen statt ad-hoc Agent-Seitenspuren. </target>
+        <target> Arbeit durchläuft vertraute Phasen statt spontaner Nebenwege der Agenten. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageTicketsBenefit2Title" datatype="html">
         <source>Visible progress</source>
@@ -1876,7 +1876,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageTicketsBenefit2Desc" datatype="html">
         <source>Teammates see what agents are doing before surprises land in review or production.</source>
-        <target> Teammitglieder sehen, was Agents tun, bevor Überraschungen in Review oder Produktion landen. </target>
+        <target> Teammitglieder sehen, was Agenten tun, bevor Überraschungen im Review oder in der Produktion landen. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageTicketsBenefit3Title" datatype="html">
         <source>Less rework after merge</source>
@@ -1892,7 +1892,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageIdeLead" datatype="html">
         <source>Developers spend less time jumping between chat, review, and source control when the work happens beside the agents doing it.</source>
-        <target> Entwicklerinnen und Entwickler springen weniger zwischen Chat, Review und Source Control hin und her, wenn die Arbeit neben den Agents passiert, die sie ausführen. </target>
+        <target> Entwickler wechseln seltener zwischen Chat, Review und Versionskontrolle, wenn die Arbeit neben den Agenten passiert, die sie ausführen. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageIdeBenefit1Title" datatype="html">
         <source>Shorter feedback loops</source>
@@ -1924,7 +1924,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageDeployLead" datatype="html">
         <source>Releases and environments are reachable where agents and engineers already collaborate, so delivery is not a separate ceremony.</source>
-        <target> Releases und Umgebungen sind dort erreichbar, wo Agents und Engineers bereits zusammenarbeiten, sodass Delivery kein separates Ritual ist. </target>
+        <target> Releases und Umgebungen sind dort erreichbar, wo Agenten und Entwickler bereits zusammenarbeiten. So wird Auslieferung kein separates Ritual. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageDeployBenefit1Title" datatype="html">
         <source>Fewer context breaks</source>
@@ -1932,7 +1932,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageDeployBenefit1Desc" datatype="html">
         <source>Operators do not hand off to another portal just to promote what agents already built.</source>
-        <target> Operatoren müssen nicht zu einem anderen Portal wechseln, nur um das zu promoten, was Agents bereits gebaut haben. </target>
+        <target> Operatoren müssen nicht zu einem anderen Portal wechseln, nur um auszuliefern, was Agenten bereits gebaut haben. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-solutionAdvantageDeployBenefit2Title" datatype="html">
         <source>Operators stay in the loop</source>
@@ -1952,11 +1952,11 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-engineeringTitle" datatype="html">
         <source>Built for how platform and engineering teams ship software</source>
-        <target> Passt zu der Art, wie Ihr Team bereits Software entwickelt </target>
+        <target> Entwickelt für Platform- und Engineering-Teams, die Software ausliefern </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-engineeringLead" datatype="html">
         <source>Agenstra is where your team operates agents. It is not a replacement for your IDE. It sits beside the editors, Git, and pipelines you already use so agent work follows familiar review and release habits.</source>
-        <target> Agentische Systeme haben nur Erfolg, wenn sie sich in bestehende Engineering-Praktiken integrieren. Agenstra wurde mit Fokus auf Plattform und Developer Experience entwickelt. </target>
+        <target> Agenstra ist der Ort, an dem Ihr Team Agenten betreibt. Es ersetzt nicht Ihre IDE. Es sitzt neben den Editoren, Git und Pipelines, die Sie bereits nutzen, damit Agenten-Arbeit vertraute Review- und Release-Gewohnheiten folgt. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-engineeringVisualBadge" datatype="html">
         <source>Web IDE + agent chat</source>
@@ -1972,7 +1972,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-engineeringItem1" datatype="html">
         <source>Use a full web-based code editor with terminal beside chat without context switching</source>
-        <target> Arbeiten Sie in einer webbasierten IDE, die sich für Entwickler vertraut anfühlt </target>
+        <target> Nutzen Sie einen vollständigen webbasierten Code-Editor mit Terminal neben dem Chat, ohne Kontextwechsel </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-engineeringTile2Title" datatype="html">
         <source>Context in Git</source>
@@ -1980,7 +1980,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-engineeringItem2" datatype="html">
         <source>Keep agent configuration and context in version control where reviews and history already live</source>
-        <target> Behalten Sie alle Konfigurationen in der Versionskontrolle, wo Reviews und History bereits existieren </target>
+        <target> Halten Sie Agenten-Konfiguration und Kontext in der Versionskontrolle, wo Reviews und Historie bereits liegen </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-engineeringTile3Title" datatype="html">
         <source>Lanes you recognize</source>
@@ -1988,7 +1988,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-engineeringItem3" datatype="html">
         <source>Map workspaces and environments to dev, staging, and production delivery lanes</source>
-        <target> Verwenden Sie Konfigurationen, Arbeitsbereiche und Pipelines in Ihrem Entwicklungs-Workflow </target>
+        <target> Ordnen Sie Workspaces und Umgebungen Entwicklungs-, Staging- und Produktions-Lanes zu </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-engineeringTile4Title" datatype="html">
         <source>Ops without a repo PR</source>
@@ -1996,7 +1996,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-engineeringItem4" datatype="html">
         <source>Let operators adjust knowledge, tickets, and policies without opening the repository</source>
-        <target> Bieten Sie sichere Oberflächen für Produkt- und Domänenexperten, um Verhalten anzupassen, ohne Code zu berühren </target>
+        <target> Lassen Sie Operatoren Wissen, Tickets und Richtlinien anpassen, ohne das Repository zu öffnen </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-engineeringTile5Title" datatype="html">
         <source>Tickets first</source>
@@ -2004,11 +2004,11 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-engineeringItem5" datatype="html">
         <source>Start from tickets so automation, branches, and reviews stay tied to real delivery work</source>
-        <target> Drive agent work from tickets with automation runs tied to branches and verifiers </target>
+        <target> Starten Sie bei Tickets, damit Automatisierung, Branches und Reviews an echter Auslieferungsarbeit hängen bleiben. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-capabilitiesTitle" datatype="html">
         <source>Five ways Agenstra earns a place in your delivery stack</source>
-        <target> Alles, was Sie brauchen, um KI-Agenten wie Produktionssoftware zu betreiben </target>
+        <target> Fünf Gründe, warum Agenstra in Ihren Auslieferungs-Stack gehört </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-capabilitiesLead" datatype="html">
         <source>Pick a theme to see what Agenstra does: workspaces, policy, tickets, knowledge, IDE, integrations, and releases. This is the feature-level detail engineering and platform teams evaluate.</source>
@@ -2036,19 +2036,19 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability1Title" datatype="html">
         <source>One home for every workspace</source>
-        <target> Einheitliches Agent-Management </target>
+        <target> Ein Zuhause für jeden Workspace </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarRunLead" datatype="html">
         <source>Stop chasing agents across clouds and vendors. Give each team a governed space while leadership keeps a single view of what is running where.</source>
-        <target> Beenden Sie die Jagd nach Agents über Clouds und Anbieter hinweg. Geben Sie jedem Team einen geregelten Raum, während die Führungsebene einen einzigen Überblick behält, was wo läuft. </target>
+        <target> Schluss mit der Suche nach Agenten über Clouds und Anbieter hinweg. Geben Sie jedem Team einen geregelten Raum, während die Führungsebene behält, wo was läuft. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarRunPoint1Title" datatype="html">
         <source>Every squad, one map</source>
-        <target> Jedes Squad, eine Karte </target>
+        <target> Jedes Team, eine Karte </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-capability1Item1" datatype="html">
         <source>Register agents from different tools and see them together in Agenstra Studio</source>
-        <target> Verbinden Sie mehrere Agent-Manager und Laufzeitumgebungen verschiedener Anbieter oder Frameworks </target>
+        <target> Registrieren Sie Agenten aus verschiedenen Tools und sehen Sie sie gemeinsam in Agenstra Studio </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarRunPoint2Title" datatype="html">
         <source>The right access</source>
@@ -2056,7 +2056,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability1Item2" datatype="html">
         <source>Invite teammates with roles per workspace and sign in with your company identity provider</source>
-        <target> Organisieren Sie Agenten nach Team, Umgebung oder Anwendungsfall mit Tags </target>
+        <target> Laden Sie Teammitglieder mit Rollen pro Workspace ein und melden Sie sich mit Ihrem Unternehmens-Identity-Provider an </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarRunPoint3Title" datatype="html">
         <source>Clear boundaries</source>
@@ -2064,15 +2064,15 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability1Item3" datatype="html">
         <source>Keep dev, staging, and production separate so experiments never blur into live systems</source>
-        <target> Wenden Sie globale Richtlinien an, die regeln, wie Agenten auf Tools, Daten und externe Systeme zugreifen </target>
+        <target> Trennen Sie Entwicklung, Staging und Produktion, damit Experimente nicht in Live-Systeme übergehen </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-capability2Title" datatype="html">
         <source>Trust you can show auditors</source>
-        <target> Prompt- und Context-Governance </target>
+        <target> Vertrauen, das Sie Auditoren zeigen können </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarGovernLead" datatype="html">
         <source>Set guardrails once and apply them everywhere. When something sensitive slips through, you have a record, not a debate in chat.</source>
-        <target> Legen Sie Leitplanken einmal fest und wenden Sie sie überall an. Wenn etwas Sensibles durchrutscht, haben Sie einen Nachweis, keinen Streit im Chat. </target>
+        <target> Legen Sie Leitplanken einmal fest und wenden Sie sie überall an. Wenn etwas Sensibles durchrutscht, haben Sie einen Nachweis statt eines Streits im Chat. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarGovernPoint1Title" datatype="html">
         <source>Company rules</source>
@@ -2080,7 +2080,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability2Item1" datatype="html">
         <source>Block or rewrite risky content before it reaches agents, consistently across workspaces</source>
-        <target> Speichern Sie Prompts, Konfiguration und Kontext zentral statt in Ad-hoc-Dateien </target>
+        <target> Blockieren oder umschreiben Sie riskante Inhalte, bevor sie Agenten erreichen, durchgängig über alle Workspaces </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarGovernPoint2Title" datatype="html">
         <source>Full picture</source>
@@ -2088,7 +2088,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability2Item2" datatype="html">
         <source>Review what was blocked, flagged, or sent. That is ready for compliance reviews and leadership dashboards</source>
-        <target> Definieren Sie wiederverwendbare Regelsets, Filter und Transformer, die Anfragen formen, bevor sie Agenten erreichen </target>
+        <target> Prüfen Sie, was blockiert, markiert oder gesendet wurde. Bereit für Compliance-Reviews und Führungs-Dashboards. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarGovernPoint3Title" datatype="html">
         <source>Humans stay in charge</source>
@@ -2096,15 +2096,15 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability2Item3" datatype="html">
         <source>Require sign-off before agents run on their own, with limits on scope and runtime</source>
-        <target> Führen Sie Prompts durch automatische Prüfungen, um riskante Inhalte und fehlenden Kontext zu erkennen </target>
+        <target> Verlangen Sie Freigaben, bevor Agenten selbstständig laufen, mit Grenzen für Umfang und Laufzeit </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-capability3Title" datatype="html">
         <source>From ticket to release, in one flow</source>
-        <target> Observability und Auditierbarkeit </target>
+        <target> Vom Ticket bis zum Release in einem Ablauf </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarShipLead" datatype="html">
         <source>Agents stop being a side channel. Plan work, run automation, commit code, and ship without switching between five different products.</source>
-        <target> Agents werden kein Nebenkanal mehr. Planen Sie Arbeit, führen Sie Automatisierung aus, committen Sie Code und liefern Sie aus, ohne zwischen fünf verschiedenen Produkten zu wechseln. </target>
+        <target> Agenten werden kein Nebenkanal mehr. Planen Sie Arbeit, führen Sie Automatisierung aus, committen Sie Code und liefern Sie aus, ohne zwischen fünf verschiedenen Produkten zu wechseln. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarShipPoint1Title" datatype="html">
         <source>Visible work</source>
@@ -2112,7 +2112,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability3Item1" datatype="html">
         <source>Track tickets with comments and live updates so everyone sees what agents are working on</source>
-        <target> Verfolgen Sie jede Agent-Anfrage vom Input über Tools bis zum finalen Output </target>
+        <target> Verfolgen Sie Tickets mit Kommentaren und Live-Updates, damit alle sehen, woran Agenten arbeiten </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarShipPoint2Title" datatype="html">
         <source>Smart automation</source>
@@ -2120,7 +2120,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability3Item2" datatype="html">
         <source>Let agents draft solutions on tickets, with checks before changes merge</source>
-        <target> Inspizieren Sie Zwischenschritte und Tool-Aufrufe für Debugging und Qualitätsprüfung </target>
+        <target> Lassen Sie Agenten Lösungen auf Tickets ausarbeiten, mit Prüfungen, bevor Änderungen gemergt werden </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarShipPoint3Title" datatype="html">
         <source>Ship with confidence</source>
@@ -2128,15 +2128,15 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability3Item3" datatype="html">
         <source>Trigger releases, follow run logs, and use Git from the same place you chat with agents</source>
-        <target> Generieren Sie Audit-Logs, die zeigen, welche Entscheidungen ein Agent getroffen hat und warum </target>
+        <target> Lösen Sie Releases aus, folgen Sie Run-Logs und nutzen Sie Git dort, wo Sie mit Agenten chatten </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-capability5Title" datatype="html">
         <source>Context everyone actually uses</source>
-        <target> Planung und Wissen </target>
+        <target> Kontext, den alle wirklich nutzen </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarKnowLead" datatype="html">
         <source>Replace scattered docs and tribal knowledge with pages your agents and teammates can search. They are linked to the work in flight.</source>
-        <target> Ersetzen Sie verstreute Docs und informelles Wissen durch Seiten, die Ihre Agents und Kolleginnen und Kollegen durchsuchen können. Sie sind mit der laufenden Arbeit verknüpft. </target>
+        <target> Ersetzen Sie verstreute Dokumente und informelles Wissen durch Seiten, die Ihre Agenten und Kolleginnen und Kollegen durchsuchen können. Sie sind mit der laufenden Arbeit verknüpft. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarKnowPoint1Title" datatype="html">
         <source>Living library</source>
@@ -2144,7 +2144,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability5Item1" datatype="html">
         <source>Organize guides and decisions in searchable pages per workspace</source>
-        <target> Verfolgen Sie Arbeit pro Workspace mit Tickets, Prioritäten und Status, damit Agenten-Initiativen neben der Ausführung sichtbar bleiben </target>
+        <target> Organisieren Sie Leitfäden und Entscheidungen in durchsuchbaren Seiten pro Workspace </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarKnowPoint2Title" datatype="html">
         <source>Connected work</source>
@@ -2152,7 +2152,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability5Item2" datatype="html">
         <source>Tie knowledge to tickets so context travels with every handoff</source>
-        <target> Bauen Sie strukturiertes Wissen mit Ordnern und Markdown Seiten auf und finden Sie Wichtiges schnell mit der Workspace Suche </target>
+        <target> Verknüpfen Sie Wissen mit Tickets, damit Kontext bei jeder Übergabe mitgeht </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarKnowPoint3Title" datatype="html">
         <source>One source for editors</source>
@@ -2160,7 +2160,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability5Item3Prefix" datatype="html">
         <source>Standardize how assistants read your repo with</source>
-        <target> Pair with </target>
+        <target> Standardisieren Sie, wie Assistenten Ihr Repo lesen, mit </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-capability5Item3Link" datatype="html">
         <source>AgentCTX</source>
@@ -2168,11 +2168,11 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability4Title" datatype="html">
         <source>Plays nice with what you already bought</source>
-        <target> Sichere Konnektivität </target>
+        <target> Passt zu dem, was Sie bereits nutzen </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarConnectLead" datatype="html">
         <source>Agenstra sits alongside your editors, issue trackers, and cloud, not instead of them. Keep vendor choice and data where you want it.</source>
-        <target> Agenstra arbeitet neben Ihren Editoren, Issue-Trackern und der Cloud, nicht an ihrer Stelle. Behalten Sie Anbieterwahl und Daten dort, wo Sie sie haben möchten. </target>
+        <target> Agenstra arbeitet neben Ihren Editoren, Issue-Trackern und der Cloud, nicht an deren Stelle. Anbieterwahl und Daten bleiben dort, wo Sie sie haben möchten. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarConnectPoint1Title" datatype="html">
         <source>Jira &amp; Confluence</source>
@@ -2180,15 +2180,15 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability4Item1" datatype="html">
         <source>Pull issue and wiki context into workspaces so agents start informed</source>
-        <target> Halten Sie Secrets und Credentials aus Prompts heraus, indem Sie verwaltete Integrationen verwenden </target>
+        <target> Holen Sie Issue- und Wiki-Kontext in Workspaces, damit Agenten informiert starten </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarConnectPoint2Title" datatype="html">
         <source>Your agents</source>
-        <target> Ihre Agents </target>
+        <target> Ihre Agenten </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-capability4Item2" datatype="html">
         <source>Use Cursor, OpenCode, OpenClaw, and more on infrastructure you choose</source>
-        <target> Begrenzen Sie, auf welche Tools und Daten jeder Agent basierend auf Rolle und Umgebung zugreifen kann </target>
+        <target> Nutzen Sie Cursor, OpenCode, OpenClaw und mehr auf Infrastruktur Ihrer Wahl </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-pillarConnectPoint3Title" datatype="html">
         <source>Your deployment</source>
@@ -2196,11 +2196,11 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-capability4Item3" datatype="html">
         <source>Run on your own servers, our managed cloud, or Desktop for day-to-day operators</source>
-        <target> Unterstützen Sie hybride und verteilte Setups, bei denen Agenten nah an den Systemen laufen, die sie automatisieren </target>
+        <target> Betreiben Sie Agenstra auf eigenen Servern, in unserer verwalteten Cloud oder mit Desktop für den täglichen Betrieb </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-ecosystemTitle" datatype="html">
         <source>One platform, flexible surfaces</source>
-        <target> One platform, flexible surfaces </target>
+        <target> Eine Plattform, flexible Oberflächen </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-ecosystemLead" datatype="html">
         <source>Agenstra Studio is the product your teams sign into. Run it on your infrastructure or choose Agenstra Cloud when you want us to operate the platform.</source>
@@ -2236,11 +2236,11 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-ecosystemAgentCtxDesc" datatype="html">
         <source>Maintain project context once for the whole team. Keep every coding assistant aligned without copying rules between editors.</source>
-        <target> Pflegen Sie Projektkontext einmal für das ganze Team. Halten Sie jeden Coding-Assistenten ausgerichtet, ohne Regeln zwischen Editoren zu kopieren. </target>
+        <target> Pflegen Sie Projektkontext einmal für das ganze Team. Halten Sie jeden Coding-Assistenten abgestimmt, ohne Regeln zwischen Editoren zu kopieren. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-ecosystemAgentCtxCta" datatype="html">
         <source>Explore AgentCTX</source>
-        <target> Explore AgentCTX </target>
+        <target> AgentCTX entdecken </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-ecosystemDesktopTitle" datatype="html">
         <source>Agenstra Desktop</source>
@@ -2252,7 +2252,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-ecosystemDesktopCta" datatype="html">
         <source>Explore Desktop</source>
-        <target> Explore Desktop </target>
+        <target> Desktop entdecken </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-ecosystemCloudTitle" datatype="html">
         <source>Agenstra Cloud</source>
@@ -2260,7 +2260,7 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-ecosystemCloudDesc" datatype="html">
         <source>We run the platform for you. Your agents stay in your tools and clouds while upgrades, scaling, and audit trails are handled by us.</source>
-        <target> We run the platform for you. Your agents stay in your tools and clouds while upgrades, scaling, and audit trails are handled by us. </target>
+        <target> Wir betreiben die Plattform für Sie. Ihre Agenten bleiben in Ihren Tools und Clouds, während Updates, Skalierung und Audit-Trails bei uns liegen. </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-cloudStartingAt" datatype="html">
         <source>Starting at</source>
@@ -2280,15 +2280,15 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-ctaTitle" datatype="html">
         <source>Operate coding agents like production infrastructure</source>
-        <target> Bauen Sie agentische Systeme, denen Sie vertrauen können </target>
+        <target> Betreiben Sie Coding-Agenten wie Produktionsinfrastruktur </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-ctaLead" datatype="html">
         <source>Move from isolated experiments to a governed platform: one console for workspaces, automation, and compliance-ready observability.</source>
-        <target> Wenn Ihr Team von KI-Experimenten zu echten Produktions-Workflows übergeht, benötigen Sie eine Plattform, die Agenten als Teil Ihrer Software-Infrastruktur behandelt. </target>
+        <target> Gehen Sie von isolierten Experimenten zu einer gesteuerten Plattform: eine Konsole für Workspaces, Automatisierung und prüfbare Observability. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-ctaSub" datatype="html">
         <source>Run on your own infrastructure or let us host Agenstra Cloud for you.</source>
-        <target> Agenstra bietet Ihnen zentrale Kontrolle, Governance und Observability für verteilte KI-Agenten. </target>
+        <target> Betreiben Sie Agenstra auf eigener Infrastruktur oder lassen Sie uns Agenstra Cloud für Sie hosten. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-getStarted" datatype="html">
         <source>Get started</source>
@@ -2300,15 +2300,15 @@
       </trans-unit>
       <trans-unit id="featurePortalHome-metaTitle" datatype="html">
         <source>One place to run, govern, and ship with agents :: Agenstra</source>
-        <target> Eine Plattform zum Steuern und Ausliefern mit Agenten :: Agenstra </target>
+        <target> Ein Ort, um Agenten zu betreiben, zu steuern und auszuliefern :: Agenstra </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-metaDescription" datatype="html">
         <source>Run and govern coding agents at enterprise scale: workspaces, ticket automation, in-browser coding, releases, policy, and audit trails. Self-host Agenstra or run on Agenstra Cloud.</source>
-        <target> Coding-Agenten im Enterprise-Betrieb steuern: Workspaces, Ticket-Automatisierung, In-Browser-Coding, Releases, Policy und Audit Trails. Agenstra selbst hosten oder in der Cloud betreiben. </target>
+        <target> Coding-Agenten im Enterprise-Betrieb steuern: Workspaces, Ticket-Automatisierung, Coding im Browser, Releases, Richtlinien und Audit-Trails. Agenstra selbst hosten oder in der Cloud betreiben. </target>
       </trans-unit>
       <trans-unit id="featurePortalHome-metaKeywords" datatype="html">
         <source>Agenstra, enterprise coding agents, AI agent governance, ticket automation, agent audit, self-hosted AI platform, software delivery, team knowledge, Cursor OpenCode integration</source>
-        <target> Agenstra, Coding-Agent Control Plane, Enterprise-KI-Agenten-Governance, Ticket-Automatisierung, Nachrichtenfilter-Regeln, Agenten-Audit, selbst gehostete KI-Agenten, Software Delivery, Multi-Workspace-Agenten-Management </target>
+        <target> Agenstra, Coding-Agent Control Plane, Enterprise-KI-Agenten-Governance, Ticket-Automatisierung, Nachrichtenfilter-Regeln, Agenten-Audit, selbst gehostete KI-Agenten, Software-Auslieferung, Multi-Workspace-Agenten-Management </target>
       </trans-unit>
       <trans-unit id="featurePortalDisclosure-title" datatype="html">
         <source>Legal Disclosure</source>
@@ -2974,7 +2974,7 @@
       </trans-unit>
       <trans-unit id="featurePortalPricing-heroDescription" datatype="html">
         <source>Run Agenstra on your own infrastructure or let us host it with predictable pricing as you grow from experiments to enterprise governance.</source>
-        <target> Skalieren Sie von Teams bis zu Enterprise mit vorhersehbarer Preisgestaltung. </target>
+        <target> Betreiben Sie Agenstra auf eigener Infrastruktur oder lassen Sie uns hosten. Planbare Preise vom Experiment bis zur Enterprise-Governance. </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-pathsTitle" datatype="html">
         <source>Two ways to run Agenstra</source>
@@ -2982,11 +2982,11 @@
       </trans-unit>
       <trans-unit id="featurePortalPricing-pathsLead" datatype="html">
         <source>Most teams start self-hosted; move to managed cloud when you want us to operate the platform.</source>
-        <target> Die meisten Teams starten self-hosted und wechseln zur verwalteten Cloud, wenn wir die Plattform für Sie betreiben sollen. </target>
+        <target> Die meisten Teams starten selbst gehostet und wechseln zur verwalteten Cloud, wenn wir die Plattform für Sie betreiben sollen. </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-pathSelfHostedTitle" datatype="html">
         <source>Self-hosted</source>
-        <target> Self-hosted </target>
+        <target> Selbst gehostet </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-pathSelfHostedDesc" datatype="html">
         <source>Open source through enterprise licenses. You control data, networking, and upgrades.</source>
@@ -3016,7 +3016,7 @@
       </trans-unit>
       <trans-unit id="featurePortalPricing-tiersLead" datatype="html">
         <source>Compare self-hosted plans from open source through enterprise. Swipe or use the arrows to review Startup, Business, and Enterprise.</source>
-        <target> Vergleichen Sie Self-hosted-Pläne von Open Source bis Enterprise. Wischen Sie oder nutzen Sie die Pfeile, um Startup, Business und Enterprise zu prüfen. </target>
+        <target> Vergleichen Sie selbst gehostete Pläne von Open Source bis Enterprise. Wischen Sie oder nutzen Sie die Pfeile, um Startup, Business und Enterprise zu prüfen. </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-scrollPrev" datatype="html">
         <source>Previous plans</source>
@@ -3032,7 +3032,7 @@
       </trans-unit>
       <trans-unit id="featurePortalPricing-selfHostedBadge" datatype="html">
         <source>Self-Hosted</source>
-        <target> Self-Hosted </target>
+        <target> Selbst gehostet </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-openSourcePrice" datatype="html">
         <source>Free</source>
@@ -3044,7 +3044,7 @@
       </trans-unit>
       <trans-unit id="featurePortalPricing-openSourceFeature1" datatype="html">
         <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Agenstra Studio<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> includes workspaces, tickets, and agent oversight</source>
-        <target> Agent Manager - Vollständiges Agent-Lifecycle-Management </target>
+        <target> Agenstra Studio mit Workspaces, Tickets und Agenten-Übersicht </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-openSourceFeature2" datatype="html">
         <source>Single-machine agent runtime</source>
@@ -3084,7 +3084,7 @@
       </trans-unit>
       <trans-unit id="featurePortalPricing-startupFeature2" datatype="html">
         <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Multi-workspace operations<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> provide centralized management and server provisioning</source>
-        <target> Agent Controller - Zentralisierte Verwaltung &amp; Server-Bereitstellung </target>
+        <target> Multi-Workspace-Betrieb mit zentraler Verwaltung und Server-Bereitstellung </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-startupFeature3" datatype="html">
         <source>Multi-machine agent runtime orchestration</source>
@@ -3096,7 +3096,7 @@
       </trans-unit>
       <trans-unit id="featurePortalPricing-startupNote" datatype="html">
         <source>For businesses with Total Finances &lt; €2,000,000/year</source>
-        <target> Für Unternehmen mit Gesamtfinanzierung &lt; 2.000.000 €/Jahr </target>
+        <target> Für Unternehmen mit Jahresumsatz &lt; 2.000.000 € </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-mostPopularBadge" datatype="html">
         <source>Most Popular</source>
@@ -3128,7 +3128,7 @@
       </trans-unit>
       <trans-unit id="featurePortalPricing-businessNote" datatype="html">
         <source>For businesses with Total Finances ≥ €2,000,000/year</source>
-        <target> Für Unternehmen mit Gesamtfinanzierung ≥ 2.000.000 €/Jahr </target>
+        <target> Für Unternehmen mit Jahresumsatz ≥ 2.000.000 € </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-bookDemo" datatype="html">
         <source>Book a Demo</source>
@@ -3188,15 +3188,15 @@
       </trans-unit>
       <trans-unit id="featurePortalPricing-cloudFeature1" datatype="html">
         <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Fully managed.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> We handle infrastructure, updates, and maintenance</source>
-        <target> Vollständig verwaltet - Wir kümmern uns um die gesamte Infrastruktur, Updates und Wartung </target>
+        <target> Vollständig verwaltet. Wir kümmern uns um Infrastruktur, Updates und Wartung. </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-cloudFeature2" datatype="html">
         <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Full platform.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Studio, web IDE, automation, and governance</source>
-        <target> Alle Features enthalten - Vollständige Plattform mit Web-IDE, Agent-Management und mehr </target>
+        <target> Volle Plattform. Studio, Web-IDE, Automatisierung und Governance. </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-cloudFeature3" datatype="html">
         <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Automatic scaling.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Capacity grows with your teams</source>
-        <target> Automatische Skalierung - Infrastruktur skaliert mit Ihren Anforderungen </target>
+        <target> Automatische Skalierung. Kapazität wächst mit Ihren Teams. </target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-cloudFeature4" datatype="html">
         <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>99.9% uptime SLA<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> for enterprise-grade reliability</source>

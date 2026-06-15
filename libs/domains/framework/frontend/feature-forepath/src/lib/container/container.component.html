@@ -1,0 +1,345 @@
+<header class="header sticky-top bg-body-tertiary grid-section grid-section--navigation" [class.shadow]="isScrolled()">
+  <div class="header-topbar d-none d-md-block border-bottom">
+    <div class="container grid-section__container">
+      <div class="d-flex align-items-center justify-content-between gap-3 header-topbar__inner">
+        <div class="d-flex align-items-center flex-wrap gap-3 gap-lg-4">
+          <a
+            [href]="'mailto:' + contact.email"
+            class="header-topbar__link text-decoration-none"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <i class="bi bi-envelope" aria-hidden="true"></i>
+            <span>{{ contact.email }}</span>
+          </a>
+          <a [href]="contact.phoneHref" class="header-topbar__link text-decoration-none">
+            <i class="bi bi-telephone" aria-hidden="true"></i>
+            <span>{{ contact.phoneDisplay }}</span>
+          </a>
+        </div>
+        <div
+          class="d-flex align-items-center gap-2 header-topbar__socials"
+          i18n-aria-label="@@featureForepath-socialLinksAriaLabel"
+          aria-label="ForePath on social media"
+        >
+          @for (socialLink of socialLinks; track socialLink.id) {
+            <a
+              [href]="socialLink.href"
+              class="header-topbar__social-link text-decoration-none"
+              target="_blank"
+              rel="noopener noreferrer"
+              [attr.aria-label]="socialLink.label"
+            >
+              <i class="bi" [class]="socialLink.iconClass" aria-hidden="true"></i>
+            </a>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+  <nav class="navbar navbar-expand-md navbar-light p-0">
+    <div
+      class="container grid-section__container grid-section__container--shadow d-flex align-items-center justify-content-between gap-2 navbar-content"
+    >
+      <div class="d-flex align-items-center">
+        <a routerLink="/" class="brand-icon-container fs-3 bg-primary p-3">
+          <img
+            src="assets/images/icon_light.svg"
+            i18n-alt="@@featurePortal-brandAlt"
+            alt="Agenstra"
+            class="brand-icon"
+          />
+        </a>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-grow-1 justify-content-end">
+        <button
+          class="navbar-toggler d-md-none d-block"
+          type="button"
+          (click)="toggleMobileMenu()"
+          [attr.aria-expanded]="mobileMenuOpen()"
+          aria-controls="navbarNav"
+          i18n-aria-label="@@featureForepath-toggleNavAriaLabel"
+          aria-label="Toggle navigation"
+        >
+          <i class="bi bi-list fs-4"></i>
+        </button>
+        <div class="collapse navbar-collapse mobile-navbar" [class.mobile-open]="mobileMenuOpen()" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-center">
+            <li class="nav-item dropdown portal-nav-dropdown">
+              <a
+                class="nav-link dropdown-toggle portal-nav-dropdown-toggle"
+                [class.active]="servicesDropdownActive()"
+                href="#"
+                id="servicesNavDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span i18n="@@featureForepath-navServices">Services</span>
+                <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
+              </a>
+              <ul
+                class="dropdown-menu dropdown-menu-end portal-nav-dropdown-menu portal-nav-dropdown-menu--wide"
+                aria-labelledby="servicesNavDropdown"
+              >
+                <li>
+                  <a
+                    routerLink="/consulting"
+                    class="dropdown-item portal-nav-dropdown-item"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    (click)="closeMobileMenu()"
+                    i18n="@@featureForepath-navConsulting"
+                    >Consulting</a
+                  >
+                </li>
+                <li>
+                  <a
+                    routerLink="/it-systems"
+                    class="dropdown-item portal-nav-dropdown-item"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    (click)="closeMobileMenu()"
+                    i18n="@@featureForepath-navItSystems"
+                    >IT Systems</a
+                  >
+                </li>
+                <li>
+                  <a
+                    routerLink="/software-development"
+                    class="dropdown-item portal-nav-dropdown-item"
+                    routerLinkActive="active"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    (click)="closeMobileMenu()"
+                    i18n="@@featureForepath-navSoftwareDevelopment"
+                    >Software Development</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown portal-nav-dropdown">
+              <a
+                class="nav-link dropdown-toggle portal-nav-dropdown-toggle"
+                href="#"
+                id="productsNavDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span i18n="@@featureForepath-navProducts">Products</span>
+                <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
+              </a>
+              <ul
+                class="dropdown-menu dropdown-menu-end portal-nav-dropdown-menu"
+                aria-labelledby="productsNavDropdown"
+              >
+                <li>
+                  <a
+                    href="https://agenstra.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="dropdown-item portal-nav-dropdown-item"
+                    (click)="closeMobileMenu()"
+                    i18n="@@featureForepath-navAgenstra"
+                    >Agenstra</a
+                  >
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <a
+                routerLink="/one"
+                class="nav-link"
+                routerLinkActive="active"
+                (click)="closeMobileMenu()"
+                i18n="@@featureForepath-navOne"
+                >One</a
+              >
+            </li>
+            <li class="nav-item ms-md-3">
+              <a href="mailto:hi@forepath.io" class="btn btn-primary py-2 px-3 px-md-4" target="_blank" rel="noopener">
+                <span i18n="@@featureForepath-contactUsButton">Contact us</span>
+              </a>
+            </li>
+          </ul>
+          @if (mobileMenuOpen()) {
+            <div class="mobile-navbar-overlay" (click)="closeMobileMenu()"></div>
+          }
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<router-outlet></router-outlet>
+<footer class="footer bg-body-tertiary position-relative overflow-hidden grid-section pt-10">
+  <div class="container grid-section__container grid-section__container--footer-top">
+    <div class="row">
+      <div class="col-md-4 mb-3 mb-md-0">
+        <img src="assets/images/favicon.svg" i18n-alt="@@featureForepath-brandAlt" alt="ForePath" class="brand-icon" />
+        <h5 class="fw-bold my-3" i18n="@@featureForepath-footerBrand">ForePath</h5>
+        <p class="fs-6 mb-4 text-muted" i18n="@@featureForepath-footerTagline">
+          Pragmatic consulting and engineering for teams that need reliable infrastructure, modern software delivery,
+          and products they can operate with confidence.
+        </p>
+        <ul class="list-unstyled mb-4 forepath-contact-list">
+          <li class="mb-2">
+            <a
+              [href]="'mailto:' + contact.email"
+              class="text-decoration-none footer-link small d-inline-flex align-items-center gap-2"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <i class="bi bi-envelope" aria-hidden="true"></i>
+              <span>{{ contact.email }}</span>
+            </a>
+          </li>
+          <li>
+            <a
+              [href]="contact.phoneHref"
+              class="text-decoration-none footer-link small d-inline-flex align-items-center gap-2"
+            >
+              <i class="bi bi-telephone" aria-hidden="true"></i>
+              <span>{{ contact.phoneDisplay }}</span>
+            </a>
+          </li>
+        </ul>
+        <div
+          class="d-flex align-items-center gap-3 mb-4 forepath-social-links"
+          i18n-aria-label="@@featureForepath-socialLinksAriaLabel"
+          aria-label="ForePath on social media"
+        >
+          @for (socialLink of socialLinks; track socialLink.id) {
+            <a
+              [href]="socialLink.href"
+              class="forepath-social-link text-decoration-none"
+              target="_blank"
+              rel="noopener noreferrer"
+              [attr.aria-label]="socialLink.label"
+            >
+              <i class="bi" [class]="socialLink.iconClass" aria-hidden="true"></i>
+            </a>
+          }
+        </div>
+        <div class="dropdown mt-4">
+          <button
+            class="btn btn-outline-secondary btn-sm dropdown-toggle"
+            type="button"
+            id="footerLanguageDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            i18n-aria-label="@@featureForepath-languageSwitcherAriaLabel"
+            aria-label="Select language"
+          >
+            <i class="bi bi-globe me-1"></i>
+            <span i18n="@@featureForepath-language">Language</span>
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="footerLanguageDropdown">
+            @for (locale of localeService.getAvailableLocales(); track locale.code) {
+              <li>
+                <a
+                  class="dropdown-item"
+                  [class.active]="localeService.getCurrentLocale() === locale.code"
+                  [href]="localeService.getLanguageSwitchUrl(locale.code)"
+                  >{{ locale.label }}</a
+                >
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-3 offset-md-2">
+        <h6 class="fw-bold mb-3" i18n="@@featureForepath-footerServices">Services</h6>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a
+              routerLink="/consulting"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureForepath-navConsulting"
+              >Consulting</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/it-systems"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureForepath-navItSystems"
+              >IT Systems</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/software-development"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureForepath-navSoftwareDevelopment"
+              >Software Development</a
+            >
+          </li>
+        </ul>
+        <h6 class="fw-bold mb-3 mt-4" i18n="@@featureForepath-footerProducts">Products</h6>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a routerLink="/one" class="text-decoration-none footer-link small" i18n="@@featureForepath-navOne">One</a>
+          </li>
+          <li class="mb-2">
+            <a
+              href="https://agenstra.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureForepath-footerAgenstraLink"
+              >Agenstra</a
+            >
+          </li>
+        </ul>
+      </div>
+      <div class="col-md-3">
+        <h6 class="fw-bold mb-3" i18n="@@featureForepath-footerCompany">Company</h6>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a routerLink="/pricing" class="text-decoration-none footer-link small" i18n="@@featureForepath-navPricing"
+              >Pricing</a
+            >
+          </li>
+        </ul>
+        <h6 class="fw-bold mb-3 mt-4" i18n="@@featureForepath-footerLegal">Legal</h6>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a
+              routerLink="/legal/disclosure"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureForepath-legalDisclosureLink"
+              >Legal Disclosure</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/legal/terms"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureForepath-termsOfServiceLink"
+              >Terms of Service</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/legal/privacy"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureForepath-privacyPolicyLink"
+              >Privacy Policy</a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="py-5">
+    <div class="container grid-section__container grid-section__container--footer-bottom">
+      <div class="row">
+        <div class="col-md-12 text-center">
+          <p class="mb-0 small text-muted" i18n="@@featureForepath-footerCopyright">
+            &copy; 2025 IPvX UG (haftungsbeschränkt). All rights reserved.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
