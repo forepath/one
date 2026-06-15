@@ -485,7 +485,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: windows-electron-bundle
-          path: dist/apps/native-agent-console/out/native-agent-console-win32-x64
+          path: dist/apps/agenstra/native-agent-console/out/native-agent-console-win32-x64
           if-no-files-found: ignore
           retention-days: 1
 
@@ -532,7 +532,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: binary-artifacts-windows-installer
-          path: apps/native-agent-console/installer-out/*.exe
+          path: apps/agenstra/native-agent-console/installer-out/*.exe
           if-no-files-found: ignore
           retention-days: 1
           compression-level: 6
@@ -673,7 +673,7 @@ jobs:
           projectname: 'agent-console'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
-          bomfilename: 'dist/sboms/frontend-agent-console.cdx.json'
+          bomfilename: 'dist/sboms/agenstra-frontend-agent-console.cdx.json'
 
       - name: Upload agent-controller SBOM
         uses: forepath/gh-upload-sbom@v2
@@ -685,7 +685,7 @@ jobs:
           projectname: 'agent-controller'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
-          bomfilename: 'dist/sboms/backend-agent-controller.cdx.json'
+          bomfilename: 'dist/sboms/agenstra-backend-agent-controller.cdx.json'
 
       - name: Upload agent-manager SBOM
         uses: forepath/gh-upload-sbom@v2
@@ -697,7 +697,7 @@ jobs:
           projectname: 'agent-manager'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
-          bomfilename: 'dist/sboms/backend-agent-manager.cdx.json'
+          bomfilename: 'dist/sboms/agenstra-backend-agent-manager.cdx.json'
 
       - name: Upload billing-console SBOM
         uses: forepath/gh-upload-sbom@v2
@@ -709,7 +709,7 @@ jobs:
           projectname: 'billing-console'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
-          bomfilename: 'dist/sboms/frontend-billing-console.cdx.json'
+          bomfilename: 'dist/sboms/agenstra-frontend-billing-console.cdx.json'
 
       - name: Upload billing-manager SBOM
         uses: forepath/gh-upload-sbom@v2
@@ -721,7 +721,7 @@ jobs:
           projectname: 'billing-manager'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
-          bomfilename: 'dist/sboms/backend-billing-manager.cdx.json'
+          bomfilename: 'dist/sboms/agenstra-backend-billing-manager.cdx.json'
 
       - name: Upload desktop SBOM
         uses: forepath/gh-upload-sbom@v2
@@ -733,7 +733,7 @@ jobs:
           projectname: 'desktop'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
-          bomfilename: 'dist/sboms/native-agent-console.cdx.json'
+          bomfilename: 'dist/sboms/agenstra-native-agent-console.cdx.json'
 
       - name: Upload docs SBOM
         uses: forepath/gh-upload-sbom@v2
@@ -745,7 +745,7 @@ jobs:
           projectname: 'docs'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
-          bomfilename: 'dist/sboms/frontend-docs.cdx.json'
+          bomfilename: 'dist/sboms/agenstra-frontend-docs.cdx.json'
 
       - name: Upload mcp-devkit SBOM
         uses: forepath/gh-upload-sbom@v2
@@ -754,10 +754,10 @@ jobs:
           serverhostname: dependencytrack.forepath.io
           apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           parent: '9cb8e25b-6172-4abc-a3c2-06dd1e778143'
-          projectname: 'mcp-devkit'
+          projectname: 'shared-mcp-devkit'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
-          bomfilename: 'dist/sboms/mcp-devkit.cdx.json'
+          bomfilename: 'dist/sboms/shared-mcp-devkit.cdx.json'
 
       - name: Upload mcp-proxy SBOM
         uses: forepath/gh-upload-sbom@v2
@@ -766,10 +766,10 @@ jobs:
           serverhostname: dependencytrack.forepath.io
           apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           parent: '729eb40a-7c42-4f6e-9b8a-de47c68b38ca'
-          projectname: 'mcp-proxy'
+          projectname: 'shared-mcp-proxy'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
-          bomfilename: 'dist/sboms/mcp-proxy.cdx.json'
+          bomfilename: 'dist/sboms/shared-mcp-proxy.cdx.json'
 
       - name: Upload portal SBOM
         uses: forepath/gh-upload-sbom@v2
@@ -781,7 +781,7 @@ jobs:
           projectname: 'portal'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
-          bomfilename: 'dist/sboms/frontend-portal.cdx.json'
+          bomfilename: 'dist/sboms/agenstra-frontend-landingpage.cdx.json'
 
       - name: Upload SBOMs to Cloudflare R2 bucket
         env:

@@ -1,5 +1,5 @@
 {
-  "name": "@agenstra/sbom",
+  "name": "@forepath/sbom",
   "version": "0.0.2",
   "private": true,
   "type": "commonjs",

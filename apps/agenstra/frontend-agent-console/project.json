@@ -1,0 +1,228 @@
+{
+  "name": "agenstra-frontend-agent-console",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/agenstra/frontend-agent-console/src",
+  "i18n": {
+    "sourceLocale": "en",
+    "locales": {
+      "de": "apps/agenstra/frontend-agent-console/src/i18n/messages.de.xlf"
+    }
+  },
+  "tags": ["type:app", "scope:frontend"],
+  "implicitDependencies": [
+    "shared-platform-authentication",
+    "agenstra-backend-agent-controller"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/agenstra/frontend-agent-console",
+        "index": "apps/agenstra/frontend-agent-console/src/index.html",
+        "browser": "apps/agenstra/frontend-agent-console/src/main.ts",
+        "polyfills": [
+          "zone.js",
+          "apps/agenstra/frontend-agent-console/src/polyfills.ts"
+        ],
+        "tsConfig": "apps/agenstra/frontend-agent-console/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/agenstra/frontend-agent-console/public"
+          },
+          {
+            "glob": "**/*",
+            "input": "node_modules/monaco-editor",
+            "output": "/assets/monaco/"
+          }
+        ],
+        "externalDependencies": ["monaco-editor"],
+        "styles": [
+          "apps/agenstra/frontend-agent-console/src/styles.scss",
+          "@milkdown/crepe/theme/common/style.css"
+        ],
+        "scripts": [
+          "node_modules/@popperjs/core/dist/umd/popper.min.js",
+          "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
+          "node_modules/apexcharts/dist/apexcharts.min.js"
+        ],
+        "localize": true,
+        "i18nMissingTranslation": "warning"
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "16kb",
+              "maximumError": "32kb"
+            }
+          ],
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.production.ts"
+            }
+          ]
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        },
+        "serve": {
+          "externalDependencies": []
+        },
+        "en": {
+          "localize": ["en"]
+        },
+        "de": {
+          "localize": ["de"]
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "hmr": false,
+        "port": 4200
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "agenstra-frontend-agent-console:build:development,serve,en"
+        },
+        "production": {
+          "buildTarget": "agenstra-frontend-agent-console:build:production,serve,en"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n-angular": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "agenstra-frontend-agent-console:build",
+        "outputPath": "apps/agenstra/frontend-agent-console/src/i18n"
+      }
+    },
+    "extract-i18n": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node ../../../remove-context-groups.cjs src/i18n/messages.xlf",
+        "cwd": "apps/agenstra/frontend-agent-console"
+      },
+      "dependsOn": ["extract-i18n-angular"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/agenstra/frontend-agent-console/jest.config.ts",
+        "tsConfig": "apps/agenstra/frontend-agent-console/tsconfig.spec.json"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "agenstra-frontend-agent-console:build",
+        "port": 4200,
+        "staticFilePath": "dist/apps/agenstra/frontend-agent-console/browser",
+        "spa": true
+      }
+    },
+    "prebuild-server": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/agenstra/frontend-agent-console/server",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/agenstra/frontend-agent-console/src/server.ts",
+        "tsConfig": "apps/agenstra/frontend-agent-console/tsconfig.server.json",
+        "assets": [],
+        "generatePackageJson": true,
+        "external": ["express"],
+        "deleteOutputPath": false,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      },
+      "dependsOn": ["build"]
+    },
+    "server": {
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/agenstra/frontend-agent-console/server/browser"
+      ],
+      "options": {
+        "command": "bash -c \"test -d dist/apps/agenstra/frontend-agent-console/browser && mkdir -p dist/apps/agenstra/frontend-agent-console/server && cp -r dist/apps/agenstra/frontend-agent-console/browser dist/apps/agenstra/frontend-agent-console/server/browser || (echo 'Error: Browser directory not found. Please run build first.' && exit 1)\""
+      },
+      "dependsOn": ["prebuild-server"]
+    },
+    "server-container-image": {
+      "dependsOn": ["server"],
+      "cache": false,
+      "executor": "@nx-tools/nx-container:build",
+      "options": {
+        "engine": "docker",
+        "file": "apps/agenstra/frontend-agent-console/Dockerfile.server",
+        "context": "dist/apps/agenstra/frontend-agent-console/server"
+      },
+      "configurations": {
+        "test": {
+          "load": true,
+          "tags": ["ghcr.io/forepath/agenstra-console-server:latest"]
+        },
+        "release": {
+          "push": true,
+          "tags": [
+            "ghcr.io/forepath/agenstra-console-server:latest",
+            "ghcr.io/forepath/agenstra-console-server:$VERSION"
+          ]
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "start-containers": {
+      "dependsOn": ["server-container-image"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/agenstra/frontend-agent-console",
+        "command": "docker compose up -d --force-recreate --remove-orphans"
+      }
+    },
+    "sbom": {
+      "executor": "@forepath/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
+    }
+  }
+}

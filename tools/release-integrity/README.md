@@ -1,4 +1,4 @@
-# @agenstra/release-integrity
+# @forepath/release-integrity
 
 Nx project **`release-integrity`**: hashes **Electron Forge** build artifacts and writes checksum files next to them (default `out/make`). Used after `electron-forge make` so releases ship with verifiable integrity (repo root **`SECURITY.md`**).
 
@@ -38,7 +38,7 @@ node tools/release-integrity/dist/src/cli.js verify --input path/to/make/output
 **TypeScript** (same package name):
 
 ```typescript
-import { buildIntegrityArtifactsForDirectory, verifyDirectoryAgainstManifest } from '@agenstra/release-integrity';
+import { buildIntegrityArtifactsForDirectory, verifyDirectoryAgainstManifest } from '@forepath/release-integrity';
 ```
 
 ## CI

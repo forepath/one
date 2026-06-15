@@ -1,0 +1,21 @@
+{
+  "name": "agenstra-frontend-data-access-portal",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/agenstra/frontend/data-access-portal/src",
+  "prefix": "framework",
+  "projectType": "library",
+  "tags": ["domain:agenstra", "scope:frontend", "type:data-access"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/agenstra/frontend/data-access-portal/jest.config.ts",
+        "tsConfig": "libs/domains/agenstra/frontend/data-access-portal/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

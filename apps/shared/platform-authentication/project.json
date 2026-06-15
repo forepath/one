@@ -1,0 +1,23 @@
+{
+  "name": "shared-platform-authentication",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/shared/platform-authentication",
+  "projectType": "application",
+  "tags": ["type:app", "scope:backend", "scope:frontend"],
+  "targets": {
+    "up": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose up -d",
+        "cwd": "apps/shared/platform-authentication"
+      }
+    },
+    "down": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "docker compose down",
+        "cwd": "apps/shared/platform-authentication"
+      }
+    }
+  }
+}

@@ -32,52 +32,54 @@ Agenstra provides a complete solution for managing distributed AI agent infrastr
 
 Agenstra follows a three-tier distributed architecture:
 
-```
-┌─────────────────────┐
-│  Frontend Console   │  Angular application with NgRx state management
-│  (Web-based IDE)    │  Monaco Editor, Chat Interface, File Management
-└──────────┬──────────┘
-           │ HTTP REST API
-           │ WebSocket (Socket.IO)
-           ▼
-┌─────────────────────┐
-│ Agent Controller   │  Centralized control plane
-│ (Backend)           │  Client management, event forwarding
-└──────────┬──────────┘
-           │ HTTP REST API
-           │ WebSocket (Socket.IO)
-           ▼
-┌─────────────────────┐
-│ Agent Manager       │  Agent lifecycle management
-│ (Backend)           │  Container management, Docker integration
-└─────────────────────┘
+```mermaid
+flowchart TB
+  FE["Frontend Console<br/>(Web-based IDE)<br/>Angular, NgRx, Monaco Editor,<br/>Chat Interface, File Management"]
+  AC["Agent Controller<br/>(Backend)<br/>Centralized control plane<br/>Client management, event forwarding"]
+  AM["Agent Manager<br/>(Backend)<br/>Agent lifecycle management<br/>Container management, Docker integration"]
+
+  FE -->|"HTTP REST API<br/>WebSocket (Socket.IO)"| AC
+  AC -->|"HTTP REST API<br/>WebSocket (Socket.IO)"| AM
 ```
 
 ### Components
 
-- **Frontend Agent Console** - Web-based IDE and chat interface built with Angular and NgRx
-- **Backend Agent Controller** - Centralized control plane for managing multiple agent-manager instances
-- **Backend Agent Manager** - Agent management system with HTTP REST API and WebSocket gateway
+- **Frontend Agent Console** (`apps/agenstra/frontend-agent-console`) - Web-based IDE and chat interface built with Angular and NgRx
+- **Backend Agent Controller** (`apps/agenstra/backend-agent-controller`) - Centralized control plane for managing multiple agent-manager instances
+- **Backend Agent Manager** (`apps/agenstra/backend-agent-manager`) - Agent management system with HTTP REST API and WebSocket gateway
+
+### Repository layout
+
+Applications and libraries are grouped by product domain:
+
+| Domain     | Applications (`apps/<domain>/`)                                                          | Libraries (`libs/domains/<domain>/`)              |
+| ---------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `agenstra` | Agent console, controllers, managers, billing, docs, landing page, native desktop client | Agenstra-specific features and data-access layers |
+| `forepath` | Company marketing site (`frontend-landingpage`)                                          | Forepath marketing feature libraries              |
+| `shared`   | Platform authentication, MCP devkit and proxy                                            | Cross-product utilities and monitoring            |
+| `identity` | —                                                                                        | Authentication and user management (unchanged)    |
+
+Nx project names use a domain prefix (for example `agenstra-backend-agent-manager`).
 
 ## Key Features
 
-### ✅ Distributed Agent Management
+### Distributed Agent Management
 
 Connect to and manage multiple remote agent-manager services from a single console. Each client represents a remote agent-manager instance that can be provisioned automatically or connected manually.
 
-### ✅ Real-time AI Chat
+### Real-time AI Chat
 
 WebSocket-based bidirectional communication with AI agents. Send messages, receive instant responses, and maintain chat history across reconnections.
 
-### ✅ Integrated Code Editor
+### Integrated Code Editor
 
 Monaco Editor integration allows you to edit files directly in agent containers. Read, write, and manage code in real-time with syntax highlighting and code completion.
 
-### ✅ Automated Server Provisioning
+### Automated Server Provisioning
 
 Provision cloud servers (Hetzner Cloud, DigitalOcean) with automated Docker installation and agent-manager deployment. Configure authentication, Git repositories, and agent settings during provisioning.
 
-### ✅ Version Control Integration
+### Version Control Integration
 
 Full Git operations directly from the web interface:
 
@@ -86,15 +88,15 @@ Full Git operations directly from the web interface:
 - Pull and rebase operations
 - Resolve merge conflicts
 
-### ✅ Container Management
+### Container Management
 
 Monitor agent containers, view logs, and manage container lifecycle. Real-time container statistics and health monitoring.
 
-### ✅ VNC Browser Access
+### VNC Browser Access
 
 Access a Chromium browser running in a virtual workspace container via VNC. XFCE4 desktop environment with auto-started browser, accessible through a web-based noVNC client.
 
-### ✅ CI/CD Pipeline Management
+### CI/CD Pipeline Management
 
 Configure CI/CD providers (GitHub Actions), trigger pipeline runs, monitor their status, and view logs directly from the Agenstra console.
 
@@ -161,47 +163,67 @@ This program is free software: you can redistribute it and/or modify it under th
 
 The following components are sublicensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**:
 
-- [`apps/backend-agent-manager`](./apps/backend-agent-manager/) - Backend application for agent management
-- [`libs/domains/framework/backend/feature-agent-manager`](./libs/domains/framework/backend/feature-agent-manager/) - Agent management feature library
-- [`libs/domains/framework/backend/feature-monitoring`](./libs/domains/framework/backend/feature-monitoring/) - Monitoring feature library
-- [`apps/frontend-agent-console`](./apps/frontend-agent-console/) - Frontend application for agent console
-- [`libs/domains/framework/frontend/feature-agent-console`](./libs/domains/framework/frontend/feature-agent-console/) - Agent console feature library
-- [`libs/domains/framework/frontend/data-access-agent-console`](./libs/domains/framework/frontend/data-access-agent-console/) - Agent console data access library
-- [`libs/domains/framework/frontend/util-configuration`](./libs/domains/framework/frontend/util-configuration/) - Frontend configuration utility library
-- [`libs/domains/framework/frontend/util-cookie-consent`](./libs/domains/framework/frontend/util-cookie-consent/) - Cookie consent utility library
-- [`libs/domains/framework/frontend/util-docs-parser`](./libs/domains/framework/frontend/util-docs-parser/) - Documentation parser utility library
-- [`libs/domains/framework/frontend/util-runtime-config-server`](./libs/domains/framework/frontend/util-runtime-config-server/) - Frontend runtime config proxy utility library
+- [`apps/agenstra/backend-agent-manager`](./apps/agenstra/backend-agent-manager/) - Backend application for agent management
+- [`libs/domains/agenstra/backend/feature-agent-manager`](./libs/domains/agenstra/backend/feature-agent-manager/) - Agent management feature library
+- [`libs/domains/shared/backend/feature-monitoring`](./libs/domains/shared/backend/feature-monitoring/) - Monitoring feature library
+- [`apps/agenstra/frontend-agent-console`](./apps/agenstra/frontend-agent-console/) - Frontend application for agent console
+- [`libs/domains/agenstra/frontend/feature-agent-console`](./libs/domains/agenstra/frontend/feature-agent-console/) - Agent console feature library
+- [`libs/domains/agenstra/frontend/data-access-agent-console`](./libs/domains/agenstra/frontend/data-access-agent-console/) - Agent console data access library
+- [`libs/domains/shared/frontend/util-configuration`](./libs/domains/shared/frontend/util-configuration/) - Frontend configuration utility library
+- [`libs/domains/shared/frontend/util-cookie-consent`](./libs/domains/shared/frontend/util-cookie-consent/) - Cookie consent utility library
+- [`libs/domains/shared/frontend/util-express-server`](./libs/domains/shared/frontend/util-express-server/) - Express server utilities for frontend apps
+- [`libs/domains/agenstra/frontend/util-docs-parser`](./libs/domains/agenstra/frontend/util-docs-parser/) - Documentation parser utility library
+- [`libs/domains/shared/frontend/util-runtime-config-server`](./libs/domains/shared/frontend/util-runtime-config-server/) - Frontend runtime config proxy utility library
 
-These components are licensed under AGPL-3.0, which means that any modifications or derivative works must also be licensed under AGPL-3.0 and made available to users, including when accessed over a network. See the respective [backend-agent-manager application LICENSE](./apps/backend-agent-manager/LICENSE), [feature-agent-manager library LICENSE](./libs/domains/framework/backend/feature-agent-manager/LICENSE), [feature-monitoring library LICENSE](./libs/domains/framework/backend/feature-monitoring/LICENSE), [frontend-agent-console application LICENSE](./apps/frontend-agent-console/LICENSE), [feature-agent-console library LICENSE](./libs/domains/framework/frontend/feature-agent-console/LICENSE), [data-access-agent-console library LICENSE](./libs/domains/framework/frontend/data-access-agent-console/LICENSE), [util-configuration library LICENSE](./libs/domains/framework/frontend/util-configuration/LICENSE), [util-cookie-consent library LICENSE](./libs/domains/framework/frontend/util-cookie-consent/LICENSE), [util-docs-parser library LICENSE](./libs/domains/framework/frontend/util-docs-parser/LICENSE), and [util-runtime-config-server library LICENSE](./libs/domains/framework/frontend/util-runtime-config-server/LICENSE) files for the full AGPL-3.0 license text.
+These components are licensed under AGPL-3.0, which means that any modifications or derivative works must also be licensed under AGPL-3.0 and made available to users, including when accessed over a network. See the respective LICENSE files:
+
+- [backend-agent-manager application](./apps/agenstra/backend-agent-manager/LICENSE)
+- [feature-agent-manager library](./libs/domains/agenstra/backend/feature-agent-manager/LICENSE)
+- [feature-monitoring library](./libs/domains/shared/backend/feature-monitoring/LICENSE)
+- [frontend-agent-console application](./apps/agenstra/frontend-agent-console/LICENSE)
+- [feature-agent-console library](./libs/domains/agenstra/frontend/feature-agent-console/LICENSE)
+- [data-access-agent-console library](./libs/domains/agenstra/frontend/data-access-agent-console/LICENSE)
+- [util-configuration library](./libs/domains/shared/frontend/util-configuration/LICENSE)
+- [util-cookie-consent library](./libs/domains/shared/frontend/util-cookie-consent/LICENSE)
+- [util-express-server library](./libs/domains/shared/frontend/util-express-server/LICENSE)
+- [util-docs-parser library](./libs/domains/agenstra/frontend/util-docs-parser/LICENSE)
+- [util-runtime-config-server library](./libs/domains/shared/frontend/util-runtime-config-server/LICENSE)
 
 The following components are sublicensed under the **Business Source License 1.1 (BUSL-1.1)**:
 
-- [`apps/backend-agent-controller`](./apps/backend-agent-controller/) - Backend application for agent controller
-- [`libs/domains/framework/backend/feature-agent-controller`](./libs/domains/framework/backend/feature-agent-controller/) - Agent controller feature library
+- [`apps/agenstra/backend-agent-controller`](./apps/agenstra/backend-agent-controller/) - Backend application for agent controller
+- [`libs/domains/agenstra/backend/feature-agent-controller`](./libs/domains/agenstra/backend/feature-agent-controller/) - Agent controller feature library
 
-These components are licensed under BUSL-1.1, which permits non-production use and limited production use (subject to the Additional Use Grant terms). The license will convert to AGPL-3.0 after the Change Date (three years from release date). See the respective [backend-agent-controller application LICENSE](./apps/backend-agent-controller/LICENSE) and [feature-agent-controller library LICENSE](./libs/domains/framework/backend/feature-agent-controller/LICENSE) files for the full BUSL-1.1 license text.
+These components are licensed under BUSL-1.1, which permits non-production use and limited production use (subject to the Additional Use Grant terms). The license will convert to AGPL-3.0 after the Change Date (three years from release date). See the respective [backend-agent-controller application LICENSE](./apps/agenstra/backend-agent-controller/LICENSE) and [feature-agent-controller library LICENSE](./libs/domains/agenstra/backend/feature-agent-controller/LICENSE) files for the full BUSL-1.1 license text.
 
 The following components are sublicensed under the **Source-Available License**:
 
-- [`apps/frontend-portal`](./apps/frontend-portal/) - Frontend application for the public landing page
-- [`libs/domains/framework/frontend/feature-portal`](./libs/domains/framework/frontend/feature-portal/) - Portal feature library
-- [`apps/frontend-docs`](./apps/frontend-docs/) - Frontend application for documentation
-- [`libs/domains/framework/frontend/feature-docs`](./libs/domains/framework/frontend/feature-docs/) - Documentation feature library
-- [`apps/frontend-billing-console`](./apps/frontend-billing-console/) - Frontend application for billing console
-- [`libs/domains/framework/frontend/feature-billing-console`](./libs/domains/framework/frontend/feature-billing-console/) - Billing console feature library
-- [`libs/domains/framework/frontend/data-access-billing-console`](./libs/domains/framework/frontend/data-access-billing-console/) - Billing console data access library
-- [`libs/domains/framework/frontend/data-access-portal`](./libs/domains/framework/frontend/data-access-portal/) - Portal data access library
-- [`apps/backend-billing-manager`](./apps/backend-billing-manager/) - Backend application for billing management
-- [`libs/domains/framework/backend/feature-billing-manager`](./libs/domains/framework/backend/feature-billing-manager/) - Billing management feature library
+- [`apps/agenstra/frontend-landingpage`](./apps/agenstra/frontend-landingpage/) - Frontend application for the public landing page
+- [`libs/domains/agenstra/frontend/feature-landingpage`](./libs/domains/agenstra/frontend/feature-landingpage/) - Landing page feature library
+- [`apps/agenstra/frontend-docs`](./apps/agenstra/frontend-docs/) - Frontend application for documentation
+- [`libs/domains/agenstra/frontend/feature-docs`](./libs/domains/agenstra/frontend/feature-docs/) - Documentation feature library
+- [`apps/agenstra/frontend-billing-console`](./apps/agenstra/frontend-billing-console/) - Frontend application for billing console
+- [`libs/domains/agenstra/frontend/feature-billing-console`](./libs/domains/agenstra/frontend/feature-billing-console/) - Billing console feature library
+- [`libs/domains/agenstra/frontend/data-access-billing-console`](./libs/domains/agenstra/frontend/data-access-billing-console/) - Billing console data access library
+- [`libs/domains/agenstra/frontend/data-access-portal`](./libs/domains/agenstra/frontend/data-access-portal/) - Portal data access library
+- [`apps/agenstra/backend-billing-manager`](./apps/agenstra/backend-billing-manager/) - Backend application for billing management
+- [`libs/domains/agenstra/backend/feature-billing-manager`](./libs/domains/agenstra/backend/feature-billing-manager/) - Billing management feature library
 
-These components are licensed under a source-available license that grants only the right to view the source code. No other rights are granted, including copying, modifying, distributing, or using the software for any purpose. See the respective [frontend-portal application LICENSE](./apps/frontend-portal/LICENSE), [feature-portal library LICENSE](./libs/domains/framework/frontend/feature-portal/LICENSE), [frontend-docs application LICENSE](./apps/frontend-docs/LICENSE), [feature-docs library LICENSE](./libs/domains/framework/frontend/feature-docs/LICENSE), [frontend-billing-console application LICENSE](./apps/frontend-billing-console/LICENSE), [feature-billing-console library LICENSE](./libs/domains/framework/frontend/feature-billing-console/LICENSE), [data-access-billing-console library LICENSE](./libs/domains/framework/frontend/data-access-billing-console/LICENSE), [data-access-portal library LICENSE](./libs/domains/framework/frontend/data-access-portal/LICENSE), [backend-billing-manager application LICENSE](./apps/backend-billing-manager/LICENSE), and [feature-billing-manager library LICENSE](./libs/domains/framework/backend/feature-billing-manager/LICENSE) files for the full license text.
+These components are licensed under a source-available license that grants only the right to view the source code. No other rights are granted, including copying, modifying, distributing, or using the software for any purpose. See the respective LICENSE files:
+
+- [frontend-landingpage application](./apps/agenstra/frontend-landingpage/LICENSE)
+- [feature-landingpage library](./libs/domains/agenstra/frontend/feature-landingpage/LICENSE)
+- [frontend-docs application](./apps/agenstra/frontend-docs/LICENSE)
+- [feature-docs library](./libs/domains/agenstra/frontend/feature-docs/LICENSE)
+- [frontend-billing-console application](./apps/agenstra/frontend-billing-console/LICENSE)
+- [feature-billing-console library](./libs/domains/agenstra/frontend/feature-billing-console/LICENSE)
+- [data-access-billing-console library](./libs/domains/agenstra/frontend/data-access-billing-console/LICENSE)
+- [data-access-portal library](./libs/domains/agenstra/frontend/data-access-portal/LICENSE)
+- [backend-billing-manager application](./apps/agenstra/backend-billing-manager/LICENSE)
+- [feature-billing-manager library](./libs/domains/agenstra/backend/feature-billing-manager/LICENSE)
 
 ## Contribution
 
 We welcome contributions! Whether you're fixing bugs, adding features, or improving documentation, your input helps make Agenstra better for everyone.
 
 For detailed information on how to contribute, please see our [Contributing Guide](./CONTRIBUTING.md).
-
----
-
-_Built with ❤️ for developers who want to manage AI agents at scale._

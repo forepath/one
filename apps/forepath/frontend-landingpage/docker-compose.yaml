@@ -1,0 +1,20 @@
+services:
+  frontend-landingpage-server:
+    image: ghcr.io/forepath/forepath-landingpage-server:latest
+    pull_policy: never
+    container_name: landingpage-server
+    environment:
+      # Frontend server configuration
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-4200}
+      NODE_ENV: ${NODE_ENV:-production}
+      DEFAULT_LOCALE: ${DEFAULT_LOCALE:-en}
+    ports:
+      - '${PORT:-4200}:${PORT:-4200}'
+    networks:
+      - landingpage-network
+    restart: unless-stopped
+
+networks:
+  landingpage-network:
+    driver: bridge

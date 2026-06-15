@@ -6,10 +6,13 @@ import { applicationGenerator as generatorFn } from '@nx/node';
 import { McpGeneratorSchema } from './schema';
 
 export async function mcpGenerator(tree: Tree, options: McpGeneratorSchema) {
-  const appRoot = `apps/mcp-${options.name}`;
+  const domain = options.domain ?? 'shared';
+  const roleName = `mcp-${options.name}`;
+  const projectName = `${domain}-${roleName}`;
+  const appRoot = `apps/${domain}/${roleName}`;
 
   await generatorFn(tree, {
-    name: `mcp-${options.name}`,
+    name: projectName,
     directory: appRoot,
     tags: 'type:app,scope:backend',
     skipPackageJson: true,
@@ -44,7 +47,7 @@ export async function mcpGenerator(tree: Tree, options: McpGeneratorSchema) {
       projectJson.targets.debug = {
         executor: 'nx:run-commands',
         options: {
-          command: `npx @modelcontextprotocol/inspector node ./dist/apps/mcp-${options.name}/main.js`,
+          command: `npx @modelcontextprotocol/inspector node ./dist/${appRoot}/main.js`,
         },
         dependsOn: [{ target: 'build' }],
       };

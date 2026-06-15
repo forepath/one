@@ -15,6 +15,6 @@ This directory (`.agenstra/`) is the single source of truth for AI coding assist
 
 ## Usage
 
-This folder is the **example context** for the repo. The `@agenstra/ai` tool acts as a **transformer** from `.agenstra/` to tool-specific configs (e.g. `.cursor/`, OpenCode, GitHub Copilot). Run the transformer when implemented (e.g. `agenstra transform --path=.agenstra --target=cursor`). Do not remove or overwrite existing `.cursor` contents when copying context manually.
+This folder is the **example context** for the repo. The `@forepath/ai` tool acts as a **transformer** from `.agenstra/` to tool-specific configs (e.g. `.cursor/`, OpenCode, GitHub Copilot). Run the transformer when implemented (e.g. `agenstra transform --path=.agenstra --target=cursor`). Do not remove or overwrite existing `.cursor` contents when copying context manually.
 
 **Overrides**: Files in `overrides/` are copied to the output directory after transformation, allowing you to manually override or extend generated content. The override structure mirrors the output structure (e.g., `overrides/.cursor/...` → `generated/.cursor/...`).

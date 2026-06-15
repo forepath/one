@@ -1,0 +1,19 @@
+{
+  "name": "shared-frontend-util-express-server",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/shared/frontend/util-express-server/src",
+  "projectType": "library",
+  "tags": ["domain:shared", "scope:frontend", "type:util"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/shared/frontend/util-express-server/jest.config.ts"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

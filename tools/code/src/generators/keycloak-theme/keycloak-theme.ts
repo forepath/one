@@ -6,12 +6,14 @@ import { formatFiles, generateFiles, OverwriteStrategy, Tree, updateJson } from 
 import { KeycloakThemeGeneratorSchema } from './schema';
 
 export async function keycloakThemeGenerator(tree: Tree, options: KeycloakThemeGeneratorSchema) {
-  const appName = `keycloak-theme-${options.name}`;
-  const appRoot = `apps/${appName}`;
+  const domain = options.domain ?? 'shared';
+  const roleName = `keycloak-theme-${options.name}`;
+  const projectName = `${domain}-${roleName}`;
+  const appRoot = `apps/${domain}/${roleName}`;
   const appPrefix = options.prefix || options.name;
 
   await generatorFn(tree, {
-    name: appName,
+    name: projectName,
     directory: appRoot,
     tags: 'type:app,scope:keycloak',
     routing: false,
@@ -54,7 +56,7 @@ export async function keycloakThemeGenerator(tree: Tree, options: KeycloakThemeG
       build: {
         executor: 'nx:run-commands',
         options: {
-          command: `rm -rf dist/${appName}/bundle && mkdir -p dist/${appName}/bundle && mv ${appRoot}/dist/* dist/${appName}/bundle/ && rm -rf ${appRoot}/dist`,
+          command: `rm -rf dist/${projectName}/bundle && mkdir -p dist/${projectName}/bundle && mv ${appRoot}/dist/* dist/${projectName}/bundle/ && rm -rf ${appRoot}/dist`,
         },
         dependsOn: [
           {
@@ -65,19 +67,19 @@ export async function keycloakThemeGenerator(tree: Tree, options: KeycloakThemeG
       serve: {
         executor: '@nx/vite:dev-server',
         options: {
-          buildTarget: `${appName}:build`,
+          buildTarget: `${projectName}:build`,
         },
       },
       prepublish: {
         executor: 'nx:run-commands',
         options: {
-          command: `nx run ${appName}:prebuild && npx keycloakify build --project ${appRoot}`,
+          command: `nx run ${projectName}:prebuild && npx keycloakify build --project ${appRoot}`,
         },
       },
       publish: {
         executor: 'nx:run-commands',
         options: {
-          command: `rm -rf dist/${appName}/bin && mkdir -p dist/${appName}/bin && mv ${appRoot}/dist_keycloak/* dist/${appName}/bin/ && rm -rf ${appRoot}/dist ${appRoot}/dist_keycloak`,
+          command: `rm -rf dist/${projectName}/bin && mkdir -p dist/${projectName}/bin && mv ${appRoot}/dist_keycloak/* dist/${projectName}/bin/ && rm -rf ${appRoot}/dist ${appRoot}/dist_keycloak`,
         },
         dependsOn: [
           {
@@ -90,7 +92,7 @@ export async function keycloakThemeGenerator(tree: Tree, options: KeycloakThemeG
         options: {
           configDir: `${appRoot}/.storybook`,
           compodoc: false,
-          browserTarget: `${appName}:build-storybook`,
+          browserTarget: `${projectName}:build-storybook`,
         },
       },
       'build-storybook': {

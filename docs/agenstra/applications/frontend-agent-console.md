@@ -41,8 +41,8 @@ This application is built using:
 
 The application integrates:
 
-- `@forepath/framework/frontend/feature-agent-console` - Feature components
-- `@forepath/framework/frontend/data-access-agent-console` - State management and data access
+- `@forepath/agenstra/frontend/feature-agent-console` - Feature components
+- `@forepath/agenstra/frontend/data-access-agent-console` - State management and data access
 
 ## State Management (NgRx)
 
@@ -127,7 +127,7 @@ The application uses NgRx for state management with the following state slices:
 
 ## Routing
 
-Routes are defined in the framework library `libs/domains/framework/frontend/feature-agent-console/src/lib/agent-console.routes.ts`. Highlights:
+Routes are defined in the framework library `libs/domains/agenstra/frontend/feature-agent-console/src/lib/agent-console.routes.ts`. Highlights:
 
 - ``(empty) → redirect to`clients`
 - **Identity** – `identityAuthRoutes` (login, register, password reset, email confirmation, user management) merged under the shell component

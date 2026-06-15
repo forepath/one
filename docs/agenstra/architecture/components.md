@@ -10,7 +10,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 **Purpose**: Centralized control plane for managing multiple distributed agent-manager instances.
 
-**Key Components** (via `ClientsModule` and related providers from `@forepath/framework/backend`):
+**Key Components** (via `ClientsModule` and related providers from `@forepath/agenstra/backend`):
 
 - `ClientsController` - HTTP REST API for clients, proxy paths, tickets, statistics, filter rules, provisioning
 - `ClientsService` - Business logic for clients with permission checks
@@ -23,7 +23,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 **Dependencies**:
 
-- `@forepath/framework/backend` (Nest module: agent-controller feature bundle)
+- `@forepath/agenstra/backend` (Nest module: agent-controller feature bundle)
 - PostgreSQL database
 - Keycloak (optional, can use API key or users auth)
 
@@ -40,7 +40,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 **Purpose**: Agent management system with HTTP REST API and WebSocket gateway.
 
-**Key Components** (via `AgentsModule` from `@forepath/framework/backend`):
+**Key Components** (via `AgentsModule` from `@forepath/agenstra/backend`):
 
 - `AgentsController` - HTTP REST API for agent management
 - `AgentsDeploymentsController` - Deployment configuration and CI/CD runs
@@ -52,7 +52,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 **Dependencies**:
 
-- `@forepath/framework/backend` (Nest module: agent-manager feature bundle)
+- `@forepath/agenstra/backend` (Nest module: agent-manager feature bundle)
 - PostgreSQL database
 - Docker (for container management)
 - Keycloak (optional, can use API key)
@@ -84,8 +84,8 @@ This document provides a detailed breakdown of all system components, their resp
 
 **Dependencies**:
 
-- `@forepath/framework/frontend/feature-agent-console` - Feature components
-- `@forepath/framework/frontend/data-access-agent-console` - State management
+- `@forepath/agenstra/frontend/feature-agent-console` - Feature components
+- `@forepath/agenstra/frontend/data-access-agent-console` - State management
 - Angular framework
 - NgRx store
 
@@ -100,7 +100,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 ### Feature Agent Controller
 
-**Location**: `libs/domains/framework/backend/feature-agent-controller`
+**Location**: `libs/domains/agenstra/backend/feature-agent-controller`
 
 **Purpose**: Client management and proxying functionality.
 
@@ -125,7 +125,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 ### Feature Agent Manager
 
-**Location**: `libs/domains/framework/backend/feature-agent-manager`
+**Location**: `libs/domains/agenstra/backend/feature-agent-manager`
 
 **Purpose**: Agent management core functionality.
 
@@ -149,7 +149,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 ### Feature Agent Console
 
-**Location**: `libs/domains/framework/frontend/feature-agent-console`
+**Location**: `libs/domains/agenstra/frontend/feature-agent-console`
 
 **Purpose**: Frontend feature components and UI.
 
@@ -165,7 +165,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 ### Data Access Agent Console
 
-**Location**: `libs/domains/framework/frontend/data-access-agent-console`
+**Location**: `libs/domains/agenstra/frontend/data-access-agent-console`
 
 **Purpose**: State management (NgRx) and data access.
 

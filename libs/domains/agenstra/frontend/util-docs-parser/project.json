@@ -1,0 +1,21 @@
+{
+  "name": "agenstra-frontend-util-docs-parser",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/agenstra/frontend/util-docs-parser/src",
+  "prefix": "framework",
+  "projectType": "library",
+  "tags": ["domain:agenstra", "scope:frontend", "type:util"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/agenstra/frontend/util-docs-parser/jest.config.ts",
+        "tsConfig": "libs/domains/agenstra/frontend/util-docs-parser/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

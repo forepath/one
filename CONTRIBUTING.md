@@ -164,9 +164,9 @@ We value documentation improvements:
 
 ### Community Support
 
-- [GitHub Discussions](https://github.com/forepath/agenstra/discussions)
+- [GitHub Discussions](https://github.com/forepath/one/discussions)
 - [Project overview and docs](./docs/agenstra/README.md)
-- [Issue Tracker](https://github.com/forepath/agenstra/issues)
+- [Issue Tracker](https://github.com/forepath/one/issues)
 
 ### Direct Support
 

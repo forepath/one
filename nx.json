@@ -79,7 +79,7 @@
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
     },
-    "@agenstra/sbom:sbom": {
+    "@forepath/sbom:sbom": {
       "cache": true,
       "inputs": [
         "production",

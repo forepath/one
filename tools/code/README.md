@@ -1,10 +1,10 @@
-# @agenstra/code
+# @forepath/code
 
 Nx generators for scaffolding applications and libraries in the monorepo. Generators follow the workspace's scope and domain conventions (frontend, backend, keycloak-theme, shared) and produce projects that align with the framework guidelines.
 
 ## Generators
 
-Run any generator with `nx generate @agenstra/code:GENERATOR_NAME [options]`. All generators are interactive when options are omitted.
+Run any generator with `nx generate @forepath/code:GENERATOR_NAME [options]`. All generators are interactive when options are omitted.
 
 ### backend
 
@@ -14,8 +14,8 @@ Creates a new NestJS backend application.
 - **protected** (default: `true`) – Enable authenticated routes
 
 ```bash
-nx generate @agenstra/code:backend my-api
-nx generate @agenstra/code:backend my-api --protected=false
+nx generate @forepath/code:backend my-api
+nx generate @forepath/code:backend my-api --protected=false
 ```
 
 ### frontend
@@ -30,8 +30,8 @@ Creates a new Angular frontend application.
 - **ssr** (default: `true`) – Enable server-side rendering
 
 ```bash
-nx generate @agenstra/code:frontend portal --prefix=app --ui=bootstrap
-nx generate @agenstra/code:frontend portal --ui=none --no-ssr
+nx generate @forepath/code:frontend portal --prefix=app --ui=bootstrap
+nx generate @forepath/code:frontend portal --ui=none --no-ssr
 ```
 
 ### keycloak-theme
@@ -42,7 +42,7 @@ Creates a new Keycloakify-based Keycloak theme (Angular).
 - **prefix** (default: `app`) – Component prefix
 
 ```bash
-nx generate @agenstra/code:keycloak-theme my-theme
+nx generate @forepath/code:keycloak-theme my-theme
 ```
 
 ### domain
@@ -53,7 +53,7 @@ Creates a new domain with placeholder index files for backend, frontend, keycloa
 - **prefix** (default: `@domain`) – Import/package prefix
 
 ```bash
-nx generate @agenstra/code:domain payments --prefix=@domain
+nx generate @forepath/code:domain payments --prefix=@domain
 ```
 
 ### lib
@@ -67,7 +67,7 @@ Creates a new domain library (feature, data-access, ui, or util) under a given d
 - **generator** (required) – Base Nx generator: `js`, `node`, or `angular`
 
 ```bash
-nx generate @agenstra/code:lib --domain=payments --scope=frontend --type=feature --name=checkout --generator=angular
+nx generate @forepath/code:lib --domain=payments --scope=frontend --type=feature --name=checkout --generator=angular
 ```
 
 ### mcp
@@ -78,7 +78,7 @@ Creates a new MCP (Model Context Protocol) server project.
 - **protected** (default: `true`) – Enable authenticated routes
 
 ```bash
-nx generate @agenstra/code:mcp my-mcp-server
+nx generate @forepath/code:mcp my-mcp-server
 ```
 
 ### init
@@ -86,7 +86,7 @@ nx generate @agenstra/code:mcp my-mcp-server
 Initializes the repository for use with AI agents (e.g. adds or configures agent-related structure). No options.
 
 ```bash
-nx generate @agenstra/code:init
+nx generate @forepath/code:init
 ```
 
 ## Building and testing
@@ -96,4 +96,4 @@ nx generate @agenstra/code:init
 
 ## Exports
 
-This package exposes **Nx generators only**; there is no programmatic API. Use `nx generate @agenstra/code:...` as shown above.
+This package exposes **Nx generators only**; there is no programmatic API. Use `nx generate @forepath/code:...` as shown above.

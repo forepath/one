@@ -82,7 +82,7 @@ The billing manager exposes a Socket.IO gateway for **dashboard server status** 
 **AsyncAPI Specification**: [asyncapi.yaml](/spec/billing-manager/asyncapi.yaml)
 
 - **View in AsyncAPI Studio**: [Open in AsyncAPI Studio](https://studio.asyncapi.com/?url=https://docs.agenstra.com/spec/billing-manager/asyncapi.yaml)
-- **Download**: [asyncapi.yaml](/spec/billing-manager/asyncapi.yaml) (canonical source in-repo: `libs/domains/framework/backend/feature-billing-manager/spec/asyncapi.yaml`)
+- **Download**: [asyncapi.yaml](/spec/billing-manager/asyncapi.yaml) (canonical source in-repo: `libs/domains/agenstra/backend/feature-billing-manager/spec/asyncapi.yaml`)
 
 The billing status gateway provides:
 

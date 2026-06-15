@@ -5,11 +5,13 @@ import { setupDockerGenerator as setupDockerGeneratorFn } from '@nx/node/src/gen
 import { BackendGeneratorSchema } from './schema';
 
 export async function backendGenerator(tree: Tree, options: BackendGeneratorSchema) {
-  const appName = `backend-${options.name}`;
-  const appRoot = `apps/${appName}`;
+  const domain = options.domain ?? 'agenstra';
+  const roleName = `backend-${options.name}`;
+  const projectName = `${domain}-${roleName}`;
+  const appRoot = `apps/${domain}/${roleName}`;
 
   await generatorFn(tree, {
-    name: appName,
+    name: projectName,
     directory: appRoot,
     tags: 'type:app,scope:backend',
     skipPackageJson: true,
@@ -22,7 +24,7 @@ export async function backendGenerator(tree: Tree, options: BackendGeneratorSche
       `${appRoot}/package.json`,
       JSON.stringify(
         {
-          name: appName,
+          name: roleName,
           version: '0.0.0',
           private: true,
         },
@@ -54,7 +56,7 @@ export async function backendGenerator(tree: Tree, options: BackendGeneratorSche
   });
 
   await setupDockerGeneratorFn(tree, {
-    project: appName,
+    project: projectName,
     outputPath: `dist/${appRoot}`,
     buildTarget: 'build',
   });
@@ -79,7 +81,7 @@ export async function backendGenerator(tree: Tree, options: BackendGeneratorSche
         executor: 'nx:run-commands',
         options: {
           cwd: `dist/${appRoot}`,
-          command: `docker build . -f ../../../${appRoot}/Dockerfile --tag apps-${appName}`,
+          command: `docker build . -f ../../../${appRoot}/Dockerfile --tag apps-${projectName}`,
         },
       };
     }

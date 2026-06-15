@@ -7,12 +7,14 @@ import { setupDockerGenerator as setupDockerGeneratorFn } from '@nx/node/src/gen
 import { FrontendGeneratorSchema } from './schema';
 
 export async function frontendGenerator(tree: Tree, options: FrontendGeneratorSchema) {
-  const appName = `frontend-${options.name}`;
-  const appRoot = `apps/${appName}`;
+  const domain = options.domain ?? 'agenstra';
+  const roleName = `frontend-${options.name}`;
+  const projectName = `${domain}-${roleName}`;
+  const appRoot = `apps/${domain}/${roleName}`;
   const appPrefix = options.prefix || options.name;
 
   await generatorFn(tree, {
-    name: appName,
+    name: projectName,
     directory: appRoot,
     tags: 'type:app,scope:frontend',
     routing: true,
@@ -49,7 +51,7 @@ export async function frontendGenerator(tree: Tree, options: FrontendGeneratorSc
     });
 
     await setupDockerGeneratorFn(tree, {
-      project: appName,
+      project: projectName,
       outputPath: `dist/${appRoot}/server`,
       buildTarget: 'build',
     });
@@ -77,7 +79,7 @@ export async function frontendGenerator(tree: Tree, options: FrontendGeneratorSc
           executor: 'nx:run-commands',
           options: {
             cwd: `dist/${appRoot}/server`,
-            command: `docker build . -f ../../../../${appRoot}/Dockerfile --tag apps-${appName}`,
+            command: `docker build . -f ../../../../${appRoot}/Dockerfile --tag apps-${projectName}`,
           },
         };
       }

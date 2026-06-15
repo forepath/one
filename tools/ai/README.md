@@ -1,4 +1,4 @@
-# @agenstra/ai
+# @forepath/ai
 
 Transforms `.agenstra/` context into tool-specific agent configs for Cursor, OpenCode, and GitHub Copilot. This package does **not** scaffold `.agenstra/`; use the example context in this repo's `.agenstra/` as reference.
 
@@ -31,7 +31,7 @@ The reader only stores properties that are used by at least one transformer. Unu
 ### Programmatic API
 
 ```ts
-import { transform, listTools, readContext, validateContext } from '@agenstra/ai';
+import { transform, listTools, readContext, validateContext } from '@forepath/ai';
 
 // Transform .agenstra to one or more tools (sync)
 const result = transform({
@@ -62,7 +62,7 @@ Run the transformer via the `transform` executor. Add the target to a project's 
 {
   "targets": {
     "agenstra-transform": {
-      "executor": "@agenstra/ai:transform",
+      "executor": "@forepath/ai:transform",
       "options": {
         "source": ".",
         "target": ["cursor", "opencode", "github-copilot"],
@@ -87,10 +87,10 @@ Executor options: `source` (default `"."`), `target` (required), `outputDir` (de
 Validates that a `.agenstra/` context exists and optionally runs the transformer, writing output into the Nx tree:
 
 ```bash
-nx generate @agenstra/ai:context --path=.
-nx generate @agenstra/ai:context --project=my-app
-nx generate @agenstra/ai:context --path=. --target=cursor,github-copilot --outputDir=generated
-nx generate @agenstra/ai:context --path=. --dryRun
+nx generate @forepath/ai:context --path=.
+nx generate @forepath/ai:context --project=my-app
+nx generate @forepath/ai:context --path=. --target=cursor,github-copilot --outputDir=generated
+nx generate @forepath/ai:context --path=. --dryRun
 ```
 
 Generator options: `project` (Nx project name; `.agenstra/` at project root), `path` (default `"."` when not using `project`), `target` (optional; when set, runs transform and writes under `outputDir`), `outputDir` (default `"generated"`), `dryRun` (default `false`; only validate, do not transform or write).
