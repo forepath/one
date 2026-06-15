@@ -29,7 +29,7 @@ import {
   TicketCommentEntity,
   TicketEntity,
   UserEnvironmentReadStateEntity,
-} from '@forepath/agenstra/backend';
+} from '@forepath/agenstra/backend/feature-agent-controller';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
 import { ClientAgentCredentialEntity, ClientEntity, ClientUserEntity, UserEntity } from '@forepath/identity/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';

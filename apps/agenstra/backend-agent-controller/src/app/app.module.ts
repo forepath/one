@@ -1,4 +1,4 @@
-import { ClientsModule, IdentityStatisticsBridgeModule } from '@forepath/agenstra/backend';
+import { ClientsModule, IdentityStatisticsBridgeModule } from '@forepath/agenstra/backend/feature-agent-controller';
 import { MonitoringModule } from '@forepath/shared/backend';
 import {
   BullBoardSkippingThrottlerGuard,

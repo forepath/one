@@ -5,7 +5,7 @@ import {
   FilterRulesService,
   FilterRulesSyncService,
   KnowledgeEmbeddingIndexService,
-} from '@forepath/agenstra/backend';
+} from '@forepath/agenstra/backend/feature-agent-controller';
 import { enqueueUnitJob } from '@forepath/shared/backend';
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';

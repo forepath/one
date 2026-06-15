@@ -1,7 +1,7 @@
 # Build a Windows NSIS installer from a pre-packaged Electron app directory (electron-builder --prepackaged).
 param(
     [string]$BundleRoot = $(if ($env:WINDOWS_BUNDLE_DIR) { $env:WINDOWS_BUNDLE_DIR } else { 'windows-electron-bundle' }),
-    [string]$ProjectDir = $(if ($env:NATIVE_AGENT_CONSOLE_DIR) { $env:NATIVE_AGENT_CONSOLE_DIR } else { 'apps/native-agent-console' })
+    [string]$ProjectDir = $(if ($env:NATIVE_AGENT_CONSOLE_DIR) { $env:NATIVE_AGENT_CONSOLE_DIR } else { 'apps/agenstra/native-agent-console' })
 )
 
 $ErrorActionPreference = 'Stop'
@@ -60,7 +60,7 @@ fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 
 Write-Host "Building NSIS installer from prepackaged app: $appDirectory"
 
-# Pin version: matches apps/native-agent-console devDependency; avoids npx pulling latest (e.g. 26.x).
+# Pin version: matches apps/agenstra/native-agent-console devDependency; avoids npx pulling latest (e.g. 26.x).
 $electronBuilderVersion = '25.1.8'
 
 Push-Location $ProjectDir

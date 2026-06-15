@@ -1,9 +1,4 @@
-import {
-  BillingKeycloakUserSyncModule,
-  BillingModule,
-  BillingUsersAuthModule,
-  MonitoringModule,
-} from '@forepath/agenstra/backend';
+import { BillingKeycloakUserSyncModule, BillingModule, BillingUsersAuthModule } from '@forepath/agenstra/backend';
 import {
   BullBoardSkippingThrottlerGuard,
   getAuthenticationMethod,
@@ -12,7 +7,7 @@ import {
   KeycloakModule,
   KeycloakService,
 } from '@forepath/identity/backend';
-import { getTypeOrmOptionsForQueueRole } from '@forepath/shared/backend';
+import { getTypeOrmOptionsForQueueRole, MonitoringModule } from '@forepath/shared/backend';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';

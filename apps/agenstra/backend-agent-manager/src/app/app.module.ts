@@ -1,4 +1,4 @@
-import { AgentsModule } from '@forepath/agenstra/backend';
+import { AgentsModule } from '@forepath/agenstra/backend/feature-agent-manager';
 import { MonitoringModule } from '@forepath/shared/backend';
 import { getHybridAuthGuards, getRateLimitConfig, KeycloakModule, KeycloakService } from '@forepath/identity/backend';
 import { Module } from '@nestjs/common';

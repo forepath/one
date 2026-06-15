@@ -1,5 +1,8 @@
-import { ClientsModule } from '@forepath/agenstra/backend';
-import { ContextImportModule, FilterRulesModule } from '@forepath/agenstra/backend/feature-agent-controller';
+import {
+  ClientsModule,
+  ContextImportModule,
+  FilterRulesModule,
+} from '@forepath/agenstra/backend/feature-agent-controller';
 import { SharedQueueModule, shouldRegisterRepeatableJobs, shouldRunQueueWorkers } from '@forepath/shared/backend';
 import { Module, forwardRef } from '@nestjs/common';
 

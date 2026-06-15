@@ -1,4 +1,4 @@
-import { KnowledgeEmbeddingIndexService } from '@forepath/agenstra/backend';
+import { KnowledgeEmbeddingIndexService } from '@forepath/agenstra/backend/feature-agent-controller';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 

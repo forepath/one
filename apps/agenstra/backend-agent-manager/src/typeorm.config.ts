@@ -7,7 +7,7 @@ import {
   DeploymentRunEntity,
   RegexFilterRuleEntity,
   WorkspaceConfigurationOverrideEntity,
-} from '@forepath/agenstra/backend';
+} from '@forepath/agenstra/backend/feature-agent-manager';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
