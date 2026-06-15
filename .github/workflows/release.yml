@@ -48,17 +48,17 @@ jobs:
 
       - name: Run build
         if: steps.semantic-release.outputs.new_release_published == 'true'
-        run: npx nx run-many --target=build --configuration=production --parallel=3 || echo "No projects for build"
+        run: npx nx run-many --target=build --configuration=production --parallel=3
 
       - name: Generate binaries
         if: steps.semantic-release.outputs.new_release_published == 'true'
-        run: npx nx run-many --target=scripts-binary --parallel=3 || echo "No projects for scripts binary build"
+        run: npx nx run-many --target=scripts-binary --parallel=3
 
       - name: Run SBOM generation
         if: steps.semantic-release.outputs.new_release_published == 'true'
         env:
           VERSION: ${{ steps.semantic-release.outputs.new_release_version }}
-        run: npx nx run-many --target=sbom --parallel=1 || echo "No projects for sbom generation"
+        run: npx nx run-many --target=sbom --parallel=1
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
@@ -110,7 +110,7 @@ jobs:
         env:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
-          npx nx run-many --target=api-container-image --configuration=release --parallel=3 || echo "No projects for api container image build"
+          npx nx run-many --target=api-container-image --configuration=release --parallel=3
 
       - name: Generate container image SBOMs
         uses: ./.github/actions/generate-container-image-sboms
@@ -157,7 +157,7 @@ jobs:
         env:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
-          npx nx run-many --target=worker-container-image --configuration=release --parallel=3 || echo "No projects for worker container image build"
+          npx nx run-many --target=worker-container-image --configuration=release --parallel=3
 
       - name: Generate container image SBOMs
         uses: ./.github/actions/generate-container-image-sboms
@@ -204,7 +204,7 @@ jobs:
         env:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
-          npx nx run-many --target=vnc-container-image --configuration=release --parallel=3 || echo "No projects for vnc container image build"
+          npx nx run-many --target=vnc-container-image --configuration=release --parallel=3
 
       - name: Generate container image SBOMs
         uses: ./.github/actions/generate-container-image-sboms
@@ -251,7 +251,7 @@ jobs:
         env:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
-          npx nx run-many --target=ssh-container-image --configuration=release --parallel=3 || echo "No projects for ssh container image build"
+          npx nx run-many --target=ssh-container-image --configuration=release --parallel=3
 
       - name: Generate container image SBOMs
         uses: ./.github/actions/generate-container-image-sboms
@@ -298,7 +298,7 @@ jobs:
         env:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
-          npx nx run-many --target=agi-container-image --configuration=release --parallel=3 || echo "No projects for agi container image build"
+          npx nx run-many --target=agi-container-image --configuration=release --parallel=3
 
       - name: Generate container image SBOMs
         uses: ./.github/actions/generate-container-image-sboms
@@ -345,7 +345,7 @@ jobs:
         env:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
-          npx nx run-many --target=server-container-image --configuration=release --parallel=3 || echo "No projects for server container image build"
+          npx nx run-many --target=server-container-image --configuration=release --parallel=3
 
       - name: Generate container image SBOMs
         uses: ./.github/actions/generate-container-image-sboms
@@ -395,7 +395,7 @@ jobs:
         env:
           VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
-          npx nx run-many --target=openapi-client-js --configuration=release --parallel=3 || echo "No projects for openapi js client publish"
+          npx nx run-many --target=openapi-client-js --configuration=release --parallel=3
 
   build-native-applications-linux:
     name: Publish Linux Applications
@@ -430,7 +430,7 @@ jobs:
           ELECTRON_FORGE_PLATFORM: linux
           RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
-          xvfb-run -a npx nx run-many --target=package --configuration=production-linux --parallel=3 || echo "No projects for native applications build"
+          xvfb-run -a npx nx run-many --target=package --configuration=production-linux --parallel=3
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
@@ -479,7 +479,7 @@ jobs:
           ELECTRON_FORGE_PLATFORM: win32
           RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
         run: |
-          xvfb-run -a npx nx run-many --target=package --configuration=production-windows --parallel=3 || echo "No projects for native applications build"
+          xvfb-run -a npx nx run-many --target=package --configuration=production-windows --parallel=3
 
       - name: Upload Windows Electron bundle
         uses: actions/upload-artifact@v7
@@ -517,7 +517,6 @@ jobs:
 
       - name: Download Windows Electron bundle
         uses: actions/download-artifact@v8
-        continue-on-error: true
         with:
           name: windows-electron-bundle
           path: windows-electron-bundle
@@ -526,6 +525,7 @@ jobs:
         shell: pwsh
         env:
           RELEASE_VERSION: ${{ needs.publish.outputs.new_release_version }}
+          REQUIRE_INSTALLER_BUNDLE: '1'
         run: ./tools/ci/build-windows-installer.ps1
 
       - name: Upload Windows installer artifacts
@@ -562,7 +562,6 @@ jobs:
 
       - name: Download binaries
         uses: actions/download-artifact@v8
-        continue-on-error: true
         with:
           path: artifacts
           pattern: binary-artifacts-*
@@ -599,6 +598,12 @@ jobs:
           CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
           AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
         run: |
+          shopt -s nullglob
+          files=(release/*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No desktop binaries in release/ — aborting R2 upload"
+            exit 1
+          fi
           aws s3 cp release/ s3://${{ secrets.AWS_BUCKET }}/releases/${{ needs.publish.outputs.new_release_version }}/desktop/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
 
   publish-agentctx:
@@ -664,6 +669,7 @@ jobs:
           fi
 
       - name: Upload agent-console SBOM
+        id: upload-sbom-agent-console
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
@@ -676,6 +682,7 @@ jobs:
           bomfilename: 'dist/sboms/agenstra-frontend-agent-console.cdx.json'
 
       - name: Upload agent-controller SBOM
+        id: upload-sbom-agent-controller
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
@@ -688,6 +695,7 @@ jobs:
           bomfilename: 'dist/sboms/agenstra-backend-agent-controller.cdx.json'
 
       - name: Upload agent-manager SBOM
+        id: upload-sbom-agent-manager
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
@@ -700,6 +708,7 @@ jobs:
           bomfilename: 'dist/sboms/agenstra-backend-agent-manager.cdx.json'
 
       - name: Upload billing-console SBOM
+        id: upload-sbom-billing-console
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
@@ -712,6 +721,7 @@ jobs:
           bomfilename: 'dist/sboms/agenstra-frontend-billing-console.cdx.json'
 
       - name: Upload billing-manager SBOM
+        id: upload-sbom-billing-manager
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
@@ -724,6 +734,7 @@ jobs:
           bomfilename: 'dist/sboms/agenstra-backend-billing-manager.cdx.json'
 
       - name: Upload desktop SBOM
+        id: upload-sbom-desktop
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
@@ -736,6 +747,7 @@ jobs:
           bomfilename: 'dist/sboms/agenstra-native-agent-console.cdx.json'
 
       - name: Upload docs SBOM
+        id: upload-sbom-docs
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
@@ -748,6 +760,7 @@ jobs:
           bomfilename: 'dist/sboms/agenstra-frontend-docs.cdx.json'
 
       - name: Upload mcp-devkit SBOM
+        id: upload-sbom-mcp-devkit
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
@@ -760,6 +773,7 @@ jobs:
           bomfilename: 'dist/sboms/shared-mcp-devkit.cdx.json'
 
       - name: Upload mcp-proxy SBOM
+        id: upload-sbom-mcp-proxy
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
@@ -772,6 +786,7 @@ jobs:
           bomfilename: 'dist/sboms/shared-mcp-proxy.cdx.json'
 
       - name: Upload portal SBOM
+        id: upload-sbom-portal
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
@@ -782,6 +797,46 @@ jobs:
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
           bomfilename: 'dist/sboms/agenstra-frontend-landingpage.cdx.json'
+
+      - name: Report DependencyTrack upload outcomes
+        if: always()
+        run: |
+          {
+            echo "## DependencyTrack SBOM uploads"
+            echo ""
+            echo "| Project | Outcome |"
+            echo "|---------|---------|"
+            echo "| agent-console | ${{ steps.upload-sbom-agent-console.outcome }} |"
+            echo "| agent-controller | ${{ steps.upload-sbom-agent-controller.outcome }} |"
+            echo "| agent-manager | ${{ steps.upload-sbom-agent-manager.outcome }} |"
+            echo "| billing-console | ${{ steps.upload-sbom-billing-console.outcome }} |"
+            echo "| billing-manager | ${{ steps.upload-sbom-billing-manager.outcome }} |"
+            echo "| desktop | ${{ steps.upload-sbom-desktop.outcome }} |"
+            echo "| docs | ${{ steps.upload-sbom-docs.outcome }} |"
+            echo "| shared-mcp-devkit | ${{ steps.upload-sbom-mcp-devkit.outcome }} |"
+            echo "| shared-mcp-proxy | ${{ steps.upload-sbom-mcp-proxy.outcome }} |"
+            echo "| portal | ${{ steps.upload-sbom-portal.outcome }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          failed=0
+          for outcome in \
+            "${{ steps.upload-sbom-agent-console.outcome }}" \
+            "${{ steps.upload-sbom-agent-controller.outcome }}" \
+            "${{ steps.upload-sbom-agent-manager.outcome }}" \
+            "${{ steps.upload-sbom-billing-console.outcome }}" \
+            "${{ steps.upload-sbom-billing-manager.outcome }}" \
+            "${{ steps.upload-sbom-desktop.outcome }}" \
+            "${{ steps.upload-sbom-docs.outcome }}" \
+            "${{ steps.upload-sbom-mcp-devkit.outcome }}" \
+            "${{ steps.upload-sbom-mcp-proxy.outcome }}" \
+            "${{ steps.upload-sbom-portal.outcome }}"
+          do
+            if [ "$outcome" = "failure" ]; then
+              failed=1
+            fi
+          done
+          if [ "$failed" -eq 1 ]; then
+            echo "::warning::One or more DependencyTrack SBOM uploads failed (see table above)"
+          fi
 
       - name: Upload SBOMs to Cloudflare R2 bucket
         env:

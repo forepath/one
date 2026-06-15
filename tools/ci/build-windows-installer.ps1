@@ -7,6 +7,9 @@ param(
 $ErrorActionPreference = 'Stop'
 
 if (-not (Test-Path -LiteralPath $BundleRoot)) {
+    if ($env:REQUIRE_INSTALLER_BUNDLE -eq '1') {
+        throw "Bundle root '$BundleRoot' not found"
+    }
     Write-Host "Bundle root '$BundleRoot' not found; skipping Windows installer build."
     exit 0
 }
@@ -15,6 +18,9 @@ $exe = Get-ChildItem -Path $BundleRoot -Recurse -Filter 'native-agent-console.ex
     Select-Object -First 1
 
 if (-not $exe) {
+    if ($env:REQUIRE_INSTALLER_BUNDLE -eq '1') {
+        throw "No native-agent-console.exe under '$BundleRoot'"
+    }
     Write-Host "No native-agent-console.exe under '$BundleRoot'; skipping Windows installer build."
     exit 0
 }
