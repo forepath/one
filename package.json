@@ -166,7 +166,7 @@
     "ng-apexcharts": "2.3.0",
     "ngx-cookieconsent": "8.0.0",
     "ngx-monaco-editor-v2": "21.1.4",
-    "nodemailer": "7.0.13",
+    "nodemailer": "8.0.9",
     "pdf-lib": "1.17.1",
     "pg": "8.16.3",
     "playwright": "1.55.1",
