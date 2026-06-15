@@ -1,13 +1,12 @@
 <div style="text-align: center;">
 
+[![GitHub](https://img.shields.io/badge/GitHub-forepath%2Fone-181717?style=flat&logo=github&logoColor=white)](https://github.com/forepath/one)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Nx](https://img.shields.io/badge/powered%20by-Nx-143055?style=flat&logo=nx&logoColor=white)](https://nx.dev)
 [![Cursor](https://img.shields.io/badge/Cursor-IDE-FFB500?style=flat&logo=cursor&logoColor=white)](https://www.cursor.so)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Angular](https://img.shields.io/badge/Angular-DD0031?style=flat&logo=angular&logoColor=white)](https://angular.io)
 [![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=flat&logo=nestjs&logoColor=white)](https://nestjs.com/)
-
-[![GitHub](https://img.shields.io/badge/GitHub-forepath%2Fone-181717?style=flat&logo=github&logoColor=white)](https://github.com/forepath/one)
 
 </div>
 
