@@ -1,0 +1,32 @@
+name: Detect affected Nx projects
+description: List affected projects and expose outputs for skipping nx affected when nothing changed.
+
+outputs:
+  has_affected:
+    description: True when at least one project is affected
+    value: ${{ steps.detect.outputs.has_affected }}
+  projects:
+    description: Newline-separated list of affected project names
+    value: ${{ steps.detect.outputs.projects }}
+  has_test:
+    description: True when at least one affected project has a test target
+    value: ${{ steps.detect.outputs.has_test }}
+  has_e2e:
+    description: True when at least one affected project has an e2e target
+    value: ${{ steps.detect.outputs.has_e2e }}
+  has_lint:
+    description: True when at least one affected project has a lint target
+    value: ${{ steps.detect.outputs.has_lint }}
+  has_build:
+    description: True when at least one affected project has a build target
+    value: ${{ steps.detect.outputs.has_build }}
+
+runs:
+  using: composite
+  steps:
+    - name: Detect affected projects
+      id: detect
+      shell: bash
+      run: |
+        chmod +x tools/ci/detect-affected.sh
+        tools/ci/detect-affected.sh
