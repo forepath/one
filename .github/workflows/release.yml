@@ -452,6 +452,8 @@ jobs:
       contents: read
       actions: read
       packages: write
+    outputs:
+      has_windows_bundle: ${{ steps.detect-windows-bundle.outputs.exists }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -486,7 +488,7 @@ jobs:
         with:
           name: windows-electron-bundle
           path: dist/apps/agenstra/native-agent-console/out/native-agent-console-win32-x64
-          if-no-files-found: ignore
+          if-no-files-found: error
           retention-days: 1
 
       - name: Upload Windows zip artifacts
@@ -498,13 +500,26 @@ jobs:
           retention-days: 1
           compression-level: 6
 
+      - name: Detect Windows Electron bundle
+        id: detect-windows-bundle
+        if: ${{ !cancelled() }}
+        run: |
+          bundle_path="dist/apps/agenstra/native-agent-console/out/native-agent-console-win32-x64"
+          if [ -d "$bundle_path" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build-native-applications-windows-installer:
     name: Build Windows Installer
     runs-on: windows-latest
     needs:
       - publish
       - build-native-applications-windows
-    if: needs.publish.outputs.new_release_published == 'true'
+    if: >-
+      needs.publish.outputs.new_release_published == 'true' &&
+      needs.build-native-applications-windows.outputs.has_windows_bundle == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
