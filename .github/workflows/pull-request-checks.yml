@@ -660,6 +660,8 @@ jobs:
     name: Build Windows Applications
     runs-on: ubuntu-latest
     needs: build
+    outputs:
+      has_windows_bundle: ${{ steps.detect-windows-bundle.outputs.exists }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -704,11 +706,24 @@ jobs:
           retention-days: 1
           compression-level: 6
 
+      - name: Detect Windows Electron bundle
+        id: detect-windows-bundle
+        if: ${{ !cancelled() }}
+        run: |
+          bundle_path="dist/apps/agenstra/native-agent-console/out/native-agent-console-win32-x64"
+          if [ -d "$bundle_path" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build-native-applications-windows-installer:
     name: Build Windows Installer
     runs-on: windows-latest
     needs: build-native-applications-windows
-    if: ${{ needs.build-native-applications-windows.result == 'success' }}
+    if: >-
+      needs.build-native-applications-windows.result == 'success' &&
+      needs.build-native-applications-windows.outputs.has_windows_bundle == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
