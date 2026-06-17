@@ -166,6 +166,12 @@
   border-left: 1px solid var(--bs-border-color);
   border-radius: 0.75rem;
   overflow: hidden;
+  margin-bottom: 3rem;
+
+  @media (min-width: 768px) {
+    min-height: 21rem;
+    margin-bottom: 6rem;
+  }
 
   @media (min-width: 992px) {
     border-top: 0;
@@ -179,6 +185,7 @@
     right: var(--grid-section-line-right);
     width: auto;
     min-height: 100%;
+    margin-bottom: 0;
   }
 }
 
