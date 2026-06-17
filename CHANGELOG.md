@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.8.3](https://github.com/forepath/one/compare/v2.8.2...v2.8.3) (2026-06-17)
+
+
+### Bug Fixes
+
+* forepath og preview image ([#425](https://github.com/forepath/one/issues/425)) ([be21455](https://github.com/forepath/one/commit/be214555417476aa0210515c9665c4f8ce76db81))
+
 ## [2.8.2](https://github.com/forepath/one/compare/v2.8.1...v2.8.2) (2026-06-17)
 
 
