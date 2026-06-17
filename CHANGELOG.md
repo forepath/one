@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.8.0](https://github.com/forepath/one/compare/v2.7.7...v2.8.0) (2026-06-17)
+
+
+### Features
+
+* custom invoice issuer ([#405](https://github.com/forepath/one/issues/405)) ([c056e12](https://github.com/forepath/one/commit/c056e12c0ec9985bcbb01e5a02dce5b4ccacfa0c))
+* forepath landingpage ([#408](https://github.com/forepath/one/issues/408)) ([ae63cb5](https://github.com/forepath/one/commit/ae63cb59001b3462ae1addb9fc6360e167c10b59))
+* forepath landingpage tagmanager integration ([#420](https://github.com/forepath/one/issues/420)) ([292318e](https://github.com/forepath/one/commit/292318e1566c39c45e93a61af69ba0893bb27713))
+
+
+### Bug Fixes
+
+* ci silent fails ([#413](https://github.com/forepath/one/issues/413)) ([fcdaef9](https://github.com/forepath/one/commit/fcdaef9cb961dea0cda324de2820ab65ec922f0f))
+
+
+### Chores
+
+* add technology logos ([#422](https://github.com/forepath/one/issues/422)) ([4050580](https://github.com/forepath/one/commit/4050580c3fdb0877df3837f9b8e3722133756a58))
+* readme badge grouping ([#419](https://github.com/forepath/one/issues/419)) ([213b9ce](https://github.com/forepath/one/commit/213b9cebbe4640485b33100c3424f67a3bc6d004))
+
+
+### Code Refactoring
+
+* application and library grouping ([#410](https://github.com/forepath/one/issues/410)) ([39aba55](https://github.com/forepath/one/commit/39aba556f4172a354800b7d7bb5c2c3b0ca42260))
+
 ## [2.7.7](https://github.com/forepath/one/compare/v2.7.6...v2.7.7) (2026-06-02)
 
 ### Bug Fixes
