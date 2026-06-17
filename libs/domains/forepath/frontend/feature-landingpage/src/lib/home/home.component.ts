@@ -36,6 +36,7 @@ const PLATFORM_LOGO_SLOTS: readonly (readonly PlatformLogo[])[] = [
   [
     { id: 'ubuntu', name: 'Ubuntu', logoUrl: 'assets/images/logos/ubuntu.svg' },
     { id: 'windowsserver', name: 'Windows Server', logoUrl: 'assets/images/logos/windowsserver.svg' },
+    { id: 'kubernetes', name: 'Kubernetes', logoUrl: 'assets/images/logos/kubernetes.svg' },
   ],
   [
     { id: 'aws', name: 'AWS', logoUrl: 'assets/images/logos/aws.svg' },
