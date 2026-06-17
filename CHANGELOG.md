@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.8.4](https://github.com/forepath/one/compare/v2.8.3...v2.8.4) (2026-06-17)
+
+
+### Bug Fixes
+
+* forepath mobile image sizes ([#426](https://github.com/forepath/one/issues/426)) ([fe32896](https://github.com/forepath/one/commit/fe328963ffa3edbd5b51bb7ff5f84cd63cf6f536))
+
 ## [2.8.3](https://github.com/forepath/one/compare/v2.8.2...v2.8.3) (2026-06-17)
 
 
