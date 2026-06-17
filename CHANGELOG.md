@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.8.2](https://github.com/forepath/one/compare/v2.8.1...v2.8.2) (2026-06-17)
+
+
+### Bug Fixes
+
+* add allowed hosts to ssr ([#424](https://github.com/forepath/one/issues/424)) ([31f2efd](https://github.com/forepath/one/commit/31f2efd25aeeaf54b4642f350934706ab0b8f1c5))
+
 ## [2.8.1](https://github.com/forepath/one/compare/v2.8.0...v2.8.1) (2026-06-17)
 
 
