@@ -10,3 +10,4 @@ export {
   type RuntimeConfigRouteEnv,
   type RuntimeConfigRouteLogger,
 } from './lib/runtime-config-route';
+export { buildSsrAllowedHosts } from './lib/ssr-allowed-hosts';

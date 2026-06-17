@@ -46,7 +46,15 @@
           "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
         ],
         "localize": true,
-        "i18nMissingTranslation": "warning"
+        "i18nMissingTranslation": "warning",
+        "security": {
+          "allowedHosts": [
+            "localhost",
+            "127.0.0.1",
+            "agenstra.com",
+            "*.agenstra.com"
+          ]
+        }
       },
       "configurations": {
         "production": {

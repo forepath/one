@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { APP_BASE_HREF } from '@angular/common';
 import { CommonEngine, isMainModule } from '@angular/ssr/node';
 import {
+  buildSsrAllowedHosts,
   createSecurityHeadersMiddleware,
   registerRuntimeConfigEndpoint,
 } from '@forepath/shared/frontend/util-express-server';
@@ -15,7 +16,9 @@ const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 const indexHtml = join(serverDistFolder, 'index.server.html');
 const app = express();
-const commonEngine = new CommonEngine();
+const commonEngine = new CommonEngine({
+  allowedHosts: buildSsrAllowedHosts(['forepath.io']),
+});
 
 app.use(createSecurityHeadersMiddleware());
 registerRuntimeConfigEndpoint(app);
