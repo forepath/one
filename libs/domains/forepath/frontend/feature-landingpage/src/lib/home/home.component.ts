@@ -44,6 +44,7 @@ const PLATFORM_LOGO_SLOTS: readonly (readonly PlatformLogo[])[] = [
   [
     { id: 'digitalocean', name: 'DigitalOcean', logoUrl: 'assets/images/logos/digitalocean.png' },
     { id: 'cloudflare', name: 'Cloudflare', logoUrl: 'assets/images/logos/cloudflare.svg' },
+    { id: 'docker', name: 'Docker', logoUrl: 'assets/images/logos/docker.png' },
   ],
 ] as const;
 
