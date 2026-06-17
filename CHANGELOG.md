@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.8.1](https://github.com/forepath/one/compare/v2.8.0...v2.8.1) (2026-06-17)
+
+
+### Bug Fixes
+
+* forepath landingpage delegation server ([#423](https://github.com/forepath/one/issues/423)) ([a8249e3](https://github.com/forepath/one/commit/a8249e31f49e66804c936c05fc737c66a43908e7))
+
 ## [2.8.0](https://github.com/forepath/one/compare/v2.7.7...v2.8.0) (2026-06-17)
 
 
