@@ -183,6 +183,15 @@
         }
       },
       "defaultConfiguration": "test"
+    },
+    "start-containers": {
+      "dependsOn": ["server-container-image"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/forepath/frontend-landingpage",
+        "command": "docker compose up -d --force-recreate --remove-orphans"
+      }
     }
   }
 }
