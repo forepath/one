@@ -1,0 +1,59 @@
+<div class="billing-admin-user-select">
+  @if (selectedUser(); as user) {
+    <small
+      class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1 billing-admin-user-select__chip"
+    >
+      <span class="text-truncate small">{{ user.email }}</span>
+      <button
+        type="button"
+        class="btn btn-link btn-sm p-0 ms-1 align-baseline flex-shrink-0"
+        [disabled]="disabled()"
+        (click)="clearSelection()"
+        i18n-aria-label="@@featureBillingAdminUserSelect-clearSelectionAria"
+        aria-label="Clear selected user"
+      >
+        <i class="bi bi-x" aria-hidden="true"></i>
+      </button>
+    </small>
+  } @else {
+    <div class="position-relative">
+      <input
+        [id]="inputId()"
+        type="text"
+        class="form-control"
+        autocomplete="off"
+        [disabled]="disabled()"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearchChange($event)"
+        (focus)="onSearchFocus()"
+        (blur)="onSearchBlur()"
+        [placeholder]="placeholder()"
+        [attr.aria-required]="required() ? true : null"
+      />
+      @if (suggestionsOpen() && filteredUsers().length > 0) {
+        <ul
+          class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100 billing-admin-user-select__suggestions"
+        >
+          @for (user of filteredUsers(); track user.id) {
+            <li>
+              <button type="button" class="dropdown-item py-2 text-start" (mousedown)="pickUser(user, $event)">
+                <span class="d-block small fw-medium text-truncate">{{ user.email }}</span>
+                <span class="d-block font-monospace text-muted small text-truncate">{{ user.id }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+      } @else if (suggestionsOpen() && searchQuery().trim()) {
+        <ul
+          class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100 billing-admin-user-select__suggestions"
+        >
+          <li>
+            <span class="dropdown-item-text text-muted small" i18n="@@featureBillingAdminUserSelect-noUsers"
+              >No users found.</span
+            >
+          </li>
+        </ul>
+      }
+    </div>
+  }
+</div>

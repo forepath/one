@@ -67,6 +67,16 @@ export class InvoicesRepository {
     return await this.repository.findOne({ where: { id } });
   }
 
+  async findByIdForUser(invoiceId: string, userId: string): Promise<InvoiceEntity | null> {
+    const invoice = await this.findById(invoiceId);
+
+    if (!invoice || invoice.userId !== userId) {
+      return null;
+    }
+
+    return invoice;
+  }
+
   async findByIdOrThrow(id: string): Promise<InvoiceEntity> {
     const entity = await this.findById(id);
 
@@ -251,6 +261,15 @@ export class InvoicesRepository {
     const entity = this.repository.create(dto);
 
     return await this.repository.save(entity);
+  }
+
+  async countByUserId(userId: string): Promise<number> {
+    return await this.repository.count({ where: { userId } });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.findByIdOrThrow(id);
+    await this.repository.delete(id);
   }
 }
 

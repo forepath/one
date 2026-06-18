@@ -152,6 +152,51 @@ describe('InvoicesService', () => {
     req.flush({ checkoutUrl: 'https://checkout.stripe.com/test' });
   });
 
+  it('should get invoice details by ref without subscription', (done) => {
+    const detail = {
+      ...mockInvoice,
+      subscriptionId: null,
+      currency: 'EUR',
+      subtotalNet: 10,
+      taxTotal: 1.9,
+      totalGross: 11.9,
+      balanceDue: 11.9,
+      lineItems: [],
+      taxBreakdown: [],
+    };
+
+    service.getInvoiceDetails(undefined, 'inv-1').subscribe((res) => {
+      expect(res.id).toBe('inv-1');
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/ref/inv-1`);
+
+    req.flush(detail);
+  });
+
+  it('should download invoice pdf by ref without subscription', (done) => {
+    const blob = new Blob(['pdf']);
+
+    service.downloadInvoicePdf(undefined, 'inv-1').subscribe((res) => {
+      expect(res).toEqual(blob);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/ref/inv-1/pdf`);
+
+    expect(req.request.responseType).toBe('blob');
+    req.flush(blob);
+  });
+
+  it('should initiate payment by ref without subscription', (done) => {
+    service.initiatePayment(undefined, 'ref-1').subscribe((res) => {
+      expect(res.checkoutUrl).toContain('stripe');
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/ref/ref-1/pay`);
+
+    req.flush({ checkoutUrl: 'https://checkout.stripe.com/test' });
+  });
+
   it('should void invoice', (done) => {
     service.voidInvoice('sub-1', 'inv-1').subscribe((res) => {
       expect(res.status).toBe('voided');

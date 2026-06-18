@@ -10,10 +10,10 @@ export class InvoiceEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id!: string;
 
-  @Column({ type: 'uuid', name: 'subscription_id' })
-  subscriptionId!: string;
+  @Column({ type: 'uuid', name: 'subscription_id', nullable: true })
+  subscriptionId?: string;
 
-  @ManyToOne(() => SubscriptionEntity, { onDelete: 'CASCADE' })
+  @ManyToOne(() => SubscriptionEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'subscription_id' })
   subscription?: SubscriptionEntity;
 

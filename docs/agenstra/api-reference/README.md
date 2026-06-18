@@ -75,6 +75,12 @@ The Agent Manager WebSocket gateway provides:
 - Terminal session management (`createTerminal`, `terminalInput`, `terminalOutput`, `closeTerminal`)
 - Container statistics broadcasting (`containerStats`; default every 15s on the manager, configurable via `CONTAINER_STATS_SCHEDULER_INTERVAL`)
 
+## Billing Manager HTTP API
+
+**OpenAPI Specification**: [openapi.yaml](/spec/billing-manager/openapi.yaml) (canonical source: `libs/domains/agenstra/backend/feature-billing-manager/spec/openapi.yaml`)
+
+Admin manual invoices and customer billing profile CRUD: [Billing Administration](../features/billing-administration.md)
+
 ## Billing Manager WebSocket
 
 The billing manager exposes a Socket.IO gateway for **dashboard server status** (provisioned subscription items), separate from the HTTP port. Connections use the same JWT / Keycloak handshake auth as HTTP; static API key clients are not given an end-user billing stream (aligned with REST).

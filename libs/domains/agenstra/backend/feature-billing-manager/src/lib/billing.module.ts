@@ -12,6 +12,7 @@ import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
 import { PAYMENT_PROCESSOR_INIT } from './constants/payment-processor-init.token';
 import { AdminBillingController } from './controllers/admin-billing.controller';
+import { AdminCustomerProfilesController } from './controllers/admin-customer-profiles.controller';
 import { AvailabilityController } from './controllers/availability.controller';
 import { BackordersController } from './controllers/backorders.controller';
 import { CustomerProfilesController } from './controllers/customer-profiles.controller';
@@ -78,6 +79,7 @@ import { BillingStatisticsQueryService } from './services/billing-statistics-que
 import { CancellationPolicyService } from './services/cancellation-policy.service';
 import { CloudflareDnsService } from './services/cloudflare-dns.service';
 import { CustomerProfilesService } from './services/customer-profiles.service';
+import { CustomerProfilesAdminService } from './services/customer-profiles-admin.service';
 import { DigitaloceanProvisioningService } from './services/digitalocean-provisioning.service';
 import { EInvoiceEmbedService } from './services/e-invoice-embed.service';
 import { EInvoiceXmlService } from './services/e-invoice-xml.service';
@@ -85,6 +87,7 @@ import { HetznerProvisioningService } from './services/hetzner-provisioning.serv
 import { HostnameReservationService } from './services/hostname-reservation.service';
 import { InvoiceAdminService } from './services/invoice-admin.service';
 import { InvoiceCreationService } from './services/invoice-creation.service';
+import { ManualInvoiceService } from './services/manual-invoice.service';
 import { InvoiceEmailService } from './services/invoice-email.service';
 import { InvoiceIssuanceService } from './services/invoice-issuance.service';
 import { InvoiceOverdueJobHandler } from './services/invoice-overdue.job-handler';
@@ -317,6 +320,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     PricingController,
     InvoicesController,
     AdminBillingController,
+    AdminCustomerProfilesController,
     PaymentsWebhookController,
     UsageController,
     CustomerProfilesController,
@@ -346,6 +350,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     BillingAuditLogService,
     BillingStatisticsQueryService,
     InvoiceAdminService,
+    ManualInvoiceService,
     EInvoiceXmlService,
     EInvoiceEmbedService,
     InvoicePdfTemplateService,
@@ -374,6 +379,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionService,
     UsageService,
     CustomerProfilesService,
+    CustomerProfilesAdminService,
     SubscriptionBillingJobHandler,
     SubscriptionExpirationJobHandler,
     SubscriptionRenewalReminderJobHandler,

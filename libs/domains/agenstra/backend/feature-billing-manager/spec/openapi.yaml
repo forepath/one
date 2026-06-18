@@ -1682,6 +1682,184 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedAdminInvoicesResponse'
+  /admin/billing/invoices/manual:
+    post:
+      tags: [Admin Billing]
+      summary: Create manual invoice draft (admin only)
+      operationId: createManualInvoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateManualInvoiceDto'
+      responses:
+        '201':
+          description: Created draft invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManualInvoiceDetailResponse'
+  /admin/billing/invoices/{invoiceRefId}:
+    get:
+      tags: [Admin Billing]
+      summary: Get invoice detail (admin only)
+      operationId: getAdminInvoiceDetail
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Invoice detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManualInvoiceDetailResponse'
+    post:
+      tags: [Admin Billing]
+      summary: Update manual invoice draft (admin only)
+      operationId: updateManualInvoice
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateManualInvoiceDto'
+      responses:
+        '200':
+          description: Updated draft
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManualInvoiceDetailResponse'
+    delete:
+      tags: [Admin Billing]
+      summary: Delete manual invoice draft (admin only)
+      operationId: deleteManualInvoice
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Draft deleted
+  /admin/billing/invoices/{invoiceRefId}/issue:
+    post:
+      tags: [Admin Billing]
+      summary: Issue manual invoice draft (admin only)
+      operationId: issueManualInvoice
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueManualInvoiceDto'
+      responses:
+        '200':
+          description: Issued invoice
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManualInvoiceDetailResponse'
+  /admin/billing/customer-profiles:
+    get:
+      tags: [Admin Billing]
+      summary: List customer billing profiles (admin only)
+      operationId: listAdminCustomerProfiles
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Paginated profiles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminCustomerProfilesResponse'
+    post:
+      tags: [Admin Billing]
+      summary: Create customer billing profile (admin only)
+      operationId: createAdminCustomerProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAdminCustomerProfileDto'
+      responses:
+        '201':
+          description: Created profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileResponse'
+  /admin/billing/customer-profiles/{id}:
+    get:
+      tags: [Admin Billing]
+      summary: Get customer billing profile (admin only)
+      operationId: getAdminCustomerProfile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Profile detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCustomerProfileDetailResponse'
+    post:
+      tags: [Admin Billing]
+      summary: Update customer billing profile (admin only)
+      operationId: updateAdminCustomerProfile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerProfileDto'
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileResponse'
+    delete:
+      tags: [Admin Billing]
+      summary: Delete customer billing profile (admin only)
+      operationId: deleteAdminCustomerProfile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Profile deleted
   /admin/billing/invoices/{invoiceRefId}/void:
     post:
       tags: [Admin Billing]
@@ -2733,3 +2911,82 @@ components:
         totalGross: { type: number }
         from: { type: string, format: date }
         to: { type: string, format: date }
+    ManualInvoiceLineItemDto:
+      type: object
+      required: [description, quantity, unitPriceNet]
+      properties:
+        description: { type: string }
+        quantity: { type: number }
+        unitPriceNet: { type: number }
+        taxCategory: { type: string, enum: [standard, reduced] }
+    CreateManualInvoiceDto:
+      type: object
+      required: [userId, lineItems]
+      properties:
+        userId: { type: string, format: uuid }
+        subscriptionId: { type: string, format: uuid, nullable: true }
+        lineItems:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ManualInvoiceLineItemDto'
+        currency: { type: string }
+    UpdateManualInvoiceDto:
+      type: object
+      required: [lineItems]
+      properties:
+        lineItems:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ManualInvoiceLineItemDto'
+    IssueManualInvoiceDto:
+      type: object
+      properties:
+        dueInDays: { type: integer, minimum: 1 }
+    ManualInvoiceDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/InvoiceDetailResponse'
+        - type: object
+          properties:
+            userId: { type: string, format: uuid }
+            userEmail: { type: string, format: email, nullable: true }
+    AdminCustomerProfileListItem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        userEmail: { type: string, format: email, nullable: true }
+        firstName: { type: string, nullable: true }
+        lastName: { type: string, nullable: true }
+        company: { type: string, nullable: true }
+        email: { type: string, format: email, nullable: true }
+        country: { type: string, nullable: true }
+        isComplete: { type: boolean }
+        stripeCustomerId: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PaginatedAdminCustomerProfilesResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminCustomerProfileListItem'
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+    CreateAdminCustomerProfileDto:
+      allOf:
+        - $ref: '#/components/schemas/CustomerProfileDto'
+        - type: object
+          required: [userId]
+          properties:
+            userId: { type: string, format: uuid }
+    AdminCustomerProfileDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/CustomerProfileResponse'
+        - type: object
+          properties:
+            userEmail: { type: string, format: email, nullable: true }
+            isComplete: { type: boolean }

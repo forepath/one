@@ -13,7 +13,7 @@ export function resolveInvoicingPeriod(
   subscription?: Pick<SubscriptionEntity, 'currentPeriodStart' | 'currentPeriodEnd' | 'createdAt'> | null,
   plan?: Pick<ServicePlanEntity, 'billingIntervalType' | 'billingIntervalValue' | 'billingDayOfMonth'> | null,
 ): InvoicingPeriod {
-  const periodEnd = invoice.issuedAt ?? invoice.createdAt;
+  const periodEnd = invoice.issuedAt ?? invoice.createdAt ?? new Date();
 
   if (subscription?.currentPeriodStart && subscription?.currentPeriodEnd) {
     return normalizePeriod({

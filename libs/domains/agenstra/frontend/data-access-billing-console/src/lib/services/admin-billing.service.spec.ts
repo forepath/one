@@ -134,4 +134,20 @@ describe('AdminBillingService', () => {
     expect(req.request.params.get('from')).toBe('2024-01-01');
     req.flush({ items: [], totalGross: 50, from: '2024-01-01', to: '2024-01-31' });
   });
+
+  it('lists user subscriptions', (done) => {
+    const userId = '11111111-1111-4111-8111-111111111111';
+
+    service.listUserSubscriptions(userId, { limit: 100 }).subscribe((res) => {
+      expect(res).toEqual([{ id: 'sub-1', number: 'SUB-001', planId: 'plan-1', userId, status: 'active' }]);
+      done();
+    });
+    const req = httpMock.expectOne(
+      (request) => request.url === `${apiUrl}/admin/billing/users/${userId}/subscriptions`,
+    );
+
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('limit')).toBe('100');
+    req.flush([{ id: 'sub-1', number: 'SUB-001', planId: 'plan-1', userId, status: 'active' }]);
+  });
 });

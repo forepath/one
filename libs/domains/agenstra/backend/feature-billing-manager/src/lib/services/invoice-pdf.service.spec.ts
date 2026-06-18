@@ -177,6 +177,25 @@ describe('InvoicePdfService', () => {
         expect.any(Uint8Array),
       );
     });
+
+    it('writes manual invoice PDF under manual user folder when subscription is missing', async () => {
+      const tmpRoot = path.join(os.tmpdir(), `billing-pdf-manual-${Date.now()}`);
+
+      process.env.BILLING_INVOICE_PDF_STORAGE_PATH = tmpRoot;
+
+      const manualInvoice = {
+        ...invoice,
+        subscriptionId: undefined,
+        userId: 'user-1',
+      } as InvoiceEntity;
+      const storageKey = await service.generateAndStore(manualInvoice, lineItems, issuer, buyer, '', invoicingPeriod);
+
+      expect(storageKey).toBe('manual/user-1/inv-1.pdf');
+      expect(fs.promises.writeFile).toHaveBeenCalledWith(
+        expect.stringContaining(path.join('manual', 'user-1', 'inv-1.pdf')),
+        expect.any(Uint8Array),
+      );
+    });
   });
 
   describe('generateVoidDocumentAndStore', () => {

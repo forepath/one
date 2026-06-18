@@ -162,6 +162,48 @@ describe('InvoiceIssuanceService', () => {
     );
   });
 
+  it('issues manual invoice draft without subscription', async () => {
+    const manualDraft = {
+      ...draftInvoice,
+      subscriptionId: undefined,
+    } as InvoiceEntity;
+
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(manualDraft);
+    invoicesRepository.update.mockReset();
+    invoicesRepository.update
+      .mockResolvedValueOnce({
+        ...manualDraft,
+        invoiceNumber: 'INV-2026-00001',
+        status: InvoiceStatus.ISSUED,
+        issuedAt: new Date('2026-06-01T00:00:00Z'),
+      })
+      .mockResolvedValueOnce({
+        ...manualDraft,
+        invoiceNumber: 'INV-2026-00001',
+        status: InvoiceStatus.ISSUED,
+        issuedAt: new Date('2026-06-01T00:00:00Z'),
+        pdfStorageKey: 'manual/user-1/inv-1.pdf',
+      });
+    invoicePdfService.generateAndStore.mockResolvedValue('manual/user-1/inv-1.pdf');
+
+    const result = await service.issueDraft('inv-1');
+
+    expect(subscriptionsRepository.findByIdOrThrow).not.toHaveBeenCalled();
+    expect(servicePlansRepository.findByIdOrThrow).not.toHaveBeenCalled();
+    expect(invoicePdfService.generateAndStore).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      '',
+      expect.objectContaining({
+        periodStart: expect.any(Date),
+        periodEnd: expect.any(Date),
+      }),
+    );
+    expect(result.pdfStorageKey).toBe('manual/user-1/inv-1.pdf');
+  });
+
   it('throws when invoice is not a draft', async () => {
     invoicesRepository.findByIdOrThrow.mockResolvedValue({
       ...draftInvoice,

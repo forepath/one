@@ -62,15 +62,17 @@ export class InvoiceIssuanceService {
       balanceDue: invoice.totalGross,
       paymentProcessor: process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR ?? 'stripe',
     });
-    const subscription = await this.subscriptionsRepository.findByIdOrThrow(invoice.subscriptionId);
-    const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
+    const subscription = invoice.subscriptionId
+      ? await this.subscriptionsRepository.findByIdOrThrow(invoice.subscriptionId)
+      : null;
+    const plan = subscription ? await this.servicePlansRepository.findByIdOrThrow(subscription.planId) : null;
     const pdfStorageKey = await this.invoicePdfService.generateAndStore(
       updated,
       lineItems,
       this.billingIssuerConfig.getConfig(),
       profile,
-      resolvePurchaseOrderReference(subscription.number, subscription.id),
-      resolveInvoicingPeriod(updated, subscription, plan),
+      resolvePurchaseOrderReference(subscription?.number, subscription?.id),
+      resolveInvoicingPeriod(updated, subscription ?? undefined, plan ?? undefined),
     );
     const issued = await this.invoicesRepository.update(invoiceId, { pdfStorageKey });
 

@@ -1,351 +1,451 @@
 <div class="admin-billing-container border-top d-flex flex-column h-100">
   <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminBilling-title">Billing Administration</h5>
-    <button type="button" class="btn btn-primary btn-sm" (click)="openBillNowModal()">
-      <i class="bi bi-cash-coin me-1"></i>
-      <span i18n="@@featureAdminBilling-billNow">Bill now</span>
-    </button>
+    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminBilling-title">Billing</h5>
+    <div class="d-flex gap-2">
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        (click)="openCreateModal()"
+        [disabled]="(invoicesCreating$ | async) === true"
+      >
+        <i class="bi bi-plus-circle me-1"></i>
+        <span i18n="@@featureAdminInvoices-add">Add</span>
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" (click)="openBillNowModal()">
+        <i class="bi bi-cash-coin me-1"></i>
+        <span i18n="@@featureAdminBilling-billNow">Bill now</span>
+      </button>
+    </div>
   </div>
 
-  <div class="p-3 flex-grow-1 overflow-auto">
+  <div class="d-flex align-items-center gap-0 d-md-none border-bottom btn-group-options">
+    @for (panel of mobilePanels; track panel) {
+      <button
+        type="button"
+        class="btn btn-sm btn-options"
+        [class.btn-outline-secondary]="mobilePanel() !== panel"
+        [class.btn-primary]="mobilePanel() === panel"
+        (click)="mobilePanel.set(panel)"
+      >
+        {{ mobilePanelLabel(panel) }}
+      </button>
+    }
+  </div>
+
+  <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
     @if (summaryError$ | async; as err) {
-      <div class="alert alert-danger" role="alert">{{ err }}</div>
-    }
-    @if (openOverdueError$ | async; as err) {
-      <div class="alert alert-danger" role="alert">{{ err }}</div>
-    }
-    @if (statisticsError$ | async; as err) {
-      <div class="alert alert-danger" role="alert">{{ err }}</div>
+      <div class="alert alert-danger mb-0 rounded-0 border-0 border-bottom" role="alert">{{ err }}</div>
     }
 
-    <div class="row g-3 mb-4">
-      <div class="col-12 col-md-6 col-xl-3">
-        <div class="card h-100">
-          <div class="card-body">
-            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminBilling-activeSubscriptions">
-              Active subscriptions
-            </h6>
-            @if (summaryLoading$ | async) {
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            } @else if (summary$ | async; as summary) {
-              <p class="card-title mb-0 fs-4 fw-bold">{{ summary.activeSubscriptionsCount }}</p>
-            }
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-md-6 col-xl-3">
-        <div class="card h-100">
-          <div class="card-body">
-            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminBilling-openOverdueCount">
-              Open and overdue invoices
-            </h6>
-            @if (summaryLoading$ | async) {
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            } @else if (summary$ | async; as summary) {
-              <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openOverdueCount }}</p>
-            }
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-md-6 col-xl-3">
-        <div class="card h-100">
-          <div class="card-body">
-            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminBilling-openOverdueTotal">
-              Open total amount
-            </h6>
-            @if (summaryLoading$ | async) {
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            } @else if (summary$ | async; as summary) {
-              <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openOverdueTotal | number: '1.2-2' }}€</p>
-            }
-          </div>
-        </div>
-      </div>
-      <div class="col-12 col-md-6 col-xl-3">
-        <div class="card h-100">
-          <div class="card-body">
-            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminBilling-unbilledTotal">
-              Unbilled amount
-            </h6>
-            @if (summaryLoading$ | async) {
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            } @else if (summary$ | async; as summary) {
-              <p class="card-title mb-0 fs-4 fw-bold">{{ summary.unbilledTotal | number: '1.2-2' }}€</p>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="border rounded mb-4 bg-body-tertiary">
-      <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-        <h6 class="mb-0 fw-semibold" i18n="@@featureAdminBilling-statisticsTitle">Statistics</h6>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary d-md-none"
-          data-bs-toggle="collapse"
-          data-bs-target="#adminBillingFilters"
-          (click)="onToggleFilters()"
-        >
-          <i class="bi" [class.bi-chevron-down]="filtersCollapsed()" [class.bi-chevron-up]="!filtersCollapsed()"></i>
-        </button>
-      </div>
-      <div class="collapse d-md-block p-3" id="adminBillingFilters">
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-3">
-            <label class="form-label small" for="adminBillingUser" i18n="@@featureAdminBilling-userFilter">User</label>
-            <select
-              id="adminBillingUser"
-              class="form-select form-select-sm"
-              [ngModel]="selectedUserId()"
-              (ngModelChange)="selectedUserId.set($event)"
-            >
-              <option [ngValue]="null" i18n="@@featureAdminBilling-allUsers">All users</option>
-              @for (user of users(); track user.id) {
-                <option [ngValue]="user.id">{{ user.email }}</option>
-              }
-            </select>
-          </div>
-          <div class="col-12 col-md-2">
-            <label class="form-label small" for="adminBillingFrom" i18n="@@featureAdminBilling-fromDate">From</label>
-            <input
-              id="adminBillingFrom"
-              type="date"
-              class="form-control form-control-sm"
-              [ngModel]="fromDate()"
-              (ngModelChange)="fromDate.set($event)"
-            />
-          </div>
-          <div class="col-12 col-md-2">
-            <label class="form-label small" for="adminBillingTo" i18n="@@featureAdminBilling-toDate">To</label>
-            <input
-              id="adminBillingTo"
-              type="date"
-              class="form-control form-control-sm"
-              [ngModel]="toDate()"
-              (ngModelChange)="toDate.set($event)"
-            />
-          </div>
-          <div class="col-12 col-md-2">
-            <label class="form-label small" for="adminBillingGroupBy" i18n="@@featureAdminBilling-groupBy"
-              >Group by</label
-            >
-            <select
-              id="adminBillingGroupBy"
-              class="form-select form-select-sm"
-              [ngModel]="groupBy()"
-              (ngModelChange)="groupBy.set($event)"
-            >
-              <option value="day" i18n="@@featureAdminBilling-groupByDay">Day</option>
-              <option value="month" i18n="@@featureAdminBilling-groupByMonth">Month</option>
-            </select>
-          </div>
-          <div class="col-12 col-md-3 d-flex align-items-end gap-2">
-            <button
-              type="button"
-              class="btn btn-primary btn-sm"
-              (click)="onApplyFilters()"
-              i18n="@@featureAdminBilling-apply"
-            >
-              Apply
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-secondary btn-sm"
-              (click)="onResetFilters()"
-              i18n="@@featureAdminBilling-reset"
-            >
-              Reset
-            </button>
-          </div>
-        </div>
-        <div class="row g-3">
-          <div class="col-12 col-lg-8">
-            <div class="card">
-              <div class="card-body">
-                @if (seriesChartOptions(); as chart) {
-                  <apx-chart
-                    [series]="chart.series"
-                    [chart]="chart.chart"
-                    [colors]="chart.colors"
-                    [stroke]="chart.stroke"
-                    [fill]="chart.fill"
-                    [dataLabels]="chart.dataLabels"
-                    [xaxis]="chart.xaxis"
-                    [yaxis]="chart.yaxis"
-                    [grid]="chart.grid"
-                    [title]="chart.title"
-                  ></apx-chart>
-                } @else if (statisticsSummaryLoading$ | async) {
-                  <div class="text-center py-4"><span class="spinner-border spinner-border-sm"></span></div>
-                } @else {
-                  <p class="text-muted small mb-0" i18n="@@featureAdminBilling-noChartData">
-                    No turnover data for selected period.
-                  </p>
-                }
-              </div>
-            </div>
-          </div>
-          <div class="col-12" [class.col-lg-4]="seriesChartOptions()">
-            <div class="card">
-              <div class="card-body">
-                @if (donutChartOptions(); as chart) {
-                  <apx-chart
-                    [series]="chart.series"
-                    [chart]="chart.chart"
-                    [labels]="chart.labels"
-                    [colors]="chart.colors"
-                    [legend]="chart.legend"
-                    [title]="chart.title"
-                  ></apx-chart>
-                } @else if (statisticsByProductLoading$ | async) {
-                  <div class="text-center py-4"><span class="spinner-border spinner-border-sm"></span></div>
-                } @else {
-                  <p class="text-muted small mb-0" i18n="@@featureAdminBilling-noProductData">
-                    No product breakdown for selected period.
-                  </p>
-                }
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h6 class="mb-0 fw-semibold" i18n="@@featureAdminBilling-invoicesTitle">Invoices</h6>
-      <input
-        type="search"
-        class="form-control form-control-sm"
-        style="max-width: 320px"
-        [ngModel]="invoiceSearch()"
-        (ngModelChange)="invoiceSearch.set($event)"
-        (keyup.enter)="onInvoiceSearch()"
-        placeholder="Search invoice #, subscription #, or user"
-        i18n-placeholder="@@featureAdminBilling-searchPlaceholder"
-      />
-    </div>
-
-    <div class="table-responsive">
-      <table class="table table-sm table-hover align-middle">
-        <thead>
-          <tr>
-            <th i18n="@@featureAdminBilling-colInvoice">Invoice</th>
-            <th i18n="@@featureAdminBilling-colUser">User</th>
-            <th i18n="@@featureAdminBilling-colSubscription">Subscription</th>
-            <th i18n="@@featureAdminBilling-colStatus">Status</th>
-            <th i18n="@@featureAdminBilling-colBalance">Balance</th>
-            <th i18n="@@featureAdminBilling-colDueDate">Due date</th>
-            <th i18n="@@featureAdminBilling-colActions">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (openOverdueLoading$ | async) {
-            <tr>
-              <td colspan="7" class="text-center py-4">
+    <div class="admin-billing__summary-bar flex-shrink-0">
+      <div class="row g-0 admin-billing__summary-grid">
+        <div class="col-6 col-md-3">
+          <div class="card h-100 rounded-0 admin-billing__summary-card admin-billing__summary-card--first">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminBilling-activeSubscriptions">
+                Active subscriptions
+              </h6>
+              @if (summaryLoading$ | async) {
                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              </td>
-            </tr>
-          } @else {
-            @for (invoice of openOverdueItems(); track invoice.id) {
-              <tr>
-                <td>{{ invoice.invoiceNumber ?? invoice.id }}</td>
-                <td>{{ invoice.userEmail ?? invoice.userId }}</td>
-                <td>{{ invoice.subscriptionNumber ?? invoice.subscriptionId }}</td>
-                <td>
-                  <span class="badge text-bg-secondary">{{ invoice.status }}</span>
-                </td>
-                <td>{{ invoice.balance | number: '1.2-2' }}€</td>
-                <td>{{ invoice.dueDate ? (invoice.dueDate | date: 'mediumDate') : '—' }}</td>
-                <td>
-                  <div class="btn-group btn-group-sm">
-                    @if (canVoid(invoice)) {
-                      <button
-                        type="button"
-                        class="btn btn-outline-danger"
-                        (click)="openActionModal('void', invoice)"
-                        i18n="@@featureAdminBilling-void"
-                      >
-                        Void
-                      </button>
-                    }
-                    @if (canMarkPaid(invoice)) {
-                      <button
-                        type="button"
-                        class="btn btn-outline-success"
-                        (click)="openActionModal('markPaid', invoice)"
-                        i18n="@@featureAdminBilling-markPaid"
-                      >
-                        Mark paid
-                      </button>
-                    }
-                    @if (canMarkUnpaid(invoice)) {
-                      <button
-                        type="button"
-                        class="btn btn-outline-warning"
-                        (click)="openActionModal('markUnpaid', invoice)"
-                        i18n="@@featureAdminBilling-markUnpaid"
-                      >
-                        Mark unpaid
-                      </button>
-                    }
-                    @if (invoice.canDownload) {
-                      <button
-                        type="button"
-                        class="btn btn-outline-primary"
-                        (click)="downloadInvoice(invoice)"
-                        i18n="@@featureAdminBilling-download"
-                      >
-                        Download
-                      </button>
-                    }
-                    @if (invoice.canDownloadVoidDocument) {
-                      <button
-                        type="button"
-                        class="btn btn-outline-primary"
-                        (click)="downloadVoidDocument(invoice)"
-                        i18n="@@featureAdminBilling-downloadCreditNote"
-                      >
-                        Credit note
-                      </button>
-                    }
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      (click)="openAuditHistory(invoice)"
-                      i18n="@@featureAdminBilling-history"
-                    >
-                      History
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="7" class="text-muted text-center py-4" i18n="@@featureAdminBilling-noInvoices">
-                  No invoices found.
-                </td>
-              </tr>
-            }
-          }
-        </tbody>
-      </table>
+              } @else if (summary$ | async; as summary) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.activeSubscriptionsCount }}</p>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card h-100 rounded-0 admin-billing__summary-card admin-billing__summary-card--second">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminBilling-openOverdueCount">
+                Open and overdue invoices
+              </h6>
+              @if (summaryLoading$ | async) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else if (summary$ | async; as summary) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openOverdueCount }}</p>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card h-100 rounded-0 admin-billing__summary-card admin-billing__summary-card--third">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminBilling-openOverdueTotal">
+                Open total amount
+              </h6>
+              @if (summaryLoading$ | async) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else if (summary$ | async; as summary) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openOverdueTotal | number: '1.2-2' }}€</p>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card h-100 rounded-0 admin-billing__summary-card admin-billing__summary-card--fourth">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminBilling-unbilledTotal">
+                Unbilled amount
+              </h6>
+              @if (summaryLoading$ | async) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else if (summary$ | async; as summary) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.unbilledTotal | number: '1.2-2' }}€</p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <nav aria-label="Invoice pagination" class="d-flex justify-content-between align-items-center">
-      <span class="small text-muted">{{ openOverdueTotal() }} total</span>
-      <ul class="pagination pagination-sm mb-0">
-        <li class="page-item" [class.disabled]="invoicesPage() === 0">
-          <button type="button" class="page-link" (click)="onInvoicesPageChange(invoicesPage() - 1)">‹</button>
-        </li>
-        <li class="page-item disabled">
-          <span class="page-link">{{ invoicesPage() + 1 }} / {{ totalInvoicePages() }}</span>
-        </li>
-        <li class="page-item" [class.disabled]="invoicesPage() + 1 >= totalInvoicePages()">
-          <button type="button" class="page-link" (click)="onInvoicesPageChange(invoicesPage() + 1)">›</button>
-        </li>
-      </ul>
-    </nav>
+    <div class="section__row flex-grow-1 min-h-0">
+      <div
+        class="section__column section__column--overview d-flex flex-column min-h-0"
+        [class.d-none]="mobilePanel() !== 'overview'"
+      >
+        @if (statisticsError$ | async; as err) {
+          <div class="alert alert-danger mb-0 rounded-0 border-0 border-bottom" role="alert">{{ err }}</div>
+        }
+
+        <div class="admin-billing__statistics-lane card flex-grow-1 border-0 d-flex flex-column min-h-0">
+          <div
+            class="card-header admin-billing__lane-header py-2 small fw-semibold d-flex justify-content-between align-items-center flex-shrink-0"
+          >
+            <span i18n="@@featureAdminBilling-statisticsTitle">Statistics</span>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              (click)="onToggleFilters()"
+              [attr.aria-expanded]="!filtersCollapsed()"
+              aria-controls="adminBillingFilters"
+            >
+              <span i18n="@@featureAdminBilling-filters">Filters</span>
+              <i
+                class="bi ms-1"
+                [class.bi-chevron-down]="filtersCollapsed()"
+                [class.bi-chevron-up]="!filtersCollapsed()"
+                aria-hidden="true"
+              ></i>
+            </button>
+          </div>
+          <div
+            id="adminBillingFilters"
+            class="admin-billing__statistics-filters border-bottom collapse flex-shrink-0"
+            [class.show]="!filtersCollapsed()"
+          >
+            <div class="p-3">
+              <div class="row g-3 mb-0">
+                <div class="col-12">
+                  <label class="form-label small" for="adminBillingUser" i18n="@@featureAdminBilling-userFilter"
+                    >User</label
+                  >
+                  <select
+                    id="adminBillingUser"
+                    class="form-select form-select-sm"
+                    [ngModel]="selectedUserId()"
+                    (ngModelChange)="selectedUserId.set($event)"
+                  >
+                    <option [ngValue]="null" i18n="@@featureAdminBilling-allUsers">All users</option>
+                    @for (user of users(); track user.id) {
+                      <option [ngValue]="user.id">{{ user.email }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label small" for="adminBillingFrom" i18n="@@featureAdminBilling-fromDate"
+                    >From</label
+                  >
+                  <input
+                    id="adminBillingFrom"
+                    type="date"
+                    class="form-control form-control-sm"
+                    [ngModel]="fromDate()"
+                    (ngModelChange)="fromDate.set($event)"
+                  />
+                </div>
+                <div class="col-6">
+                  <label class="form-label small" for="adminBillingTo" i18n="@@featureAdminBilling-toDate">To</label>
+                  <input
+                    id="adminBillingTo"
+                    type="date"
+                    class="form-control form-control-sm"
+                    [ngModel]="toDate()"
+                    (ngModelChange)="toDate.set($event)"
+                  />
+                </div>
+                <div class="col-12">
+                  <label class="form-label small" for="adminBillingGroupBy" i18n="@@featureAdminBilling-groupBy"
+                    >Group by</label
+                  >
+                  <select
+                    id="adminBillingGroupBy"
+                    class="form-select form-select-sm"
+                    [ngModel]="groupBy()"
+                    (ngModelChange)="groupBy.set($event)"
+                  >
+                    <option value="day" i18n="@@featureAdminBilling-groupByDay">Day</option>
+                    <option value="month" i18n="@@featureAdminBilling-groupByMonth">Month</option>
+                  </select>
+                </div>
+                <div class="col-12 d-flex gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    (click)="onApplyFilters()"
+                    i18n="@@featureAdminBilling-apply"
+                  >
+                    Apply
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    (click)="onResetFilters()"
+                    i18n="@@featureAdminBilling-reset"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="admin-billing__statistics-body">
+            <div class="d-flex flex-column gap-3 p-3">
+              <div class="card">
+                <div class="card-body">
+                  @if (seriesChartOptions(); as chart) {
+                    <apx-chart
+                      [series]="chart.series"
+                      [chart]="chart.chart"
+                      [colors]="chart.colors"
+                      [stroke]="chart.stroke"
+                      [fill]="chart.fill"
+                      [dataLabels]="chart.dataLabels"
+                      [xaxis]="chart.xaxis"
+                      [yaxis]="chart.yaxis"
+                      [grid]="chart.grid"
+                      [title]="chart.title"
+                    ></apx-chart>
+                  } @else if (statisticsSummaryLoading$ | async) {
+                    <div class="text-center py-4"><span class="spinner-border spinner-border-sm"></span></div>
+                  } @else {
+                    <p class="text-muted small mb-0" i18n="@@featureAdminBilling-noChartData">
+                      No turnover data for selected period.
+                    </p>
+                  }
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body">
+                  @if (donutChartOptions(); as chart) {
+                    <apx-chart
+                      [series]="chart.series"
+                      [chart]="chart.chart"
+                      [labels]="chart.labels"
+                      [colors]="chart.colors"
+                      [legend]="chart.legend"
+                      [title]="chart.title"
+                    ></apx-chart>
+                  } @else if (statisticsByProductLoading$ | async) {
+                    <div class="text-center py-4"><span class="spinner-border spinner-border-sm"></span></div>
+                  } @else {
+                    <p class="text-muted small mb-0" i18n="@@featureAdminBilling-noProductData">
+                      No product breakdown for selected period.
+                    </p>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="section__column section__column--invoices d-md-flex flex-column border-start"
+        [class.d-none]="mobilePanel() !== 'invoices'"
+      >
+        <div class="admin-billing__invoices-lane card h-100 border-0 d-flex flex-column">
+          <div
+            class="card-header admin-billing__lane-header py-2 small fw-semibold d-flex justify-content-between align-items-center flex-shrink-0 d-none d-md-flex"
+          >
+            <span i18n="@@featureAdminBilling-invoicesTitle">Invoices</span>
+            <span class="btn btn-sm btn-outline-secondary invisible" aria-hidden="true">
+              Filters
+              <i class="bi bi-chevron-down ms-1" aria-hidden="true"></i>
+            </span>
+          </div>
+          <form class="admin-billing__invoices-search" (ngSubmit)="$event.preventDefault()">
+            <label for="invoiceSearchInput" class="visually-hidden" i18n="@@featureAdminInvoices-searchPlaceholder">
+              Search invoices
+            </label>
+            <div class="input-group search-input-container border-bottom">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input
+                id="invoiceSearchInput"
+                type="search"
+                class="form-control border-0 search-input"
+                placeholder="Search invoices"
+                i18n-placeholder="@@featureAdminInvoices-searchPlaceholder"
+                [ngModel]="invoiceSearch()"
+                (ngModelChange)="invoiceSearch.set($event)"
+                name="invoiceSearch"
+              />
+            </div>
+          </form>
+
+          <div class="admin-billing__invoices-list list-group list-group-flush flex-grow-1">
+            @if (invoicesLoading$ | async) {
+              <div class="d-flex justify-content-center align-items-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden" i18n="@@featureAdminInvoices-loading">Loading invoices...</span>
+                </div>
+              </div>
+            } @else {
+              @if (invoicesError$ | async; as error) {
+                <div class="alert alert-danger m-3" role="alert">{{ error }}</div>
+              }
+              @if (invoices().length === 0) {
+                <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+                  <div class="text-center">
+                    <i class="bi bi-receipt fs-1 d-block mb-2"></i>
+                    <p class="mb-0" i18n="@@featureAdminInvoices-empty">No invoices found</p>
+                  </div>
+                </div>
+              } @else {
+                @for (invoice of invoices(); track invoice.id) {
+                  <div class="list-group-item d-flex justify-content-between align-items-start border-bottom gap-2">
+                    <div class="min-w-0">
+                      <div class="fw-semibold mb-1">{{ invoiceDisplayTitle(invoice) }}</div>
+                      <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+                        <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                          <span
+                            class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded me-2"
+                            [ngClass]="invoiceStatusBadgeClass(invoice.status)"
+                            [attr.title]="invoice.status ?? undefined"
+                          >
+                            {{ invoiceStatusLabel(invoice.status) }}
+                          </span>
+                          <span class="me-2">
+                            <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ invoiceUserLabel(invoice) }}
+                          </span>
+                          <span class="me-2">
+                            <i class="bi bi-cash-stack me-1" aria-hidden="true"></i
+                            >{{ invoice.balance ?? 0 | number: '1.2-2' }} EUR
+                          </span>
+                          <span class="me-2">
+                            <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(invoice.createdAt) }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="btn-group btn-group-sm flex-shrink-0"
+                      role="group"
+                      aria-label="Invoice actions"
+                      i18n-aria-label="@@featureAdminInvoices-invoiceActionsAria"
+                    >
+                      @if (isDraft(invoice)) {
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary"
+                          (click)="openEditModal(invoice)"
+                          title="Edit draft"
+                          i18n-title="@@featureAdminInvoices-editButtonTitle"
+                        >
+                          <i class="bi bi-pencil" aria-hidden="true"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-outline-success"
+                          (click)="openIssueModal(invoice)"
+                          title="Issue invoice"
+                          i18n-title="@@featureAdminInvoices-issueButtonTitle"
+                        >
+                          <i class="bi bi-send" aria-hidden="true"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-outline-danger"
+                          (click)="openDeleteModal(invoice)"
+                          title="Delete draft"
+                          i18n-title="@@featureAdminInvoices-deleteButtonTitle"
+                        >
+                          <i class="bi bi-trash" aria-hidden="true"></i>
+                        </button>
+                      } @else {
+                        @if (canVoid(invoice)) {
+                          <button
+                            type="button"
+                            class="btn btn-outline-danger"
+                            (click)="openActionModal('void', invoice)"
+                            title="Void invoice"
+                            i18n-title="@@featureAdminInvoices-voidButtonTitle"
+                          >
+                            <i class="bi bi-x-circle" aria-hidden="true"></i>
+                          </button>
+                        }
+                        @if (canMarkPaid(invoice)) {
+                          <button
+                            type="button"
+                            class="btn btn-outline-success"
+                            (click)="openActionModal('markPaid', invoice)"
+                            title="Mark as paid"
+                            i18n-title="@@featureAdminInvoices-markPaidButtonTitle"
+                          >
+                            <i class="bi bi-check-circle" aria-hidden="true"></i>
+                          </button>
+                        }
+                        @if (canMarkUnpaid(invoice)) {
+                          <button
+                            type="button"
+                            class="btn btn-outline-warning"
+                            (click)="openActionModal('markUnpaid', invoice)"
+                            title="Mark as unpaid"
+                            i18n-title="@@featureAdminInvoices-markUnpaidButtonTitle"
+                          >
+                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                          </button>
+                        }
+                        @if (invoice.canDownload) {
+                          <button
+                            type="button"
+                            class="btn btn-outline-secondary"
+                            (click)="downloadInvoice(invoice)"
+                            title="Download PDF"
+                            i18n-title="@@featureAdminInvoices-downloadPdfButtonTitle"
+                          >
+                            <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
+                          </button>
+                        }
+                        @if (invoice.canDownloadVoidDocument) {
+                          <button
+                            type="button"
+                            class="btn btn-outline-secondary"
+                            (click)="downloadVoidDocument(invoice)"
+                            title="Download void PDF"
+                            i18n-title="@@featureAdminInvoices-downloadVoidPdfButtonTitle"
+                          >
+                            <i class="bi bi-file-earmark-x" aria-hidden="true"></i>
+                          </button>
+                        }
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary"
+                          (click)="openAuditHistory(invoice)"
+                          title="View history"
+                          i18n-title="@@featureAdminInvoices-historyButtonTitle"
+                        >
+                          <i class="bi bi-clock-history" aria-hidden="true"></i>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -391,28 +491,13 @@
           >
         </div>
         @if (billNowScope() === 'user') {
-          <input
-            type="search"
-            class="form-control form-control-sm mb-2"
-            [ngModel]="billNowUserSearch()"
-            (ngModelChange)="billNowUserSearch.set($event)"
-            placeholder="Search by email or ID"
-            i18n-placeholder="@@featureAdminBilling-userSearchPlaceholder"
+          <framework-billing-admin-user-select
+            #billNowUserSelect
+            inputId="billNowUser"
+            [users]="users()"
+            [(selectedUserId)]="billNowUserId"
+            [showSuggestionsOnFocus]="true"
           />
-          <div class="list-group list-group-flush border rounded" style="max-height: 200px; overflow-y: auto">
-            @for (user of filteredBillNowUsers(); track user.id) {
-              <button
-                type="button"
-                class="list-group-item list-group-item-action"
-                [class.active]="billNowUserId() === user.id"
-                (click)="billNowUserId.set(user.id)"
-              >
-                {{ user.email }}
-              </button>
-            } @empty {
-              <div class="list-group-item text-muted small" i18n="@@featureAdminBilling-noUsers">No users found.</div>
-            }
-          </div>
         }
         @if (billNowError$ | async; as err) {
           <div class="alert alert-danger mt-3 mb-0" role="alert">{{ err }}</div>
@@ -433,7 +518,7 @@
           type="button"
           class="btn btn-primary"
           (click)="submitBillNow()"
-          [disabled]="(billNowLoading$ | async) === true || (billNowScope() === 'user' && !billNowUserId())"
+          [disabled]="(billNowLoading$ | async) === true || (billNowScope() === 'user' && !billNowUserId)"
         >
           @if (billNowLoading$ | async) {
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
@@ -515,3 +600,228 @@
     </div>
   </div>
 </div>
+
+<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminInvoices-createTitle">Create manual invoice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="createInvoiceUser" i18n="@@featureAdminInvoices-user">User</label>
+          <framework-billing-admin-user-select
+            #createInvoiceUserSelect
+            inputId="createInvoiceUser"
+            [users]="users()"
+            [(selectedUserId)]="createUserId"
+            (selectedUserIdChange)="onCreateInvoiceUserChanged($event)"
+            [required]="true"
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="createInvoiceSubscription" i18n="@@featureAdminInvoices-subscriptionOptional"
+            >Subscription (optional)</label
+          >
+          @if (!createUserId) {
+            <input
+              id="createInvoiceSubscription"
+              type="text"
+              class="form-control"
+              disabled
+              i18n-placeholder="@@featureAdminInvoices-selectUserFirst"
+              placeholder="Select a user first"
+            />
+          } @else {
+            <framework-billing-admin-subscription-select
+              #createInvoiceSubscriptionSelect
+              inputId="createInvoiceSubscription"
+              [subscriptions]="createInvoiceSubscriptions()"
+              [loading]="createInvoiceSubscriptionsLoading()"
+              [(selectedSubscriptionId)]="createSubscriptionId"
+            />
+          }
+        </div>
+        @for (line of createLineItems; track $index; let i = $index) {
+          <ng-container
+            *ngTemplateOutlet="
+              manualInvoiceLineItem;
+              context: { line: line, index: i, prefix: 'create', target: 'create', itemCount: createLineItems.length }
+            "
+          ></ng-container>
+        }
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addLineItem('create')">
+          Add line item
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitCreate()"
+          [disabled]="(invoicesCreating$ | async) === true"
+        >
+          Save draft
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminInvoices-editTitle">Edit draft invoice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @for (line of editLineItems; track $index; let i = $index) {
+          <ng-container
+            *ngTemplateOutlet="
+              manualInvoiceLineItem;
+              context: { line: line, index: i, prefix: 'edit', target: 'edit', itemCount: editLineItems.length }
+            "
+          ></ng-container>
+        }
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addLineItem('edit')">
+          Add line item
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitEdit()"
+          [disabled]="(invoicesUpdating$ | async) === true"
+        >
+          Update draft
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #issueModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminInvoices-issueTitle">Issue invoice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label" i18n="@@featureAdminInvoices-dueInDays">Due in days</label>
+        <input type="number" class="form-control" [(ngModel)]="issueDueInDays" name="issueDueInDays" min="1" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button
+          type="button"
+          class="btn btn-success"
+          (click)="submitIssue()"
+          [disabled]="(invoicesIssuing$ | async) === true"
+        >
+          Issue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #deleteModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminInvoices-deleteTitle">Delete draft</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p i18n="@@featureAdminInvoices-deleteConfirm">Delete this draft invoice permanently?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmDelete()"
+          [disabled]="(invoicesDeleting$ | async) === true"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template
+  #manualInvoiceLineItem
+  let-line="line"
+  let-i="index"
+  let-prefix="prefix"
+  let-target="target"
+  let-itemCount="itemCount"
+>
+  <div class="border rounded p-2 mb-2">
+    <label class="form-label" [for]="prefix + 'LineDesc' + i" i18n="@@featureAdminInvoices-lineDescription"
+      >Description</label
+    >
+    <input
+      class="form-control mb-2"
+      [id]="prefix + 'LineDesc' + i"
+      [(ngModel)]="line.description"
+      [name]="prefix + 'Desc' + i"
+    />
+    <div class="row g-2">
+      <div class="col-4">
+        <label class="form-label" [for]="prefix + 'LineQty' + i" i18n="@@featureAdminInvoices-lineQuantity"
+          >Quantity</label
+        >
+        <input
+          type="number"
+          class="form-control"
+          [id]="prefix + 'LineQty' + i"
+          [(ngModel)]="line.quantity"
+          [name]="prefix + 'Qty' + i"
+          min="0.0001"
+          step="any"
+        />
+      </div>
+      <div class="col-4">
+        <label class="form-label" [for]="prefix + 'LinePrice' + i" i18n="@@featureAdminInvoices-lineUnitPriceNet"
+          >Unit price (net)</label
+        >
+        <input
+          type="number"
+          class="form-control"
+          [id]="prefix + 'LinePrice' + i"
+          [(ngModel)]="line.unitPriceNet"
+          [name]="prefix + 'Price' + i"
+          min="0"
+          step="any"
+        />
+      </div>
+      <div class="col-4">
+        <label class="form-label" [for]="prefix + 'LineTax' + i" i18n="@@featureAdminInvoices-lineTaxCategory"
+          >Tax category</label
+        >
+        <select
+          class="form-select"
+          [id]="prefix + 'LineTax' + i"
+          [(ngModel)]="line.taxCategory"
+          [name]="prefix + 'Tax' + i"
+        >
+          <option value="standard" i18n="@@featureAdminInvoices-taxStandard">Standard</option>
+          <option value="reduced" i18n="@@featureAdminInvoices-taxReduced">Reduced</option>
+        </select>
+      </div>
+    </div>
+    @if (itemCount > 1) {
+      <button type="button" class="btn btn-link btn-sm text-danger p-0 mt-2" (click)="removeLineItem(target, i)">
+        <span i18n="@@featureAdminInvoices-removeLine">Remove line</span>
+      </button>
+    }
+  </div>
+</ng-template>

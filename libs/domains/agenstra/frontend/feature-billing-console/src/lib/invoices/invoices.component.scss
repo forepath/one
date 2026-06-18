@@ -1,3 +1,7 @@
+@use '../section.scss';
+@use '../admin-list-page.scss';
+@use '../customer-lane-layout.scss';
+
 :host {
   display: flex;
   flex-direction: column;
@@ -6,6 +10,99 @@
   overflow: hidden;
 }
 
+.invoices-container {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
 .invoices-header {
   min-height: 64px;
+}
+
+.customer-billing__summary-bar {
+  flex-shrink: 0;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.customer-billing__summary-grid .customer-billing__summary-card {
+  background: var(--bs-body-bg);
+  border-top: 0;
+}
+
+.customer-billing__summary-card--first {
+  border-left: 0;
+}
+
+.customer-billing__summary-card--second {
+  @media (max-width: 767.98px) {
+    border-right: 0;
+  }
+}
+
+.customer-billing__summary-card--third {
+  border-left: 0;
+
+  @media (max-width: 767.98px) {
+    border-bottom: 0;
+  }
+
+  @media (min-width: 768px) {
+    border-left-width: var(--bs-border-width);
+  }
+}
+
+.customer-billing__summary-card--fourth {
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.section__row {
+  flex: 1 1 0;
+  min-height: 0;
+  flex-wrap: nowrap;
+}
+
+.section__column--open-overdue,
+.section__column--subscription {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.customer-billing__lane {
+  border-radius: 0;
+
+  .customer-billing__lane-header,
+  .customer-billing__lane-subscription-select {
+    background: var(--bs-secondary-bg);
+    border-radius: 0;
+  }
+}
+
+.btn-group-options {
+  > .btn-options {
+    border-radius: 0;
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 0;
+    flex: 1 1 auto;
+
+    &:last-child {
+      border-right: 0;
+    }
+  }
+}
+
+.invoice-preview-modal {
+  max-width: 56rem;
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    min-height: 12rem;
+    color: var(--bs-secondary-color);
+  }
 }

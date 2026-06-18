@@ -1,14 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   ServiceTypesFacade,
   type CreateServiceTypeDto,
+  type ProviderDetail,
   type ServiceTypeResponse,
   type UpdateServiceTypeDto,
 } from '@forepath/agenstra/frontend/data-access-billing-console';
-import { filter, pairwise } from 'rxjs';
+import { map, combineLatest } from 'rxjs';
+
+import {
+  getActiveStatusLabel,
+  getActiveStatusTextClass,
+  getProviderDisplayName,
+  getUnavailableLabel,
+} from '../billing-status-labels';
+import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 
 @Component({
   selector: 'framework-billing-service-types-page',
@@ -25,7 +34,21 @@ export class ServiceTypesPageComponent implements OnInit {
   private readonly facade = inject(ServiceTypesFacade);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly serviceTypes$ = this.facade.getServiceTypes$();
+  readonly searchQuery = signal('');
+  readonly searchQuery$ = toObservable(this.searchQuery);
+  readonly serviceTypes$ = combineLatest([
+    this.facade.getServiceTypes$(),
+    this.facade.getProviderDetails$(),
+    this.searchQuery$,
+  ]).pipe(
+    map(([serviceTypes, providerDetails, searchQuery]) => {
+      const filtered = !searchQuery.trim()
+        ? serviceTypes
+        : serviceTypes.filter((item) => JSON.stringify(item).toLowerCase().includes(searchQuery.trim().toLowerCase()));
+
+      return { serviceTypes: filtered, providerDetails };
+    }),
+  );
   readonly providerDetails$ = this.facade.getProviderDetails$();
   readonly providerDetailsLoading$ = this.facade.getProviderDetailsLoading$();
   readonly loading$ = this.facade.getServiceTypesLoading$();
@@ -42,44 +65,12 @@ export class ServiceTypesPageComponent implements OnInit {
   ngOnInit(): void {
     this.facade.loadServiceTypes();
     this.facade.loadProviderDetails();
-    this.facade
-      .getServiceTypesCreating$()
-      .pipe(
-        pairwise(),
-        filter(([prev, curr]) => prev === true && curr === false),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.hideModal(this.createModal);
-        this.resetCreateForm();
-      });
-    this.facade
-      .getServiceTypesUpdating$()
-      .pipe(
-        pairwise(),
-        filter(([prev, curr]) => prev === true && curr === false),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.hideModal(this.editModal);
-        this.resetEditForm();
-      });
-    this.facade
-      .getServiceTypesDeleting$()
-      .pipe(
-        pairwise(),
-        filter(([prev, curr]) => prev === true && curr === false),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.hideModal(this.deleteConfirmModal);
-        this.serviceTypeToDelete = null;
-      });
+    this.registerModalCloseWatchers();
   }
 
   openCreateModal(): void {
     this.resetCreateForm();
-    this.showModal(this.createModal);
+    showBillingModal(this.createModal);
   }
 
   openEditModal(st: ServiceTypeResponse): void {
@@ -90,12 +81,30 @@ export class ServiceTypesPageComponent implements OnInit {
       provider: st.provider,
       isActive: st.isActive,
     };
-    this.showModal(this.editModal);
+    showBillingModal(this.editModal);
   }
 
   openDeleteConfirm(st: ServiceTypeResponse): void {
     this.serviceTypeToDelete = st;
-    this.showModal(this.deleteConfirmModal);
+    showBillingModal(this.deleteConfirmModal);
+  }
+
+  providerLabel(providerId: string, providers: ProviderDetail[] | null | undefined): string {
+    return getProviderDisplayName(providerId, providers);
+  }
+
+  activeStatusLabel(isActive: boolean): string {
+    return getActiveStatusLabel(isActive);
+  }
+
+  activeStatusTextClass(isActive: boolean): string {
+    return getActiveStatusTextClass(isActive);
+  }
+
+  serviceTypeKeyLabel(key: string | null | undefined): string {
+    const trimmed = key?.trim();
+
+    return trimmed || getUnavailableLabel();
   }
 
   onSubmitCreate(): void {
@@ -122,9 +131,9 @@ export class ServiceTypesPageComponent implements OnInit {
   }
 
   confirmDelete(): void {
-    if (this.serviceTypeToDelete) {
-      this.facade.deleteServiceType(this.serviceTypeToDelete.id);
-    }
+    if (!this.serviceTypeToDelete) return;
+
+    this.facade.deleteServiceType(this.serviceTypeToDelete.id);
   }
 
   private resetCreateForm(): void {
@@ -135,27 +144,29 @@ export class ServiceTypesPageComponent implements OnInit {
     this.editForm = { id: '', name: '', description: '', provider: '', isActive: true };
   }
 
-  private showModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      const modal = (
-        window as unknown as {
-          bootstrap?: { Modal?: { getOrCreateInstance: (el: HTMLElement) => { show: () => void } } };
-        }
-      ).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
-
-      if (modal) modal.show();
-    }
-  }
-
-  private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      const modal = (
-        window as unknown as {
-          bootstrap?: { Modal?: { getInstance: (el: HTMLElement) => { hide: () => void } | null } };
-        }
-      ).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
-
-      if (modal) modal.hide();
-    }
+  private registerModalCloseWatchers(): void {
+    watchBillingMutationModalClose({
+      loading$: this.creating$,
+      error$: this.error$,
+      modal: () => this.createModal,
+      destroyRef: this.destroyRef,
+      onSuccess: () => this.resetCreateForm(),
+    });
+    watchBillingMutationModalClose({
+      loading$: this.updating$,
+      error$: this.error$,
+      modal: () => this.editModal,
+      destroyRef: this.destroyRef,
+      onSuccess: () => this.resetEditForm(),
+    });
+    watchBillingMutationModalClose({
+      loading$: this.deleting$,
+      error$: this.error$,
+      modal: () => this.deleteConfirmModal,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        this.serviceTypeToDelete = null;
+      },
+    });
   }
 }

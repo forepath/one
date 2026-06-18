@@ -1,0 +1,72 @@
+<div class="billing-admin-user-select">
+  @if (selectedSubscription(); as subscription) {
+    <small
+      class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1 billing-admin-user-select__chip"
+    >
+      <span class="text-truncate small">{{ subscriptionPrimaryLabel(subscription) }}</span>
+      <button
+        type="button"
+        class="btn btn-link btn-sm p-0 ms-1 align-baseline flex-shrink-0"
+        [disabled]="isInputDisabled()"
+        (click)="clearSelection()"
+        i18n-aria-label="@@featureBillingAdminSubscriptionSelect-clearSelectionAria"
+        aria-label="Clear selected subscription"
+      >
+        <i class="bi bi-x" aria-hidden="true"></i>
+      </button>
+    </small>
+  } @else {
+    <div class="position-relative">
+      <input
+        [id]="inputId()"
+        type="text"
+        class="form-control"
+        autocomplete="off"
+        [disabled]="isInputDisabled()"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearchChange($event)"
+        (focus)="onSearchFocus()"
+        (blur)="onSearchBlur()"
+        [placeholder]="loading() ? loadingPlaceholder : placeholder()"
+      />
+      @if (loading()) {
+        <span class="position-absolute top-50 end-0 translate-middle-y me-2">
+          <span class="spinner-border spinner-border-sm text-muted" role="status" aria-hidden="true"></span>
+        </span>
+      }
+      @if (suggestionsOpen() && filteredSubscriptions().length > 0) {
+        <ul
+          class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100 billing-admin-user-select__suggestions"
+        >
+          @for (subscription of filteredSubscriptions(); track subscription.id) {
+            <li>
+              <button
+                type="button"
+                class="dropdown-item py-2 text-start"
+                (mousedown)="pickSubscription(subscription, $event)"
+              >
+                <span class="d-block small fw-medium text-truncate">{{ subscriptionPrimaryLabel(subscription) }}</span>
+                <span class="d-block text-muted small text-truncate">
+                  {{ subscription.planId }} · {{ subscriptionStatusLabel(subscription.status) }}
+                </span>
+                <span class="d-block font-monospace text-muted small text-truncate">{{ subscription.id }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+      } @else if (suggestionsOpen() && searchQuery().trim() && !loading()) {
+        <ul
+          class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100 billing-admin-user-select__suggestions"
+        >
+          <li>
+            <span
+              class="dropdown-item-text text-muted small"
+              i18n="@@featureBillingAdminSubscriptionSelect-noSubscriptions"
+              >No subscriptions found.</span
+            >
+          </li>
+        </ul>
+      }
+    </div>
+  }
+</div>

@@ -24,7 +24,7 @@ import type { LineItemInput } from './tax-calculation.service';
 import { TaxCalculationService } from './tax-calculation.service';
 
 export interface CreateInvoiceDraftParams {
-  subscriptionId: string;
+  subscriptionId?: string;
   userId: string;
   lineInputs: LineItemInput[];
   currency?: string;
@@ -159,7 +159,30 @@ export class InvoiceService {
       throw new NotFoundException('Invoice not found');
     }
 
-    const lineItems = await this.invoiceLineItemsRepository.findByInvoiceId(invoiceId);
+    return this.buildDetailResponse(invoice);
+  }
+
+  async getDetailForUser(invoiceId: string, userId: string): Promise<InvoiceDetailResponseDto> {
+    const invoice = await this.invoicesRepository.findByIdForUser(invoiceId, userId);
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    return this.buildDetailResponse(invoice);
+  }
+
+  async getDetailById(invoiceId: string): Promise<InvoiceDetailResponseDto & { userId: string }> {
+    const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceId);
+
+    return {
+      ...(await this.buildDetailResponse(invoice)),
+      userId: invoice.userId,
+    };
+  }
+
+  private async buildDetailResponse(invoice: InvoiceEntity): Promise<InvoiceDetailResponseDto> {
+    const lineItems = await this.invoiceLineItemsRepository.findByInvoiceId(invoice.id);
     const totals = this.taxCalculationService.computeLines(
       lineItems.map((line) => ({
         description: line.description,
@@ -197,12 +220,8 @@ export class InvoiceService {
     };
   }
 
-  async getVoidPdfBuffer(invoiceId: string, subscriptionId: string): Promise<Buffer> {
-    const invoice = await this.invoicesRepository.findByIdAndSubscriptionId(invoiceId, subscriptionId);
-
-    if (!invoice) {
-      throw new NotFoundException('Invoice not found');
-    }
+  async getVoidPdfBuffer(invoiceId: string, subscriptionId?: string | null): Promise<Buffer> {
+    const invoice = await this.findInvoiceForAccess(invoiceId, subscriptionId);
 
     if (invoice.status !== InvoiceStatus.VOID) {
       throw new BadRequestException('Void document is only available for voided invoices');
@@ -223,12 +242,8 @@ export class InvoiceService {
     return await this.invoicePdfService.readPdf(storageKey);
   }
 
-  async getPdfBuffer(invoiceId: string, subscriptionId: string): Promise<Buffer> {
-    const invoice = await this.invoicesRepository.findByIdAndSubscriptionId(invoiceId, subscriptionId);
-
-    if (!invoice) {
-      throw new NotFoundException('Invoice not found');
-    }
+  async getPdfBuffer(invoiceId: string, subscriptionId?: string | null): Promise<Buffer> {
+    const invoice = await this.findInvoiceForAccess(invoiceId, subscriptionId);
 
     if (invoice.status === InvoiceStatus.DRAFT) {
       throw new BadRequestException('Draft invoices have no PDF');
@@ -247,6 +262,40 @@ export class InvoiceService {
     return await this.invoicePdfService.readPdf(storageKey);
   }
 
+  async getPdfBufferForUser(invoiceId: string, userId: string): Promise<Buffer> {
+    const invoice = await this.invoicesRepository.findByIdForUser(invoiceId, userId);
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    return await this.getPdfBuffer(invoiceId, invoice.subscriptionId);
+  }
+
+  async getVoidPdfBufferForUser(invoiceId: string, userId: string): Promise<Buffer> {
+    const invoice = await this.invoicesRepository.findByIdForUser(invoiceId, userId);
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    return await this.getVoidPdfBuffer(invoiceId, invoice.subscriptionId);
+  }
+
+  private async findInvoiceForAccess(invoiceId: string, subscriptionId?: string | null): Promise<InvoiceEntity> {
+    if (subscriptionId) {
+      const invoice = await this.invoicesRepository.findByIdAndSubscriptionId(invoiceId, subscriptionId);
+
+      if (!invoice) {
+        throw new NotFoundException('Invoice not found');
+      }
+
+      return invoice;
+    }
+
+    return await this.invoicesRepository.findByIdOrThrow(invoiceId);
+  }
+
   private async ensurePdfStored(invoice: InvoiceEntity): Promise<string> {
     const lineItems = await this.invoiceLineItemsRepository.findByInvoiceId(invoice.id);
     const profile = await this.customerProfilesRepository.findByUserId(invoice.userId);
@@ -256,7 +305,9 @@ export class InvoiceService {
     }
 
     this.billingIssuerConfig.assertConfigured();
-    const subscription = await this.subscriptionsRepository.findById(invoice.subscriptionId);
+    const subscription = invoice.subscriptionId
+      ? await this.subscriptionsRepository.findById(invoice.subscriptionId)
+      : null;
     const plan = subscription ? await this.servicePlansRepository.findById(subscription.planId) : null;
     const storageKey = await this.invoicePdfService.generateAndStore(
       invoice,
@@ -299,7 +350,9 @@ export class InvoiceService {
     }
 
     this.billingIssuerConfig.assertConfigured();
-    const subscription = await this.subscriptionsRepository.findById(invoice.subscriptionId);
+    const subscription = invoice.subscriptionId
+      ? await this.subscriptionsRepository.findById(invoice.subscriptionId)
+      : null;
     const plan = subscription ? await this.servicePlansRepository.findById(subscription.planId) : null;
     const generated = await this.invoicePdfService.generateVoidDocumentAndStore(
       invoice,

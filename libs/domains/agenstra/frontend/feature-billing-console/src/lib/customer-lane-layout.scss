@@ -1,0 +1,24 @@
+.customer-billing__lane-header,
+.customer-billing__lane-subscription-select,
+.customer-plans__lane-header,
+.customer-overview__lane-header {
+  flex-shrink: 0;
+}
+
+.customer-billing__lane,
+.customer-plans__lane,
+.customer-overview__lane {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.customer-billing__lane-list,
+.customer-plans__lane-list,
+.customer-overview__lane-list {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-radius: 0 !important;
+}

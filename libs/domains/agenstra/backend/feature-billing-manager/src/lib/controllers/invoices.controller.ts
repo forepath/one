@@ -81,6 +81,88 @@ export class InvoicesController {
     return rows.map((row) => this.invoiceService.mapToResponse(row, row.subscription?.number));
   }
 
+  @Get('ref/:invoiceRefId')
+  async getDetailByRef(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<InvoiceDetailResponseDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return await this.invoiceService.getDetailForUser(invoiceRefId, userInfo.userId);
+  }
+
+  @Get('ref/:invoiceRefId/pdf')
+  @Header('Content-Type', 'application/pdf')
+  async downloadPdfByRef(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Req() req?: RequestWithUser,
+    @Res({ passthrough: true }) res?: Response,
+  ): Promise<StreamableFile> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    const invoice = await this.invoicesRepository.findByIdForUser(invoiceRefId, userInfo.userId);
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    const buffer = await this.invoiceService.getPdfBufferForUser(invoiceRefId, userInfo.userId);
+    const filename = `${invoice.invoiceNumber ?? invoiceRefId}.pdf`;
+
+    res?.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    return new StreamableFile(buffer);
+  }
+
+  @Get('ref/:invoiceRefId/void-document/pdf')
+  @Header('Content-Type', 'application/pdf')
+  async downloadVoidDocumentPdfByRef(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Req() req?: RequestWithUser,
+    @Res({ passthrough: true }) res?: Response,
+  ): Promise<StreamableFile> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    const invoice = await this.invoicesRepository.findByIdForUser(invoiceRefId, userInfo.userId);
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    const buffer = await this.invoiceService.getVoidPdfBufferForUser(invoiceRefId, userInfo.userId);
+    const filename = `${invoice.invoiceNumber ?? invoiceRefId}-void.pdf`;
+
+    res?.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    return new StreamableFile(buffer);
+  }
+
+  @Post('ref/:invoiceRefId/pay')
+  async initiatePaymentByRef(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<InitiatePaymentResponseDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return await this.paymentOrchestrationService.initiatePaymentForUser(invoiceRefId, userInfo.userId);
+  }
+
   @Get(':subscriptionId')
   async list(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,

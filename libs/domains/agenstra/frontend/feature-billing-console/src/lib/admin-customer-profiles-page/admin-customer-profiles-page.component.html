@@ -1,0 +1,239 @@
+<div class="admin-profiles-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminProfiles-title">Billing Profiles</h5>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      (click)="openCreateModal()"
+      [disabled]="(creating$ | async) === true"
+    >
+      <i class="bi bi-plus-circle me-1"></i>
+      <span i18n="@@featureAdminProfiles-add">Add</span>
+    </button>
+  </div>
+
+  <div class="input-group search-input-container border-bottom">
+    <i class="bi bi-search"></i>
+    <input
+      type="text"
+      class="form-control border-0 search-input"
+      placeholder="Search profiles"
+      i18n-placeholder="@@featureAdminProfiles-searchPlaceholder"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+      name="search"
+    />
+  </div>
+
+  <div class="flex-grow-1 overflow-auto">
+    @if (loading$ | async) {
+      <div class="d-flex justify-content-center align-items-center p-4">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+    } @else {
+      @if (error$ | async; as error) {
+        <div class="alert alert-danger m-3" role="alert">{{ error }}</div>
+      }
+      @if (profiles().length === 0) {
+        <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+          <p class="mb-0" i18n="@@featureAdminProfiles-empty">No billing profiles found</p>
+        </div>
+      } @else {
+        <div class="list-group list-group-flush">
+          @for (profile of profiles(); track profile.id) {
+            <div class="list-group-item d-flex justify-content-between align-items-start border-bottom gap-3">
+              <div class="min-w-0">
+                <div class="fw-semibold mb-1">{{ profilePrimaryTitle(profile) }}</div>
+                @if (profileSecondaryName(profile); as contactName) {
+                  <div class="small text-muted mb-1">{{ contactName }}</div>
+                }
+                <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                    <span class="me-2" [ngClass]="profileCompleteTextClass(profile.isComplete)">
+                      @if (profile.isComplete) {
+                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                      } @else {
+                        <i class="bi bi-clock me-1" aria-hidden="true"></i>
+                      }
+                      {{ profileCompleteLabel(profile.isComplete) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ profileUserLabel(profile) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ profileCountryLabel(profile.country) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(profile.updatedAt) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="btn-group btn-group-sm flex-shrink-0"
+                role="group"
+                aria-label="Profile actions"
+                i18n-aria-label="@@featureAdminProfiles-profileActionsAria"
+              >
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  (click)="openEditModal(profile)"
+                  title="Edit profile"
+                  i18n-title="@@featureAdminProfiles-editButtonTitle"
+                >
+                  <i class="bi bi-pencil" aria-hidden="true"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger"
+                  (click)="openDeleteModal(profile)"
+                  title="Delete profile"
+                  i18n-title="@@featureAdminProfiles-deleteButtonTitle"
+                >
+                  <i class="bi bi-trash" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminProfiles-createTitle">Create billing profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="createProfileUser">User</label>
+          <framework-billing-admin-user-select
+            #createUserSelect
+            inputId="createProfileUser"
+            [users]="usersWithoutProfile()"
+            [(selectedUserId)]="createForm.userId"
+            [required]="true"
+          />
+        </div>
+        <ng-container *ngTemplateOutlet="profileFields; context: { form: createForm, prefix: 'create' }"></ng-container>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitCreate()"
+          [disabled]="(creating$ | async) === true"
+        >
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminProfiles-editTitle">Edit billing profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ng-container *ngTemplateOutlet="profileFields; context: { form: editForm, prefix: 'edit' }"></ng-container>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="submitEdit()" [disabled]="(updating$ | async) === true">
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #deleteModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminProfiles-deleteTitle">Delete profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p i18n="@@featureAdminProfiles-deleteConfirm">Delete this billing profile?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmDelete()"
+          [disabled]="(deleting$ | async) === true"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #profileFields let-form="form" let-prefix="prefix">
+  <div class="row g-2">
+    <div class="col-md-6">
+      <input
+        class="form-control mb-2"
+        placeholder="First name"
+        [(ngModel)]="form.firstName"
+        [name]="prefix + 'FirstName'"
+      />
+    </div>
+    <div class="col-md-6">
+      <input
+        class="form-control mb-2"
+        placeholder="Last name"
+        [(ngModel)]="form.lastName"
+        [name]="prefix + 'LastName'"
+      />
+    </div>
+  </div>
+  <input class="form-control mb-2" placeholder="Company" [(ngModel)]="form.company" [name]="prefix + 'Company'" />
+  <input class="form-control mb-2" placeholder="Email" [(ngModel)]="form.email" [name]="prefix + 'Email'" />
+  <input
+    class="form-control mb-2"
+    placeholder="Address line 1"
+    [(ngModel)]="form.addressLine1"
+    [name]="prefix + 'Address1'"
+  />
+  <input
+    class="form-control mb-2"
+    placeholder="Address line 2"
+    [(ngModel)]="form.addressLine2"
+    [name]="prefix + 'Address2'"
+  />
+  <div class="row g-2">
+    <div class="col-md-4">
+      <input
+        class="form-control mb-2"
+        placeholder="Postal code"
+        [(ngModel)]="form.postalCode"
+        [name]="prefix + 'PostalCode'"
+      />
+    </div>
+    <div class="col-md-4">
+      <input class="form-control mb-2" placeholder="City" [(ngModel)]="form.city" [name]="prefix + 'City'" />
+    </div>
+    <div class="col-md-4">
+      <select class="form-select mb-2" [(ngModel)]="form.country" [name]="prefix + 'Country'">
+        @for (country of countryOptions; track country.code) {
+          <option [value]="country.code">{{ country.name }}</option>
+        }
+      </select>
+    </div>
+  </div>
+  <input class="form-control mb-2" placeholder="Phone" [(ngModel)]="form.phone" [name]="prefix + 'Phone'" />
+</ng-template>

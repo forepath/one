@@ -1,88 +1,104 @@
 <div class="service-types-container border-top d-flex flex-column h-100">
-  <div
-    class="service-types-header p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center"
-  >
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
     <h5 class="mb-0 fw-semibold" i18n="@@featureServiceTypes-title">Service Types</h5>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      (click)="openCreateModal()"
+      [disabled]="(loadingAny$ | async) === true"
+    >
+      <i class="bi bi-plus-circle me-1"></i>
+      <span i18n="@@featureServiceTypes-add">Add service type</span>
+    </button>
   </div>
-  <div class="p-3 flex-grow-1 overflow-auto">
-    @if (error$ | async; as err) {
-      <div class="alert alert-danger" role="alert">{{ err }}</div>
-    }
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="h5 mb-0" i18n="@@featureServiceTypes-list">Service types</h2>
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="openCreateModal()"
-        [disabled]="(loadingAny$ | async) === true"
-        i18n="@@featureServiceTypes-add"
-      >
-        Add service type
-      </button>
-    </div>
+  <div class="input-group search-input-container border-bottom">
+    <i class="bi bi-search"></i>
+    <input
+      type="text"
+      class="form-control border-0 search-input"
+      placeholder="Search providers"
+      i18n-placeholder="@@featureServiceTypes-searchPlaceholder"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+      name="search"
+    />
+  </div>
 
+  <div class="flex-grow-1 overflow-auto">
     @if (loading$ | async) {
-      <div class="d-flex align-items-center gap-2 mb-3">
-        <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
-        <span i18n="@@featureServiceTypes-loading">Loading...</span>
+      <div class="d-flex justify-content-center align-items-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden" i18n="@@featureServiceTypes-loading">Loading...</span>
+        </div>
       </div>
     } @else {
-      <div class="table-responsive">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th scope="col" i18n="@@featureServiceTypes-key">Key</th>
-              <th scope="col" i18n="@@featureServiceTypes-name">Name</th>
-              <th scope="col" i18n="@@featureServiceTypes-provider">Provider</th>
-              <th scope="col" i18n="@@featureServiceTypes-active">Active</th>
-              <th scope="col" i18n="@@featureServiceTypes-actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (st of serviceTypes$ | async; track st.id) {
-              <tr>
-                <td>
-                  <code>{{ st.key }}</code>
-                </td>
-                <td>{{ st.name }}</td>
-                <td>{{ st.provider }}</td>
-                <td>
-                  @if (st.isActive) {
-                    <span class="badge bg-success" i18n="@@featureServiceTypes-yes">Yes</span>
-                  } @else {
-                    <span class="badge bg-secondary" i18n="@@featureServiceTypes-no">No</span>
-                  }
-                </td>
-                <td>
+      @if (error$ | async; as err) {
+        <div class="alert alert-danger m-3" role="alert">{{ err }}</div>
+      }
+      @if (serviceTypes$ | async; as listData) {
+        @if (listData.serviceTypes.length === 0) {
+          <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+            <p class="mb-0" i18n="@@featureServiceTypes-empty">No service types.</p>
+          </div>
+        } @else {
+          <div class="list-group list-group-flush">
+            @for (st of listData.serviceTypes; track st.id) {
+              <div class="list-group-item d-flex justify-content-between align-items-start border-bottom gap-3">
+                <div class="min-w-0">
+                  <div class="fw-semibold mb-1">{{ st.name }}</div>
+                  <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+                    <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                      <span class="me-2" [ngClass]="activeStatusTextClass(st.isActive)">
+                        @if (st.isActive) {
+                          <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                        } @else {
+                          <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
+                        }
+                        {{ activeStatusLabel(st.isActive) }}
+                      </span>
+                      <span class="me-2">
+                        <i class="bi bi-box-seam me-1" aria-hidden="true"></i
+                        >{{ providerLabel(st.provider, listData.providerDetails) }}
+                      </span>
+                      <span class="me-2">
+                        <i class="bi bi-key me-1" aria-hidden="true"></i>{{ serviceTypeKeyLabel(st.key) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="btn-group btn-group-sm flex-shrink-0"
+                  role="group"
+                  aria-label="Service type actions"
+                  i18n-aria-label="@@featureServiceTypes-serviceTypeActionsAria"
+                >
                   <button
                     type="button"
-                    class="btn btn-sm btn-outline-primary me-1"
+                    class="btn btn-outline-primary"
                     (click)="openEditModal(st)"
                     [disabled]="(loadingAny$ | async) === true"
-                    i18n="@@featureServiceTypes-edit"
+                    title="Edit service type"
+                    i18n-title="@@featureServiceTypes-editButtonTitle"
                   >
-                    Edit
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
                   </button>
                   <button
                     type="button"
-                    class="btn btn-sm btn-outline-danger"
+                    class="btn btn-outline-danger"
                     (click)="openDeleteConfirm(st)"
                     [disabled]="(loadingAny$ | async) === true"
-                    i18n="@@featureServiceTypes-delete"
+                    title="Delete service type"
+                    i18n-title="@@featureServiceTypes-deleteButtonTitle"
                   >
-                    Delete
+                    <i class="bi bi-trash" aria-hidden="true"></i>
                   </button>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="5" class="text-body-secondary" i18n="@@featureServiceTypes-empty">No service types.</td>
-              </tr>
+                </div>
+              </div>
             }
-          </tbody>
-        </table>
-      </div>
+          </div>
+        }
+      }
     }
   </div>
 </div>

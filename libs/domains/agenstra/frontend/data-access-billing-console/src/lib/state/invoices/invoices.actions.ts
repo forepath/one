@@ -44,7 +44,7 @@ export const createInvoiceFailure = createAction('[Invoices] Create Invoice Fail
 
 export const loadInvoiceDetails = createAction(
   '[Invoices] Load Invoice Details',
-  props<{ subscriptionId: string; invoiceRefId: string }>(),
+  props<{ subscriptionId?: string; invoiceRefId: string }>(),
 );
 export const loadInvoiceDetailsSuccess = createAction(
   '[Invoices] Load Invoice Details Success',
@@ -57,7 +57,7 @@ export const loadInvoiceDetailsFailure = createAction(
 
 export const initiatePayment = createAction(
   '[Invoices] Initiate Payment',
-  props<{ subscriptionId: string; invoiceRefId: string }>(),
+  props<{ subscriptionId?: string; invoiceRefId: string }>(),
 );
 export const initiatePaymentSuccess = createAction('[Invoices] Initiate Payment Success');
 export const initiatePaymentFailure = createAction('[Invoices] Initiate Payment Failure', props<{ error: string }>());

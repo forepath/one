@@ -6,6 +6,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import {
   AuthenticationFacade,
   createUserSuccess,
+  getUserRoleLabel,
   updateUserSuccess,
   type CreateUserDto,
   type UpdateUserDto,
@@ -190,6 +191,10 @@ export class IdentityUserManagerComponent implements OnInit {
     } catch {
       return iso;
     }
+  }
+
+  userRoleLabel(role: UserResponseDto['role']): string {
+    return getUserRoleLabel(role);
   }
 
   private showModal(modalElement: ElementRef<HTMLDivElement>): void {
