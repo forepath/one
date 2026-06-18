@@ -12,6 +12,8 @@ describe('InvoiceService', () => {
   const invoicesRepository = {
     create: jest.fn(),
     findByIdAndSubscriptionId: jest.fn(),
+    findByIdForUser: jest.fn(),
+    findByIdOrThrow: jest.fn(),
     update: jest.fn(),
   };
   const invoiceLineItemsRepository = {
@@ -323,6 +325,97 @@ describe('InvoiceService', () => {
       });
 
       await expect(service.getPdfBuffer('inv-1', subscriptionId)).rejects.toBeInstanceOf(BadRequestException);
+    });
+  });
+
+  describe('getDetailForUser', () => {
+    it('returns invoice detail for user-owned manual invoice', async () => {
+      const invoice = {
+        id: 'inv-manual',
+        userId,
+        subscriptionId: null,
+        status: InvoiceStatus.ISSUED,
+        currency: 'EUR',
+        subtotalNet: 100,
+        taxTotal: 19,
+        totalGross: 119,
+        balanceDue: 119,
+        createdAt: new Date('2026-06-01'),
+      } as InvoiceEntity;
+
+      invoicesRepository.findByIdForUser.mockResolvedValue(invoice);
+      invoiceLineItemsRepository.findByInvoiceId.mockResolvedValue([
+        {
+          description: 'Consulting',
+          quantity: 1,
+          unitPriceNet: 100,
+          taxCategory: TaxCategory.STANDARD,
+          taxRate: 19,
+          lineNet: 100,
+          lineTax: 19,
+          lineGross: 119,
+        },
+      ]);
+
+      const detail = await service.getDetailForUser('inv-manual', userId);
+
+      expect(detail.id).toBe('inv-manual');
+      expect(detail.subscriptionId).toBeNull();
+      expect(detail.lineItems).toHaveLength(1);
+    });
+
+    it('throws when invoice not found for user', async () => {
+      invoicesRepository.findByIdForUser.mockResolvedValue(null);
+
+      await expect(service.getDetailForUser('missing', userId)).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('getPdfBufferForUser', () => {
+    it('returns PDF buffer for user-owned invoice', async () => {
+      const buffer = Buffer.from('pdf');
+      const invoice = {
+        id: 'inv-manual',
+        userId,
+        subscriptionId: null,
+        status: InvoiceStatus.ISSUED,
+        pdfStorageKey: 'manual/user/inv-manual.pdf',
+      } as InvoiceEntity;
+
+      invoicesRepository.findByIdForUser.mockResolvedValue(invoice);
+      invoicesRepository.findByIdOrThrow.mockResolvedValue(invoice);
+      invoicePdfService.readPdf.mockResolvedValue(buffer);
+
+      await expect(service.getPdfBufferForUser('inv-manual', userId)).resolves.toBe(buffer);
+    });
+
+    it('throws when invoice not found for user', async () => {
+      invoicesRepository.findByIdForUser.mockResolvedValue(null);
+
+      await expect(service.getPdfBufferForUser('missing', userId)).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('getVoidPdfBufferForUser', () => {
+    it('returns void PDF buffer for user-owned invoice', async () => {
+      const buffer = Buffer.from('void-pdf');
+      const invoice = {
+        id: 'inv-manual',
+        userId,
+        subscriptionId: null,
+        status: InvoiceStatus.VOID,
+        invoiceNumber: 'INV-2026-00002',
+        voidedAt: new Date('2026-06-10'),
+      } as InvoiceEntity;
+
+      invoicesRepository.findByIdForUser.mockResolvedValue(invoice);
+      invoicesRepository.findByIdOrThrow.mockResolvedValue(invoice);
+      invoiceVoidDocumentsRepository.findByInvoiceId.mockResolvedValue({
+        pdfStorageKey: 'manual/user/inv-manual-void.pdf',
+      });
+      invoicePdfService.readPdf.mockResolvedValue(buffer);
+
+      await expect(service.getVoidPdfBufferForUser('inv-manual', userId)).resolves.toBe(buffer);
     });
   });
 

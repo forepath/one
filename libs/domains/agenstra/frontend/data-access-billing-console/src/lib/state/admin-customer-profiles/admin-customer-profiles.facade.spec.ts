@@ -1,7 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 
-import { loadAdminCustomerProfiles } from './admin-customer-profiles.actions';
+import {
+  createAdminCustomerProfile,
+  deleteAdminCustomerProfile,
+  loadAdminCustomerProfiles,
+  updateAdminCustomerProfile,
+} from './admin-customer-profiles.actions';
 import { AdminCustomerProfilesFacade } from './admin-customer-profiles.facade';
 
 describe('AdminCustomerProfilesFacade', () => {
@@ -21,5 +26,27 @@ describe('AdminCustomerProfilesFacade', () => {
     facade.loadProfiles();
 
     expect(store.dispatch).toHaveBeenCalledWith(loadAdminCustomerProfiles());
+  });
+
+  it('createProfile dispatches createAdminCustomerProfile', () => {
+    const dto = { userId: 'u-1', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.com' };
+
+    facade.createProfile(dto);
+
+    expect(store.dispatch).toHaveBeenCalledWith(createAdminCustomerProfile({ dto }));
+  });
+
+  it('updateProfile dispatches updateAdminCustomerProfile', () => {
+    const dto = { firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.com', country: 'DE' };
+
+    facade.updateProfile('p-1', dto);
+
+    expect(store.dispatch).toHaveBeenCalledWith(updateAdminCustomerProfile({ id: 'p-1', dto }));
+  });
+
+  it('deleteProfile dispatches deleteAdminCustomerProfile', () => {
+    facade.deleteProfile('p-1');
+
+    expect(store.dispatch).toHaveBeenCalledWith(deleteAdminCustomerProfile({ id: 'p-1' }));
   });
 });

@@ -150,4 +150,96 @@ describe('AdminBillingService', () => {
     expect(req.request.params.get('limit')).toBe('100');
     req.flush([{ id: 'sub-1', number: 'SUB-001', planId: 'plan-1', userId, status: 'active' }]);
   });
+
+  it('creates manual invoice', (done) => {
+    const dto = {
+      userId: 'user-1',
+      lineItems: [{ description: 'Consulting', quantity: 1, unitPriceNet: 100, taxCategory: 'standard' as const }],
+    };
+
+    service.createManualInvoice(dto).subscribe((res) => {
+      expect(res.id).toBe('inv-manual-1');
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/invoices/manual`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(dto);
+    req.flush({ id: 'inv-manual-1', userId: 'user-1', status: 'draft', lineItems: [], taxBreakdown: [] });
+  });
+
+  it('gets manual invoice detail', (done) => {
+    service.getManualInvoiceDetail('inv-manual-1').subscribe((res) => {
+      expect(res.id).toBe('inv-manual-1');
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/invoices/inv-manual-1`);
+
+    expect(req.request.method).toBe('GET');
+    req.flush({ id: 'inv-manual-1', userId: 'user-1', status: 'draft', lineItems: [], taxBreakdown: [] });
+  });
+
+  it('updates manual invoice', (done) => {
+    const dto = {
+      lineItems: [{ description: 'Updated', quantity: 2, unitPriceNet: 50, taxCategory: 'standard' as const }],
+    };
+
+    service.updateManualInvoice('inv-manual-1', dto).subscribe((res) => {
+      expect(res.status).toBe('draft');
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/invoices/inv-manual-1`);
+
+    expect(req.request.method).toBe('POST');
+    req.flush({ id: 'inv-manual-1', userId: 'user-1', status: 'draft', lineItems: [], taxBreakdown: [] });
+  });
+
+  it('issues manual invoice', (done) => {
+    service.issueManualInvoice('inv-manual-1', { dueInDays: 14 }).subscribe((res) => {
+      expect(res.status).toBe('issued');
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/invoices/inv-manual-1/issue`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ dueInDays: 14 });
+    req.flush({ id: 'inv-manual-1', userId: 'user-1', status: 'issued', lineItems: [], taxBreakdown: [] });
+  });
+
+  it('deletes manual invoice', (done) => {
+    service.deleteManualInvoice('inv-manual-1').subscribe((res) => {
+      expect(res).toBeNull();
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/invoices/inv-manual-1`);
+
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+  });
+
+  it('downloads invoice pdf by ref', (done) => {
+    const blob = new Blob(['pdf']);
+
+    service.downloadInvoicePdf('inv-manual-1').subscribe((res) => {
+      expect(res).toEqual(blob);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/invoices/inv-manual-1/pdf`);
+
+    expect(req.request.responseType).toBe('blob');
+    req.flush(blob);
+  });
+
+  it('downloads void document pdf by ref', (done) => {
+    const blob = new Blob(['void-pdf']);
+
+    service.downloadVoidDocumentPdf('inv-manual-1').subscribe((res) => {
+      expect(res).toEqual(blob);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/invoices/inv-manual-1/void-document/pdf`);
+
+    expect(req.request.responseType).toBe('blob');
+    req.flush(blob);
+  });
 });

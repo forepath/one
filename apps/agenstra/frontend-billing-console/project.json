@@ -33,14 +33,8 @@
           {
             "glob": "**/*",
             "input": "apps/agenstra/frontend-billing-console/public"
-          },
-          {
-            "glob": "**/*",
-            "input": "node_modules/monaco-editor",
-            "output": "/assets/monaco/"
           }
         ],
-        "externalDependencies": ["monaco-editor"],
         "styles": [
           "node_modules/cookieconsent/build/cookieconsent.min.css",
           "apps/agenstra/frontend-billing-console/src/styles.scss"

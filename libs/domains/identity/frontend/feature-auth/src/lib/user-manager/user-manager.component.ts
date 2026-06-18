@@ -6,8 +6,8 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import {
   AuthenticationFacade,
   createUserSuccess,
-  getUserRoleLabel,
   updateUserSuccess,
+  UserRoleLabelPipe,
   type CreateUserDto,
   type UpdateUserDto,
   type UserResponseDto,
@@ -18,7 +18,7 @@ import { combineLatestWith, map } from 'rxjs/operators';
 
 @Component({
   selector: 'identity-auth-user-manager',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, UserRoleLabelPipe],
   templateUrl: './user-manager.component.html',
   styleUrls: ['./user-manager.component.scss'],
   standalone: true,
@@ -191,10 +191,6 @@ export class IdentityUserManagerComponent implements OnInit {
     } catch {
       return iso;
     }
-  }
-
-  userRoleLabel(role: UserResponseDto['role']): string {
-    return getUserRoleLabel(role);
   }
 
   private showModal(modalElement: ElementRef<HTMLDivElement>): void {

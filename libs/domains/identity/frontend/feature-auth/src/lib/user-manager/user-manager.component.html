@@ -59,7 +59,7 @@
                 <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
                   <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
                     <span class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded me-2">{{
-                      userRoleLabel(user.role)
+                      user.role | userRoleLabel
                     }}</span>
                     @if (user.lockedAt) {
                       <span class="text-danger me-2"

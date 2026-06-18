@@ -74,6 +74,23 @@ describe('ManualInvoiceService', () => {
       lineItems: [],
       taxBreakdown: [],
     });
+    taxCalculationService.computeLines.mockReturnValue({
+      subtotalNet: 100,
+      taxTotal: 19,
+      totalGross: 119,
+      lines: [
+        {
+          description: 'Item',
+          quantity: 1,
+          unitPriceNet: 100,
+          taxCategory: TaxCategory.STANDARD,
+          taxRate: 0.19,
+          lineNet: 100,
+          lineTax: 19,
+          lineGross: 119,
+        },
+      ],
+    });
   });
 
   it('createDraft validates user exists', async () => {
@@ -128,5 +145,59 @@ describe('ManualInvoiceService', () => {
 
     expect(invoiceLineItemsRepository.deleteByInvoiceId).toHaveBeenCalledWith('inv-1');
     expect(invoicesRepository.delete).toHaveBeenCalledWith('inv-1');
+  });
+
+  it('createDraft creates manual invoice and returns detail', async () => {
+    const result = await service.createDraft(
+      {
+        userId: 'user-1',
+        lineItems: [{ description: 'Consulting', quantity: 1, unitPriceNet: 100 }],
+      },
+      'admin-1',
+    );
+
+    expect(result.id).toBe('inv-1');
+    expect(invoiceService.createDraft).toHaveBeenCalled();
+    expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ process: 'invoice.manual_create' }));
+  });
+
+  it('updateDraft updates line items and totals', async () => {
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(draftInvoice);
+    invoicesRepository.update.mockResolvedValue({ ...draftInvoice, totalGross: 119 });
+
+    const result = await service.updateDraft(
+      'inv-1',
+      { lineItems: [{ description: 'Updated', quantity: 1, unitPriceNet: 100 }] },
+      'admin-1',
+    );
+
+    expect(result.id).toBe('inv-1');
+    expect(invoiceLineItemsRepository.createMany).toHaveBeenCalled();
+    expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ process: 'invoice.manual_update' }));
+  });
+
+  it('issueDraft issues draft when profile is complete', async () => {
+    invoicesRepository.findByIdOrThrow.mockResolvedValue(draftInvoice);
+    customerProfilesService.getByUserId.mockResolvedValue({ userId: 'user-1' });
+    customerProfilesService.isProfileComplete.mockReturnValue(true);
+
+    const result = await service.issueDraft('inv-1', 'admin-1', { dueInDays: 7 });
+
+    expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith('inv-1', 7);
+    expect(result.id).toBe('inv-1');
+  });
+
+  it('getDetail enriches response with user email', async () => {
+    invoiceService.getDetailById.mockResolvedValue({
+      id: 'inv-1',
+      userId: 'user-1',
+      status: InvoiceStatus.DRAFT,
+      lineItems: [],
+      taxBreakdown: [],
+    });
+
+    const result = await service.getDetail('inv-1');
+
+    expect(result.userEmail).toBe('user@example.com');
   });
 });

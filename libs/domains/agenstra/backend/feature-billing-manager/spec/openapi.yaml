@@ -179,7 +179,7 @@ paths:
           required: true
           schema:
             type: string
-            example: hetzner
+            examples: [hetzner]
       responses:
         '200':
           description: List of server types with id, name, specs, priceMonthly, priceHourly
@@ -875,7 +875,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /subscriptions/{id}:
+  /subscriptions/{subscriptionId}:
     get:
       summary: Get subscription
       operationId: getSubscription
@@ -900,7 +900,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /subscriptions/{id}/cancel:
+  /subscriptions/{subscriptionId}/cancel:
     post:
       summary: Cancel subscription
       operationId: cancelSubscription
@@ -931,7 +931,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /subscriptions/{id}/resume:
+  /subscriptions/{subscriptionId}/resume:
     post:
       summary: Resume subscription
       operationId: resumeSubscription
@@ -1363,6 +1363,112 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /invoices/ref/{invoiceRefId}:
+    get:
+      summary: Get invoice details by reference (no subscription)
+      operationId: getInvoiceDetailsByRef
+      description: |
+        Returns invoice detail for the authenticated user when the invoice is not tied to a subscription
+        (e.g. manual invoices). Access is scoped to invoices owned by the current user.
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Invoice detail with line items and tax breakdown
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceDetailResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Invoice not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /invoices/ref/{invoiceRefId}/pdf:
+    get:
+      summary: Download invoice PDF by reference (no subscription)
+      operationId: downloadInvoicePdfByRef
+      description: Downloads the invoice PDF for the authenticated user when no subscription context is required.
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: PDF file with embedded e-invoice XML
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '404':
+          description: Invoice PDF not found
+  /invoices/ref/{invoiceRefId}/void-document/pdf:
+    get:
+      summary: Download void credit note PDF by reference (no subscription)
+      operationId: downloadInvoiceVoidDocumentPdfByRef
+      description: Downloads the void document PDF for the authenticated user when no subscription context is required.
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Credit note PDF with embedded e-invoice XML (type 381)
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invoice is not voided
+        '401':
+          description: Unauthorized
+        '404':
+          description: Invoice not found
+  /invoices/ref/{invoiceRefId}/pay:
+    post:
+      summary: Initiate payment by reference (no subscription)
+      operationId: initiateInvoicePaymentByRef
+      description: Starts Stripe Checkout for an invoice owned by the authenticated user without a subscription path segment.
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Checkout session URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitiatePaymentResponse'
+        '400':
+          description: Invoice not payable
+        '401':
+          description: Unauthorized
   /invoices/{subscriptionId}:
     get:
       summary: List invoices
@@ -1773,6 +1879,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ManualInvoiceDetailResponse'
+  /admin/billing/invoices/{invoiceRefId}/pdf:
+    get:
+      tags: [Admin Billing]
+      summary: Download invoice PDF (admin only)
+      operationId: downloadAdminInvoicePdf
+      description: Downloads the invoice PDF for any invoice by ID. Supports subscription and manual invoices.
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: PDF file with embedded e-invoice XML
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Invoice not found
+  /admin/billing/invoices/{invoiceRefId}/void-document/pdf:
+    get:
+      tags: [Admin Billing]
+      summary: Download void credit note PDF (admin only)
+      operationId: downloadAdminInvoiceVoidDocumentPdf
+      description: Downloads the void document PDF for any voided invoice by ID.
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Credit note PDF with embedded e-invoice XML (type 381)
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invoice is not voided
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Invoice not found
   /admin/billing/customer-profiles:
     get:
       tags: [Admin Billing]

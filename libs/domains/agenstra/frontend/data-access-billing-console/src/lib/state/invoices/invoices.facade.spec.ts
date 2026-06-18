@@ -125,6 +125,13 @@ describe('InvoicesFacade', () => {
       expect(store.dispatch).toHaveBeenCalledWith(loadInvoiceDetails({ subscriptionId, invoiceRefId }));
     });
 
+    it('should dispatch loadInvoiceDetails without subscriptionId for manual invoices', () => {
+      const invoiceRefId = 'ref-manual';
+
+      facade.loadInvoiceDetails(undefined, invoiceRefId);
+      expect(store.dispatch).toHaveBeenCalledWith(loadInvoiceDetails({ subscriptionId: undefined, invoiceRefId }));
+    });
+
     it('should dispatch loadOpenOverdueInvoices', () => {
       facade.loadOpenOverdueInvoices();
       expect(store.dispatch).toHaveBeenCalledWith(loadOpenOverdueInvoices());
@@ -136,6 +143,13 @@ describe('InvoicesFacade', () => {
       facade.initiatePayment(subscriptionId, invoiceRefId);
       expect(store.dispatch).toHaveBeenCalledWith(initiatePayment({ subscriptionId, invoiceRefId }));
     });
+
+    it('should dispatch initiatePayment without subscriptionId for manual invoices', () => {
+      const invoiceRefId = 'ref-manual';
+
+      facade.initiatePayment(undefined, invoiceRefId);
+      expect(store.dispatch).toHaveBeenCalledWith(initiatePayment({ subscriptionId: undefined, invoiceRefId }));
+    });
   });
 
   describe('Service Methods', () => {
@@ -146,6 +160,17 @@ describe('InvoicesFacade', () => {
       facade.downloadInvoicePdf(subscriptionId, 'inv-1').subscribe((result) => {
         expect(result).toBe(blob);
         expect(invoicesService.downloadInvoicePdf).toHaveBeenCalledWith(subscriptionId, 'inv-1');
+        done();
+      });
+    });
+
+    it('should delegate downloadInvoicePdf without subscriptionId', (done) => {
+      const blob = new Blob(['pdf']);
+
+      invoicesService.downloadInvoicePdf.mockReturnValue(of(blob));
+      facade.downloadInvoicePdf(undefined, 'inv-manual').subscribe((result) => {
+        expect(result).toBe(blob);
+        expect(invoicesService.downloadInvoicePdf).toHaveBeenCalledWith(undefined, 'inv-manual');
         done();
       });
     });

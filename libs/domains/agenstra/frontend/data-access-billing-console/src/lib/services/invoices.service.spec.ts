@@ -197,6 +197,19 @@ describe('InvoicesService', () => {
     req.flush({ checkoutUrl: 'https://checkout.stripe.com/test' });
   });
 
+  it('should download void document pdf by ref without subscription', (done) => {
+    const blob = new Blob(['void-pdf']);
+
+    service.downloadVoidDocumentPdf(undefined, 'inv-1').subscribe((res) => {
+      expect(res).toEqual(blob);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/ref/inv-1/void-document/pdf`);
+
+    expect(req.request.responseType).toBe('blob');
+    req.flush(blob);
+  });
+
   it('should void invoice', (done) => {
     service.voidInvoice('sub-1', 'inv-1').subscribe((res) => {
       expect(res.status).toBe('voided');
