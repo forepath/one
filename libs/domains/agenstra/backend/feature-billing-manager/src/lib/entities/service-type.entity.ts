@@ -1,12 +1,16 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 
 @Entity('billing_service_types')
+@Unique('uq_billing_service_types_tenant_key', ['tenantId', 'key'])
 export class ServiceTypeEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id!: string;
 
-  @Column({ type: 'varchar', length: 100, name: 'key', unique: true })
+  @Column({ type: 'varchar', length: 100, name: 'key' })
   key!: string;
+
+  @Column({ type: 'varchar', length: 64, name: 'tenant_id', default: 'default' })
+  tenantId!: string;
 
   @Column({ type: 'varchar', length: 255, name: 'name' })
   name!: string;

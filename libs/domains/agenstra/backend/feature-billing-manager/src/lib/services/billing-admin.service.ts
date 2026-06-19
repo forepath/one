@@ -42,7 +42,7 @@ export class BillingAdminService {
   }
 
   async listUserSubscriptions(userId: string, limit: number, offset: number): Promise<SubscriptionEntity[]> {
-    const user = await this.usersRepository.findById(userId);
+    const user = await this.usersRepository.findByIdForTenant(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');

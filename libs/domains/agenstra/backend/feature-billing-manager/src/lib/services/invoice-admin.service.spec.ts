@@ -12,7 +12,7 @@ describe('InvoiceAdminService', () => {
   };
   const invoiceService = { mapToResponse: jest.fn(), voidInvoice: jest.fn() };
   const auditLog = { log: jest.fn() };
-  const usersRepository = { findById: jest.fn() };
+  const usersRepository = { findByIdForTenant: jest.fn() };
   const service = new InvoiceAdminService(
     invoicesRepository as never,
     invoiceService as never,
@@ -40,7 +40,7 @@ describe('InvoiceAdminService', () => {
       canDownload: true,
       canPreview: true,
     });
-    usersRepository.findById.mockResolvedValue({ email: 'user@example.com' });
+    usersRepository.findByIdForTenant.mockResolvedValue({ email: 'user@example.com' });
   });
 
   it('markPaidManual updates status and logs audit', async () => {

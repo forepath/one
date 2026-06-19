@@ -9,6 +9,7 @@ const createMockQueryBuilder = () => ({
   select: jest.fn().mockReturnThis(),
   addSelect: jest.fn().mockReturnThis(),
   getRawOne: jest.fn(),
+  getOne: jest.fn(),
 });
 
 describe('InvoicesRepository', () => {
@@ -41,7 +42,7 @@ describe('InvoicesRepository', () => {
 
       expect(result).toEqual({ count: 2, totalBalance: 99.5 });
       expect(mockRepository.createQueryBuilder).toHaveBeenCalledWith('inv');
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('inv.userId = :userId', { userId: 'user-1' });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('inv.user_id = :userId', { userId: 'user-1' });
     });
 
     it('returns zero count and total when getRawOne returns null', async () => {
@@ -65,7 +66,7 @@ describe('InvoicesRepository', () => {
     it('returns invoice when found', async () => {
       const invoice = { id: 'inv-1' };
 
-      mockRepository.findOne.mockResolvedValue(invoice);
+      mockQueryBuilder.getOne.mockResolvedValue(invoice);
 
       const repository = new InvoicesRepository(mockRepository as never);
 
@@ -73,7 +74,7 @@ describe('InvoicesRepository', () => {
     });
 
     it('throws NotFoundException when missing', async () => {
-      mockRepository.findOne.mockResolvedValue(null);
+      mockQueryBuilder.getOne.mockResolvedValue(null);
 
       const repository = new InvoicesRepository(mockRepository as never);
 
@@ -98,7 +99,7 @@ describe('InvoicesRepository', () => {
     it('update merges dto into existing entity', async () => {
       const entity = { id: 'inv-1', status: InvoiceStatus.ISSUED, balanceDue: 100 };
 
-      mockRepository.findOne.mockResolvedValue(entity);
+      mockQueryBuilder.getOne.mockResolvedValue(entity);
       mockRepository.save.mockImplementation(async (row) => row);
 
       const repository = new InvoicesRepository(mockRepository as never);

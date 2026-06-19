@@ -5,6 +5,7 @@ import {
   getAuthInterceptor,
   getUsersSessionInvalidationInterceptor,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import { getBillingTenantInterceptor } from '@forepath/agenstra/frontend/data-access-billing-console';
 import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/shared/frontend/util-configuration';
 import { cookieConfig } from '@forepath/shared/frontend/util-cookie-consent';
 import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideKeycloak } from '@forepath/identity/frontend';
@@ -36,7 +37,9 @@ export const appConfig: ApplicationConfig = {
     // Provide KeycloakService before HTTP client so interceptor can inject it
     ...(environment.authentication.type === 'keycloak' ? provideKeycloak() : []),
     // Provide HTTP client with auth interceptor (KeycloakService must be available)
-    provideHttpClient(withInterceptors([getAuthInterceptor(), getUsersSessionInvalidationInterceptor()])),
+    provideHttpClient(
+      withInterceptors([getBillingTenantInterceptor(), getAuthInterceptor(), getUsersSessionInvalidationInterceptor()]),
+    ),
     // NgRx Store - base store required at root level
     provideStore(),
     // NgRx Store DevTools - only enabled in non-production environments

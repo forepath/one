@@ -3,7 +3,7 @@ import { randomBytes } from 'crypto';
 import { parseAllowedHosts } from '@forepath/shared/shared/util-network-address';
 
 import { buildCertbotBootstrapScript } from './certbot-bootstrap.script';
-import { formatEnvLines as formatEnv } from './env.utils';
+import { formatEnvLines as formatEnv, quoteYamlScalar } from './env.utils';
 
 export interface AgentControllerCloudInitConfig {
   ssh: {
@@ -345,9 +345,9 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     image: pgvector/pgvector:pg16
     container_name: agent-controller-postgres
     environment:
-      POSTGRES_USER: ${config.backend?.database?.username ?? 'postgres'}
-      POSTGRES_PASSWORD: ${config.backend?.database?.password ?? 'postgres'}
-      POSTGRES_DB: ${config.backend?.database?.database ?? 'postgres'}
+      POSTGRES_USER: ${quoteYamlScalar(config.backend?.database?.username ?? 'postgres')}
+      POSTGRES_PASSWORD: ${quoteYamlScalar(config.backend?.database?.password ?? 'postgres')}
+      POSTGRES_DB: ${quoteYamlScalar(config.backend?.database?.database ?? 'postgres')}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

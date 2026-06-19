@@ -112,7 +112,12 @@ export class StripePaymentProcessor implements PaymentProcessor {
 
   mapWebhookToPaymentUpdate(event: { type: string; data: unknown }): PaymentStatusUpdate | null {
     if (event.type === 'checkout.session.completed') {
-      const session = event.data as StripeCheckoutSessionPayload;
+      const session = this.extractCheckoutSession(event.data);
+
+      if (!session) {
+        return null;
+      }
+
       const invoiceId = session.metadata?.invoiceId ?? session.client_reference_id;
 
       if (!invoiceId) {
@@ -124,11 +129,17 @@ export class StripePaymentProcessor implements PaymentProcessor {
         externalId: session.id,
         status: 'succeeded',
         amountPaid: session.amount_total != null ? session.amount_total / 100 : undefined,
+        tenantId: session.metadata?.tenantId,
       };
     }
 
     if (event.type === 'checkout.session.expired') {
-      const session = event.data as StripeCheckoutSessionPayload;
+      const session = this.extractCheckoutSession(event.data);
+
+      if (!session) {
+        return null;
+      }
+
       const invoiceId = session.metadata?.invoiceId ?? session.client_reference_id;
 
       if (!invoiceId) {
@@ -139,9 +150,24 @@ export class StripePaymentProcessor implements PaymentProcessor {
         invoiceId,
         externalId: session.id,
         status: 'canceled',
+        tenantId: session.metadata?.tenantId,
       };
     }
 
     return null;
+  }
+
+  private extractCheckoutSession(data: unknown): StripeCheckoutSessionPayload | null {
+    if (!data || typeof data !== 'object') {
+      return null;
+    }
+
+    const envelope = data as { object?: StripeCheckoutSessionPayload };
+
+    if (envelope.object && typeof envelope.object === 'object') {
+      return envelope.object;
+    }
+
+    return data as StripeCheckoutSessionPayload;
   }
 }

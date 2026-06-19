@@ -1,7 +1,7 @@
 import { UserEntity } from '@forepath/identity/backend';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import {
   BILLED_INVOICE_STATUSES,
@@ -9,6 +9,7 @@ import {
   OPEN_OVERDUE_INVOICE_STATUSES,
 } from '../constants/invoice-status.constants';
 import { InvoiceEntity } from '../entities/invoice.entity';
+import { applyUserTenantFilter, getRequiredTenantId } from '../utils/tenant-query.utils';
 
 export interface OpenOverdueSummary {
   count: number;
@@ -44,27 +45,50 @@ export class InvoicesRepository {
   ) {}
 
   async findBySubscription(userId: string, subscriptionId: string): Promise<InvoiceEntity[]> {
-    return await this.repository.find({
-      where: { userId, subscriptionId },
-      order: { createdAt: 'DESC' },
-    });
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.user_id = :userId', { userId })
+      .andWhere('inv.subscription_id = :subscriptionId', { subscriptionId })
+      .orderBy('inv.createdAt', 'DESC');
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
   }
 
   async findLatestBySubscription(subscriptionId: string): Promise<InvoiceEntity | null> {
-    return await this.repository.findOne({
-      where: { subscriptionId },
-      order: { createdAt: 'DESC' },
-    });
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.subscription_id = :subscriptionId', { subscriptionId })
+      .orderBy('inv.createdAt', 'DESC')
+      .take(1);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getOne();
   }
 
   async findByIdAndSubscriptionId(id: string, subscriptionId: string): Promise<InvoiceEntity | null> {
-    return await this.repository.findOne({
-      where: { id, subscriptionId },
-    });
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.id = :id', { id })
+      .andWhere('inv.subscription_id = :subscriptionId', { subscriptionId });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getOne();
   }
 
   async findById(id: string): Promise<InvoiceEntity | null> {
-    return await this.repository.findOne({ where: { id } });
+    return await this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.id = :id', { id })
+      .andWhere('user.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
+      .getOne();
   }
 
   async findByIdForUser(invoiceId: string, userId: string): Promise<InvoiceEntity | null> {
@@ -88,34 +112,55 @@ export class InvoicesRepository {
   }
 
   async findByIdWithLineItems(id: string): Promise<InvoiceEntity | null> {
-    return await this.repository.findOne({
-      where: { id },
-      relations: ['lineItems'],
-    });
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .leftJoinAndSelect('inv.lineItems', 'lineItems')
+      .where('inv.id = :id', { id });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getOne();
   }
 
   async findBatchForOverdueCheck(batchSize: number, offset: number): Promise<InvoiceEntity[]> {
-    return await this.repository.find({
-      where: { status: In([InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID]) },
-      order: { createdAt: 'ASC' },
-      take: batchSize,
-      skip: offset,
-    });
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.status IN (:...statuses)', { statuses: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID] })
+      .orderBy('inv.createdAt', 'ASC')
+      .take(batchSize)
+      .skip(offset);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
   }
 
   async findOpenOverdueByUserId(userId: string): Promise<InvoiceEntity[]> {
-    return await this.repository.find({
-      where: { userId, status: In(OPEN_OVERDUE_INVOICE_STATUSES) },
-      relations: ['subscription'],
-      order: { createdAt: 'DESC' },
-    });
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .leftJoinAndSelect('inv.subscription', 'subscription')
+      .where('inv.user_id = :userId', { userId })
+      .andWhere('inv.status IN (:...statuses)', { statuses: OPEN_OVERDUE_INVOICE_STATUSES })
+      .orderBy('inv.createdAt', 'DESC');
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
   }
 
   async findOpenOverdueSummaryByUserId(userId: string): Promise<OpenOverdueSummary> {
-    const result = await this.repository
+    const qb = this.repository
       .createQueryBuilder('inv')
-      .where('inv.userId = :userId', { userId })
-      .andWhere('inv.status IN (:...statuses)', { statuses: OPEN_OVERDUE_INVOICE_STATUSES })
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.user_id = :userId', { userId })
+      .andWhere('inv.status IN (:...statuses)', { statuses: OPEN_OVERDUE_INVOICE_STATUSES });
+
+    applyUserTenantFilter(qb, 'user');
+
+    const result = await qb
       .select('COUNT(inv.id)', 'count')
       .addSelect('COALESCE(SUM(inv.balance_due), 0)', 'total')
       .getRawOne<{ count: string; total: string }>();
@@ -126,12 +171,16 @@ export class InvoicesRepository {
   }
 
   async findGlobalOpenOverdueSummary(): Promise<OpenOverdueSummary> {
-    const result = await this.repository
+    const qb = this.repository
       .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
       .where('inv.status IN (:...statuses)', { statuses: OPEN_OVERDUE_INVOICE_STATUSES })
       .select('COUNT(inv.id)', 'count')
-      .addSelect('COALESCE(SUM(inv.balance_due), 0)', 'total')
-      .getRawOne<{ count: string; total: string }>();
+      .addSelect('COALESCE(SUM(inv.balance_due), 0)', 'total');
+
+    applyUserTenantFilter(qb, 'user');
+
+    const result = await qb.getRawOne<{ count: string; total: string }>();
     const count = result?.count != null ? parseInt(String(result.count), 10) : 0;
     const totalBalance = result?.total != null ? parseFloat(String(result.total)) : 0;
 
@@ -143,6 +192,8 @@ export class InvoicesRepository {
       .createQueryBuilder('inv')
       .leftJoinAndSelect('inv.subscription', 'subscription')
       .leftJoin(UserEntity, 'user', 'user.id = inv.user_id');
+
+    applyUserTenantFilter(qb, 'user');
 
     if (params.userId) {
       qb.andWhere('inv.userId = :userId', { userId: params.userId });
@@ -182,10 +233,13 @@ export class InvoicesRepository {
     const trunc = groupBy === 'month' ? 'month' : 'day';
     const qb = this.repository
       .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
       .where('inv.status IN (:...statuses)', { statuses: BILLED_INVOICE_STATUSES })
       .andWhere('inv.issued_at IS NOT NULL')
       .andWhere('inv.issued_at >= :from', { from })
       .andWhere('inv.issued_at <= :to', { to });
+
+    applyUserTenantFilter(qb, 'user');
 
     if (userId) {
       qb.andWhere('inv.userId = :userId', { userId });
@@ -208,9 +262,12 @@ export class InvoicesRepository {
   async countPaidInPeriod(from: Date, to: Date, userId?: string): Promise<number> {
     const qb = this.repository
       .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
       .where('inv.status = :status', { status: InvoiceStatus.PAID })
       .andWhere('inv.issued_at >= :from', { from })
       .andWhere('inv.issued_at <= :to', { to });
+
+    applyUserTenantFilter(qb, 'user');
 
     if (userId) {
       qb.andWhere('inv.userId = :userId', { userId });
@@ -222,12 +279,15 @@ export class InvoicesRepository {
   async sumByPlanInPeriod(from: Date, to: Date, userId?: string): Promise<TurnoverByPlanRow[]> {
     const qb = this.repository
       .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
       .innerJoin('inv.subscription', 'subscription')
       .innerJoin('subscription.plan', 'plan')
       .where('inv.status IN (:...statuses)', { statuses: BILLED_INVOICE_STATUSES })
       .andWhere('inv.issued_at IS NOT NULL')
       .andWhere('inv.issued_at >= :from', { from })
       .andWhere('inv.issued_at <= :to', { to });
+
+    applyUserTenantFilter(qb, 'user');
 
     if (userId) {
       qb.andWhere('inv.userId = :userId', { userId });
@@ -264,7 +324,14 @@ export class InvoicesRepository {
   }
 
   async countByUserId(userId: string): Promise<number> {
-    return await this.repository.count({ where: { userId } });
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.user_id = :userId', { userId });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getCount();
   }
 
   async delete(id: string): Promise<void> {

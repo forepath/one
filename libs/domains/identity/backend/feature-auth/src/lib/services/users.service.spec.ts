@@ -6,7 +6,9 @@ import { UsersService } from './users.service';
 describe('UsersService', () => {
   const mockUsersRepository = {
     findById: jest.fn(),
+    findByIdForTenant: jest.fn(),
     update: jest.fn(),
+    countByTenant: jest.fn(),
     count: jest.fn(),
     findAll: jest.fn(),
     findByEmail: jest.fn(),
@@ -29,7 +31,7 @@ describe('UsersService', () => {
   });
 
   it('locks a target user by setting lockedAt', async () => {
-    mockUsersRepository.findById.mockResolvedValue({
+    mockUsersRepository.findByIdForTenant.mockResolvedValue({
       id: 'user-1',
       email: 'user@example.com',
       role: UserRole.USER,
@@ -56,7 +58,7 @@ describe('UsersService', () => {
   });
 
   it('unlocks a target user by setting lockedAt to null', async () => {
-    mockUsersRepository.findById.mockResolvedValue({
+    mockUsersRepository.findByIdForTenant.mockResolvedValue({
       id: 'user-1',
       email: 'user@example.com',
       role: UserRole.USER,
@@ -82,17 +84,17 @@ describe('UsersService', () => {
   it('rejects self-lock', async () => {
     await expect(service.lockUser('user-1', 'user-1')).rejects.toThrow(BadRequestException);
     await expect(service.lockUser('user-1', 'user-1')).rejects.toThrow('You cannot lock your own account');
-    expect(mockUsersRepository.findById).not.toHaveBeenCalled();
+    expect(mockUsersRepository.findByIdForTenant).not.toHaveBeenCalled();
   });
 
   it('rejects self-unlock', async () => {
     await expect(service.unlockUser('user-1', 'user-1')).rejects.toThrow(BadRequestException);
     await expect(service.unlockUser('user-1', 'user-1')).rejects.toThrow('You cannot unlock your own account');
-    expect(mockUsersRepository.findById).not.toHaveBeenCalled();
+    expect(mockUsersRepository.findByIdForTenant).not.toHaveBeenCalled();
   });
 
   it('throws not found when lock target does not exist', async () => {
-    mockUsersRepository.findById.mockResolvedValue(null);
+    mockUsersRepository.findByIdForTenant.mockResolvedValue(null);
 
     await expect(service.lockUser('missing', 'admin-1')).rejects.toThrow(NotFoundException);
     await expect(service.lockUser('missing', 'admin-1')).rejects.toThrow('User not found');

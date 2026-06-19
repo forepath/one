@@ -174,6 +174,23 @@ When building `Dockerfile.api` images that mount `/var/run/docker.sock`:
 - `GIT_AUTHOR_NAME` - Git commit author name (default: `Agenstra`)
 - `GIT_AUTHOR_EMAIL` - Git commit author email (default: `noreply@agenstra.com`)
 
+## Backend Billing Manager
+
+### Multi-tenancy
+
+Billing data and users are partitioned by **`tenant_id`**. HTTP clients send **`X-Tenant`**; the billing console and landing page attach it via `environment.billing.tenantId` (defaults to `default`).
+
+| Variable                   | Description                                                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `TENANTS`                  | Comma-separated tenant ids allowed for **`X-Tenant`** (always includes `default`). Unset → only `default`.         |
+| `STATIC_API_KEY_TENANT_ID` | Optional. When set with **`STATIC_API_KEY`** auth, API key requests are accepted only when **`X-Tenant`** matches. |
+| `BILLING_FRONTEND_URL`     | Billing console base URL for the `default` tenant (Stripe return redirects).                                       |
+| `TENANT_FRONTEND_URLS`     | Per-tenant console URLs: `tenantId=https://…` pairs, comma-separated.                                              |
+
+**API key scope (accepted risk [AR-007](../security/accepted-risks.md#ar-007--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)):** With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, one deployment key grants **admin access to every tenant** in **`TENANTS`**, selected per request via **`X-Tenant`**. This is **intentional** (single shared automation credential). Set **`STATIC_API_KEY_TENANT_ID`** to bind the key to one tenant, or use **keycloak** / **users** for interactive multi-tenant console access.
+
+See also the [billing feature README](../../libs/domains/agenstra/backend/feature-billing-manager/README.md).
+
 ## Frontend applications (Express SSR)
 
 The Angular apps **agenstra-frontend-agent-console**, **agenstra-frontend-billing-console**, **agenstra-frontend-landingpage**, and **agenstra-frontend-docs** use the same Express layer for `GET /config` (runtime JSON proxy) and security headers. The variables below are written with the agent console in mind; they apply to all four apps unless an app-specific doc says otherwise.

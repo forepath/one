@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { InvoiceNumberSequenceEntity } from '../entities/invoice-number-sequence.entity';
+import { getRequiredTenantId } from '../utils/tenant-query.utils';
 
 @Injectable()
 export class InvoiceNumberSequencesRepository {
@@ -12,12 +13,14 @@ export class InvoiceNumberSequencesRepository {
   ) {}
 
   async nextInvoiceNumber(year: number): Promise<string> {
+    const tenantId = getRequiredTenantId();
+
     return await this.repository.manager.transaction(async (manager) => {
       const repo = manager.getRepository(InvoiceNumberSequenceEntity);
-      let row = await repo.findOne({ where: { year } });
+      let row = await repo.findOne({ where: { year, tenantId } });
 
       if (!row) {
-        row = repo.create({ year, lastValue: 0 });
+        row = repo.create({ year, tenantId, lastValue: 0 });
       }
 
       row.lastValue += 1;

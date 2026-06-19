@@ -6,7 +6,7 @@ describe('BillingAdminService', () => {
   const openPositionsRepository = { findDistinctUserIdsWithUnbilled: jest.fn() };
   const invoiceCreationService = { getUnbilledTotalForUser: jest.fn() };
   const subscriptionService = { listSubscriptions: jest.fn() };
-  const usersRepository = { findById: jest.fn() };
+  const usersRepository = { findByIdForTenant: jest.fn() };
   const service = new BillingAdminService(
     subscriptionsRepository as never,
     invoicesRepository as never,
@@ -36,7 +36,7 @@ describe('BillingAdminService', () => {
   });
 
   it('listUserSubscriptions returns subscriptions for an existing user', async () => {
-    usersRepository.findById.mockResolvedValue({ id: 'user-1' });
+    usersRepository.findByIdForTenant.mockResolvedValue({ id: 'user-1' });
     subscriptionService.listSubscriptions.mockResolvedValue([{ id: 'sub-1' }]);
 
     const result = await service.listUserSubscriptions('user-1', 100, 0);

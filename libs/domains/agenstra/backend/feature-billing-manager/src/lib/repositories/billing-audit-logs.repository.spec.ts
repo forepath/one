@@ -1,3 +1,5 @@
+import { runWithTenantId } from '@forepath/shared/backend';
+
 import { BillingAuditLogsRepository } from './billing-audit-logs.repository';
 
 describe('BillingAuditLogsRepository', () => {
@@ -17,11 +19,11 @@ describe('BillingAuditLogsRepository', () => {
 
     typeOrmRepo.findAndCount.mockResolvedValue([items, 1]);
 
-    const result = await repository.findByInvoiceId('inv-1', 10, 0);
+    const result = await runWithTenantId('default', () => repository.findByInvoiceId('inv-1', 10, 0));
 
     expect(result).toEqual({ items, total: 1 });
     expect(typeOrmRepo.findAndCount).toHaveBeenCalledWith({
-      where: { invoiceId: 'inv-1' },
+      where: { invoiceId: 'inv-1', tenantId: 'default' },
       order: { createdAt: 'DESC' },
       take: 10,
       skip: 0,

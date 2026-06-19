@@ -29,6 +29,7 @@ describe('BillingAuditLogService', () => {
       invoiceId: 'inv-1',
       userId: 'user-1',
       correlationId: undefined,
+      tenantId: 'default',
       context: { totalGross: 119 },
     });
   });

@@ -1,8 +1,9 @@
 import { ViewportScroller } from '@angular/common';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideRouter, withInMemoryScrolling, withRouterConfig } from '@angular/router';
+import { getBillingTenantInterceptor } from '@forepath/agenstra/frontend/data-access-billing-console';
 import { environment, provideLocale } from '@forepath/shared/frontend/util-configuration';
 import { cookieConfig } from '@forepath/shared/frontend/util-cookie-consent';
 import { provideStore } from '@ngrx/store';
@@ -37,7 +38,7 @@ export const appConfig: ApplicationConfig = {
     ),
     // Custom ViewportScroller with 80px offset for fixed navbar
     { provide: ViewportScroller, useClass: ViewportScrollerOffset },
-    provideHttpClient(withFetch()),
+    provideHttpClient(withFetch(), withInterceptors([getBillingTenantInterceptor()])),
     provideNgcCookieConsent(cookieConfig),
     provideLocale(),
   ],

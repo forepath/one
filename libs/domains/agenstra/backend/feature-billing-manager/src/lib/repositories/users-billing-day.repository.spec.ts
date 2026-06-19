@@ -4,6 +4,7 @@ describe('UsersBillingDayRepository', () => {
   let mockQueryBuilder: {
     select: jest.Mock;
     where: jest.Mock;
+    andWhere: jest.Mock;
     getRawMany: jest.Mock;
   };
   let mockRepository: { createQueryBuilder: jest.Mock; findOne: jest.Mock };
@@ -13,6 +14,7 @@ describe('UsersBillingDayRepository', () => {
     mockQueryBuilder = {
       select: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
       getRawMany: jest.fn(),
     };
     mockRepository = {
@@ -31,7 +33,7 @@ describe('UsersBillingDayRepository', () => {
       const result = await repository.getEffectiveBillingDayForUser('user-1');
 
       expect(mockRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 'user-1' },
+        where: { id: 'user-1', tenantId: 'default' },
         select: ['createdAt', 'billingDayOfMonth'],
       });
       expect(result).toBe(20);

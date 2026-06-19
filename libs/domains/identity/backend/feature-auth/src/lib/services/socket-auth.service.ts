@@ -34,7 +34,7 @@ export class SocketAuthService {
    * Validate Authorization header and return user info for client access checks.
    * Uses same auth logic as HTTP: api-key, keycloak, or users (JWT).
    */
-  async validateAndGetUser(authHeader: string | undefined): Promise<SocketUserInfo | null> {
+  async validateAndGetUser(authHeader: string | undefined, tenantId?: string): Promise<SocketUserInfo | null> {
     if (!authHeader) {
       return null;
     }
@@ -52,11 +52,11 @@ export class SocketAuthService {
     }
 
     if (authMethod === 'keycloak' && this.keycloak) {
-      return this.validateKeycloakToken(token);
+      return this.validateKeycloakToken(token, tenantId);
     }
 
     if (authMethod === 'users' && this.jwtService) {
-      return await this.validateUsersToken(token);
+      return await this.validateUsersToken(token, tenantId);
     }
 
     return null;
@@ -87,7 +87,7 @@ export class SocketAuthService {
     return null;
   }
 
-  private async validateKeycloakToken(token: string): Promise<SocketUserInfo | null> {
+  private async validateKeycloakToken(token: string, tenantId?: string): Promise<SocketUserInfo | null> {
     // Use exact same validation logic as HTTP AuthGuard from nest-keycloak-connect
     const tokenValidation = this.keycloakOpts?.tokenValidation || TokenValidation.ONLINE;
     const gm = this.keycloak!.grantManager;
@@ -153,6 +153,10 @@ export class SocketAuthService {
           return null;
         }
 
+        if (!this.userMatchesTenant(syncedUser, tenantId)) {
+          return null;
+        }
+
         userId = syncedUser.id;
       }
 
@@ -170,12 +174,12 @@ export class SocketAuthService {
     }
   }
 
-  private async validateUsersToken(token: string): Promise<SocketUserInfo | null> {
+  private async validateUsersToken(token: string, tenantId?: string): Promise<SocketUserInfo | null> {
     try {
       const payload = await this.jwtService!.verifyAsync<{ sub: string; email?: string; roles?: string[] }>(token);
       const entity = await this.usersRepository.findById(payload.sub);
 
-      if (!entity || entity.lockedAt) {
+      if (!entity || entity.lockedAt || !this.userMatchesTenant(entity, tenantId)) {
         return null;
       }
 
@@ -195,6 +199,14 @@ export class SocketAuthService {
     } catch {
       return null;
     }
+  }
+
+  private userMatchesTenant(user: { tenantId: string }, tenantId?: string): boolean {
+    if (!tenantId) {
+      return true;
+    }
+
+    return user.tenantId === tenantId;
   }
 
   private parseJwtPayload(token: string): { sub: string; realm_access?: { roles?: string[] } } {

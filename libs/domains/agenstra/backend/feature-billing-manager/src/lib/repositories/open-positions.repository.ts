@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, IsNull, Repository } from 'typeorm';
 
 import { OpenPositionEntity } from '../entities/open-position.entity';
+import { applyUserTenantFilter, getRequiredTenantId } from '../utils/tenant-query.utils';
 
 @Injectable()
 export class OpenPositionsRepository {
@@ -19,48 +20,67 @@ export class OpenPositionsRepository {
 
   async findUnbilledByUserId(userId: string, manager?: EntityManager): Promise<OpenPositionEntity[]> {
     const repository = manager ? manager.getRepository(OpenPositionEntity) : this.repository;
+    const qb = repository
+      .createQueryBuilder('pos')
+      .innerJoin('users', 'user', 'user.id = pos.user_id')
+      .where('pos.user_id = :userId', { userId })
+      .andWhere('pos.invoice_ref_id IS NULL')
+      .orderBy('pos.createdAt', 'ASC');
 
-    return await repository.find({
-      where: { userId, invoiceRefId: IsNull() },
-      order: { createdAt: 'ASC' },
-    });
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
   }
 
   async findUnbilledByUserIdForUpdate(userId: string, manager: EntityManager): Promise<OpenPositionEntity[]> {
-    return await manager.getRepository(OpenPositionEntity).find({
-      where: { userId, invoiceRefId: IsNull() },
-      order: { createdAt: 'ASC' },
-      lock: { mode: 'pessimistic_write' },
-    });
+    const qb = manager
+      .getRepository(OpenPositionEntity)
+      .createQueryBuilder('pos')
+      .innerJoin('users', 'user', 'user.id = pos.user_id')
+      .where('pos.user_id = :userId', { userId })
+      .andWhere('pos.invoice_ref_id IS NULL')
+      .orderBy('pos.createdAt', 'ASC')
+      .setLock('pessimistic_write');
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
   }
 
   async hasUnbilledForSubscription(subscriptionId: string): Promise<boolean> {
-    const count = await this.repository.count({
-      where: { subscriptionId, invoiceRefId: IsNull() },
-    });
+    const qb = this.repository
+      .createQueryBuilder('pos')
+      .innerJoin('users', 'user', 'user.id = pos.user_id')
+      .where('pos.subscription_id = :subscriptionId', { subscriptionId })
+      .andWhere('pos.invoice_ref_id IS NULL');
+
+    applyUserTenantFilter(qb, 'user');
+
+    const count = await qb.getCount();
 
     return count > 0;
   }
 
   async findDistinctUserIdsWithUnbilled(): Promise<string[]> {
-    const rows = await this.repository
+    const qb = this.repository
       .createQueryBuilder('pos')
+      .innerJoin('users', 'user', 'user.id = pos.user_id')
       .select('DISTINCT pos.user_id', 'userId')
-      .where('pos.invoice_ref_id IS NULL')
-      .getRawMany<{ userId: string }>();
+      .where('pos.invoice_ref_id IS NULL');
+
+    applyUserTenantFilter(qb, 'user');
+
+    const rows = await qb.getRawMany<{ userId: string }>();
 
     return rows.map((row) => row.userId);
   }
 
   async markBilled(id: string, invoiceRefId: string, manager?: EntityManager): Promise<OpenPositionEntity> {
-    const repository = manager ? manager.getRepository(OpenPositionEntity) : this.repository;
-    const entity = await repository.findOne({ where: { id } });
-
-    if (!entity) {
-      throw new NotFoundException(`Open position ${id} not found`);
-    }
+    const entity = await this.findByIdInTenant(id, manager);
 
     entity.invoiceRefId = invoiceRefId;
+
+    const repository = manager ? manager.getRepository(OpenPositionEntity) : this.repository;
 
     return await repository.save(entity);
   }
@@ -68,6 +88,10 @@ export class OpenPositionsRepository {
   async markManyBilled(ids: string[], invoiceRefId: string, manager?: EntityManager): Promise<void> {
     if (ids.length === 0) {
       return;
+    }
+
+    for (const id of ids) {
+      await this.findByIdInTenant(id, manager);
     }
 
     const repository = manager ? manager.getRepository(OpenPositionEntity) : this.repository;
@@ -79,5 +103,21 @@ export class OpenPositionsRepository {
       .whereInIds(ids)
       .andWhere('invoice_ref_id IS NULL')
       .execute();
+  }
+
+  private async findByIdInTenant(id: string, manager?: EntityManager): Promise<OpenPositionEntity> {
+    const repository = manager ? manager.getRepository(OpenPositionEntity) : this.repository;
+    const entity = await repository
+      .createQueryBuilder('pos')
+      .innerJoin('users', 'user', 'user.id = pos.user_id')
+      .where('pos.id = :id', { id })
+      .andWhere('user.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
+      .getOne();
+
+    if (!entity) {
+      throw new NotFoundException(`Open position ${id} not found`);
+    }
+
+    return entity;
   }
 }

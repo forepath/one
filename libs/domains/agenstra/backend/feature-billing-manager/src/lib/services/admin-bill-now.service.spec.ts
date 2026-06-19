@@ -4,7 +4,7 @@ import { AdminBillNowService } from './admin-bill-now.service';
 
 describe('AdminBillNowService', () => {
   const openPositionsRepository = { findDistinctUserIdsWithUnbilled: jest.fn() };
-  const usersRepository = { findById: jest.fn() };
+  const usersRepository = { findByIdForTenant: jest.fn() };
   const enqueuePort = { enqueueCoordinator: jest.fn() };
   const createService = (withQueue = true) =>
     new AdminBillNowService(
@@ -30,13 +30,14 @@ describe('AdminBillNowService', () => {
       expect.objectContaining({
         adminUserId: 'admin-1',
         scope: 'all',
+        tenantId: 'default',
         requestId: result.requestId,
       }),
     );
   });
 
   it('queueBillNow enqueues coordinator for a single user', async () => {
-    usersRepository.findById.mockResolvedValue({ id: 'user-1' });
+    usersRepository.findByIdForTenant.mockResolvedValue({ id: 'user-1' });
     const service = createService();
     const result = await service.queueBillNow('admin-1', { userId: 'user-1' });
 
@@ -51,7 +52,7 @@ describe('AdminBillNowService', () => {
   });
 
   it('queueBillNow rejects unknown user before enqueue', async () => {
-    usersRepository.findById.mockResolvedValue(null);
+    usersRepository.findByIdForTenant.mockResolvedValue(null);
     const service = createService();
 
     await expect(service.queueBillNow('admin-1', { userId: 'missing' })).rejects.toThrow(BadRequestException);

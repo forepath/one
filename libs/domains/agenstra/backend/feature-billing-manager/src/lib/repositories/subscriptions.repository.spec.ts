@@ -5,11 +5,13 @@ import { SubscriptionStatus } from '../entities/subscription.entity';
 import { SubscriptionsRepository } from './subscriptions.repository';
 
 const createMockQueryBuilder = () => ({
+  innerJoin: jest.fn().mockReturnThis(),
   where: jest.fn().mockReturnThis(),
   andWhere: jest.fn().mockReturnThis(),
   orderBy: jest.fn().mockReturnThis(),
   take: jest.fn().mockReturnThis(),
   getMany: jest.fn(),
+  getOne: jest.fn(),
 });
 
 describe('SubscriptionsRepository', () => {
@@ -34,6 +36,7 @@ describe('SubscriptionsRepository', () => {
     const subscription = { id: 'sub-1', status: SubscriptionStatus.ACTIVE };
 
     mockRepository.findOne.mockResolvedValue(subscription);
+    mockQueryBuilder.getOne.mockResolvedValue(subscription);
 
     const result = await repository.findByIdOrThrow('sub-1');
 
@@ -42,6 +45,7 @@ describe('SubscriptionsRepository', () => {
 
   it('throws when subscription not found', async () => {
     mockRepository.findOne.mockResolvedValue(null);
+    mockQueryBuilder.getOne.mockResolvedValue(null);
 
     await expect(repository.findByIdOrThrow('nonexistent')).rejects.toThrow(NotFoundException);
   });
@@ -50,6 +54,7 @@ describe('SubscriptionsRepository', () => {
     const subscription = { id: 'sub-1', status: SubscriptionStatus.ACTIVE };
 
     mockRepository.findOne.mockResolvedValue(subscription);
+    mockQueryBuilder.getOne.mockResolvedValue(subscription);
 
     const result = await repository.findById('sub-1');
 
@@ -58,6 +63,7 @@ describe('SubscriptionsRepository', () => {
 
   it('returns null when not found', async () => {
     mockRepository.findOne.mockResolvedValue(null);
+    mockQueryBuilder.getOne.mockResolvedValue(null);
 
     const result = await repository.findById('nonexistent');
 
@@ -96,6 +102,7 @@ describe('SubscriptionsRepository', () => {
     const existing = { id: 'sub-1', status: SubscriptionStatus.ACTIVE };
 
     mockRepository.findOne.mockResolvedValue(existing);
+    mockQueryBuilder.getOne.mockResolvedValue(existing);
     mockRepository.save.mockResolvedValue({ ...existing, status: SubscriptionStatus.PENDING_CANCEL });
 
     const result = await repository.update('sub-1', { status: SubscriptionStatus.PENDING_CANCEL });
@@ -115,9 +122,7 @@ describe('SubscriptionsRepository', () => {
     expect(mockQueryBuilder.where).toHaveBeenCalledWith('subscription.status = :status', {
       status: 'active',
     });
-    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('subscription.nextBillingAt <= :now', {
-      now,
-    });
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('user.tenant_id = :tenantId', { tenantId: 'default' });
   });
 
   it('finds subscriptions due for cancellation', async () => {

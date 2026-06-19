@@ -1,14 +1,19 @@
 import { NotFoundException } from '@nestjs/common';
+import { runWithTenantId } from '@forepath/shared/backend';
 
 import { CustomerProfilesRepository } from './customer-profiles.repository';
 
 const createMockQueryBuilder = () => ({
+  innerJoin: jest.fn().mockReturnThis(),
   leftJoin: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  andWhere: jest.fn().mockReturnThis(),
   orderBy: jest.fn().mockReturnThis(),
   take: jest.fn().mockReturnThis(),
   skip: jest.fn().mockReturnThis(),
   getCount: jest.fn(),
   getMany: jest.fn(),
+  getOne: jest.fn(),
 });
 
 describe('CustomerProfilesRepository', () => {
@@ -35,16 +40,17 @@ describe('CustomerProfilesRepository', () => {
     repository = new CustomerProfilesRepository(mockRepository as never);
   });
 
-  it('findByUserId returns profile', async () => {
+  it('findByUserId returns profile for tenant', async () => {
     const profile = { id: 'profile-1', userId: 'user-1' };
 
-    mockRepository.findOne.mockResolvedValue(profile);
+    mockQueryBuilder.getOne.mockResolvedValue(profile);
 
-    await expect(repository.findByUserId('user-1')).resolves.toEqual(profile);
+    await expect(runWithTenantId('default', () => repository.findByUserId('user-1'))).resolves.toEqual(profile);
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('user.tenant_id = :tenantId', { tenantId: 'default' });
   });
 
   it('findByIdOrThrow throws when missing', async () => {
-    mockRepository.findOne.mockResolvedValue(null);
+    mockQueryBuilder.getOne.mockResolvedValue(null);
 
     await expect(repository.findByIdOrThrow('missing')).rejects.toThrow(NotFoundException);
   });
@@ -72,7 +78,7 @@ describe('CustomerProfilesRepository', () => {
   it('update merges profile fields', async () => {
     const profile = { id: 'profile-1', userId: 'user-1', country: 'US' };
 
-    mockRepository.findOne.mockResolvedValue(profile);
+    mockQueryBuilder.getOne.mockResolvedValue(profile);
 
     const result = await repository.update('profile-1', { country: 'DE' });
 
@@ -80,7 +86,7 @@ describe('CustomerProfilesRepository', () => {
   });
 
   it('delete removes profile', async () => {
-    mockRepository.findOne.mockResolvedValue({ id: 'profile-1' });
+    mockQueryBuilder.getOne.mockResolvedValue({ id: 'profile-1' });
 
     await repository.delete('profile-1');
 

@@ -192,7 +192,8 @@ describe('cloud-init.utils', () => {
       expect(script).toContain('CONFIG_ALLOWED_HOSTS: test.spirde.com');
       expect(script).toContain('CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: true');
       expect(script).toContain('CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: false');
-      expect(script).toContain('CLIENT_ENDPOINT_ALLOWED_HOSTS: *');
+      expect(script).toContain("CLIENT_ENDPOINT_ALLOWED_HOSTS: '*'");
+      expect(script).toContain("CORS_ORIGIN: 'https://test.spirde.com'");
       expect(script).toContain('CSP_ENFORCE: true');
     });
 
@@ -379,7 +380,7 @@ describe('cloud-init.utils', () => {
       expect(script).toContain("certbot renew -q --deploy-hook 'docker exec agent-controller-nginx nginx -s reload'");
       expect(script).toContain('subjectAltName=DNS:my-instance.example.com');
       expect(script).toContain('CN=my-instance.example.com');
-      expect(script).toContain('CLIENT_ENDPOINT_ALLOWED_HOSTS: *');
+      expect(script).toContain("CLIENT_ENDPOINT_ALLOWED_HOSTS: '*'");
     });
 
     it('includes ssh.publicKey in authorized_keys in the script when set', () => {

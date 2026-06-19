@@ -1,4 +1,5 @@
 import { UserEntity, UserRole } from '@forepath/identity/backend';
+import { DEFAULT_TENANT, getTenantIdOrDefault } from '@forepath/shared/backend';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -24,20 +25,29 @@ export class UsersRepository {
     return this.repository.findOne({ where: { id } });
   }
 
-  async findByEmail(email: string): Promise<UserEntity | null> {
-    return this.repository.findOne({ where: { email: email.toLowerCase() } });
+  async findByIdForTenant(id: string, tenantId: string = getTenantIdOrDefault()): Promise<UserEntity | null> {
+    return this.repository.findOne({ where: { id, tenantId } });
   }
 
-  async findByKeycloakSub(keycloakSub: string): Promise<UserEntity | null> {
-    return this.repository.findOne({ where: { keycloakSub } });
+  async findByEmail(email: string, tenantId: string = getTenantIdOrDefault()): Promise<UserEntity | null> {
+    return this.repository.findOne({ where: { email: email.toLowerCase(), tenantId } });
+  }
+
+  async findByKeycloakSub(keycloakSub: string, tenantId: string = getTenantIdOrDefault()): Promise<UserEntity | null> {
+    return this.repository.findOne({ where: { keycloakSub, tenantId } });
   }
 
   async count(): Promise<number> {
     return this.repository.count();
   }
 
-  async findAll(limit = 10, offset = 0): Promise<UserEntity[]> {
+  async countByTenant(tenantId: string = getTenantIdOrDefault()): Promise<number> {
+    return this.repository.count({ where: { tenantId } });
+  }
+
+  async findAll(limit = 10, offset = 0, tenantId: string = getTenantIdOrDefault()): Promise<UserEntity[]> {
     return this.repository.find({
+      where: { tenantId },
       order: { createdAt: 'DESC' },
       take: limit,
       skip: offset,
@@ -58,6 +68,7 @@ export class UsersRepository {
     const entity = this.repository.create({
       ...data,
       email: data.email?.toLowerCase(),
+      tenantId: data.tenantId ?? getTenantIdOrDefault(),
     });
 
     return this.repository.save(entity);
@@ -82,3 +93,5 @@ export class UsersRepository {
     await this.repository.delete(id);
   }
 }
+
+export { DEFAULT_TENANT };

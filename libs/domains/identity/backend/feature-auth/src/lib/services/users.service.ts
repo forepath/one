@@ -46,7 +46,7 @@ export class UsersService {
   }
 
   async getUsersCount(): Promise<number> {
-    return this.usersRepository.count();
+    return this.usersRepository.countByTenant();
   }
 
   async findAll(limit = 10, offset = 0): Promise<UserResponseDto[]> {
@@ -56,7 +56,7 @@ export class UsersService {
   }
 
   async findOne(id: string): Promise<UserResponseDto> {
-    const user = await this.usersRepository.findById(id);
+    const user = await this.usersRepository.findByIdForTenant(id);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -98,7 +98,7 @@ export class UsersService {
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
-    const user = await this.usersRepository.findById(id);
+    const user = await this.usersRepository.findByIdForTenant(id);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -149,7 +149,7 @@ export class UsersService {
   }
 
   async remove(id: string, requestingUserId?: string): Promise<void> {
-    const user = await this.usersRepository.findById(id);
+    const user = await this.usersRepository.findByIdForTenant(id);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -166,7 +166,7 @@ export class UsersService {
       throw new BadRequestException('You cannot lock your own account');
     }
 
-    const user = await this.usersRepository.findById(targetUserId);
+    const user = await this.usersRepository.findByIdForTenant(targetUserId);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -182,7 +182,7 @@ export class UsersService {
       throw new BadRequestException('You cannot unlock your own account');
     }
 
-    const user = await this.usersRepository.findById(targetUserId);
+    const user = await this.usersRepository.findByIdForTenant(targetUserId);
 
     if (!user) {
       throw new NotFoundException('User not found');

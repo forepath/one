@@ -26,3 +26,4 @@ export * from './lib/statistics.interface';
 
 // Migrations
 export * from './lib/migrations/1765000000000_CreateUsersTable';
+export * from './lib/migrations/1770550000000_AddTenantIdToUsers';

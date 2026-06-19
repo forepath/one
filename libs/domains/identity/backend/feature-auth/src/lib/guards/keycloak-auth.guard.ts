@@ -1,4 +1,5 @@
 import { getAuthenticationMethod, IS_PUBLIC_KEY, UserEntity, UserRole } from '@forepath/identity/backend';
+import { getTenantIdOrDefault } from '@forepath/shared/backend';
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
@@ -51,6 +52,10 @@ export class KeycloakAuthGuard implements CanActivate {
     const email = tokenPayload.email || tokenPayload.preferred_username || `${tokenPayload.sub}@keycloak`;
     const user = await this.syncUser(tokenPayload.sub, email);
 
+    if (user.tenantId !== getTenantIdOrDefault()) {
+      throw new UnauthorizedException('Session is no longer valid.');
+    }
+
     request.user = {
       id: user.id,
       username: user.email,
@@ -66,16 +71,19 @@ export class KeycloakAuthGuard implements CanActivate {
     }
   }
 
-  private async syncUser(keycloakSub: string, email: string): Promise<{ id: string; email: string; role: UserRole }> {
+  private async syncUser(
+    keycloakSub: string,
+    email: string,
+  ): Promise<{ id: string; email: string; role: UserRole; tenantId: string }> {
     let user = await this.usersRepository.findByKeycloakSub(keycloakSub);
 
     if (user) {
       this.assertUserNotLocked(user);
 
-      return { id: user.id, email: user.email, role: user.role };
+      return { id: user.id, email: user.email, role: user.role, tenantId: user.tenantId };
     }
 
-    const count = await this.usersRepository.count();
+    const count = await this.usersRepository.countByTenant();
     const role = count === 0 ? UserRole.ADMIN : UserRole.USER;
 
     user = await this.usersRepository.findByEmail(email.toLowerCase());
@@ -84,7 +92,7 @@ export class KeycloakAuthGuard implements CanActivate {
       this.assertUserNotLocked(user);
       await this.usersRepository.update(user.id, { keycloakSub });
 
-      return { id: user.id, email: user.email, role: user.role };
+      return { id: user.id, email: user.email, role: user.role, tenantId: user.tenantId };
     }
 
     user = await this.usersRepository.create({
@@ -94,6 +102,6 @@ export class KeycloakAuthGuard implements CanActivate {
       emailConfirmedAt: new Date(),
     });
 
-    return { id: user.id, email: user.email, role: user.role };
+    return { id: user.id, email: user.email, role: user.role, tenantId: user.tenantId };
   }
 }

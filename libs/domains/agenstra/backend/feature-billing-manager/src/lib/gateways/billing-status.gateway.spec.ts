@@ -1,4 +1,4 @@
-import { SocketAuthService, UserRole } from '@forepath/identity/backend';
+import { SocketAuthService, UserRole, UsersRepository } from '@forepath/identity/backend';
 import { Test, TestingModule } from '@nestjs/testing';
 import type { Socket } from 'socket.io';
 
@@ -22,6 +22,7 @@ describe('BillingStatusGateway', () => {
   let socketAuth: jest.Mocked<Pick<SocketAuthService, 'validateAndGetUser'>>;
   let subscriptionService: jest.Mocked<Pick<SubscriptionService, 'listSubscriptions'>>;
   let itemServerService: jest.Mocked<Pick<SubscriptionItemServerService, 'listItems' | 'getServerInfo'>>;
+  let usersRepository: jest.Mocked<Pick<UsersRepository, 'findByIdForTenant'>>;
   const userSocketInfo = {
     isApiKeyAuth: false,
     userId: 'user-1',
@@ -40,6 +41,9 @@ describe('BillingStatusGateway', () => {
       listItems: jest.fn(),
       getServerInfo: jest.fn(),
     };
+    usersRepository = {
+      findByIdForTenant: jest.fn().mockResolvedValue({ id: 'user-1', tenantId: 'default' }),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -47,6 +51,7 @@ describe('BillingStatusGateway', () => {
         { provide: SocketAuthService, useValue: socketAuth },
         { provide: SubscriptionService, useValue: subscriptionService },
         { provide: SubscriptionItemServerService, useValue: itemServerService },
+        { provide: UsersRepository, useValue: usersRepository },
       ],
     }).compile();
 
@@ -59,7 +64,7 @@ describe('BillingStatusGateway', () => {
       const next = jest.fn();
       const mockSocket = {
         id: 's1',
-        handshake: { headers: {}, auth: {} },
+        handshake: { headers: {}, auth: { tenantId: 'default' } },
         data: {},
       };
       const useCallbacks: Array<(s: typeof mockSocket, n: (e?: Error) => void) => Promise<void>> = [];
@@ -80,7 +85,7 @@ describe('BillingStatusGateway', () => {
       const next = jest.fn();
       const mockSocket = {
         id: 's1',
-        handshake: { headers: { authorization: 'Bearer x' }, auth: {} },
+        handshake: { headers: { authorization: 'Bearer x' }, auth: { tenantId: 'default' } },
         data: {},
       };
       const useCallbacks: Array<(s: typeof mockSocket, n: (e?: Error) => void) => Promise<void>> = [];
@@ -93,6 +98,7 @@ describe('BillingStatusGateway', () => {
       gateway.afterInit(server as never);
       await useCallbacks[0](mockSocket, next);
       expect(next).toHaveBeenCalledWith();
+      expect(socketAuth.validateAndGetUser).toHaveBeenCalledWith('Bearer x', 'default');
       expect((mockSocket as unknown as { data: { userInfo: unknown } }).data.userInfo).toEqual(userSocketInfo);
     });
   });

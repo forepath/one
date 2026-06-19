@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 
 import { SubscriptionItemEntity } from '../entities/subscription-item.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
+import { applyUserTenantFilter, getRequiredTenantId } from '../utils/tenant-query.utils';
 
 @Injectable()
 export class SubscriptionItemsRepository {
@@ -19,11 +20,7 @@ export class SubscriptionItemsRepository {
   }
 
   async updateProviderReference(id: string, providerReference: string): Promise<SubscriptionItemEntity> {
-    const entity = await this.repository.findOne({ where: { id } });
-
-    if (!entity) {
-      throw new Error(`Subscription item ${id} not found`);
-    }
+    const entity = await this.findByIdInTenant(id);
 
     entity.providerReference = providerReference;
 
@@ -31,44 +28,55 @@ export class SubscriptionItemsRepository {
   }
 
   async updateProvisioningStatus(id: string, status: 'pending' | 'active' | 'failed'): Promise<SubscriptionItemEntity> {
-    const entity = await this.repository.findOne({ where: { id } });
+    const entity = await this.findByIdInTenant(id);
 
-    if (!entity) {
-      throw new Error(`Subscription item ${id} not found`);
-    }
-
-    entity.provisioningStatus = status as any;
+    entity.provisioningStatus = status as SubscriptionItemEntity['provisioningStatus'];
 
     return await this.repository.save(entity);
   }
 
   async findBySubscription(subscriptionId: string): Promise<SubscriptionItemEntity[]> {
-    return await this.repository.find({
-      where: { subscriptionId },
-      relations: ['serviceType'],
-    });
+    const qb = this.repository
+      .createQueryBuilder('item')
+      .innerJoin('item.subscription', 'sub')
+      .innerJoin('users', 'user', 'user.id = sub.user_id')
+      .leftJoinAndSelect('item.serviceType', 'st')
+      .where('item.subscription_id = :subscriptionId', { subscriptionId });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
   }
 
   async findByIdWithRelations(id: string): Promise<SubscriptionItemEntity | null> {
-    return await this.repository.findOne({
-      where: { id },
-      relations: ['serviceType', 'subscription'],
-    });
+    const qb = this.repository
+      .createQueryBuilder('item')
+      .innerJoinAndSelect('item.subscription', 'sub')
+      .innerJoin('users', 'user', 'user.id = sub.user_id')
+      .leftJoinAndSelect('item.serviceType', 'st')
+      .where('item.id = :id', { id });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getOne();
   }
 
   async findByIdAndSubscriptionId(id: string, subscriptionId: string): Promise<SubscriptionItemEntity | null> {
-    return await this.repository.findOne({
-      where: { id, subscriptionId },
-      relations: ['serviceType', 'subscription'],
-    });
+    const qb = this.repository
+      .createQueryBuilder('item')
+      .innerJoinAndSelect('item.subscription', 'sub')
+      .innerJoin('users', 'user', 'user.id = sub.user_id')
+      .leftJoinAndSelect('item.serviceType', 'st')
+      .where('item.id = :id', { id })
+      .andWhere('item.subscription_id = :subscriptionId', { subscriptionId });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getOne();
   }
 
   async updateServerInfoSnapshot(id: string, snapshot: Record<string, unknown>): Promise<SubscriptionItemEntity> {
-    const entity = await this.repository.findOne({ where: { id } });
-
-    if (!entity) {
-      throw new Error(`Subscription item ${id} not found`);
-    }
+    const entity = await this.findByIdInTenant(id);
 
     entity.serverInfoSnapshot = snapshot;
 
@@ -76,11 +84,7 @@ export class SubscriptionItemsRepository {
   }
 
   async updateHostname(id: string, hostname: string | null): Promise<SubscriptionItemEntity> {
-    const entity = await this.repository.findOne({ where: { id } });
-
-    if (!entity) {
-      throw new Error(`Subscription item ${id} not found`);
-    }
+    const entity = await this.findByIdInTenant(id);
 
     entity.hostname = hostname ?? undefined;
 
@@ -88,11 +92,7 @@ export class SubscriptionItemsRepository {
   }
 
   async updateSshPrivateKey(id: string, privateKeyPlain: string): Promise<SubscriptionItemEntity> {
-    const entity = await this.repository.findOne({ where: { id } });
-
-    if (!entity) {
-      throw new Error(`Subscription item ${id} not found`);
-    }
+    const entity = await this.findByIdInTenant(id);
 
     entity.sshPrivateKey = privateKeyPlain;
 
@@ -104,14 +104,34 @@ export class SubscriptionItemsRepository {
    * Used by the update scheduler to run docker compose pull/up over SSH.
    */
   async findProvisionedWithSshKey(): Promise<SubscriptionItemEntity[]> {
-    return await this.repository
+    const qb = this.repository
       .createQueryBuilder('item')
       .innerJoinAndSelect('item.subscription', 'sub')
+      .innerJoin('users', 'user', 'user.id = sub.user_id')
       .innerJoinAndSelect('item.serviceType', 'st')
       .where('item.provisioning_status = :status', { status: 'active' })
       .andWhere('item.provider_reference IS NOT NULL')
       .andWhere('item.ssh_private_key IS NOT NULL')
-      .andWhere('sub.status = :subStatus', { subStatus: SubscriptionStatus.ACTIVE })
-      .getMany();
+      .andWhere('sub.status = :subStatus', { subStatus: SubscriptionStatus.ACTIVE });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
+  }
+
+  private async findByIdInTenant(id: string): Promise<SubscriptionItemEntity> {
+    const entity = await this.repository
+      .createQueryBuilder('item')
+      .innerJoin('item.subscription', 'sub')
+      .innerJoin('users', 'user', 'user.id = sub.user_id')
+      .where('item.id = :id', { id })
+      .andWhere('user.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
+      .getOne();
+
+    if (!entity) {
+      throw new Error(`Subscription item ${id} not found`);
+    }
+
+    return entity;
   }
 }

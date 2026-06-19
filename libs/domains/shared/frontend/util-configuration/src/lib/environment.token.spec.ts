@@ -73,6 +73,24 @@ describe('environment.token', () => {
       expect(result.production).toBe(environment.production);
     });
 
+    it('should deep-merge billing overrides without dropping restApiUrl', async () => {
+      const remoteConfig: Partial<Environment> = {
+        billing: {
+          frontendUrl: 'http://custom-billing:4500',
+        },
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => remoteConfig,
+      });
+
+      const result = await loadRuntimeEnvironment();
+
+      expect(result.billing.frontendUrl).toBe('http://custom-billing:4500');
+      expect(result.billing.restApiUrl).toBe(environment.billing.restApiUrl);
+    });
+
     it('should call /config endpoint', async () => {
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,

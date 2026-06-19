@@ -1,4 +1,6 @@
 import { SocketAuthService, type SocketUserInfo } from '@forepath/identity/backend';
+import { UsersRepository } from '@forepath/identity/backend';
+import { getTenantIdOrDefault, readIncomingTenantIdFromHandshake } from '@forepath/shared/backend';
 import { Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -87,13 +89,27 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
     private readonly socketAuthService: SocketAuthService,
     private readonly subscriptionService: SubscriptionService,
     private readonly subscriptionItemServerService: SubscriptionItemServerService,
+    private readonly usersRepository: UsersRepository,
   ) {}
 
   afterInit(server: Server): void {
     server.use(async (socket, next) => {
       const authHeader = socket.handshake?.headers?.authorization ?? socket.handshake?.auth?.Authorization;
+      const tenantId = readIncomingTenantIdFromHandshake(
+        socket.handshake?.headers as Record<string, unknown> | undefined,
+        socket.handshake?.auth as Record<string, unknown> | undefined,
+      );
+
+      if (!tenantId) {
+        this.logger.warn(`Billing WebSocket rejected: invalid tenant for socket ${socket.id}`);
+        next(new Error('Invalid tenant'));
+
+        return;
+      }
+
       const userInfo = await this.socketAuthService.validateAndGetUser(
         typeof authHeader === 'string' ? authHeader : undefined,
+        tenantId,
       );
 
       if (!userInfo) {
@@ -129,6 +145,13 @@ export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection,
     if (!userId) {
       socket.emit('error', { message: 'User not authenticated' });
 
+      return;
+    }
+
+    const user = await this.usersRepository.findByIdForTenant(userId);
+
+    if (!user || user.tenantId !== getTenantIdOrDefault()) {
+      socket.emit('error', { message: 'Access denied' });
       return;
     }
 

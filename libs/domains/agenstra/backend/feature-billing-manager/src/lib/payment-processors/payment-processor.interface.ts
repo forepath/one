@@ -20,6 +20,7 @@ export interface PaymentStatusUpdate {
   externalId: string;
   status: 'succeeded' | 'failed' | 'canceled' | 'pending';
   amountPaid?: number;
+  tenantId?: string;
 }
 
 export interface PaymentProcessor {
