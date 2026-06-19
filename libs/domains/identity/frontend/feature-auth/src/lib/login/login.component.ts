@@ -43,6 +43,9 @@ export class IdentityLoginComponent implements OnInit {
     return this.environment.authentication.type === 'api-key';
   }
 
+  protected readonly productName = this.environment.productName;
+  protected readonly authMarketing = this.environment.authMarketing;
+
   /**
    * Whether signup is disabled (users auth only). When true, the "Create an account" link is hidden.
    */

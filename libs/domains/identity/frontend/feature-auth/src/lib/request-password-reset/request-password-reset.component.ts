@@ -29,6 +29,8 @@ export class IdentityRequestPasswordResetComponent implements OnInit {
   error$: Observable<string | null> = this.authFacade.error$;
   successMessage$: Observable<string | null> = this.authFacade.successMessage$;
 
+  protected readonly authMarketing = this.environment.authMarketing;
+
   get isUsersAuth(): boolean {
     return this.environment.authentication.type === 'users';
   }

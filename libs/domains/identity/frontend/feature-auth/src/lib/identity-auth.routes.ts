@@ -24,6 +24,7 @@ import {
   unlockUser$,
   updateUser$,
 } from '@forepath/identity/frontend';
+import { buildPageTitle } from '@forepath/shared/frontend/util-configuration';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 
@@ -67,43 +68,44 @@ export const identityAuthRoutes: Route[] = [
     path: 'login',
     component: IdentityLoginComponent,
     canActivate: [loginGuard],
-    title: $localize`:@@featureAuth-loginTitle:Login :: Agenstra`,
+    title: () => buildPageTitle($localize`:@@featureAuth-loginPage:Login`),
   },
   {
     path: 'register',
     component: IdentityRegisterComponent,
     canActivate: [signupDisabledGuard, loginGuard],
-    title: $localize`:@@featureAuth-registerTitle:Register :: Agenstra`,
+    title: () => buildPageTitle($localize`:@@featureAuth-registerPage:Register`),
   },
   {
     path: 'request-password-reset',
     component: IdentityRequestPasswordResetComponent,
     canActivate: [loginGuard],
-    title: $localize`:@@featureAuth-requestPasswordResetTitle:Request Password Reset :: Agenstra`,
+    title: () => buildPageTitle($localize`:@@featureAuth-requestPasswordResetPage:Request Password Reset`),
   },
   {
     path: 'request-password-reset-confirmation',
     component: IdentityRequestPasswordResetConfirmationComponent,
     canActivate: [loginGuard],
-    title: $localize`:@@featureAuth-requestPasswordResetConfirmationTitle:Password Reset Requested :: Agenstra`,
+    title: () =>
+      buildPageTitle($localize`:@@featureAuth-requestPasswordResetConfirmationPage:Password Reset Requested`),
   },
   {
     path: 'reset-password',
     component: IdentityResetPasswordComponent,
     canActivate: [loginGuard],
-    title: $localize`:@@featureAuth-resetPasswordTitle:Reset Password :: Agenstra`,
+    title: () => buildPageTitle($localize`:@@featureAuth-resetPasswordPage:Reset Password`),
   },
   {
     path: 'confirm-email',
     component: IdentityConfirmEmailComponent,
     canActivate: [loginGuard],
-    title: $localize`:@@featureAuth-confirmEmailTitle:Confirm Email :: Agenstra`,
+    title: () => buildPageTitle($localize`:@@featureAuth-confirmEmailPage:Confirm Email`),
   },
   {
     path: 'users',
     canActivate: [authGuard, adminGuard],
     component: IdentityUserManagerComponent,
-    title: $localize`:@@featureAuth-usersTitle:User Management :: Agenstra`,
+    title: () => buildPageTitle($localize`:@@featureAuth-usersPage:User Management`),
   },
 ];
 

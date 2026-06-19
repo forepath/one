@@ -39,6 +39,7 @@ export class IdentityRegisterComponent implements OnInit {
   /** Shown on the registration form when both URLs are configured (e.g. from {@code cookieConsent}). */
   protected readonly termsUrl = this.environment.termsUrl;
   protected readonly privacyPolicyUrl = this.environment.privacyPolicyUrl;
+  protected readonly registerDescription = this.environment.authMarketing.registerDescription;
 
   get isUsersAuth(): boolean {
     return this.environment.authentication.type === 'users';

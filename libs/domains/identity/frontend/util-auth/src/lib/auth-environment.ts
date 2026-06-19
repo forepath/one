@@ -1,4 +1,5 @@
 import { InjectionToken } from '@angular/core';
+import type { AuthMarketing } from '@forepath/shared/frontend/util-configuration';
 
 /**
  * Authentication configuration types.
@@ -34,6 +35,10 @@ export type AuthenticationConfig =
  * from their full environment to these auth-relevant fields.
  */
 export interface IdentityAuthEnvironment {
+  /** Product name shown on auth screens and in page titles. */
+  productName: string;
+  /** Brand-specific copy for login, registration, and related auth screens. */
+  authMarketing: AuthMarketing;
   /** The base URL of the REST API (used to scope auth headers to API requests) */
   apiUrl: string;
   /**

@@ -1,7 +1,9 @@
 import { Environment } from './environment.interface';
+import { agenstraAuthMarketing } from './auth-marketing.agenstra';
 
 export const environment: Environment = {
   production: false,
+  productName: 'Agenstra',
   controller: {
     restApiUrl: 'http://localhost:3100/api',
     websocketUrl: 'http://localhost:8081/clients',
@@ -24,6 +26,7 @@ export const environment: Environment = {
     clientId: 'agent-frontend',
     */
   },
+  authMarketing: agenstraAuthMarketing,
   chatModelOptions: {
     cursor: {},
     opencode: {},
@@ -35,6 +38,7 @@ export const environment: Environment = {
     openInNewWindow: true,
   },
   cookieConsent: {
+    enabled: true,
     domain: '.agenstra.com',
     privacyPolicyUrl: 'https://agenstra.com/legal/privacy',
     termsUrl: 'https://agenstra.com/legal/terms',

@@ -3,17 +3,17 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "app",
-  "sourceRoot": "apps/agenstra/frontend-billing-console/src",
+  "sourceRoot": "apps/decabill/frontend-billing-console/src",
   "i18n": {
     "sourceLocale": "en",
     "locales": {
-      "de": "apps/agenstra/frontend-billing-console/src/i18n/messages.de.xlf"
+      "de": "apps/decabill/frontend-billing-console/src/i18n/messages.de.xlf"
     }
   },
-  "tags": ["type:app", "scope:frontend"],
+  "tags": ["domain:agenstra", "type:app", "scope:frontend"],
   "implicitDependencies": [
     "shared-platform-authentication",
-    "agenstra-backend-billing-manager"
+    "decabill-backend-billing-manager"
   ],
   "targets": {
     "build": {
@@ -22,14 +22,18 @@
       "options": {
         "outputPath": "dist/apps/agenstra/frontend-billing-console",
         "index": "apps/agenstra/frontend-billing-console/src/index.html",
-        "browser": "apps/agenstra/frontend-billing-console/src/main.ts",
+        "browser": "apps/decabill/frontend-billing-console/src/main.ts",
         "polyfills": [
           "zone.js",
-          "apps/agenstra/frontend-billing-console/src/polyfills.ts"
+          "apps/decabill/frontend-billing-console/src/polyfills.ts"
         ],
-        "tsConfig": "apps/agenstra/frontend-billing-console/tsconfig.app.json",
+        "tsConfig": "apps/decabill/frontend-billing-console/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/decabill/frontend-billing-console/public"
+          },
           {
             "glob": "**/*",
             "input": "apps/agenstra/frontend-billing-console/public"
@@ -66,14 +70,20 @@
           "fileReplacements": [
             {
               "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
-              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.production.ts"
+              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.agenstra.production.ts"
             }
           ]
         },
         "development": {
           "optimization": false,
           "extractLicenses": false,
-          "sourceMap": true
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.agenstra.ts"
+            }
+          ]
         },
         "serve": {
           "externalDependencies": []
@@ -108,14 +118,14 @@
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
         "buildTarget": "agenstra-frontend-billing-console:build",
-        "outputPath": "apps/agenstra/frontend-billing-console/src/i18n"
+        "outputPath": "apps/decabill/frontend-billing-console/src/i18n"
       }
     },
     "extract-i18n": {
       "executor": "nx:run-commands",
       "options": {
         "command": "node ../../../remove-context-groups.cjs src/i18n/messages.xlf",
-        "cwd": "apps/agenstra/frontend-billing-console"
+        "cwd": "apps/decabill/frontend-billing-console"
       },
       "dependsOn": ["extract-i18n-angular"]
     },
@@ -126,8 +136,8 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/agenstra/frontend-billing-console/jest.config.ts",
-        "tsConfig": "apps/agenstra/frontend-billing-console/tsconfig.spec.json"
+        "jestConfig": "apps/decabill/frontend-billing-console/jest.config.ts",
+        "tsConfig": "apps/decabill/frontend-billing-console/tsconfig.spec.json"
       }
     },
     "serve-static": {
@@ -149,8 +159,8 @@
         "outputPath": "dist/apps/agenstra/frontend-billing-console/server",
         "format": ["cjs"],
         "bundle": true,
-        "main": "apps/agenstra/frontend-billing-console/src/server.ts",
-        "tsConfig": "apps/agenstra/frontend-billing-console/tsconfig.server.json",
+        "main": "apps/decabill/frontend-billing-console/src/server.ts",
+        "tsConfig": "apps/decabill/frontend-billing-console/tsconfig.server.json",
         "assets": [],
         "generatePackageJson": true,
         "external": ["express"],
@@ -188,7 +198,7 @@
       "executor": "@nx-tools/nx-container:build",
       "options": {
         "engine": "docker",
-        "file": "apps/agenstra/frontend-billing-console/Dockerfile.server",
+        "file": "apps/decabill/frontend-billing-console/Dockerfile.server",
         "context": "dist/apps/agenstra/frontend-billing-console/server"
       },
       "configurations": {
@@ -211,8 +221,7 @@
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "apps/agenstra/frontend-billing-console",
-        "command": "docker compose up -d --force-recreate --remove-orphans"
+        "command": "docker rm -f agenstra-billing-console-server 2>/dev/null || true; docker run -d --name agenstra-billing-console-server --pull never -p ${PORT:-4500}:${PORT:-4500} -e HOST=${HOST:-0.0.0.0} -e PORT=${PORT:-4500} -e NODE_ENV=${NODE_ENV:-production} -e DEFAULT_LOCALE=${DEFAULT_LOCALE:-en} -e CSP_ENFORCE=${CSP_ENFORCE:-true} -e CSP_CONNECT_SRC_EXTRA=${CSP_CONNECT_SRC_EXTRA:-http://host.docker.internal:3200} ghcr.io/forepath/agenstra-billing-console-server:latest"
       }
     },
     "sbom": {

@@ -1,0 +1,229 @@
+{
+  "name": "decabill-frontend-billing-console",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/decabill/frontend-billing-console/src",
+  "i18n": {
+    "sourceLocale": "en",
+    "locales": {
+      "de": "apps/decabill/frontend-billing-console/src/i18n/messages.de.xlf"
+    }
+  },
+  "tags": ["domain:decabill", "type:app", "scope:frontend"],
+  "implicitDependencies": [
+    "shared-platform-authentication",
+    "decabill-backend-billing-manager"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/decabill/frontend-billing-console",
+        "index": "apps/decabill/frontend-billing-console/src/index.html",
+        "browser": "apps/decabill/frontend-billing-console/src/main.ts",
+        "polyfills": [
+          "zone.js",
+          "apps/decabill/frontend-billing-console/src/polyfills.ts"
+        ],
+        "tsConfig": "apps/decabill/frontend-billing-console/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/decabill/frontend-billing-console/public"
+          }
+        ],
+        "styles": [
+          "node_modules/cookieconsent/build/cookieconsent.min.css",
+          "apps/decabill/frontend-billing-console/src/styles.scss"
+        ],
+        "scripts": [
+          "node_modules/cookieconsent/build/cookieconsent.min.js",
+          "node_modules/@popperjs/core/dist/umd/popper.min.js",
+          "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js",
+          "node_modules/apexcharts/dist/apexcharts.min.js"
+        ],
+        "localize": true,
+        "i18nMissingTranslation": "warning"
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "1mb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.decabill.production.ts"
+            }
+          ]
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.decabill.ts"
+            }
+          ]
+        },
+        "serve": {
+          "externalDependencies": []
+        },
+        "en": {
+          "localize": ["en"]
+        },
+        "de": {
+          "localize": ["de"]
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "hmr": false,
+        "port": 4500
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "decabill-frontend-billing-console:build:development,serve,en"
+        },
+        "production": {
+          "buildTarget": "decabill-frontend-billing-console:build:production,serve,en"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n-angular": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "decabill-frontend-billing-console:build",
+        "outputPath": "apps/decabill/frontend-billing-console/src/i18n"
+      }
+    },
+    "extract-i18n": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node ../../../remove-context-groups.cjs src/i18n/messages.xlf",
+        "cwd": "apps/decabill/frontend-billing-console"
+      },
+      "dependsOn": ["extract-i18n-angular"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/decabill/frontend-billing-console/jest.config.ts",
+        "tsConfig": "apps/decabill/frontend-billing-console/tsconfig.spec.json"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "decabill-frontend-billing-console:build",
+        "port": 4500,
+        "staticFilePath": "dist/apps/decabill/frontend-billing-console/browser",
+        "spa": true
+      }
+    },
+    "prebuild-server": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/decabill/frontend-billing-console/server",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/decabill/frontend-billing-console/src/server.ts",
+        "tsConfig": "apps/decabill/frontend-billing-console/tsconfig.server.json",
+        "assets": [],
+        "generatePackageJson": true,
+        "external": ["express"],
+        "deleteOutputPath": false,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      },
+      "dependsOn": ["build"]
+    },
+    "server": {
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/decabill/frontend-billing-console/server/browser"
+      ],
+      "options": {
+        "command": "bash -c \"test -d dist/apps/decabill/frontend-billing-console/browser && mkdir -p dist/apps/decabill/frontend-billing-console/server && cp -r dist/apps/decabill/frontend-billing-console/browser dist/apps/decabill/frontend-billing-console/server/browser || (echo 'Error: Browser directory not found. Please run build first.' && exit 1)\""
+      },
+      "dependsOn": ["prebuild-server"]
+    },
+    "server-container-image": {
+      "dependsOn": ["server"],
+      "cache": false,
+      "executor": "@nx-tools/nx-container:build",
+      "options": {
+        "engine": "docker",
+        "file": "apps/decabill/frontend-billing-console/Dockerfile.server",
+        "context": "dist/apps/decabill/frontend-billing-console/server"
+      },
+      "configurations": {
+        "test": {
+          "load": true,
+          "tags": ["ghcr.io/forepath/decabill-billing-console-server:latest"]
+        },
+        "release": {
+          "push": true,
+          "tags": [
+            "ghcr.io/forepath/decabill-billing-console-server:latest",
+            "ghcr.io/forepath/decabill-billing-console-server:$VERSION"
+          ]
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "start-containers": {
+      "dependsOn": ["server-container-image"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/decabill/frontend-billing-console",
+        "command": "docker compose up -d --force-recreate --remove-orphans"
+      }
+    },
+    "sbom": {
+      "executor": "@forepath/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
+    }
+  }
+}

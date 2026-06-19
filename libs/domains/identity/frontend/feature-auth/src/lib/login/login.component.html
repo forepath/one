@@ -1,49 +1,18 @@
 <section class="section__row">
   <div class="section__column d-flex align-items-center justify-content-center bg-body-tertiary h-100">
     <div class="p-4" style="width: 700px; max-width: 100%">
-      <h1 class="display-5 fw-bold mb-3" i18n="@@featureLogin-appName">Agenstra</h1>
-      <p class="lead mb-4" i18n="@@featureLogin-appDescription">
-        Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact
-        with agents in real-time, and edit code directly in their containers - all from one powerful dashboard.
-      </p>
+      <h1 class="display-5 fw-bold mb-3">{{ productName }}</h1>
+      <p class="lead mb-4">{{ authMarketing.loginDescription }}</p>
       <ul class="list-unstyled">
-        <li class="mb-2 d-flex align-items-center gap-2 bg-body-secondary py-2 px-3 rounded-2">
-          <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
-          <div class="d-flex flex-column">
-            <strong i18n="@@featureLogin-featureDistributedAgent">Distributed Agent Management</strong>
-            <span class="text-muted small" i18n="@@featureLogin-featureDistributedAgentDesc"
-              >Connect to and manage multiple remote agent-manager services from a single console</span
-            >
-          </div>
-        </li>
-        <li class="mb-2 d-flex align-items-center gap-2 bg-body-secondary py-2 px-3 rounded-2">
-          <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
-          <div class="d-flex flex-column">
-            <strong i18n="@@featureLogin-featureRealtimeChat">Real-time AI Chat</strong>
-            <span class="text-muted small" i18n="@@featureLogin-featureRealtimeChatDesc"
-              >WebSocket-based bidirectional communication with AI agents and instant responses</span
-            >
-          </div>
-        </li>
-        <li class="mb-2 d-flex align-items-center gap-2 bg-body-secondary py-2 px-3 rounded-2">
-          <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
-          <div class="d-flex flex-column">
-            <strong i18n="@@featureLogin-featureCodeEditor">Integrated Code Editor</strong>
-            <span class="text-muted small" i18n="@@featureLogin-featureCodeEditorDesc"
-              >Edit files directly in agent containers with Monaco Editor - read, write, and manage code in
-              real-time</span
-            >
-          </div>
-        </li>
-        <li class="mb-2 d-flex align-items-center gap-2 bg-body-secondary py-2 px-3 rounded-2">
-          <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
-          <div class="d-flex flex-column">
-            <strong i18n="@@featureLogin-featureContainer">Container Integration</strong>
-            <span class="text-muted small" i18n="@@featureLogin-featureContainerDesc"
-              >Docker-based agent execution with live log streaming and file system operations</span
-            >
-          </div>
-        </li>
+        @for (feature of authMarketing.features; track feature.title) {
+          <li class="mb-2 d-flex align-items-center gap-2 bg-body-secondary py-2 px-3 rounded-2">
+            <i class="bi bi-check-circle-fill text-primary me-2 fs-5"></i>
+            <div class="d-flex flex-column">
+              <strong>{{ feature.title }}</strong>
+              <span class="text-muted small">{{ feature.description }}</span>
+            </div>
+          </li>
+        }
       </ul>
     </div>
   </div>

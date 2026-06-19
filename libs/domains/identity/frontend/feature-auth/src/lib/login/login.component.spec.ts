@@ -2,8 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { AuthenticationFacade } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
+import {
+  AuthenticationFacade,
+  createMockIdentityAuthEnvironment,
+  IDENTITY_AUTH_ENVIRONMENT,
+} from '@forepath/identity/frontend';
 import { Actions } from '@ngrx/effects';
 import { of } from 'rxjs';
 
@@ -23,13 +26,9 @@ describe('IdentityLoginComponent', () => {
       clearError: jest.fn(),
     };
 
-    mockEnvironment = {
-      apiUrl: 'http://localhost:3100/api',
-      authentication: {
-        type: 'api-key',
-      },
+    mockEnvironment = createMockIdentityAuthEnvironment({
       controllerApiUrl: 'http://localhost:3100/api',
-    };
+    });
 
     await TestBed.configureTestingModule({
       imports: [
@@ -87,10 +86,7 @@ describe('IdentityLoginComponent', () => {
           { provide: AuthenticationFacade, useValue: mockAuthFacade },
           {
             provide: IDENTITY_AUTH_ENVIRONMENT,
-            useValue: {
-              apiUrl: 'http://localhost:3100/api',
-              authentication: { type: 'api-key' },
-            },
+            useValue: createMockIdentityAuthEnvironment(),
           },
           { provide: Actions, useValue: of() },
         ],
