@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
   BackordersFacade,
@@ -14,15 +15,23 @@ import {
   isBillingServerStatusTransitional,
   SubscriptionServerInfoFacade,
   SubscriptionsFacade,
+  type BackorderResponse,
+  type InvoicesSummaryResponse,
+  type ServerInfoResponse,
+  type SubscriptionResponse,
+  type SubscriptionWithServerInfo,
 } from '@forepath/agenstra/frontend/data-access-billing-console';
 import type { Environment } from '@forepath/shared/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { combineLatest, filter, map, take } from 'rxjs';
 
+import { getProfileCompleteLabel } from '../billing-status-labels';
+import { filterItemsBySearch } from '../billing-list-search';
+
 @Component({
   selector: 'framework-billing-overview',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './overview.component.html',
   styleUrls: ['./overview.component.scss'],
 })
@@ -38,12 +47,27 @@ export class OverviewComponent implements OnInit {
 
   readonly subscriptions$ = this.subscriptionsFacade.getSubscriptions$();
   readonly invoicesSummary$ = this.invoicesFacade.getInvoicesSummary$();
+  readonly invoicesSummary = toSignal(this.invoicesFacade.getInvoicesSummary$(), {
+    initialValue: null as InvoicesSummaryResponse | null,
+  });
   readonly invoicesSummaryLoading$ = this.invoicesFacade.getInvoicesSummaryLoading$();
   readonly subscriptionsLoading$ = this.subscriptionsFacade.getSubscriptionsLoading$();
   readonly subscriptionsError$ = this.subscriptionsFacade.getSubscriptionsError$();
   readonly activeSubscriptions$ = this.subscriptionsFacade.getActiveSubscriptions$();
+  readonly activeSubscriptions = toSignal(this.subscriptionsFacade.getActiveSubscriptions$(), {
+    initialValue: [] as SubscriptionResponse[],
+  });
 
   readonly subscriptionsWithServerInfo$ = this.serverInfoFacade.getSubscriptionsWithServerInfo$();
+  readonly subscriptionsWithServerInfo = toSignal(this.serverInfoFacade.getSubscriptionsWithServerInfo$(), {
+    initialValue: [] as SubscriptionWithServerInfo[],
+  });
+  readonly instancesSearch = signal('');
+  readonly filteredSubscriptionsWithServerInfo = computed(() =>
+    filterItemsBySearch(this.subscriptionsWithServerInfo(), this.instancesSearch(), (item) =>
+      this.instanceSearchHaystack(item),
+    ),
+  );
   readonly overviewServerInfoLoading$ = combineLatest([
     this.serverInfoFacade.getOverviewServerInfoLoading$(),
     this.billingDashboardSocketFacade.getStreamPending$(),
@@ -58,18 +82,97 @@ export class OverviewComponent implements OnInit {
 
   readonly backorders$ = this.backordersFacade.getBackorders$();
   readonly pendingBackorders$ = this.backordersFacade.getPendingBackorders$();
+  readonly pendingBackorders = toSignal(this.backordersFacade.getPendingBackorders$(), {
+    initialValue: [] as BackorderResponse[],
+  });
   readonly backordersLoading$ = this.backordersFacade.getBackordersLoading$();
   readonly backordersError$ = this.backordersFacade.getBackordersError$();
 
   readonly customerProfile$ = this.customerProfileFacade.getCustomerProfile$();
   readonly customerProfileLoading$ = this.customerProfileFacade.getCustomerProfileLoading$();
   readonly isCustomerProfileComplete$ = this.customerProfileFacade.isCustomerProfileComplete$();
+  readonly isCustomerProfileComplete = toSignal(this.customerProfileFacade.isCustomerProfileComplete$(), {
+    initialValue: false,
+  });
 
   readonly isServerOnline = isBillingServerOnline;
   readonly isServerOff = isBillingServerOff;
   readonly isServerStartable = isBillingServerStartable;
   readonly isServerStatusTransitional = isBillingServerStatusTransitional;
   readonly serverLocationLabel = getBillingServerLocationLabel;
+
+  profileCompleteLabel(isComplete: boolean): string {
+    return getProfileCompleteLabel(isComplete);
+  }
+
+  instanceDisplayTitle(item: SubscriptionWithServerInfo): string {
+    return item.subscription.number?.trim() || '—';
+  }
+
+  instanceSearchHaystack(item: SubscriptionWithServerInfo): string {
+    const provider = item.serverInfo.metadata?.['provider'];
+
+    return [
+      item.subscription.number,
+      this.serviceTypeLabel(item.service),
+      this.serverStatusLabel(item.serverInfo),
+      this.getProviderName(provider),
+      this.serverLocationLabel(item.serverInfo.metadata),
+      item.serverInfo.hostnameFqdn,
+      item.serverInfo.publicIp,
+      item.serverInfo.privateIp,
+    ]
+      .filter((value) => value !== null && value !== undefined && value !== '')
+      .join(' ');
+  }
+
+  onInstancesSearchChange(value: string): void {
+    this.instancesSearch.set(value);
+  }
+
+  serviceTypeLabel(service: SubscriptionWithServerInfo['service']): string {
+    if (service === 'manager') {
+      return $localize`:@@featureOverview-agenstraManager:Agenstra Manager`;
+    }
+
+    return $localize`:@@featureOverview-agenstraController:Agenstra Controller`;
+  }
+
+  serverStatusLabel(serverInfo: ServerInfoResponse): string {
+    if (isBillingServerOnline(serverInfo)) {
+      return $localize`:@@featureOverview-serverStatusOnline:Online`;
+    }
+
+    if (isBillingServerOff(serverInfo)) {
+      return $localize`:@@featureOverview-serverStatusOff:Stopped`;
+    }
+
+    return $localize`:@@featureOverview-serverStatusUpdatingLabel:Updating`;
+  }
+
+  serverStatusBadgeClass(serverInfo: ServerInfoResponse): string {
+    if (isBillingServerOnline(serverInfo)) {
+      return 'billing-admin__chip--status-paid';
+    }
+
+    if (isBillingServerOff(serverInfo)) {
+      return 'billing-admin__chip--status-overdue';
+    }
+
+    return 'billing-admin__chip--status-partially-paid';
+  }
+
+  serverStatusIconClass(serverInfo: ServerInfoResponse): string {
+    if (isBillingServerOnline(serverInfo)) {
+      return 'bi-play-fill';
+    }
+
+    if (isBillingServerOff(serverInfo)) {
+      return 'bi-stop-fill';
+    }
+
+    return 'bi-hourglass-split';
+  }
 
   ngOnInit(): void {
     this.subscriptionsFacade.loadSubscriptions();

@@ -19,6 +19,7 @@ import { InvoicePdfHtmlRendererService } from './invoice-pdf-html-renderer.servi
 import { buildCreditNotePdfPresentation, buildInvoicePdfPresentation } from './invoice-pdf-presentation.util';
 import { InvoicePdfTemplateService } from './invoice-pdf-template.service';
 import type { InvoicingPeriod } from './invoicing-period.util';
+import { buildInvoicePdfStorageKey } from '../utils/invoice-pdf-storage.util';
 
 export interface VoidDocumentGenerationResult {
   storageKey: string;
@@ -69,7 +70,7 @@ export class InvoicePdfService {
     );
     const pdfBytes = await this.renderPdf(invoice, lineItems, issuer, buyer, buildInvoicePdfPresentation(invoice));
     const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
-    const storageKey = path.join(invoice.subscriptionId, `${invoice.id}.pdf`);
+    const storageKey = buildInvoicePdfStorageKey(invoice, '.pdf');
     const absolute = this.resolveAbsolutePath(storageKey);
 
     await fs.promises.mkdir(path.dirname(absolute), { recursive: true });
@@ -107,7 +108,7 @@ export class InvoicePdfService {
     const presentation = buildCreditNotePdfPresentation(documentNumber, voidedAt, originalInvoiceNumber);
     const pdfBytes = await this.renderPdf(invoice, lineItems, issuer, buyer, presentation);
     const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
-    const storageKey = path.join(invoice.subscriptionId, `${invoice.id}-void.pdf`);
+    const storageKey = buildInvoicePdfStorageKey(invoice, '-void.pdf');
     const absolute = this.resolveAbsolutePath(storageKey);
 
     await fs.promises.mkdir(path.dirname(absolute), { recursive: true });

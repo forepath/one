@@ -15,6 +15,8 @@ Backend billing module providing subscription management, backorders, availabili
   is created with all of that user's unbilled positions as line items. This reduces the number of invoices (one per
   user per billing day). The user billing day is independent of the service plan's `billing_day_of_month`.
 - Customer profile management for invoicing metadata.
+- **Admin manual invoices:** Draft → edit → issue workflow via `/admin/billing/invoices/manual` (see `docs/agenstra/features/billing-administration.md`).
+- **Admin customer profiles:** CRUD via `/admin/billing/customer-profiles` (admin only).
 - Usage-based pricing supported via usage records.
 
 ## Auth
@@ -142,5 +144,6 @@ the latest images and recreates containers so updates are applied. Failures are 
 - docs/subscription-lifecycle.mmd
 - docs/auth-flow.mmd
 - docs/sequence-invoice-payment.mmd (Stripe checkout + webhook)
+- docs/manual-invoice-administration.mmd (admin manual invoice draft → issue flow)
 - docs/config-validation-flow.mmd
 - docs/customer-location-selection.md (plan flag, customer override rules, backorder retry)

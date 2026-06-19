@@ -1,3 +1,135 @@
+@use '../section.scss';
+@use '../admin-list-page.scss';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .admin-billing-container {
   min-height: 0;
+}
+
+.section__column--overview {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin-billing__summary-bar {
+  flex-shrink: 0;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.admin-billing__summary-grid .admin-billing__summary-card {
+  background: var(--bs-body-bg);
+  border-top: 0;
+}
+
+.admin-billing__summary-card--first {
+  border-left: 0;
+}
+
+.admin-billing__summary-card--second {
+  @media (max-width: 767.98px) {
+    border-right: 0;
+  }
+}
+
+.admin-billing__summary-card--third {
+  border-left: 0;
+
+  @media (max-width: 767.98px) {
+    border-bottom: 0;
+  }
+
+  @media (min-width: 768px) {
+    border-left-width: var(--bs-border-width);
+  }
+}
+
+.admin-billing__summary-card--fourth {
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.section__row {
+  flex: 1 1 0;
+  min-height: 0;
+  flex-wrap: nowrap;
+}
+
+.admin-billing__statistics-lane {
+  flex: 1 1 0;
+  min-height: 0;
+  border-radius: 0;
+}
+
+.admin-billing__lane-header {
+  background: var(--bs-secondary-bg);
+  border-radius: 0;
+}
+
+.admin-billing__statistics-body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.section__column--invoices {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.admin-billing__invoices-search {
+  margin: 0;
+}
+
+.search-input {
+  border-radius: 0;
+  position: relative;
+  padding-left: 0;
+  box-shadow: none;
+}
+
+.search-input-container {
+  position: relative;
+
+  i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+.admin-billing__invoices-list {
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: 0 !important;
+}
+
+.admin-billing__invoice-meta .info-badge {
+  margin-top: 0;
+}
+
+.btn-group-options {
+  > .btn-options {
+    border-radius: 0;
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 0;
+    flex: 1 1 auto;
+
+    &:last-child {
+      border-right: 0;
+    }
+  }
 }

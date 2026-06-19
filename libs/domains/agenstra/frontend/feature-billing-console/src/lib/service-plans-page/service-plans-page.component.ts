@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   ServicePlansFacade,
@@ -16,7 +16,14 @@ import {
   type UpdateServicePlanDto,
 } from '@forepath/agenstra/frontend/data-access-billing-console';
 import { combineLatest, map, take } from 'rxjs';
-import { filter, pairwise } from 'rxjs';
+
+import {
+  getActiveStatusLabel,
+  getActiveStatusTextClass,
+  getBillingIntervalLabel,
+  getUnavailableLabel,
+} from '../billing-status-labels';
+import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 
 /** Schema property: type, description, and optional enum for pre-defined values. */
 interface ConfigSchemaProperty {
@@ -44,7 +51,26 @@ export class ServicePlansPageComponent implements OnInit {
   private readonly serviceTypesService = inject(ServiceTypesService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly servicePlans$ = this.plansFacade.getServicePlans$();
+  readonly searchQuery = signal('');
+  readonly searchQuery$ = toObservable(this.searchQuery);
+  readonly servicePlans$ = combineLatest([
+    this.plansFacade.getServicePlans$(),
+    this.typesFacade.getServiceTypes$(),
+    this.searchQuery$,
+  ]).pipe(
+    map(([plans, serviceTypes, searchQuery]) => {
+      const term = searchQuery.trim().toLowerCase();
+      const filteredPlans = !term
+        ? plans
+        : plans.filter((plan) => {
+            const typeName = serviceTypes.find((type) => type.id === plan.serviceTypeId)?.name ?? '';
+
+            return JSON.stringify(plan).toLowerCase().includes(term) || typeName.toLowerCase().includes(term);
+          });
+
+      return { plans: filteredPlans, serviceTypes };
+    }),
+  );
   readonly serviceTypes$ = this.typesFacade.getServiceTypes$();
   /** Combined service types + provider details for template (single async). */
   readonly typesAndProviders$ = combineLatest([
@@ -70,15 +96,31 @@ export class ServicePlansPageComponent implements OnInit {
   serverTypesLoading = false;
 
   serviceTypeNameById(types: ServiceTypeResponse[] | null, id: string): string {
-    if (!types) return id;
+    if (!types) return getUnavailableLabel();
 
-    const t = types.find((x) => x.id === id);
+    const serviceType = types.find((item) => item.id === id);
 
-    return t?.name ?? id;
+    return serviceType?.name?.trim() || getUnavailableLabel();
   }
 
   billingIntervalLabel(plan: ServicePlanResponse): string {
-    return `${plan.billingIntervalValue} ${plan.billingIntervalType}(s)`;
+    return getBillingIntervalLabel(plan.billingIntervalValue, plan.billingIntervalType);
+  }
+
+  activeStatusLabel(isActive: boolean): string {
+    return getActiveStatusLabel(isActive);
+  }
+
+  activeStatusTextClass(isActive: boolean): string {
+    return getActiveStatusTextClass(isActive);
+  }
+
+  highlightsLabel(plan: ServicePlanResponse): string {
+    const count = this.orderingHighlightCount(plan);
+
+    return count === 1
+      ? $localize`:@@featureBilling-planHighlightsSingular:1 highlight`
+      : $localize`:@@featureBilling-planHighlightsPlural:${count} highlights`;
   }
 
   /** Calculates total price from plan (base + margin). Same formula as backend PricingService. */
@@ -439,46 +481,14 @@ export class ServicePlansPageComponent implements OnInit {
     this.plansFacade.loadServicePlans();
     this.typesFacade.loadServiceTypes();
     this.typesFacade.loadProviderDetails();
-    this.plansFacade
-      .getServicePlansCreating$()
-      .pipe(
-        pairwise(),
-        filter(([prev, curr]) => prev === true && curr === false),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.hideModal(this.createModal);
-        this.resetCreateForm();
-      });
-    this.plansFacade
-      .getServicePlansUpdating$()
-      .pipe(
-        pairwise(),
-        filter(([prev, curr]) => prev === true && curr === false),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.hideModal(this.editModal);
-        this.resetEditForm();
-      });
-    this.plansFacade
-      .getServicePlansDeleting$()
-      .pipe(
-        pairwise(),
-        filter(([prev, curr]) => prev === true && curr === false),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.hideModal(this.deleteConfirmModal);
-        this.planToDelete = null;
-      });
+    this.registerModalCloseWatchers();
   }
 
   openCreateModal(): void {
     this.resetCreateForm();
     this.currentServerTypes = [];
     this.serverTypesLoading = false;
-    this.showModal(this.createModal);
+    showBillingModal(this.createModal);
   }
 
   openEditModal(plan: ServicePlanResponse): void {
@@ -514,12 +524,12 @@ export class ServicePlansPageComponent implements OnInit {
 
       if (basePriceField && providerId) this.loadServerTypes(providerId);
     });
-    this.showModal(this.editModal);
+    showBillingModal(this.editModal);
   }
 
   openDeleteConfirm(plan: ServicePlanResponse): void {
     this.planToDelete = plan;
-    this.showModal(this.deleteConfirmModal);
+    showBillingModal(this.deleteConfirmModal);
   }
 
   onSubmitCreate(): void {
@@ -575,9 +585,9 @@ export class ServicePlansPageComponent implements OnInit {
   }
 
   confirmDelete(): void {
-    if (this.planToDelete) {
-      this.plansFacade.deleteServicePlan(this.planToDelete.id);
-    }
+    if (!this.planToDelete) return;
+
+    this.plansFacade.deleteServicePlan(this.planToDelete.id);
   }
 
   /** Coerce providerConfigDefaults values to number where schema says number. */
@@ -606,27 +616,29 @@ export class ServicePlansPageComponent implements OnInit {
     this.editingPlan = null;
   }
 
-  private showModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      const modal = (
-        window as unknown as {
-          bootstrap?: { Modal?: { getOrCreateInstance: (el: HTMLElement) => { show: () => void } } };
-        }
-      ).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
-
-      if (modal) modal.show();
-    }
-  }
-
-  private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      const modal = (
-        window as unknown as {
-          bootstrap?: { Modal?: { getInstance: (el: HTMLElement) => { hide: () => void } | null } };
-        }
-      ).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
-
-      if (modal) modal.hide();
-    }
+  private registerModalCloseWatchers(): void {
+    watchBillingMutationModalClose({
+      loading$: this.creating$,
+      error$: this.error$,
+      modal: () => this.createModal,
+      destroyRef: this.destroyRef,
+      onSuccess: () => this.resetCreateForm(),
+    });
+    watchBillingMutationModalClose({
+      loading$: this.updating$,
+      error$: this.error$,
+      modal: () => this.editModal,
+      destroyRef: this.destroyRef,
+      onSuccess: () => this.resetEditForm(),
+    });
+    watchBillingMutationModalClose({
+      loading$: this.deleting$,
+      error$: this.error$,
+      modal: () => this.deleteConfirmModal,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        this.planToDelete = null;
+      },
+    });
   }
 }

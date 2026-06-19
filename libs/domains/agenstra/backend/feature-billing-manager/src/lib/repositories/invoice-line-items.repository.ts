@@ -23,4 +23,8 @@ export class InvoiceLineItemsRepository {
       order: { position: 'ASC' },
     });
   }
+
+  async deleteByInvoiceId(invoiceId: string): Promise<void> {
+    await this.repository.delete({ invoiceId });
+  }
 }

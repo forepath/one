@@ -1,98 +1,110 @@
 <div class="service-plans-container border-top d-flex flex-column h-100">
-  <div
-    class="service-plans-header p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center"
-  >
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
     <h5 class="mb-0 fw-semibold" i18n="@@featureServicePlans-title">Service Plans</h5>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      (click)="openCreateModal()"
+      [disabled]="(loadingAny$ | async) === true"
+    >
+      <i class="bi bi-plus-circle me-1"></i>
+      <span i18n="@@featureServicePlans-add">Add service plan</span>
+    </button>
   </div>
-  <div class="p-3 flex-grow-1 overflow-auto">
-    @if (error$ | async; as err) {
-      <div class="alert alert-danger" role="alert">{{ err }}</div>
-    }
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="h5 mb-0" i18n="@@featureServicePlans-list">Service plans</h2>
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="openCreateModal()"
-        [disabled]="(loadingAny$ | async) === true"
-        i18n="@@featureServicePlans-add"
-      >
-        Add service plan
-      </button>
-    </div>
+  <div class="input-group search-input-container border-bottom">
+    <i class="bi bi-search"></i>
+    <input
+      type="text"
+      class="form-control border-0 search-input"
+      placeholder="Search plans"
+      i18n-placeholder="@@featureServicePlans-searchPlaceholder"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+      name="search"
+    />
+  </div>
 
+  <div class="flex-grow-1 overflow-auto">
     @if (loading$ | async) {
-      <div class="d-flex align-items-center gap-2 mb-3">
-        <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
-        <span i18n="@@featureServicePlans-loading">Loading...</span>
+      <div class="d-flex justify-content-center align-items-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden" i18n="@@featureServicePlans-loading">Loading...</span>
+        </div>
       </div>
     } @else {
-      <div class="table-responsive">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th scope="col" i18n="@@featureServicePlans-name">Name</th>
-              <th scope="col" i18n="@@featureServicePlans-serviceType">Service type</th>
-              <th scope="col" i18n="@@featureServicePlans-billingInterval">Billing interval</th>
-              <th scope="col" i18n="@@featureServicePlans-price">Price</th>
-              <th scope="col" i18n="@@featureServicePlans-orderingHighlightsColumn">Highlights</th>
-              <th scope="col" i18n="@@featureServicePlans-active">Active</th>
-              <th scope="col" i18n="@@featureServicePlans-actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (plan of servicePlans$ | async; track plan.id) {
-              <tr>
-                <td>{{ plan.name }}</td>
-                <td>
-                  @if (serviceTypes$ | async; as types) {
-                    {{ serviceTypeNameById(types, plan.serviceTypeId) }}
-                  } @else {
-                    {{ plan.serviceTypeId }}
-                  }
-                </td>
-                <td>{{ billingIntervalLabel(plan) }}</td>
-                <td>{{ formatPlanPrice(plan) }}</td>
-                <td>
-                  <span class="badge bg-secondary">{{ orderingHighlightCount(plan) }}</span>
-                </td>
-                <td>
-                  @if (plan.isActive) {
-                    <span class="badge bg-success" i18n="@@featureServicePlans-yes">Yes</span>
-                  } @else {
-                    <span class="badge bg-secondary" i18n="@@featureServicePlans-no">No</span>
-                  }
-                </td>
-                <td>
+      @if (error$ | async; as err) {
+        <div class="alert alert-danger m-3" role="alert">{{ err }}</div>
+      }
+      @if (servicePlans$ | async; as listData) {
+        @if (listData.plans.length === 0) {
+          <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+            <p class="mb-0" i18n="@@featureServicePlans-empty">No service plans.</p>
+          </div>
+        } @else {
+          <div class="list-group list-group-flush">
+            @for (plan of listData.plans; track plan.id) {
+              <div class="list-group-item d-flex justify-content-between align-items-start border-bottom gap-3">
+                <div class="min-w-0">
+                  <div class="fw-semibold mb-1">{{ plan.name }}</div>
+                  <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+                    <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                      <span class="me-2" [ngClass]="activeStatusTextClass(plan.isActive)">
+                        @if (plan.isActive) {
+                          <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                        } @else {
+                          <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
+                        }
+                        {{ activeStatusLabel(plan.isActive) }}
+                      </span>
+                      <span class="me-2">
+                        <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i
+                        >{{ serviceTypeNameById(listData.serviceTypes, plan.serviceTypeId) }}
+                      </span>
+                      <span class="me-2">
+                        <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ billingIntervalLabel(plan) }}
+                      </span>
+                      <span class="me-2">
+                        <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatPlanPrice(plan) }}
+                      </span>
+                      <span class="me-2">
+                        <i class="bi bi-star me-1" aria-hidden="true"></i>{{ highlightsLabel(plan) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="btn-group btn-group-sm flex-shrink-0"
+                  role="group"
+                  aria-label="Plan actions"
+                  i18n-aria-label="@@featureServicePlans-planActionsAria"
+                >
                   <button
                     type="button"
-                    class="btn btn-sm btn-outline-primary me-1"
+                    class="btn btn-outline-primary"
                     (click)="openEditModal(plan)"
                     [disabled]="(loadingAny$ | async) === true"
-                    i18n="@@featureServicePlans-edit"
+                    title="Edit plan"
+                    i18n-title="@@featureServicePlans-editButtonTitle"
                   >
-                    Edit
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
                   </button>
                   <button
                     type="button"
-                    class="btn btn-sm btn-outline-danger"
+                    class="btn btn-outline-danger"
                     (click)="openDeleteConfirm(plan)"
                     [disabled]="(loadingAny$ | async) === true"
-                    i18n="@@featureServicePlans-delete"
+                    title="Delete plan"
+                    i18n-title="@@featureServicePlans-deleteButtonTitle"
                   >
-                    Delete
+                    <i class="bi bi-trash" aria-hidden="true"></i>
                   </button>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="7" class="text-body-secondary" i18n="@@featureServicePlans-empty">No service plans.</td>
-              </tr>
+                </div>
+              </div>
             }
-          </tbody>
-        </table>
-      </div>
+          </div>
+        }
+      }
     }
   </div>
 </div>

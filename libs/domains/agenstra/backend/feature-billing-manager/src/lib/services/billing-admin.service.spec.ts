@@ -5,11 +5,15 @@ describe('BillingAdminService', () => {
   const invoicesRepository = { findGlobalOpenOverdueSummary: jest.fn() };
   const openPositionsRepository = { findDistinctUserIdsWithUnbilled: jest.fn() };
   const invoiceCreationService = { getUnbilledTotalForUser: jest.fn() };
+  const subscriptionService = { listSubscriptions: jest.fn() };
+  const usersRepository = { findById: jest.fn() };
   const service = new BillingAdminService(
     subscriptionsRepository as never,
     invoicesRepository as never,
     openPositionsRepository as never,
     invoiceCreationService as never,
+    subscriptionService as never,
+    usersRepository as never,
   );
 
   beforeEach(() => {
@@ -29,5 +33,15 @@ describe('BillingAdminService', () => {
       openOverdueTotal: 100,
       unbilledTotal: 15,
     });
+  });
+
+  it('listUserSubscriptions returns subscriptions for an existing user', async () => {
+    usersRepository.findById.mockResolvedValue({ id: 'user-1' });
+    subscriptionService.listSubscriptions.mockResolvedValue([{ id: 'sub-1' }]);
+
+    const result = await service.listUserSubscriptions('user-1', 100, 0);
+
+    expect(subscriptionService.listSubscriptions).toHaveBeenCalledWith('user-1', 100, 0);
+    expect(result).toEqual([{ id: 'sub-1' }]);
   });
 });

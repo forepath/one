@@ -48,7 +48,18 @@ jobs:
 
       - name: Run build
         if: steps.semantic-release.outputs.new_release_published == 'true'
-        run: npx nx run-many --target=build --configuration=production --parallel=3
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if npx nx run-many --target=build --configuration=production --parallel=3; then
+              exit 0
+            fi
+            echo "Build attempt ${attempt} failed."
+            if [ "${attempt}" -eq 3 ]; then
+              exit 1
+            fi
+            sleep 10
+          done
 
       - name: Generate binaries
         if: steps.semantic-release.outputs.new_release_published == 'true'

@@ -36,27 +36,36 @@ export class InvoicesService {
     return this.http.get<InvoiceResponse[]>(`${this.apiUrl}/invoices/${subscriptionId}`);
   }
 
-  getInvoiceDetails(subscriptionId: string, invoiceRefId: string): Observable<InvoiceDetailResponse> {
-    return this.http.get<InvoiceDetailResponse>(`${this.apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}`);
+  getInvoiceDetails(subscriptionId: string | undefined, invoiceRefId: string): Observable<InvoiceDetailResponse> {
+    const url = subscriptionId
+      ? `${this.apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}`
+      : `${this.apiUrl}/invoices/ref/${invoiceRefId}`;
+
+    return this.http.get<InvoiceDetailResponse>(url);
   }
 
-  downloadInvoicePdf(subscriptionId: string, invoiceRefId: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}/pdf`, {
-      responseType: 'blob',
-    });
+  downloadInvoicePdf(subscriptionId: string | undefined, invoiceRefId: string): Observable<Blob> {
+    const url = subscriptionId
+      ? `${this.apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}/pdf`
+      : `${this.apiUrl}/invoices/ref/${invoiceRefId}/pdf`;
+
+    return this.http.get(url, { responseType: 'blob' });
   }
 
-  downloadVoidDocumentPdf(subscriptionId: string, invoiceRefId: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}/void-document/pdf`, {
-      responseType: 'blob',
-    });
+  downloadVoidDocumentPdf(subscriptionId: string | undefined, invoiceRefId: string): Observable<Blob> {
+    const url = subscriptionId
+      ? `${this.apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}/void-document/pdf`
+      : `${this.apiUrl}/invoices/ref/${invoiceRefId}/void-document/pdf`;
+
+    return this.http.get(url, { responseType: 'blob' });
   }
 
-  initiatePayment(subscriptionId: string, invoiceRefId: string): Observable<InitiatePaymentResponse> {
-    return this.http.post<InitiatePaymentResponse>(
-      `${this.apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}/pay`,
-      {},
-    );
+  initiatePayment(subscriptionId: string | undefined, invoiceRefId: string): Observable<InitiatePaymentResponse> {
+    const url = subscriptionId
+      ? `${this.apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}/pay`
+      : `${this.apiUrl}/invoices/ref/${invoiceRefId}/pay`;
+
+    return this.http.post<InitiatePaymentResponse>(url, {});
   }
 
   voidInvoice(subscriptionId: string, invoiceRefId: string): Observable<InvoiceResponse> {

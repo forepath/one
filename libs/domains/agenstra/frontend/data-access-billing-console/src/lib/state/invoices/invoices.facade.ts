@@ -125,19 +125,19 @@ export class InvoicesFacade {
     this.store.dispatch(createInvoice({ subscriptionId, dto }));
   }
 
-  loadInvoiceDetails(subscriptionId: string, invoiceRefId: string): void {
+  loadInvoiceDetails(subscriptionId: string | undefined, invoiceRefId: string): void {
     this.store.dispatch(loadInvoiceDetails({ subscriptionId, invoiceRefId }));
   }
 
-  initiatePayment(subscriptionId: string, invoiceRefId: string): void {
+  initiatePayment(subscriptionId: string | undefined, invoiceRefId: string): void {
     this.store.dispatch(initiatePayment({ subscriptionId, invoiceRefId }));
   }
 
-  downloadInvoicePdf(subscriptionId: string, invoiceRefId: string): Observable<Blob> {
+  downloadInvoicePdf(subscriptionId: string | undefined, invoiceRefId: string): Observable<Blob> {
     return this.invoicesService.downloadInvoicePdf(subscriptionId, invoiceRefId);
   }
 
-  downloadVoidDocumentPdf(subscriptionId: string, invoiceRefId: string): Observable<Blob> {
+  downloadVoidDocumentPdf(subscriptionId: string | undefined, invoiceRefId: string): Observable<Blob> {
     return this.invoicesService.downloadVoidDocumentPdf(subscriptionId, invoiceRefId);
   }
 

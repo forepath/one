@@ -16,6 +16,7 @@ export * from './lib/services/availability.service';
 export * from './lib/services/customer-profile.service';
 export * from './lib/services/invoices.service';
 export * from './lib/services/admin-billing.service';
+export * from './lib/services/admin-customer-profiles.service';
 export * from './lib/services/usage.service';
 export * from './lib/services/subscription-items.service';
 
@@ -81,6 +82,20 @@ export * from './lib/state/admin-billing/admin-billing.effects';
 export * from './lib/state/admin-billing/admin-billing.facade';
 export * from './lib/state/admin-billing/admin-billing.reducer';
 export * from './lib/state/admin-billing/admin-billing.selectors';
+
+// Admin Invoice Manager State
+export * from './lib/state/admin-invoice-manager/admin-invoice-manager.actions';
+export * from './lib/state/admin-invoice-manager/admin-invoice-manager.effects';
+export * from './lib/state/admin-invoice-manager/admin-invoice-manager.facade';
+export * from './lib/state/admin-invoice-manager/admin-invoice-manager.reducer';
+export * from './lib/state/admin-invoice-manager/admin-invoice-manager.selectors';
+
+// Admin Customer Profiles State
+export * from './lib/state/admin-customer-profiles/admin-customer-profiles.actions';
+export * from './lib/state/admin-customer-profiles/admin-customer-profiles.effects';
+export * from './lib/state/admin-customer-profiles/admin-customer-profiles.facade';
+export * from './lib/state/admin-customer-profiles/admin-customer-profiles.reducer';
+export * from './lib/state/admin-customer-profiles/admin-customer-profiles.selectors';
 
 // Availability State
 export * from './lib/state/availability/availability.actions';

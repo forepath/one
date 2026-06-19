@@ -1,3 +1,4 @@
+import { UserEntity } from '@forepath/identity/backend';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -25,6 +26,18 @@ export class CustomerProfilesRepository {
     return entity;
   }
 
+  async findAll(limit: number, offset: number): Promise<{ items: CustomerProfileEntity[]; total: number }> {
+    const qb = this.repository
+      .createQueryBuilder('profile')
+      .leftJoin(UserEntity, 'user', 'user.id = profile.user_id')
+      .orderBy('profile.updatedAt', 'DESC');
+
+    const total = await qb.getCount();
+    const items = await qb.take(limit).skip(offset).getMany();
+
+    return { items, total };
+  }
+
   async create(dto: Partial<CustomerProfileEntity>): Promise<CustomerProfileEntity> {
     const entity = this.repository.create(dto);
 
@@ -37,5 +50,10 @@ export class CustomerProfilesRepository {
     Object.assign(entity, dto);
 
     return await this.repository.save(entity);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.findByIdOrThrow(id);
+    await this.repository.delete(id);
   }
 }

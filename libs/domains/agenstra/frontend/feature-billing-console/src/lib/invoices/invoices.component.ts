@@ -1,6 +1,6 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { AuthenticationFacade } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
@@ -12,17 +12,24 @@ import {
   type InvoiceResponse,
   type ServicePlanResponse,
 } from '@forepath/agenstra/frontend/data-access-billing-console';
-import { BehaviorSubject, combineLatest, filter, map, Observable, of, pairwise, switchMap } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, of, switchMap } from 'rxjs';
 
-import { getSubscriptionStatusLabel } from '../billing-status-labels';
+import {
+  getInvoiceStatusBadgeClass,
+  getInvoiceStatusLabel,
+  getSubscriptionStatusLabel,
+} from '../billing-status-labels';
+import { filterItemsBySearch } from '../billing-list-search';
+import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { NextBillingDayPipe } from '../pipes/next-billing-day.pipe';
 
-const PAGE_SIZE = 10;
+type CustomerBillingMobilePanel = 'openOverdue' | 'subscription';
 
 @Component({
   selector: 'framework-billing-invoices',
   standalone: true,
   imports: [CommonModule, FormsModule, NextBillingDayPipe],
+  providers: [DatePipe],
   templateUrl: './invoices.component.html',
   styleUrls: ['./invoices.component.scss'],
 })
@@ -35,6 +42,12 @@ export class InvoicesComponent implements OnInit {
   private readonly subscriptionsFacade = inject(SubscriptionsFacade);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly authFacade = inject(AuthenticationFacade);
+  private readonly datePipe = inject(DatePipe);
+
+  readonly mobilePanels: CustomerBillingMobilePanel[] = ['openOverdue', 'subscription'];
+  readonly mobilePanel = signal<CustomerBillingMobilePanel>('openOverdue');
+  readonly openOverdueSearch = signal('');
+  readonly subscriptionInvoicesSearch = signal('');
 
   readonly isAdmin$ = this.authFacade.canAccessBillingAdministration$;
 
@@ -45,9 +58,9 @@ export class InvoicesComponent implements OnInit {
   readonly previewInvoiceRefId$ = new BehaviorSubject<string | null>(null);
   readonly previewSubscriptionId$ = new BehaviorSubject<string | null>(null);
 
-  readonly previewDetail$ = combineLatest([this.previewInvoiceRefId$, this.previewSubscriptionId$]).pipe(
-    switchMap(([refId, subId]) =>
-      refId && subId ? this.invoicesFacade.getInvoiceDetail$(refId) : of(null as InvoiceDetailResponse | null),
+  readonly previewDetail$ = this.previewInvoiceRefId$.pipe(
+    switchMap((refId) =>
+      refId ? this.invoicesFacade.getInvoiceDetail$(refId) : of(null as InvoiceDetailResponse | null),
     ),
   );
 
@@ -58,15 +71,21 @@ export class InvoicesComponent implements OnInit {
     { initialValue: [] as InvoiceResponse[] },
   );
 
-  readonly invoicesPage = signal(0);
-  readonly paginatedInvoices = computed(() => {
-    const list = this.allInvoices();
-    const page = this.invoicesPage();
-    const start = page * PAGE_SIZE;
-
-    return list.slice(start, start + PAGE_SIZE);
+  readonly openOverdueList = toSignal(this.invoicesFacade.getOpenOverdueList$(), {
+    initialValue: [] as InvoiceResponse[],
   });
-  readonly invoicesTotalPages = computed(() => Math.max(1, Math.ceil(this.allInvoices().length / PAGE_SIZE)));
+
+  readonly filteredOpenOverdueList = computed(() =>
+    filterItemsBySearch(this.openOverdueList(), this.openOverdueSearch(), (invoice) =>
+      this.invoiceSearchHaystack(invoice),
+    ),
+  );
+
+  readonly filteredAllInvoices = computed(() =>
+    filterItemsBySearch(this.allInvoices(), this.subscriptionInvoicesSearch(), (invoice) =>
+      this.invoiceSearchHaystack(invoice),
+    ),
+  );
 
   readonly invoicesLoading$ = this.invoicesFacade.getInvoicesLoading$();
   readonly invoicesCreating$ = this.invoicesFacade.getInvoicesCreating$();
@@ -108,37 +127,39 @@ export class InvoicesComponent implements OnInit {
     this.servicePlansFacade.loadServicePlans();
     this.invoicesFacade.loadInvoicesSummary();
     this.invoicesFacade.loadOpenOverdueInvoices();
-    this.invoicesFacade
-      .getInvoicesCreating$()
-      .pipe(
-        pairwise(),
-        filter(([prev, curr]) => prev === true && curr === false),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.hideModal(this.createInvoiceModal);
+    watchBillingMutationModalClose({
+      loading$: this.invoicesCreating$,
+      error$: this.invoicesError$,
+      modal: () => this.createInvoiceModal,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
         this.createInvoiceDescription = '';
-      });
+      },
+    });
   }
 
   onSelectSubscription(subscriptionId: string): void {
     const id = subscriptionId || '';
 
     this.selectedSubscriptionId$.next(id);
-    this.invoicesPage.set(0);
+    this.subscriptionInvoicesSearch.set('');
 
     if (id) {
       this.invoicesFacade.loadInvoices(id);
     }
   }
 
-  onInvoicesPageChange(page: number): void {
-    this.invoicesPage.set(page);
+  onOpenOverdueSearchChange(value: string): void {
+    this.openOverdueSearch.set(value);
+  }
+
+  onSubscriptionInvoicesSearchChange(value: string): void {
+    this.subscriptionInvoicesSearch.set(value);
   }
 
   openCreateInvoiceModal(): void {
     this.createInvoiceDescription = '';
-    this.showModal(this.createInvoiceModal);
+    showBillingModal(this.createInvoiceModal);
   }
 
   onSubmitCreateInvoice(): void {
@@ -160,33 +181,41 @@ export class InvoicesComponent implements OnInit {
     this.onSelectSubscription(value ?? '');
   }
 
-  openPreview(subscriptionId: string, inv: InvoiceResponse): void {
-    this.previewSubscriptionId$.next(subscriptionId);
+  openPreview(subscriptionId: string | undefined, inv: InvoiceResponse): void {
+    const resolvedSubscriptionId = subscriptionId ?? inv.subscriptionId ?? undefined;
+
+    this.previewSubscriptionId$.next(resolvedSubscriptionId ?? null);
     this.previewInvoiceRefId$.next(inv.id);
-    this.invoicesFacade.loadInvoiceDetails(subscriptionId, inv.id);
-    this.showModal(this.previewInvoiceModal);
+    this.invoicesFacade.loadInvoiceDetails(resolvedSubscriptionId, inv.id);
+    showBillingModal(this.previewInvoiceModal);
   }
 
-  payInvoice(subscriptionId: string, inv: InvoiceResponse): void {
+  payInvoice(subscriptionId: string | undefined, inv: InvoiceResponse): void {
     if (!inv.canPay) return;
 
-    this.invoicesFacade.initiatePayment(subscriptionId, inv.id);
+    const resolvedSubscriptionId = subscriptionId ?? inv.subscriptionId ?? undefined;
+
+    this.invoicesFacade.initiatePayment(resolvedSubscriptionId, inv.id);
   }
 
-  downloadInvoice(subscriptionId: string, inv: InvoiceResponse): void {
+  downloadInvoice(subscriptionId: string | undefined, inv: InvoiceResponse): void {
     if (!inv.canDownload) return;
 
+    const resolvedSubscriptionId = subscriptionId ?? inv.subscriptionId ?? undefined;
+
     this.downloadPdfBlob(
-      this.invoicesFacade.downloadInvoicePdf(subscriptionId, inv.id),
+      this.invoicesFacade.downloadInvoicePdf(resolvedSubscriptionId, inv.id),
       `${inv.invoiceNumber ?? inv.id}.pdf`,
     );
   }
 
-  downloadVoidDocument(subscriptionId: string, inv: InvoiceResponse): void {
+  downloadVoidDocument(subscriptionId: string | undefined, inv: InvoiceResponse): void {
     if (!inv.canDownloadVoidDocument) return;
 
+    const resolvedSubscriptionId = subscriptionId ?? inv.subscriptionId ?? undefined;
+
     this.downloadPdfBlob(
-      this.invoicesFacade.downloadVoidDocumentPdf(subscriptionId, inv.id),
+      this.invoicesFacade.downloadVoidDocumentPdf(resolvedSubscriptionId, inv.id),
       `${inv.voidDocumentNumber ?? `${inv.invoiceNumber ?? inv.id}-void`}.pdf`,
     );
   }
@@ -205,50 +234,41 @@ export class InvoicesComponent implements OnInit {
     });
   }
 
-  private showModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      const modal = (
-        window as unknown as {
-          bootstrap?: { Modal?: { getOrCreateInstance: (el: HTMLElement) => { show: () => void } } };
-        }
-      ).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.show();
-      }
-    }
-  }
-
-  private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      const modal = (
-        window as unknown as {
-          bootstrap?: { Modal?: { getInstance: (el: HTMLElement) => { hide: () => void } | null } };
-        }
-      ).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.hide();
-      }
-    }
-  }
-
   getInvoiceStatus(status: string | null | undefined): string {
-    switch (status) {
-      case 'draft':
-        return $localize`:@@featureInvoices-statusDraft:Draft`;
-      case 'issued':
-        return $localize`:@@featureInvoices-statusIssued:Issued`;
-      case 'partially_paid':
-        return $localize`:@@featureInvoices-statusPartiallyPaid:Partially paid`;
-      case 'paid':
-        return $localize`:@@featureInvoices-statusPaid:Paid`;
-      case 'overdue':
-        return $localize`:@@featureInvoices-statusOverdue:Overdue`;
-      case 'void':
-        return $localize`:@@featureInvoices-statusVoid:Void`;
-      default:
-        return status ?? '—';
-    }
+    return getInvoiceStatusLabel(status);
+  }
+
+  invoiceStatusBadgeClass(status: string | null | undefined): string {
+    return getInvoiceStatusBadgeClass(status);
+  }
+
+  invoiceDisplayTitle(invoice: InvoiceResponse): string {
+    return invoice.invoiceNumber?.trim() || getInvoiceStatusLabel('draft');
+  }
+
+  invoiceSearchHaystack(invoice: InvoiceResponse): string {
+    return [
+      invoice.invoiceNumber,
+      invoice.subscriptionNumber,
+      invoice.status,
+      getInvoiceStatusLabel(invoice.status),
+      invoice.balance,
+      invoice.createdAt,
+      invoice.dueDate,
+    ]
+      .filter((value) => value !== null && value !== undefined && value !== '')
+      .join(' ');
+  }
+
+  formatDate(value?: string | null): string {
+    if (!value) return '—';
+
+    return this.datePipe.transform(value, 'mediumDate') ?? '—';
+  }
+
+  mobilePanelLabel(panel: CustomerBillingMobilePanel): string {
+    return panel === 'openOverdue'
+      ? $localize`:@@featureInvoices-mobileOpenOverdue:Open & overdue`
+      : $localize`:@@featureInvoices-mobileSubscription:By subscription`;
   }
 }

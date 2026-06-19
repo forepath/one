@@ -985,7 +985,7 @@
         <source>Enabled</source>
         </trans-unit>
       <trans-unit id="featureChat-workspaceAutoEnrichDisabled" datatype="html">
-        <source>Disabled</source>
+        <source> Disabled </source>
         </trans-unit>
       <trans-unit id="featureChat-workspaceConfigurationValuePlaceholder" datatype="html">
         <source>Enter override value</source>
@@ -1163,6 +1163,9 @@
         </trans-unit>
       <trans-unit id="featureChat-openDeploymentManager" datatype="html">
         <source>Open Deployment Manager</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceSettingTitleGitSetupMode" datatype="html">
+        <source>Git repository setup mode</source>
         </trans-unit>
       <trans-unit id="featureChat-workspaceSettingTitleGitRepo" datatype="html">
         <source>Git repository URL</source>
@@ -2957,6 +2960,18 @@
       <trans-unit id="featureTicketsBoard-requestFailed" datatype="html">
         <source>Request failed</source>
         </trans-unit>
+      <trans-unit id="featureUserManager-roleAdmin" datatype="html">
+        <source>Admin</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-roleUser" datatype="html">
+        <source>User</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-roleUnknown" datatype="html">
+        <source>Unknown</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-roleUnknownValue" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="role"/>)</source>
+        </trans-unit>
       <trans-unit id="featureConfirmEmail-title" datatype="html">
         <source>Confirm Your Email</source>
         </trans-unit>
@@ -3425,12 +3440,6 @@
       <trans-unit id="featureUserManager-roleLabel" datatype="html">
         <source>Role</source>
         </trans-unit>
-      <trans-unit id="featureUserManager-roleUser" datatype="html">
-        <source>User</source>
-        </trans-unit>
-      <trans-unit id="featureUserManager-roleAdmin" datatype="html">
-        <source>Admin</source>
-        </trans-unit>
       <trans-unit id="featureUserManager-cancel" datatype="html">
         <source> Cancel </source>
         </trans-unit>
@@ -3464,6 +3473,21 @@
         </trans-unit>
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-message" datatype="html">
+        <source>This website uses cookies to ensure you get the best experience on our website.</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-dismiss" datatype="html">
+        <source>Got it!</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-allow" datatype="html">
+        <source>Accept</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-deny" datatype="html">
+        <source>Decline</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-link" datatype="html">
+        <source>Learn more</source>
         </trans-unit>
     </body>
   </file>

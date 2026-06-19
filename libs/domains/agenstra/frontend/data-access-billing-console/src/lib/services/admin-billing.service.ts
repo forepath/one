@@ -12,10 +12,15 @@ import type {
   AdminOpenOverdueListParams,
   BillingStatisticsByProduct,
   BillingStatisticsSummary,
+  CreateManualInvoiceDto,
+  IssueManualInvoiceDto,
+  ManualInvoiceDetailResponse,
   MarkInvoicePaymentStatusDto,
   PaginatedAdminInvoicesResponse,
   PaginatedBillingAuditLogsResponse,
   AdminInvoiceListItem,
+  SubscriptionResponse,
+  UpdateManualInvoiceDto,
 } from '../types/billing.types';
 
 @Injectable({
@@ -107,6 +112,60 @@ export class AdminBillingService {
 
     return this.http.get<BillingStatisticsByProduct>(`${this.apiUrl}/admin/billing/statistics/by-product`, {
       params: httpParams,
+    });
+  }
+
+  listInvoices(params: AdminOpenOverdueListParams): Observable<PaginatedAdminInvoicesResponse> {
+    return this.listOpenOverdue(params);
+  }
+
+  listUserSubscriptions(
+    userId: string,
+    params?: { limit?: number; offset?: number },
+  ): Observable<SubscriptionResponse[]> {
+    let httpParams = new HttpParams();
+
+    if (params?.limit != null) httpParams = httpParams.set('limit', String(params.limit));
+
+    if (params?.offset != null) httpParams = httpParams.set('offset', String(params.offset));
+
+    return this.http.get<SubscriptionResponse[]>(`${this.apiUrl}/admin/billing/users/${userId}/subscriptions`, {
+      params: httpParams,
+    });
+  }
+
+  createManualInvoice(dto: CreateManualInvoiceDto): Observable<ManualInvoiceDetailResponse> {
+    return this.http.post<ManualInvoiceDetailResponse>(`${this.apiUrl}/admin/billing/invoices/manual`, dto);
+  }
+
+  getManualInvoiceDetail(invoiceRefId: string): Observable<ManualInvoiceDetailResponse> {
+    return this.http.get<ManualInvoiceDetailResponse>(`${this.apiUrl}/admin/billing/invoices/${invoiceRefId}`);
+  }
+
+  updateManualInvoice(invoiceRefId: string, dto: UpdateManualInvoiceDto): Observable<ManualInvoiceDetailResponse> {
+    return this.http.post<ManualInvoiceDetailResponse>(`${this.apiUrl}/admin/billing/invoices/${invoiceRefId}`, dto);
+  }
+
+  issueManualInvoice(invoiceRefId: string, dto?: IssueManualInvoiceDto): Observable<ManualInvoiceDetailResponse> {
+    return this.http.post<ManualInvoiceDetailResponse>(
+      `${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/issue`,
+      dto ?? {},
+    );
+  }
+
+  deleteManualInvoice(invoiceRefId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/admin/billing/invoices/${invoiceRefId}`);
+  }
+
+  downloadInvoicePdf(invoiceRefId: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/pdf`, {
+      responseType: 'blob',
+    });
+  }
+
+  downloadVoidDocumentPdf(invoiceRefId: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/void-document/pdf`, {
+      responseType: 'blob',
     });
   }
 }

@@ -1,9 +1,27 @@
 import { Route } from '@angular/router';
 import {
   AdminBillingFacade,
+  AdminCustomerProfilesFacade,
+  AdminInvoiceManagerFacade,
+  adminCustomerProfilesReducer,
+  adminInvoiceManagerReducer,
   adminMarkPaid$,
   adminMarkUnpaid$,
   adminVoidInvoice$,
+  adminInvoiceManagerMarkPaid$,
+  adminInvoiceManagerMarkUnpaid$,
+  adminInvoiceManagerVoid$,
+  createAdminCustomerProfile$,
+  createManualInvoice$,
+  deleteAdminCustomerProfile$,
+  deleteManualInvoice$,
+  issueManualInvoice$,
+  loadAdminCustomerProfiles$,
+  loadAdminCustomerProfilesBatch$,
+  loadAdminInvoiceManager$,
+  loadAdminInvoiceManagerBatch$,
+  updateAdminCustomerProfile$,
+  updateManualInvoice$,
   adminBillingReducer,
   billNow$,
   loadAdminAuditLogs$,
@@ -78,6 +96,7 @@ import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 
 import { AdminBillingPageComponent } from './admin-billing-page/admin-billing-page.component';
+import { AdminCustomerProfilesPageComponent } from './admin-customer-profiles-page/admin-customer-profiles-page.component';
 import { BillingConsoleContainerComponent } from './container/container.component';
 import { billingAdminGuard } from './guards/billing-admin.guard';
 import { InvoicesComponent } from './invoices/invoices.component';
@@ -138,6 +157,12 @@ export const billingConsoleRoutes: Route[] = [
             component: AdminBillingPageComponent,
             title: $localize`:@@featureContainer-adminBillingTitle:Billing :: Agenstra`,
           },
+          {
+            path: 'customer-profiles',
+            canActivate: [authGuard, billingAdminGuard],
+            component: AdminCustomerProfilesPageComponent,
+            title: $localize`:@@featureContainer-adminProfilesTitle:Billing Profiles :: Agenstra`,
+          },
         ],
       },
       {
@@ -154,6 +179,8 @@ export const billingConsoleRoutes: Route[] = [
       ServiceTypesFacade,
       InvoicesFacade,
       AdminBillingFacade,
+      AdminInvoiceManagerFacade,
+      AdminCustomerProfilesFacade,
       BackordersFacade,
       CustomerProfileFacade,
       AvailabilityFacade,
@@ -162,6 +189,8 @@ export const billingConsoleRoutes: Route[] = [
       provideState('serviceTypes', serviceTypesReducer),
       provideState('invoices', invoicesReducer),
       provideState('adminBilling', adminBillingReducer),
+      provideState('adminInvoiceManager', adminInvoiceManagerReducer),
+      provideState('adminCustomerProfiles', adminCustomerProfilesReducer),
       provideState('backorders', backordersReducer),
       provideState('customerProfile', customerProfileReducer),
       provideState('availability', availabilityReducer),
@@ -220,6 +249,20 @@ export const billingConsoleRoutes: Route[] = [
         loadAdminStatisticsSummary$,
         loadAdminStatisticsByProduct$,
         loadAdminAuditLogs$,
+        loadAdminInvoiceManager$,
+        loadAdminInvoiceManagerBatch$,
+        createManualInvoice$,
+        updateManualInvoice$,
+        issueManualInvoice$,
+        deleteManualInvoice$,
+        adminInvoiceManagerVoid$,
+        adminInvoiceManagerMarkPaid$,
+        adminInvoiceManagerMarkUnpaid$,
+        loadAdminCustomerProfiles$,
+        loadAdminCustomerProfilesBatch$,
+        createAdminCustomerProfile$,
+        updateAdminCustomerProfile$,
+        deleteAdminCustomerProfile$,
       }),
     ],
   },

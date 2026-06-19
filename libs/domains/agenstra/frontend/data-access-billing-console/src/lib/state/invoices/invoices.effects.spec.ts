@@ -202,6 +202,35 @@ describe('InvoicesEffects', () => {
         done();
       });
     });
+
+    it('should load invoice details without subscription id', (done) => {
+      const detail = {
+        id: 'inv-1',
+        subscriptionId: null,
+        invoiceNumber: 'INV-001',
+        status: 'issued',
+        currency: 'EUR',
+        subtotalNet: 100,
+        taxTotal: 19,
+        totalGross: 119,
+        balanceDue: 119,
+        lineItems: [],
+        taxBreakdown: [],
+        createdAt: '2024-01-01T00:00:00Z',
+        canPay: true,
+        canDownload: true,
+        canPreview: true,
+      };
+
+      actions$ = of(loadInvoiceDetails({ invoiceRefId: 'inv-1' }));
+      invoicesService.getInvoiceDetails.mockReturnValue(of(detail));
+
+      loadInvoiceDetails$(actions$, invoicesService).subscribe((result) => {
+        expect(invoicesService.getInvoiceDetails).toHaveBeenCalledWith(undefined, 'inv-1');
+        expect(result).toEqual(loadInvoiceDetailsSuccess({ invoiceRefId: 'inv-1', detail }));
+        done();
+      });
+    });
   });
 
   describe('initiatePaymentRedirect$', () => {
@@ -222,6 +251,17 @@ describe('InvoicesEffects', () => {
 
       initiatePaymentRedirect$(actions$, invoicesService).subscribe((result) => {
         expect(result).toEqual(initiatePaymentFailure({ error: 'Payment failed' }));
+        done();
+      });
+    });
+
+    it('should initiate payment without subscription id', (done) => {
+      actions$ = of(initiatePayment({ invoiceRefId: 'inv-1' }));
+      invoicesService.initiatePayment.mockReturnValue(of({ checkoutUrl: 'https://checkout.stripe.com/pay' }));
+
+      initiatePaymentRedirect$(actions$, invoicesService).subscribe((result) => {
+        expect(invoicesService.initiatePayment).toHaveBeenCalledWith(undefined, 'inv-1');
+        expect(result).toEqual(initiatePaymentSuccess());
         done();
       });
     });

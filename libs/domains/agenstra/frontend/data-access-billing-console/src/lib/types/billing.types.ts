@@ -338,7 +338,7 @@ export type TaxCategory = 'standard' | 'reduced';
 
 export interface InvoiceResponse {
   id: string;
-  subscriptionId: string;
+  subscriptionId?: string;
   invoiceNumber?: string | null;
   status?: InvoiceStatus | string | null;
   balance?: number | null;
@@ -371,7 +371,7 @@ export interface InvoiceTaxBreakdown {
 
 export interface InvoiceDetailResponse {
   id: string;
-  subscriptionId: string;
+  subscriptionId?: string;
   invoiceNumber?: string | null;
   status: InvoiceStatus | string;
   currency: string;
@@ -610,4 +610,62 @@ export interface AdminOpenOverdueListParams {
   offset?: number;
   search?: string;
   userId?: string;
+}
+
+export interface ManualInvoiceLineItemDto {
+  description: string;
+  quantity: number;
+  unitPriceNet: number;
+  taxCategory?: TaxCategory;
+}
+
+export interface CreateManualInvoiceDto {
+  userId: string;
+  subscriptionId?: string;
+  lineItems: ManualInvoiceLineItemDto[];
+  currency?: string;
+}
+
+export interface UpdateManualInvoiceDto {
+  lineItems: ManualInvoiceLineItemDto[];
+}
+
+export interface IssueManualInvoiceDto {
+  dueInDays?: number;
+}
+
+export interface ManualInvoiceDetailResponse extends InvoiceDetailResponse {
+  userId: string;
+  userEmail?: string;
+}
+
+export interface AdminCustomerProfileListItem {
+  id: string;
+  userId: string;
+  userEmail?: string;
+  firstName?: string;
+  lastName?: string;
+  company?: string;
+  email?: string;
+  country?: string;
+  isComplete: boolean;
+  stripeCustomerId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaginatedAdminCustomerProfilesResponse {
+  items: AdminCustomerProfileListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface CreateAdminCustomerProfileDto extends CustomerProfileDto {
+  userId: string;
+}
+
+export interface AdminCustomerProfileDetail extends CustomerProfileResponse {
+  userEmail?: string;
+  isComplete: boolean;
 }

@@ -1,3 +1,5 @@
+@import '../admin-list-page.scss';
+
 :host {
   display: flex;
   flex-direction: column;
@@ -6,6 +8,6 @@
   overflow: hidden;
 }
 
-.service-plans-header {
-  min-height: 64px;
+.service-plans-container {
+  min-height: 0;
 }

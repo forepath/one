@@ -11,6 +11,7 @@ describe('PaymentOrchestrationService', () => {
   const invoicesRepository = {
     findByIdAndSubscriptionId: jest.fn(),
     findById: jest.fn(),
+    findByIdForUser: jest.fn(),
     update: jest.fn(),
   };
   const paymentAttemptsRepository = {
@@ -99,6 +100,41 @@ describe('PaymentOrchestrationService', () => {
       });
 
       await expect(service.initiatePayment('inv-1', 'sub-1', 'user-1')).rejects.toBeInstanceOf(BadRequestException);
+    });
+  });
+
+  describe('initiatePaymentForUser', () => {
+    it('creates checkout session for manual invoice without subscription', async () => {
+      invoicesRepository.findByIdForUser.mockResolvedValue({
+        id: 'inv-manual',
+        subscriptionId: null,
+        userId: 'user-1',
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 50,
+        currency: 'EUR',
+        invoiceNumber: 'INV-M-1',
+        paymentProcessor: 'stripe',
+      });
+      customerProfilesRepository.findByUserId.mockResolvedValue({
+        email: 'user@example.com',
+        stripeCustomerId: 'cus_1',
+      });
+      processor.createCheckoutSession.mockResolvedValue({
+        checkoutUrl: 'https://checkout.stripe.com/manual',
+        externalId: 'cs_manual',
+      });
+      paymentAttemptsRepository.create.mockResolvedValue({ id: 'attempt-1' });
+      invoicesRepository.update.mockResolvedValue({});
+
+      const result = await service.initiatePaymentForUser('inv-manual', 'user-1');
+
+      expect(result.checkoutUrl).toBe('https://checkout.stripe.com/manual');
+      expect(processor.createCheckoutSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          invoiceId: 'inv-manual',
+          metadata: expect.objectContaining({ subscriptionId: '', invoiceId: 'inv-manual' }),
+        }),
+      );
     });
   });
 

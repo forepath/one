@@ -20,7 +20,7 @@ export class InvoiceTaxBreakdownDto {
 
 export class InvoiceDetailResponseDto {
   id!: string;
-  subscriptionId!: string;
+  subscriptionId?: string;
   invoiceNumber?: string;
   status!: InvoiceStatus;
   currency!: string;

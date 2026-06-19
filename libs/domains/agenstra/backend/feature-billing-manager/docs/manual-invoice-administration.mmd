@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant Admin
+    participant API as AdminBillingController
+    participant Manual as ManualInvoiceService
+    participant Issue as InvoiceIssuanceService
+
+    Admin->>API: POST /admin/billing/invoices/manual
+    API->>Manual: createDraft
+    Manual-->>Admin: draft invoice
+
+    Admin->>API: POST /admin/billing/invoices/{id}
+    API->>Manual: updateDraft (draft only)
+    Manual-->>Admin: updated draft
+
+    Admin->>API: POST /admin/billing/invoices/{id}/issue
+    API->>Manual: issueDraft
+    Manual->>Issue: issueDraft
+    Issue-->>Admin: issued invoice (immutable)

@@ -1,0 +1,54 @@
+.search-input-container {
+  position: relative;
+  flex-shrink: 0;
+
+  i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+.search-input {
+  padding-left: 0;
+  box-shadow: none;
+}
+
+.lane-search {
+  flex-shrink: 0;
+}
+
+@mixin billing-admin-chip-tint($mix-color, $text-color) {
+  background-color: color-mix(in srgb, $mix-color 24%, var(--bs-tertiary-bg)) !important;
+  color: $text-color !important;
+}
+
+.info-badge.billing-admin__chip--status-draft {
+  @include billing-admin-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
+}
+
+.info-badge.billing-admin__chip--status-issued {
+  @include billing-admin-chip-tint(var(--bs-primary), var(--bs-primary-text-emphasis, var(--bs-primary)));
+}
+
+.info-badge.billing-admin__chip--status-partially-paid {
+  @include billing-admin-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
+}
+
+.info-badge.billing-admin__chip--status-paid {
+  @include billing-admin-chip-tint(var(--bs-success), var(--bs-success-text-emphasis, var(--bs-success)));
+}
+
+.info-badge.billing-admin__chip--status-overdue {
+  @include billing-admin-chip-tint(var(--bs-danger), var(--bs-danger-text-emphasis, var(--bs-danger)));
+}
+
+.info-badge.billing-admin__chip--status-void {
+  @include billing-admin-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
+}
+
+.info-badge.billing-admin__chip--status-unknown {
+  @include billing-admin-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
+}

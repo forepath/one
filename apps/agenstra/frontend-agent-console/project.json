@@ -16,7 +16,20 @@
     "agenstra-backend-agent-controller"
   ],
   "targets": {
+    "stage-monaco-assets": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/package-lock.json",
+        "{workspaceRoot}/node_modules/monaco-editor/**/*"
+      ],
+      "outputs": ["{workspaceRoot}/.cache/monaco-editor"],
+      "options": {
+        "command": "node tools/ci/stage-monaco-assets.mjs"
+      }
+    },
     "build": {
+      "dependsOn": ["stage-monaco-assets"],
       "executor": "@angular-devkit/build-angular:application",
       "outputs": ["{options.outputPath}"],
       "options": {
@@ -36,7 +49,7 @@
           },
           {
             "glob": "**/*",
-            "input": "node_modules/monaco-editor",
+            "input": ".cache/monaco-editor",
             "output": "/assets/monaco/"
           }
         ],

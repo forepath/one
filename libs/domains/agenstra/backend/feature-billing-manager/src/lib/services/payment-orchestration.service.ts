@@ -3,6 +3,7 @@ import { createHash } from 'crypto';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import type { InvoiceEntity } from '../entities/invoice.entity';
 import { PaymentAttemptStatus } from '../entities/payment-attempt.entity';
 import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
@@ -32,6 +33,24 @@ export class PaymentOrchestrationService {
       throw new BadRequestException('Invoice not found');
     }
 
+    return await this.initiatePaymentForInvoice(invoice, userId, subscriptionId);
+  }
+
+  async initiatePaymentForUser(invoiceId: string, userId: string): Promise<{ checkoutUrl: string }> {
+    const invoice = await this.invoicesRepository.findByIdForUser(invoiceId, userId);
+
+    if (!invoice) {
+      throw new BadRequestException('Invoice not found');
+    }
+
+    return await this.initiatePaymentForInvoice(invoice, userId, invoice.subscriptionId ?? '');
+  }
+
+  private async initiatePaymentForInvoice(
+    invoice: InvoiceEntity,
+    userId: string,
+    subscriptionId: string,
+  ): Promise<{ checkoutUrl: string }> {
     if (invoice.status === InvoiceStatus.VOID || invoice.status === InvoiceStatus.PAID) {
       throw new BadRequestException('Invoice is not payable');
     }
@@ -44,18 +63,18 @@ export class PaymentOrchestrationService {
 
     const processorType = invoice.paymentProcessor ?? process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR ?? 'stripe';
     const processor = this.paymentProcessorFactory.getProcessor(processorType);
-    const idempotencyKey = `pay-${invoiceId}-${Date.now()}`;
+    const idempotencyKey = `pay-${invoice.id}-${Date.now()}`;
     const profile = await this.customerProfilesRepository.findByUserId(userId);
     const successUrl = this.buildUrl(
       process.env.STRIPE_CHECKOUT_SUCCESS_URL ?? 'http://localhost:4500/invoices?payment=success',
-      { invoiceRefId: invoiceId, subscriptionId },
+      { invoiceRefId: invoice.id, subscriptionId },
     );
     const cancelUrl = this.buildUrl(
       process.env.STRIPE_CHECKOUT_CANCEL_URL ?? 'http://localhost:4500/invoices?payment=cancel',
-      { invoiceRefId: invoiceId, subscriptionId },
+      { invoiceRefId: invoice.id, subscriptionId },
     );
     const session = await processor.createCheckoutSession({
-      invoiceId,
+      invoiceId: invoice.id,
       amount: balance,
       currency: invoice.currency,
       customerEmail: profile?.email,
@@ -64,7 +83,7 @@ export class PaymentOrchestrationService {
       cancelUrl,
       idempotencyKey,
       metadata: {
-        invoiceId,
+        invoiceId: invoice.id,
         subscriptionId,
         userId,
         invoiceNumber: invoice.invoiceNumber ?? '',
@@ -72,7 +91,7 @@ export class PaymentOrchestrationService {
     });
 
     await this.paymentAttemptsRepository.create({
-      invoiceId,
+      invoiceId: invoice.id,
       processor: processorType,
       externalId: session.externalId,
       status: PaymentAttemptStatus.PENDING,
@@ -82,13 +101,13 @@ export class PaymentOrchestrationService {
       metadata: { checkoutUrl: session.checkoutUrl },
     });
 
-    await this.invoicesRepository.update(invoiceId, { externalPaymentId: session.externalId });
+    await this.invoicesRepository.update(invoice.id, { externalPaymentId: session.externalId });
 
     await this.auditLog.log({
       process: 'payment.init',
       level: 'info',
       message: 'Payment checkout session created',
-      invoiceId,
+      invoiceId: invoice.id,
       userId,
       context: { processor: processorType, externalId: session.externalId },
     });
