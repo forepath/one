@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { getTenantIdOrDefault } from '@forepath/shared/backend';
 
 import type { BillingAuditLogResponseDto } from '../dto/admin-billing.dto';
 import type { BillingAuditLogEntity } from '../entities/billing-audit-log.entity';
@@ -36,6 +37,7 @@ export class BillingAuditLogService {
       invoiceId,
       userId,
       correlationId,
+      tenantId: getTenantIdOrDefault(),
       context: context ?? {},
     });
   }

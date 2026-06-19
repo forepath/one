@@ -4,6 +4,12 @@
     "restApiUrl": "https://cloud.agenstra.com/v1/api",
     "websocketUrl": "https://cloud.agenstra.com/v1/clients"
   },
+  "billing": {
+    "restApiUrl": "https://cloud.agenstra.com/v1/billing/api",
+    "frontendUrl": "https://billing.agenstra.com",
+    "tenantId": "default",
+    "websocketUrl": "https://cloud.agenstra.com/v1/billing"
+  },
   "authentication": {
     "type": "keycloak",
     "authServerUrl": "https://cloud.agenstra.com/auth",

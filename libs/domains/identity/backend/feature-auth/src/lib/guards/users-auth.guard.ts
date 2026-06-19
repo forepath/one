@@ -4,6 +4,7 @@ import {
   isBullBoardRequestPath,
   IS_PUBLIC_KEY,
 } from '@forepath/identity/backend';
+import { DEFAULT_TENANT, getTenantId, getTenantIdOrDefault } from '@forepath/shared/backend';
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
@@ -44,7 +45,7 @@ export class UsersAuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<Request & { tenantId?: string }>();
 
     // Pass through when user is already set (e.g. by API key or other auth)
     if (request['user']) {
@@ -67,6 +68,13 @@ export class UsersAuthGuard implements CanActivate {
 
       if (user.lockedAt) {
         throw new UnauthorizedException('This account is locked. Please contact an administrator.');
+      }
+
+      const requestTenantId = request.tenantId ?? getTenantId() ?? getTenantIdOrDefault();
+      const userTenantId = user.tenantId?.trim() || DEFAULT_TENANT;
+
+      if (userTenantId !== requestTenantId) {
+        throw new UnauthorizedException('Session is no longer valid.');
       }
 
       request['user'] = {

@@ -32,7 +32,7 @@ export class CustomerProfilesAdminService {
 
     await Promise.all(
       userIds.map(async (userId) => {
-        const user = await this.usersRepository.findById(userId);
+        const user = await this.usersRepository.findByIdForTenant(userId);
 
         if (user?.email) {
           userEmailById.set(userId, user.email);
@@ -50,7 +50,7 @@ export class CustomerProfilesAdminService {
 
   async getById(id: string): Promise<CustomerProfileResponseDto & { userEmail?: string; isComplete: boolean }> {
     const profile = await this.customerProfilesRepository.findByIdOrThrow(id);
-    const user = await this.usersRepository.findById(profile.userId);
+    const user = await this.usersRepository.findByIdForTenant(profile.userId);
 
     return {
       ...this.mapResponse(profile),
@@ -60,7 +60,7 @@ export class CustomerProfilesAdminService {
   }
 
   async create(dto: CreateAdminCustomerProfileDto): Promise<CustomerProfileResponseDto> {
-    const user = await this.usersRepository.findById(dto.userId);
+    const user = await this.usersRepository.findByIdForTenant(dto.userId);
 
     if (!user) {
       throw new NotFoundException('User not found');

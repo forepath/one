@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { SubscriptionEntity } from '../entities/subscription.entity';
+import { applyUserTenantFilter, getRequiredTenantId } from '../utils/tenant-query.utils';
 
 @Injectable()
 export class SubscriptionsRepository {
@@ -12,7 +13,12 @@ export class SubscriptionsRepository {
   ) {}
 
   async findByIdOrThrow(id: string): Promise<SubscriptionEntity> {
-    const entity = await this.repository.findOne({ where: { id } });
+    const entity = await this.repository
+      .createQueryBuilder('subscription')
+      .innerJoin('users', 'user', 'user.id = subscription.user_id')
+      .where('subscription.id = :id', { id })
+      .andWhere('user.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
+      .getOne();
 
     if (!entity) {
       throw new NotFoundException(`Subscription with ID ${id} not found`);
@@ -22,7 +28,12 @@ export class SubscriptionsRepository {
   }
 
   async findById(id: string): Promise<SubscriptionEntity | null> {
-    return await this.repository.findOne({ where: { id } });
+    return await this.repository
+      .createQueryBuilder('subscription')
+      .innerJoin('users', 'user', 'user.id = subscription.user_id')
+      .where('subscription.id = :id', { id })
+      .andWhere('user.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
+      .getOne();
   }
 
   async findAllByUser(userId: string, limit = 10, offset = 0): Promise<SubscriptionEntity[]> {
@@ -49,27 +60,42 @@ export class SubscriptionsRepository {
   }
 
   async findDueForBilling(now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
-    return await this.repository
+    const qb = this.repository
       .createQueryBuilder('subscription')
+      .innerJoin('users', 'user', 'user.id = subscription.user_id')
       .where('subscription.status = :status', { status: 'active' })
       .andWhere('subscription.nextBillingAt <= :now', { now })
       .orderBy('subscription.nextBillingAt', 'ASC')
-      .take(limit)
-      .getMany();
+      .take(limit);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
   }
 
   async findDueForCancellation(now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
-    return await this.repository
+    const qb = this.repository
       .createQueryBuilder('subscription')
+      .innerJoin('users', 'user', 'user.id = subscription.user_id')
       .where('subscription.status = :status', { status: 'pending_cancel' })
       .andWhere('subscription.cancelEffectiveAt <= :now', { now })
       .orderBy('subscription.cancelEffectiveAt', 'ASC')
-      .take(limit)
-      .getMany();
+      .take(limit);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
   }
 
   async countByStatus(status: string): Promise<number> {
-    return await this.repository.count({ where: { status: status as SubscriptionEntity['status'] } });
+    const qb = this.repository
+      .createQueryBuilder('subscription')
+      .innerJoin('users', 'user', 'user.id = subscription.user_id')
+      .where('subscription.status = :status', { status });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getCount();
   }
 
   async findUpcomingRenewals(withinDays: number, now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
@@ -77,13 +103,17 @@ export class SubscriptionsRepository {
 
     futureDate.setDate(futureDate.getDate() + withinDays);
 
-    return await this.repository
+    const qb = this.repository
       .createQueryBuilder('subscription')
+      .innerJoin('users', 'user', 'user.id = subscription.user_id')
       .where('subscription.status = :status', { status: 'active' })
       .andWhere('subscription.nextBillingAt > :now', { now })
       .andWhere('subscription.nextBillingAt <= :futureDate', { futureDate })
       .orderBy('subscription.nextBillingAt', 'ASC')
-      .take(limit)
-      .getMany();
+      .take(limit);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
   }
 }

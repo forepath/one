@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { getEffectiveBillingDay } from '../utils/billing-day.utils';
+import { getRequiredTenantId } from '../utils/tenant-query.utils';
 
 /**
  * Billing-specific user queries. Uses UserEntity to find users by effective billing day
@@ -20,7 +21,10 @@ export class UsersBillingDayRepository {
    * Returns the effective billing day (1-28) for a user. Defaults to 1 if user not found.
    */
   async getEffectiveBillingDayForUser(userId: string): Promise<number> {
-    const user = await this.repository.findOne({ where: { id: userId }, select: ['createdAt', 'billingDayOfMonth'] });
+    const user = await this.repository.findOne({
+      where: { id: userId, tenantId: getRequiredTenantId() },
+      select: ['createdAt', 'billingDayOfMonth'],
+    });
 
     if (!user?.createdAt) {
       return 1;
@@ -39,6 +43,7 @@ export class UsersBillingDayRepository {
       .where(`COALESCE(u.billing_day_of_month, LEAST(28, EXTRACT(DAY FROM u.created_at)::int)) = :day`, {
         day: dayOfMonth,
       })
+      .andWhere('u.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
       .getRawMany<{ id: string }>();
 
     return rows.map((r) => r.id);

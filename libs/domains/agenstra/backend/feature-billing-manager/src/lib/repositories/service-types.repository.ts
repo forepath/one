@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { ServiceTypeEntity } from '../entities/service-type.entity';
+import { getRequiredTenantId } from '../utils/tenant-query.utils';
 
 @Injectable()
 export class ServiceTypesRepository {
@@ -12,7 +13,7 @@ export class ServiceTypesRepository {
   ) {}
 
   async findByIdOrThrow(id: string): Promise<ServiceTypeEntity> {
-    const entity = await this.repository.findOne({ where: { id } });
+    const entity = await this.repository.findOne({ where: { id, tenantId: getRequiredTenantId() } });
 
     if (!entity) {
       throw new NotFoundException(`Service type with ID ${id} not found`);
@@ -22,19 +23,27 @@ export class ServiceTypesRepository {
   }
 
   async findById(id: string): Promise<ServiceTypeEntity | null> {
-    return await this.repository.findOne({ where: { id } });
+    return await this.repository.findOne({ where: { id, tenantId: getRequiredTenantId() } });
   }
 
   async findByKey(key: string): Promise<ServiceTypeEntity | null> {
-    return await this.repository.findOne({ where: { key } });
+    return await this.repository.findOne({ where: { key, tenantId: getRequiredTenantId() } });
   }
 
   async findAll(limit = 10, offset = 0): Promise<ServiceTypeEntity[]> {
-    return await this.repository.find({ take: limit, skip: offset, order: { createdAt: 'DESC' } });
+    return await this.repository.find({
+      where: { tenantId: getRequiredTenantId() },
+      take: limit,
+      skip: offset,
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async create(dto: Partial<ServiceTypeEntity>): Promise<ServiceTypeEntity> {
-    const entity = this.repository.create(dto);
+    const entity = this.repository.create({
+      ...dto,
+      tenantId: dto.tenantId ?? getRequiredTenantId(),
+    });
 
     return await this.repository.save(entity);
   }

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { PaymentAttemptEntity, PaymentAttemptStatus } from '../entities/payment-attempt.entity';
+import { applyUserTenantFilter, getRequiredTenantId } from '../utils/tenant-query.utils';
 
 @Injectable()
 export class PaymentAttemptsRepository {
@@ -18,19 +19,32 @@ export class PaymentAttemptsRepository {
   }
 
   async findByIdempotencyKey(key: string): Promise<PaymentAttemptEntity | null> {
-    return await this.repository.findOne({ where: { idempotencyKey: key } });
+    const qb = this.repository
+      .createQueryBuilder('attempt')
+      .innerJoin('attempt.invoice', 'inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('attempt.idempotency_key = :key', { key });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getOne();
   }
 
   async findByExternalId(processor: string, externalId: string): Promise<PaymentAttemptEntity | null> {
-    return await this.repository.findOne({ where: { processor, externalId } });
+    const qb = this.repository
+      .createQueryBuilder('attempt')
+      .innerJoin('attempt.invoice', 'inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('attempt.processor = :processor', { processor })
+      .andWhere('attempt.external_id = :externalId', { externalId });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getOne();
   }
 
   async update(id: string, dto: Partial<PaymentAttemptEntity>): Promise<PaymentAttemptEntity> {
-    const entity = await this.repository.findOne({ where: { id } });
-
-    if (!entity) {
-      throw new NotFoundException(`Payment attempt ${id} not found`);
-    }
+    const entity = await this.findByIdInTenant(id);
 
     Object.assign(entity, dto);
 
@@ -38,9 +52,33 @@ export class PaymentAttemptsRepository {
   }
 
   async findLatestPendingByInvoiceId(invoiceId: string): Promise<PaymentAttemptEntity | null> {
-    return await this.repository.findOne({
-      where: { invoiceId, status: PaymentAttemptStatus.PENDING },
-      order: { createdAt: 'DESC' },
-    });
+    const qb = this.repository
+      .createQueryBuilder('attempt')
+      .innerJoin('attempt.invoice', 'inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('attempt.invoice_id = :invoiceId', { invoiceId })
+      .andWhere('attempt.status = :status', { status: PaymentAttemptStatus.PENDING })
+      .orderBy('attempt.createdAt', 'DESC')
+      .take(1);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getOne();
+  }
+
+  private async findByIdInTenant(id: string): Promise<PaymentAttemptEntity> {
+    const entity = await this.repository
+      .createQueryBuilder('attempt')
+      .innerJoin('attempt.invoice', 'inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('attempt.id = :id', { id })
+      .andWhere('user.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
+      .getOne();
+
+    if (!entity) {
+      throw new NotFoundException(`Payment attempt ${id} not found`);
+    }
+
+    return entity;
   }
 }

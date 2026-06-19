@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { BillingAuditLogEntity } from '../entities/billing-audit-log.entity';
+import { getRequiredTenantId } from '../utils/tenant-query.utils';
 
 @Injectable()
 export class BillingAuditLogsRepository {
@@ -23,7 +24,7 @@ export class BillingAuditLogsRepository {
     offset: number,
   ): Promise<{ items: BillingAuditLogEntity[]; total: number }> {
     const [items, total] = await this.repository.findAndCount({
-      where: { invoiceId },
+      where: { invoiceId, tenantId: getRequiredTenantId() },
       order: { createdAt: 'DESC' },
       take: limit,
       skip: offset,

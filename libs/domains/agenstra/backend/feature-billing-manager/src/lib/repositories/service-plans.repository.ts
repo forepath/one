@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 
 import { ServicePlanEntity } from '../entities/service-plan.entity';
+import { applyServiceTypeTenantFilter, getRequiredTenantId } from '../utils/tenant-query.utils';
 
 @Injectable()
 export class ServicePlansRepository {
@@ -12,7 +13,12 @@ export class ServicePlansRepository {
   ) {}
 
   async findByIdOrThrow(id: string): Promise<ServicePlanEntity> {
-    const entity = await this.repository.findOne({ where: { id } });
+    const entity = await this.repository
+      .createQueryBuilder('plan')
+      .innerJoinAndSelect('plan.serviceType', 'st')
+      .where('plan.id = :id', { id })
+      .andWhere('st.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
+      .getOne();
 
     if (!entity) {
       throw new NotFoundException(`Service plan with ID ${id} not found`);
@@ -22,49 +28,69 @@ export class ServicePlansRepository {
   }
 
   async findById(id: string): Promise<ServicePlanEntity | null> {
-    return await this.repository.findOne({ where: { id } });
+    return await this.repository
+      .createQueryBuilder('plan')
+      .innerJoinAndSelect('plan.serviceType', 'st')
+      .where('plan.id = :id', { id })
+      .andWhere('st.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
+      .getOne();
   }
 
   async findAll(limit = 10, offset = 0): Promise<ServicePlanEntity[]> {
-    return await this.repository.find({ take: limit, skip: offset, order: { createdAt: 'DESC' } });
+    const qb = this.repository
+      .createQueryBuilder('plan')
+      .innerJoinAndSelect('plan.serviceType', 'st')
+      .orderBy('plan.createdAt', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    applyServiceTypeTenantFilter(qb, 'st');
+
+    return await qb.getMany();
   }
 
   /**
    * Active plans with service type relation for public catalog (no inactive or config filtering here).
    */
   async findActiveWithServiceType(limit: number, offset: number, serviceTypeId?: string): Promise<ServicePlanEntity[]> {
-    const where: FindOptionsWhere<ServicePlanEntity> = { isActive: true };
+    const qb = this.repository
+      .createQueryBuilder('plan')
+      .innerJoinAndSelect('plan.serviceType', 'st')
+      .where('plan.is_active = :isActive', { isActive: true })
+      .orderBy('plan.createdAt', 'DESC')
+      .take(limit)
+      .skip(offset);
+
+    applyServiceTypeTenantFilter(qb, 'st');
+
     const trimmedTypeId = serviceTypeId?.trim();
 
     if (trimmedTypeId) {
-      where.serviceTypeId = trimmedTypeId;
+      qb.andWhere('plan.service_type_id = :serviceTypeId', { serviceTypeId: trimmedTypeId });
     }
 
-    return await this.repository.find({
-      where,
-      relations: ['serviceType'],
-      take: limit,
-      skip: offset,
-      order: { createdAt: 'DESC' },
-    });
+    return await qb.getMany();
   }
 
   /**
    * All active plans with service type (no pagination). Used to pick lowest customer price in application code.
    */
   async findAllActiveWithServiceType(serviceTypeId?: string): Promise<ServicePlanEntity[]> {
-    const where: FindOptionsWhere<ServicePlanEntity> = { isActive: true };
+    const qb = this.repository
+      .createQueryBuilder('plan')
+      .innerJoinAndSelect('plan.serviceType', 'st')
+      .where('plan.is_active = :isActive', { isActive: true })
+      .orderBy('plan.id', 'ASC');
+
+    applyServiceTypeTenantFilter(qb, 'st');
+
     const trimmedTypeId = serviceTypeId?.trim();
 
     if (trimmedTypeId) {
-      where.serviceTypeId = trimmedTypeId;
+      qb.andWhere('plan.service_type_id = :serviceTypeId', { serviceTypeId: trimmedTypeId });
     }
 
-    return await this.repository.find({
-      where,
-      relations: ['serviceType'],
-      order: { id: 'ASC' },
-    });
+    return await qb.getMany();
   }
 
   async create(dto: Partial<ServicePlanEntity>): Promise<ServicePlanEntity> {

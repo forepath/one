@@ -1,6 +1,7 @@
 import { createHash } from 'crypto';
 
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { getTenantIdOrDefault, runWithTenantId } from '@forepath/shared/backend';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import type { InvoiceEntity } from '../entities/invoice.entity';
@@ -10,6 +11,7 @@ import { CustomerProfilesRepository } from '../repositories/customer-profiles.re
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { PaymentAttemptsRepository } from '../repositories/payment-attempts.repository';
 import { PaymentWebhookEventsRepository } from '../repositories/payment-webhook-events.repository';
+import { buildStripeCheckoutReturnUrl } from '../utils/tenant-frontend-url.utils';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 
@@ -65,14 +67,10 @@ export class PaymentOrchestrationService {
     const processor = this.paymentProcessorFactory.getProcessor(processorType);
     const idempotencyKey = `pay-${invoice.id}-${Date.now()}`;
     const profile = await this.customerProfilesRepository.findByUserId(userId);
-    const successUrl = this.buildUrl(
-      process.env.STRIPE_CHECKOUT_SUCCESS_URL ?? 'http://localhost:4500/invoices?payment=success',
-      { invoiceRefId: invoice.id, subscriptionId },
-    );
-    const cancelUrl = this.buildUrl(
-      process.env.STRIPE_CHECKOUT_CANCEL_URL ?? 'http://localhost:4500/invoices?payment=cancel',
-      { invoiceRefId: invoice.id, subscriptionId },
-    );
+    const tenantId = getTenantIdOrDefault();
+    const returnParams = { invoiceRefId: invoice.id, subscriptionId };
+    const successUrl = buildStripeCheckoutReturnUrl(tenantId, 'success', returnParams);
+    const cancelUrl = buildStripeCheckoutReturnUrl(tenantId, 'cancel', returnParams);
     const session = await processor.createCheckoutSession({
       invoiceId: invoice.id,
       amount: balance,
@@ -87,6 +85,7 @@ export class PaymentOrchestrationService {
         subscriptionId,
         userId,
         invoiceNumber: invoice.invoiceNumber ?? '',
+        tenantId,
       },
     });
 
@@ -146,7 +145,15 @@ export class PaymentOrchestrationService {
       return;
     }
 
-    await this.applyPaymentUpdate(update, processorType);
+    if (!update.tenantId) {
+      this.logger.warn(`Webhook event ${event.eventId} missing tenantId metadata; ignoring payment update`);
+
+      return;
+    }
+
+    await runWithTenantId(update.tenantId, async () => {
+      await this.applyPaymentUpdate(update, processorType);
+    });
   }
 
   private async applyPaymentUpdate(
@@ -188,17 +195,5 @@ export class PaymentOrchestrationService {
     if (update.status === 'canceled' && attempt) {
       await this.paymentAttemptsRepository.update(attempt.id, { status: PaymentAttemptStatus.CANCELED });
     }
-  }
-
-  private buildUrl(template: string, params: Record<string, string>): string {
-    let url = template;
-
-    for (const [key, value] of Object.entries(params)) {
-      url = url.replace(`{${key}}`, encodeURIComponent(value));
-    }
-
-    const separator = url.includes('?') ? '&' : '?';
-
-    return `${url}${separator}subscriptionId=${encodeURIComponent(params.subscriptionId)}&invoiceRefId=${encodeURIComponent(params.invoiceRefId)}`;
   }
 }

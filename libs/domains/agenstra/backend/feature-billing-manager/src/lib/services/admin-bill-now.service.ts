@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 
 import { UsersRepository } from '@forepath/identity/backend';
+import { getTenantIdOrDefault } from '@forepath/shared/backend';
 import { BadRequestException, Inject, Injectable, InternalServerErrorException, Optional } from '@nestjs/common';
 
 import type { AdminBillNowDto, AdminBillNowResponseDto } from '../dto/admin-billing.dto';
@@ -21,7 +22,7 @@ export class AdminBillNowService {
     }
 
     if (dto.userId) {
-      const user = await this.usersRepository.findById(dto.userId);
+      const user = await this.usersRepository.findByIdForTenant(dto.userId);
 
       if (!user) {
         throw new BadRequestException('User not found');
@@ -30,10 +31,12 @@ export class AdminBillNowService {
 
     const userIds = await this.resolveTargetUserIds(dto);
     const requestId = randomUUID();
+    const tenantId = getTenantIdOrDefault();
 
     await this.enqueuePort.enqueueCoordinator({
       requestId,
       adminUserId,
+      tenantId,
       scope: dto.userId ? 'user' : 'all',
       userId: dto.userId,
     });

@@ -27,6 +27,8 @@ export interface Environment {
     restApiUrl: string;
     frontendUrl: string;
     websocketUrl?: string;
+    /** Optional tenant id sent as `X-Tenant` on billing API requests; defaults to `default`. */
+    tenantId?: string;
   };
   authentication: AuthenticationConfig;
   chatModelOptions: { [provider: string]: Record<string, string> };

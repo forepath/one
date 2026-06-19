@@ -16,7 +16,7 @@ describe('ManualInvoiceService', () => {
     createMany: jest.fn(),
   };
   const subscriptionsRepository = { findByIdOrThrow: jest.fn() };
-  const usersRepository = { findById: jest.fn() };
+  const usersRepository = { findByIdForTenant: jest.fn() };
   const invoiceService = { createDraft: jest.fn(), getDetailById: jest.fn() };
   const invoiceIssuanceService = { issueDraft: jest.fn() };
   const taxCalculationService = {
@@ -65,7 +65,7 @@ describe('ManualInvoiceService', () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
-    usersRepository.findById.mockResolvedValue({ id: 'user-1', email: 'user@example.com' });
+    usersRepository.findByIdForTenant.mockResolvedValue({ id: 'user-1', email: 'user@example.com' });
     invoiceService.createDraft.mockResolvedValue(draftInvoice);
     invoiceService.getDetailById.mockResolvedValue({
       id: 'inv-1',
@@ -94,7 +94,7 @@ describe('ManualInvoiceService', () => {
   });
 
   it('createDraft validates user exists', async () => {
-    usersRepository.findById.mockResolvedValue(null);
+    usersRepository.findByIdForTenant.mockResolvedValue(null);
 
     await expect(
       service.createDraft(

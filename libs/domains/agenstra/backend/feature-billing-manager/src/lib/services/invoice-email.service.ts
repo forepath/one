@@ -115,7 +115,7 @@ export class InvoiceEmailService {
       return profileEmail;
     }
 
-    const user = await this.usersRepository.findById(userId);
+    const user = await this.usersRepository.findByIdForTenant(userId);
 
     return user?.email?.trim();
   }

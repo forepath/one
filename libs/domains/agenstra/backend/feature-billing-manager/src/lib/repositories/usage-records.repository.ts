@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { UsageRecordEntity } from '../entities/usage-record.entity';
+import { applyUserTenantFilter } from '../utils/tenant-query.utils';
 
 @Injectable()
 export class UsageRecordsRepository {
@@ -12,10 +13,17 @@ export class UsageRecordsRepository {
   ) {}
 
   async findLatestForSubscription(subscriptionId: string): Promise<UsageRecordEntity | null> {
-    return await this.repository.findOne({
-      where: { subscriptionId },
-      order: { createdAt: 'DESC' },
-    });
+    const qb = this.repository
+      .createQueryBuilder('usage')
+      .innerJoin('usage.subscription', 'sub')
+      .innerJoin('users', 'user', 'user.id = sub.user_id')
+      .where('usage.subscription_id = :subscriptionId', { subscriptionId })
+      .orderBy('usage.createdAt', 'DESC')
+      .take(1);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getOne();
   }
 
   async create(dto: Partial<UsageRecordEntity>): Promise<UsageRecordEntity> {

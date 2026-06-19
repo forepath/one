@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto';
 
 import { buildCertbotBootstrapScript } from './certbot-bootstrap.script';
-import { formatEnvLines } from './env.utils';
+import { formatEnvLines, quoteYamlScalar } from './env.utils';
 
 export interface AgentManagerCloudInitConfig {
   ssh: {
@@ -222,9 +222,9 @@ export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInit
     image: postgres:16-alpine
     container_name: agent-manager-postgres
     environment:
-      POSTGRES_USER: ${config.backend?.database?.username ?? 'postgres'}
-      POSTGRES_PASSWORD: ${config.backend?.database?.password ?? 'postgres'}
-      POSTGRES_DB: ${config.backend?.database?.database ?? 'postgres'}
+      POSTGRES_USER: ${quoteYamlScalar(config.backend?.database?.username ?? 'postgres')}
+      POSTGRES_PASSWORD: ${quoteYamlScalar(config.backend?.database?.password ?? 'postgres')}
+      POSTGRES_DB: ${quoteYamlScalar(config.backend?.database?.database ?? 'postgres')}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

@@ -20,12 +20,14 @@ describe('InvoiceNumberSequencesRepository', () => {
     const number = await repository.nextInvoiceNumber(2026);
 
     expect(number).toBe('INV-2026-00001');
-    expect(sequenceRepo.save).toHaveBeenCalledWith(expect.objectContaining({ year: 2026, lastValue: 1 }));
+    expect(sequenceRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({ year: 2026, tenantId: 'default', lastValue: 1 }),
+    );
   });
 
   it('formats padded invoice numbers for existing sequence row', async () => {
     const sequenceRepo = {
-      findOne: jest.fn().mockResolvedValue({ year: 2026, lastValue: 41 }),
+      findOne: jest.fn().mockResolvedValue({ year: 2026, tenantId: 'default', lastValue: 41 }),
       create: jest.fn(),
       save: jest.fn().mockImplementation(async (row) => row),
     };

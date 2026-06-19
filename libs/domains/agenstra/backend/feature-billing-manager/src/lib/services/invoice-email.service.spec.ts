@@ -12,7 +12,7 @@ describe('InvoiceEmailService', () => {
     findByUserId: jest.fn(),
   };
   const usersRepository = {
-    findById: jest.fn(),
+    findByIdForTenant: jest.fn(),
   };
   const invoicePdfService = {
     readPdf: jest.fn(),
@@ -63,7 +63,7 @@ describe('InvoiceEmailService', () => {
 
     it('falls back to account email when profile email is missing', async () => {
       customerProfilesRepository.findByUserId.mockResolvedValue({ userId: 'user-1', firstName: 'Jane' });
-      usersRepository.findById.mockResolvedValue({ id: 'user-1', email: 'account@example.com' });
+      usersRepository.findByIdForTenant.mockResolvedValue({ id: 'user-1', email: 'account@example.com' });
 
       const sent = await service.notifyInvoiceIssued(invoice, 'sub-1/inv-1.pdf');
 
@@ -73,7 +73,7 @@ describe('InvoiceEmailService', () => {
 
     it('skips when no recipient email is available', async () => {
       customerProfilesRepository.findByUserId.mockResolvedValue({ userId: 'user-1', firstName: 'Jane' });
-      usersRepository.findById.mockResolvedValue({ id: 'user-1' });
+      usersRepository.findByIdForTenant.mockResolvedValue({ id: 'user-1' });
 
       const sent = await service.notifyInvoiceIssued(invoice, 'sub-1/inv-1.pdf');
 

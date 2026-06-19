@@ -12,7 +12,7 @@ describe('CustomerProfilesAdminService', () => {
     delete: jest.fn(),
   };
   const customerProfilesService = { isProfileComplete: jest.fn().mockReturnValue(true) };
-  const usersRepository = { findById: jest.fn() };
+  const usersRepository = { findByIdForTenant: jest.fn() };
   const invoicesRepository = { countByUserId: jest.fn() };
   const subscriptionsRepository = { findAllByUser: jest.fn() };
 
@@ -36,7 +36,7 @@ describe('CustomerProfilesAdminService', () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
-    usersRepository.findById.mockResolvedValue({ id: 'user-1', email: 'user@example.com' });
+    usersRepository.findByIdForTenant.mockResolvedValue({ id: 'user-1', email: 'user@example.com' });
     customerProfilesService.isProfileComplete.mockReturnValue(true);
   });
 
@@ -49,7 +49,7 @@ describe('CustomerProfilesAdminService', () => {
   });
 
   it('create rejects unknown user', async () => {
-    usersRepository.findById.mockResolvedValue(null);
+    usersRepository.findByIdForTenant.mockResolvedValue(null);
 
     await expect(
       service.create({ userId: 'user-1', firstName: 'Jane', lastName: 'Doe', email: 'jane@example.com' }),

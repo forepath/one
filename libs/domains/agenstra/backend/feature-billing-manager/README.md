@@ -28,11 +28,32 @@ All endpoints require authentication. Admin-only routes use the same role guards
 
 API key auth is supported through the shared HybridAuthGuard at the app level.
 
+## Multi-tenancy
+
+- Clients send `X-Tenant` on HTTP requests (frontend: `billing.tenantId` in runtime config; defaults to `default`).
+- Server validates against `TENANTS` env (comma-separated; always includes `default`).
+- Per-tenant billing console URLs for Stripe return redirects: `BILLING_FRONTEND_URL` (default tenant) and `TENANT_FRONTEND_URLS` on the backend.
+- Users, service types, invoices, and subscriptions are scoped per tenant; same email can register separately per tenant.
+- Background jobs iterate all configured tenants. Stripe webhooks resolve tenant from checkout session metadata.
+
+### API key auth and tenant scope
+
+When **`AUTHENTICATION_METHOD=api-key`** (or api-key is inferred from **`STATIC_API_KEY`**):
+
+- **`STATIC_API_KEY_TENANT_ID`** (optional) — when set, API key requests are only accepted when **`X-Tenant`** matches this value.
+- When **`STATIC_API_KEY_TENANT_ID`** is **unset**, a valid **`STATIC_API_KEY`** grants **admin access to every tenant** listed in **`TENANTS`**, selected per request via **`X-Tenant`**. This is **intentional and accepted** (single shared automation key); see **[AR-007](../../../docs/agenstra/security/accepted-risks.md#ar-007--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)**.
+- Interactive auth (**keycloak** / **users**) always enforces the user’s **`tenant_id`** regardless of the above.
+
 ## Environment
 
+- `TENANTS` (optional; comma-separated tenant ids, e.g. `one,two`) – allowed tenant ids for `X-Tenant` requests. Always includes `default`. When unset or empty, only `default` is allowed.
+- `STATIC_API_KEY_TENANT_ID` (optional) – when set, API key auth is only accepted for this tenant id (must match `X-Tenant`). When unset, one **`STATIC_API_KEY`** may access **all** configured tenants via **`X-Tenant`** (accepted risk **AR-007**).
+- Public catalog (`/public/service-plan-offerings`) is unauthenticated; tenant is selected via `X-Tenant` (defaults to `default`). Restrict allowed tenants with `TENANTS`.
+- `BILLING_FRONTEND_URL` (optional; default derived from `STRIPE_CHECKOUT_SUCCESS_URL` origin or `http://localhost:4500`) – billing console base URL for the `default` tenant; used for Stripe success/cancel redirects.
+- `TENANT_FRONTEND_URLS` (optional; `tenantId=https://billing.example.com` pairs, comma-separated) – per-tenant billing console base URLs for Stripe return redirects.
 - BILLING*ISSUER*\* (name, VAT ID, address, email, IBAN) and BILLING_TAX_RATE_STANDARD / BILLING_TAX_RATE_REDUCED
 - BILLING_INVOICE_PDF_STORAGE_PATH, BILLING_DEFAULT_PAYMENT_PROCESSOR
-- STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_CHECKOUT_SUCCESS_URL, STRIPE_CHECKOUT_CANCEL_URL
+- STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_CHECKOUT_SUCCESS_URL, STRIPE_CHECKOUT_CANCEL_URL (path portion used with tenant frontend base; legacy full URL still sets default-tenant origin)
 - DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE
 - HETZNER_API_TOKEN
 - DIGITALOCEAN_API_TOKEN

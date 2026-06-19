@@ -68,7 +68,7 @@ export class AuthService {
       throw new ServiceUnavailableException('Signup is disabled');
     }
 
-    const count = await this.usersRepository.count();
+    const count = await this.usersRepository.countByTenant();
     const isFirstUser = count === 0;
     const created = await this.usersService.create(
       { email, password, role: isFirstUser ? UserRole.ADMIN : UserRole.USER },

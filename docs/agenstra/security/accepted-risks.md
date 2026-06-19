@@ -2,7 +2,7 @@
 
 This register records **explicit risk acceptance** for product and deployment constraints that deviate from stricter security baselines. It supports **BSI / ISMS-style** traceability and **CRA-oriented** technical documentation (risk treatment and transparency). A compact summary table may also be published at the repository root in `SECURITY.md` for hosts that surface that file. For vulnerability reporting, SBOM paths, and desktop checksum verification, see **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**.
 
-**Review cadence:** entries use acceptance **2026-05-06** and next review **2027-05-06** unless a row states otherwise; trigger an early review if the relevant templates, packaging, CSP integration, authentication resolution, or Electron shell policy change materially.
+**Review cadence:** entries use acceptance **2026-05-06** and next review **2027-05-06** unless a row states otherwise; trigger an early review if the relevant templates, packaging, CSP integration, authentication resolution, billing multi-tenancy, or Electron shell policy change materially.
 
 ---
 
@@ -138,6 +138,28 @@ New windows are **allowed** by design. Risk is **lower** than in a general-purpo
 
 ---
 
+## AR-007 — Billing multi-tenant API key scope (`STATIC_API_KEY_TENANT_ID` unset)
+
+| Field                                 | Recorded value                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ID**                                | AR-007                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Area**                              | **Billing manager** multi-tenancy with **`AUTHENTICATION_METHOD=api-key`** (or inferred api-key when **`STATIC_API_KEY`** is set). Implementation: `TenantUserGuard` in `libs/domains/agenstra/backend/feature-billing-manager/src/lib/guards/tenant-user.guard.ts`; admin bypass via `ensureAdmin()` in `billing-access.utils.ts`.                                                                           |
+| **Configuration**                     | A **single** deployment-wide **`STATIC_API_KEY`**. **`STATIC_API_KEY_TENANT_ID`** is **optional**. When unset, a valid API key is accepted for **any** tenant id allowed by **`TENANTS`** / **`X-Tenant`** (each request selects the tenant via header). API key auth is treated as **admin** for billing admin routes.                                                                                       |
+| **Residual risk**                     | Anyone who possesses **`STATIC_API_KEY`** can read and mutate **all** configured tenants’ billing data by changing **`X-Tenant`**, not only one tenant. This is **cross-tenant admin access** from a single shared secret.                                                                                                                                                                                    |
+| **Mitigations in scope of this repo** | **`STATIC_API_KEY_TENANT_ID`** optionally binds API key auth to one tenant (must match **`X-Tenant`**). User/session auth (**keycloak** / **users**) enforces per-user **`tenant_id`** regardless of this setting. WebSocket dashboard status does **not** stream data to API key clients.                                                                                                                    |
+| **Compensating controls (deployer)**  | Treat **`STATIC_API_KEY`** as a **high-value** secret (rotation, least exposure, no client-side use). Prefer **keycloak** or **users** for the billing console in multi-tenant production. Set **`STATIC_API_KEY_TENANT_ID`** when automation must use API key against **one** tenant only. Use separate billing deployments or keys per tenant if policy forbids shared cross-tenant automation credentials. |
+| **Risk owner**                        | Maintaining party for this repository and product security documentation (Forepath).                                                                                                                                                                                                                                                                                                                          |
+| **Acceptor**                          | Repository maintainer (acceptance recorded in project documentation).                                                                                                                                                                                                                                                                                                                                         |
+| **Acceptance date**                   | **2026-06-19**                                                                                                                                                                                                                                                                                                                                                                                                |
+| **Next review date**                  | **2027-05-06**                                                                                                                                                                                                                                                                                                                                                                                                |
+| **Rationale (business / technical)**  | Billing deployments use **one** static API key for automation and operator scripts. Requiring a separate key per tenant would multiply secret management without a current product requirement. **Explicit acceptance:** shared key + optional tenant header is **intentional**; operators who need single-tenant binding use **`STATIC_API_KEY_TENANT_ID`**.                                                 |
+
+#### Operator summary (AR-007)
+
+With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, the key is **not** limited to one tenant: it grants **admin-level access to every tenant** allowed by **`TENANTS`**, selected per request via **`X-Tenant`**. That behavior is **accepted** because there is only one deployment key. To restrict API key use to a single tenant, set **`STATIC_API_KEY_TENANT_ID`**. Interactive users (Keycloak/JWT) remain scoped to their own tenant. See **[Environment configuration — Billing manager multi-tenancy](../deployment/environment-configuration.md#backend-billing-manager)** and the **[billing feature README](../../libs/domains/agenstra/backend/feature-billing-manager/README.md)**.
+
+---
+
 ## Hardening paths (if an acceptance is withdrawn)
 
 - **AR-001:** Prefer a non-root admin user, **`PermitRootLogin no`**, least-privilege `sudo`, and cloud-init-native `ssh_authorized_keys` where possible; reduce secrets in user-data.
@@ -146,6 +168,7 @@ New windows are **allowed** by design. Risk is **lower** than in a general-purpo
 - **AR-004:** Require **`AUTHENTICATION_METHOD`** in all environments if auditors demand explicit configuration, or add startup validation that fails when **`STATIC_API_KEY`** is set without an explicit mode.
 - **AR-005:** Tighten **`setWindowOpenHandler`** (for example URL allowlist or **`action: 'deny'`**) if the product loads untrusted origins or adds browser-like navigation.
 - **AR-006:** Set **`vulnerability.ignore-unfixed: false`** (and optionally add **HIGH** to `severity`) if policy requires failing on all CRITICAL findings regardless of fix availability; expect more `.trivyignore` churn until dependencies catch up.
+- **AR-007:** Require **`STATIC_API_KEY_TENANT_ID`** whenever **`STATIC_API_KEY`** is set and **`TENANTS`** lists more than one id; or reject API key auth on billing when multiple tenants are configured; or issue per-tenant API keys (product change).
 
 ---
 

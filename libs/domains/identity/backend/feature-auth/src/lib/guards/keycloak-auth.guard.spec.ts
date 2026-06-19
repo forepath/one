@@ -9,7 +9,7 @@ describe('KeycloakAuthGuard', () => {
   let guard: KeycloakAuthGuard;
   let reflector: jest.Mocked<Pick<Reflector, 'getAllAndOverride'>>;
   let usersRepository: jest.Mocked<
-    Pick<UsersRepository, 'findByKeycloakSub' | 'count' | 'findByEmail' | 'create' | 'update'>
+    Pick<UsersRepository, 'findByKeycloakSub' | 'countByTenant' | 'findByEmail' | 'create' | 'update'>
   >;
   let originalAuthMethod: string | undefined;
   const createExecutionContext = (request: Record<string, unknown>) =>
@@ -28,7 +28,7 @@ describe('KeycloakAuthGuard', () => {
     reflector = { getAllAndOverride: jest.fn().mockReturnValue(false) };
     usersRepository = {
       findByKeycloakSub: jest.fn(),
-      count: jest.fn(),
+      countByTenant: jest.fn(),
       findByEmail: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -54,6 +54,7 @@ describe('KeycloakAuthGuard', () => {
       id: 'user-1',
       email: 'a@b.com',
       role: UserRole.USER,
+      tenantId: 'default',
       lockedAt: null,
     } as never);
 
@@ -65,6 +66,20 @@ describe('KeycloakAuthGuard', () => {
       username: 'a@b.com',
       roles: [UserRole.USER],
     });
+  });
+
+  it('rejects when synced user tenant mismatches request tenant', async () => {
+    const request = { user: { sub: 'kc-sub-1', email: 'a@b.com' } };
+
+    usersRepository.findByKeycloakSub.mockResolvedValue({
+      id: 'user-1',
+      email: 'a@b.com',
+      role: UserRole.USER,
+      tenantId: 'other',
+      lockedAt: null,
+    } as never);
+
+    await expect(guard.canActivate(createExecutionContext(request))).rejects.toThrow('Session is no longer valid.');
   });
 
   it('rejects when synced user is locked', async () => {
@@ -86,7 +101,7 @@ describe('KeycloakAuthGuard', () => {
     const request = { user: { sub: 'kc-new', email: 'existing@b.com' } };
 
     usersRepository.findByKeycloakSub.mockResolvedValue(null);
-    usersRepository.count.mockResolvedValue(1);
+    usersRepository.countByTenant.mockResolvedValue(1);
     usersRepository.findByEmail.mockResolvedValue({
       id: 'user-2',
       email: 'existing@b.com',
@@ -98,5 +113,30 @@ describe('KeycloakAuthGuard', () => {
       'This account is locked. Please contact an administrator.',
     );
     expect(usersRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('allows public routes without syncing user', async () => {
+    reflector.getAllAndOverride.mockReturnValue(true);
+
+    const ok = await guard.canActivate(createExecutionContext({ user: { sub: 'kc-sub-1' } }));
+
+    expect(ok).toBe(true);
+    expect(usersRepository.findByKeycloakSub).not.toHaveBeenCalled();
+  });
+
+  it('skips sync when authentication method is not keycloak', async () => {
+    process.env.AUTHENTICATION_METHOD = 'users';
+
+    const ok = await guard.canActivate(createExecutionContext({ user: { sub: 'kc-sub-1' } }));
+
+    expect(ok).toBe(true);
+    expect(usersRepository.findByKeycloakSub).not.toHaveBeenCalled();
+  });
+
+  it('passes through when keycloak token payload has no sub', async () => {
+    const ok = await guard.canActivate(createExecutionContext({ user: { email: 'a@b.com' } }));
+
+    expect(ok).toBe(true);
+    expect(usersRepository.findByKeycloakSub).not.toHaveBeenCalled();
   });
 });

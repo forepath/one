@@ -1,8 +1,9 @@
 import {
   CorrelationAwareConsoleLogger,
-  CorrelationAwareSocketIoAdapter,
   createCorrelationIdMiddleware,
+  createTenantIdMiddleware,
   registerAxiosCorrelationIdPropagation,
+  TenantAwareSocketIoAdapter,
 } from '@forepath/shared/backend/util-http-context';
 import { createOriginAllowlistMiddleware } from '@forepath/identity/backend';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
@@ -60,8 +61,9 @@ export async function bootstrap(): Promise<void> {
       log: (message: string) => httpLogger.log(message),
     }),
   );
+  app.use(createTenantIdMiddleware());
   app.use(createOriginAllowlistMiddleware(new Logger('OriginAllowlist')));
-  app.useWebSocketAdapter(new CorrelationAwareSocketIoAdapter(app));
+  app.useWebSocketAdapter(new TenantAwareSocketIoAdapter(app));
 
   const isProduction = process.env.NODE_ENV === 'production';
   const corsOrigin = process.env.CORS_ORIGIN;
@@ -80,7 +82,7 @@ export async function bootstrap(): Promise<void> {
     origin,
     credentials: origin !== '*' && Array.isArray(origin) && origin.length > 0,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Correlation-Id', 'X-Request-Id'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Correlation-Id', 'X-Request-Id', 'X-Tenant'],
     exposedHeaders: ['Content-Range', 'X-Content-Range', 'X-Correlation-Id'],
   });
 

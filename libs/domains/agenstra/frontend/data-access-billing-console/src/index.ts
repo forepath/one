@@ -1,3 +1,6 @@
+// Interceptors
+export * from './lib/interceptors/tenant.interceptor';
+
 // Types
 export * from './lib/types/billing.types';
 

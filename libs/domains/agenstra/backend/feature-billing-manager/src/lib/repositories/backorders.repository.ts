@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { BackorderEntity, BackorderStatus } from '../entities/backorder.entity';
+import { applyUserTenantFilter, getRequiredTenantId } from '../utils/tenant-query.utils';
 
 @Injectable()
 export class BackordersRepository {
@@ -12,7 +13,12 @@ export class BackordersRepository {
   ) {}
 
   async findByIdOrThrow(id: string): Promise<BackorderEntity> {
-    const entity = await this.repository.findOne({ where: { id } });
+    const entity = await this.repository
+      .createQueryBuilder('backorder')
+      .innerJoin('users', 'user', 'user.id = backorder.user_id')
+      .where('backorder.id = :id', { id })
+      .andWhere('user.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
+      .getOne();
 
     if (!entity) {
       throw new NotFoundException(`Backorder with ID ${id} not found`);
@@ -31,12 +37,17 @@ export class BackordersRepository {
   }
 
   async findAllPending(limit = 100, offset = 0): Promise<BackorderEntity[]> {
-    return await this.repository.find({
-      where: [{ status: BackorderStatus.PENDING }, { status: BackorderStatus.RETRYING }],
-      take: limit,
-      skip: offset,
-      order: { createdAt: 'ASC' },
-    });
+    const qb = this.repository
+      .createQueryBuilder('backorder')
+      .innerJoin('users', 'user', 'user.id = backorder.user_id')
+      .where('backorder.status IN (:...statuses)', { statuses: [BackorderStatus.PENDING, BackorderStatus.RETRYING] })
+      .orderBy('backorder.createdAt', 'ASC')
+      .take(limit)
+      .skip(offset);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
   }
 
   async create(dto: Partial<BackorderEntity>): Promise<BackorderEntity> {

@@ -288,11 +288,11 @@ describe('agent-manager.utils', () => {
       const b64 = buildAgentManagerCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
 
-      expect(script).toContain('GIT_REPOSITORY_URL: https://github.com/org/repo.git');
+      expect(script).toContain("GIT_REPOSITORY_URL: 'https://github.com/org/repo.git'");
       expect(script).toContain('GIT_USERNAME: gituser');
       expect(script).toContain('GIT_TOKEN: secret');
       expect(script).toContain('GIT_COMMIT_AUTHOR_NAME: Agent');
-      expect(script).toContain('GIT_COMMIT_AUTHOR_EMAIL: agent@example.com');
+      expect(script).toContain("GIT_COMMIT_AUTHOR_EMAIL: 'agent@example.com'");
     });
 
     it('emits only GIT_REPOSITORY_SETUP_MODE when git setupMode is empty', () => {

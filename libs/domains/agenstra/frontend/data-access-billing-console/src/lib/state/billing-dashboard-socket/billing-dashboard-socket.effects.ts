@@ -22,6 +22,7 @@ import {
   disconnectBillingDashboardSocket,
   disconnectBillingDashboardSocketSuccess,
 } from './billing-dashboard-socket.actions';
+import { resolveBillingTenantId } from '../../interceptors/tenant.interceptor';
 
 const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
 const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
@@ -99,7 +100,13 @@ export const connectBillingDashboardSocket$ = createEffect(
               reconnectionDelay: 1000,
               reconnectionDelayMax: 5000,
               randomizationFactor: 0.5,
-              auth: { Authorization: authHeader },
+              extraHeaders: {
+                'X-Tenant': resolveBillingTenantId(environment),
+              },
+              auth: {
+                Authorization: authHeader,
+                tenantId: resolveBillingTenantId(environment),
+              },
             });
 
             const socket = billingDashboardSocketInstance;

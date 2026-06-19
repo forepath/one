@@ -31,7 +31,7 @@ export class ManualInvoiceService {
   ) {}
 
   async createDraft(dto: CreateManualInvoiceDto, adminUserId: string): Promise<ManualInvoiceDetailResponseDto> {
-    const user = await this.usersRepository.findById(dto.userId);
+    const user = await this.usersRepository.findByIdForTenant(dto.userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
@@ -163,7 +163,7 @@ export class ManualInvoiceService {
 
   async getDetail(invoiceRefId: string): Promise<ManualInvoiceDetailResponseDto> {
     const detail = await this.invoiceService.getDetailById(invoiceRefId);
-    const user = await this.usersRepository.findById(detail.userId ?? '');
+    const user = await this.usersRepository.findByIdForTenant(detail.userId ?? '');
 
     return {
       ...detail,

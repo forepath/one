@@ -22,6 +22,9 @@ export class UserEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id!: string;
 
+  @Column({ type: 'varchar', length: 64, name: 'tenant_id', default: 'default' })
+  tenantId!: string;
+
   @Column({ type: 'varchar', length: 255, name: 'email' })
   email!: string;
 

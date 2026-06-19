@@ -5,14 +5,17 @@ import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { InvoicesRepository } from './invoices.repository';
 
 const createMockQueryBuilder = () => ({
+  innerJoin: jest.fn().mockReturnThis(),
   leftJoinAndSelect: jest.fn().mockReturnThis(),
   leftJoin: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
   andWhere: jest.fn().mockReturnThis(),
   orderBy: jest.fn().mockReturnThis(),
   take: jest.fn().mockReturnThis(),
   skip: jest.fn().mockReturnThis(),
   getCount: jest.fn(),
   getMany: jest.fn(),
+  getOne: jest.fn(),
 });
 
 describe('InvoicesRepository', () => {
@@ -46,19 +49,19 @@ describe('InvoicesRepository', () => {
   it('findByIdForUser returns invoice when user owns it', async () => {
     const invoice = { id: 'inv-1', userId: 'user-1' };
 
-    mockRepository.findOne.mockResolvedValue(invoice);
+    mockQueryBuilder.getOne.mockResolvedValue(invoice);
 
     await expect(repository.findByIdForUser('inv-1', 'user-1')).resolves.toEqual(invoice);
   });
 
   it('findByIdForUser returns null when user mismatch', async () => {
-    mockRepository.findOne.mockResolvedValue({ id: 'inv-1', userId: 'other-user' });
+    mockQueryBuilder.getOne.mockResolvedValue({ id: 'inv-1', userId: 'other-user' });
 
     await expect(repository.findByIdForUser('inv-1', 'user-1')).resolves.toBeNull();
   });
 
   it('findByIdOrThrow throws when invoice missing', async () => {
-    mockRepository.findOne.mockResolvedValue(null);
+    mockQueryBuilder.getOne.mockResolvedValue(null);
 
     await expect(repository.findByIdOrThrow('missing')).rejects.toThrow(NotFoundException);
   });
@@ -66,7 +69,7 @@ describe('InvoicesRepository', () => {
   it('findByIdOrThrow returns invoice', async () => {
     const invoice = { id: 'inv-1', userId: 'user-1' };
 
-    mockRepository.findOne.mockResolvedValue(invoice);
+    mockQueryBuilder.getOne.mockResolvedValue(invoice);
 
     await expect(repository.findByIdOrThrow('inv-1')).resolves.toEqual(invoice);
   });
@@ -89,15 +92,16 @@ describe('InvoicesRepository', () => {
   });
 
   it('countByUserId returns count', async () => {
-    mockRepository.count.mockResolvedValue(3);
+    mockQueryBuilder.getCount.mockResolvedValue(3);
 
     await expect(repository.countByUserId('user-1')).resolves.toBe(3);
+    expect(mockQueryBuilder.getCount).toHaveBeenCalled();
   });
 
   it('delete removes invoice', async () => {
     const invoice = { id: 'inv-1', userId: 'user-1', status: InvoiceStatus.DRAFT };
 
-    mockRepository.findOne.mockResolvedValue(invoice);
+    mockQueryBuilder.getOne.mockResolvedValue(invoice);
 
     await repository.delete('inv-1');
 
@@ -107,7 +111,7 @@ describe('InvoicesRepository', () => {
   it('update merges and saves invoice', async () => {
     const invoice = { id: 'inv-1', userId: 'user-agent', status: InvoiceStatus.DRAFT };
 
-    mockRepository.findOne.mockResolvedValue(invoice);
+    mockQueryBuilder.getOne.mockResolvedValue(invoice);
 
     const result = await repository.update('inv-1', { status: InvoiceStatus.ISSUED });
 

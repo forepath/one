@@ -32,6 +32,18 @@ Resolution is implemented in **`getAuthenticationMethod`** (`libs/domains/identi
 
 **Operator note:** Set **`AUTHENTICATION_METHOD`** explicitly if your security policy requires unambiguous configuration. Implicit **keycloak** when neither an explicit mode nor **`STATIC_API_KEY`** is set is an **accepted risk**; see **AR-004** in **[Accepted risks](./accepted-risks.md)**.
 
+## Billing manager — multi-tenancy
+
+| Control                        | Purpose                                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| **`X-Tenant` header**          | Selects tenant context on HTTP and billing WebSocket handshakes. Validated against **`TENANTS`**; unknown ids → **400**. |
+| **`TenantUserGuard`**          | Ensures authenticated users’ **`tenant_id`** matches the request tenant.                                                 |
+| **`STATIC_API_KEY_TENANT_ID`** | Optional bind of API key auth to one tenant.                                                                             |
+
+**Accepted risk [AR-007](./accepted-risks.md#ar-007--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset):** With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, one deployment API key grants **admin access to every tenant** in **`TENANTS`** (tenant chosen per request via **`X-Tenant`**). This is **intentional** for a single shared automation key. Interactive **keycloak** / **users** sessions remain limited to the user’s tenant.
+
+Code: `libs/domains/agenstra/backend/feature-billing-manager/src/lib/guards/tenant-user.guard.ts`, `libs/domains/shared/backend/util-http-context/src/lib/tenant-id.middleware.ts`.
+
 ## Agent Controller — remote client endpoints (SSRF)
 
 Customer-configured **`client.endpoint`** values drive HTTP and WebSocket traffic from the controller to remote agent-managers.

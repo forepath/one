@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { runWithTenantId } from '@forepath/shared/backend';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { PaymentAttemptStatus } from '../entities/payment-attempt.entity';
@@ -8,6 +9,8 @@ import type { PaymentProcessor } from '../payment-processors/payment-processor.i
 import { PaymentOrchestrationService } from './payment-orchestration.service';
 
 describe('PaymentOrchestrationService', () => {
+  const originalTenantFrontendUrls = process.env['TENANT_FRONTEND_URLS'];
+  const originalBillingFrontendUrl = process.env['BILLING_FRONTEND_URL'];
   const invoicesRepository = {
     findByIdAndSubscriptionId: jest.fn(),
     findById: jest.fn(),
@@ -35,6 +38,8 @@ describe('PaymentOrchestrationService', () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+    delete process.env['TENANT_FRONTEND_URLS'];
+    delete process.env['BILLING_FRONTEND_URL'];
     processor = {
       getType: jest.fn().mockReturnValue('stripe'),
       getDisplayName: jest.fn().mockReturnValue('Stripe'),
@@ -53,6 +58,20 @@ describe('PaymentOrchestrationService', () => {
       factory,
       auditLog as never,
     );
+  });
+
+  afterEach(() => {
+    if (originalTenantFrontendUrls === undefined) {
+      delete process.env['TENANT_FRONTEND_URLS'];
+    } else {
+      process.env['TENANT_FRONTEND_URLS'] = originalTenantFrontendUrls;
+    }
+
+    if (originalBillingFrontendUrl === undefined) {
+      delete process.env['BILLING_FRONTEND_URL'];
+    } else {
+      process.env['BILLING_FRONTEND_URL'] = originalBillingFrontendUrl;
+    }
   });
 
   describe('initiatePayment', () => {
@@ -100,6 +119,42 @@ describe('PaymentOrchestrationService', () => {
       });
 
       await expect(service.initiatePayment('inv-1', 'sub-1', 'user-1')).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('uses tenant-specific stripe return urls', async () => {
+      process.env['BILLING_FRONTEND_URL'] = 'http://localhost:4500';
+      process.env['TENANT_FRONTEND_URLS'] = 'acme=https://billing.acme.com';
+
+      invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue({
+        id: 'inv-1',
+        subscriptionId: 'sub-1',
+        userId: 'user-1',
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 99.5,
+        currency: 'EUR',
+        invoiceNumber: 'INV-1',
+        paymentProcessor: 'stripe',
+      });
+      customerProfilesRepository.findByUserId.mockResolvedValue({
+        email: 'user@example.com',
+        stripeCustomerId: 'cus_1',
+      });
+      processor.createCheckoutSession.mockResolvedValue({
+        checkoutUrl: 'https://checkout.stripe.com/pay',
+        externalId: 'cs_1',
+      });
+      paymentAttemptsRepository.create.mockResolvedValue({ id: 'attempt-1' });
+      invoicesRepository.update.mockResolvedValue({});
+
+      await runWithTenantId('acme', () => service.initiatePayment('inv-1', 'sub-1', 'user-1'));
+
+      expect(processor.createCheckoutSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          successUrl: 'https://billing.acme.com/invoices?payment=success&subscriptionId=sub-1&invoiceRefId=inv-1',
+          cancelUrl: 'https://billing.acme.com/invoices?payment=cancel&subscriptionId=sub-1&invoiceRefId=inv-1',
+          metadata: expect.objectContaining({ tenantId: 'acme' }),
+        }),
+      );
     });
   });
 
@@ -150,6 +205,7 @@ describe('PaymentOrchestrationService', () => {
         invoiceId: 'inv-1',
         externalId: 'cs_1',
         status: 'succeeded',
+        tenantId: 'default',
       });
       paymentWebhookEventsRepository.exists.mockResolvedValue(false);
       paymentWebhookEventsRepository.create.mockResolvedValue({});
@@ -196,6 +252,7 @@ describe('PaymentOrchestrationService', () => {
         invoiceId: 'inv-1',
         externalId: 'cs_1',
         status: 'canceled',
+        tenantId: 'default',
       });
       paymentWebhookEventsRepository.exists.mockResolvedValue(false);
       paymentWebhookEventsRepository.create.mockResolvedValue({});
@@ -209,6 +266,26 @@ describe('PaymentOrchestrationService', () => {
         status: PaymentAttemptStatus.CANCELED,
       });
       expect(invoicesRepository.update).not.toHaveBeenCalled();
+    });
+    it('ignores webhook updates without tenantId metadata', async () => {
+      processor.verifyWebhookSignature.mockReturnValue(true);
+      processor.parseWebhookEvent.mockReturnValue({
+        eventId: 'evt_missing_tenant',
+        type: 'checkout.session.completed',
+        data: {},
+      });
+      processor.mapWebhookToPaymentUpdate.mockReturnValue({
+        invoiceId: 'inv-1',
+        externalId: 'cs_1',
+        status: 'succeeded',
+      });
+      paymentWebhookEventsRepository.exists.mockResolvedValue(false);
+      paymentWebhookEventsRepository.create.mockResolvedValue({});
+
+      await service.handleWebhook('stripe', Buffer.from('{}'), 'sig');
+
+      expect(invoicesRepository.update).not.toHaveBeenCalled();
+      expect(paymentWebhookEventsRepository.create).toHaveBeenCalled();
     });
   });
 });

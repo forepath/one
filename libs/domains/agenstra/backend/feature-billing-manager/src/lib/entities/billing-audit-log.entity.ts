@@ -17,6 +17,9 @@ export class BillingAuditLogEntity {
   @Column({ type: 'uuid', nullable: true, name: 'user_id' })
   userId?: string;
 
+  @Column({ type: 'varchar', length: 64, nullable: true, name: 'tenant_id' })
+  tenantId?: string;
+
   @Column({ type: 'varchar', length: 20, name: 'level' })
   level!: string;
 

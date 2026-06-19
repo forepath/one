@@ -7,6 +7,7 @@ import {
 } from '@forepath/identity/backend';
 import { EmailService } from '@forepath/shared/backend';
 import { Module, OnModuleInit } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
@@ -44,6 +45,7 @@ import { SubscriptionItemEntity } from './entities/subscription-item.entity';
 import { SubscriptionEntity } from './entities/subscription.entity';
 import { UsageRecordEntity } from './entities/usage-record.entity';
 import { BillingStatusGateway } from './gateways/billing-status.gateway';
+import { TenantUserGuard } from './guards/tenant-user.guard';
 import { PaymentProcessorFactory } from './payment-processors/payment-processor.factory';
 import { StripePaymentProcessor } from './payment-processors/processors/stripe-payment.processor';
 import { AdminBillNowEnqueueAdapter } from './queue/admin-bill-now-enqueue.adapter';
@@ -73,6 +75,7 @@ import { BackorderRetryJobHandler } from './services/backorder-retry.job-handler
 import { BackorderService } from './services/backorder.service';
 import { BillingAdminService } from './services/billing-admin.service';
 import { BillingAuditLogService } from './services/billing-audit-log.service';
+import { BillingTenantService } from './services/billing-tenant.service';
 import { BillingIssuerConfigService } from './services/billing-issuer-config.service';
 import { BillingScheduleService } from './services/billing-schedule.service';
 import { BillingStatisticsQueryService } from './services/billing-statistics-query.service';
@@ -348,6 +351,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     AdminBillNowService,
     BillingAdminService,
     BillingAuditLogService,
+    BillingTenantService,
     BillingStatisticsQueryService,
     InvoiceAdminService,
     ManualInvoiceService,
@@ -410,6 +414,11 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     UsersRepository,
     SocketAuthService,
     BillingStatusGateway,
+    TenantUserGuard,
+    {
+      provide: APP_GUARD,
+      useClass: TenantUserGuard,
+    },
   ],
   exports: [
     AdminBillNowService,
@@ -417,6 +426,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     BackorderService,
     BackorderRetryJobHandler,
     BillingScheduleService,
+    BillingTenantService,
     CancellationPolicyService,
     CloudflareDnsService,
     DigitaloceanProvisioningService,

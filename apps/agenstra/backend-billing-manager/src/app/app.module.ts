@@ -24,6 +24,7 @@ const authMethod = getAuthenticationMethod();
     TypeOrmModule.forRoot(getTypeOrmOptionsForQueueRole(typeormConfig)),
     BillingQueueModule,
     ThrottlerModule.forRoot(getRateLimitConfig()),
+    BillingModule,
     ...(authMethod === 'keycloak'
       ? [
           KeycloakModule,
@@ -32,7 +33,6 @@ const authMethod = getAuthenticationMethod();
         ]
       : []),
     ...(authMethod === 'users' ? [BillingUsersAuthModule] : []),
-    BillingModule,
     MonitoringModule,
   ],
   providers: [

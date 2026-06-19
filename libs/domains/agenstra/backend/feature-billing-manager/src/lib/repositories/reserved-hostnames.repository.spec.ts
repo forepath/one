@@ -1,73 +1,107 @@
-import { Test } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-
-import { ReservedHostnameEntity } from '../entities/reserved-hostname.entity';
+import { runWithTenantId } from '@forepath/shared/backend';
 
 import { ReservedHostnamesRepository } from './reserved-hostnames.repository';
 
 describe('ReservedHostnamesRepository', () => {
-  let repository: jest.Mocked<Repository<ReservedHostnameEntity>>;
+  const mockGetCount = jest.fn();
+  const mockGetOne = jest.fn();
+  const mockInnerJoin = jest.fn().mockReturnThis();
+  const mockWhere = jest.fn().mockReturnThis();
+  const mockAndWhere = jest.fn().mockReturnThis();
+  const createQueryBuilderReturn = {
+    innerJoin: mockInnerJoin,
+    where: mockWhere,
+    andWhere: mockAndWhere,
+    getCount: mockGetCount,
+    getOne: mockGetOne,
+  };
+  const mockRepository = {
+    create: jest.fn(),
+    save: jest.fn(),
+    delete: jest.fn(),
+    createQueryBuilder: jest.fn().mockReturnValue(createQueryBuilderReturn),
+  };
   let reservedHostnamesRepository: ReservedHostnamesRepository;
 
-  beforeEach(async () => {
-    repository = {
-      count: jest.fn(),
-      create: jest.fn(),
-      save: jest.fn(),
-      delete: jest.fn(),
-      findOne: jest.fn(),
-    } as never;
-
-    const module = await Test.createTestingModule({
-      providers: [
-        ReservedHostnamesRepository,
-        { provide: getRepositoryToken(ReservedHostnameEntity), useValue: repository },
-      ],
-    }).compile();
-
-    reservedHostnamesRepository = module.get(ReservedHostnamesRepository);
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRepository.createQueryBuilder.mockReturnValue(createQueryBuilderReturn);
+    mockInnerJoin.mockReturnThis();
+    mockWhere.mockReturnThis();
+    mockAndWhere.mockReturnThis();
+    reservedHostnamesRepository = new ReservedHostnamesRepository(mockRepository as never);
   });
 
-  it('existsByHostname returns true when count > 0', async () => {
-    repository.count.mockResolvedValue(1);
-    expect(await reservedHostnamesRepository.existsByHostname('foo')).toBe(true);
-    expect(repository.count).toHaveBeenCalledWith({ where: { hostname: 'foo' } });
+  it('existsByHostname returns true when count > 0 in tenant', async () => {
+    mockGetCount.mockResolvedValue(1);
+
+    const result = await runWithTenantId('default', () => reservedHostnamesRepository.existsByHostname('foo'));
+
+    expect(result).toBe(true);
+    expect(mockInnerJoin).toHaveBeenNthCalledWith(1, 'host.subscriptionItem', 'item');
+    expect(mockInnerJoin).toHaveBeenNthCalledWith(2, 'item.subscription', 'sub');
+    expect(mockInnerJoin).toHaveBeenNthCalledWith(3, 'users', 'user', 'user.id = sub.user_id');
+    expect(mockAndWhere).toHaveBeenCalledWith('user.tenant_id = :tenantId', { tenantId: 'default' });
   });
 
   it('existsByHostname returns false when count is 0', async () => {
-    repository.count.mockResolvedValue(0);
-    expect(await reservedHostnamesRepository.existsByHostname('foo')).toBe(false);
+    mockGetCount.mockResolvedValue(0);
+
+    const result = await runWithTenantId('default', () => reservedHostnamesRepository.existsByHostname('foo'));
+
+    expect(result).toBe(false);
   });
 
   it('create saves entity with hostname and subscriptionItemId', async () => {
     const entity = { id: 'e1', hostname: 'bar', subscriptionItemId: 'sub-1' };
 
-    repository.create.mockReturnValue(entity as never);
-    repository.save.mockResolvedValue(entity as never);
+    mockRepository.create.mockReturnValue(entity);
+    mockRepository.save.mockResolvedValue(entity);
     const result = await reservedHostnamesRepository.create('bar', 'sub-1');
 
-    expect(repository.create).toHaveBeenCalledWith({ hostname: 'bar', subscriptionItemId: 'sub-1' });
-    expect(repository.save).toHaveBeenCalledWith(entity);
+    expect(mockRepository.create).toHaveBeenCalledWith({ hostname: 'bar', subscriptionItemId: 'sub-1' });
     expect(result).toEqual(entity);
   });
 
-  it('deleteBySubscriptionItemId deletes by subscriptionItemId', async () => {
-    repository.delete.mockResolvedValue({ affected: 1 } as never);
-    await reservedHostnamesRepository.deleteBySubscriptionItemId('sub-1');
-    expect(repository.delete).toHaveBeenCalledWith({ subscriptionItemId: 'sub-1' });
-  });
-
-  it('findBySubscriptionItemId returns entity when found', async () => {
+  it('deleteBySubscriptionItemId deletes tenant-scoped row', async () => {
     const entity = { id: 'e1', hostname: 'bar', subscriptionItemId: 'sub-1' };
 
-    repository.findOne.mockResolvedValue(entity as never);
-    expect(await reservedHostnamesRepository.findBySubscriptionItemId('sub-1')).toEqual(entity);
-    expect(repository.findOne).toHaveBeenCalledWith({ where: { subscriptionItemId: 'sub-1' } });
+    mockGetOne.mockResolvedValue(entity);
+    mockRepository.delete.mockResolvedValue({ affected: 1 });
+
+    await runWithTenantId('default', () => reservedHostnamesRepository.deleteBySubscriptionItemId('sub-1'));
+
+    expect(mockRepository.delete).toHaveBeenCalledWith('e1');
+  });
+
+  it('deleteBySubscriptionItemId is a no-op when hostname is not found', async () => {
+    mockGetOne.mockResolvedValue(null);
+
+    await runWithTenantId('default', () => reservedHostnamesRepository.deleteBySubscriptionItemId('sub-1'));
+
+    expect(mockRepository.delete).not.toHaveBeenCalled();
+  });
+
+  it('findBySubscriptionItemId returns entity when found in tenant', async () => {
+    const entity = { id: 'e1', hostname: 'bar', subscriptionItemId: 'sub-1' };
+
+    mockGetOne.mockResolvedValue(entity);
+
+    const result = await runWithTenantId('default', () =>
+      reservedHostnamesRepository.findBySubscriptionItemId('sub-1'),
+    );
+
+    expect(result).toEqual(entity);
+    expect(mockAndWhere).toHaveBeenCalledWith('user.tenant_id = :tenantId', { tenantId: 'default' });
   });
 
   it('findBySubscriptionItemId returns null when not found', async () => {
-    repository.findOne.mockResolvedValue(null);
-    expect(await reservedHostnamesRepository.findBySubscriptionItemId('sub-1')).toBeNull();
+    mockGetOne.mockResolvedValue(null);
+
+    const result = await runWithTenantId('default', () =>
+      reservedHostnamesRepository.findBySubscriptionItemId('sub-1'),
+    );
+
+    expect(result).toBeNull();
   });
 });

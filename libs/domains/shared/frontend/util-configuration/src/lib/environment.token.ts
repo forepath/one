@@ -10,11 +10,21 @@ function mergeEnvironmentOverrides(base: Environment, overrides: Partial<Environ
     return base;
   }
 
-  // Shallow merge is sufficient for our use cases; we trust remote config to provide full objects
-  // where necessary. We assert the type to avoid over-constraining optional fields.
   return {
     ...base,
     ...overrides,
+    controller: overrides.controller ? { ...base.controller, ...overrides.controller } : base.controller,
+    billing: overrides.billing ? { ...base.billing, ...overrides.billing } : base.billing,
+    authentication: overrides.authentication
+      ? { ...base.authentication, ...overrides.authentication }
+      : base.authentication,
+    chatModelOptions: overrides.chatModelOptions
+      ? { ...base.chatModelOptions, ...overrides.chatModelOptions }
+      : base.chatModelOptions,
+    editor: overrides.editor ? { ...base.editor, ...overrides.editor } : base.editor,
+    deployment: overrides.deployment ? { ...base.deployment, ...overrides.deployment } : base.deployment,
+    cookieConsent: overrides.cookieConsent ? { ...base.cookieConsent, ...overrides.cookieConsent } : base.cookieConsent,
+    socialPreview: overrides.socialPreview ? { ...base.socialPreview, ...overrides.socialPreview } : base.socialPreview,
   } as Environment;
 }
 

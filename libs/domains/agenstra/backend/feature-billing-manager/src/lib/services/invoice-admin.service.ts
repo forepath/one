@@ -36,7 +36,7 @@ export class InvoiceAdminService {
 
     await Promise.all(
       userIds.map(async (userId) => {
-        const user = await this.usersRepository.findById(userId);
+        const user = await this.usersRepository.findByIdForTenant(userId);
 
         if (user?.email) {
           userEmailById.set(userId, user.email);
@@ -145,7 +145,7 @@ export class InvoiceAdminService {
 
   private async mapAdminItem(invoice: InvoiceEntity): Promise<AdminInvoiceListItemDto> {
     const base = this.invoiceService.mapToResponse(invoice, invoice.subscription?.number);
-    const user = await this.usersRepository.findById(invoice.userId);
+    const user = await this.usersRepository.findByIdForTenant(invoice.userId);
 
     return {
       ...base,
