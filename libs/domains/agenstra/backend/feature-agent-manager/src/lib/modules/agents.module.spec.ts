@@ -1,4 +1,13 @@
 import { PasswordService } from '@forepath/identity/backend';
+import {
+  AGENT_PROVIDER_REGISTRY,
+  AgentProvider,
+  CHAT_FILTER_REGISTRY,
+  ChatFilter,
+  PIPELINE_PROVIDER_REGISTRY,
+  PipelineProvider,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
@@ -14,20 +23,6 @@ import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
-import { AgentProviderFactory } from '../providers/agent-provider.factory';
-import { CursorAgentProvider } from '../providers/agents/cursor-agent.provider';
-import { OpenClawAgentProvider } from '../providers/agents/openclaw-agent.provider';
-import { OpenCodeAgentProvider } from '../providers/agents/opencode-agent.provider';
-import { ChatFilterFactory } from '../providers/chat-filter.factory';
-import { BidirectionalChatFilter } from '../providers/filters/bidirectional-chat-filter';
-import { DatabaseRegexIncomingChatFilter } from '../providers/filters/database-regex-incoming-chat-filter';
-import { DatabaseRegexOutgoingChatFilter } from '../providers/filters/database-regex-outgoing-chat-filter';
-import { IncomingChatFilter } from '../providers/filters/incoming-chat-filter';
-import { NoopChatFilter } from '../providers/filters/noop-chat-filter';
-import { OutgoingChatFilter } from '../providers/filters/outgoing-chat-filter';
-import { PipelineProviderFactory } from '../providers/pipeline-provider.factory';
-import { GitHubProvider } from '../providers/pipelines/github.provider';
-import { GitLabProvider } from '../providers/pipelines/gitlab.provider';
 import { AgentEnvironmentVariablesRepository } from '../repositories/agent-environment-variables.repository';
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
 import { AgentsRepository } from '../repositories/agents.repository';
@@ -144,127 +139,36 @@ describe('AgentsModule', () => {
     expect(repository).toBeDefined();
   });
 
-  it('should provide AgentProviderFactory', () => {
-    const factory = module.get<AgentProviderFactory>(AgentProviderFactory);
+  it('should provide agent provider registry with default providers', () => {
+    const registry = module.get<ProviderRegistry<AgentProvider>>(AGENT_PROVIDER_REGISTRY);
 
-    expect(factory).toBeDefined();
-    expect(factory).toBeInstanceOf(AgentProviderFactory);
+    expect(registry).toBeDefined();
+    expect(registry.hasProvider('cursor')).toBe(true);
+    expect(registry.hasProvider('opencode')).toBe(true);
+    expect(registry.hasProvider('openclaw')).toBe(true);
+    expect(registry.getProvider('cursor').getType()).toBe('cursor');
   });
 
-  it('should provide CursorAgentProvider', () => {
-    const provider = module.get<CursorAgentProvider>(CursorAgentProvider);
+  it('should provide chat filter registry with default filters', () => {
+    const registry = module.get<ProviderRegistry<ChatFilter>>(CHAT_FILTER_REGISTRY);
 
-    expect(provider).toBeDefined();
-    expect(provider).toBeInstanceOf(CursorAgentProvider);
+    expect(registry).toBeDefined();
+    expect(registry.hasProvider('noop')).toBe(true);
+    expect(registry.hasProvider('incoming-example')).toBe(true);
+    expect(registry.hasProvider('outgoing-example')).toBe(true);
+    expect(registry.hasProvider('bidirectional-example')).toBe(true);
+    expect(registry.hasProvider('database-regex-incoming')).toBe(true);
+    expect(registry.hasProvider('database-regex-outgoing')).toBe(true);
   });
 
-  it('should provide OpenCodeAgentProvider', () => {
-    const provider = module.get<OpenCodeAgentProvider>(OpenCodeAgentProvider);
+  it('should provide pipeline provider registry with default providers', () => {
+    const registry = module.get<ProviderRegistry<PipelineProvider>>(PIPELINE_PROVIDER_REGISTRY);
 
-    expect(provider).toBeDefined();
-    expect(provider).toBeInstanceOf(OpenCodeAgentProvider);
-  });
-
-  it('should provide OpenClawAgentProvider', () => {
-    const provider = module.get<OpenClawAgentProvider>(OpenClawAgentProvider);
-
-    expect(provider).toBeDefined();
-    expect(provider).toBeInstanceOf(OpenClawAgentProvider);
-  });
-
-  it('should register CursorAgentProvider and OpenCodeAgentProvider via AGENT_PROVIDER_INIT factory', () => {
-    const factory = module.get<AgentProviderFactory>(AgentProviderFactory);
-    const cursorProvider = module.get<CursorAgentProvider>(CursorAgentProvider);
-    const opencodeProvider = module.get<OpenCodeAgentProvider>(OpenCodeAgentProvider);
-
-    // Verify the provider is registered
-    expect(factory.hasProvider('cursor')).toBe(true);
-    expect(factory.getProvider('cursor')).toBe(cursorProvider);
-    expect(cursorProvider.getType()).toBe('cursor');
-
-    expect(factory.hasProvider('opencode')).toBe(true);
-    expect(factory.getProvider('opencode')).toBe(opencodeProvider);
-    expect(opencodeProvider.getType()).toBe('opencode');
-  });
-
-  it('should initialize AGENT_PROVIDER_INIT factory', () => {
-    const initValue = module.get<boolean>('AGENT_PROVIDER_INIT');
-
-    expect(initValue).toBe(true);
-  });
-
-  it('should provide ChatFilterFactory', () => {
-    const factory = module.get<ChatFilterFactory>(ChatFilterFactory);
-
-    expect(factory).toBeDefined();
-    expect(factory).toBeInstanceOf(ChatFilterFactory);
-  });
-
-  it('should provide NoopChatFilter', () => {
-    const filter = module.get<NoopChatFilter>(NoopChatFilter);
-
-    expect(filter).toBeDefined();
-    expect(filter).toBeInstanceOf(NoopChatFilter);
-  });
-
-  it('should provide IncomingChatFilter', () => {
-    const filter = module.get<IncomingChatFilter>(IncomingChatFilter);
-
-    expect(filter).toBeDefined();
-    expect(filter).toBeInstanceOf(IncomingChatFilter);
-  });
-
-  it('should provide OutgoingChatFilter', () => {
-    const filter = module.get<OutgoingChatFilter>(OutgoingChatFilter);
-
-    expect(filter).toBeDefined();
-    expect(filter).toBeInstanceOf(OutgoingChatFilter);
-  });
-
-  it('should provide BidirectionalChatFilter', () => {
-    const filter = module.get<BidirectionalChatFilter>(BidirectionalChatFilter);
-
-    expect(filter).toBeDefined();
-    expect(filter).toBeInstanceOf(BidirectionalChatFilter);
-  });
-
-  it('should register all filters via CHAT_FILTER_INIT factory', () => {
-    const factory = module.get<ChatFilterFactory>(ChatFilterFactory);
-    const noopFilter = module.get<NoopChatFilter>(NoopChatFilter);
-    const incomingFilter = module.get<IncomingChatFilter>(IncomingChatFilter);
-    const outgoingFilter = module.get<OutgoingChatFilter>(OutgoingChatFilter);
-    const bidirectionalFilter = module.get<BidirectionalChatFilter>(BidirectionalChatFilter);
-
-    // Verify all filters are registered
-    expect(factory.hasFilter('noop')).toBe(true);
-    expect(factory.getFilter('noop')).toBe(noopFilter);
-    expect(noopFilter.getType()).toBe('noop');
-
-    expect(factory.hasFilter('incoming-example')).toBe(true);
-    expect(factory.getFilter('incoming-example')).toBe(incomingFilter);
-    expect(incomingFilter.getType()).toBe('incoming-example');
-
-    expect(factory.hasFilter('outgoing-example')).toBe(true);
-    expect(factory.getFilter('outgoing-example')).toBe(outgoingFilter);
-    expect(outgoingFilter.getType()).toBe('outgoing-example');
-
-    expect(factory.hasFilter('bidirectional-example')).toBe(true);
-    expect(factory.getFilter('bidirectional-example')).toBe(bidirectionalFilter);
-    expect(bidirectionalFilter.getType()).toBe('bidirectional-example');
-
-    const dbIn = module.get(DatabaseRegexIncomingChatFilter);
-    const dbOut = module.get(DatabaseRegexOutgoingChatFilter);
-
-    expect(factory.hasFilter('database-regex-incoming')).toBe(true);
-    expect(factory.getFilter('database-regex-incoming')).toBe(dbIn);
-    expect(factory.hasFilter('database-regex-outgoing')).toBe(true);
-    expect(factory.getFilter('database-regex-outgoing')).toBe(dbOut);
-  });
-
-  it('should initialize CHAT_FILTER_INIT factory', () => {
-    const initValue = module.get<boolean>('CHAT_FILTER_INIT');
-
-    expect(initValue).toBe(true);
+    expect(registry).toBeDefined();
+    expect(registry.hasProvider('github')).toBe(true);
+    expect(registry.hasProvider('gitlab')).toBe(true);
+    expect(registry.getProvider('github').getType()).toBe('github');
+    expect(registry.getProvider('gitlab').getType()).toBe('gitlab');
   });
 
   it('should provide DeploymentsService', () => {
@@ -286,13 +190,6 @@ describe('AgentsModule', () => {
 
     expect(repository).toBeDefined();
     expect(repository).toBeInstanceOf(DeploymentRunsRepository);
-  });
-
-  it('should provide PipelineProviderFactory', () => {
-    const factory = module.get<PipelineProviderFactory>(PipelineProviderFactory);
-
-    expect(factory).toBeDefined();
-    expect(factory).toBeInstanceOf(PipelineProviderFactory);
   });
 
   it('should provide AgentEnvironmentVariablesService', () => {
@@ -321,41 +218,6 @@ describe('AgentsModule', () => {
 
     expect(repository).toBeDefined();
     expect(repository).toBeInstanceOf(AgentMessagesRepository);
-  });
-
-  it('should provide GitHubProvider', () => {
-    const provider = module.get<GitHubProvider>(GitHubProvider);
-
-    expect(provider).toBeDefined();
-    expect(provider).toBeInstanceOf(GitHubProvider);
-  });
-
-  it('should provide GitLabProvider', () => {
-    const provider = module.get<GitLabProvider>(GitLabProvider);
-
-    expect(provider).toBeDefined();
-    expect(provider).toBeInstanceOf(GitLabProvider);
-  });
-
-  it('should register GitHubProvider and GitLabProvider via PIPELINE_PROVIDER_INIT factory', () => {
-    const factory = module.get<PipelineProviderFactory>(PipelineProviderFactory);
-    const githubProvider = module.get<GitHubProvider>(GitHubProvider);
-    const gitlabProvider = module.get<GitLabProvider>(GitLabProvider);
-
-    // Verify the providers are registered
-    expect(factory.hasProvider('github')).toBe(true);
-    expect(factory.getProvider('github')).toBe(githubProvider);
-    expect(githubProvider.getType()).toBe('github');
-
-    expect(factory.hasProvider('gitlab')).toBe(true);
-    expect(factory.getProvider('gitlab')).toBe(gitlabProvider);
-    expect(gitlabProvider.getType()).toBe('gitlab');
-  });
-
-  it('should initialize PIPELINE_PROVIDER_INIT factory', () => {
-    const initValue = module.get<boolean>('PIPELINE_PROVIDER_INIT');
-
-    expect(initValue).toBe(true);
   });
 
   it('should provide AgentsDeploymentsController', () => {

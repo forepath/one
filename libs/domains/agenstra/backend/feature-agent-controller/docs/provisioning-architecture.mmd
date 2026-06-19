@@ -1,23 +1,23 @@
 graph TB
     subgraph "Client Controller"
         CC[ClientsController]
-        CC --> |GET /provisioning/providers| PPF[ProvisioningProviderFactory]
-        CC --> |GET /provisioning/providers/:type/server-types| PPF
+        CC --> |GET /provisioning/providers| PPR[PROVISIONING_PROVIDER_REGISTRY]
+        CC --> |GET /provisioning/providers/:type/server-types| PPR
         CC --> |POST /provisioning/provision| PS[ProvisioningService]
         CC --> |GET /:id/provisioning/info| PS
         CC --> |DELETE /:id/provisioning| PS
     end
 
     subgraph "Provisioning Service"
-        PS --> |Uses| PPF
+        PS --> |Uses| PPR
         PS --> |Creates| CS[ClientsService]
         PS --> |Stores| PRR[ProvisioningReferencesRepository]
     end
 
-    subgraph "Provider Factory"
-        PPF --> |Manages| HP[HetznerProvider]
-        PPF --> |Manages| DOP[DigitalOceanProvider]
-        PPF --> |Manages| FP[Future Providers...]
+    subgraph "Plugin Host"
+        PPR --> |Manages| HP[HetznerProvider]
+        PPR --> |Manages| DOP[DigitalOceanProvider]
+        PPR --> |Manages| FP[Future Providers...]
     end
 
     subgraph "Hetzner Provider"
@@ -46,7 +46,7 @@ graph TB
 
     style CC fill:#e1f5ff
     style PS fill:#fff9c4
-    style PPF fill:#f3e5f5
+    style PPR fill:#f3e5f5
     style HP fill:#e8f5e9
     style DOP fill:#e8f5e9
     style AM fill:#c8e6c9

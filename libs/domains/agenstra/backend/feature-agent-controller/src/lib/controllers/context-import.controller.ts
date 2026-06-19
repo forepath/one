@@ -5,6 +5,11 @@
  */
 import { UserRole, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
 import {
+  EXTERNAL_IMPORT_PROVIDER_REGISTRY,
+  ExternalContextImportProvider,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
+import {
   Body,
   Controller,
   Delete,
@@ -12,6 +17,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
@@ -27,7 +33,7 @@ import { CreateExternalImportConfigDto } from '../dto/context-import/create-exte
 import { ExternalImportConfigResponseDto } from '../dto/context-import/external-import-config-response.dto';
 import { UpdateAtlassianSiteConnectionDto } from '../dto/context-import/update-atlassian-site-connection.dto';
 import { UpdateExternalImportConfigDto } from '../dto/context-import/update-external-import-config.dto';
-import { AtlassianImportProvider } from '../providers/import/atlassian-external-import.provider';
+import { ExternalImportProviderId } from '../entities/external-import.enums';
 import { AtlassianSiteConnectionService } from '../services/atlassian-site-connection.service';
 import { ContextImportOrchestratorService } from '../services/context-import-orchestrator.service';
 import { ExternalImportConfigService } from '../services/external-import-config.service';
@@ -40,7 +46,8 @@ export class ContextImportController {
     private readonly configs: ExternalImportConfigService,
     private readonly orchestrator: ContextImportOrchestratorService,
     private readonly markers: ExternalImportSyncMarkerService,
-    private readonly atlassianProvider: AtlassianImportProvider,
+    @Inject(EXTERNAL_IMPORT_PROVIDER_REGISTRY)
+    private readonly importProviderRegistry: ProviderRegistry<ExternalContextImportProvider>,
   ) {}
 
   private assertAdmin(req?: RequestWithUser): void {
@@ -112,7 +119,7 @@ export class ContextImportController {
   ): Promise<{ ok: boolean; message?: string }> {
     this.assertAdmin(req);
 
-    return await this.atlassianProvider.testConnection(id);
+    return await this.importProviderRegistry.getProvider(ExternalImportProviderId.ATLASSIAN).testConnection?.(id);
   }
 
   @Get('configs')

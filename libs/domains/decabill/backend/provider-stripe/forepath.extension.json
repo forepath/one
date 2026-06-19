@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "stripe",
+  "kind": "payment-processor",
+  "name": "Stripe",
+  "description": "Stripe payment processor extension.",
+  "version": "0.0.0"
+}

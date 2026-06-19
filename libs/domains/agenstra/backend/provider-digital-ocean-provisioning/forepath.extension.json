@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "digital-ocean",
+  "kind": "provisioning-provider",
+  "name": "DigitalOceanProvisioning",
+  "description": "Digital Ocean Provisioning provisioning provider extension.",
+  "version": "0.0.0"
+}

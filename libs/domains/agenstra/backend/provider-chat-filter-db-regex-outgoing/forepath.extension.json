@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "database-regex-outgoing",
+  "kind": "chat-filter",
+  "name": "ChatFilterDbRegexOutgoing",
+  "description": "Chat Filter Db Regex Outgoing chat filter extension.",
+  "version": "0.0.0"
+}

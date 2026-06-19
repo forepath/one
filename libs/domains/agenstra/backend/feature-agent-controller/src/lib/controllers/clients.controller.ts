@@ -28,6 +28,11 @@ import {
   UserRole,
 } from '@forepath/identity/backend';
 import {
+  PROVISIONING_PROVIDER_REGISTRY,
+  ProvisioningProvider,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
+import {
   BadRequestException,
   Body,
   Controller,
@@ -36,6 +41,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
@@ -52,7 +58,6 @@ import { CreateClientDto } from '../dto/create-client.dto';
 import { ProvisionServerDto } from '../dto/provision-server.dto';
 import { ProvisionedServerResponseDto } from '../dto/provisioned-server-response.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
-import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
@@ -72,7 +77,8 @@ export class ClientsController {
     private readonly clientAgentFileSystemProxyService: ClientAgentFileSystemProxyService,
     private readonly clientAgentEnvironmentVariablesProxyService: ClientAgentEnvironmentVariablesProxyService,
     private readonly provisioningService: ProvisioningService,
-    private readonly provisioningProviderFactory: ProvisioningProviderFactory,
+    @Inject(PROVISIONING_PROVIDER_REGISTRY)
+    private readonly provisioningProviderRegistry: ProviderRegistry<ProvisioningProvider>,
     private readonly clientUsersService: ClientUsersService,
     private readonly clientsRepository: ClientsRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
@@ -664,7 +670,7 @@ export class ClientsController {
    */
   @Get('provisioning/providers')
   async getProvisioningProviders(): Promise<Array<{ type: string; displayName: string }>> {
-    return this.provisioningProviderFactory.getAllProviders().map((provider) => ({
+    return this.provisioningProviderRegistry.getAll().map((provider) => ({
       type: provider.getType(),
       displayName: provider.getDisplayName(),
     }));
@@ -677,13 +683,13 @@ export class ClientsController {
    */
   @Get('provisioning/providers/:providerType/server-types')
   async getServerTypes(@Param('providerType') providerType: string) {
-    if (!this.provisioningProviderFactory.hasProvider(providerType)) {
+    if (!this.provisioningProviderRegistry.hasProvider(providerType)) {
       throw new BadRequestException(
-        `Provider type '${providerType}' is not available. Available types: ${this.provisioningProviderFactory.getRegisteredTypes().join(', ')}`,
+        `Provider type '${providerType}' is not available. Available types: ${this.provisioningProviderRegistry.getRegisteredIds().join(', ')}`,
       );
     }
 
-    const provider = this.provisioningProviderFactory.getProvider(providerType);
+    const provider = this.provisioningProviderRegistry.getProvider(providerType);
 
     return await provider.getServerTypes();
   }

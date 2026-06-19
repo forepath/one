@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "incoming-example",
+  "kind": "chat-filter",
+  "name": "ChatFilterIncoming",
+  "description": "Chat Filter Incoming chat filter extension.",
+  "version": "0.0.0"
+}

@@ -47,7 +47,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `AgentsService` - Business logic for agents
 - `AgentsGateway` - WebSocket gateway for agent communication
 - `DockerService` - Container management and log streaming
-- `AgentProviderFactory` - Plugin-based agent provider system
+- `ProviderRegistry` (via `AgenstraPluginHostModule`) — Config-driven agent, pipeline, and chat-filter extensions
 - Regex filter rule services for `/api/agents-filters`
 
 **Dependencies**:

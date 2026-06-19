@@ -1,0 +1,27 @@
+import { DynamicModule, Module, Type } from '@nestjs/common';
+
+import type { <%= contractName %> } from '@forepath/<%= domain %>/backend/util-plugin-host';
+import type { ForepathExtension } from '@forepath/shared/backend/util-extension-core';
+
+import { <%= className %>Provider } from './<%= fileName %>.provider';
+
+@Module({
+  providers: [<%= className %>Provider],
+  exports: [<%= className %>Provider],
+})
+class <%= className %>ExtensionModule {}
+
+export function <%= extensionFactoryName %>(): ForepathExtension<<%= contractName %>> {
+  return {
+    register(): DynamicModule {
+      return {
+        module: <%= className %>ExtensionModule,
+        providers: [<%= className %>Provider],
+        exports: [<%= className %>Provider],
+      };
+    },
+    getInstanceToken(): Type<<%= contractName %>> {
+      return <%= className %>Provider;
+    },
+  };
+}

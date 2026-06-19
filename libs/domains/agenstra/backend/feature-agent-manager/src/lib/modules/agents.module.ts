@@ -1,4 +1,13 @@
 import { PasswordService } from '@forepath/identity/backend';
+import {
+  AGENSTRA_EXTENSION_KINDS,
+  AgentProviderDepsModule,
+  AGENT_PROVIDER_REGISTRY,
+  AgenstraPluginHostModule,
+  CHAT_FILTER_REGISTRY,
+  ChatFilterDepsModule,
+  PIPELINE_PROVIDER_REGISTRY,
+} from '@forepath/agenstra/backend/util-plugin-host';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -21,20 +30,6 @@ import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
-import { AgentProviderFactory } from '../providers/agent-provider.factory';
-import { CursorAgentProvider } from '../providers/agents/cursor-agent.provider';
-import { OpenClawAgentProvider } from '../providers/agents/openclaw-agent.provider';
-import { OpenCodeAgentProvider } from '../providers/agents/opencode-agent.provider';
-import { ChatFilterFactory } from '../providers/chat-filter.factory';
-import { BidirectionalChatFilter } from '../providers/filters/bidirectional-chat-filter';
-import { DatabaseRegexIncomingChatFilter } from '../providers/filters/database-regex-incoming-chat-filter';
-import { DatabaseRegexOutgoingChatFilter } from '../providers/filters/database-regex-outgoing-chat-filter';
-import { IncomingChatFilter } from '../providers/filters/incoming-chat-filter';
-import { NoopChatFilter } from '../providers/filters/noop-chat-filter';
-import { OutgoingChatFilter } from '../providers/filters/outgoing-chat-filter';
-import { PipelineProviderFactory } from '../providers/pipeline-provider.factory';
-import { GitHubProvider } from '../providers/pipelines/github.provider';
-import { GitLabProvider } from '../providers/pipelines/gitlab.provider';
 import { AgentEnvironmentVariablesRepository } from '../repositories/agent-environment-variables.repository';
 import { AgentMessageEventsRepository } from '../repositories/agent-message-events.repository';
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
@@ -61,6 +56,26 @@ import { RegexFilterRulesCacheService } from '../services/regex-filter-rules-cac
 import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-evaluate.service';
 import { WorkspaceConfigurationOverridesService } from '../services/workspace-configuration-overrides.service';
 
+const DEFAULT_AGENT_PROVIDERS = [
+  '@forepath/agenstra/backend/provider-cursor',
+  '@forepath/agenstra/backend/provider-opencode',
+  '@forepath/agenstra/backend/provider-openclaw',
+] as const;
+
+const DEFAULT_PIPELINE_PROVIDERS = [
+  '@forepath/agenstra/backend/provider-github-pipeline',
+  '@forepath/agenstra/backend/provider-gitlab-pipeline',
+] as const;
+
+const DEFAULT_CHAT_FILTERS = [
+  '@forepath/agenstra/backend/provider-chat-filter-noop',
+  '@forepath/agenstra/backend/provider-chat-filter-incoming',
+  '@forepath/agenstra/backend/provider-chat-filter-outgoing',
+  '@forepath/agenstra/backend/provider-chat-filter-bidirectional',
+  '@forepath/agenstra/backend/provider-chat-filter-db-regex-incoming',
+  '@forepath/agenstra/backend/provider-chat-filter-db-regex-outgoing',
+] as const;
+
 /**
  * Module for agent management feature.
  * Provides controllers, services, and repository for agent CRUD operations and file system operations.
@@ -77,6 +92,33 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
       RegexFilterRuleEntity,
       WorkspaceConfigurationOverrideEntity,
     ]),
+    AgentProviderDepsModule.forRoot({
+      providers: [DockerService],
+      exports: [DockerService],
+    }),
+    ChatFilterDepsModule.forRoot({
+      imports: [TypeOrmModule.forFeature([RegexFilterRuleEntity])],
+      providers: [RegexFilterRulesRepository, RegexFilterRulesCacheService, RegexFilterRulesEvaluateService],
+      exports: [RegexFilterRulesEvaluateService],
+    }),
+    AgenstraPluginHostModule.forRootAsync({
+      kind: AGENSTRA_EXTENSION_KINDS.AGENT_PROVIDER,
+      registryToken: AGENT_PROVIDER_REGISTRY,
+      extensionsEnvKey: 'AGENSTRA_AGENT_PROVIDER_EXTENSIONS',
+      defaultExtensions: DEFAULT_AGENT_PROVIDERS,
+    }),
+    AgenstraPluginHostModule.forRootAsync({
+      kind: AGENSTRA_EXTENSION_KINDS.PIPELINE_PROVIDER,
+      registryToken: PIPELINE_PROVIDER_REGISTRY,
+      extensionsEnvKey: 'AGENSTRA_PIPELINE_PROVIDER_EXTENSIONS',
+      defaultExtensions: DEFAULT_PIPELINE_PROVIDERS,
+    }),
+    AgenstraPluginHostModule.forRootAsync({
+      kind: AGENSTRA_EXTENSION_KINDS.CHAT_FILTER,
+      registryToken: CHAT_FILTER_REGISTRY,
+      extensionsEnvKey: 'AGENSTRA_CHAT_FILTER_EXTENSIONS',
+      defaultExtensions: DEFAULT_CHAT_FILTERS,
+    }),
   ],
   controllers: [
     AgentsController,
@@ -112,86 +154,12 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
     DeploymentConfigurationsRepository,
     DeploymentRunsRepository,
     DockerService,
-    AgentProviderFactory,
-    CursorAgentProvider,
-    OpenCodeAgentProvider,
-    OpenClawAgentProvider,
-    PipelineProviderFactory,
-    GitHubProvider,
-    GitLabProvider,
-    ChatFilterFactory,
-    NoopChatFilter,
-    IncomingChatFilter,
-    OutgoingChatFilter,
-    BidirectionalChatFilter,
     RegexFilterRulesRepository,
     RegexFilterRulesCacheService,
     RegexFilterRulesEvaluateService,
     AgentsFiltersService,
     WorkspaceConfigurationOverridesRepository,
     WorkspaceConfigurationOverridesService,
-    DatabaseRegexIncomingChatFilter,
-    DatabaseRegexOutgoingChatFilter,
-    {
-      provide: 'AGENT_PROVIDER_INIT',
-      useFactory: (
-        factory: AgentProviderFactory,
-        cursorProvider: CursorAgentProvider,
-        opencodeProvider: OpenCodeAgentProvider,
-        openclawProvider: OpenClawAgentProvider,
-      ) => {
-        factory.registerProvider(cursorProvider);
-        factory.registerProvider(opencodeProvider);
-        factory.registerProvider(openclawProvider);
-
-        return true;
-      },
-      inject: [AgentProviderFactory, CursorAgentProvider, OpenCodeAgentProvider, OpenClawAgentProvider],
-    },
-    {
-      provide: 'PIPELINE_PROVIDER_INIT',
-      useFactory: (
-        factory: PipelineProviderFactory,
-        githubProvider: GitHubProvider,
-        gitlabProvider: GitLabProvider,
-      ) => {
-        factory.registerProvider(githubProvider);
-        factory.registerProvider(gitlabProvider);
-
-        return true;
-      },
-      inject: [PipelineProviderFactory, GitHubProvider, GitLabProvider],
-    },
-    {
-      provide: 'CHAT_FILTER_INIT',
-      useFactory: (
-        factory: ChatFilterFactory,
-        noopFilter: NoopChatFilter,
-        incomingFilter: IncomingChatFilter,
-        outgoingFilter: OutgoingChatFilter,
-        bidirectionalFilter: BidirectionalChatFilter,
-        dbIncoming: DatabaseRegexIncomingChatFilter,
-        dbOutgoing: DatabaseRegexOutgoingChatFilter,
-      ) => {
-        factory.registerFilter(noopFilter);
-        factory.registerFilter(incomingFilter);
-        factory.registerFilter(outgoingFilter);
-        factory.registerFilter(bidirectionalFilter);
-        factory.registerFilter(dbIncoming);
-        factory.registerFilter(dbOutgoing);
-
-        return true;
-      },
-      inject: [
-        ChatFilterFactory,
-        NoopChatFilter,
-        IncomingChatFilter,
-        OutgoingChatFilter,
-        BidirectionalChatFilter,
-        DatabaseRegexIncomingChatFilter,
-        DatabaseRegexOutgoingChatFilter,
-      ],
-    },
   ],
   exports: [
     AgentsService,

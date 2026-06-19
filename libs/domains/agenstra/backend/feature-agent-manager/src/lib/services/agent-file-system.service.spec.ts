@@ -6,7 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AgentResponseDto } from '../dto/agent-response.dto';
 import { FileNodeDto } from '../dto/file-node.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
-import { AgentProviderFactory } from '../providers/agent-provider.factory';
+import { AGENT_PROVIDER_REGISTRY, AgentProvider, ProviderRegistry } from '@forepath/agenstra/backend/util-plugin-host';
 import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentFileSystemService } from './agent-file-system.service';
@@ -19,7 +19,7 @@ describe('AgentFileSystemService', () => {
   let agentsService: jest.Mocked<AgentsService>;
   let agentsRepository: jest.Mocked<AgentsRepository>;
   let dockerService: jest.Mocked<DockerService>;
-  let agentProviderFactory: jest.Mocked<AgentProviderFactory>;
+  let agentProviderRegistry: jest.Mocked<ProviderRegistry<AgentProvider>>;
   const mockAgentId = 'test-agent-uuid';
   const mockContainerId = 'test-container-id';
   const mockAgentResponse: AgentResponseDto = {
@@ -53,9 +53,9 @@ describe('AgentFileSystemService', () => {
     getBasePath: jest.fn().mockReturnValue('/app'),
     getConfigBasePath: jest.fn().mockReturnValue('~/.cursor'),
   };
-  const mockAgentProviderFactory = {
-    getProvider: jest.fn().mockReturnValue(mockProvider),
-  };
+  const mockAgentProviderRegistry = {
+    getProvider: jest.fn().mockReturnValue(mockProvider as unknown as AgentProvider),
+  } as unknown as jest.Mocked<ProviderRegistry<AgentProvider>>;
   const mockGitStateBroadcast = {
     notifyGitStateMayHaveChanged: jest.fn(),
   };
@@ -77,8 +77,8 @@ describe('AgentFileSystemService', () => {
           useValue: mockDockerService,
         },
         {
-          provide: AgentProviderFactory,
-          useValue: mockAgentProviderFactory,
+          provide: AGENT_PROVIDER_REGISTRY,
+          useValue: mockAgentProviderRegistry,
         },
         {
           provide: AgentGitStateBroadcastService,
@@ -91,7 +91,7 @@ describe('AgentFileSystemService', () => {
     agentsService = module.get(AgentsService);
     agentsRepository = module.get(AgentsRepository);
     dockerService = module.get(DockerService);
-    agentProviderFactory = module.get(AgentProviderFactory);
+    agentProviderRegistry = module.get(AGENT_PROVIDER_REGISTRY);
   });
 
   afterEach(() => {
@@ -100,7 +100,7 @@ describe('AgentFileSystemService', () => {
     mockProvider.getBasePath.mockReturnValue('/app');
     mockProvider.getConfigBasePath = jest.fn().mockReturnValue('~/.cursor');
     mockDockerService.getContainerHomeDirectory.mockResolvedValue('/home/agenstra');
-    mockAgentProviderFactory.getProvider.mockReturnValue(mockProvider);
+    mockAgentProviderRegistry.getProvider.mockReturnValue(mockProvider as unknown as AgentProvider);
   });
 
   describe('readFile', () => {
@@ -654,7 +654,7 @@ file|file2.txt|2048|1704067200`;
 
       await service.readFile(mockAgentId, filePath);
 
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
+      expect(agentProviderRegistry.getProvider).toHaveBeenCalledWith('cursor');
       expect(mockProvider.getBasePath).toHaveBeenCalled();
       expect(dockerService.copyFileFromContainer).toHaveBeenCalledWith(
         mockContainerId,
@@ -666,7 +666,7 @@ file|file2.txt|2048|1704067200`;
     it('should fall back to default /app when provider getBasePath is not implemented', async () => {
       const providerWithoutBasePath = {};
 
-      mockAgentProviderFactory.getProvider.mockReturnValue(providerWithoutBasePath as never);
+      mockAgentProviderRegistry.getProvider.mockReturnValue(providerWithoutBasePath as never);
 
       const filePath = 'test-file.txt';
       const fileContent = 'Hello, World!';
@@ -722,7 +722,7 @@ file|file2.txt|2048|1704067200`;
     });
 
     it('should fall back to default /app when provider factory throws error', async () => {
-      mockAgentProviderFactory.getProvider.mockImplementation(() => {
+      mockAgentProviderRegistry.getProvider.mockImplementation(() => {
         throw new Error('Provider not found');
       });
 
@@ -783,7 +783,7 @@ file|file2.txt|2048|1704067200`;
     it('should throw BadRequestException when provider has no getConfigBasePath', async () => {
       const noConfig = { getBasePath: () => '/app' };
 
-      mockAgentProviderFactory.getProvider.mockReturnValue(noConfig as never);
+      mockAgentProviderRegistry.getProvider.mockReturnValue(noConfig as never);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
 

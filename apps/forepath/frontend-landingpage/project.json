@@ -10,7 +10,7 @@
       "de": "apps/forepath/frontend-landingpage/src/i18n/messages.de.xlf"
     }
   },
-  "tags": ["type:app", "scope:frontend"],
+  "tags": ["domain:forepath", "type:app", "scope:frontend"],
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:application",

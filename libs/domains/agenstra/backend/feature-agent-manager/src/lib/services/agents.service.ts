@@ -5,15 +5,19 @@ import { BadRequestException, forwardRef, Inject, Injectable, Logger, OnApplicat
 import * as sshpk from 'sshpk';
 import { v4 as uuidv4 } from 'uuid';
 
+import {
+  AGENT_PROVIDER_REGISTRY,
+  AgentProvider,
+  AgentProviderModels,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
+
 import { GitRepositorySetupMode, resolveGitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { AgentResponseDto } from '../dto/agent-response.dto';
 import { CreateAgentResponseDto } from '../dto/create-agent-response.dto';
 import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
-import { AgentProviderFactory } from '../providers/agent-provider.factory';
-import { AgentProvider } from '../providers/agent-provider.interface';
-import { AgentProviderModels } from '../providers/agent-provider.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 
@@ -37,7 +41,8 @@ export class AgentsService implements OnApplicationBootstrap {
     private readonly agentsRepository: AgentsRepository,
     private readonly dockerService: DockerService,
     private readonly passwordService: PasswordService,
-    private readonly agentProviderFactory: AgentProviderFactory,
+    @Inject(AGENT_PROVIDER_REGISTRY)
+    private readonly agentProviderRegistry: ProviderRegistry<AgentProvider>,
     @Inject(forwardRef(() => DeploymentsService))
     private readonly deploymentsService?: DeploymentsService,
   ) {}
@@ -91,7 +96,7 @@ export class AgentsService implements OnApplicationBootstrap {
    * Uses `mkdir -p` so nested paths (e.g. ~/.config/opencode) are created idempotently.
    */
   private async ensureProviderConfigBaseDirectoryExists(containerId: string, agentType: string): Promise<void> {
-    const provider = this.agentProviderFactory.getProvider(agentType);
+    const provider = this.agentProviderRegistry.getProvider(agentType);
 
     if (!provider.getConfigBasePath) {
       return;
@@ -396,7 +401,7 @@ export class AgentsService implements OnApplicationBootstrap {
     // Determine agent type (default to 'cursor' for backward compatibility)
     const agentType = createAgentDto.agentType || 'cursor';
     // Get the provider for this agent type to retrieve the Docker image
-    const provider = this.agentProviderFactory.getProvider(agentType);
+    const provider = this.agentProviderRegistry.getProvider(agentType);
     const dockerImage = provider.getDockerImage();
     const virtualWorkspaceDockerImage = provider.getVirtualWorkspaceDockerImage();
     const sshConnectionDockerImage = provider.getSshConnectionDockerImage();
@@ -1113,7 +1118,7 @@ export class AgentsService implements OnApplicationBootstrap {
    */
   async listModels(id: string): Promise<AgentProviderModels> {
     const agent = await this.agentsRepository.findByIdOrThrow(id);
-    const provider = this.agentProviderFactory.getProvider(agent.agentType);
+    const provider = this.agentProviderRegistry.getProvider(agent.agentType);
 
     if (!provider.getModelsListCommand || !provider.toModelsList) {
       throw new BadRequestException('Provider does not support listing models');

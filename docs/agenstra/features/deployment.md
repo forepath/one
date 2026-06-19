@@ -16,7 +16,7 @@ The deployment feature provides:
 The deployment feature follows the same provider pattern used throughout Agenstra:
 
 - **PipelineProvider Interface** - Unified interface for CI/CD providers
-- **PipelineProviderFactory** - Factory for managing multiple providers
+- **Pipeline provider registry** — `PIPELINE_PROVIDER_REGISTRY` from `AgenstraPluginHostModule`; resolves GitHub/GitLab pipeline providers by type
 - **Provider Implementations** - GitHub Actions and GitLab CI/CD providers (extensible to Jenkins, Azure DevOps, etc.)
 - **Deployment Service** - Orchestrates pipeline operations
 - **Database Storage** - Stores deployment configurations and run history

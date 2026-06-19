@@ -7,8 +7,12 @@ import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
-import { AgentProviderFactory } from '../providers/agent-provider.factory';
-import { AgentProvider, AgentProviderModels } from '../providers/agent-provider.interface';
+import {
+  AGENT_PROVIDER_REGISTRY,
+  AgentProvider,
+  AgentProviderModels,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
 import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentsService } from './agents.service';
@@ -20,7 +24,7 @@ describe('AgentsService', () => {
   let repository: jest.Mocked<AgentsRepository>;
   let passwordService: jest.Mocked<PasswordService>;
   let dockerService: jest.Mocked<DockerService>;
-  let agentProviderFactory: jest.Mocked<AgentProviderFactory>;
+  let agentProviderRegistry: jest.Mocked<ProviderRegistry<AgentProvider>>;
   let deploymentsService: jest.Mocked<DeploymentsService>;
   const mockAgent: AgentEntity = {
     id: 'test-uuid',
@@ -81,12 +85,13 @@ describe('AgentsService', () => {
     getBasePath: jest.fn().mockReturnValue('/app'),
     getConfigBasePath: jest.fn().mockReturnValue('~/.cursor'),
   };
-  const mockAgentProviderFactory = {
+  const mockAgentProviderRegistry = {
     getProvider: jest.fn().mockReturnValue(mockAgentProvider),
-    registerProvider: jest.fn(),
+    register: jest.fn(),
     hasProvider: jest.fn(),
-    getRegisteredTypes: jest.fn(),
-  } as unknown as jest.Mocked<AgentProviderFactory>;
+    getRegisteredIds: jest.fn(),
+    getAll: jest.fn(),
+  } as unknown as jest.Mocked<ProviderRegistry<AgentProvider>>;
   const mockDeploymentsService = {
     upsertConfiguration: jest.fn(),
     deleteConfiguration: jest.fn(),
@@ -110,8 +115,8 @@ describe('AgentsService', () => {
           useValue: mockDockerService,
         },
         {
-          provide: AgentProviderFactory,
-          useValue: mockAgentProviderFactory,
+          provide: AGENT_PROVIDER_REGISTRY,
+          useValue: mockAgentProviderRegistry,
         },
         {
           provide: DeploymentsService,
@@ -124,7 +129,7 @@ describe('AgentsService', () => {
     repository = module.get(AgentsRepository);
     passwordService = module.get(PasswordService);
     dockerService = module.get(DockerService);
-    agentProviderFactory = module.get(AgentProviderFactory);
+    agentProviderRegistry = module.get(AGENT_PROVIDER_REGISTRY);
     deploymentsService = module.get(DeploymentsService);
   });
 
@@ -193,7 +198,7 @@ describe('AgentsService', () => {
       expect(typeof result.password).toBe('string');
       expect(repository.findByName).toHaveBeenCalledWith(createDto.name);
       expect(passwordService.hashPassword).toHaveBeenCalled();
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
+      expect(agentProviderRegistry.getProvider).toHaveBeenCalledWith('cursor');
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
       expect(dockerService.ensureImageExists).toHaveBeenCalledTimes(1);
       expect(dockerService.ensureImageExists).toHaveBeenCalledWith('ghcr.io/forepath/agenstra-manager-worker:latest');
@@ -434,7 +439,7 @@ describe('AgentsService', () => {
 
       expect(result.name).toBe(createDto.name);
       expect(result.description).toBeUndefined();
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
+      expect(agentProviderRegistry.getProvider).toHaveBeenCalledWith('cursor');
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
@@ -715,7 +720,7 @@ describe('AgentsService', () => {
       expect(result.name).toBe(createDto.name);
       expect(result.description).toBe(createDto.description);
       expect(result.password).toBeDefined();
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
+      expect(agentProviderRegistry.getProvider).toHaveBeenCalledWith('cursor');
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
@@ -1672,8 +1677,8 @@ describe('AgentsService', () => {
             useValue: mockDockerService,
           },
           {
-            provide: AgentProviderFactory,
-            useValue: mockAgentProviderFactory,
+            provide: AGENT_PROVIDER_REGISTRY,
+            useValue: mockAgentProviderRegistry,
           },
           {
             provide: DeploymentsService,
@@ -1841,7 +1846,7 @@ describe('AgentsService', () => {
 
       expect(result).toEqual(modelsPayload);
       expect(repository.findByIdOrThrow).toHaveBeenCalledWith('test-uuid');
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith(mockAgent.agentType);
+      expect(agentProviderRegistry.getProvider).toHaveBeenCalledWith(mockAgent.agentType);
       expect(mockAgentProvider.getModelsListCommand).toHaveBeenCalled();
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockAgent.containerId,
@@ -1879,7 +1884,7 @@ describe('AgentsService', () => {
         toModelsList: undefined,
       } as unknown as AgentProvider;
 
-      agentProviderFactory.getProvider.mockReturnValueOnce(unsupported);
+      agentProviderRegistry.getProvider.mockReturnValueOnce(unsupported);
 
       await expect(service.listModels('test-uuid')).rejects.toThrow(BadRequestException);
       expect(dockerService.sendCommandToContainer).not.toHaveBeenCalled();

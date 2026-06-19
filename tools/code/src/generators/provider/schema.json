@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "Provider",
+  "title": "Forepath Extension Provider Generator",
+  "description": "Scaffold a domain provider library with forepath.extension.json and extension stubs",
+  "type": "object",
+  "properties": {
+    "domain": {
+      "type": "string",
+      "description": "Domain name (agenstra or decabill)",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      },
+      "enum": ["agenstra", "decabill"],
+      "x-prompt": "Which domain is this provider for?"
+    },
+    "name": {
+      "type": "string",
+      "description": "Short provider name (e.g. stripe, cursor, chat-filter-noop)",
+      "$default": {
+        "$source": "argv",
+        "index": 1
+      },
+      "x-prompt": "What name would you like to use?"
+    },
+    "kind": {
+      "type": "string",
+      "description": "Extension kind constant for the domain plugin-host",
+      "$default": {
+        "$source": "argv",
+        "index": 2
+      },
+      "x-prompt": "What extension kind does this provider implement?"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description for forepath.extension.json",
+      "x-prompt": "Optional description for the extension manifest"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semver version for forepath.extension.json",
+      "default": "0.0.0"
+    },
+    "generator": {
+      "type": "string",
+      "description": "Base Nx library generator",
+      "default": "node",
+      "enum": ["js", "node"]
+    }
+  },
+  "required": ["domain", "name", "kind"]
+}

@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "cursor",
+  "kind": "agent-provider",
+  "name": "Cursor",
+  "description": "Cursor agent provider extension.",
+  "version": "0.0.0"
+}

@@ -1,14 +1,21 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+
+import {
+  EMBEDDING_PROVIDER_REGISTRY,
+  EmbeddingProvider,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
 
 import { KnowledgeNodeEmbeddingEntity } from '../entities/knowledge-node-embedding.entity';
 import { KnowledgeRelationSourceType } from '../entities/knowledge-node.enums';
 
-import { LocalEmbeddingProvider } from './embeddings/local-embedding.provider';
 import { KnowledgeTreeService } from './knowledge-tree.service';
 import { StatisticsService } from './statistics.service';
 import { TicketsService } from './tickets.service';
+
+const DEFAULT_EMBEDDING_PROVIDER_ID = 'local';
 
 interface ContextInjectionPayload {
   includeWorkspace?: boolean;
@@ -48,7 +55,8 @@ export class AutoContextResolverService {
     private readonly embeddingRepo: Repository<KnowledgeNodeEmbeddingEntity>,
     private readonly ticketsService: TicketsService,
     private readonly knowledgeTreeService: KnowledgeTreeService,
-    private readonly localEmbeddingProvider: LocalEmbeddingProvider,
+    @Inject(EMBEDDING_PROVIDER_REGISTRY)
+    private readonly embeddingProviderRegistry: ProviderRegistry<EmbeddingProvider>,
     private readonly statisticsService: StatisticsService,
   ) {}
 
@@ -180,7 +188,8 @@ export class AutoContextResolverService {
     }
 
     try {
-      const vector = (await this.localEmbeddingProvider.embedMany([trimmed]))[0]?.vector;
+      const embeddingProvider = this.embeddingProviderRegistry.getProvider(DEFAULT_EMBEDDING_PROVIDER_ID);
+      const vector = (await embeddingProvider.embedMany([trimmed]))[0]?.vector;
 
       if (!vector || vector.length === 0) {
         return [];

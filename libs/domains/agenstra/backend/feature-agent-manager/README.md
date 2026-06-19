@@ -42,18 +42,10 @@ The library follows Domain-Driven Design (DDD) principles with clear separation 
   - `PasswordService` - Password hashing and verification
   - `DockerService` - Container log streaming, command execution, and environment variable updates
   - `AgentEnvironmentVariablesService` - Business logic for environment variable management with automatic Docker container synchronization
-- **Providers**: Plugin-based provider systems
-  - **Agent Providers**: Plugin-based agent provider system
-    - `AgentProvider` - Interface for agent implementations
-    - `AgentProviderFactory` - Factory for getting the appropriate provider based on agent type
-    - `CursorAgentProvider` - Cursor-agent implementation
-  - **Chat Filters**: Plugin-based chat filter system
-    - `ChatFilter` - Interface for message filtering implementations
-    - `ChatFilterFactory` - Factory for managing and retrieving filters by direction
-    - `NoopChatFilter` - No-op filter (never filters messages)
-    - `IncomingChatFilter` - Example incoming-only filter
-    - `OutgoingChatFilter` - Example outgoing-only filter
-    - `BidirectionalChatFilter` - Example bidirectional filter
+- **Providers**: Config-driven extension plugins via `AgenstraPluginHostModule` (`@forepath/agenstra/backend/util-plugin-host`)
+  - **Agent providers** — `AGENT_PROVIDER_REGISTRY`; default libs `provider-cursor`, `provider-opencode`, `provider-openclaw`
+  - **Pipeline providers** — `PIPELINE_PROVIDER_REGISTRY`; default libs `provider-github-pipeline`, `provider-gitlab-pipeline`
+  - **Chat filters** — `CHAT_FILTER_REGISTRY`; six default `provider-chat-filter-*` libs
 - **DTOs**: Data transfer objects for API boundaries
   - `CreateAgentDto` - Input validation for creating agents (includes optional `agentType`)
   - `UpdateAgentDto` - Input validation for updating agents (includes optional `agentType`)
@@ -488,22 +480,19 @@ To add a new agent provider:
    }
    ```
 
-2. Register the provider in `AgentsModule`:
+2. Scaffold and register the provider:
 
-   ```typescript
-   providers: [
-     // ... existing providers
-     MyAgentProvider,
-     {
-       provide: 'AGENT_PROVIDER_INIT',
-       useFactory: (factory: AgentProviderFactory, myProvider: MyAgentProvider) => {
-         factory.registerProvider(myProvider);
-         return true;
-       },
-       inject: [AgentProviderFactory, MyAgentProvider],
-     },
-   ],
+   ```bash
+   nx generate @forepath/code:provider agenstra my-agent agent-provider --description="My agent provider"
    ```
+
+   Move your implementation into the generated `provider-my-agent` lib. Add the import path to `AGENSTRA_AGENT_PROVIDER_EXTENSIONS` (or rely on defaults in `AgentsModule`):
+
+   ```bash
+   AGENSTRA_AGENT_PROVIDER_EXTENSIONS=@forepath/agenstra/backend/provider-cursor,...,@forepath/agenstra/backend/provider-my-agent
+   ```
+
+   For external npm packages, add the dependency to the app `package.json` and use an `npm:` specifier. Webpack externals are applied automatically via `util-extension-core`.
 
 3. Update the DTO validation to include the new type:
 
@@ -593,45 +582,13 @@ To add a new chat filter:
    }
    ```
 
-2. Register the filter in `AgentsModule`:
+2. Scaffold and register the filter:
 
-   ```typescript
-   providers: [
-     // ... existing providers
-     MyChatFilter,
-     {
-       provide: 'CHAT_FILTER_INIT',
-       useFactory: (
-         factory: ChatFilterFactory,
-         noopFilter: NoopChatFilter,
-         incomingFilter: IncomingChatFilter,
-         outgoingFilter: OutgoingChatFilter,
-         bidirectionalFilter: BidirectionalChatFilter,
-         myFilter: MyChatFilter, // Add your new filter here
-       ) => {
-         factory.registerFilter(noopFilter);
-         factory.registerFilter(incomingFilter);
-         factory.registerFilter(outgoingFilter);
-         factory.registerFilter(bidirectionalFilter);
-         factory.registerFilter(myFilter); // Register your new filter
-         return true;
-       },
-       inject: [
-         ChatFilterFactory,
-         NoopChatFilter,
-         IncomingChatFilter,
-         OutgoingChatFilter,
-         BidirectionalChatFilter,
-         MyChatFilter, // Add your new filter to inject array
-       ],
-     },
-   ],
+   ```bash
+   nx generate @forepath/code:provider agenstra my-filter chat-filter --description="My chat filter"
    ```
 
-   **Note**: The `CHAT_FILTER_INIT` factory registers all filters at module initialization. When adding a new filter, you must:
-   - Add the filter class to the `providers` array
-   - Add the filter instance to the factory's `inject` array
-   - Call `factory.registerFilter()` for your new filter in the factory function
+   Implement `ChatFilter` in the generated lib and add `@forepath/agenstra/backend/provider-my-filter` to `AGENSTRA_CHAT_FILTER_EXTENSIONS` (or extend `defaultExtensions` in `AgentsModule`).
 
 3. The filter will automatically be applied to messages based on its direction:
    - Incoming filters are applied before broadcasting and persisting user messages

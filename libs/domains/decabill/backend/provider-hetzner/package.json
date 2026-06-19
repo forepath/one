@@ -1,0 +1,15 @@
+{
+  "name": "@forepath/decabill/backend/provider-hetzner",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "@nestjs/common": "11.1.6",
+    "axios": "*",
+    "@forepath/decabill/backend/util-plugin-host": "*",
+    "@forepath/shared/backend/util-extension-core": "*"
+  }
+}

@@ -1,12 +1,11 @@
+import { AGENT_PROVIDER_REGISTRY, AgentProvider, ProviderRegistry } from '@forepath/agenstra/backend/util-plugin-host';
 import { Test, TestingModule } from '@nestjs/testing';
-
-import { AgentProviderFactory } from '../providers/agent-provider.factory';
 
 import { ConfigService } from './config.service';
 
 describe('ConfigService', () => {
   let service: ConfigService;
-  let agentProviderFactory: jest.Mocked<AgentProviderFactory>;
+  let agentProviderRegistry: jest.Mocked<ProviderRegistry<AgentProvider>>;
   const mockProvider = {
     getType: jest.fn().mockReturnValue('cursor'),
     getDisplayName: jest.fn().mockReturnValue('Cursor'),
@@ -26,8 +25,8 @@ describe('ConfigService', () => {
     getModelsListCommand: jest.fn().mockReturnValue(undefined),
     toModelsList: jest.fn().mockReturnValue(undefined),
   };
-  const mockAgentProviderFactory = {
-    getRegisteredTypes: jest.fn(),
+  const mockAGENT_PROVIDER_REGISTRY = {
+    getRegisteredIds: jest.fn(),
     getProvider: jest.fn().mockReturnValue(mockProvider),
   };
 
@@ -36,14 +35,14 @@ describe('ConfigService', () => {
       providers: [
         ConfigService,
         {
-          provide: AgentProviderFactory,
-          useValue: mockAgentProviderFactory,
+          provide: AGENT_PROVIDER_REGISTRY,
+          useValue: mockAGENT_PROVIDER_REGISTRY,
         },
       ],
     }).compile();
 
     service = module.get<ConfigService>(ConfigService);
-    agentProviderFactory = module.get(AgentProviderFactory);
+    agentProviderRegistry = module.get(AGENT_PROVIDER_REGISTRY);
   });
 
   afterEach(() => {
@@ -73,13 +72,13 @@ describe('ConfigService', () => {
     it('should return array of agent types with display names', () => {
       const agentTypes = ['cursor'];
 
-      agentProviderFactory.getRegisteredTypes.mockReturnValue(agentTypes);
+      agentProviderRegistry.getRegisteredIds.mockReturnValue(agentTypes);
 
       const result = service.getAvailableAgentTypes();
 
       expect(result).toEqual([{ type: 'cursor', displayName: 'Cursor' }]);
-      expect(agentProviderFactory.getRegisteredTypes).toHaveBeenCalled();
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
+      expect(agentProviderRegistry.getRegisteredIds).toHaveBeenCalled();
+      expect(agentProviderRegistry.getProvider).toHaveBeenCalledWith('cursor');
       expect(mockProvider.getType).toHaveBeenCalled();
       expect(mockProvider.getDisplayName).toHaveBeenCalled();
     });
@@ -125,8 +124,8 @@ describe('ConfigService', () => {
       };
       const agentTypes = ['cursor', 'openai', 'anthropic'];
 
-      agentProviderFactory.getRegisteredTypes.mockReturnValue(agentTypes);
-      agentProviderFactory.getProvider
+      agentProviderRegistry.getRegisteredIds.mockReturnValue(agentTypes);
+      agentProviderRegistry.getProvider
         .mockReturnValueOnce(mockProvider)
         .mockReturnValueOnce(mockOpenAIProvider)
         .mockReturnValueOnce(mockAnthropicProvider);
@@ -142,13 +141,13 @@ describe('ConfigService', () => {
     });
 
     it('should return empty array when no agent types are registered', () => {
-      agentProviderFactory.getRegisteredTypes.mockReturnValue([]);
+      agentProviderRegistry.getRegisteredIds.mockReturnValue([]);
 
       const result = service.getAvailableAgentTypes();
 
       expect(result).toEqual([]);
       expect(result).toHaveLength(0);
-      expect(agentProviderFactory.getProvider).not.toHaveBeenCalled();
+      expect(agentProviderRegistry.getProvider).not.toHaveBeenCalled();
     });
   });
 });

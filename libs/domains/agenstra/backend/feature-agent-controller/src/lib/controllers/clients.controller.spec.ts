@@ -32,8 +32,11 @@ import { CreateClientDto } from '../dto/create-client.dto';
 import { ProvisionServerDto } from '../dto/provision-server.dto';
 import { ProvisionedServerResponseDto } from '../dto/provisioned-server-response.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
-import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
-import { ProvisioningProvider } from '../providers/provisioning-provider.interface';
+import {
+  PROVISIONING_PROVIDER_REGISTRY,
+  ProvisioningProvider,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
@@ -49,7 +52,7 @@ describe('ClientsController', () => {
   let proxyService: jest.Mocked<ClientAgentProxyService>;
   let fileSystemProxyService: jest.Mocked<ClientAgentFileSystemProxyService>;
   let provisioningService: jest.Mocked<ProvisioningService>;
-  let provisioningProviderFactory: jest.Mocked<ProvisioningProviderFactory>;
+  let provisioningProviderRegistry: jest.Mocked<ProviderRegistry<ProvisioningProvider>>;
   let clientUsersService: jest.Mocked<ClientUsersService>;
   let clientsRepository: jest.Mocked<ClientsRepository>;
   let clientUsersRepository: jest.Mocked<ClientUsersRepository>;
@@ -125,11 +128,11 @@ describe('ClientsController', () => {
     deleteProvisionedServer: jest.fn(),
     getServerInfo: jest.fn(),
   };
-  const mockProvisioningProviderFactory = {
-    getAllProviders: jest.fn(),
+  const mockPROVISIONING_PROVIDER_REGISTRY = {
+    getAll: jest.fn(),
     hasProvider: jest.fn(),
     getProvider: jest.fn(),
-    getRegisteredTypes: jest.fn(),
+    getRegisteredIds: jest.fn(),
   };
   const mockClientUsersService = {
     addUserToClient: jest.fn(),
@@ -169,8 +172,8 @@ describe('ClientsController', () => {
           useValue: mockProvisioningService,
         },
         {
-          provide: ProvisioningProviderFactory,
-          useValue: mockProvisioningProviderFactory,
+          provide: PROVISIONING_PROVIDER_REGISTRY,
+          useValue: mockPROVISIONING_PROVIDER_REGISTRY,
         },
         {
           provide: ClientUsersService,
@@ -192,7 +195,7 @@ describe('ClientsController', () => {
     proxyService = module.get(ClientAgentProxyService);
     fileSystemProxyService = module.get(ClientAgentFileSystemProxyService);
     provisioningService = module.get(ProvisioningService);
-    provisioningProviderFactory = module.get(ProvisioningProviderFactory);
+    provisioningProviderRegistry = module.get(PROVISIONING_PROVIDER_REGISTRY);
     clientUsersService = module.get(ClientUsersService);
     clientsRepository = module.get(ClientsRepository);
     clientUsersRepository = module.get(ClientUsersRepository);
@@ -847,7 +850,7 @@ describe('ClientsController', () => {
         getServerInfo: jest.fn(),
       };
 
-      provisioningProviderFactory.getAllProviders.mockReturnValue([mockProvider]);
+      provisioningProviderRegistry.getAll.mockReturnValue([mockProvider]);
 
       const result = await controller.getProvisioningProviders();
 
@@ -857,7 +860,7 @@ describe('ClientsController', () => {
           displayName: 'Hetzner Cloud',
         },
       ]);
-      expect(provisioningProviderFactory.getAllProviders).toHaveBeenCalled();
+      expect(provisioningProviderRegistry.getAll).toHaveBeenCalled();
     });
   });
 
@@ -883,23 +886,23 @@ describe('ClientsController', () => {
         getServerInfo: jest.fn(),
       };
 
-      provisioningProviderFactory.hasProvider.mockReturnValue(true);
-      provisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      provisioningProviderRegistry.hasProvider.mockReturnValue(true);
+      provisioningProviderRegistry.getProvider.mockReturnValue(mockProvider);
 
       const result = await controller.getServerTypes('hetzner');
 
       expect(result).toEqual(mockServerTypes);
-      expect(provisioningProviderFactory.hasProvider).toHaveBeenCalledWith('hetzner');
-      expect(provisioningProviderFactory.getProvider).toHaveBeenCalledWith('hetzner');
+      expect(provisioningProviderRegistry.hasProvider).toHaveBeenCalledWith('hetzner');
+      expect(provisioningProviderRegistry.getProvider).toHaveBeenCalledWith('hetzner');
       expect(mockProvider.getServerTypes).toHaveBeenCalled();
     });
 
     it('should throw BadRequestException when provider is not available', async () => {
-      provisioningProviderFactory.hasProvider.mockReturnValue(false);
-      provisioningProviderFactory.getRegisteredTypes.mockReturnValue(['hetzner']);
+      provisioningProviderRegistry.hasProvider.mockReturnValue(false);
+      provisioningProviderRegistry.getRegisteredIds.mockReturnValue(['hetzner']);
 
       await expect(controller.getServerTypes('invalid-provider')).rejects.toThrow(BadRequestException);
-      expect(provisioningProviderFactory.hasProvider).toHaveBeenCalledWith('invalid-provider');
+      expect(provisioningProviderRegistry.hasProvider).toHaveBeenCalledWith('invalid-provider');
     });
   });
 

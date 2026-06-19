@@ -1,4 +1,4 @@
-import { Logger, OnModuleInit } from '@nestjs/common';
+import { Logger, OnModuleInit, Inject } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -12,16 +12,20 @@ import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
 import { GIT_STATE_CHANGED_EVENT, toolMayMutateGitWorkspace } from '../constants/agent-git-state.constants';
-import { AgentEventEnvelope, AgentInteractionQueryPayload, AgentResponseMode } from '../providers/agent-events.types';
-import { AgentProviderFactory } from '../providers/agent-provider.factory';
-import { AgentResponseObject } from '../providers/agent-provider.interface';
-import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import {
+  AGENT_PROVIDER_REGISTRY,
+  AgentProvider,
+  AgentResponseObject,
   AppliedFilterInfo,
+  CHAT_FILTER_REGISTRY,
+  ChatFilter,
   FilterApplicationResult,
   FilterContext,
   FilterDirection,
-} from '../providers/chat-filter.interface';
+  getChatFiltersByDirection,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
+import { AgentEventEnvelope, AgentInteractionQueryPayload, AgentResponseMode } from '../providers/agent-events.types';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
@@ -261,8 +265,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     private readonly dockerService: DockerService,
     private readonly agentMessagesService: AgentMessagesService,
     private readonly agentMessageEventsService: AgentMessageEventsService,
-    private readonly agentProviderFactory: AgentProviderFactory,
-    private readonly chatFilterFactory: ChatFilterFactory,
+    @Inject(AGENT_PROVIDER_REGISTRY)
+    private readonly agentProviderRegistry: ProviderRegistry<AgentProvider>,
+    @Inject(CHAT_FILTER_REGISTRY)
+    private readonly chatFilterRegistry: ProviderRegistry<ChatFilter>,
     private readonly promptContextComposer: PromptContextComposerService,
     private readonly agentSessionHydrationService: AgentSessionHydrationService,
     private readonly gitStateBroadcast: AgentGitStateBroadcastService,
@@ -1289,7 +1295,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
           if (containerId) {
             try {
               // Get the appropriate provider based on agent type
-              const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
+              const provider = this.agentProviderRegistry.getProvider(entity.agentType || 'cursor');
 
               await provider.sendInitialization(agent.id, containerId, { model: data.model });
               this.logger.debug(`Sent initialization message to agent ${agentUuid}`);
@@ -1337,7 +1343,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       if (containerId) {
         // Get the appropriate provider based on agent type
         try {
-          const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
+          const provider = this.agentProviderRegistry.getProvider(entity.agentType || 'cursor');
           const supportsStreaming =
             wantsStream &&
             responseMode !== 'sync' &&
@@ -1784,7 +1790,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         return;
       }
 
-      const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
+      const provider = this.agentProviderRegistry.getProvider(entity.agentType || 'cursor');
       const rawResponse = await runWithTimeout(
         provider.sendMessage(agent.id, containerId, composed, {
           model: data.model,
@@ -2009,7 +2015,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         return;
       }
 
-      const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
+      const provider = this.agentProviderRegistry.getProvider(entity.agentType || 'cursor');
       const rawResponse = await runWithTimeout(
         provider.sendMessage(agent.id, containerId, composed, {
           model: data.model,
@@ -2614,7 +2620,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     direction: FilterDirection,
     context?: FilterContext,
   ): Promise<FilterApplicationResult> {
-    const filters = this.chatFilterFactory.getFiltersByDirection(direction);
+    const filters = getChatFiltersByDirection(this.chatFilterRegistry, direction);
     const appliedFilters: AppliedFilterInfo[] = [];
     let matchedFilter: AppliedFilterInfo | undefined;
     let currentMessage = message; // Track message as it may be modified by filters

@@ -39,6 +39,8 @@ export class IdentityRequestPasswordResetConfirmationComponent implements OnInit
   error$: Observable<string | null> = this.authFacade.error$;
   resettingPassword$: Observable<boolean> = this.authFacade.resettingPassword$;
 
+  protected readonly authMarketing = this.environment.authMarketing;
+
   get isUsersAuth(): boolean {
     return this.environment.authentication.type === 'users';
   }

@@ -3,8 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
-import { PipelineProviderFactory } from '../providers/pipeline-provider.factory';
-import { PipelineProvider } from '../providers/pipeline-provider.interface';
+import { PIPELINE_PROVIDER_REGISTRY } from '@forepath/agenstra/backend/util-plugin-host';
+import { PipelineProvider } from '@forepath/agenstra/backend/util-plugin-host';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { DeploymentConfigurationsRepository } from '../repositories/deployment-configurations.repository';
 import { DeploymentRunsRepository } from '../repositories/deployment-runs.repository';
@@ -96,7 +96,7 @@ describe('DeploymentsService', () => {
           useValue: mockAgentsRepository,
         },
         {
-          provide: PipelineProviderFactory,
+          provide: PIPELINE_PROVIDER_REGISTRY,
           useValue: mockProviderFactory,
         },
       ],

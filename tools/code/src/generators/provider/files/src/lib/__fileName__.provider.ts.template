@@ -1,0 +1,14 @@
+import { Injectable } from '@nestjs/common';
+
+import type { <%= contractName %> } from '@forepath/<%= domain %>/backend/util-plugin-host';
+
+@Injectable()
+export class <%= className %>Provider implements <%= contractName %> {
+  getType(): string {
+    return '<%= name %>';
+  }
+
+  getDisplayName(): string {
+    return '<%= className %>';
+  }
+}

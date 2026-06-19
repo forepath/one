@@ -1,6 +1,18 @@
+import { EmbeddingProvider, ProviderRegistry } from '@forepath/agenstra/backend/util-plugin-host';
+
 import { KnowledgeRelationSourceType } from '../entities/knowledge-node.enums';
 
 import { AutoContextResolverService } from './auto-context-resolver.service';
+
+function createEmbeddingRegistry(embedMany: jest.Mock): ProviderRegistry<EmbeddingProvider> {
+  return {
+    getProvider: jest.fn().mockReturnValue({
+      getType: () => 'local',
+      getModelName: () => 'm',
+      embedMany,
+    }),
+  } as unknown as ProviderRegistry<EmbeddingProvider>;
+}
 
 describe('AutoContextResolverService', () => {
   const originalEnv = process.env;
@@ -35,13 +47,14 @@ describe('AutoContextResolverService', () => {
     const embeddingRepo: any = { createQueryBuilder: jest.fn() };
     const ticketsService: any = { resolveTicketIdByClientSha: jest.fn() };
     const knowledgeTreeService: any = { findNodeBySha: jest.fn(), collectPromptContextsForSource: jest.fn() };
-    const localEmbeddingProvider: any = { embedMany: jest.fn() };
+    const embedMany = jest.fn();
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = { recordAutoContextEnrichment: jest.fn() };
     const service = new AutoContextResolverService(
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
 
@@ -52,7 +65,7 @@ describe('AutoContextResolverService', () => {
       workspaceAutoEnrichEnabledGlobal: false,
     });
 
-    expect(localEmbeddingProvider.embedMany).not.toHaveBeenCalled();
+    expect(embedMany).not.toHaveBeenCalled();
   });
 
   it('returns normalized injection without enrichment when global auto enrich is disabled', async () => {
@@ -60,13 +73,14 @@ describe('AutoContextResolverService', () => {
     const embeddingRepo: any = { createQueryBuilder: jest.fn() };
     const ticketsService: any = { resolveTicketIdByClientSha: jest.fn() };
     const knowledgeTreeService: any = { findNodeBySha: jest.fn(), collectPromptContextsForSource: jest.fn() };
-    const localEmbeddingProvider: any = { embedMany: jest.fn() };
+    const embedMany = jest.fn();
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = { recordAutoContextEnrichment: jest.fn() };
     const service = new AutoContextResolverService(
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
     const result = await service.resolve({
@@ -77,20 +91,21 @@ describe('AutoContextResolverService', () => {
 
     expect(result.ticketShas).toEqual(['a']);
     expect(result.knowledgeShas).toEqual(['b']);
-    expect(localEmbeddingProvider.embedMany).not.toHaveBeenCalled();
+    expect(embedMany).not.toHaveBeenCalled();
   });
 
   it('returns normalized injection when autoEnrichmentEnabled is false on payload', async () => {
     const embeddingRepo: any = { createQueryBuilder: jest.fn() };
     const ticketsService: any = { resolveTicketIdByClientSha: jest.fn() };
     const knowledgeTreeService: any = { findNodeBySha: jest.fn(), collectPromptContextsForSource: jest.fn() };
-    const localEmbeddingProvider: any = { embedMany: jest.fn() };
+    const embedMany = jest.fn();
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = { recordAutoContextEnrichment: jest.fn() };
     const service = new AutoContextResolverService(
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
     const result = await service.resolve({
@@ -100,7 +115,7 @@ describe('AutoContextResolverService', () => {
     });
 
     expect(result.knowledgeContexts).toEqual(['keep']);
-    expect(localEmbeddingProvider.embedMany).not.toHaveBeenCalled();
+    expect(embedMany).not.toHaveBeenCalled();
   });
 
   it('merges vector and relation contexts, dedupes vector rows per node, and records statistics', async () => {
@@ -122,9 +137,8 @@ describe('AutoContextResolverService', () => {
         promptSections: ['Relation block'],
       }),
     };
-    const localEmbeddingProvider: any = {
-      embedMany: jest.fn().mockResolvedValue([{ vector: [0.1, 0.2] }]),
-    };
+    const embedMany = jest.fn().mockResolvedValue([{ vector: [0.1, 0.2] }]);
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = {
       recordAutoContextEnrichment: jest.fn().mockResolvedValue(undefined),
     };
@@ -132,7 +146,7 @@ describe('AutoContextResolverService', () => {
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
     const result = await service.resolve({
@@ -146,7 +160,7 @@ describe('AutoContextResolverService', () => {
     });
 
     expect(ticketsService.resolveTicketIdByClientSha).toHaveBeenCalledWith('c1', 'tsha');
-    expect(localEmbeddingProvider.embedMany).toHaveBeenCalledWith(['find docs']);
+    expect(embedMany).toHaveBeenCalledWith(['find docs']);
     expect(result.knowledgeContexts).toEqual(
       expect.arrayContaining(['existing', 'Relation block', 'Knowledge Page Context:\nfrom vector']),
     );
@@ -175,15 +189,14 @@ describe('AutoContextResolverService', () => {
     };
     const ticketsService: any = { resolveTicketIdByClientSha: jest.fn() };
     const knowledgeTreeService: any = { findNodeBySha: jest.fn(), collectPromptContextsForSource: jest.fn() };
-    const localEmbeddingProvider: any = {
-      embedMany: jest.fn().mockResolvedValue([{ vector: [0.1, 0.2] }]),
-    };
+    const embedMany = jest.fn().mockResolvedValue([{ vector: [0.1, 0.2] }]);
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = { recordAutoContextEnrichment: jest.fn() };
     const service = new AutoContextResolverService(
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
 
@@ -203,15 +216,14 @@ describe('AutoContextResolverService', () => {
     };
     const ticketsService: any = { resolveTicketIdByClientSha: jest.fn() };
     const knowledgeTreeService: any = { findNodeBySha: jest.fn(), collectPromptContextsForSource: jest.fn() };
-    const localEmbeddingProvider: any = {
-      embedMany: jest.fn().mockResolvedValue([{ vector: [0.1, 0.2] }]),
-    };
+    const embedMany = jest.fn().mockResolvedValue([{ vector: [0.1, 0.2] }]);
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = { recordAutoContextEnrichment: jest.fn() };
     const service = new AutoContextResolverService(
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
 
@@ -232,13 +244,14 @@ describe('AutoContextResolverService', () => {
     const embeddingRepo: any = { createQueryBuilder: jest.fn() };
     const ticketsService: any = { resolveTicketIdByClientSha: jest.fn() };
     const knowledgeTreeService: any = { findNodeBySha: jest.fn(), collectPromptContextsForSource: jest.fn() };
-    const localEmbeddingProvider: any = { embedMany: jest.fn() };
+    const embedMany = jest.fn();
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = { recordAutoContextEnrichment: jest.fn() };
     const service = new AutoContextResolverService(
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
 
@@ -248,7 +261,7 @@ describe('AutoContextResolverService', () => {
       contextInjection: {},
     });
 
-    expect(localEmbeddingProvider.embedMany).not.toHaveBeenCalled();
+    expect(embedMany).not.toHaveBeenCalled();
     expect(embeddingRepo.createQueryBuilder).not.toHaveBeenCalled();
   });
 
@@ -256,15 +269,14 @@ describe('AutoContextResolverService', () => {
     const embeddingRepo: any = { createQueryBuilder: jest.fn() };
     const ticketsService: any = { resolveTicketIdByClientSha: jest.fn() };
     const knowledgeTreeService: any = { findNodeBySha: jest.fn(), collectPromptContextsForSource: jest.fn() };
-    const localEmbeddingProvider: any = {
-      embedMany: jest.fn().mockResolvedValue([{ vector: [] }]),
-    };
+    const embedMany = jest.fn().mockResolvedValue([{ vector: [] }]);
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = { recordAutoContextEnrichment: jest.fn() };
     const service = new AutoContextResolverService(
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
 
@@ -286,15 +298,14 @@ describe('AutoContextResolverService', () => {
     };
     const ticketsService: any = { resolveTicketIdByClientSha: jest.fn() };
     const knowledgeTreeService: any = { findNodeBySha: jest.fn(), collectPromptContextsForSource: jest.fn() };
-    const localEmbeddingProvider: any = {
-      embedMany: jest.fn().mockResolvedValue([{ vector: [1, 0] }]),
-    };
+    const embedMany = jest.fn().mockResolvedValue([{ vector: [1, 0] }]);
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = { recordAutoContextEnrichment: jest.fn() };
     const service = new AutoContextResolverService(
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
     const warn = jest.spyOn(service['logger'], 'warn').mockImplementation();
@@ -317,9 +328,8 @@ describe('AutoContextResolverService', () => {
     };
     const ticketsService: any = { resolveTicketIdByClientSha: jest.fn() };
     const knowledgeTreeService: any = { findNodeBySha: jest.fn(), collectPromptContextsForSource: jest.fn() };
-    const localEmbeddingProvider: any = {
-      embedMany: jest.fn().mockResolvedValue([{ vector: [1] }]),
-    };
+    const embedMany = jest.fn().mockResolvedValue([{ vector: [1] }]);
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = {
       recordAutoContextEnrichment: jest.fn().mockRejectedValue(new Error('db')),
     };
@@ -327,7 +337,7 @@ describe('AutoContextResolverService', () => {
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
 
@@ -350,13 +360,14 @@ describe('AutoContextResolverService', () => {
     const embeddingRepo: any = { createQueryBuilder: jest.fn() };
     const ticketsService: any = { resolveTicketIdByClientSha: jest.fn() };
     const knowledgeTreeService: any = { findNodeBySha: jest.fn(), collectPromptContextsForSource: jest.fn() };
-    const localEmbeddingProvider: any = { embedMany: jest.fn() };
+    const embedMany = jest.fn();
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = { recordAutoContextEnrichment: jest.fn() };
     const service = new AutoContextResolverService(
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
 
@@ -366,7 +377,7 @@ describe('AutoContextResolverService', () => {
       contextInjection: {},
     });
 
-    expect(localEmbeddingProvider.embedMany).not.toHaveBeenCalled();
+    expect(embedMany).not.toHaveBeenCalled();
     expect(embeddingRepo.createQueryBuilder).not.toHaveBeenCalled();
   });
 
@@ -384,7 +395,8 @@ describe('AutoContextResolverService', () => {
         promptSections: ['short', 'medium-length-text', 'never-included'],
       }),
     };
-    const localEmbeddingProvider: any = { embedMany: jest.fn() };
+    const embedMany = jest.fn();
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = {
       recordAutoContextEnrichment: jest.fn().mockResolvedValue(undefined),
     };
@@ -392,7 +404,7 @@ describe('AutoContextResolverService', () => {
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
     const result = await service.resolve({
@@ -412,13 +424,14 @@ describe('AutoContextResolverService', () => {
       findNodeBySha: jest.fn().mockResolvedValue({ id: 'f1', nodeType: 'folder' }),
       collectPromptContextsForSource: jest.fn(),
     };
-    const localEmbeddingProvider: any = { embedMany: jest.fn() };
+    const embedMany = jest.fn();
+    const embeddingProviderRegistry = createEmbeddingRegistry(embedMany);
     const statisticsService: any = { recordAutoContextEnrichment: jest.fn() };
     const service = new AutoContextResolverService(
       embeddingRepo,
       ticketsService,
       knowledgeTreeService,
-      localEmbeddingProvider,
+      embeddingProviderRegistry,
       statisticsService,
     );
 

@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "openclaw",
+  "kind": "agent-provider",
+  "name": "Openclaw",
+  "description": "Openclaw agent provider extension.",
+  "version": "0.0.0"
+}

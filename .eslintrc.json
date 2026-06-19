@@ -48,6 +48,14 @@
                 "onlyDependOnLibsWithTags": ["type:util"]
               },
               {
+                "sourceTag": "type:provider",
+                "onlyDependOnLibsWithTags": [
+                  "type:provider",
+                  "type:feature",
+                  "type:util"
+                ]
+              },
+              {
                 "sourceTag": "domain:shared",
                 "onlyDependOnLibsWithTags": ["domain:shared"]
               },
@@ -75,6 +83,7 @@
                 "sourceTag": "domain:agenstra",
                 "onlyDependOnLibsWithTags": [
                   "domain:agenstra",
+                  "domain:decabill",
                   "domain:identity",
                   "domain:shared"
                 ]
@@ -83,6 +92,15 @@
                 "sourceTag": "domain:forepath",
                 "onlyDependOnLibsWithTags": [
                   "domain:forepath",
+                  "domain:decabill",
+                  "domain:identity",
+                  "domain:shared"
+                ]
+              },
+              {
+                "sourceTag": "domain:decabill",
+                "onlyDependOnLibsWithTags": [
+                  "domain:decabill",
                   "domain:identity",
                   "domain:shared"
                 ]

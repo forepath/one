@@ -5,8 +5,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { ProvisionServerDto } from '../dto/provision-server.dto';
 import { ProvisioningReferenceEntity } from '../entities/provisioning-reference.entity';
-import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
-import { ProvisionedServer, ProvisioningProvider, ServerInfo } from '../providers/provisioning-provider.interface';
+import {
+  PROVISIONING_PROVIDER_REGISTRY,
+  ProvisionedServer,
+  ProvisioningProvider,
+  ServerInfo,
+} from '@forepath/agenstra/backend/util-plugin-host';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 
 import { ClientsService } from './clients.service';
@@ -69,10 +73,10 @@ describe('ProvisioningService', () => {
     updatedAt: new Date('2024-01-01'),
     client: mockClient,
   };
-  const mockProvisioningProviderFactory = {
+  const mockPROVISIONING_PROVIDER_REGISTRY = {
     hasProvider: jest.fn(),
     getProvider: jest.fn(),
-    getRegisteredTypes: jest.fn(),
+    getRegisteredIds: jest.fn(),
   };
   const mockClientsService = {
     create: jest.fn(),
@@ -93,8 +97,8 @@ describe('ProvisioningService', () => {
       providers: [
         ProvisioningService,
         {
-          provide: ProvisioningProviderFactory,
-          useValue: mockProvisioningProviderFactory,
+          provide: PROVISIONING_PROVIDER_REGISTRY,
+          useValue: mockPROVISIONING_PROVIDER_REGISTRY,
         },
         {
           provide: ClientsService,
@@ -140,8 +144,8 @@ describe('ProvisioningService', () => {
     };
 
     it('should provision a server with API_KEY authentication and create client', async () => {
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(true);
+      mockPROVISIONING_PROVIDER_REGISTRY.getProvider.mockReturnValue(mockProvider);
       (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
       mockClientsService.create.mockResolvedValue(mockClient);
       mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
@@ -160,8 +164,8 @@ describe('ProvisioningService', () => {
       });
       expect(result.isAutoProvisioned).toBe(true);
 
-      expect(mockProvisioningProviderFactory.hasProvider).toHaveBeenCalledWith('hetzner');
-      expect(mockProvisioningProviderFactory.getProvider).toHaveBeenCalledWith('hetzner');
+      expect(mockPROVISIONING_PROVIDER_REGISTRY.hasProvider).toHaveBeenCalledWith('hetzner');
+      expect(mockPROVISIONING_PROVIDER_REGISTRY.getProvider).toHaveBeenCalledWith('hetzner');
       expect(mockProvider.provisionServer).toHaveBeenCalledWith(
         expect.objectContaining({
           serverType: 'cx11',
@@ -213,8 +217,8 @@ describe('ProvisioningService', () => {
         apiKey: undefined,
       };
 
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(true);
+      mockPROVISIONING_PROVIDER_REGISTRY.getProvider.mockReturnValue(mockProvider);
       (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
       mockClientsService.create.mockResolvedValue(keycloakClient);
       mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
@@ -244,8 +248,8 @@ describe('ProvisioningService', () => {
         gitToken: 'token',
       };
 
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(true);
+      mockPROVISIONING_PROVIDER_REGISTRY.getProvider.mockReturnValue(mockProvider);
       (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
       mockClientsService.create.mockResolvedValue(mockClient);
       mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
@@ -267,8 +271,8 @@ describe('ProvisioningService', () => {
         apiKey: 'custom-api-key-123',
       };
 
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(true);
+      mockPROVISIONING_PROVIDER_REGISTRY.getProvider.mockReturnValue(mockProvider);
       (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
       mockClientsService.create.mockResolvedValue(mockClient);
       mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
@@ -286,8 +290,8 @@ describe('ProvisioningService', () => {
     });
 
     it('should generate API key if not provided for API_KEY authentication', async () => {
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(true);
+      mockPROVISIONING_PROVIDER_REGISTRY.getProvider.mockReturnValue(mockProvider);
       (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
       mockClientsService.create.mockResolvedValue(mockClient);
       mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
@@ -302,16 +306,16 @@ describe('ProvisioningService', () => {
     });
 
     it('should throw BadRequestException when provider is not available', async () => {
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(false);
-      mockProvisioningProviderFactory.getRegisteredTypes.mockReturnValue(['aws']);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(false);
+      mockPROVISIONING_PROVIDER_REGISTRY.getRegisteredIds.mockReturnValue(['aws']);
 
       await expect(service.provisionServer(provisionDto)).rejects.toThrow(BadRequestException);
       await expect(service.provisionServer(provisionDto)).rejects.toThrow("Provider type 'hetzner' is not available");
     });
 
     it('should include authentication configuration in user data', async () => {
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(true);
+      mockPROVISIONING_PROVIDER_REGISTRY.getProvider.mockReturnValue(mockProvider);
       (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
       mockClientsService.create.mockResolvedValue(mockClient);
       mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
@@ -328,8 +332,8 @@ describe('ProvisioningService', () => {
     });
 
     it('should embed AUTO_ENRICH_ENABLED_GLOBAL in user data when provided', async () => {
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(true);
+      mockPROVISIONING_PROVIDER_REGISTRY.getProvider.mockReturnValue(mockProvider);
       (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
       mockClientsService.create.mockResolvedValue(mockClient);
       mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
@@ -343,8 +347,8 @@ describe('ProvisioningService', () => {
     });
 
     it('should embed AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE in user data when provided', async () => {
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(true);
+      mockPROVISIONING_PROVIDER_REGISTRY.getProvider.mockReturnValue(mockProvider);
       (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
       mockClientsService.create.mockResolvedValue(mockClient);
       mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
@@ -361,23 +365,23 @@ describe('ProvisioningService', () => {
   describe('deleteProvisionedServer', () => {
     it('should delete server from provider and remove client', async () => {
       mockProvisioningReferencesRepository.findByClientId.mockResolvedValue(mockProvisioningReference);
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(true);
+      mockPROVISIONING_PROVIDER_REGISTRY.getProvider.mockReturnValue(mockProvider);
       (mockProvider.deleteServer as jest.Mock).mockResolvedValue(undefined);
       mockClientsService.remove.mockResolvedValue(undefined);
 
       await service.deleteProvisionedServer('client-uuid');
 
       expect(mockProvisioningReferencesRepository.findByClientId).toHaveBeenCalledWith('client-uuid');
-      expect(mockProvisioningProviderFactory.hasProvider).toHaveBeenCalledWith('hetzner');
+      expect(mockPROVISIONING_PROVIDER_REGISTRY.hasProvider).toHaveBeenCalledWith('hetzner');
       expect(mockProvider.deleteServer).toHaveBeenCalledWith('server-123');
       expect(mockClientsService.remove).toHaveBeenCalledWith('client-uuid', undefined, undefined, true);
     });
 
     it('should continue with client deletion even if server deletion fails', async () => {
       mockProvisioningReferencesRepository.findByClientId.mockResolvedValue(mockProvisioningReference);
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(true);
+      mockPROVISIONING_PROVIDER_REGISTRY.getProvider.mockReturnValue(mockProvider);
       (mockProvider.deleteServer as jest.Mock).mockRejectedValue(new Error('Server deletion failed'));
       mockClientsService.remove.mockResolvedValue(undefined);
 
@@ -389,7 +393,7 @@ describe('ProvisioningService', () => {
 
     it('should skip server deletion if provider is not available', async () => {
       mockProvisioningReferencesRepository.findByClientId.mockResolvedValue(mockProvisioningReference);
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(false);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(false);
       mockClientsService.remove.mockResolvedValue(undefined);
 
       await service.deleteProvisionedServer('client-uuid');
@@ -411,8 +415,8 @@ describe('ProvisioningService', () => {
   describe('getServerInfo', () => {
     it('should return fresh server information from provider', async () => {
       mockProvisioningReferencesRepository.findByClientId.mockResolvedValue(mockProvisioningReference);
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(true);
+      mockPROVISIONING_PROVIDER_REGISTRY.getProvider.mockReturnValue(mockProvider);
       (mockProvider.getServerInfo as jest.Mock).mockResolvedValue(mockServerInfo);
       mockProvisioningReferencesRepository.update.mockResolvedValue(mockProvisioningReference);
 
@@ -437,7 +441,7 @@ describe('ProvisioningService', () => {
 
     it('should return stored information when provider is not available', async () => {
       mockProvisioningReferencesRepository.findByClientId.mockResolvedValue(mockProvisioningReference);
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(false);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(false);
 
       const result = await service.getServerInfo('client-uuid');
 
@@ -472,8 +476,8 @@ describe('ProvisioningService', () => {
       };
 
       mockProvisioningReferencesRepository.findByClientId.mockResolvedValue(referenceWithoutPrivateIp);
-      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
-      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      mockPROVISIONING_PROVIDER_REGISTRY.hasProvider.mockReturnValue(true);
+      mockPROVISIONING_PROVIDER_REGISTRY.getProvider.mockReturnValue(mockProvider);
       (mockProvider.getServerInfo as jest.Mock).mockResolvedValue(serverInfoWithoutPrivateIp);
       mockProvisioningReferencesRepository.update.mockResolvedValue(referenceWithoutPrivateIp);
 

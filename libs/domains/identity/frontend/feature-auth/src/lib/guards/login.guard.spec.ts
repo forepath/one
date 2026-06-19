@@ -2,7 +2,7 @@ import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
+import { createMockIdentityAuthEnvironment, IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { KeycloakService } from 'keycloak-angular';
 
 import { loginGuard } from './login.guard';
@@ -64,12 +64,7 @@ describe('loginGuard', () => {
     mockRoute = {} as ActivatedRouteSnapshot;
     mockState = {} as RouterStateSnapshot;
 
-    mockEnvironment = {
-      apiUrl: 'http://localhost:3100/api',
-      authentication: {
-        type: 'api-key',
-      },
-    };
+    mockEnvironment = createMockIdentityAuthEnvironment();
 
     mockKeycloakService = {
       isLoggedIn: jest.fn(),

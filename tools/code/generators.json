@@ -25,6 +25,11 @@
       "schema": "./src/generators/lib/schema.json",
       "description": "lib generator"
     },
+    "provider": {
+      "factory": "./src/generators/provider/provider",
+      "schema": "./src/generators/provider/schema.json",
+      "description": "Scaffold a forepath extension provider library with forepath.extension.json"
+    },
     "mcp": {
       "factory": "./src/generators/mcp/mcp",
       "schema": "./src/generators/mcp/schema.json",

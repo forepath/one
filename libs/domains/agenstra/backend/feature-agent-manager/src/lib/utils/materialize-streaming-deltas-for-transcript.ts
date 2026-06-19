@@ -1,4 +1,4 @@
-import { AgentResponseObject } from '../providers/agent-provider.interface';
+import { AgentResponseObject } from '@forepath/agenstra/backend/util-plugin-host';
 
 /**
  * Streaming builds `streamedUnified` with `type: "delta"` chunks interleaved with tools, thinking, etc.

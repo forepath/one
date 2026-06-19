@@ -77,17 +77,87 @@ nx generate @forepath/code:domain payments --prefix=@forepath
 
 ### lib
 
-Creates a new domain library (feature, data-access, ui, or util) under a given domain and scope.
+Creates a new domain library (feature, data-access, ui, util, or provider) under a given domain and scope.
 
 - **domain** (required) – Domain name
 - **scope** (required) – `frontend`, `backend`, `keycloak`, or `shared`
-- **type** (required) – `data-access`, `feature`, `ui`, or `util`
+- **type** (required) – `data-access`, `feature`, `ui`, `util`, or `provider`
 - **name** (required) – Library name
 - **generator** (required) – Base Nx generator: `js`, `node`, or `angular`
 
 ```bash
 nx generate @forepath/code:lib --domain=payments --scope=frontend --type=feature --name=checkout --generator=angular
 ```
+
+For extension provider libraries, prefer `@forepath/code:provider` (adds `forepath.extension.json` and extension stubs).
+
+### provider
+
+Scaffolds a Forepath extension provider library under `libs/domains/{domain}/backend/provider-{name}/` with `forepath.extension.json`, provider stub, and extension factory.
+
+- **domain** (required) – `agenstra` or `decabill`
+- **name** (required) – short provider name (e.g. `stripe`, `cursor`)
+- **kind** (required) – extension kind constant for the domain plugin-host
+- **description** (optional) – manifest description
+- **version** (optional, default `0.0.0`) – manifest semver
+- **generator** (optional, default `node`) – base Nx library generator (`js` or `node`)
+
+```bash
+nx generate @forepath/code:provider decabill stripe payment-processor
+nx generate @forepath/code:provider agenstra cursor agent-provider --description="Cursor agent provider"
+```
+
+Generated libraries are tagged `domain:{domain},scope:backend,type:provider` and import domain contracts from `{domain}/backend/util-plugin-host`.
+
+External npm extensions ship `forepath.extension.json` at the package root; internal monorepo providers use the generated manifest beside `src/index.ts`.
+
+#### External npm extension packages
+
+Third-party extensions are published as normal npm packages and loaded at **deploy time** (listed in the backend app `package.json`), then referenced via `npm:` env specifiers.
+
+**Package layout (minimum):**
+
+```
+my-forepath-extension/
+  package.json
+  forepath.extension.json
+  dist/index.js          # exports createMyExtension()
+```
+
+**`forepath.extension.json`:**
+
+```json
+{
+  "id": "my-extension",
+  "kind": "agent-provider",
+  "name": "My Extension",
+  "description": "Short description for admin UIs and logs.",
+  "version": "1.0.0"
+}
+```
+
+The `kind` must match the target domain plugin-host (`agent-provider`, `payment-processor`, etc.). The `id` must match the provider's `getType()` return value.
+
+**`package.json` bridge (optional when manifest is at package root):**
+
+```json
+{
+  "name": "@acme/agenstra-cursor-agent",
+  "main": "dist/index.js",
+  "forepath": {
+    "extensionManifest": "./forepath.extension.json"
+  }
+}
+```
+
+**Deploy and configure:**
+
+1. Add the package to the backend app `dependencies` and install in the deployment image.
+2. Append an `npm:` specifier to the relevant env key, for example:
+   `AGENSTRA_AGENT_PROVIDER_EXTENSIONS=@forepath/agenstra/backend/provider-cursor,npm:@acme/agenstra-cursor-agent`
+3. Backend app webpack configs call `applyExtensionWebpackExternals` from `util-extension-core` so npm extensions are not bundled and resolve at runtime via Node `require`.
+
+**Extension entrypoint:** Export `create{Name}Extension(): ForepathExtension<TContract>` from the package main (or set `entrypoint` in the manifest when non-default). See `@forepath/shared/backend/util-extension-core` and domain `util-plugin-host` modules.
 
 ### mcp
 

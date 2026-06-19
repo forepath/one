@@ -4,10 +4,15 @@ import { GitRepositorySetupMode } from '@forepath/agenstra/backend/feature-agent
 import { AuthenticationType, UserRole } from '@forepath/identity/backend';
 import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 
+import {
+  PROVISIONING_PROVIDER_REGISTRY,
+  ProvisioningProvider,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
+
 import { ProvisionServerDto } from '../dto/provision-server.dto';
 import { ProvisionedServerResponseDto } from '../dto/provisioned-server-response.dto';
 import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
-import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 
 import { ClientsService } from './clients.service';
@@ -23,7 +28,8 @@ export class ProvisioningService {
   private readonly API_KEY_LENGTH = 32;
 
   constructor(
-    private readonly provisioningProviderFactory: ProvisioningProviderFactory,
+    @Inject(PROVISIONING_PROVIDER_REGISTRY)
+    private readonly provisioningProviderRegistry: ProviderRegistry<ProvisioningProvider>,
     @Inject(forwardRef(() => ClientsService))
     private readonly clientsService: ClientsService,
     private readonly provisioningReferencesRepository: ProvisioningReferencesRepository,
@@ -349,13 +355,13 @@ DOCKER_COMPOSE_EOF
     isApiKeyAuth = false,
   ): Promise<ProvisionedServerResponseDto> {
     // Get the provider
-    if (!this.provisioningProviderFactory.hasProvider(provisionServerDto.providerType)) {
+    if (!this.provisioningProviderRegistry.hasProvider(provisionServerDto.providerType)) {
       throw new BadRequestException(
-        `Provider type '${provisionServerDto.providerType}' is not available. Available types: ${this.provisioningProviderFactory.getRegisteredTypes().join(', ')}`,
+        `Provider type '${provisionServerDto.providerType}' is not available. Available types: ${this.provisioningProviderRegistry.getRegisteredIds().join(', ')}`,
       );
     }
 
-    const provider = this.provisioningProviderFactory.getProvider(provisionServerDto.providerType);
+    const provider = this.provisioningProviderRegistry.getProvider(provisionServerDto.providerType);
     // Generate API key if needed
     let apiKey: string | undefined;
 
@@ -488,13 +494,13 @@ DOCKER_COMPOSE_EOF
       .catch(() => undefined);
 
     // Get the provider
-    if (!this.provisioningProviderFactory.hasProvider(reference.providerType)) {
+    if (!this.provisioningProviderRegistry.hasProvider(reference.providerType)) {
       this.logger.warn(
         `Provider type '${reference.providerType}' is not available. Skipping server deletion, but will delete client and reference.`,
       );
     } else {
       // Delete server from provider
-      const provider = this.provisioningProviderFactory.getProvider(reference.providerType);
+      const provider = this.provisioningProviderRegistry.getProvider(reference.providerType);
 
       try {
         await provider.deleteServer(reference.serverId);
@@ -531,7 +537,7 @@ DOCKER_COMPOSE_EOF
     }
 
     // Get the provider
-    if (!this.provisioningProviderFactory.hasProvider(reference.providerType)) {
+    if (!this.provisioningProviderRegistry.hasProvider(reference.providerType)) {
       // Return stored information if provider is not available
       return {
         serverId: reference.serverId,
@@ -543,7 +549,7 @@ DOCKER_COMPOSE_EOF
     }
 
     // Get fresh information from provider
-    const provider = this.provisioningProviderFactory.getProvider(reference.providerType);
+    const provider = this.provisioningProviderRegistry.getProvider(reference.providerType);
     const serverInfo = await provider.getServerInfo(reference.serverId);
 
     // Update reference with fresh information

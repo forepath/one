@@ -1,7 +1,8 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+
+import { AGENT_PROVIDER_REGISTRY, AgentProvider, ProviderRegistry } from '@forepath/agenstra/backend/util-plugin-host';
 
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
-import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentEnvironmentVariablesRepository } from '../repositories/agent-environment-variables.repository';
 import { AgentsRepository } from '../repositories/agents.repository';
 
@@ -22,7 +23,8 @@ export class AgentEnvironmentVariablesService {
     private readonly agentsRepository: AgentsRepository,
     private readonly dockerService: DockerService,
     private readonly agentMessagesService: AgentMessagesService,
-    private readonly agentProviderFactory: AgentProviderFactory,
+    @Inject(AGENT_PROVIDER_REGISTRY)
+    private readonly agentProviderRegistry: ProviderRegistry<AgentProvider>,
     private readonly agentSessionHydrationService: AgentSessionHydrationService,
   ) {}
 
@@ -69,7 +71,7 @@ export class AgentEnvironmentVariablesService {
     ].join('\n');
 
     try {
-      const provider = this.agentProviderFactory.getProvider(agentType || 'cursor');
+      const provider = this.agentProviderRegistry.getProvider(agentType || 'cursor');
       const raw = await provider.sendMessage(agentId, containerId, summarizePrompt, model ? { model } : {});
       const parseable = provider.toParseableStrings(raw);
 

@@ -2,7 +2,12 @@ import { HttpErrorResponse, HttpRequest } from '@angular/common/http';
 import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { IDENTITY_AUTH_ENVIRONMENT, IdentityAuthEnvironment, USERS_JWT_STORAGE_KEY } from '@forepath/identity/frontend';
+import {
+  createMockIdentityAuthEnvironment,
+  IDENTITY_AUTH_ENVIRONMENT,
+  IdentityAuthEnvironment,
+  USERS_JWT_STORAGE_KEY,
+} from '@forepath/identity/frontend';
 import { Store } from '@ngrx/store';
 import { throwError } from 'rxjs';
 
@@ -41,10 +46,9 @@ describe('usersSessionInvalidatedInterceptor', () => {
   });
 
   it('dispatches logout and clears JWT storage on locked-account 401 for users mode', (done) => {
-    const env: IdentityAuthEnvironment = {
-      apiUrl: 'http://localhost:3100/api',
+    const env: IdentityAuthEnvironment = createMockIdentityAuthEnvironment({
       authentication: { type: 'users' },
-    };
+    });
     const injector = setupInjector(env, { dispatch: storeDispatch });
 
     mockNext.mockReturnValue(
@@ -73,10 +77,9 @@ describe('usersSessionInvalidatedInterceptor', () => {
   });
 
   it('does not logout on 401 with change-password message', (done) => {
-    const env: IdentityAuthEnvironment = {
-      apiUrl: 'http://localhost:3100/api',
+    const env: IdentityAuthEnvironment = createMockIdentityAuthEnvironment({
       authentication: { type: 'users' },
-    };
+    });
     const injector = setupInjector(env, { dispatch: storeDispatch });
 
     mockNext.mockReturnValue(
@@ -102,10 +105,9 @@ describe('usersSessionInvalidatedInterceptor', () => {
   });
 
   it('no-ops for api-key authentication type', (done) => {
-    const env: IdentityAuthEnvironment = {
-      apiUrl: 'http://localhost:3100/api',
+    const env: IdentityAuthEnvironment = createMockIdentityAuthEnvironment({
       authentication: { type: 'api-key', apiKey: 'k' },
-    };
+    });
     const injector = setupInjector(env, { dispatch: storeDispatch });
 
     mockNext.mockReturnValue(
@@ -130,10 +132,9 @@ describe('usersSessionInvalidatedInterceptor', () => {
   });
 
   it('dispatches logout on locked-account 401 for keycloak mode without clearing users JWT storage', (done) => {
-    const env: IdentityAuthEnvironment = {
-      apiUrl: 'http://localhost:3100/api',
+    const env: IdentityAuthEnvironment = createMockIdentityAuthEnvironment({
       authentication: { type: 'keycloak' },
-    };
+    });
     const injector = setupInjector(env, { dispatch: storeDispatch });
 
     mockNext.mockReturnValue(

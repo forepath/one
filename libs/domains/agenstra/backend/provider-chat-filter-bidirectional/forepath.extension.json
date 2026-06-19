@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "bidirectional-example",
+  "kind": "chat-filter",
+  "name": "ChatFilterBidirectional",
+  "description": "Chat Filter Bidirectional chat filter extension.",
+  "version": "0.0.0"
+}

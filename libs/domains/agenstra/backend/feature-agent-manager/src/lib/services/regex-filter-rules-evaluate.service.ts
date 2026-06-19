@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
-import { FilterDirection, FilterResult } from '../providers/chat-filter.interface';
+import { FilterDirection, FilterResult } from '@forepath/agenstra/backend/util-plugin-host';
 import {
   applyReplace,
   compileRegexOrThrow,

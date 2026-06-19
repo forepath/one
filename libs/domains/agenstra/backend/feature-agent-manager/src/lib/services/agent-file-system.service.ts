@@ -2,11 +2,12 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+
+import { AGENT_PROVIDER_REGISTRY, AgentProvider, ProviderRegistry } from '@forepath/agenstra/backend/util-plugin-host';
 
 import { FileContentDto } from '../dto/file-content.dto';
 import { FileNodeDto } from '../dto/file-node.dto';
-import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentsRepository } from '../repositories/agents.repository';
 import type { AgentFileManagerContext } from '../utils/agent-file-manager-context';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
@@ -30,7 +31,8 @@ export class AgentFileSystemService {
     private readonly agentsService: AgentsService,
     private readonly agentsRepository: AgentsRepository,
     private readonly dockerService: DockerService,
-    private readonly agentProviderFactory: AgentProviderFactory,
+    @Inject(AGENT_PROVIDER_REGISTRY)
+    private readonly agentProviderRegistry: ProviderRegistry<AgentProvider>,
     private readonly gitStateBroadcast: AgentGitStateBroadcastService,
   ) {}
 
@@ -78,7 +80,7 @@ export class AgentFileSystemService {
    */
   private getBasePath(agentType: string): string {
     try {
-      const provider = this.agentProviderFactory.getProvider(agentType);
+      const provider = this.agentProviderRegistry.getProvider(agentType);
 
       if (provider.getBasePath) {
         const basePath = provider.getBasePath();
@@ -116,7 +118,7 @@ export class AgentFileSystemService {
     }
 
     try {
-      const provider = this.agentProviderFactory.getProvider(agentType);
+      const provider = this.agentProviderRegistry.getProvider(agentType);
 
       if (!provider.getConfigBasePath) {
         throw new BadRequestException(AgentFileSystemService.CONFIG_NOT_SUPPORTED);

@@ -40,7 +40,7 @@
         "$source": "argv",
         "index": 2
       },
-      "enum": ["data-access", "feature", "ui", "util"],
+      "enum": ["data-access", "feature", "ui", "util", "provider"],
       "x-prompt": {
         "message": "What type of library would you like to create?",
         "type": "list",
@@ -48,7 +48,8 @@
           { "value": "data-access", "label": "Data Access" },
           { "value": "feature", "label": "Feature" },
           { "value": "ui", "label": "UI" },
-          { "value": "util", "label": "Utility" }
+          { "value": "util", "label": "Utility" },
+          { "value": "provider", "label": "Provider (extension plugin)" }
         ]
       }
     },

@@ -1,7 +1,10 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 
-import { ExternalImportProviderFactory } from '../providers/external-import-provider.factory';
-import { CONTEXT_IMPORT_PROVIDERS } from '../providers/external-import-provider.tokens';
+import {
+  EXTERNAL_IMPORT_PROVIDER_REGISTRY,
+  ExternalContextImportProvider,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
 
 import { ExternalImportConfigService } from './external-import-config.service';
 
@@ -12,8 +15,8 @@ export class ContextImportOrchestratorService {
   private readonly logger = new Logger(ContextImportOrchestratorService.name);
 
   constructor(
-    @Inject(CONTEXT_IMPORT_PROVIDERS)
-    private readonly importProviderFactory: ExternalImportProviderFactory,
+    @Inject(EXTERNAL_IMPORT_PROVIDER_REGISTRY)
+    private readonly importProviderRegistry: ProviderRegistry<ExternalContextImportProvider>,
     private readonly configService: ExternalImportConfigService,
   ) {}
 
@@ -30,7 +33,7 @@ export class ContextImportOrchestratorService {
       return;
     }
 
-    const provider = this.importProviderFactory.getProvider(config.provider);
+    const provider = this.importProviderRegistry.getProvider(config.provider);
     let recordedError: string | null = null;
 
     try {
@@ -57,7 +60,7 @@ export class ContextImportOrchestratorService {
     let n = 0;
 
     for (const config of configs) {
-      const provider = this.importProviderFactory.getProvider(config.provider);
+      const provider = this.importProviderRegistry.getProvider(config.provider);
       let recordedError: string | null = null;
 
       try {

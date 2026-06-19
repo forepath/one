@@ -1,4 +1,11 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+
+import {
+  PIPELINE_PROVIDER_REGISTRY,
+  PipelineProvider,
+  PipelineProviderCredentials,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
 
 import {
   CreateDeploymentConfigurationDto,
@@ -15,8 +22,6 @@ import {
 } from '../dto/deployment-run.dto';
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
-import { PipelineProviderFactory } from '../providers/pipeline-provider.factory';
-import { PipelineProviderCredentials } from '../providers/pipeline-provider.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { DeploymentConfigurationsRepository } from '../repositories/deployment-configurations.repository';
 import { DeploymentRunsRepository } from '../repositories/deployment-runs.repository';
@@ -33,7 +38,8 @@ export class DeploymentsService {
     private readonly deploymentConfigurationsRepository: DeploymentConfigurationsRepository,
     private readonly deploymentRunsRepository: DeploymentRunsRepository,
     private readonly agentsRepository: AgentsRepository,
-    private readonly pipelineProviderFactory: PipelineProviderFactory,
+    @Inject(PIPELINE_PROVIDER_REGISTRY)
+    private readonly pipelineProviderRegistry: ProviderRegistry<PipelineProvider>,
   ) {}
 
   /**
@@ -76,7 +82,7 @@ export class DeploymentsService {
     }
 
     // Verify provider exists
-    if (!this.pipelineProviderFactory.hasProvider(providerType)) {
+    if (!this.pipelineProviderRegistry.hasProvider(providerType)) {
       throw new BadRequestException(`Pipeline provider '${providerType}' is not available`);
     }
 
@@ -104,7 +110,7 @@ export class DeploymentsService {
    */
   async listRepositories(agentId: string): Promise<RepositoryResponseDto[]> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
-    const provider = this.pipelineProviderFactory.getProvider(config.providerType);
+    const provider = this.pipelineProviderRegistry.getProvider(config.providerType);
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
@@ -126,7 +132,7 @@ export class DeploymentsService {
    */
   async listBranches(agentId: string, repositoryId: string): Promise<BranchResponseDto[]> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
-    const provider = this.pipelineProviderFactory.getProvider(config.providerType);
+    const provider = this.pipelineProviderRegistry.getProvider(config.providerType);
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
@@ -145,7 +151,7 @@ export class DeploymentsService {
    */
   async listWorkflows(agentId: string, repositoryId: string, branch?: string): Promise<WorkflowResponseDto[]> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
-    const provider = this.pipelineProviderFactory.getProvider(config.providerType);
+    const provider = this.pipelineProviderRegistry.getProvider(config.providerType);
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
@@ -166,7 +172,7 @@ export class DeploymentsService {
    */
   async triggerWorkflow(agentId: string, dto: TriggerWorkflowDto): Promise<DeploymentRunResponseDto> {
     const config = await this.deploymentConfigurationsRepository.findByAgentIdOrThrow(agentId);
-    const provider = this.pipelineProviderFactory.getProvider(config.providerType);
+    const provider = this.pipelineProviderRegistry.getProvider(config.providerType);
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
@@ -205,7 +211,7 @@ export class DeploymentsService {
       throw new BadRequestException(`Deployment run ${runId} does not belong to agent ${agentId}`);
     }
 
-    const provider = this.pipelineProviderFactory.getProvider(config.providerType);
+    const provider = this.pipelineProviderRegistry.getProvider(config.providerType);
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
@@ -245,7 +251,7 @@ export class DeploymentsService {
       throw new BadRequestException(`Deployment run ${runId} does not belong to agent ${agentId}`);
     }
 
-    const provider = this.pipelineProviderFactory.getProvider(config.providerType);
+    const provider = this.pipelineProviderRegistry.getProvider(config.providerType);
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
@@ -271,7 +277,7 @@ export class DeploymentsService {
       throw new BadRequestException(`Deployment run ${runId} does not belong to agent ${agentId}`);
     }
 
-    const provider = this.pipelineProviderFactory.getProvider(config.providerType);
+    const provider = this.pipelineProviderRegistry.getProvider(config.providerType);
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
@@ -305,7 +311,7 @@ export class DeploymentsService {
       throw new BadRequestException(`Deployment run ${runId} does not belong to agent ${agentId}`);
     }
 
-    const provider = this.pipelineProviderFactory.getProvider(config.providerType);
+    const provider = this.pipelineProviderRegistry.getProvider(config.providerType);
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,
@@ -331,7 +337,7 @@ export class DeploymentsService {
       throw new BadRequestException(`Deployment run ${runId} does not belong to agent ${agentId}`);
     }
 
-    const provider = this.pipelineProviderFactory.getProvider(config.providerType);
+    const provider = this.pipelineProviderRegistry.getProvider(config.providerType);
     const credentials: PipelineProviderCredentials = {
       token: config.providerToken,
       baseUrl: config.providerBaseUrl,

@@ -1,12 +1,18 @@
+import * as pluginHost from '@forepath/agenstra/backend/util-plugin-host';
+import {
+  AGENT_PROVIDER_REGISTRY,
+  AgentProvider,
+  AgentResponseObject,
+  CHAT_FILTER_REGISTRY,
+  ChatFilter,
+  FilterDirection,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Server, Socket } from 'socket.io';
 
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import type { AgentEventEnvelope } from '../providers/agent-events.types';
-import { AgentProviderFactory } from '../providers/agent-provider.factory';
-import { AgentProvider, AgentResponseObject } from '../providers/agent-provider.interface';
-import { ChatFilterFactory } from '../providers/chat-filter.factory';
-import { ChatFilter, FilterDirection } from '../providers/chat-filter.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
@@ -32,8 +38,9 @@ describe('AgentsGateway', () => {
   let agentsRepository: jest.Mocked<AgentsRepository>;
   let dockerService: jest.Mocked<DockerService>;
   let agentMessagesService: jest.Mocked<AgentMessagesService>;
-  let agentProviderFactory: jest.Mocked<AgentProviderFactory>;
-  let chatFilterFactory: jest.Mocked<ChatFilterFactory>;
+  let agentProviderRegistry: jest.Mocked<ProviderRegistry<AgentProvider>>;
+  let chatFilterRegistry: jest.Mocked<ProviderRegistry<ChatFilter>>;
+  let getChatFiltersByDirectionSpy: jest.SpyInstance;
   let mockServer: Partial<Server>;
   let mockSocket: Partial<Socket>;
   const mockAgent: AgentEntity = {
@@ -96,20 +103,20 @@ describe('AgentsGateway', () => {
     getModelsListCommand: jest.fn().mockReturnValue('cursor-agent --list-models'),
     toModelsList: jest.fn().mockReturnValue({}),
   };
-  const mockAgentProviderFactory = {
+  const mockAgentProviderRegistry = {
     getProvider: jest.fn().mockReturnValue(mockAgentProvider),
-    registerProvider: jest.fn(),
+    register: jest.fn(),
     hasProvider: jest.fn(),
-    getRegisteredTypes: jest.fn(),
-  } as unknown as jest.Mocked<AgentProviderFactory>;
-  const mockChatFilterFactory = {
-    getFiltersByDirection: jest.fn().mockReturnValue([]),
-    getAllFilters: jest.fn().mockReturnValue([]),
-    getFilter: jest.fn(),
-    hasFilter: jest.fn(),
-    getRegisteredTypes: jest.fn(),
-    registerFilter: jest.fn(),
-  } as unknown as jest.Mocked<ChatFilterFactory>;
+    getRegisteredIds: jest.fn(),
+    getAll: jest.fn(),
+  } as unknown as jest.Mocked<ProviderRegistry<AgentProvider>>;
+  const mockChatFilterRegistry = {
+    getProvider: jest.fn(),
+    register: jest.fn(),
+    hasProvider: jest.fn(),
+    getRegisteredIds: jest.fn(),
+    getAll: jest.fn().mockReturnValue([]),
+  } as unknown as jest.Mocked<ProviderRegistry<ChatFilter>>;
   const mockPromptContextComposerService = {
     composeChatMessage: jest.fn((message: string) => message),
     composeEnhanceMessage: jest.fn((message: string) => message),
@@ -130,6 +137,7 @@ describe('AgentsGateway', () => {
 
   beforeEach(async () => {
     gitStateBroadcaster = undefined;
+    getChatFiltersByDirectionSpy = jest.spyOn(pluginHost, 'getChatFiltersByDirection').mockReturnValue([]);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AgentsGateway,
@@ -154,12 +162,12 @@ describe('AgentsGateway', () => {
           useValue: mockAgentMessageEventsService,
         },
         {
-          provide: AgentProviderFactory,
-          useValue: mockAgentProviderFactory,
+          provide: AGENT_PROVIDER_REGISTRY,
+          useValue: mockAgentProviderRegistry,
         },
         {
-          provide: ChatFilterFactory,
-          useValue: mockChatFilterFactory,
+          provide: CHAT_FILTER_REGISTRY,
+          useValue: mockChatFilterRegistry,
         },
         {
           provide: PromptContextComposerService,
@@ -182,8 +190,8 @@ describe('AgentsGateway', () => {
     agentsRepository = module.get(AgentsRepository);
     dockerService = module.get(DockerService);
     agentMessagesService = module.get(AgentMessagesService);
-    agentProviderFactory = module.get(AgentProviderFactory);
-    chatFilterFactory = module.get(ChatFilterFactory);
+    agentProviderRegistry = module.get(AGENT_PROVIDER_REGISTRY);
+    chatFilterRegistry = module.get(CHAT_FILTER_REGISTRY);
 
     // Setup mock server
     mockServer = {
@@ -208,6 +216,7 @@ describe('AgentsGateway', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    getChatFiltersByDirectionSpy.mockRestore();
     // Clear authenticated clients map and socket references
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (gateway as any).authenticatedClients.clear();
@@ -1000,7 +1009,7 @@ describe('AgentsGateway', () => {
           timestamp: expect.any(String),
         }),
       );
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
+      expect(agentProviderRegistry.getProvider).toHaveBeenCalledWith('cursor');
       expect(mockAgentProvider.sendMessage).toHaveBeenCalledWith(mockAgent.id, 'container-123', 'Hello, world!', {});
       // Check agent response emission with parsed JSON - now uses socket.emit via broadcastToAgent
       expect(mockSocket.emit).toHaveBeenCalledWith(
@@ -1204,7 +1213,7 @@ describe('AgentsGateway', () => {
         }),
       };
 
-      chatFilterFactory.getFiltersByDirection.mockReturnValue([mockFilter]);
+      getChatFiltersByDirectionSpy.mockReturnValue([mockFilter]);
       agentMessagesService.createUserMessage.mockResolvedValue({
         id: 'dropped-msg',
         agentId: mockAgent.id,
@@ -1296,7 +1305,7 @@ describe('AgentsGateway', () => {
         }),
       };
 
-      chatFilterFactory.getFiltersByDirection.mockReturnValue([mockFilter]);
+      getChatFiltersByDirectionSpy.mockReturnValue([mockFilter]);
       agentMessagesService.createUserMessage.mockResolvedValue({
         id: 'msg-2',
         agentId: mockAgent.id,
@@ -1376,7 +1385,7 @@ describe('AgentsGateway', () => {
         }),
       };
 
-      chatFilterFactory.getFiltersByDirection.mockReturnValue([mockFilter]);
+      getChatFiltersByDirectionSpy.mockReturnValue([mockFilter]);
       agentMessagesService.createUserMessage.mockResolvedValue({
         id: 'msg-2',
         agentId: mockAgent.id,
@@ -1477,7 +1486,7 @@ describe('AgentsGateway', () => {
         }),
       };
 
-      chatFilterFactory.getFiltersByDirection
+      getChatFiltersByDirectionSpy
         .mockReturnValueOnce([mockIncomingFilter]) // For incoming
         .mockReturnValueOnce([mockOutgoingFilter]); // For outgoing
 
@@ -1560,7 +1569,7 @@ describe('AgentsGateway', () => {
         }),
       };
 
-      chatFilterFactory.getFiltersByDirection.mockReturnValue([mockFilter]);
+      getChatFiltersByDirectionSpy.mockReturnValue([mockFilter]);
       agentMessagesService.createUserMessage.mockResolvedValue({
         id: 'dropped-msg',
         agentId: mockAgent.id,
@@ -1634,7 +1643,7 @@ describe('AgentsGateway', () => {
         }),
       };
 
-      chatFilterFactory.getFiltersByDirection.mockReturnValue([mockFilter1, mockFilter2]);
+      getChatFiltersByDirectionSpy.mockReturnValue([mockFilter1, mockFilter2]);
       agentMessagesService.createUserMessage.mockResolvedValue({
         id: 'msg-2',
         agentId: mockAgent.id,
@@ -1728,7 +1737,7 @@ describe('AgentsGateway', () => {
         }),
       };
 
-      chatFilterFactory.getFiltersByDirection.mockImplementation((direction) => {
+      getChatFiltersByDirectionSpy.mockImplementation((_registry, direction) => {
         if (direction === FilterDirection.INCOMING) {
           return [mockIncomingFilter];
         }
@@ -1849,7 +1858,7 @@ describe('AgentsGateway', () => {
         }),
       };
 
-      chatFilterFactory.getFiltersByDirection.mockImplementation((direction) => {
+      getChatFiltersByDirectionSpy.mockImplementation((_registry, direction) => {
         if (direction === FilterDirection.INCOMING) {
           return [];
         }
@@ -1874,7 +1883,7 @@ describe('AgentsGateway', () => {
         updatedAt: new Date(),
       });
       // Mock filter factory to return empty array for incoming (no filters)
-      chatFilterFactory.getFiltersByDirection.mockImplementation((direction) => {
+      getChatFiltersByDirectionSpy.mockImplementation((_registry, direction) => {
         if (direction === FilterDirection.INCOMING) {
           return [];
         }

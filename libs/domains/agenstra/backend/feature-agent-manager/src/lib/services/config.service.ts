@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+
+import { AGENT_PROVIDER_REGISTRY, AgentProvider, ProviderRegistry } from '@forepath/agenstra/backend/util-plugin-host';
 
 import { GitRepositorySetupMode, resolveGitRepositorySetupMode } from '../constants/git-repository-setup-mode';
-import { AgentProviderFactory } from '../providers/agent-provider.factory';
 
 /**
  * Service for retrieving configuration parameters.
@@ -9,7 +10,10 @@ import { AgentProviderFactory } from '../providers/agent-provider.factory';
  */
 @Injectable()
 export class ConfigService {
-  constructor(private readonly agentProviderFactory: AgentProviderFactory) {}
+  constructor(
+    @Inject(AGENT_PROVIDER_REGISTRY)
+    private readonly agentProviderRegistry: ProviderRegistry<AgentProvider>,
+  ) {}
 
   /**
    * Get the Git repository URL from environment variables.
@@ -32,8 +36,8 @@ export class ConfigService {
    * @returns Array of agent type information objects
    */
   getAvailableAgentTypes(): Array<{ type: string; displayName: string }> {
-    return this.agentProviderFactory.getRegisteredTypes().map((type) => {
-      const provider = this.agentProviderFactory.getProvider(type);
+    return this.agentProviderRegistry.getRegisteredIds().map((type) => {
+      const provider = this.agentProviderRegistry.getProvider(type);
 
       return {
         type: provider.getType(),

@@ -67,26 +67,20 @@
       "@forepath/agenstra/backend/feature-agent-manager": [
         "libs/domains/agenstra/backend/feature-agent-manager/src/index.ts"
       ],
+      "@forepath/agenstra/backend/feature-agent-manager/plugin-deps": [
+        "libs/domains/agenstra/backend/feature-agent-manager/src/plugin-deps.ts"
+      ],
       "@forepath/agenstra/backend/feature-agent-controller": [
         "libs/domains/agenstra/backend/feature-agent-controller/src/index.ts"
       ],
-      "@forepath/agenstra/backend/feature-billing-manager": [
-        "libs/domains/agenstra/backend/feature-billing-manager/src/index.ts"
-      ],
       "@forepath/agenstra/frontend/data-access-agent-console": [
         "libs/domains/agenstra/frontend/data-access-agent-console/src/index.ts"
-      ],
-      "@forepath/agenstra/frontend/data-access-billing-console": [
-        "libs/domains/agenstra/frontend/data-access-billing-console/src/index.ts"
       ],
       "@forepath/agenstra/frontend/data-access-portal": [
         "libs/domains/agenstra/frontend/data-access-portal/src/index.ts"
       ],
       "@forepath/agenstra/frontend/feature-agent-console": [
         "libs/domains/agenstra/frontend/feature-agent-console/src/index.ts"
-      ],
-      "@forepath/agenstra/frontend/feature-billing-console": [
-        "libs/domains/agenstra/frontend/feature-billing-console/src/index.ts"
       ],
       "@forepath/agenstra/frontend/feature-docs": [
         "libs/domains/agenstra/frontend/feature-docs/src/index.ts"
@@ -99,6 +93,86 @@
       ],
       "@forepath/forepath/frontend/feature-landingpage": [
         "libs/domains/forepath/frontend/feature-landingpage/src/index.ts"
+      ],
+      "@forepath/decabill/backend": ["libs/domains/decabill/backend/index.ts"],
+      "@forepath/decabill/frontend": [
+        "libs/domains/decabill/frontend/index.ts"
+      ],
+      "@forepath/decabill/keycloak": [
+        "libs/domains/decabill/keycloak/index.ts"
+      ],
+      "@forepath/decabill/shared": ["libs/domains/decabill/shared/index.ts"],
+      "@forepath/decabill/backend/feature-billing-manager": [
+        "libs/domains/decabill/backend/feature-billing-manager/src/index.ts"
+      ],
+      "@forepath/decabill/frontend/data-access-billing-console": [
+        "libs/domains/decabill/frontend/data-access-billing-console/src/index.ts"
+      ],
+      "@forepath/decabill/frontend/feature-billing-console": [
+        "libs/domains/decabill/frontend/feature-billing-console/src/index.ts"
+      ],
+      "@forepath/shared/backend/util-extension-core": [
+        "libs/domains/shared/backend/util-extension-core/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/util-plugin-host": [
+        "libs/domains/agenstra/backend/util-plugin-host/src/index.ts"
+      ],
+      "@forepath/decabill/backend/util-plugin-host": [
+        "libs/domains/decabill/backend/util-plugin-host/src/index.ts"
+      ],
+      "@forepath/decabill/backend/provider-stripe": [
+        "libs/domains/decabill/backend/provider-stripe/src/index.ts"
+      ],
+      "@forepath/decabill/backend/provider-hetzner": [
+        "libs/domains/decabill/backend/provider-hetzner/src/index.ts"
+      ],
+      "@forepath/decabill/backend/provider-digital-ocean": [
+        "libs/domains/decabill/backend/provider-digital-ocean/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-hetzner-provisioning": [
+        "libs/domains/agenstra/backend/provider-hetzner-provisioning/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-digital-ocean-provisioning": [
+        "libs/domains/agenstra/backend/provider-digital-ocean-provisioning/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-atlassian-import": [
+        "libs/domains/agenstra/backend/provider-atlassian-import/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-local-embedding": [
+        "libs/domains/agenstra/backend/provider-local-embedding/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-cursor": [
+        "libs/domains/agenstra/backend/provider-cursor/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-opencode": [
+        "libs/domains/agenstra/backend/provider-opencode/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-openclaw": [
+        "libs/domains/agenstra/backend/provider-openclaw/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-github-pipeline": [
+        "libs/domains/agenstra/backend/provider-github-pipeline/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-gitlab-pipeline": [
+        "libs/domains/agenstra/backend/provider-gitlab-pipeline/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-chat-filter-noop": [
+        "libs/domains/agenstra/backend/provider-chat-filter-noop/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-chat-filter-incoming": [
+        "libs/domains/agenstra/backend/provider-chat-filter-incoming/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-chat-filter-outgoing": [
+        "libs/domains/agenstra/backend/provider-chat-filter-outgoing/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-chat-filter-bidirectional": [
+        "libs/domains/agenstra/backend/provider-chat-filter-bidirectional/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-chat-filter-db-regex-incoming": [
+        "libs/domains/agenstra/backend/provider-chat-filter-db-regex-incoming/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/provider-chat-filter-db-regex-outgoing": [
+        "libs/domains/agenstra/backend/provider-chat-filter-db-regex-outgoing/src/index.ts"
       ]
     }
   },

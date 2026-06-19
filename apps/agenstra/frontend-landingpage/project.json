@@ -10,7 +10,7 @@
       "de": "apps/agenstra/frontend-landingpage/src/i18n/messages.de.xlf"
     }
   },
-  "tags": ["type:app", "scope:frontend"],
+  "tags": ["domain:agenstra", "type:app", "scope:frontend"],
   "targets": {
     "build": {
       "executor": "@angular-devkit/build-angular:application",
@@ -74,14 +74,20 @@
           "fileReplacements": [
             {
               "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
-              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.production.ts"
+              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.agenstra.production.ts"
             }
           ]
         },
         "development": {
           "optimization": false,
           "extractLicenses": false,
-          "sourceMap": true
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.agenstra.ts"
+            }
+          ]
         },
         "en": {
           "localize": ["en"]

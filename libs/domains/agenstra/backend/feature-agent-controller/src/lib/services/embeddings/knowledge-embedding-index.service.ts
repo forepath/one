@@ -1,6 +1,11 @@
 import { createHash } from 'crypto';
 
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  EMBEDDING_PROVIDER_REGISTRY,
+  EmbeddingProvider,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -8,12 +13,12 @@ import { KnowledgeNodeEmbeddingEntity } from '../../entities/knowledge-node-embe
 import { KnowledgeNodeEntity } from '../../entities/knowledge-node.entity';
 import { KnowledgeNodeType } from '../../entities/knowledge-node.enums';
 
-import { LocalEmbeddingProvider } from './local-embedding.provider';
-
 interface EmbeddingChunk {
   index: number;
   text: string;
 }
+
+const DEFAULT_EMBEDDING_PROVIDER_ID = 'local';
 
 @Injectable()
 export class KnowledgeEmbeddingIndexService {
@@ -25,8 +30,13 @@ export class KnowledgeEmbeddingIndexService {
     private readonly knowledgeNodeRepo: Repository<KnowledgeNodeEntity>,
     @InjectRepository(KnowledgeNodeEmbeddingEntity)
     private readonly embeddingRepo: Repository<KnowledgeNodeEmbeddingEntity>,
-    private readonly localEmbeddingProvider: LocalEmbeddingProvider,
+    @Inject(EMBEDDING_PROVIDER_REGISTRY)
+    private readonly embeddingProviderRegistry: ProviderRegistry<EmbeddingProvider>,
   ) {}
+
+  private getEmbeddingProvider(): EmbeddingProvider {
+    return this.embeddingProviderRegistry.getProvider(DEFAULT_EMBEDDING_PROVIDER_ID);
+  }
 
   async reindexPage(clientId: string, knowledgeNodeId: string, title: string, content: string): Promise<void> {
     const chunks = this.buildChunks(title, content);
@@ -37,8 +47,10 @@ export class KnowledgeEmbeddingIndexService {
       return;
     }
 
+    const embeddingProvider = this.getEmbeddingProvider();
+
     try {
-      const embeddings = await this.localEmbeddingProvider.embedMany(chunks.map((chunk) => chunk.text));
+      const embeddings = await embeddingProvider.embedMany(chunks.map((chunk) => chunk.text));
       const rows = chunks.map((chunk, idx) =>
         this.embeddingRepo.create({
           clientId,
@@ -46,8 +58,8 @@ export class KnowledgeEmbeddingIndexService {
           chunkIndex: chunk.index,
           chunkText: chunk.text,
           embedding: embeddings[idx].vector,
-          embeddingModel: this.localEmbeddingProvider.getModelName(),
-          embeddingProvider: this.localEmbeddingProvider.getProviderName(),
+          embeddingModel: embeddingProvider.getModelName(),
+          embeddingProvider: embeddingProvider.getType(),
           contentHash: this.hashContent(chunk.text),
         }),
       );

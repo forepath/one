@@ -48,6 +48,7 @@ export * from './lib/services/agent-messages.service';
 export * from './lib/services/agents-vcs.service';
 export * from './lib/services/agents.service';
 export * from './lib/services/config.service';
+export * from './lib/services/regex-filter-rules-evaluate.service';
 export * from './lib/services/docker.service';
 export * from './lib/services/workspace-configuration-overrides.service';
 export * from './lib/utils/agent-file-manager-context';

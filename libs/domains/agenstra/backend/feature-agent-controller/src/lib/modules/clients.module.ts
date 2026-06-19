@@ -13,6 +13,14 @@ import {
   UserEntity,
   UsersRepository,
 } from '@forepath/identity/backend';
+import {
+  AGENSTRA_EXTENSION_KINDS,
+  AgenstraPluginHostModule,
+  EMBEDDING_PROVIDER_REGISTRY,
+  EmbeddingDepsModule,
+  PROVISIONING_PROVIDER_REGISTRY,
+  ProvisioningProviderDepsModule,
+} from '@forepath/agenstra/backend/util-plugin-host';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
@@ -48,9 +56,6 @@ import { ClientsGateway } from '../gateways/clients.gateway';
 import { KnowledgeBoardGateway } from '../gateways/knowledge-board.gateway';
 import { StatusGateway } from '../gateways/status.gateway';
 import { TicketsBoardGateway } from '../gateways/tickets-board.gateway';
-import { DigitalOceanProvider } from '../providers/provisioning/digital-ocean.provider';
-import { HetznerProvider } from '../providers/provisioning/hetzner.provider';
-import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { TicketAutomationRunsStatusRepository } from '../repositories/ticket-automation-runs-status.repository';
@@ -70,7 +75,6 @@ import { ClientAutomationChatRealtimeService } from '../services/client-automati
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { KnowledgeEmbeddingIndexService } from '../services/embeddings/knowledge-embedding-index.service';
-import { LocalEmbeddingProvider } from '../services/embeddings/local-embedding.provider';
 import { KnowledgeBoardRealtimeService } from '../services/knowledge-board-realtime.service';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { ProvisioningService } from '../services/provisioning.service';
@@ -86,6 +90,13 @@ import { FilterRulesModule } from './filter-rules.module';
 import { StatisticsModule } from './statistics.module';
 
 const authMethod = getAuthenticationMethod();
+
+const DEFAULT_PROVISIONING_PROVIDERS = [
+  '@forepath/agenstra/backend/provider-hetzner-provisioning',
+  '@forepath/agenstra/backend/provider-digital-ocean-provisioning',
+] as const;
+
+const DEFAULT_EMBEDDING_PROVIDERS = ['@forepath/agenstra/backend/provider-local-embedding'] as const;
 
 /**
  * Module for agent clients feature.
@@ -117,7 +128,20 @@ const authMethod = getAuthenticationMethod();
     StatisticsModule,
     forwardRef(() => FilterRulesModule),
     forwardRef(() => ContextImportModule),
-    // Import KeycloakConnectModule conditionally to make KEYCLOAK_INSTANCE available to SocketAuthService
+    ProvisioningProviderDepsModule.forRoot(),
+    EmbeddingDepsModule.forRoot(),
+    AgenstraPluginHostModule.forRootAsync({
+      kind: AGENSTRA_EXTENSION_KINDS.PROVISIONING_PROVIDER,
+      registryToken: PROVISIONING_PROVIDER_REGISTRY,
+      extensionsEnvKey: 'AGENSTRA_PROVISIONING_PROVIDER_EXTENSIONS',
+      defaultExtensions: DEFAULT_PROVISIONING_PROVIDERS,
+    }),
+    AgenstraPluginHostModule.forRootAsync({
+      kind: AGENSTRA_EXTENSION_KINDS.EMBEDDING_PROVIDER,
+      registryToken: EMBEDDING_PROVIDER_REGISTRY,
+      extensionsEnvKey: 'AGENSTRA_EMBEDDING_PROVIDER_EXTENSIONS',
+      defaultExtensions: DEFAULT_EMBEDDING_PROVIDERS,
+    }),
     ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],
   controllers: [
@@ -140,7 +164,6 @@ const authMethod = getAuthenticationMethod();
     KnowledgeTreeService,
     AutoContextResolverService,
     KnowledgeEmbeddingIndexService,
-    LocalEmbeddingProvider,
     TicketAutomationService,
     ClientAgentAutonomyService,
     RemoteAgentsSessionService,
@@ -173,25 +196,8 @@ const authMethod = getAuthenticationMethod();
     KnowledgeBoardGateway,
     StatusGateway,
     ProvisioningService,
-    ProvisioningProviderFactory,
     ProvisioningReferencesRepository,
-    HetznerProvider,
-    DigitalOceanProvider,
     StatisticsAgentSyncService,
-    {
-      provide: 'PROVISIONING_PROVIDERS',
-      useFactory: (
-        factory: ProvisioningProviderFactory,
-        hetzner: HetznerProvider,
-        digitalOcean: DigitalOceanProvider,
-      ) => {
-        factory.registerProvider(hetzner);
-        factory.registerProvider(digitalOcean);
-
-        return factory;
-      },
-      inject: [ProvisioningProviderFactory, HetznerProvider, DigitalOceanProvider],
-    },
   ],
   exports: [
     ClientsService,
@@ -209,7 +215,6 @@ const authMethod = getAuthenticationMethod();
     ClientAgentCredentialsService,
     ClientsGateway,
     ProvisioningService,
-    ProvisioningProviderFactory,
     TicketsService,
     KnowledgeTreeService,
     KnowledgeEmbeddingIndexService,

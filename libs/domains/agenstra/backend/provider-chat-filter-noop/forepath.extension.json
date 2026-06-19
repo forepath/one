@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "noop",
+  "kind": "chat-filter",
+  "name": "ChatFilterNoop",
+  "description": "Chat Filter Noop chat filter extension.",
+  "version": "0.0.0"
+}

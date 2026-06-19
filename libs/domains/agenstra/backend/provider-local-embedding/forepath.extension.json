@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "local",
+  "kind": "embedding-provider",
+  "name": "LocalEmbedding",
+  "description": "Local Embedding embedding provider extension.",
+  "version": "0.0.0"
+}

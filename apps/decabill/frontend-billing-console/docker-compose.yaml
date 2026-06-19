@@ -1,0 +1,22 @@
+services:
+  frontend-billing-console-server:
+    image: ghcr.io/forepath/decabill-billing-console-server:latest
+    pull_policy: never
+    container_name: billing-console-server
+    environment:
+      # Frontend server configuration
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-4500}
+      NODE_ENV: ${NODE_ENV:-production}
+      DEFAULT_LOCALE: ${DEFAULT_LOCALE:-en}
+      CSP_ENFORCE: ${CSP_ENFORCE:-true}
+      CSP_CONNECT_SRC_EXTRA: ${CSP_CONNECT_SRC_EXTRA:-http://host.docker.internal:3200}
+    ports:
+      - '${PORT:-4500}:${PORT:-4500}'
+    networks:
+      - billing-console-network
+    restart: unless-stopped
+
+networks:
+  billing-console-network:
+    driver: bridge

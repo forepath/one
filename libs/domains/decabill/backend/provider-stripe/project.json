@@ -1,0 +1,16 @@
+{
+  "name": "decabill-backend-provider-stripe",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/decabill/backend/provider-stripe/src",
+  "projectType": "library",
+  "tags": ["domain:decabill", "scope:backend", "type:provider"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/decabill/backend/provider-stripe/jest.config.cts"
+      }
+    }
+  }
+}

@@ -3,7 +3,7 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/agenstra/backend-agent-controller/src",
   "projectType": "application",
-  "tags": ["type:app", "scope:backend"],
+  "tags": ["domain:agenstra", "type:app", "scope:backend"],
   "implicitDependencies": [
     "shared-platform-authentication",
     "agenstra-backend-feature-agent-controller",

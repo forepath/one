@@ -2,7 +2,7 @@ sequenceDiagram
     participant Client
     participant Controller
     participant ProvisioningService
-    participant ProviderFactory
+    participant Registry as PROVISIONING_PROVIDER_REGISTRY
     participant Provider as Cloud Provider<br/>(Hetzner/DigitalOcean)
     participant CloudAPI as Cloud API<br/>(Hetzner/DigitalOcean)
     participant Server
@@ -12,8 +12,8 @@ sequenceDiagram
     Client->>Controller: POST /provisioning/provision
     Controller->>ProvisioningService: provisionServer(dto)
 
-    ProvisioningService->>ProviderFactory: getProvider(type)
-    ProviderFactory-->>ProvisioningService: Provider Instance
+    ProvisioningService->>Registry: getProvider(type)
+    Registry-->>ProvisioningService: Provider Instance
 
     ProvisioningService->>ProvisioningService: Generate Auth Config
     ProvisioningService->>ProvisioningService: Generate User Data Script

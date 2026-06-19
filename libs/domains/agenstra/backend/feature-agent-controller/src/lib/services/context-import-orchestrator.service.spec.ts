@@ -1,12 +1,13 @@
+import { ProviderRegistry } from '@forepath/shared/backend/util-extension-core';
+
 import type { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
 import { ExternalImportProviderId } from '../entities/external-import.enums';
-import { ExternalImportProviderFactory } from '../providers/external-import-provider.factory';
-import type { ExternalContextImportProvider } from '../providers/external-import-provider.interface';
+import type { ExternalContextImportProvider } from '@forepath/agenstra/backend/util-plugin-host';
 
 import { ContextImportOrchestratorService } from './context-import-orchestrator.service';
 
 describe('ContextImportOrchestratorService', () => {
-  const factory = new ExternalImportProviderFactory();
+  const registry = new ProviderRegistry<ExternalContextImportProvider>();
   const configService = {
     findEntityWithConnection: jest.fn(),
     recordRunOutcome: jest.fn(),
@@ -19,13 +20,13 @@ describe('ContextImportOrchestratorService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    factory.registerProvider(provider as unknown as ExternalContextImportProvider);
+    registry.register(ExternalImportProviderId.ATLASSIAN, provider as unknown as ExternalContextImportProvider);
     provider.runImport.mockResolvedValue({ processedCount: 0, hasMore: false });
     configService.recordRunOutcome.mockResolvedValue(undefined);
   });
 
   function svc(): ContextImportOrchestratorService {
-    return new ContextImportOrchestratorService(factory, configService as never);
+    return new ContextImportOrchestratorService(registry, configService as never);
   }
 
   it('runConfigById returns early when config is missing', async () => {
@@ -58,50 +59,48 @@ describe('ContextImportOrchestratorService', () => {
 
     await svc().runConfigById('cfg-1', 10);
 
-    expect(provider.runImport).toHaveBeenCalledWith(
-      expect.objectContaining({
-        config: expect.objectContaining({ id: 'cfg-1' }),
-        itemBudget: 10,
-      }),
-    );
+    expect(provider.runImport).toHaveBeenCalledWith({
+      config: expect.objectContaining({ id: 'cfg-1' }),
+      itemBudget: 10,
+    });
     expect(configService.recordRunOutcome).toHaveBeenCalledWith('cfg-1', null);
   });
 
-  it('runConfigById records null when provider returns only whitespace errorMessage', async () => {
+  it('runConfigById records provider errorMessage', async () => {
     configService.findEntityWithConnection.mockResolvedValue({
       id: 'cfg-1',
       enabled: true,
       provider: ExternalImportProviderId.ATLASSIAN,
     } as ExternalImportConfigEntity);
-    provider.runImport.mockResolvedValue({ processedCount: 1, hasMore: false, errorMessage: ' \n\t ' });
+    provider.runImport.mockResolvedValue({ processedCount: 0, hasMore: false, errorMessage: 'sync failed' });
 
     await svc().runConfigById('cfg-1');
 
-    expect(configService.recordRunOutcome).toHaveBeenCalledWith('cfg-1', null);
+    expect(configService.recordRunOutcome).toHaveBeenCalledWith('cfg-1', 'sync failed');
   });
 
-  it('runConfigById records failure when provider throws', async () => {
+  it('runConfigById records thrown errors', async () => {
     configService.findEntityWithConnection.mockResolvedValue({
       id: 'cfg-1',
       enabled: true,
       provider: ExternalImportProviderId.ATLASSIAN,
     } as ExternalImportConfigEntity);
-    provider.runImport.mockRejectedValue(new Error('network down'));
+    provider.runImport.mockRejectedValue(new Error('boom'));
 
     await svc().runConfigById('cfg-1');
 
-    expect(configService.recordRunOutcome).toHaveBeenCalledWith('cfg-1', 'network down');
+    expect(configService.recordRunOutcome).toHaveBeenCalledWith('cfg-1', 'boom');
   });
 
   it('runSchedulerBatch processes enabled configs', async () => {
     configService.findEnabledForSchedulerBatch.mockResolvedValue([
-      { id: 'a', provider: ExternalImportProviderId.ATLASSIAN },
-      { id: 'b', provider: ExternalImportProviderId.ATLASSIAN },
+      { id: 'cfg-1', enabled: true, provider: ExternalImportProviderId.ATLASSIAN },
+      { id: 'cfg-2', enabled: true, provider: ExternalImportProviderId.ATLASSIAN },
     ]);
 
-    const n = await svc().runSchedulerBatch(5, 7);
+    const count = await svc().runSchedulerBatch(2, 5);
 
-    expect(n).toBe(2);
+    expect(count).toBe(2);
     expect(provider.runImport).toHaveBeenCalledTimes(2);
     expect(configService.recordRunOutcome).toHaveBeenCalledTimes(2);
   });

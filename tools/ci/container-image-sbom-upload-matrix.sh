@@ -13,10 +13,11 @@ fi
 
 # Longest names first so multi-segment image names match correctly.
 KNOWN_IMAGE_NAMES=(
+  decabill-billing-console-server
+  decabill-billing-api
   agenstra-billing-console-server
   agenstra-console-server
   agenstra-controller-api
-  agenstra-billing-api
   agenstra-manager-worker
   agenstra-manager-api
   agenstra-manager-vnc

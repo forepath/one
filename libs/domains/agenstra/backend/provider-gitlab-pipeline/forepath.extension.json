@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "gitlab",
+  "kind": "pipeline-provider",
+  "name": "GitlabPipeline",
+  "description": "Gitlab Pipeline pipeline provider extension.",
+  "version": "0.0.0"
+}

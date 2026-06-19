@@ -1,0 +1,16 @@
+{
+  "name": "agenstra-backend-provider-cursor",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/agenstra/backend/provider-cursor/src",
+  "projectType": "library",
+  "tags": ["domain:agenstra", "scope:backend", "type:provider"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/agenstra/backend/provider-cursor/jest.config.cts"
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "opencode",
+  "kind": "agent-provider",
+  "name": "Opencode",
+  "description": "Opencode agent provider extension.",
+  "version": "0.0.0"
+}

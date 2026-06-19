@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 
 import type { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
-import { FilterDirection } from '../providers/chat-filter.interface';
+import { FilterDirection } from '@forepath/agenstra/backend/util-plugin-host';
 import { RegexFilterRulesRepository } from '../repositories/regex-filter-rules.repository';
 
 import { RegexFilterRulesCacheService } from './regex-filter-rules-cache.service';

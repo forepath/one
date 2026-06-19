@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "hetzner",
+  "kind": "provisioning-provider",
+  "name": "HetznerProvisioning",
+  "description": "Hetzner Provisioning provisioning provider extension.",
+  "version": "0.0.0"
+}

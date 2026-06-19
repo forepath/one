@@ -4,7 +4,7 @@ sequenceDiagram
     participant Service as DeploymentsService
     participant Repo as DeploymentConfigurationsRepository
     participant RunRepo as DeploymentRunsRepository
-    participant PPF as PipelineProviderFactory
+    participant PPR as PIPELINE_PROVIDER_REGISTRY
     participant Provider as GitHubProvider
     participant GitHub as GitHub REST API
     participant DB as Database
@@ -29,8 +29,8 @@ sequenceDiagram
         Repo->>DB: SELECT deployment_configurations WHERE agent_id
         DB-->>Repo: configuration entity
         Repo-->>Service: configuration entity
-        Service->>PPF: getProvider(config.providerType)
-        PPF-->>Service: GitHubProvider
+        Service->>PPR: getProvider(config.providerType)
+        PPR-->>Service: GitHubProvider
         Service->>Provider: listRepositories(credentials)
         Provider->>GitHub: GET /user/repos
         GitHub-->>Provider: repositories array
@@ -47,8 +47,8 @@ sequenceDiagram
         Repo->>DB: SELECT deployment_configurations WHERE agent_id
         DB-->>Repo: configuration entity
         Repo-->>Service: configuration entity
-        Service->>PPF: getProvider(config.providerType)
-        PPF-->>Service: GitHubProvider
+        Service->>PPR: getProvider(config.providerType)
+        PPR-->>Service: GitHubProvider
         Service->>Provider: listWorkflows(credentials, repositoryId, branch?)
         Provider->>GitHub: GET /repos/:owner/:repo/actions/workflows
         GitHub-->>Provider: workflows array
@@ -65,8 +65,8 @@ sequenceDiagram
         Repo->>DB: SELECT deployment_configurations WHERE agent_id
         DB-->>Repo: configuration entity
         Repo-->>Service: configuration entity
-        Service->>PPF: getProvider(config.providerType)
-        PPF-->>Service: GitHubProvider
+        Service->>PPR: getProvider(config.providerType)
+        PPR-->>Service: GitHubProvider
         Service->>Provider: triggerWorkflow(credentials, repositoryId, workflowId, ref, inputs?)
         Provider->>GitHub: POST /repos/:owner/:repo/actions/workflows/:id/dispatches<br/>{ ref, inputs }
         GitHub-->>Provider: 204 No Content
@@ -92,8 +92,8 @@ sequenceDiagram
         Repo->>DB: SELECT deployment_configurations WHERE agent_id
         DB-->>Repo: configuration entity
         Repo-->>Service: configuration entity
-        Service->>PPF: getProvider(config.providerType)
-        PPF-->>Service: GitHubProvider
+        Service->>PPR: getProvider(config.providerType)
+        PPR-->>Service: GitHubProvider
         Service->>Provider: getRunStatus(credentials, repositoryId, runId)
         Provider->>GitHub: GET /repos/:owner/:repo/actions/runs/:runId
         GitHub-->>Provider: run data
@@ -116,8 +116,8 @@ sequenceDiagram
         Repo->>DB: SELECT deployment_configurations WHERE agent_id
         DB-->>Repo: configuration entity
         Repo-->>Service: configuration entity
-        Service->>PPF: getProvider(config.providerType)
-        PPF-->>Service: GitHubProvider
+        Service->>PPR: getProvider(config.providerType)
+        PPR-->>Service: GitHubProvider
         Service->>Provider: getRunLogs(credentials, repositoryId, runId)
         Provider->>GitHub: GET /repos/:owner/:repo/actions/runs/:runId/jobs
         GitHub-->>Provider: jobs array

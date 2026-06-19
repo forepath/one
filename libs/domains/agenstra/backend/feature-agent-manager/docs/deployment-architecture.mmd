@@ -2,16 +2,16 @@ graph TB
     subgraph "Agent Manager"
         AC[AgentsDeploymentsController]
         AC --> |Uses| DS[DeploymentsService]
-        DS --> |Uses| PPF[PipelineProviderFactory]
+        DS --> |Uses| PPR[PIPELINE_PROVIDER_REGISTRY]
         DS --> |Stores| DCR[DeploymentConfigurationsRepository]
         DS --> |Stores| DRR[DeploymentRunsRepository]
         DS --> |Verifies| AR[AgentsRepository]
     end
 
-    subgraph "Provider Factory"
-        PPF --> |Manages| GP[GitHubProvider]
-        PPF --> |Manages| GLP[GitLabProvider]
-        PPF --> |Manages| FP[Future Providers...]
+    subgraph "Plugin Host"
+        PPR --> |Manages| GP[GitHubProvider]
+        PPR --> |Manages| GLP[GitLabProvider]
+        PPR --> |Manages| FP[Future Providers...]
     end
 
     subgraph "GitHub Provider"
@@ -40,7 +40,7 @@ graph TB
 
     style AC fill:#e1f5ff
     style DS fill:#fff9c4
-    style PPF fill:#f3e5f5
+    style PPR fill:#f3e5f5
     style GP fill:#e8f5e9
     style GLP fill:#fff3e0
     style DCE fill:#c8e6c9

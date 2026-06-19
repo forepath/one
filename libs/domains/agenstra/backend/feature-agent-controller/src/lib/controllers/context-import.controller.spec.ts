@@ -15,7 +15,11 @@ import { CreateExternalImportConfigDto } from '../dto/context-import/create-exte
 import { UpdateAtlassianSiteConnectionDto } from '../dto/context-import/update-atlassian-site-connection.dto';
 import { UpdateExternalImportConfigDto } from '../dto/context-import/update-external-import-config.dto';
 import { ExternalImportKind, ExternalImportProviderId } from '../entities/external-import.enums';
-import { AtlassianImportProvider } from '../providers/import/atlassian-external-import.provider';
+import {
+  EXTERNAL_IMPORT_PROVIDER_REGISTRY,
+  ExternalContextImportProvider,
+  ProviderRegistry,
+} from '@forepath/agenstra/backend/util-plugin-host';
 import { AtlassianSiteConnectionService } from '../services/atlassian-site-connection.service';
 import { ContextImportOrchestratorService } from '../services/context-import-orchestrator.service';
 import { ExternalImportConfigService } from '../services/external-import-config.service';
@@ -48,7 +52,10 @@ describe('ContextImportController', () => {
   } as unknown as ExternalImportSyncMarkerService;
   const atlassianProvider = {
     testConnection: jest.fn(),
-  } as unknown as AtlassianImportProvider;
+  } as unknown as ExternalContextImportProvider;
+  const importProviderRegistry = {
+    getProvider: jest.fn().mockReturnValue(atlassianProvider),
+  } as unknown as ProviderRegistry<ExternalContextImportProvider>;
   const adminReq = {} as Parameters<ContextImportController['listConnections']>[0];
   const connectionId = '123e4567-e89b-42d3-a456-426614174000';
   const configId = '223e4567-e89b-42d3-a456-426614174001';
@@ -62,7 +69,7 @@ describe('ContextImportController', () => {
       userRole: identity.UserRole.ADMIN,
       isApiKeyAuth: false,
     } as identity.UserInfoFromRequest);
-    controller = new ContextImportController(connections, configs, orchestrator, markers, atlassianProvider);
+    controller = new ContextImportController(connections, configs, orchestrator, markers, importProviderRegistry);
   });
 
   describe('authorization', () => {

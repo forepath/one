@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 import { AgentEntity } from '../entities/agent.entity';
-import { AgentProviderFactory } from '../providers/agent-provider.factory';
+import { AGENT_PROVIDER_REGISTRY } from '@forepath/agenstra/backend/util-plugin-host';
 import { AgentEnvironmentVariablesRepository } from '../repositories/agent-environment-variables.repository';
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
 import { AgentsRepository } from '../repositories/agents.repository';
@@ -62,7 +62,7 @@ describe('AgentEnvironmentVariablesService', () => {
     toParseableStrings: jest.fn(),
     toUnifiedResponse: jest.fn(),
   };
-  const mockAgentProviderFactory = {
+  const mockAGENT_PROVIDER_REGISTRY = {
     getProvider: jest.fn().mockReturnValue(mockAgentProvider),
   };
   const mockAgentSessionHydrationService = {
@@ -94,8 +94,8 @@ describe('AgentEnvironmentVariablesService', () => {
           useValue: mockAgentMessagesService,
         },
         {
-          provide: AgentProviderFactory,
-          useValue: mockAgentProviderFactory,
+          provide: AGENT_PROVIDER_REGISTRY,
+          useValue: mockAGENT_PROVIDER_REGISTRY,
         },
         {
           provide: AgentSessionHydrationService,

@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../shared/backend/util-extension-core/src/schemas/forepath.extension.schema.json",
+  "id": "github",
+  "kind": "pipeline-provider",
+  "name": "GithubPipeline",
+  "description": "Github Pipeline pipeline provider extension.",
+  "version": "0.0.0"
+}

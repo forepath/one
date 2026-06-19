@@ -1,7 +1,9 @@
 import { Environment } from './environment.interface';
+import { forepathAuthMarketing } from './auth-marketing.forepath';
 
 export const environment: Environment = {
   production: false,
+  productName: 'ForePath',
   controller: {
     restApiUrl: 'http://localhost:3100/api',
     websocketUrl: 'http://localhost:8081/clients',
@@ -15,6 +17,7 @@ export const environment: Environment = {
     type: 'users',
     disableSignup: false,
   },
+  authMarketing: forepathAuthMarketing,
   chatModelOptions: {
     cursor: {},
     opencode: {},
@@ -26,6 +29,7 @@ export const environment: Environment = {
     openInNewWindow: true,
   },
   cookieConsent: {
+    enabled: true,
     domain: '.forepath.io',
     privacyPolicyUrl: 'https://forepath.io/legal/privacy',
     termsUrl: 'https://forepath.io/legal/terms',
