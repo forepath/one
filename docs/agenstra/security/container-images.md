@@ -6,10 +6,10 @@ For image build targets and registry names, see **[Backend Agent Manager](../app
 
 ## Runtime users
 
-| Image family                                                                                  | User       | Default UID/GID | Notes                                   |
-| --------------------------------------------------------------------------------------------- | ---------- | --------------- | --------------------------------------- |
-| Manager/controller **API**, **worker**, **VNC**, **SSH**, **agi** (OpenClaw), billing **API** | `agenstra` | **10001**       | `ARG APP_UID` / `APP_GID` at build time |
-| Frontend **server** images (agent console, billing console, portal, docs)                     | `node`     | **1000**        | Alpine-based SSR images                 |
+| Image family                                                                 | User       | Default UID/GID | Notes                                   |
+| ---------------------------------------------------------------------------- | ---------- | --------------- | --------------------------------------- |
+| Manager/controller **API**, **worker**, **VNC**, **SSH**, **agi** (OpenClaw) | `agenstra` | **10001**       | `ARG APP_UID` / `APP_GID` at build time |
+| Frontend **server** images (agent console, portal, docs)                     | `node`     | **1000**        | Alpine-based SSR images                 |
 
 Processes do **not** run as root after container start. The optional SSH image still starts **`sshd`** via a single allowed `sudo` invocation in the entrypoint.
 

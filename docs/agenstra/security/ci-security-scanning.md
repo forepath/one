@@ -26,7 +26,7 @@ The `.github/workflows/release.yml` workflow does **not** run Trivy vulnerabilit
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Fail pipeline** | CRITICAL                                                                                                                                                                                                |
 | **Report only**   | HIGH, MEDIUM, LOW (visible in SARIF when uploaded)                                                                                                                                                      |
-| **Unfixed CVEs**  | Ignored (`vulnerability.ignore-unfixed: true`) — findings without a Fixed Version do not fail the gate; see **[AR-006](./accepted-risks.md#ar-006--ci--local-trivy-unfixed-vulnerabilities-not-gated)** |
+| **Unfixed CVEs**  | Ignored (`vulnerability.ignore-unfixed: true`). Findings without a Fixed Version do not fail the gate. See **[AR-005](./accepted-risks.md#ar-005---ci--local-trivy-unfixed-vulnerabilities-not-gated)** |
 
 ## Viewing results
 
@@ -41,7 +41,7 @@ SARIF categories include `trivy-fs`, `trivy-config`, and `trivy-images-*` on pul
 2. **Documented ignore** — open a PR that adds the CVE to `.trivyignore`, reference an **[accepted-risk](./accepted-risks.md)** entry (or document a false positive), and note a **review/expiry date** in the PR description.
 3. **Do not** weaken `trivy.yaml` for one-off exceptions.
 
-See **[Accepted risks](./accepted-risks.md)** for deliberate product-level deviations (separate from CVE ignores), including **[AR-006](./accepted-risks.md#ar-006--ci--local-trivy-unfixed-vulnerabilities-not-gated)** (unfixed vulnerabilities are not pipeline blockers).
+See **[Accepted risks](./accepted-risks.md)** for deliberate product-level deviations (separate from CVE ignores), including **[AR-005](./accepted-risks.md#ar-005---ci--local-trivy-unfixed-vulnerabilities-not-gated)** (unfixed vulnerabilities are not pipeline blockers).
 
 ## Local reproduction
 

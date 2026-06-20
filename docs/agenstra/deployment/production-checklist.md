@@ -53,7 +53,7 @@ Comprehensive checklist for deploying Agenstra to production.
 ### Authentication
 
 - Use strong API keys or Keycloak with proper configuration
-- Consider setting **`AUTHENTICATION_METHOD`** explicitly in production if your policy requires fully unambiguous mode selection (see **[Accepted risks — AR-004](../security/accepted-risks.md)**)
+- Consider setting **`AUTHENTICATION_METHOD`** explicitly in production if your policy requires fully unambiguous mode selection (see **[Accepted risks - AR-003](../security/accepted-risks.md)**)
 - Enable token expiration and refresh
 - Implement proper session management
 - Use HTTPS for all API communications

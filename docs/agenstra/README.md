@@ -119,25 +119,13 @@ New to Agenstra? Follow this learning path:
 
 Agenstra follows a three-tier architecture:
 
-```
-┌─────────────────────┐
-│  Frontend Console   │  Angular application with NgRx state management
-│  (Web-based IDE)    │  Monaco Editor, Chat Interface, File Management
-└──────────┬──────────┘
-           │ HTTP REST API
-           │ WebSocket (Socket.IO)
-           ▼
-┌─────────────────────┐
-│ Agent Controller   │  Centralized control plane
-│ (Backend)           │  Client management, event forwarding
-└──────────┬──────────┘
-           │ HTTP REST API
-           │ WebSocket (Socket.IO)
-           ▼
-┌─────────────────────┐
-│ Agent Manager       │  Agent lifecycle management
-│ (Backend)           │  Container management, Docker integration
-└─────────────────────┘
+```mermaid
+graph TB
+    FE["Frontend Console<br/>(Web-based IDE)<br/>Angular, Monaco Editor, Chat, File Management"]
+    AC["Agent Controller<br/>(Backend)<br/>Client management, event forwarding"]
+    AM["Agent Manager<br/>(Backend)<br/>Container management, Docker integration"]
+    FE -->|"HTTP REST API<br/>WebSocket (Socket.IO)"| AC
+    AC -->|"HTTP REST API<br/>WebSocket (Socket.IO)"| AM
 ```
 
 For detailed architecture information, see the [Architecture Documentation](./architecture/README.md).

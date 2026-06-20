@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="featureDocsBreadcrumbs-documentation" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-brandAlt" datatype="html">
+        <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-documentation" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-githubAriaLabel" datatype="html">
+        <source>GitHub</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-githubTitle" datatype="html">
+        <source>View on GitHub</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-darkModeTitle" datatype="html">
+        <source>Toggle dark mode</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-toggleNavAriaLabel" datatype="html">
+        <source>Toggle navigation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-searchPlaceholder" datatype="html">
+        <source>Search documentation...</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-viewAllResults" datatype="html">
+        <source> View all results </source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-noResults" datatype="html">
+        <source>No results found</source>
+        </trans-unit>
+      <trans-unit id="featureDocsToc-title" datatype="html">
+        <source>Table of Contents</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallback" datatype="html">
+        <source>Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywords" datatype="html">
+        <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallbackDecabill" datatype="html">
+        <source>Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywordsDecabill" datatype="html">
+        <source>Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaTitlePrefix" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-title" datatype="html">
+        <source>Search Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-noResultsFor" datatype="html">
+        <source>No results found for &quot;<x id="INTERPOLATION" equiv-text="{{ searchQuery() }}"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-enterQueryHint" datatype="html">
+        <source>Enter a search query above to find documentation.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
+        <source>Search Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
+        <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescriptionDecabill" datatype="html">
+        <source>Search Decabill docs for setup guides, API references, security hardening, billing configuration, deployment patterns, and troubleshooting.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-foundOneResult" datatype="html">
+        <source>Found <x id="PH" equiv-text="count"/> result for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-foundResults" datatype="html">
+        <source>Found <x id="PH" equiv-text="count"/> results for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-message" datatype="html">
+        <source>This website uses cookies to ensure you get the best experience on our website.</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-dismiss" datatype="html">
+        <source>Got it!</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-allow" datatype="html">
+        <source>Accept</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-deny" datatype="html">
+        <source>Decline</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-link" datatype="html">
+        <source>Learn more</source>
+        </trans-unit>
+    </body>
+  </file>
+</xliff>

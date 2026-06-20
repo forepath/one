@@ -16,7 +16,7 @@ How public documentation relates to **CRA** (Regulation (EU) 2024/2847) and **BS
 
 ### [Accepted risks (register)](./accepted-risks.md)
 
-Register **AR-001** through **AR-007**: provisioning SSH posture, native desktop signing and update posture, frontend CSP, backend authentication method resolution, Electron window-open policy, Trivy unfixed-CVE gating, and billing multi-tenant API key scope. Includes acceptance dates, review cadence, mitigations, and withdrawal paths.
+Register **AR-001** through **AR-005**: native desktop signing and update posture, frontend CSP, backend authentication method resolution, Electron window-open policy, and Trivy unfixed-CVE gating. Includes acceptance dates, review cadence, mitigations, and withdrawal paths.
 
 ### [Container image security](./container-images.md)
 
@@ -32,7 +32,7 @@ Responsible disclosure (contact and process), CycloneDX **SBOM** location, and *
 
 ### [CI security scanning (Trivy)](./ci-security-scanning.md)
 
-Automated **Trivy** scans on pull requests (filesystem, IaC/config, container images); SARIF upload to GitHub Security; CRITICAL fail gate (fixable issues only — see **[AR-006](./accepted-risks.md#ar-006--ci--local-trivy-unfixed-vulnerabilities-not-gated)**). Pre-commit runs filesystem/config scans locally.
+Automated **Trivy** scans on pull requests (filesystem, IaC/config, container images); SARIF upload to GitHub Security; CRITICAL fail gate (fixable issues only; see **[AR-005](./accepted-risks.md#ar-005---ci--local-trivy-unfixed-vulnerabilities-not-gated)**). Pre-commit runs filesystem/config scans locally.
 
 ## Configuration reference
 

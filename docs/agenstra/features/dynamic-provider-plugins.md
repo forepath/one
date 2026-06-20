@@ -2,7 +2,7 @@
 
 Agenstra backends can register **extra provider implementations at runtime** from comma-separated `DYNAMIC_*` environment variables. The same mechanism supports **baked-in** packages (present in the app image deploy graph) and **post-build** plugins (mounted or installed into a container path without rebuilding the image).
 
-This page covers **Agenstra** backends only: **agent controller** and **agent manager**. Decabill billing backends use the same loader for payment processors and billing UI metadata; see [Billing Administration](./billing-administration.md) and the [API Reference](../api-reference/README.md#billing-manager-http-api).
+This page covers **Agenstra** backends only: **agent controller** and **agent manager**. Payment processor and billing UI plugins are documented in the Decabill product documentation site.
 
 ## Overview
 

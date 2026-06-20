@@ -147,7 +147,7 @@ When `CONFIG` is set, the frontend server also supports the following optional h
 - `CONFIG_JSON_MAX_DEPTH` - Max JSON traversal depth for key counting (default: `12`)
 - `CONFIG_JSON_MAX_KEYS` - Max total JSON keys (default: `512`)
 
-Frontend Express servers (agent console, billing console, portal, docs) also support:
+Frontend Express servers (agent console, portal, docs) also support:
 
 - `CSP_ENFORCE` - Set to `true` to enforce Content Security Policy (sends `Content-Security-Policy`), otherwise report-only (`Content-Security-Policy-Report-Only`).
 - `CSP_DEFAULT_SRC_EXTRA` - Extra origins appended to `default-src` (same URL list rules as `CSP_CONNECT_SRC_EXTRA`).
@@ -158,8 +158,6 @@ Frontend Express servers (agent console, billing console, portal, docs) also sup
 - `CSP_SCRIPT_SRC_EXTRA` - Extra origins appended to `script-src` (same URL list rules as `CSP_CONNECT_SRC_EXTRA`).
 - `CSP_WORKER_SRC_EXTRA`, `CSP_STYLE_SRC_EXTRA`, `CSP_IMG_SRC_EXTRA`, `CSP_FONT_SRC_EXTRA` - Same pattern for `worker-src`, `style-src`, `img-src`, and `font-src` respectively.
 - `CSP_FRAME_ANCESTORS` - Optional full override of CSP `frame-ancestors` (default `'none'`). See [Environment configuration](./environment-configuration.md).
-
-Billing manager–generated agent-controller cloud-init sets `CONFIG_ALLOWED_HOSTS` to the instance FQDN and `CSP_ENFORCE` to `true` by default for the frontend container. See [Environment configuration](./environment-configuration.md).
 
 ## Running Containers
 

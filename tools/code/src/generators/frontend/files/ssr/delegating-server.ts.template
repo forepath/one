@@ -30,6 +30,13 @@ async function loadLocaleServers() {
 }
 
 function getLocaleFromRequest(req: IncomingMessage): string {
+  const url = new URL(req.url || '', `http://${req.headers.host}`);
+  const pathSegments = url.pathname.split('/').filter(Boolean);
+
+  if (pathSegments.length > 0 && AVAILABLE_LOCALES.includes(pathSegments[0])) {
+    return pathSegments[0];
+  }
+
   const acceptLanguage = req.headers['accept-language'];
 
   if (acceptLanguage) {
@@ -38,13 +45,6 @@ function getLocaleFromRequest(req: IncomingMessage): string {
         return locale;
       }
     }
-  }
-
-  const url = new URL(req.url || '', `http://${req.headers.host}`);
-  const pathSegments = url.pathname.split('/').filter(Boolean);
-  
-  if (pathSegments.length > 0 && AVAILABLE_LOCALES.includes(pathSegments[0])) {
-    return pathSegments[0];
   }
 
   return DEFAULT_LOCALE;
@@ -56,26 +56,26 @@ function serveStaticFile(req: IncomingMessage, res: ServerResponse, locale: stri
 
   if (!pathname.startsWith('/api/') && pathname.includes('.')) {
     const localeBrowserPath = join(__dirname, 'browser', locale, pathname);
-    
+
     if (existsSync(localeBrowserPath)) {
       const stat = statSync(localeBrowserPath);
       if (stat.isFile()) {
         const ext = extname(pathname).toLowerCase();
         const contentType = getContentType(ext);
-        
+
         res.writeHead(200, {
           'Content-Type': contentType,
           'Content-Length': stat.size,
           'Cache-Control': 'public, max-age=31536000' // 1 year cache for static assets
         });
-        
+
         const stream = createReadStream(localeBrowserPath);
         stream.pipe(res);
         return true;
       }
     }
   }
-  
+
   return false;
 }
 
@@ -96,7 +96,7 @@ function getContentType(ext: string): string {
     '.ttf': 'font/ttf',
     '.eot': 'application/vnd.ms-fontobject'
   };
-  
+
   return types[ext] || 'application/octet-stream';
 }
 
@@ -104,7 +104,7 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
   try {
     const locale = getLocaleFromRequest(req);
     const localeServer = localeServers.get(locale);
-    
+
     if (!localeServer) {
       console.error(`No server found for locale: ${locale}`);
       res.writeHead(500, { 'Content-Type': 'text/plain' });
@@ -118,7 +118,7 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
 
     const originalCwd = process.cwd();
     const localeDir = join(__dirname, locale);
-    
+
     try {
       process.chdir(localeDir);
       await localeServer(req, res);

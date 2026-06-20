@@ -40,6 +40,12 @@ is_decabill_sbom() {
   esac
 }
 
+# Docs SBOM routing (no script changes required — covered by patterns above):
+#   agenstra-frontend-docs.cdx.json              -> agenstra bucket
+#   decabill-frontend-docs.cdx.json              -> decabill bucket
+#   container-agenstra-docs-server.cdx.json      -> agenstra bucket
+#   container-decabill-docs-server.cdx.json      -> decabill bucket
+
 staging_dir="$(mktemp -d)"
 trap 'rm -rf "$staging_dir"' EXIT
 

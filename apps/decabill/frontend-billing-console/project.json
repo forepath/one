@@ -218,7 +218,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/decabill/frontend-billing-console",
-        "command": "docker compose up -d --force-recreate --remove-orphans"
+        "command": "BILLING_CONSOLE_SERVER_IMAGE=ghcr.io/forepath/decabill-billing-console-server:latest BILLING_CONSOLE_SERVER_CONTAINER_NAME=decabill-billing-console-server docker compose up -d --force-recreate --remove-orphans"
       }
     },
     "sbom": {

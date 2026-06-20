@@ -38,4 +38,7 @@ export const environment: Environment = {
   socialPreview: {
     imageUrl: 'http://localhost:4500/assets/images/og-preview.png',
   },
+  docs: {
+    contentRoot: 'decabill',
+  },
 };

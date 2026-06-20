@@ -1,0 +1,147 @@
+# Subscriptions
+
+Order service plans, manage subscription lifecycle, and provision cloud infrastructure when the plan includes a provisioning provider.
+
+## Overview
+
+Subscriptions link a user to a service plan. Plans reference a service type that may include Hetzner or DigitalOcean provisioning. Each subscription can have one or more subscription items representing provisioned or pending instances.
+
+The order flow requires a complete [Customer Profile](./customer-profiles.md) before `POST /subscriptions` is accepted.
+
+## Subscription Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> active
+    active --> pending_cancel: cancel request
+    pending_cancel --> active: resume
+    pending_cancel --> canceled: effective_at reached
+    active --> pending_backorder: unavailable
+    pending_backorder --> active: provisioned
+    pending_backorder --> canceled: cancel
+```
+
+### Active
+
+Subscription is in good standing. Recurring charges create open positions according to the plan billing interval.
+
+### Pending Cancel
+
+User requested cancellation. Subscription remains active until `effective_at`. User may resume before that date.
+
+### Canceled
+
+Subscription ended. No further recurring charges. Provisioned items may be decommissioned per operator policy.
+
+### Pending Backorder
+
+Capacity was unavailable at order time or provisioning failed with `autoBackorder`. See [Backorders](./backorders.md).
+
+## Ordering a Subscription
+
+### Prerequisites
+
+1. Authenticated user in the current tenant
+2. Complete customer billing profile (name, email, address, city, country)
+3. Active service plan selected
+
+### Order Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant API as Billing Manager
+    participant Avail as AvailabilityService
+    participant Prov as ProvisioningService
+    participant DB as PostgreSQL
+
+    User->>API: POST /subscriptions (planId, requestedConfig)
+    API->>API: Validate customer profile complete
+    API->>Avail: checkAvailability(provider, config)
+    alt Available and provisioning enabled
+        API->>DB: Create subscription + item
+        API->>Prov: provision server (cloud-init)
+        Prov-->>API: serverId
+        API->>DB: Update item status active
+    else Unavailable with autoBackorder
+        API->>DB: Create backorder
+    end
+    API-->>User: Subscription response
+```
+
+### Request Body
+
+- **`planId`** (required) - UUID of the service plan
+- **`requestedConfig`** (optional) - Provider-specific configuration validated against the service type schema
+- **`autoBackorder`** (optional) - When true, queue a backorder if capacity is unavailable
+
+Provider config keys include `serverType`, `location` or `region`, and optional nested provisioning tokens. See [Service Types and Plans](./service-types-and-plans.md) and [Server Provisioning](./server-provisioning.md).
+
+### Customer Geography
+
+When `allowCustomerLocationSelection` is true on the plan and the provider schema defines `region` or `location` with an enum, customers may override geography in `requestedConfig`. Otherwise geography keys are stripped before merge.
+
+## Cancel and Resume
+
+- `POST /subscriptions/{subscriptionId}/cancel` - Schedule cancellation at period end or immediately per plan rules
+- `POST /subscriptions/{subscriptionId}/resume` - Reverse a pending cancel before `effective_at`
+
+## Subscription Items
+
+Each item tracks:
+
+- Provisioning status (`pending`, `active`, `failed`, etc.)
+- Provider reference (cloud server id)
+- Hostname and FQDN under `DNS_BASE_DOMAIN`
+- Service kind (for example controller stack)
+
+### Server Info
+
+`GET /subscriptions/{subscriptionId}/items/{itemId}/server-info` returns live cloud status: server id, name, public and private IP, hostname, FQDN, and provider metadata.
+
+### Server Control
+
+Start, stop, and restart actions are available for provisioned items. See [Dashboard and Server Control](./dashboard-and-server-control.md).
+
+## Usage Records
+
+Usage-based plans accept metering via `POST /usage/record`. Usage is included in invoice line items when `usagePayload` or `units` and `unitPrice` are present. Summary available at `GET /usage/summary/{subscriptionId}`.
+
+## Pricing Preview
+
+`POST /pricing/preview` returns estimated customer total for a plan and optional config before ordering.
+
+## Availability
+
+- `POST /availability/check` - Check whether requested config is available at the provider
+- `POST /availability/alternatives` - Suggest alternative regions or server types
+
+## API Endpoints
+
+| Method | Path                                                             | Purpose                   |
+| ------ | ---------------------------------------------------------------- | ------------------------- |
+| GET    | `/subscriptions`                                                 | List user's subscriptions |
+| POST   | `/subscriptions`                                                 | Create subscription       |
+| GET    | `/subscriptions/{subscriptionId}`                                | Get subscription detail   |
+| POST   | `/subscriptions/{subscriptionId}/cancel`                         | Cancel subscription       |
+| POST   | `/subscriptions/{subscriptionId}/resume`                         | Resume pending cancel     |
+| GET    | `/subscriptions/{subscriptionId}/items`                          | List subscription items   |
+| GET    | `/subscriptions/{subscriptionId}/items/{itemId}/server-info`     | Live server info          |
+| POST   | `/subscriptions/{subscriptionId}/items/{itemId}/actions/start`   | Start server              |
+| POST   | `/subscriptions/{subscriptionId}/items/{itemId}/actions/stop`    | Stop server               |
+| POST   | `/subscriptions/{subscriptionId}/items/{itemId}/actions/restart` | Restart server            |
+
+See [Billing Manager OpenAPI](/spec/billing-manager/openapi.yaml) for schemas.
+
+## Related Documentation
+
+- **[Customer Profiles](./customer-profiles.md)** - Required before ordering
+- **[Service Types and Plans](./service-types-and-plans.md)** - Catalog and provider schemas
+- **[Invoices](./invoices.md)** - Open positions and billing-day accumulation
+- **[Backorders](./backorders.md)** - Capacity retry queue
+- **[Server Provisioning](./server-provisioning.md)** - Cloud-init and bundled stacks
+- **[Dashboard and Server Control](./dashboard-and-server-control.md)** - Overview and power actions
+
+---
+
+_For the full subscription order sequence, see the billing manager feature module diagrams._

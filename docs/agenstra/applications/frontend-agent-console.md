@@ -218,7 +218,7 @@ See [Authentication](../features/authentication.md) for environment variables an
 
 ## Environment Configuration
 
-Configure the application via environment variables. The **Express** runtime (`/config` proxy, CSP, and related variables) is shared with **agenstra-frontend-billing-console**, **agenstra-frontend-landingpage**, and **agenstra-frontend-docs**; see [Environment configuration](../deployment/environment-configuration.md) for the full list and billing-manager provisioning defaults.
+Configure the application via environment variables. The **Express** runtime (`/config` proxy, CSP, and related variables) is shared with **agenstra-frontend-landingpage** and **agenstra-frontend-docs** (patch apps over the shared docs base). See [Environment configuration](../deployment/environment-configuration.md) for the full list.
 
 ### Runtime Configuration (Docker Containers)
 

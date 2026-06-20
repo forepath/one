@@ -54,4 +54,8 @@ export interface Environment {
   socialPreview: {
     imageUrl: string;
   };
+  docs: {
+    /** Folder name under /docs/ and docs/ repo root, e.g. "agenstra" | "decabill" */
+    contentRoot: string;
+  };
 }

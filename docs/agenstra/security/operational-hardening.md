@@ -30,30 +30,18 @@ Resolution is implemented in **`getAuthenticationMethod`** (`libs/domains/identi
 
 **`api-key`** without **`STATIC_API_KEY`** fails at runtime with an error. **Keycloak** and **users** modes rely on their respective guards after **`HybridAuthGuard`**. Health endpoints **`/api/health`** and **`/health`** remain unauthenticated by design.
 
-**Operator note:** Set **`AUTHENTICATION_METHOD`** explicitly if your security policy requires unambiguous configuration. Implicit **keycloak** when neither an explicit mode nor **`STATIC_API_KEY`** is set is an **accepted risk**; see **AR-004** in **[Accepted risks](./accepted-risks.md)**.
+**Operator note:** Set **`AUTHENTICATION_METHOD`** explicitly if your security policy requires unambiguous configuration. Implicit **keycloak** when neither an explicit mode nor **`STATIC_API_KEY`** is set is an **accepted risk**. See **AR-003** in **[Accepted risks](./accepted-risks.md)**.
 
-## Billing manager — multi-tenancy
-
-| Control                        | Purpose                                                                                                                  |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| **`X-Tenant` header**          | Selects tenant context on HTTP and billing WebSocket handshakes. Validated against **`TENANTS`**; unknown ids → **400**. |
-| **`TenantUserGuard`**          | Ensures authenticated users’ **`tenant_id`** matches the request tenant.                                                 |
-| **`STATIC_API_KEY_TENANT_ID`** | Optional bind of API key auth to one tenant.                                                                             |
-
-**Accepted risk [AR-007](./accepted-risks.md#ar-007--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset):** With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, one deployment API key grants **admin access to every tenant** in **`TENANTS`** (tenant chosen per request via **`X-Tenant`**). This is **intentional** for a single shared automation key. Interactive **keycloak** / **users** sessions remain limited to the user’s tenant.
-
-Code: `libs/domains/decabill/backend/feature-billing-manager/src/lib/guards/tenant-user.guard.ts`, `libs/domains/shared/backend/util-http-context/src/lib/tenant-id.middleware.ts`.
-
-## Agent Controller — remote client endpoints (SSRF)
+## Agent Controller - remote client endpoints (SSRF)
 
 Customer-configured **`client.endpoint`** values drive HTTP and WebSocket traffic from the controller to remote agent-managers.
 
-| Control                                       | Purpose                                                                                                                                                            |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **`CLIENT_ENDPOINT_ALLOWED_HOSTS`**           | Comma-separated hostname allowlist. The literal **`*`** explicitly allows **any host**. **Required in production** — the controller **exits** on startup if unset. |
-| **`CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP`**     | Set to `true` only if `http:` endpoints must be allowed (discouraged).                                                                                             |
-| **`CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED`** | Defaults to TLS verification on. **`false` is forbidden in production.**                                                                                           |
-| **`CLIENT_ENDPOINT_SKIP_DNS_CHECK`**          | Skips DNS resolution defense (private/loopback rebinding). Use only in controlled test scenarios.                                                                  |
+| Control                                       | Purpose                                                                                                                                                           |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`CLIENT_ENDPOINT_ALLOWED_HOSTS`**           | Comma-separated hostname allowlist. The literal **`*`** explicitly allows **any host**. **Required in production**. The controller **exits** on startup if unset. |
+| **`CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP`**     | Set to `true` only if `http:` endpoints must be allowed (discouraged).                                                                                            |
+| **`CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED`** | Defaults to TLS verification on. **`false` is forbidden in production.**                                                                                          |
+| **`CLIENT_ENDPOINT_SKIP_DNS_CHECK`**          | Skips DNS resolution defense (private/loopback rebinding). Use only in controlled test scenarios.                                                                 |
 
 Using **`*`** for **`CLIENT_ENDPOINT_ALLOWED_HOSTS`** intentionally **widens** the reachable host set. Prefer **narrow** hostnames when feasible; combine with egress controls and monitoring.
 
@@ -61,7 +49,7 @@ DNS validation resolves the endpoint hostname and rejects addresses in private/l
 
 Code: `libs/domains/agenstra/backend/feature-agent-controller/src/lib/utils/client-endpoint-security.ts`.
 
-## HTTP proxy to remote agent-manager — headers
+## HTTP proxy to remote agent-manager - headers
 
 Outbound proxied HTTP requests **drop** caller-supplied credential-like headers (`Authorization`, cookies, `x-api-key`, and similar) and attach only the **service-computed** `Authorization` for the **client entity** (stored API key or token). This avoids forwarding the **portal user’s** JWT on HTTP proxy paths.
 
@@ -89,14 +77,14 @@ When **`CONFIG`** points to a remote JSON URL, Express servers validate fetches 
 
 **`CONFIG_ALLOWED_HOSTS`** supports **`*`** to explicitly allow **any host**. That choice increases risk if **`CONFIG`** points to an attacker-controlled origin; prefer explicit host allowlists in production.
 
-See **[Environment configuration — Frontend (all `frontend-*` apps)](../deployment/environment-configuration.md)** for variable names.
+See **[Environment configuration - Frontend (all `frontend-*` apps)](../deployment/environment-configuration.md)** for variable names.
 
 ## Content Security Policy (frontend Express)
 
 - CSP includes **`'unsafe-inline'`** and **`'unsafe-eval'`** for Monaco and tooling; default delivery is **`Content-Security-Policy-Report-Only`**.
 - Set **`CSP_ENFORCE=true`** only after verifying the application still works.
 
-Accepted risk: **AR-003** in **[Accepted risks](./accepted-risks.md)**.
+Accepted risk: **AR-002** in **[Accepted risks](./accepted-risks.md)**.
 
 ## WebSocket CORS (Agent Controller)
 
@@ -107,17 +95,17 @@ Accepted risk: **AR-003** in **[Accepted risks](./accepted-risks.md)**.
 
 Browser-originated **state-changing** requests can be restricted by origin allowlist middleware on backends (see `origin-allowlist.middleware.ts` in identity util-auth). Configure per deployment expectations.
 
-## Electron shell — new windows
+## Electron shell - new windows
 
-**`native-agent-console`** may open new windows for `window.open` / `target=_blank` with **allow** semantics. See **AR-005** in **[Accepted risks](./accepted-risks.md)**.
+**`native-agent-console`** may open new windows for `window.open` / `target=_blank` with **allow** semantics. See **AR-004** in **[Accepted risks](./accepted-risks.md)**.
 
 ## Related documentation
 
-- **[Accepted risks](./accepted-risks.md)** — AR-001 through AR-005
+- **[Accepted risks](./accepted-risks.md)** - AR-001 through AR-005
 - **[Environment configuration](../deployment/environment-configuration.md)**
 - **[Production checklist](../deployment/production-checklist.md)**
-- **[Backend Agent Controller application](../applications/backend-agent-controller.md)** — WebSocket and ports
-- **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)** — Disclosure and response commitments
+- **[Backend Agent Controller application](../applications/backend-agent-controller.md)** - WebSocket and ports
+- **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)** - Disclosure and response commitments
 
 ---
 

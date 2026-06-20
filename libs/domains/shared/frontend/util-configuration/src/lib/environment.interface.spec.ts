@@ -44,6 +44,9 @@ describe('Environment interfaces', () => {
           privacyPolicyUrl: 'https://example.com/privacy',
           termsUrl: 'https://example.com/terms',
         },
+        docs: {
+          contentRoot: 'agenstra',
+        },
       };
 
       expect(validEnv.production).toBe(true);
@@ -84,6 +87,9 @@ describe('Environment interfaces', () => {
           domain: 'localhost',
           privacyPolicyUrl: 'https://example.com/privacy',
           termsUrl: 'https://example.com/terms',
+        },
+        docs: {
+          contentRoot: 'agenstra',
         },
       };
 
@@ -127,6 +133,9 @@ describe('Environment interfaces', () => {
           privacyPolicyUrl: 'https://example.com/privacy',
           termsUrl: 'https://example.com/terms',
         },
+        docs: {
+          contentRoot: 'agenstra',
+        },
       };
 
       expect(envWithController.controller).toBeDefined();
@@ -169,6 +178,9 @@ describe('Environment interfaces', () => {
           domain: 'localhost',
           privacyPolicyUrl: 'https://example.com/privacy',
           termsUrl: 'https://example.com/terms',
+        },
+        docs: {
+          contentRoot: 'agenstra',
         },
       };
 

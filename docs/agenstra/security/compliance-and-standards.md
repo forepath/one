@@ -49,10 +49,9 @@ Formal IT-Grundschutz certification or **ISMS** certification requires **organiz
 Understanding where data and credentials move supports both CRA-style technical documentation and organizational risk analysis:
 
 1. **Browser / Electron** to **Express frontend** to **backend APIs** (`/api`).
-2. **Browser** to **Agent Controller WebSocket** to **remote agent-manager WebSocket** (`/agents`) using **client-stored** credentials toward the remote host (not the end-user’s controller JWT merged into HTTP proxy headers for those paths).
+2. **Browser** to **Agent Controller WebSocket** to **remote agent-manager WebSocket** (`/agents`) using **client-stored** credentials toward the remote host (not the end-user's controller JWT merged into HTTP proxy headers for those paths).
 3. **Controller** to **customer `client.endpoint`** (SSRF and misconfiguration risk; mitigated by allowlists, TLS policy, DNS checks).
-4. **Provisioning** to **cloud APIs and SSH** to new hosts (see **AR-001** in **[Accepted risks](./accepted-risks.md)**).
-5. **Agent Manager** to **Docker / containers** (execution and file operations; non-root `agenstra` user, bind mounts under `/opt/agents`, restricted `sudo`).
+4. **Agent Manager** to **Docker / containers** (execution and file operations; non-root `agenstra` user, bind mounts under `/opt/agents`, restricted `sudo`).
 
 Detail: **[Container image security](./container-images.md)**, **[Operational hardening](./operational-hardening.md)**.
 

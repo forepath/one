@@ -2,7 +2,7 @@
 
 Shared utilities for Angular SSR **Express** servers that expose `GET /config`: fetch and validate remote JSON from `CONFIG`, plus cache headers for success and error responses.
 
-Used by `agenstra-frontend-agent-console`, `agenstra-frontend-billing-console`, `agenstra-frontend-landingpage`, and `agenstra-frontend-docs` (`src/server.ts`).
+Used by `agenstra-frontend-agent-console`, `agenstra-frontend-billing-console`, `agenstra-frontend-landingpage`, `agenstra-frontend-docs`, `decabill-frontend-docs`, and the shared docs base (`apps/shared/frontend-docs/src/server.ts`).
 
 ## Public API
 

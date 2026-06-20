@@ -1,0 +1,27 @@
+{
+  "name": "shared-frontend-docs",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/shared/frontend-docs/src",
+  "i18n": {
+    "sourceLocale": "en",
+    "locales": {
+      "de": "apps/shared/frontend-docs/src/i18n/messages.de.xlf"
+    }
+  },
+  "tags": ["domain:shared", "type:app", "scope:frontend"],
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/shared/frontend-docs/jest.config.ts",
+        "tsConfig": "apps/shared/frontend-docs/tsconfig.spec.json"
+      }
+    }
+  }
+}
