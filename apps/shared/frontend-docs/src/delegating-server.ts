@@ -29,6 +29,13 @@ async function loadLocaleServers() {
 }
 
 function getLocaleFromRequest(req: IncomingMessage): string {
+  const url = new URL(req.url || '', `http://${req.headers.host}`);
+  const pathSegments = url.pathname.split('/').filter(Boolean);
+
+  if (pathSegments.length > 0 && AVAILABLE_LOCALES.includes(pathSegments[0])) {
+    return pathSegments[0];
+  }
+
   const acceptLanguage = req.headers['accept-language'];
 
   if (acceptLanguage) {
@@ -37,13 +44,6 @@ function getLocaleFromRequest(req: IncomingMessage): string {
         return locale;
       }
     }
-  }
-
-  const url = new URL(req.url || '', `http://${req.headers.host}`);
-  const pathSegments = url.pathname.split('/').filter(Boolean);
-
-  if (pathSegments.length > 0 && AVAILABLE_LOCALES.includes(pathSegments[0])) {
-    return pathSegments[0];
   }
 
   return DEFAULT_LOCALE;

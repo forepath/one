@@ -1,6 +1,6 @@
+import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer, IncomingMessage, ServerResponse } from 'node:http';
-import { readFileSync, existsSync, createReadStream, statSync } from 'node:fs';
-import { join, dirname, extname } from 'node:path';
+import { dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30,6 +30,13 @@ async function loadLocaleServers() {
 }
 
 function getLocaleFromRequest(req: IncomingMessage): string {
+  const url = new URL(req.url || '', `http://${req.headers.host}`);
+  const pathSegments = url.pathname.split('/').filter(Boolean);
+
+  if (pathSegments.length > 0 && AVAILABLE_LOCALES.includes(pathSegments[0])) {
+    return pathSegments[0];
+  }
+
   const acceptLanguage = req.headers['accept-language'];
 
   if (acceptLanguage) {
@@ -38,13 +45,6 @@ function getLocaleFromRequest(req: IncomingMessage): string {
         return locale;
       }
     }
-  }
-
-  const url = new URL(req.url || '', `http://${req.headers.host}`);
-  const pathSegments = url.pathname.split('/').filter(Boolean);
-
-  if (pathSegments.length > 0 && AVAILABLE_LOCALES.includes(pathSegments[0])) {
-    return pathSegments[0];
   }
 
   return DEFAULT_LOCALE;
