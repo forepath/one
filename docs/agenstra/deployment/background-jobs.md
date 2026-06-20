@@ -1,6 +1,6 @@
 # Background jobs (BullMQ)
 
-Background work for **backend agent controller** and **backend billing manager** runs through **Redis + BullMQ** instead of in-process `setInterval` loops in the API container.
+Background work for **backend agent controller** runs through **Redis + BullMQ** instead of in-process `setInterval` loops in the API container.
 
 ## Architecture
 
@@ -21,12 +21,11 @@ Each backend stack has its own **Redis** service in Docker Compose. Workers and 
 
 Workers and schedulers assume the API has already applied schema migrations. Running workers before the API in a fresh environment can cause query errors until migrations complete.
 
-Job registration (queue names, repeatable intervals, job names) lives in one file per app:
+Job registration (queue names, repeatable intervals, job names) lives in:
 
 - `apps/agenstra/backend-agent-controller/src/queue/job-registry.ts`
-- `apps/decabill/backend-billing-manager/src/queue/job-registry.ts`
 
-Coordinators fan out **unit jobs** (one subscription, one ticket, one import config, etc.). BullMQ `jobId` values prevent duplicate active work for the same entity. Custom job IDs use `.` separators and only allowed characters (alphanumeric, `.`, `-`, `_`, `~`) — e.g. `coordinator.filter-rules-sync`, `billing.subscription.<uuid>`. Colons and slashes are not valid.
+Coordinators fan out **unit jobs** (one ticket, one import config, etc.). BullMQ `jobId` values prevent duplicate active work for the same entity. Custom job IDs use `.` separators and only allowed characters (alphanumeric, `.`, `-`, `_`, `~`), for example `coordinator.filter-rules-sync`. Colons and slashes are not valid.
 
 ## Redis and queue environment variables
 
@@ -36,7 +35,7 @@ Coordinators fan out **unit jobs** (one subscription, one ticket, one import con
 | `REDIS_PORT`                | Redis port                              | `6379`                                                |
 | `REDIS_PASSWORD`            | Optional password                       | empty                                                 |
 | `REDIS_DB`                  | Redis database index                    | `0`                                                   |
-| `REDIS_KEY_PREFIX`          | Key namespace                           | `agenstra-controller` or `agenstra-billing`           |
+| `REDIS_KEY_PREFIX`          | Key namespace                           | `agenstra-controller`                                 |
 | `QUEUE_ROLE`                | `api`, `scheduler`, `worker`, or `all`  | `all` (local), `api` in API container                 |
 | `QUEUE_WORKER_CONCURRENCY`  | Default worker concurrency              | `5`                                                   |
 | `QUEUE_BULL_BOARD_ENABLED`  | Mount Bull Board UI on API / `all` only | `true` on API in compose; `false` on worker/scheduler |
@@ -51,15 +50,13 @@ Existing `*_SCHEDULER_INTERVAL*` variables now control **coordinator repeat** in
 Each backend `docker-compose.yaml` defines:
 
 - `redis`
-- `backend-*` (API, `QUEUE_ROLE=api`)
-- `backend-*-scheduler` (`QUEUE_ROLE=scheduler`)
-- `backend-*-worker` (`QUEUE_ROLE=worker`)
-
-Billing Redis is published on host port **6380** by default so it can run alongside controller Redis (**6379**).
+- `backend-agent-controller` (API, `QUEUE_ROLE=api`)
+- `backend-agent-controller-scheduler` (`QUEUE_ROLE=scheduler`)
+- `backend-agent-controller-worker` (`QUEUE_ROLE=worker`)
 
 ## Bull Board
 
-When enabled on the API container (`QUEUE_BULL_BOARD_ENABLED=true`, default in compose), Bull Board is served at **`QUEUE_BULL_BOARD_PATH`** (default **`/admin/queues`**) on the API port (controller **3100**, billing **3200**). That path is excluded from the Nest global `/api` prefix, so use `http://localhost:3100/admin/queues`, not `/api/admin/queues`.
+When enabled on the API container (`QUEUE_BULL_BOARD_ENABLED=true`, default in compose), Bull Board is served at **`QUEUE_BULL_BOARD_PATH`** (default **`/admin/queues`**) on the API port (controller **3100**). That path is excluded from the Nest global `/api` prefix, so use `http://localhost:3100/admin/queues`, not `/api/admin/queues`.
 
 Bull Board uses **HTTP Basic authentication** (`QUEUE_BULL_BOARD_USERNAME` / `QUEUE_BULL_BOARD_PASSWORD`). Local compose defaults to `admin` / `bullmq`; override in production. Startup fails in production if the board is enabled without a password.
 

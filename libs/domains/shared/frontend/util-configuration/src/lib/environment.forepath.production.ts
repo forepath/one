@@ -37,4 +37,7 @@ export const environment: Environment = {
   socialPreview: {
     imageUrl: 'https://forepath.io/assets/images/og-preview.png',
   },
+  docs: {
+    contentRoot: 'forepath',
+  },
 };

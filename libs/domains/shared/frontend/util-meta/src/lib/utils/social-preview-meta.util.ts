@@ -37,6 +37,13 @@ export interface PageMetaTagsInput {
   localeId: string;
   localizeCanonicalUrl: boolean;
   socialType?: 'website' | 'article';
+  siteName?: string;
+}
+
+export interface DocsPageDynamicMetaTagStubsInput {
+  docsSiteOrigin: string;
+  imageUrl: string;
+  siteName: string;
 }
 
 /**
@@ -170,6 +177,7 @@ export function buildPageMetaTags(input: PageMetaTagsInput): MetaDefinition[] {
       localeId: input.localeId,
       localizeCanonicalUrl: input.localizeCanonicalUrl,
       type: input.socialType,
+      siteName: input.siteName,
     }),
   );
 
@@ -179,16 +187,19 @@ export function buildPageMetaTags(input: PageMetaTagsInput): MetaDefinition[] {
 /**
  * Meta tags updated at runtime on documentation pages (description, canonical, social).
  */
-export const DOCS_PAGE_DYNAMIC_META_TAG_STUBS: MetaDefinition[] = [
-  { name: 'description', content: '' },
-  { name: 'canonical', content: '' },
-  ...buildSocialPreviewMetaTags({
-    title: '',
-    description: '',
-    canonicalUrl: 'https://docs.agenstra.com',
-    imageUrl: 'https://docs.agenstra.com/assets/images/og-preview.png',
-  }),
-];
+export function createDocsPageDynamicMetaTagStubs(input: DocsPageDynamicMetaTagStubsInput): MetaDefinition[] {
+  return [
+    { name: 'description', content: '' },
+    { name: 'canonical', content: '' },
+    ...buildSocialPreviewMetaTags({
+      title: '',
+      description: '',
+      canonicalUrl: input.docsSiteOrigin,
+      imageUrl: input.imageUrl,
+      siteName: input.siteName,
+    }),
+  ];
+}
 
 export function getMetaTagSelector(tag: MetaDefinition): string | null {
   if ('name' in tag && tag.name) {

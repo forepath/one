@@ -26,6 +26,7 @@ function mergeEnvironmentOverrides(base: Environment, overrides: Partial<Environ
     deployment: overrides.deployment ? { ...base.deployment, ...overrides.deployment } : base.deployment,
     cookieConsent: overrides.cookieConsent ? { ...base.cookieConsent, ...overrides.cookieConsent } : base.cookieConsent,
     socialPreview: overrides.socialPreview ? { ...base.socialPreview, ...overrides.socialPreview } : base.socialPreview,
+    docs: overrides.docs ? { ...base.docs, ...overrides.docs } : base.docs,
   } as Environment;
 }
 

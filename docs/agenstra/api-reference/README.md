@@ -75,27 +75,6 @@ The Agent Manager WebSocket gateway provides:
 - Terminal session management (`createTerminal`, `terminalInput`, `terminalOutput`, `closeTerminal`)
 - Container statistics broadcasting (`containerStats`; default every 15s on the manager, configurable via `CONTAINER_STATS_SCHEDULER_INTERVAL`)
 
-## Billing Manager HTTP API
-
-**OpenAPI Specification**: [openapi.yaml](/spec/billing-manager/openapi.yaml) (canonical source: `libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml`)
-
-Admin manual invoices and customer billing profile CRUD: [Billing Administration](../features/billing-administration.md)
-
-## Billing Manager WebSocket
-
-The billing manager exposes a Socket.IO gateway for **dashboard server status** (provisioned subscription items), separate from the HTTP port. Connections use the same JWT / Keycloak handshake auth as HTTP; static API key clients are not given an end-user billing stream (aligned with REST).
-
-**AsyncAPI Specification**: [asyncapi.yaml](/spec/billing-manager/asyncapi.yaml)
-
-- **View in AsyncAPI Studio**: [Open in AsyncAPI Studio](https://studio.asyncapi.com/?url=https://docs.agenstra.com/spec/billing-manager/asyncapi.yaml)
-- **Download**: [asyncapi.yaml](/spec/billing-manager/asyncapi.yaml) (canonical source in-repo: `libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml`)
-
-The billing status gateway provides:
-
-- `subscribeDashboardStatus` / `unsubscribeDashboardStatus` client commands
-- `dashboardStatusUpdate` unicast emissions with the same server-info fields as `GET .../server-info`
-- `error` events scoped to the initiating socket only
-
 ## Using the Specifications
 
 ### Swagger Editor

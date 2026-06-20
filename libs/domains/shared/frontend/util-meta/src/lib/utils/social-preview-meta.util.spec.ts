@@ -3,6 +3,7 @@ import { Meta } from '@angular/platform-browser';
 import {
   addPageMetaTags,
   buildSocialPreviewMetaTags,
+  createDocsPageDynamicMetaTagStubs,
   formatSocialPreviewDescription,
   formatSocialPreviewTitle,
   getMetaTagSelector,
@@ -107,6 +108,38 @@ describe('buildSocialPreviewMetaTags', () => {
         { property: 'og:url', content: 'https://agenstra.com/en/example' },
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:image', content: 'https://agenstra.com/assets/images/og-preview.png' },
+      ]),
+    );
+  });
+
+  it('uses the provided site name for og:site_name', () => {
+    const tags = buildSocialPreviewMetaTags({
+      title: 'Documentation :: Decabill',
+      description: 'Short description.',
+      canonicalUrl: 'https://docs.decabill.com/docs',
+      imageUrl: 'https://decabill.com/assets/images/og-preview.png',
+      siteName: 'Decabill',
+    });
+
+    expect(tags).toEqual(expect.arrayContaining([{ property: 'og:site_name', content: 'Decabill' }]));
+  });
+});
+
+describe('createDocsPageDynamicMetaTagStubs', () => {
+  it('builds brand-specific social preview stubs for cleanup', () => {
+    const tags = createDocsPageDynamicMetaTagStubs({
+      docsSiteOrigin: 'https://docs.decabill.com',
+      imageUrl: 'https://decabill.com/assets/images/og-preview.png',
+      siteName: 'Decabill',
+    });
+
+    expect(tags).toEqual(
+      expect.arrayContaining([
+        { name: 'description', content: '' },
+        { name: 'canonical', content: '' },
+        { property: 'og:site_name', content: 'Decabill' },
+        { property: 'og:url', content: 'https://docs.decabill.com' },
+        { property: 'og:image', content: 'https://decabill.com/assets/images/og-preview.png' },
       ]),
     );
   });

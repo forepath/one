@@ -38,4 +38,7 @@ export const environment: Environment = {
   socialPreview: {
     imageUrl: 'http://localhost:4400/assets/images/og-preview.png',
   },
+  docs: {
+    contentRoot: 'forepath',
+  },
 };

@@ -195,32 +195,9 @@ Optional runtime extensions for agents, CI/CD pipelines, and chat filters. See [
 - `DYNAMIC_PROVIDER_PLUGIN_PATH` - Absolute plugin root for post-build loading (unset by default; use `/var/lib/forepath/provider-plugins` with the compose volume when enabling plugins).
 - `DYNAMIC_PROVIDER_PLUGIN_INSTALL` - Comma-separated `npm install` targets into the plugin path at container startup.
 
-## Backend Billing Manager
-
-### Multi-tenancy
-
-Billing data and users are partitioned by **`tenant_id`**. HTTP clients send **`X-Tenant`**; the billing console and landing page attach it via `environment.billing.tenantId` (defaults to `default`).
-
-| Variable                   | Description                                                                                                        |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `TENANTS`                  | Comma-separated tenant ids allowed for **`X-Tenant`** (always includes `default`). Unset → only `default`.         |
-| `STATIC_API_KEY_TENANT_ID` | Optional. When set with **`STATIC_API_KEY`** auth, API key requests are accepted only when **`X-Tenant`** matches. |
-| `BILLING_FRONTEND_URL`     | Billing console base URL for the `default` tenant (Stripe return redirects).                                       |
-| `TENANT_FRONTEND_URLS`     | Per-tenant console URLs: `tenantId=https://…` pairs, comma-separated.                                              |
-
-**API key scope (accepted risk [AR-007](../security/accepted-risks.md#ar-007--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)):** With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, one deployment key grants **admin access to every tenant** in **`TENANTS`**, selected per request via **`X-Tenant`**. This is **intentional** (single shared automation credential). Set **`STATIC_API_KEY_TENANT_ID`** to bind the key to one tenant, or use **keycloak** / **users** for interactive multi-tenant console access.
-
-See also [Billing Administration](../features/billing-administration.md) and the billing sections in this document.
-
 ## Frontend applications (Express SSR)
 
-The Angular apps **agenstra-frontend-agent-console**, **agenstra-frontend-billing-console**, **agenstra-frontend-landingpage**, and **agenstra-frontend-docs** use the same Express layer for `GET /config` (runtime JSON proxy) and security headers. The variables below are written with the agent console in mind; they apply to all four apps unless an app-specific doc says otherwise.
-
-### Billing manager (provisioned agent controller)
-
-When the billing manager generates cloud-init for a product that includes the agent-controller frontend container, it sets **`CONFIG_ALLOWED_HOSTS`** to the instance **FQDN** (so production `CONFIG` fetches stay allowlisted) and **`CSP_ENFORCE`** to **`true`** by default. Override the CSP default only if your provisioning pipeline sets `frontend.cspEnforce` in the cloud-init config.
-
-It also sets client workspace SSRF env vars on **`backend-agent-controller`**: **`CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED`** (default **`true`**), **`CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP`** (default **`false`**), and **`CLIENT_ENDPOINT_ALLOWED_HOSTS`** (default **`*`** so tenants may register arbitrary agent-manager hostnames while other SSRF layers still apply). DNS rebinding checks follow runtime rules (on by default); use **`CLIENT_ENDPOINT_ALLOW_INTERNAL_HOST`** in non-provisioned setups when you need the same bypass as **`CONFIG_ALLOW_INTERNAL_HOST`** (billing does not set it by default). Optional **`clientEndpointAllowedHosts`** / **`security.clientEndpointAllowedHosts`** in **`requestedConfig`** **merge** the instance FQDN with listed hosts (FQDN first); a single **`*`** entry keeps allow-all. Optional **`security.clientEndpointAllowInsecureHttp`** and **`security.clientEndpointTlsRejectUnauthorized`** map to the same `CLIENT_ENDPOINT_*` variables.
+The Angular apps **agenstra-frontend-agent-console**, **agenstra-frontend-landingpage**, and **agenstra-frontend-docs** use the same Express layer for `GET /config` (runtime JSON proxy) and security headers. The variables below are written with the agent console in mind. They apply to all listed apps unless an app-specific doc says otherwise.
 
 ### Runtime Configuration
 
@@ -273,23 +250,23 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 
 ## Redis and BullMQ (background jobs)
 
-Used by **backend agent controller** and **backend billing manager**. See [Background jobs](./background-jobs.md).
+Used by **backend agent controller**. See [Background jobs](./background-jobs.md).
 
-| Variable                    | Description                            | Default                                    |
-| --------------------------- | -------------------------------------- | ------------------------------------------ |
-| `REDIS_HOST`                | Redis host                             | `localhost` (compose: `redis`)             |
-| `REDIS_PORT`                | Redis port                             | `6379`                                     |
-| `REDIS_PASSWORD`            | Optional password                      | empty                                      |
-| `REDIS_DB`                  | Redis DB index                         | `0`                                        |
-| `REDIS_KEY_PREFIX`          | Key prefix                             | `agenstra-controller` / `agenstra-billing` |
-| `QUEUE_ROLE`                | `api`, `scheduler`, `worker`, or `all` | `all` locally; `api` for API container     |
-| `QUEUE_WORKER_CONCURRENCY`  | Worker concurrency                     | `5`                                        |
-| `QUEUE_BULL_BOARD_ENABLED`  | Enable Bull Board                      | `true` in dev for `all`/`scheduler`        |
-| `QUEUE_BULL_BOARD_PATH`     | Bull Board path                        | `/admin/queues`                            |
-| `QUEUE_BULL_BOARD_USERNAME` | Bull Board HTTP Basic user             | `admin`                                    |
-| `QUEUE_BULL_BOARD_PASSWORD` | Bull Board HTTP Basic password         | required; `bullmq` in local compose        |
+| Variable                    | Description                            | Default                                |
+| --------------------------- | -------------------------------------- | -------------------------------------- |
+| `REDIS_HOST`                | Redis host                             | `localhost` (compose: `redis`)         |
+| `REDIS_PORT`                | Redis port                             | `6379`                                 |
+| `REDIS_PASSWORD`            | Optional password                      | empty                                  |
+| `REDIS_DB`                  | Redis DB index                         | `0`                                    |
+| `REDIS_KEY_PREFIX`          | Key prefix                             | `agenstra-controller`                  |
+| `QUEUE_ROLE`                | `api`, `scheduler`, `worker`, or `all` | `all` locally; `api` for API container |
+| `QUEUE_WORKER_CONCURRENCY`  | Worker concurrency                     | `5`                                    |
+| `QUEUE_BULL_BOARD_ENABLED`  | Enable Bull Board                      | `true` in dev for `all`/`scheduler`    |
+| `QUEUE_BULL_BOARD_PATH`     | Bull Board path                        | `/admin/queues`                        |
+| `QUEUE_BULL_BOARD_USERNAME` | Bull Board HTTP Basic user             | `admin`                                |
+| `QUEUE_BULL_BOARD_PASSWORD` | Bull Board HTTP Basic password         | required; `bullmq` in local compose    |
 
-Scheduler interval variables (e.g. `BILLING_SCHEDULER_INTERVAL`, `AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS`) configure **coordinator** repeat intervals in BullMQ.
+Scheduler interval variables (for example `AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS`) configure **coordinator** repeat intervals in BullMQ.
 
 ## Environment-Specific Defaults
 

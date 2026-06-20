@@ -47,4 +47,7 @@ export const environment: Environment = {
   socialPreview: {
     imageUrl: 'http://localhost:4300/assets/images/og-preview.png',
   },
+  docs: {
+    contentRoot: 'agenstra',
+  },
 };

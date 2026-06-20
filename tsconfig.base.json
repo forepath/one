@@ -15,6 +15,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@forepath/shared/frontend/util-docs-bootstrap": [
+        "apps/shared/frontend-docs/src/main.server.ts"
+      ],
       "@forepath/shared/frontend/util-express-server": [
         "libs/domains/shared/frontend/util-express-server/src/index.ts"
       ],
@@ -79,14 +82,8 @@
       "@forepath/agenstra/frontend/feature-agent-console": [
         "libs/domains/agenstra/frontend/feature-agent-console/src/index.ts"
       ],
-      "@forepath/agenstra/frontend/feature-docs": [
-        "libs/domains/agenstra/frontend/feature-docs/src/index.ts"
-      ],
       "@forepath/agenstra/frontend/feature-landingpage": [
         "libs/domains/agenstra/frontend/feature-landingpage/src/index.ts"
-      ],
-      "@forepath/agenstra/frontend/util-docs-parser": [
-        "libs/domains/agenstra/frontend/util-docs-parser/src/index.ts"
       ],
       "@forepath/forepath/frontend/feature-landingpage": [
         "libs/domains/forepath/frontend/feature-landingpage/src/index.ts"
@@ -110,6 +107,12 @@
       ],
       "@forepath/shared/backend/util-dynamic-provider-registry": [
         "libs/domains/shared/backend/util-dynamic-provider-registry/src/index.ts"
+      ],
+      "@forepath/shared/frontend/util-docs-parser": [
+        "libs/domains/shared/frontend/util-docs-parser/src/index.ts"
+      ],
+      "@forepath/shared/frontend/feature-docs": [
+        "libs/domains/shared/frontend/feature-docs/src/index.ts"
       ]
     }
   },

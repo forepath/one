@@ -32,19 +32,29 @@ interface SearchIndex {
   entries: SearchIndexEntry[];
 }
 
-/**
- * Build-time documentation generator
- * Scans /docs/agenstra and generates navigation.json and index.json
- */
-
-const DOCS_ROOT = path.join(process.cwd(), 'docs', 'agenstra');
-// Generate to a temp location that won't be cleaned by Angular build
-const OUTPUT_DIR = path.join(process.cwd(), 'dist', 'apps', 'frontend-docs-temp', 'assets', 'docs');
-const CONTENT_OUTPUT_DIR = path.join(process.cwd(), 'dist', 'apps', 'frontend-docs-temp', 'public', 'docs');
+interface GenerateDocsOptions {
+  contentRoot: string;
+  outputTemp: string;
+}
 
 interface FileInfo {
   path: string;
   content: string;
+}
+
+function parseArgs(): GenerateDocsOptions {
+  let contentRoot = 'agenstra';
+  let outputTemp = 'dist/apps/agenstra/frontend-docs-temp';
+
+  for (const arg of process.argv.slice(2)) {
+    if (arg.startsWith('--contentRoot=')) {
+      contentRoot = arg.split('=')[1] ?? contentRoot;
+    } else if (arg.startsWith('--outputTemp=')) {
+      outputTemp = arg.split('=')[1] ?? outputTemp;
+    }
+  }
+
+  return { contentRoot, outputTemp };
 }
 
 /**
@@ -72,8 +82,8 @@ async function scanMarkdownFiles(dir: string, basePath: string = ''): Promise<st
 /**
  * Read and parse markdown file
  */
-async function readMarkdownFile(filePath: string): Promise<FileInfo> {
-  const fullPath = path.join(DOCS_ROOT, filePath);
+async function readMarkdownFile(docsRoot: string, filePath: string): Promise<FileInfo> {
+  const fullPath = path.join(docsRoot, filePath);
   const content = await fs.readFile(fullPath, 'utf-8');
   return { path: filePath, content };
 }
@@ -155,7 +165,6 @@ function extractHeadings(content: string): Array<{ level: number; text: string; 
 
     if (level && text) {
       // Strip markdown link syntax from heading text
-      // Convert [text](url) to just "text"
       text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
       const id = text
         .toLowerCase()
@@ -170,10 +179,15 @@ function extractHeadings(content: string): Array<{ level: number; text: string; 
   return headings;
 }
 
+function stripContentRootPrefix(pathWithoutExt: string, contentRoot: string): string {
+  const prefix = `${contentRoot}/`;
+  return pathWithoutExt.startsWith(prefix) ? pathWithoutExt.substring(prefix.length) : pathWithoutExt;
+}
+
 /**
  * Build navigation tree from file list
  */
-function buildNavigationTree(files: string[], basePath: string = '/docs'): NavigationNode[] {
+function buildNavigationTree(files: string[], contentRoot: string, basePath: string = '/docs'): NavigationNode[] {
   const tree: NavigationNode[] = [];
   const nodeMap = new Map<string, NavigationNode>();
 
@@ -185,7 +199,7 @@ function buildNavigationTree(files: string[], basePath: string = '/docs'): Navig
     const isReadme = fileName.toLowerCase() === 'readme.md';
 
     const pathSegments = parts.slice(0, -1);
-    const routePath = buildRoutePath(basePath, file, isReadme);
+    const routePath = buildRoutePath(basePath, file, isReadme, contentRoot);
 
     let parent: NavigationNode[] = tree;
     let currentPath = '';
@@ -196,7 +210,7 @@ function buildNavigationTree(files: string[], basePath: string = '/docs'): Navig
 
       let folderNode = nodeMap.get(currentPath);
       if (!folderNode) {
-        const folderRoutePath = buildRoutePath(basePath, `${currentPath}/README.md`, true);
+        const folderRoutePath = buildRoutePath(basePath, `${currentPath}/README.md`, true, contentRoot);
         folderNode = {
           title: formatTitle(segment),
           path: folderRoutePath,
@@ -245,23 +259,18 @@ function buildNavigationTree(files: string[], basePath: string = '/docs'): Navig
   return tree;
 }
 
-function buildRoutePath(basePath: string, file: string, isReadme: boolean): string {
+function buildRoutePath(basePath: string, file: string, isReadme: boolean, contentRoot: string): string {
   const pathWithoutExt = file.replace(/\.md$/, '');
-
-  // Remove "agenstra/" prefix from file path for route generation
-  // Files are in "agenstra/" folder, but routes don't include this prefix
-  const pathWithoutAgenstra = pathWithoutExt.startsWith('agenstra/')
-    ? pathWithoutExt.substring('agenstra/'.length)
-    : pathWithoutExt;
+  const pathWithoutRoot = stripContentRootPrefix(pathWithoutExt, contentRoot);
 
   if (isReadme) {
-    const parts = pathWithoutAgenstra.split('/');
-    parts.pop(); // Remove 'README'
+    const parts = pathWithoutRoot.split('/');
+    parts.pop();
     const dirPath = parts.join('/');
     return dirPath ? `${basePath}/${dirPath}` : basePath;
   }
 
-  return `${basePath}/${pathWithoutAgenstra}`;
+  return `${basePath}/${pathWithoutRoot}`;
 }
 
 function formatTitle(name: string): string {
@@ -272,16 +281,10 @@ function formatTitle(name: string): string {
 }
 
 function sortNavigationNodes(nodes: NavigationNode[]): void {
-  // Sort nodes: categories (folders with non-empty children) first, then links (files without children property or empty children)
-  // Both sorted alphabetically within their group
-  // IMPORTANT: Use a stable sort by first separating categories and links, then sorting each group
   const categories: NavigationNode[] = [];
   const links: NavigationNode[] = [];
 
-  // Separate categories and links
   for (const node of nodes) {
-    // A node is a category if it has a children property AND has at least one child
-    // A node is a link if it doesn't have a children property OR has an empty children array
     if (node.children !== undefined && node.children.length > 0) {
       categories.push(node);
     } else {
@@ -289,15 +292,12 @@ function sortNavigationNodes(nodes: NavigationNode[]): void {
     }
   }
 
-  // Sort each group alphabetically
   categories.sort((a, b) => a.title.localeCompare(b.title));
   links.sort((a, b) => a.title.localeCompare(b.title));
 
-  // Replace the original array with sorted categories first, then links
   nodes.length = 0;
   nodes.push(...categories, ...links);
 
-  // Recursively sort children
   for (const node of nodes) {
     if (node.children && node.children.length > 0) {
       sortNavigationNodes(node.children);
@@ -323,37 +323,35 @@ function extractSearchableContent(content: string): string {
 /**
  * Main generation function
  */
-async function generateDocs(): Promise<void> {
-  console.log('Generating documentation files...');
+async function generateDocs(options: GenerateDocsOptions): Promise<void> {
+  const { contentRoot, outputTemp } = options;
+  const docsRoot = path.join(process.cwd(), 'docs', contentRoot);
+  const outputDir = path.join(process.cwd(), outputTemp, 'assets', 'docs');
+  const contentOutputDir = path.join(process.cwd(), outputTemp, 'public', 'docs');
 
-  // Ensure output directory exists
-  await fs.mkdir(OUTPUT_DIR, { recursive: true });
+  console.log(`Generating documentation files for ${contentRoot}...`);
 
-  // Check if docs directory exists
+  await fs.mkdir(outputDir, { recursive: true });
+
   try {
-    await fs.access(DOCS_ROOT);
+    await fs.access(docsRoot);
   } catch {
-    console.warn(`Docs directory not found: ${DOCS_ROOT}`);
-    // Create empty navigation and index
-    await fs.writeFile(path.join(OUTPUT_DIR, 'navigation.json'), JSON.stringify({ sections: [] }, null, 2));
-    await fs.writeFile(path.join(OUTPUT_DIR, 'index.json'), JSON.stringify({ entries: [] }, null, 2));
+    console.warn(`Docs directory not found: ${docsRoot}`);
+    await fs.writeFile(path.join(outputDir, 'navigation.json'), JSON.stringify({ sections: [] }, null, 2));
+    await fs.writeFile(path.join(outputDir, 'index.json'), JSON.stringify({ entries: [] }, null, 2));
     return;
   }
 
-  // Scan for markdown files
-  const files = await scanMarkdownFiles(DOCS_ROOT);
+  const files = await scanMarkdownFiles(docsRoot);
   console.log(`Found ${files.length} markdown files`);
 
-  // Read all files
-  const fileContents = await Promise.all(files.map((f) => readMarkdownFile(f)));
+  const fileContents = await Promise.all(files.map((f) => readMarkdownFile(docsRoot, f)));
 
-  // Configure marked
   marked.setOptions({
     breaks: true,
     gfm: true,
   });
 
-  // Parse files and extract metadata
   const metadata: DocMetadata[] = await Promise.all(
     fileContents.map(async (file) => {
       const title = extractTitle(file.content, file.path);
@@ -376,31 +374,23 @@ async function generateDocs(): Promise<void> {
     }),
   );
 
-  // Build navigation tree
-  // Note: Routes don't include "agenstra" prefix, but files are in "agenstra/" folder
-  const navigationTree = buildNavigationTree(files, '/docs');
+  const navigationTree = buildNavigationTree(files, contentRoot, '/docs');
 
-  // Build search index
   const searchIndex: SearchIndex = {
     entries: metadata.map((doc) => {
       const pathWithoutExt = doc.path.replace(/\.md$/, '');
       const isReadme = doc.path.toLowerCase().endsWith('readme.md');
-
-      // Remove "agenstra/" prefix from file path for route generation
-      // Files are in "agenstra/" folder, but routes don't include this prefix
-      const pathWithoutAgenstra = pathWithoutExt.startsWith('agenstra/')
-        ? pathWithoutExt.substring('agenstra/'.length)
-        : pathWithoutExt;
+      const pathWithoutRoot = stripContentRootPrefix(pathWithoutExt, contentRoot);
 
       let routePath: string;
 
       if (isReadme) {
-        const parts = pathWithoutAgenstra.split('/');
-        parts.pop(); // Remove 'README'
+        const parts = pathWithoutRoot.split('/');
+        parts.pop();
         const dirPath = parts.join('/');
         routePath = dirPath ? `/docs/${dirPath}` : '/docs';
       } else {
-        routePath = `/docs/${pathWithoutAgenstra}`;
+        routePath = `/docs/${pathWithoutRoot}`;
       }
 
       return {
@@ -413,20 +403,13 @@ async function generateDocs(): Promise<void> {
     }),
   };
 
-  // Write navigation.json
-  await fs.writeFile(path.join(OUTPUT_DIR, 'navigation.json'), JSON.stringify({ sections: navigationTree }, null, 2));
+  await fs.writeFile(path.join(outputDir, 'navigation.json'), JSON.stringify({ sections: navigationTree }, null, 2));
+  await fs.writeFile(path.join(outputDir, 'index.json'), JSON.stringify(searchIndex, null, 2));
 
-  // Write index.json
-  await fs.writeFile(path.join(OUTPUT_DIR, 'index.json'), JSON.stringify(searchIndex, null, 2));
-
-  // Copy markdown files to public directory for serving
-  // Preserve the agenstra folder structure: agenstra/file.md -> public/docs/agenstra/file.md
-  await fs.mkdir(CONTENT_OUTPUT_DIR, { recursive: true });
+  await fs.mkdir(contentOutputDir, { recursive: true });
   for (const file of files) {
-    const sourcePath = path.join(DOCS_ROOT, file);
-    // Preserve agenstra folder: file is like "getting-started.md" or "features/README.md"
-    // We want it at public/docs/agenstra/getting-started.md
-    const destPath = path.join(CONTENT_OUTPUT_DIR, 'agenstra', file);
+    const sourcePath = path.join(docsRoot, file);
+    const destPath = path.join(contentOutputDir, contentRoot, file);
     const destDir = path.dirname(destPath);
     await fs.mkdir(destDir, { recursive: true });
     await fs.copyFile(sourcePath, destPath);
@@ -438,12 +421,8 @@ async function generateDocs(): Promise<void> {
   console.log(`- Content files: ${files.length} markdown files copied`);
 }
 
-// Run if executed directly
-// For ES modules, we can check if this is the main module by comparing import.meta.url with the script path
-// Since we're compiling with --module esnext, we use ES module syntax
 const getCurrentFilePath = () => {
   const url = import.meta.url;
-  // Remove file:// protocol and handle both absolute and relative paths
   if (url.startsWith('file://')) {
     return url.replace('file://', '');
   }
@@ -452,7 +431,6 @@ const getCurrentFilePath = () => {
 
 const currentFilePath = getCurrentFilePath();
 const scriptPath = process.argv[1];
-// Check if the current file matches the script being executed
 const isMainModule =
   currentFilePath === scriptPath ||
   currentFilePath.endsWith(scriptPath) ||
@@ -460,10 +438,10 @@ const isMainModule =
   currentFilePath.includes('generate-docs.js');
 
 if (isMainModule) {
-  generateDocs().catch((error) => {
+  generateDocs(parseArgs()).catch((error) => {
     console.error('Error generating documentation:', error);
     process.exit(1);
   });
 }
 
-export { generateDocs };
+export { generateDocs, parseArgs };

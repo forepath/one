@@ -1,10 +1,9 @@
 services:
   frontend-billing-console-server:
-    image: ghcr.io/forepath/decabill-billing-console-server:latest
+    image: ${BILLING_CONSOLE_SERVER_IMAGE:-ghcr.io/forepath/decabill-billing-console-server:latest}
     pull_policy: never
-    container_name: billing-console-server
+    container_name: ${BILLING_CONSOLE_SERVER_CONTAINER_NAME:-billing-console-server}
     environment:
-      # Frontend server configuration
       HOST: ${HOST:-0.0.0.0}
       PORT: ${PORT:-4500}
       NODE_ENV: ${NODE_ENV:-production}

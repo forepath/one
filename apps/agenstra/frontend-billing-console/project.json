@@ -221,7 +221,8 @@
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
-        "command": "docker rm -f agenstra-billing-console-server 2>/dev/null || true; docker run -d --name agenstra-billing-console-server --pull never -p ${PORT:-4500}:${PORT:-4500} -e HOST=${HOST:-0.0.0.0} -e PORT=${PORT:-4500} -e NODE_ENV=${NODE_ENV:-production} -e DEFAULT_LOCALE=${DEFAULT_LOCALE:-en} -e CSP_ENFORCE=${CSP_ENFORCE:-true} -e CSP_CONNECT_SRC_EXTRA=${CSP_CONNECT_SRC_EXTRA:-http://host.docker.internal:3200} ghcr.io/forepath/agenstra-billing-console-server:latest"
+        "cwd": "apps/decabill/frontend-billing-console",
+        "command": "BILLING_CONSOLE_SERVER_IMAGE=ghcr.io/forepath/agenstra-billing-console-server:latest BILLING_CONSOLE_SERVER_CONTAINER_NAME=agenstra-billing-console-server docker compose up -d --force-recreate --remove-orphans"
       }
     },
     "sbom": {

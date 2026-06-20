@@ -1,3 +1,9 @@
+export { createDocsServer, type DocsServerBootstrap } from './lib/docs-server';
+export {
+  registerRuntimeConfigEndpoint,
+  type RuntimeConfigRouteEnv,
+  type RuntimeConfigRouteLogger,
+} from './lib/runtime-config-route';
 export {
   createSecurityHeadersMiddleware,
   parseCspConnectSrcExtra,
@@ -5,9 +11,4 @@ export {
   resolveCspFrameAncestorsSources,
   type SecurityHeadersEnv,
 } from './lib/security-headers';
-export {
-  registerRuntimeConfigEndpoint,
-  type RuntimeConfigRouteEnv,
-  type RuntimeConfigRouteLogger,
-} from './lib/runtime-config-route';
 export { buildSsrAllowedHosts } from './lib/ssr-allowed-hosts';

@@ -3,11 +3,11 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "app",
-  "sourceRoot": "apps/agenstra/frontend-docs/src",
+  "sourceRoot": "apps/shared/frontend-docs/src",
   "i18n": {
     "sourceLocale": "en",
     "locales": {
-      "de": "apps/agenstra/frontend-docs/src/i18n/messages.de.xlf"
+      "de": "apps/shared/frontend-docs/src/i18n/messages.de.xlf"
     }
   },
   "tags": ["domain:agenstra", "type:app", "scope:frontend"],
@@ -19,7 +19,7 @@
         "{workspaceRoot}/dist/apps/agenstra/frontend-docs-temp/public/docs"
       ],
       "options": {
-        "command": "mkdir -p dist/apps/agenstra/frontend-docs-temp/assets/docs dist/apps/agenstra/frontend-docs-temp/public/docs dist/tools/docs && npx tsc tools/docs/generate-docs.ts --outDir dist/tools/docs --module esnext --moduleResolution node --target es2020 --esModuleInterop --skipLibCheck --resolveJsonModule && node dist/tools/docs/generate-docs.js",
+        "command": "mkdir -p dist/apps/agenstra/frontend-docs-temp/assets/docs dist/apps/agenstra/frontend-docs-temp/public/docs dist/tools/docs && npx tsc tools/docs/generate-docs.ts --outDir dist/tools/docs --module esnext --moduleResolution node --target es2020 --esModuleInterop --skipLibCheck --resolveJsonModule && node dist/tools/docs/generate-docs.js --contentRoot=agenstra --outputTemp=dist/apps/agenstra/frontend-docs-temp",
         "cwd": "{workspaceRoot}",
         "cache": false
       }
@@ -31,14 +31,15 @@
       "options": {
         "outputPath": "dist/apps/agenstra/frontend-docs",
         "index": "apps/agenstra/frontend-docs/src/index.html",
-        "browser": "apps/agenstra/frontend-docs/src/main.ts",
-        "polyfills": [
-          "zone.js",
-          "apps/agenstra/frontend-docs/src/polyfills.ts"
-        ],
-        "tsConfig": "apps/agenstra/frontend-docs/tsconfig.app.json",
+        "browser": "apps/shared/frontend-docs/src/main.ts",
+        "polyfills": ["zone.js", "apps/shared/frontend-docs/src/polyfills.ts"],
+        "tsConfig": "apps/shared/frontend-docs/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/shared/frontend-docs/public"
+          },
           {
             "glob": "**/*",
             "input": "apps/agenstra/frontend-docs/public"
@@ -71,9 +72,10 @@
         ],
         "styles": [
           "node_modules/cookieconsent/build/cookieconsent.min.css",
-          "apps/agenstra/frontend-docs/src/styles.scss"
+          "apps/agenstra/frontend-docs/src/styles.scss",
+          "libs/domains/shared/frontend/util-cookie-consent/src/lib/cookie-consent.scss"
         ],
-        "server": "apps/agenstra/frontend-docs/src/main.server.ts",
+        "server": "apps/shared/frontend-docs/src/main.server.ts",
         "ssr": {
           "entry": "apps/agenstra/frontend-docs/src/server.ts"
         },
@@ -157,14 +159,14 @@
       "executor": "@angular-devkit/build-angular:extract-i18n",
       "options": {
         "buildTarget": "agenstra-frontend-docs:build",
-        "outputPath": "apps/agenstra/frontend-docs/src/i18n"
+        "outputPath": "apps/shared/frontend-docs/src/i18n"
       }
     },
     "extract-i18n": {
       "executor": "nx:run-commands",
       "options": {
         "command": "node ../../../remove-context-groups.cjs src/i18n/messages.xlf",
-        "cwd": "apps/agenstra/frontend-docs"
+        "cwd": "apps/shared/frontend-docs"
       },
       "dependsOn": ["extract-i18n-angular"]
     },
@@ -175,8 +177,8 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/agenstra/frontend-docs/jest.config.ts",
-        "tsConfig": "apps/agenstra/frontend-docs/tsconfig.spec.json"
+        "jestConfig": "apps/shared/frontend-docs/jest.config.ts",
+        "tsConfig": "apps/shared/frontend-docs/tsconfig.spec.json"
       }
     },
     "serve-static": {
@@ -195,7 +197,7 @@
         "{workspaceRoot}/dist/apps/agenstra/frontend-docs-delegating-server"
       ],
       "options": {
-        "command": "mkdir -p dist/apps/agenstra/frontend-docs-delegating-server/server && npx tsc apps/agenstra/frontend-docs/src/delegating-server.ts --outDir dist/apps/agenstra/frontend-docs-delegating-server/server --target es2022 --module esnext --moduleResolution node --allowSyntheticDefaultImports --esModuleInterop --skipLibCheck --declaration false --sourceMap false --removeComments true",
+        "command": "mkdir -p dist/apps/agenstra/frontend-docs-delegating-server/server && npx tsc apps/shared/frontend-docs/src/delegating-server.ts --outDir dist/apps/agenstra/frontend-docs-delegating-server/server --target es2022 --module esnext --moduleResolution node --allowSyntheticDefaultImports --esModuleInterop --skipLibCheck --declaration false --sourceMap false --removeComments true",
         "cwd": "."
       }
     },
@@ -212,7 +214,7 @@
       "executor": "@nx-tools/nx-container:build",
       "options": {
         "engine": "docker",
-        "file": "apps/agenstra/frontend-docs/Dockerfile.server",
+        "file": "apps/shared/frontend-docs/Dockerfile.server",
         "context": "dist/apps/agenstra/frontend-docs/server"
       },
       "configurations": {
@@ -235,8 +237,8 @@
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
-        "cwd": "apps/agenstra/frontend-docs",
-        "command": "docker compose up -d --force-recreate --remove-orphans"
+        "cwd": "apps/shared/frontend-docs",
+        "command": "DOCS_SERVER_IMAGE=ghcr.io/forepath/agenstra-docs-server:latest DOCS_SERVER_CONTAINER_NAME=agenstra-docs-server docker compose up -d --force-recreate --remove-orphans"
       }
     },
     "sbom": {

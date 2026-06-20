@@ -71,14 +71,14 @@ flowchart TB
   AC -->|"HTTP REST API<br/>WebSocket (Socket.IO)"| AM
 ```
 
-| Component                | Nx project                          | Path                                                                                  | Description                                                  |
-| ------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Frontend agent console   | `agenstra-frontend-agent-console`   | [`apps/agenstra/frontend-agent-console`](./apps/agenstra/frontend-agent-console/)     | Web-based IDE, chat, file management, tickets, knowledge     |
-| Native agent console     | `agenstra-native-agent-console`     | [`apps/agenstra/native-agent-console`](./apps/agenstra/native-agent-console/)         | Electron desktop shell around the agent console              |
-| Backend agent controller | `agenstra-backend-agent-controller` | [`apps/agenstra/backend-agent-controller`](./apps/agenstra/backend-agent-controller/) | Control plane for clients, tickets, proxying, and statistics |
-| Backend agent manager    | `agenstra-backend-agent-manager`    | [`apps/agenstra/backend-agent-manager`](./apps/agenstra/backend-agent-manager/)       | Agent lifecycle, Docker workloads, VNC, SSH, worker images   |
-| Frontend docs            | `agenstra-frontend-docs`            | [`apps/agenstra/frontend-docs`](./apps/agenstra/frontend-docs/)                       | In-product documentation site                                |
-| Frontend landing page    | `agenstra-frontend-landingpage`     | [`apps/agenstra/frontend-landingpage`](./apps/agenstra/frontend-landingpage/)         | Public Agenstra marketing and pricing site                   |
+| Component                | Nx project                          | Path                                                                                                                                     | Description                                                  |
+| ------------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Frontend agent console   | `agenstra-frontend-agent-console`   | [`apps/agenstra/frontend-agent-console`](./apps/agenstra/frontend-agent-console/)                                                        | Web-based IDE, chat, file management, tickets, knowledge     |
+| Native agent console     | `agenstra-native-agent-console`     | [`apps/agenstra/native-agent-console`](./apps/agenstra/native-agent-console/)                                                            | Electron desktop shell around the agent console              |
+| Backend agent controller | `agenstra-backend-agent-controller` | [`apps/agenstra/backend-agent-controller`](./apps/agenstra/backend-agent-controller/)                                                    | Control plane for clients, tickets, proxying, and statistics |
+| Backend agent manager    | `agenstra-backend-agent-manager`    | [`apps/agenstra/backend-agent-manager`](./apps/agenstra/backend-agent-manager/)                                                          | Agent lifecycle, Docker workloads, VNC, SSH, worker images   |
+| Frontend docs            | `agenstra-frontend-docs`            | [`apps/agenstra/frontend-docs`](./apps/agenstra/frontend-docs/) (patch over [`apps/shared/frontend-docs`](./apps/shared/frontend-docs/)) | In-product documentation site                                |
+| Frontend landing page    | `agenstra-frontend-landingpage`     | [`apps/agenstra/frontend-landingpage`](./apps/agenstra/frontend-landingpage/)                                                            | Public Agenstra marketing and pricing site                   |
 
 Key Agenstra capabilities include centralized management of remote agent-manager instances, WebSocket-based agent chat, Monaco Editor file editing in containers, automated cloud server provisioning (Hetzner Cloud, DigitalOcean), Git operations from the browser, container monitoring and logs, VNC browser access, and CI/CD pipeline management from the console.
 
@@ -92,10 +92,11 @@ To get started with Agenstra:
 
 Decabill is the ForePath billing product for subscriptions, invoicing, payment processing, and customer billing administration. Decabill apps and libraries are sublicensed under [BUSL-1.1](./apps/agenstra/backend-agent-controller/LICENSE) (same terms as the Agenstra agent controller).
 
-| Component                | Nx project                          | Path                                                                                  | Description                                  |
-| ------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------- |
-| Backend billing manager  | `decabill-backend-billing-manager`  | [`apps/decabill/backend-billing-manager`](./apps/decabill/backend-billing-manager/)   | Subscriptions, invoicing, Stripe integration |
-| Frontend billing console | `decabill-frontend-billing-console` | [`apps/decabill/frontend-billing-console`](./apps/decabill/frontend-billing-console/) | Admin and customer billing UI                |
+| Component                | Nx project                          | Path                                                                                                                                     | Description                                  |
+| ------------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Backend billing manager  | `decabill-backend-billing-manager`  | [`apps/decabill/backend-billing-manager`](./apps/decabill/backend-billing-manager/)                                                      | Subscriptions, invoicing, Stripe integration |
+| Frontend billing console | `decabill-frontend-billing-console` | [`apps/decabill/frontend-billing-console`](./apps/decabill/frontend-billing-console/)                                                    | Admin and customer billing UI                |
+| Frontend docs            | `decabill-frontend-docs`            | [`apps/decabill/frontend-docs`](./apps/decabill/frontend-docs/) (patch over [`apps/shared/frontend-docs`](./apps/shared/frontend-docs/)) | In-product documentation site                |
 
 ### Shared platform
 
@@ -106,6 +107,7 @@ Shared applications and libraries are used by multiple ForePath products. They c
 | Platform authentication | `shared-platform-authentication` | [`apps/shared/platform-authentication`](./apps/shared/platform-authentication/) | Keycloak Docker Compose for local and shared auth          |
 | MCP devkit              | `shared-mcp-devkit`              | [`apps/shared/mcp-devkit`](./apps/shared/mcp-devkit/)                           | Model Context Protocol server for workspace and Nx tooling |
 | MCP proxy               | `shared-mcp-proxy`               | [`apps/shared/mcp-proxy`](./apps/shared/mcp-proxy/)                             | Proxy that routes MCP clients to the devkit                |
+| Frontend docs (base)    | `shared-frontend-docs`           | [`apps/shared/frontend-docs`](./apps/shared/frontend-docs/)                     | Shared SSR docs shell used by brand patch apps             |
 
 Identity libraries under [`libs/domains/identity`](./libs/domains/identity/) provide Keycloak-backed authentication for NestJS backends and Angular frontends across Agenstra and future products.
 
@@ -128,6 +130,17 @@ Identity libraries under [`libs/domains/identity`](./libs/domains/identity/) pro
 - [Debugging Guide](./docs/agenstra/troubleshooting/debugging-guide.md)
 
 Feature guides (client management, agent management, server provisioning, WebSocket communication, file management, version control, web IDE, chat, VNC access) live under [`docs/agenstra/features/`](./docs/agenstra/features/).
+
+### Decabill
+
+- [Getting Started Guide](./docs/decabill/getting-started.md)
+- [System Overview](./docs/decabill/architecture/system-overview.md)
+- [Docker Deployment](./docs/decabill/deployment/docker-deployment.md)
+- [Environment Configuration](./docs/decabill/deployment/environment-configuration.md)
+- [API Reference](./docs/decabill/api-reference/README.md)
+- [Security documentation](./docs/decabill/security/README.md)
+
+Feature guides (subscriptions, invoices, billing administration, multi-tenancy, payments, server provisioning) live under [`docs/decabill/features/`](./docs/decabill/features/).
 
 ## License
 
@@ -183,7 +196,9 @@ The following components are source-available. You may view the source code to u
 - [`apps/agenstra/frontend-landingpage`](./apps/agenstra/frontend-landingpage/) ([LICENSE](./apps/agenstra/frontend-landingpage/LICENSE))
 - [`libs/domains/agenstra/frontend/feature-landingpage`](./libs/domains/agenstra/frontend/feature-landingpage/) ([LICENSE](./libs/domains/agenstra/frontend/feature-landingpage/LICENSE))
 - [`apps/agenstra/frontend-docs`](./apps/agenstra/frontend-docs/) ([LICENSE](./apps/agenstra/frontend-docs/LICENSE))
-- [`libs/domains/agenstra/frontend/feature-docs`](./libs/domains/agenstra/frontend/feature-docs/) ([LICENSE](./libs/domains/agenstra/frontend/feature-docs/LICENSE))
+- [`apps/decabill/frontend-docs`](./apps/decabill/frontend-docs/) ([LICENSE](./apps/decabill/frontend-docs/LICENSE))
+- [`apps/shared/frontend-docs`](./apps/shared/frontend-docs/) ([LICENSE](./apps/shared/frontend-docs/LICENSE))
+- [`libs/domains/shared/frontend/feature-docs`](./libs/domains/shared/frontend/feature-docs/) ([LICENSE](./libs/domains/shared/frontend/feature-docs/LICENSE))
 - [`libs/domains/agenstra/frontend/data-access-portal`](./libs/domains/agenstra/frontend/data-access-portal/) ([LICENSE](./libs/domains/agenstra/frontend/data-access-portal/LICENSE))
 
 ## Contributing

@@ -702,99 +702,112 @@ jobs:
             find container-sbom-download -type f -name 'container-*.cdx.json' -exec cp -n {} dist/sboms/ \;
           fi
 
-      - name: Upload agent-console SBOM
-        id: upload-sbom-agent-console
+      - name: Upload agenstra-frontend-agent-console SBOM
+        id: upload-sbom-agenstra-frontend-agent-console
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
           apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           parent: '91161848-3734-4339-a504-bf08853348b1'
-          projectname: 'agent-console'
+          projectname: 'agenstra-frontend-agent-console'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
           bomfilename: 'dist/sboms/agenstra-frontend-agent-console.cdx.json'
 
-      - name: Upload agent-controller SBOM
-        id: upload-sbom-agent-controller
+      - name: Upload agenstra-backend-agent-controller SBOM
+        id: upload-sbom-agenstra-backend-agent-controller
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
           apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           parent: 'fab6501b-b798-4e62-91b9-4bb1c5c175c1'
-          projectname: 'agent-controller'
+          projectname: 'agenstra-backend-agent-controller'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
           bomfilename: 'dist/sboms/agenstra-backend-agent-controller.cdx.json'
 
-      - name: Upload agent-manager SBOM
-        id: upload-sbom-agent-manager
+      - name: Upload agenstra-backend-agent-manager SBOM
+        id: upload-sbom-agenstra-backend-agent-manager
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
           apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           parent: '7d399337-2c6e-408e-8f1f-5f0344af1d08'
-          projectname: 'agent-manager'
+          projectname: 'agenstra-backend-agent-manager'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
           bomfilename: 'dist/sboms/agenstra-backend-agent-manager.cdx.json'
 
-      - name: Upload billing-console SBOM
-        id: upload-sbom-billing-console
+      - name: Upload decabill-frontend-billing-console SBOM
+        id: upload-sbom-decabill-frontend-billing-console
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
           apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           parent: '6c94f662-28c5-4317-93aa-415bdbccc3ce'
-          projectname: 'billing-console'
+          projectname: 'decabill-frontend-billing-console'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
           bomfilename: 'dist/sboms/decabill-frontend-billing-console.cdx.json'
 
-      - name: Upload billing-manager SBOM
-        id: upload-sbom-billing-manager
+      - name: Upload decabill-backend-billing-manager SBOM
+        id: upload-sbom-decabill-backend-billing-manager
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
           apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           parent: '9cc09622-15b6-4dbf-a639-42288ffaa6a4'
-          projectname: 'billing-manager'
+          projectname: 'decabill-backend-billing-manager'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
           bomfilename: 'dist/sboms/decabill-backend-billing-manager.cdx.json'
 
-      - name: Upload desktop SBOM
-        id: upload-sbom-desktop
+      - name: Upload agenstra-native-agent-console SBOM
+        id: upload-sbom-agenstra-native-agent-console
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
           apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           parent: '3dd3b1cd-c07f-4355-baaf-e391de4293d2'
-          projectname: 'desktop'
+          projectname: 'agenstra-native-agent-console'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
           bomfilename: 'dist/sboms/agenstra-native-agent-console.cdx.json'
 
-      - name: Upload docs SBOM
-        id: upload-sbom-docs
+      - name: Upload agenstra-frontend-docs SBOM
+        id: upload-sbom-agenstra-frontend-docs
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
           apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           parent: '231546ff-a89a-487f-a6b0-6a1361d17a59'
-          projectname: 'docs'
+          projectname: 'agenstra-frontend-docs'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
           bomfilename: 'dist/sboms/agenstra-frontend-docs.cdx.json'
 
-      - name: Upload mcp-devkit SBOM
-        id: upload-sbom-mcp-devkit
+      - name: Upload decabill-frontend-docs SBOM
+        id: upload-sbom-decabill-frontend-docs
+        uses: forepath/gh-upload-sbom@v2
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: '231546ff-a89a-487f-a6b0-6a1361d17a59'
+          projectname: 'decabill-frontend-docs'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/decabill-frontend-docs.cdx.json'
+
+      - name: Upload shared-mcp-devkit SBOM
+        id: upload-sbom-shared-mcp-devkit
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
@@ -806,8 +819,8 @@ jobs:
           autocreate: true
           bomfilename: 'dist/sboms/shared-mcp-devkit.cdx.json'
 
-      - name: Upload mcp-proxy SBOM
-        id: upload-sbom-mcp-proxy
+      - name: Upload shared-mcp-proxy SBOM
+        id: upload-sbom-shared-mcp-proxy
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
@@ -819,15 +832,15 @@ jobs:
           autocreate: true
           bomfilename: 'dist/sboms/shared-mcp-proxy.cdx.json'
 
-      - name: Upload portal SBOM
-        id: upload-sbom-portal
+      - name: Upload agenstra-frontend-landingpage SBOM
+        id: upload-sbom-agenstra-frontend-landingpage
         uses: forepath/gh-upload-sbom@v2
         continue-on-error: true
         with:
           serverhostname: dependencytrack.forepath.io
           apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           parent: 'bb6467b6-ebe9-4f90-91f9-2a785f95441e'
-          projectname: 'portal'
+          projectname: 'agenstra-frontend-landingpage'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
           bomfilename: 'dist/sboms/agenstra-frontend-landingpage.cdx.json'
@@ -840,29 +853,31 @@ jobs:
             echo ""
             echo "| Project | Outcome |"
             echo "|---------|---------|"
-            echo "| agent-console | ${{ steps.upload-sbom-agent-console.outcome }} |"
-            echo "| agent-controller | ${{ steps.upload-sbom-agent-controller.outcome }} |"
-            echo "| agent-manager | ${{ steps.upload-sbom-agent-manager.outcome }} |"
-            echo "| billing-console | ${{ steps.upload-sbom-billing-console.outcome }} |"
-            echo "| billing-manager | ${{ steps.upload-sbom-billing-manager.outcome }} |"
-            echo "| desktop | ${{ steps.upload-sbom-desktop.outcome }} |"
-            echo "| docs | ${{ steps.upload-sbom-docs.outcome }} |"
-            echo "| shared-mcp-devkit | ${{ steps.upload-sbom-mcp-devkit.outcome }} |"
-            echo "| shared-mcp-proxy | ${{ steps.upload-sbom-mcp-proxy.outcome }} |"
-            echo "| portal | ${{ steps.upload-sbom-portal.outcome }} |"
+            echo "| agenstra-frontend-agent-console | ${{ steps.upload-sbom-agenstra-frontend-agent-console.outcome }} |"
+            echo "| agenstra-backend-agent-controller | ${{ steps.upload-sbom-agenstra-backend-agent-controller.outcome }} |"
+            echo "| agenstra-backend-agent-manager | ${{ steps.upload-sbom-agenstra-backend-agent-manager.outcome }} |"
+            echo "| decabill-frontend-billing-console | ${{ steps.upload-sbom-decabill-frontend-billing-console.outcome }} |"
+            echo "| decabill-backend-billing-manager | ${{ steps.upload-sbom-decabill-backend-billing-manager.outcome }} |"
+            echo "| agenstra-native-agent-console | ${{ steps.upload-sbom-agenstra-native-agent-console.outcome }} |"
+            echo "| agenstra-frontend-docs | ${{ steps.upload-sbom-agenstra-frontend-docs.outcome }} |"
+            echo "| decabill-frontend-docs | ${{ steps.upload-sbom-decabill-frontend-docs.outcome }} |"
+            echo "| shared-mcp-devkit | ${{ steps.upload-sbom-shared-mcp-devkit.outcome }} |"
+            echo "| shared-mcp-proxy | ${{ steps.upload-sbom-shared-mcp-proxy.outcome }} |"
+            echo "| agenstra-frontend-landingpage | ${{ steps.upload-sbom-agenstra-frontend-landingpage.outcome }} |"
           } >> "$GITHUB_STEP_SUMMARY"
           failed=0
           for outcome in \
-            "${{ steps.upload-sbom-agent-console.outcome }}" \
-            "${{ steps.upload-sbom-agent-controller.outcome }}" \
-            "${{ steps.upload-sbom-agent-manager.outcome }}" \
-            "${{ steps.upload-sbom-billing-console.outcome }}" \
-            "${{ steps.upload-sbom-billing-manager.outcome }}" \
-            "${{ steps.upload-sbom-desktop.outcome }}" \
-            "${{ steps.upload-sbom-docs.outcome }}" \
-            "${{ steps.upload-sbom-mcp-devkit.outcome }}" \
-            "${{ steps.upload-sbom-mcp-proxy.outcome }}" \
-            "${{ steps.upload-sbom-portal.outcome }}"
+            "${{ steps.upload-sbom-agenstra-frontend-agent-console.outcome }}" \
+            "${{ steps.upload-sbom-agenstra-backend-agent-controller.outcome }}" \
+            "${{ steps.upload-sbom-agenstra-backend-agent-manager.outcome }}" \
+            "${{ steps.upload-sbom-decabill-frontend-billing-console.outcome }}" \
+            "${{ steps.upload-sbom-decabill-backend-billing-manager.outcome }}" \
+            "${{ steps.upload-sbom-agenstra-native-agent-console.outcome }}" \
+            "${{ steps.upload-sbom-agenstra-frontend-docs.outcome }}" \
+            "${{ steps.upload-sbom-decabill-frontend-docs.outcome }}" \
+            "${{ steps.upload-sbom-shared-mcp-devkit.outcome }}" \
+            "${{ steps.upload-sbom-shared-mcp-proxy.outcome }}" \
+            "${{ steps.upload-sbom-agenstra-frontend-landingpage.outcome }}"
           do
             if [ "$outcome" = "failure" ]; then
               failed=1
