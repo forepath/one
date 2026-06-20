@@ -18,6 +18,7 @@ The deployment feature follows the same provider pattern used throughout Agenstr
 - **PipelineProvider Interface** - Unified interface for CI/CD providers
 - **PipelineProviderFactory** - Factory for managing multiple providers
 - **Provider Implementations** - GitHub Actions and GitLab CI/CD providers (extensible to Jenkins, Azure DevOps, etc.)
+- **Runtime plugins** - Additional pipeline providers via `DYNAMIC_PIPELINE_PROVIDERS` (see [Dynamic provider plugins](./dynamic-provider-plugins.md))
 - **Deployment Service** - Orchestrates pipeline operations
 - **Database Storage** - Stores deployment configurations and run history
 
@@ -348,3 +349,4 @@ Deployment configuration can be included when creating or updating agents:
 
 - [Agent Management](./agent-management.md) - Agent lifecycle management
 - [Server Provisioning](./server-provisioning.md) - Automated server provisioning
+- [Dynamic provider plugins](./dynamic-provider-plugins.md) - `DYNAMIC_PIPELINE_PROVIDERS` and shared loader behavior

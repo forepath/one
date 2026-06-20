@@ -7,6 +7,12 @@ tmp-generated
 generated
 out-tsc
 
+# Stray tsc output next to TypeScript library sources
+libs/domains/shared/backend/util-dynamic-provider-registry/src/index.js
+libs/domains/shared/backend/util-dynamic-provider-registry/src/index.js.map
+libs/domains/shared/backend/util-dynamic-provider-registry/src/lib/*.js
+libs/domains/shared/backend/util-dynamic-provider-registry/src/lib/*.js.map
+
 # dependencies
 node_modules
 

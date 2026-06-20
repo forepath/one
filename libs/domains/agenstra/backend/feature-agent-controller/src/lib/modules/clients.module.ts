@@ -1,4 +1,8 @@
 import {
+  DynamicProviderLoaderService,
+  registerDynamicProviders,
+} from '@forepath/shared/backend/util-dynamic-provider-registry';
+import {
   ClientAgentCredentialEntity,
   ClientAgentCredentialsRepository,
   ClientAgentCredentialsService,
@@ -51,6 +55,7 @@ import { TicketsBoardGateway } from '../gateways/tickets-board.gateway';
 import { DigitalOceanProvider } from '../providers/provisioning/digital-ocean.provider';
 import { HetznerProvider } from '../providers/provisioning/hetzner.provider';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
+import { ProvisioningProvider } from '../providers/provisioning-provider.interface';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 import { TicketAutomationRunsStatusRepository } from '../repositories/ticket-automation-runs-status.repository';
@@ -177,20 +182,30 @@ const authMethod = getAuthenticationMethod();
     ProvisioningReferencesRepository,
     HetznerProvider,
     DigitalOceanProvider,
+    DynamicProviderLoaderService,
     StatisticsAgentSyncService,
     {
       provide: 'PROVISIONING_PROVIDERS',
-      useFactory: (
+      useFactory: async (
         factory: ProvisioningProviderFactory,
         hetzner: HetznerProvider,
         digitalOcean: DigitalOceanProvider,
+        dynamicLoader: DynamicProviderLoaderService,
       ) => {
         factory.registerProvider(hetzner);
         factory.registerProvider(digitalOcean);
 
+        await registerDynamicProviders<ProvisioningProvider>({
+          envKey: 'DYNAMIC_PROVISIONING_PROVIDERS',
+          criticality: 'critical',
+          register: (provider) => factory.registerProvider(provider),
+          dynamicLoader,
+          loggerContext: 'ProvisioningProviderFactory',
+        });
+
         return factory;
       },
-      inject: [ProvisioningProviderFactory, HetznerProvider, DigitalOceanProvider],
+      inject: [ProvisioningProviderFactory, HetznerProvider, DigitalOceanProvider, DynamicProviderLoaderService],
     },
   ],
   exports: [

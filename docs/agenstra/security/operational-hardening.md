@@ -42,7 +42,7 @@ Resolution is implemented in **`getAuthenticationMethod`** (`libs/domains/identi
 
 **Accepted risk [AR-007](./accepted-risks.md#ar-007--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset):** With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, one deployment API key grants **admin access to every tenant** in **`TENANTS`** (tenant chosen per request via **`X-Tenant`**). This is **intentional** for a single shared automation key. Interactive **keycloak** / **users** sessions remain limited to the user’s tenant.
 
-Code: `libs/domains/agenstra/backend/feature-billing-manager/src/lib/guards/tenant-user.guard.ts`, `libs/domains/shared/backend/util-http-context/src/lib/tenant-id.middleware.ts`.
+Code: `libs/domains/decabill/backend/feature-billing-manager/src/lib/guards/tenant-user.guard.ts`, `libs/domains/shared/backend/util-http-context/src/lib/tenant-id.middleware.ts`.
 
 ## Agent Controller — remote client endpoints (SSRF)
 

@@ -62,6 +62,11 @@
             "glob": "**/*.yaml",
             "input": "libs/domains/agenstra/backend/feature-agent-manager/spec",
             "output": "spec/agent-manager"
+          },
+          {
+            "glob": "**/*.yaml",
+            "input": "libs/domains/decabill/backend/feature-billing-manager/spec",
+            "output": "spec/billing-manager"
           }
         ],
         "styles": [

@@ -1,6 +1,6 @@
 # CI security scanning (Trivy)
 
-Agenstra uses [Trivy](https://trivy.dev/) in GitHub Actions for automated vulnerability, secret, and misconfiguration detection. Defaults are defined in [`trivy.yaml`](../../../trivy.yaml) at the repository root.
+Agenstra uses [Trivy](https://trivy.dev/) in GitHub Actions for automated vulnerability, secret, and misconfiguration detection. Defaults are defined in `trivy.yaml` at the repository root.
 
 ## What is scanned
 
@@ -14,11 +14,11 @@ Scanners enabled for filesystem scans: **vuln**, **secret**, **misconfig**.
 
 ## Workflows
 
-| Workflow                                                                                          | Jobs                                                                                |
-| ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| [`.github/workflows/pull-request-checks.yml`](../../../.github/workflows/pull-request-checks.yml) | `trivy-filesystem`, `trivy-config`, plus image scans after each container build job |
+| Workflow                                    | Jobs                                                                                |
+| ------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `.github/workflows/pull-request-checks.yml` | `trivy-filesystem`, `trivy-config`, plus image scans after each container build job |
 
-The [release workflow](../../../.github/workflows/release.yml) does **not** run Trivy vulnerability scans; pull-request scans are the CI gate before merge. Releases publish **Nx service SBOMs** and **Trivy CycloneDX container image SBOMs** (when images are built) to Dependency Track and R2.
+The `.github/workflows/release.yml` workflow does **not** run Trivy vulnerability scans; pull-request scans are the CI gate before merge. Releases publish **Nx service SBOMs** and **Trivy CycloneDX container image SBOMs** (when images are built) to Dependency Track and R2.
 
 ## Severity policy
 
@@ -38,8 +38,8 @@ SARIF categories include `trivy-fs`, `trivy-config`, and `trivy-images-*` on pul
 ## Triage and exceptions
 
 1. **Prefer fixing** — upgrade dependencies, base images, or configuration.
-2. **Documented ignore** — open a PR that adds the CVE to [`.trivyignore`](../../../.trivyignore), reference an **[accepted-risk](./accepted-risks.md)** entry (or document a false positive), and note a **review/expiry date** in the PR description.
-3. **Do not** weaken [`trivy.yaml`](../../../trivy.yaml) for one-off exceptions.
+2. **Documented ignore** — open a PR that adds the CVE to `.trivyignore`, reference an **[accepted-risk](./accepted-risks.md)** entry (or document a false positive), and note a **review/expiry date** in the PR description.
+3. **Do not** weaken `trivy.yaml` for one-off exceptions.
 
 See **[Accepted risks](./accepted-risks.md)** for deliberate product-level deviations (separate from CVE ignores), including **[AR-006](./accepted-risks.md#ar-006--ci--local-trivy-unfixed-vulnerabilities-not-gated)** (unfixed vulnerabilities are not pipeline blockers).
 
@@ -51,7 +51,7 @@ See **[Accepted risks](./accepted-risks.md)** for deliberate product-level devia
 ./tools/ci/trivy-pre-commit.sh
 ```
 
-This runs automatically via [`.husky/pre-commit`](../../../.husky/pre-commit) on every commit. Install [Trivy](https://trivy.dev/latest/docs/installation/) before your first commit on a machine; commits fail if `trivy` is not on `PATH`. To skip all Husky hooks for one commit (use sparingly): `git commit --no-verify`.
+This runs automatically via `.husky/pre-commit` on every commit. Install [Trivy](https://trivy.dev/latest/docs/installation/) before your first commit on a machine; commits fail if `trivy` is not on `PATH`. To skip all Husky hooks for one commit (use sparingly): `git commit --no-verify`.
 
 **Manual full scans:**
 
@@ -84,5 +84,5 @@ After building images locally:
 
 ## Related documentation
 
-- [`SECURITY.md`](../../../SECURITY.md)
+- **[Security overview](./README.md)**
 - **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**

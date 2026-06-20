@@ -101,7 +101,9 @@ Agenstra uses a plugin-based agent provider system. Each agent has an `agentType
 
 ### Adding New Agent Types
 
-To add a new agent type, implement the `AgentProvider` interface:
+Built-in agent providers are registered in `AgentsModule`. To add types **without rebuilding** the manager image, use [Dynamic provider plugins](./dynamic-provider-plugins.md) (`DYNAMIC_AGENT_PROVIDERS`).
+
+To add a provider in source, implement the `AgentProvider` interface:
 
 1. Create a provider class implementing `AgentProvider`
 2. Register the provider in `AgentsModule`
@@ -202,6 +204,7 @@ For detailed API documentation, see the application and API reference docs linke
 - **[VNC Browser Access](./vnc-browser-access.md)** - Graphical browser access via VNC
 - **[Usage Statistics](./usage-statistics.md)** - Controller-side usage metrics
 - **[Message Filter Rules](./message-filter-rules.md)** - Regex filters
+- **[Dynamic provider plugins](./dynamic-provider-plugins.md)** - Custom agent, pipeline, and filter providers
 - **[Backend Agent Manager Application](../applications/backend-agent-manager.md)** - Application details
 
 ---

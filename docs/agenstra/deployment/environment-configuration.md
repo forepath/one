@@ -78,6 +78,16 @@ These variables tune the **Atlassian Cloud** import scheduler and provider on th
 - `CONTEXT_IMPORT_ITEM_BUDGET` - Soft cap on import items processed **per config per run** for scheduler and on-demand runs (default: `25`).
 - `ATLASSIAN_IMPORT_DISABLED` - When set to `true`, the Atlassian import provider skips work for import runs (connections and configs remain manageable via the admin API).
 
+### Dynamic provider plugins
+
+Optional runtime extensions for provisioning and context import. See [Dynamic provider plugins](../features/dynamic-provider-plugins.md) for resolution order, post-build mounts, and export contract.
+
+- `DYNAMIC_PROVISIONING_PROVIDERS` - Comma-separated extra provisioning packages (`alias=@forepath/pkg` or `alias=file:dir`). **Critical** registry; use `DYNAMIC_PROVIDERS_FAIL_FAST=true` in production when set.
+- `DYNAMIC_CONTEXT_IMPORT_PROVIDERS` - Comma-separated extra context import provider packages (optional).
+- `DYNAMIC_PROVIDERS_FAIL_FAST` - When `true`, abort startup if a **critical** dynamic provider fails to load.
+- `DYNAMIC_PROVIDER_PLUGIN_PATH` - Absolute plugin root for post-build loading (unset by default; use `/var/lib/forepath/provider-plugins` with the compose volume when enabling plugins).
+- `DYNAMIC_PROVIDER_PLUGIN_INSTALL` - Comma-separated `npm install` targets into the plugin path at container startup.
+
 ## Backend Agent Manager
 
 ### Application Configuration
@@ -174,6 +184,17 @@ When building `Dockerfile.api` images that mount `/var/run/docker.sock`:
 - `GIT_AUTHOR_NAME` - Git commit author name (default: `Agenstra`)
 - `GIT_AUTHOR_EMAIL` - Git commit author email (default: `noreply@agenstra.com`)
 
+### Dynamic provider plugins
+
+Optional runtime extensions for agents, CI/CD pipelines, and chat filters. See [Dynamic provider plugins](../features/dynamic-provider-plugins.md).
+
+- `DYNAMIC_AGENT_PROVIDERS` - Comma-separated extra agent backend packages.
+- `DYNAMIC_PIPELINE_PROVIDERS` - Comma-separated extra CI/CD provider packages.
+- `DYNAMIC_CHAT_FILTERS` - Comma-separated extra chat filter packages.
+- `DYNAMIC_PROVIDERS_FAIL_FAST` - When `true`, abort startup if a **critical** dynamic provider fails to load (manager registries are optional; this mainly affects shared loader policy when combined with critical env on other services).
+- `DYNAMIC_PROVIDER_PLUGIN_PATH` - Absolute plugin root for post-build loading (unset by default; use `/var/lib/forepath/provider-plugins` with the compose volume when enabling plugins).
+- `DYNAMIC_PROVIDER_PLUGIN_INSTALL` - Comma-separated `npm install` targets into the plugin path at container startup.
+
 ## Backend Billing Manager
 
 ### Multi-tenancy
@@ -189,7 +210,7 @@ Billing data and users are partitioned by **`tenant_id`**. HTTP clients send **`
 
 **API key scope (accepted risk [AR-007](../security/accepted-risks.md#ar-007--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)):** With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, one deployment key grants **admin access to every tenant** in **`TENANTS`**, selected per request via **`X-Tenant`**. This is **intentional** (single shared automation credential). Set **`STATIC_API_KEY_TENANT_ID`** to bind the key to one tenant, or use **keycloak** / **users** for interactive multi-tenant console access.
 
-See also the [billing feature README](../../libs/domains/agenstra/backend/feature-billing-manager/README.md).
+See also [Billing Administration](../features/billing-administration.md) and the billing sections in this document.
 
 ## Frontend applications (Express SSR)
 

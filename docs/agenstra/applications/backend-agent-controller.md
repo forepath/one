@@ -376,6 +376,15 @@ See the application docs and environment configuration for complete environment 
 - `DIGITALOCEAN_API_TOKEN` - DigitalOcean API token
 - `ENCRYPTION_KEY` - Encryption key for sensitive data
 
+**Dynamic provider plugins (optional):**
+
+- `DYNAMIC_PROVISIONING_PROVIDERS` - Extra provisioning packages (critical registry)
+- `DYNAMIC_CONTEXT_IMPORT_PROVIDERS` - Extra context import provider packages
+- `DYNAMIC_PROVIDERS_FAIL_FAST` - Abort startup on critical provider load errors when `true`
+- `DYNAMIC_PROVIDER_PLUGIN_PATH` / `DYNAMIC_PROVIDER_PLUGIN_INSTALL` - Post-build plugin mount and startup install
+
+See [Dynamic provider plugins](../features/dynamic-provider-plugins.md) and [Environment configuration](../deployment/environment-configuration.md).
+
 ## Database Setup
 
 The application uses TypeORM and requires a database connection to be configured. See the application docs for database setup requirements and entity schema.
@@ -429,6 +438,7 @@ Before deploying to production, ensure:
 - **[Usage Statistics](../features/usage-statistics.md)** - Controller usage metrics
 - **[Message Filter Rules](../features/message-filter-rules.md)** - Global and per-agent filters
 - **[Atlassian import](../features/atlassian-import.md)** - Atlassian site connections and Jira/Confluence import configurations
+- **[Dynamic provider plugins](../features/dynamic-provider-plugins.md)** - Runtime provisioning and import provider extensions
 - **[Deployment Feature](../features/deployment.md)** - CI/CD configuration (invoked via controller proxy from the console)
 - **[Deployment Guide](../deployment/production-checklist.md)** - Production deployment guide
 

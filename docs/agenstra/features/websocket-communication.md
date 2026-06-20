@@ -41,7 +41,7 @@ See `libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml` 
 
 The billing console can open a second Socket.IO connection to the **billing-manager** status gateway (default namespace `/billing`, separate TCP port from REST). Handshake auth matches HTTP (`Bearer` JWT for users or Keycloak). **Static API key** auth does not receive a user-scoped billing stream; `subscribeDashboardStatus` is rejected with an `error` event, consistent with REST returning "User not authenticated" for API-key-only requests.
 
-The server selects subscriptions **only** from the authenticated user’s data on every poll tick and emits `dashboardStatusUpdate` **only** to that socket (no rooms). See `libs/domains/agenstra/backend/feature-billing-manager/spec/asyncapi.yaml`.
+The server selects subscriptions **only** from the authenticated user’s data on every poll tick and emits `dashboardStatusUpdate` **only** to that socket (no rooms). See `libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml`.
 
 ## Connection Flow
 

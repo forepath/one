@@ -69,7 +69,7 @@ When **`AUTHENTICATION_METHOD=api-key`** (or api-key is inferred from **`STATIC_
 ## Users Authentication
 
 When AUTHENTICATION_METHOD=users, this service uses a local users table identical to the agent-controller schema.
-The migration `apps/agenstra/backend-billing-manager/src/migrations/1767101000000_CreateUsersTable.ts` creates the required table.
+The users table migration is compiled from `libs/domains/identity/backend/util-auth/src/lib/migrations/1765000000000_CreateUsersTable.ts` into the billing manager deploy artifact.
 
 ## Customer Profile
 
@@ -84,7 +84,17 @@ Usage records can be posted to `POST /usage/record` and will be included in invo
 
 ## Provider details
 
-`GET /service-types/providers` returns all registered provisioning providers with id, display name, and optional config schema. This is used by the billing console to show a provider dropdown when creating service types and to render provider default config fields when creating/editing service plans. Providers are registered at startup (e.g. Hetzner, DigitalOcean) via `ProviderRegistryService`; add new providers in `BillingModule.onModuleInit()` or by injecting and calling `ProviderRegistryService.register()`.
+`GET /service-types/providers` returns all registered provisioning providers with id, display name, and optional config schema. This is used by the billing console to show a provider dropdown when creating service types and to render provider default config fields when creating/editing service plans. Providers are registered at startup (e.g. Hetzner, DigitalOcean) via `ProviderRegistryService`; additional metadata can be loaded from `DYNAMIC_BILLING_PROVIDER_METADATA`.
+
+**Dynamic provider plugins:**
+
+- `DYNAMIC_PAYMENT_PROCESSORS` - Comma-separated extra payment processor packages (critical; use with `DYNAMIC_PROVIDERS_FAIL_FAST=true` in production)
+- `DYNAMIC_BILLING_PROVIDER_METADATA` - Comma-separated packages exporting `providerMetadata` for the billing UI registry
+- `DYNAMIC_PROVIDERS_FAIL_FAST` - When `true`, abort startup if critical dynamic providers fail to load
+- `DYNAMIC_PROVIDER_PLUGIN_PATH` - Plugin root for post-build loading (compose default: `/var/lib/forepath/provider-plugins`)
+- `DYNAMIC_PROVIDER_PLUGIN_INSTALL` - Startup `npm install` targets into the plugin path
+
+Plugins can be baked into the billing backend deploy graph or mounted after image build. See `@forepath/shared/backend/util-dynamic-provider-registry` README and `apps/decabill/backend-billing-manager/docker-compose.yaml` (`./provider-plugins` volume).
 
 **Config schema shape:** The optional `configSchema` is a JSON-schema-like object with a `properties` map. Each property may include:
 

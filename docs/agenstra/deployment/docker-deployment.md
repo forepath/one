@@ -31,6 +31,7 @@ The `docker-compose.yaml` includes:
 - Agent controller API container
 - Environment variable configuration
 - Volume mounts for data persistence
+- Optional `./provider-plugins` mount for [dynamic provider plugins](../features/dynamic-provider-plugins.md) (`DYNAMIC_PROVIDER_PLUGIN_PATH`)
 
 ### Backend Agent Manager
 
@@ -45,6 +46,7 @@ The `docker-compose.yaml` includes:
 - Agent manager API container
 - Docker socket mount (for agent containers)
 - Environment variable configuration
+- Optional `./provider-plugins` mount for [dynamic provider plugins](../features/dynamic-provider-plugins.md)
 
 ### Frontend Agent Console
 

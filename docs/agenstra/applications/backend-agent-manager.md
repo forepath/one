@@ -225,6 +225,15 @@ See the application docs and environment configuration for complete environment 
 - `VNC_SERVER_DOCKER_IMAGE` - Docker image for VNC containers (default: `ghcr.io/forepath/agenstra-manager-vnc:latest`)
 - `VNC_SERVER_PUBLIC_PORTS` - Port range for VNC host port allocation (e.g., `"6080-6180"`)
 
+**Dynamic provider plugins (optional):**
+
+- `DYNAMIC_AGENT_PROVIDERS` - Extra agent backend packages
+- `DYNAMIC_PIPELINE_PROVIDERS` - Extra CI/CD provider packages
+- `DYNAMIC_CHAT_FILTERS` - Extra chat filter packages
+- `DYNAMIC_PROVIDER_PLUGIN_PATH` / `DYNAMIC_PROVIDER_PLUGIN_INSTALL` - Post-build plugin mount and startup install
+
+See [Dynamic provider plugins](../features/dynamic-provider-plugins.md).
+
 ## Database Setup
 
 The application uses TypeORM and requires a database connection to be configured. See the application docs for database setup requirements and entity schema.
@@ -303,6 +312,7 @@ Before deploying to production, ensure:
 - **[WebSocket Communication Feature](../features/websocket-communication.md)** - WebSocket communication guide
 - **[Deployment Feature](../features/deployment.md)** - CI/CD configuration and operations
 - **[Message Filter Rules](../features/message-filter-rules.md)** - Per-agent regex filters
+- **[Dynamic provider plugins](../features/dynamic-provider-plugins.md)** - Custom agent, pipeline, and filter providers
 - **[Backend Agent Controller](./backend-agent-controller.md)** - Control plane and proxy paths used by the console
 - **[Deployment Guide](../deployment/production-checklist.md)** - Production deployment guide
 

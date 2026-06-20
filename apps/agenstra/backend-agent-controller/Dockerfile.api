@@ -68,6 +68,9 @@ RUN . "${NVM_DIR}/nvm.sh" && npm i && npm cache clean --force && \
 
 COPY --chown=agenstra:agenstra . /app
 
+RUN mkdir -p /var/lib/forepath/provider-plugins && \
+    chown agenstra:agenstra /var/lib/forepath/provider-plugins
+
 RUN printf '%s\n' \
     '#!/bin/bash' \
     'set -euo pipefail' \
@@ -79,7 +82,11 @@ RUN printf '%s\n' \
     '    sudo groupadd -g "${docker_sock_gid}" docker' \
     '  fi' \
     '  sudo usermod -aG docker agenstra' \
-    '  exec sg docker -c '"'"'set -euo pipefail; . "${NVM_DIR}/nvm.sh"; exec node main.js'"'"'' \
+    '  exec sg docker -c '"'"'set -euo pipefail; . "${NVM_DIR}/nvm.sh"; if [ -n "${DYNAMIC_PROVIDER_PLUGIN_PATH:-}" ]; then node install-provider-plugins.js; fi; exec node main.js'"'"'' \
+    'fi' \
+    'if [ -n "${DYNAMIC_PROVIDER_PLUGIN_PATH:-}" ]; then' \
+    '  . "${NVM_DIR}/nvm.sh"' \
+    '  node install-provider-plugins.js' \
     'fi' \
     '. "${NVM_DIR}/nvm.sh"' \
     'exec node main.js' \

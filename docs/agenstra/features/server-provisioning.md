@@ -14,14 +14,16 @@ Server provisioning enables you to automatically:
 
 ## Supported Providers
 
-### Hetzner Cloud
+Built-in providers are registered statically. Additional cloud backends can be added at runtime via [Dynamic provider plugins](./dynamic-provider-plugins.md) (`DYNAMIC_PROVISIONING_PROVIDERS`).
+
+#### Hetzner Cloud
 
 - **Provider Type**: `hetzner`
 - **Requires**: `HETZNER_API_TOKEN` environment variable
 - **Server Types**: Various sizes (e.g., `cx11`, `cx21`, `cx31`)
 - **Locations**: Multiple datacenters (e.g., `fsn1`, `nbg1`, `hel1`)
 
-### DigitalOcean
+#### DigitalOcean
 
 - **Provider Type**: `digital-ocean`
 - **Requires**: `DIGITALOCEAN_API_TOKEN` environment variable
@@ -146,6 +148,7 @@ For detailed API documentation, see the application and API reference docs linke
 ## Related Documentation
 
 - **[Client Management](./client-management.md)** - Managing clients
+- **[Dynamic provider plugins](./dynamic-provider-plugins.md)** - Adding custom provisioning providers
 - **[Backend Agent Controller Application](../applications/backend-agent-controller.md)** - Application details
 
 ---
