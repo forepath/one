@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
+import { createMockIdentityAuthEnvironment, IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 
 import { AuthService } from './auth.service';
 
@@ -16,7 +16,7 @@ describe('AuthService', () => {
         AuthService,
         {
           provide: IDENTITY_AUTH_ENVIRONMENT,
-          useValue: { apiUrl },
+          useValue: createMockIdentityAuthEnvironment({ apiUrl }),
         },
       ],
     });

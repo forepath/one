@@ -18,6 +18,7 @@ function mergeEnvironmentOverrides(base: Environment, overrides: Partial<Environ
     authentication: overrides.authentication
       ? { ...base.authentication, ...overrides.authentication }
       : base.authentication,
+    authMarketing: overrides.authMarketing ? { ...base.authMarketing, ...overrides.authMarketing } : base.authMarketing,
     chatModelOptions: overrides.chatModelOptions
       ? { ...base.chatModelOptions, ...overrides.chatModelOptions }
       : base.chatModelOptions,

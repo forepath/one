@@ -5,6 +5,7 @@ import { KeycloakService } from 'keycloak-angular';
 import { of } from 'rxjs';
 
 import { IDENTITY_AUTH_ENVIRONMENT, IdentityAuthEnvironment } from './auth-environment';
+import { createMockIdentityAuthEnvironment } from './auth-environment.test-fixtures';
 import { authInterceptor } from './auth.interceptor';
 
 // Mock KeycloakService to avoid ES module import issues in Jest
@@ -42,13 +43,12 @@ describe('authInterceptor', () => {
   };
 
   beforeEach(() => {
-    mockAuthEnv = {
-      apiUrl: 'http://localhost:3100/api',
+    mockAuthEnv = createMockIdentityAuthEnvironment({
       authentication: {
         type: 'api-key',
         apiKey: 'test-api-key',
       },
-    };
+    });
 
     mockKeycloakService = {
       getToken: jest.fn(),

@@ -1,0 +1,238 @@
+---
+id: forepath-generators
+name: Forepath Nx Generators
+description: Scaffold apps, libraries, domains, and agent context with @forepath/code and @forepath/ai instead of hand-rolled layout
+---
+# Forepath Nx Generators
+
+Use this skill when adding new applications, domain libraries, domains, MCP servers, Keycloak themes, desktop apps, or agent-context wiring in this monorepo.
+
+## Guardrails (non-negotiable)
+
+- **Generators first:** Use `@forepath/code` and `@forepath/ai` generators. Do **not** hand-create `project.json`, `apps/` trees, or `libs/domains/` layout when a generator exists
+- **Schema is source of truth:** Read `tools/code/src/generators/<name>/schema.json` (or `tools/ai/src/generators/<name>/schema.json`) before choosing flags. Do not guess option names from memory
+- **Domain before apps:** If the target domain folder does not exist under `apps/<domain>/` or `libs/domains/<domain>/`, run `@forepath/code:domain` first
+- **Respect boundaries:** Generators set Nx tags (`domain:*`, `scope:*`, `type:*`) and update `.eslintrc.json` / `tsconfig.base.json`. Do not bypass tags to wire forbidden imports
+- **Capture output once:** When running generators from the shell, follow **`nx-cli.mdc`** — persist logs under `tmp/nx-agent/` and read buffers instead of re-running to inspect output
+- **No programmatic scaffolding:** `@forepath/code` exposes generators only; use `nx generate`, not copied templates from other projects
+
+## Packages
+
+| Package | Role | Invoke as |
+|---------|------|-----------|
+| `@forepath/code` | Apps, domains, domain libraries, MCP, Keycloak themes, Electron natives, repo init | `nx generate @forepath/code:<generator>` |
+| `@forepath/ai` | Validate/transform `.agenstra/` agent context | `nx generate @forepath/ai:context` or `nx run <project>:agenstra-transform` |
+
+Reference READMEs: `tools/code/README.md`, `tools/ai/README.md`.
+
+## Naming and layout (what generators produce)
+
+**Applications** (via `backend`, `frontend`, `native`, `mcp`, `keycloak-theme`):
+
+- Path: `apps/<domain>/<role>-<name>` (examples: `apps/agenstra/backend-agent-manager`, `apps/forepath/frontend-landingpage`)
+- Nx project name: `<domain>-<role>-<name>` (example: `agenstra-backend-agent-manager`)
+- Role prefixes: `backend-`, `frontend-`, `native-`, `mcp-`, `keycloak-theme-`
+
+**Domain libraries** (via `lib`):
+
+- Path: `libs/domains/<domain>/<scope>/<type>-<name>` (example: `libs/domains/decabill/backend/feature-billing-manager`)
+- Nx project name: `<domain>-<scope>-<type>-<name>`
+- Import path: `@forepath/<domain>/<scope>/<type>-<name>`
+- Tags: `domain:<domain>,scope:<scope>,type:<type>`
+
+**New domain** (via `domain`):
+
+- Path: `libs/domains/<name>/` with `backend/`, `frontend/`, `keycloak/`, `shared/` index stubs
+- Adds `tsconfig.base.json` path aliases and a baseline `domain:<name>` boundary rule
+
+## Recommended order
+
+1. **`domain`** — only when the product domain is new
+2. **`lib`** — shared code the new app will depend on
+3. **App generator** — `backend`, `frontend`, `mcp`, `keycloak-theme`, or `native` (native requires an existing frontend SSR project)
+4. **Verify** — `nx show project <project-name> --json` (buffer per `nx-cli.mdc`), then lint/test affected targets
+
+## `@forepath/code` generators
+
+Run from repository root. Omit options to get interactive prompts.
+
+### `domain`
+
+Creates domain scaffold under `libs/domains/<name>/`.
+
+```bash
+nx generate @forepath/code:domain payments --prefix=@forepath
+```
+
+| Option | Required | Default | Notes |
+|--------|----------|---------|-------|
+| `name` | yes | — | Domain folder name |
+| `prefix` | no | `@domain` | Package/import prefix root |
+
+### `lib`
+
+Creates a typed library under a domain.
+
+```bash
+nx generate @forepath/code:lib --domain=decabill --scope=backend --type=feature --name=billing-manager --generator=node
+```
+
+| Option | Required | Values | Notes |
+|--------|----------|--------|-------|
+| `domain` | yes | — | Must exist (`domain` generator or prior domain) |
+| `scope` | yes | `frontend`, `backend`, `keycloak`, `shared` | Sets `scope:*` tag |
+| `type` | yes | `data-access`, `feature`, `ui`, `util` | Sets `type:*` tag |
+| `name` | yes | — | Library segment name |
+| `generator` | yes | `js`, `node`, `angular` | Base Nx library generator |
+
+Pick `generator=angular` for frontend UI/libs, `node` for Nest/backend libs, `js` for framework-agnostic shared code.
+
+### `backend`
+
+NestJS app at `apps/<domain>/backend-<name>`.
+
+```bash
+nx generate @forepath/code:backend billing-manager --domain=decabill
+nx generate @forepath/code:backend public-api --domain=forepath --protected=false
+```
+
+| Option | Required | Default | Notes |
+|--------|----------|---------|-------|
+| `name` | yes | — | Without `backend-` prefix |
+| `domain` | no | `agenstra` | Product domain |
+| `protected` | no | `true` | Authenticated routes |
+
+### `frontend`
+
+Angular app at `apps/<domain>/frontend-<name>`.
+
+```bash
+nx generate @forepath/code:frontend landingpage --domain=forepath --prefix=app --ui=bootstrap
+nx generate @forepath/code:frontend portal --domain=agenstra --ui=none --no-ssr
+```
+
+| Option | Required | Default | Notes |
+|--------|----------|---------|-------|
+| `name` | yes | — | Without `frontend-` prefix |
+| `domain` | no | `agenstra` | Product domain |
+| `prefix` | no | `app` | Component/selector prefix |
+| `ui` | no | `bootstrap` | `bootstrap` or `none` |
+| `protected` | no | `true` | Authenticated routes |
+| `localization` | no | `true` | i18n |
+| `ssr` | no | `true` | Server-side rendering |
+
+### `native`
+
+Electron desktop app bundling a domain frontend SSR server.
+
+```bash
+nx generate @forepath/code:native agent-console --domain=agenstra
+nx generate @forepath/code:native agent-console --domain=agenstra --frontendProject=agenstra-frontend-agent-console
+```
+
+| Option | Required | Default | Notes |
+|--------|----------|---------|-------|
+| `name` | yes | — | Without `native-` prefix |
+| `domain` | no | `agenstra` | Product domain |
+| `frontendProject` | no | `<domain>-frontend-<name>` | Existing frontend Nx project |
+| `title` | no | — | Window title |
+
+### `keycloak-theme`
+
+Keycloakify theme at `apps/<domain>/keycloak-theme-<name>`.
+
+```bash
+nx generate @forepath/code:keycloak-theme platform --domain=shared
+```
+
+| Option | Required | Default | Notes |
+|--------|----------|---------|-------|
+| `name` | yes | — | Theme name |
+| `domain` | no | `shared` | Usually `shared` |
+| `prefix` | no | `app` | Component prefix |
+
+### `mcp`
+
+MCP server at `apps/<domain>/mcp-<name>`.
+
+```bash
+nx generate @forepath/code:mcp devkit --domain=shared
+```
+
+| Option | Required | Default | Notes |
+|--------|----------|---------|-------|
+| `name` | yes | — | Server name |
+| `domain` | no | `shared` | Product domain |
+| `protected` | no | `true` | Authenticated routes |
+
+### `init`
+
+One-time repo setup for AI agent structure. No options.
+
+```bash
+nx generate @forepath/code:init
+```
+
+## `@forepath/ai` generators and executor
+
+### `context`
+
+Validates `.agenstra/` and optionally emits tool configs.
+
+```bash
+nx generate @forepath/ai:context --path=. --dryRun
+nx generate @forepath/ai:context --path=. --target=cursor,github-copilot --outputDir=generated
+```
+
+| Option | Default | Notes |
+|--------|---------|-------|
+| `path` | `.` | Directory containing `.agenstra/` |
+| `project` | — | Alternative: Nx project whose root holds `.agenstra/` |
+| `target` | all tools | `cursor`, `opencode`, `github-copilot` |
+| `outputDir` | `generated` | Output base directory |
+| `dryRun` | `false` | Validate only; no write |
+
+### `transform` executor
+
+For projects with an `agenstra-transform` target in `project.json`:
+
+```bash
+nx run my-app:agenstra-transform --target=cursor --outputDir=./generated --dryRun
+```
+
+Prefer **`dryRun` / `--dryRun`** when validating context changes before writing generated agent files.
+
+## Before and after running
+
+**Before:**
+
+```bash
+# Inspect schema (no writes)
+nx generate @forepath/code:backend --help
+
+# Optional Nx dry-run preview
+nx generate @forepath/code:backend my-api --domain=forepath --dry-run 2>&1 | tee tmp/nx-agent/gen-backend-dry-run.log
+```
+
+**After:**
+
+- Read `project.json` and generated tree from disk; do not re-run the generator
+- Run `nx show project <project-name> --json` → buffer file
+- Implement feature code inside generated boundaries; extend via new `lib` projects rather than duplicating app structure
+- Run affected lint/test (see `feature-prototyping.skill.mdc` / `nx-cli.mdc`)
+
+## Anti-patterns (avoid)
+
+- Copying an existing app folder and search-replacing names
+- Creating libraries directly with `@nx/angular:library` / `@nx/node:library` without `@forepath/code:lib` (misses tags, paths, domain index exports, boundary rules)
+- Picking a `domain` that does not exist and skipping `domain` generator
+- Re-running `nx generate` with the same name after partial failure — inspect tree and schema first; delete or fix conflicts manually if needed
+- Editing generated boundary rules without understanding cross-domain dependencies (compare with existing domains in `.eslintrc.json`)
+
+## Stop and escalate
+
+- Generator fails mid-run or leaves conflicting files
+- Required cross-domain imports are blocked and need architecture approval
+- No generator fits the use case (e.g. non-standard deployable)
+
+Stop, capture the generator log in `tmp/nx-agent/`, state what was created, and propose options (extend generator, manual exception with review) rather than silent hand-rolling.

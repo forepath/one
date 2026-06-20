@@ -70,23 +70,14 @@
       "@forepath/agenstra/backend/feature-agent-controller": [
         "libs/domains/agenstra/backend/feature-agent-controller/src/index.ts"
       ],
-      "@forepath/agenstra/backend/feature-billing-manager": [
-        "libs/domains/agenstra/backend/feature-billing-manager/src/index.ts"
-      ],
       "@forepath/agenstra/frontend/data-access-agent-console": [
         "libs/domains/agenstra/frontend/data-access-agent-console/src/index.ts"
-      ],
-      "@forepath/agenstra/frontend/data-access-billing-console": [
-        "libs/domains/agenstra/frontend/data-access-billing-console/src/index.ts"
       ],
       "@forepath/agenstra/frontend/data-access-portal": [
         "libs/domains/agenstra/frontend/data-access-portal/src/index.ts"
       ],
       "@forepath/agenstra/frontend/feature-agent-console": [
         "libs/domains/agenstra/frontend/feature-agent-console/src/index.ts"
-      ],
-      "@forepath/agenstra/frontend/feature-billing-console": [
-        "libs/domains/agenstra/frontend/feature-billing-console/src/index.ts"
       ],
       "@forepath/agenstra/frontend/feature-docs": [
         "libs/domains/agenstra/frontend/feature-docs/src/index.ts"
@@ -99,6 +90,23 @@
       ],
       "@forepath/forepath/frontend/feature-landingpage": [
         "libs/domains/forepath/frontend/feature-landingpage/src/index.ts"
+      ],
+      "@forepath/decabill/backend": ["libs/domains/decabill/backend/index.ts"],
+      "@forepath/decabill/frontend": [
+        "libs/domains/decabill/frontend/index.ts"
+      ],
+      "@forepath/decabill/keycloak": [
+        "libs/domains/decabill/keycloak/index.ts"
+      ],
+      "@forepath/decabill/shared": ["libs/domains/decabill/shared/index.ts"],
+      "@forepath/decabill/backend/feature-billing-manager": [
+        "libs/domains/decabill/backend/feature-billing-manager/src/index.ts"
+      ],
+      "@forepath/decabill/frontend/data-access-billing-console": [
+        "libs/domains/decabill/frontend/data-access-billing-console/src/index.ts"
+      ],
+      "@forepath/decabill/frontend/feature-billing-console": [
+        "libs/domains/decabill/frontend/feature-billing-console/src/index.ts"
       ]
     }
   },

@@ -28,12 +28,13 @@ npm install
 
 Applications and libraries are grouped by product domain. Nx project names use a domain prefix (for example `agenstra-backend-agent-manager` or `forepath-frontend-landingpage`).
 
-| Domain     | Role                                                                                      | Applications (`apps/<domain>/`)                                                          | Libraries (`libs/domains/<domain>/`)                            |
-| ---------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `forepath` | ForePath company website and marketing features                                           | `frontend-landingpage`                                                                   | `frontend/feature-landingpage`                                  |
-| `agenstra` | Agent governance platform (console, controllers, managers, billing, docs, desktop client) | Agent console, controllers, managers, billing, docs, landing page, native desktop client | Feature, data-access, and utility libraries for Agenstra        |
-| `shared`   | Cross-product platform services                                                           | Platform authentication (Keycloak), MCP devkit, MCP proxy                                | Monitoring, configuration, Express SSR utilities, queue, crypto |
-| `identity` | Authentication shared across products                                                     | none                                                                                     | Keycloak integration for backend and frontend                   |
+| Domain     | Role                                                                             | Applications (`apps/<domain>/`)                                                 | Libraries (`libs/domains/<domain>/`)                            |
+| ---------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `forepath` | ForePath company website and marketing features                                  | `frontend-landingpage`                                                          | `frontend/feature-landingpage`                                  |
+| `agenstra` | Agent governance platform (console, controllers, managers, docs, desktop client) | Agent console, controllers, managers, docs, landing page, native desktop client | Feature, data-access, and utility libraries for Agenstra        |
+| `decabill` | Billing and subscription management product                                      | Backend billing manager, frontend billing console                               | Feature and data-access libraries for Decabill                  |
+| `shared`   | Cross-product platform services                                                  | Platform authentication (Keycloak), MCP devkit, MCP proxy                       | Monitoring, configuration, Express SSR utilities, queue, crypto |
+| `identity` | Authentication shared across products                                            | none                                                                            | Keycloak integration for backend and frontend                   |
 
 Workspace tooling under `tools/` (`code`, `ai`, `sbom`, `release-integrity`) supports generators, agent context, and release automation. It is covered by the root MIT license unless noted otherwise in the component.
 
@@ -76,8 +77,6 @@ flowchart TB
 | Native agent console     | `agenstra-native-agent-console`     | [`apps/agenstra/native-agent-console`](./apps/agenstra/native-agent-console/)         | Electron desktop shell around the agent console              |
 | Backend agent controller | `agenstra-backend-agent-controller` | [`apps/agenstra/backend-agent-controller`](./apps/agenstra/backend-agent-controller/) | Control plane for clients, tickets, proxying, and statistics |
 | Backend agent manager    | `agenstra-backend-agent-manager`    | [`apps/agenstra/backend-agent-manager`](./apps/agenstra/backend-agent-manager/)       | Agent lifecycle, Docker workloads, VNC, SSH, worker images   |
-| Backend billing manager  | `agenstra-backend-billing-manager`  | [`apps/agenstra/backend-billing-manager`](./apps/agenstra/backend-billing-manager/)   | Subscriptions, invoicing, Stripe integration                 |
-| Frontend billing console | `agenstra-frontend-billing-console` | [`apps/agenstra/frontend-billing-console`](./apps/agenstra/frontend-billing-console/) | Admin and customer billing UI                                |
 | Frontend docs            | `agenstra-frontend-docs`            | [`apps/agenstra/frontend-docs`](./apps/agenstra/frontend-docs/)                       | In-product documentation site                                |
 | Frontend landing page    | `agenstra-frontend-landingpage`     | [`apps/agenstra/frontend-landingpage`](./apps/agenstra/frontend-landingpage/)         | Public Agenstra marketing and pricing site                   |
 
@@ -88,6 +87,15 @@ To get started with Agenstra:
 1. Follow the [Getting Started Guide](./docs/agenstra/getting-started.md) to install and configure the stack.
 2. Create your first client by connecting to an existing agent-manager or provisioning a new server.
 3. Create an agent and explore the integrated editor, Git tools, and chat interface.
+
+### Decabill
+
+Decabill is the ForePath billing product for subscriptions, invoicing, payment processing, and customer billing administration. Decabill apps and libraries are sublicensed under [BUSL-1.1](./apps/agenstra/backend-agent-controller/LICENSE) (same terms as the Agenstra agent controller).
+
+| Component                | Nx project                          | Path                                                                                  | Description                                  |
+| ------------------------ | ----------------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Backend billing manager  | `decabill-backend-billing-manager`  | [`apps/decabill/backend-billing-manager`](./apps/decabill/backend-billing-manager/)   | Subscriptions, invoicing, Stripe integration |
+| Frontend billing console | `decabill-frontend-billing-console` | [`apps/decabill/frontend-billing-console`](./apps/decabill/frontend-billing-console/) | Admin and customer billing UI                |
 
 ### Shared platform
 
@@ -155,6 +163,11 @@ The following components are sublicensed under BUSL-1.1. They permit non-product
 
 - [`apps/agenstra/backend-agent-controller`](./apps/agenstra/backend-agent-controller/) ([LICENSE](./apps/agenstra/backend-agent-controller/LICENSE))
 - [`libs/domains/agenstra/backend/feature-agent-controller`](./libs/domains/agenstra/backend/feature-agent-controller/) ([LICENSE](./libs/domains/agenstra/backend/feature-agent-controller/LICENSE))
+- [`apps/decabill/backend-billing-manager`](./apps/decabill/backend-billing-manager/) ([LICENSE](./apps/decabill/backend-billing-manager/LICENSE))
+- [`libs/domains/decabill/backend/feature-billing-manager`](./libs/domains/decabill/backend/feature-billing-manager/) ([LICENSE](./libs/domains/decabill/backend/feature-billing-manager/LICENSE))
+- [`apps/decabill/frontend-billing-console`](./apps/decabill/frontend-billing-console/) ([LICENSE](./apps/decabill/frontend-billing-console/LICENSE))
+- [`libs/domains/decabill/frontend/feature-billing-console`](./libs/domains/decabill/frontend/feature-billing-console/) ([LICENSE](./libs/domains/decabill/frontend/feature-billing-console/LICENSE))
+- [`libs/domains/decabill/frontend/data-access-billing-console`](./libs/domains/decabill/frontend/data-access-billing-console/) ([LICENSE](./libs/domains/decabill/frontend/data-access-billing-console/LICENSE))
 
 ### Source-available license
 
@@ -171,12 +184,7 @@ The following components are source-available. You may view the source code to u
 - [`libs/domains/agenstra/frontend/feature-landingpage`](./libs/domains/agenstra/frontend/feature-landingpage/) ([LICENSE](./libs/domains/agenstra/frontend/feature-landingpage/LICENSE))
 - [`apps/agenstra/frontend-docs`](./apps/agenstra/frontend-docs/) ([LICENSE](./apps/agenstra/frontend-docs/LICENSE))
 - [`libs/domains/agenstra/frontend/feature-docs`](./libs/domains/agenstra/frontend/feature-docs/) ([LICENSE](./libs/domains/agenstra/frontend/feature-docs/LICENSE))
-- [`apps/agenstra/frontend-billing-console`](./apps/agenstra/frontend-billing-console/) ([LICENSE](./apps/agenstra/frontend-billing-console/LICENSE))
-- [`libs/domains/agenstra/frontend/feature-billing-console`](./libs/domains/agenstra/frontend/feature-billing-console/) ([LICENSE](./libs/domains/agenstra/frontend/feature-billing-console/LICENSE))
-- [`libs/domains/agenstra/frontend/data-access-billing-console`](./libs/domains/agenstra/frontend/data-access-billing-console/) ([LICENSE](./libs/domains/agenstra/frontend/data-access-billing-console/LICENSE))
 - [`libs/domains/agenstra/frontend/data-access-portal`](./libs/domains/agenstra/frontend/data-access-portal/) ([LICENSE](./libs/domains/agenstra/frontend/data-access-portal/LICENSE))
-- [`apps/agenstra/backend-billing-manager`](./apps/agenstra/backend-billing-manager/) ([LICENSE](./apps/agenstra/backend-billing-manager/LICENSE))
-- [`libs/domains/agenstra/backend/feature-billing-manager`](./libs/domains/agenstra/backend/feature-billing-manager/) ([LICENSE](./libs/domains/agenstra/backend/feature-billing-manager/LICENSE))
 
 ## Contributing
 

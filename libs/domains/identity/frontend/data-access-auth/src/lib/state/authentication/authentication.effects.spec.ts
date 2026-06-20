@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
+import { createMockIdentityAuthEnvironment, IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { KeycloakService } from 'keycloak-angular';
@@ -77,12 +77,7 @@ describe('AuthenticationEffects', () => {
       writable: true,
     });
 
-    mockAuthEnvironment = {
-      apiUrl: 'http://localhost:3100/api',
-      authentication: {
-        type: 'api-key',
-      },
-    };
+    mockAuthEnvironment = createMockIdentityAuthEnvironment();
 
     mockKeycloakService = {
       login: jest.fn(),
@@ -131,13 +126,12 @@ describe('AuthenticationEffects', () => {
   describe('login$', () => {
     describe('when authentication type is api-key', () => {
       beforeEach(() => {
-        mockAuthEnvironment = {
-          apiUrl: 'http://localhost:3100/api',
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({
           authentication: {
             type: 'api-key',
             apiKey: 'env-api-key',
           },
-        };
+        });
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
           providers: [
@@ -185,12 +179,11 @@ describe('AuthenticationEffects', () => {
       });
 
       it('should return loginFailure if no API key is available', (done) => {
-        mockAuthEnvironment = {
-          apiUrl: 'http://localhost:3100/api',
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({
           authentication: {
             type: 'api-key',
           },
-        };
+        });
         const action = login({});
         const outcome = loginFailure({ error: 'API key is required for authentication' });
 
@@ -206,15 +199,14 @@ describe('AuthenticationEffects', () => {
 
     describe('when authentication type is keycloak', () => {
       beforeEach(() => {
-        mockAuthEnvironment = {
-          apiUrl: 'http://localhost:3100/api',
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({
           authentication: {
             type: 'keycloak',
             authServerUrl: 'http://localhost:8080',
             realm: 'test-realm',
             clientId: 'test-client',
           },
-        };
+        });
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
           providers: [
@@ -280,12 +272,11 @@ describe('AuthenticationEffects', () => {
   describe('logout$', () => {
     describe('when authentication type is api-key', () => {
       beforeEach(() => {
-        mockAuthEnvironment = {
-          apiUrl: 'http://localhost:3100/api',
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({
           authentication: {
             type: 'api-key',
           },
-        };
+        });
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
           providers: [
@@ -322,15 +313,14 @@ describe('AuthenticationEffects', () => {
 
     describe('when authentication type is keycloak', () => {
       beforeEach(() => {
-        mockAuthEnvironment = {
-          apiUrl: 'http://localhost:3100/api',
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({
           authentication: {
             type: 'keycloak',
             authServerUrl: 'http://localhost:8080',
             realm: 'test-realm',
             clientId: 'test-client',
           },
-        };
+        });
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
           providers: [
@@ -396,13 +386,12 @@ describe('AuthenticationEffects', () => {
   describe('checkAuthentication$', () => {
     describe('when authentication type is api-key', () => {
       beforeEach(() => {
-        mockAuthEnvironment = {
-          apiUrl: 'http://localhost:3100/api',
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({
           authentication: {
             type: 'api-key',
             apiKey: 'env-api-key',
           },
-        };
+        });
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
           providers: [
@@ -437,12 +426,11 @@ describe('AuthenticationEffects', () => {
       });
 
       it('should return checkAuthenticationSuccess with true and authenticationType if API key exists in localStorage', (done) => {
-        mockAuthEnvironment = {
-          apiUrl: 'http://localhost:3100/api',
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({
           authentication: {
             type: 'api-key',
           },
-        };
+        });
         const action = checkAuthentication();
         const outcome = checkAuthenticationSuccess({ isAuthenticated: true, authenticationType: 'api-key' });
 
@@ -457,12 +445,11 @@ describe('AuthenticationEffects', () => {
       });
 
       it('should return checkAuthenticationSuccess with false if no API key exists', (done) => {
-        mockAuthEnvironment = {
-          apiUrl: 'http://localhost:3100/api',
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({
           authentication: {
             type: 'api-key',
           },
-        };
+        });
         const action = checkAuthentication();
         const outcome = checkAuthenticationSuccess({ isAuthenticated: false });
 
@@ -478,15 +465,14 @@ describe('AuthenticationEffects', () => {
 
     describe('when authentication type is keycloak', () => {
       beforeEach(() => {
-        mockAuthEnvironment = {
-          apiUrl: 'http://localhost:3100/api',
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({
           authentication: {
             type: 'keycloak',
             authServerUrl: 'http://localhost:8080',
             realm: 'test-realm',
             clientId: 'test-client',
           },
-        };
+        });
         TestBed.resetTestingModule();
         TestBed.configureTestingModule({
           providers: [

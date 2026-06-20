@@ -621,8 +621,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
-          AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.AGENSTRA_CLOUDFLARE_R2_ENDPOINT }}
+          AGENSTRA_AWS_BUCKET: ${{ secrets.AGENSTRA_AWS_BUCKET }}
         run: |
           shopt -s nullglob
           files=(release/*)
@@ -630,7 +630,11 @@ jobs:
             echo "::error::No desktop binaries in release/ — aborting R2 upload"
             exit 1
           fi
-          aws s3 cp release/ s3://${{ secrets.AWS_BUCKET }}/releases/${{ needs.publish.outputs.new_release_version }}/desktop/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+          if [ -z "${AGENSTRA_AWS_BUCKET}" ]; then
+            echo "::error::AGENSTRA_AWS_BUCKET must be configured"
+            exit 1
+          fi
+          aws s3 cp release/ "s3://${AGENSTRA_AWS_BUCKET}/releases/${{ needs.publish.outputs.new_release_version }}/desktop/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}"
 
   publish-agentctx:
     name: Publish agentctx to Cloudflare R2
@@ -650,11 +654,15 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
-          AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.AGENSTRA_CLOUDFLARE_R2_ENDPOINT }}
+          AGENSTRA_AWS_BUCKET: ${{ secrets.AGENSTRA_AWS_BUCKET }}
         run: |
-          aws s3 cp dist/tools/ai/bin/ s3://${{ secrets.AWS_BUCKET }}/releases/${{ needs.publish.outputs.new_release_version }}/agentctx/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
-          aws s3 cp dist/tools/ai/bin/ s3://${{ secrets.AWS_BUCKET }}/agentctx/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+          if [ -z "${AGENSTRA_AWS_BUCKET}" ]; then
+            echo "::error::AGENSTRA_AWS_BUCKET must be configured"
+            exit 1
+          fi
+          aws s3 cp dist/tools/ai/bin/ "s3://${AGENSTRA_AWS_BUCKET}/releases/${{ needs.publish.outputs.new_release_version }}/agentctx/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}"
+          aws s3 cp dist/tools/ai/bin/ "s3://${AGENSTRA_AWS_BUCKET}/agentctx/" --recursive --endpoint-url "${CLOUDFLARE_R2_ENDPOINT}"
 
   publish-sboms:
     name: Publish SBOMs to DependencyTrack
@@ -744,7 +752,7 @@ jobs:
           projectname: 'billing-console'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
-          bomfilename: 'dist/sboms/agenstra-frontend-billing-console.cdx.json'
+          bomfilename: 'dist/sboms/decabill-frontend-billing-console.cdx.json'
 
       - name: Upload billing-manager SBOM
         id: upload-sbom-billing-manager
@@ -757,7 +765,7 @@ jobs:
           projectname: 'billing-manager'
           projectversion: ${{ needs.publish.outputs.new_release_version }}
           autocreate: true
-          bomfilename: 'dist/sboms/agenstra-backend-billing-manager.cdx.json'
+          bomfilename: 'dist/sboms/decabill-backend-billing-manager.cdx.json'
 
       - name: Upload desktop SBOM
         id: upload-sbom-desktop
@@ -864,15 +872,41 @@ jobs:
             echo "::warning::One or more DependencyTrack SBOM uploads failed (see table above)"
           fi
 
-      - name: Upload SBOMs to Cloudflare R2 bucket
+      - name: Upload agenstra SBOMs to Cloudflare R2 bucket
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
-          AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.AGENSTRA_CLOUDFLARE_R2_ENDPOINT }}
+          AGENSTRA_AWS_BUCKET: ${{ secrets.AGENSTRA_AWS_BUCKET }}
         run: |
-          aws s3 cp dist/sboms/ s3://${{ secrets.AWS_BUCKET }}/releases/${{ needs.publish.outputs.new_release_version }}/sboms/ --recursive --endpoint-url ${{ secrets.CLOUDFLARE_R2_ENDPOINT }}
+          chmod +x tools/ci/upload-release-sboms-by-domain.sh
+          if [ -z "${AGENSTRA_AWS_BUCKET}" ]; then
+            echo "::error::AGENSTRA_AWS_BUCKET must be configured"
+            exit 1
+          fi
+          tools/ci/upload-release-sboms-by-domain.sh agenstra dist/sboms \
+            "${{ needs.publish.outputs.new_release_version }}" \
+            "${AGENSTRA_AWS_BUCKET}" \
+            "${CLOUDFLARE_R2_ENDPOINT}"
+
+      - name: Upload decabill SBOMs to Cloudflare R2 bucket
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.DECABILL_CLOUDFLARE_R2_ENDPOINT }}
+          DECABILL_AWS_BUCKET: ${{ secrets.DECABILL_AWS_BUCKET }}
+        run: |
+          chmod +x tools/ci/upload-release-sboms-by-domain.sh
+          if [ -z "${DECABILL_AWS_BUCKET}" ]; then
+            echo "::error::DECABILL_AWS_BUCKET must be configured"
+            exit 1
+          fi
+          tools/ci/upload-release-sboms-by-domain.sh decabill dist/sboms \
+            "${{ needs.publish.outputs.new_release_version }}" \
+            "${DECABILL_AWS_BUCKET}" \
+            "${CLOUDFLARE_R2_ENDPOINT}"
 
   prepare-container-image-sbom-uploads:
     name: Prepare container image SBOM uploads

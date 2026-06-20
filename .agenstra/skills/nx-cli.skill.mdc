@@ -1,0 +1,129 @@
+---
+id: nx-cli
+name: Nx CLI Usage and Output Buffers
+description: Run Nx from the monorepo root, capture CLI output to workspace tmp files, and read buffers instead of re-executing commands
+---
+# Nx CLI Usage and Output Buffers
+
+Use this skill whenever you run Nx in this workspace: discovery, affected checks, builds, tests, lint, format, or graph inspection.
+
+## Guardrails (non-negotiable)
+
+- **Repository root:** Run Nx from the workspace root (where `nx.json` lives), unless a task explicitly requires another directory
+- **One run, one buffer:** Execute each distinct Nx command **once** per task phase; persist output to `tmp/nx-agent/` and read that file afterward. Do **not** re-run the same command to recover truncated terminal output or to "check again"
+- **Tmp only:** Write agent buffers under `tmp/nx-agent/` (already gitignored via `tmp/`). Do not commit buffer files; do not scatter ad-hoc logs elsewhere in the repo
+- **Prefer JSON:** When Nx supports `--json`, capture structured output. Use plain logs only when JSON is unavailable or human-readable traces are required
+- **Exit codes:** Persist stderr and exit status alongside stdout. A failed command is still a valid buffer — read it before deciding to retry with different flags
+
+## Output buffer workflow
+
+### 1. Prepare the buffer directory (once per task)
+
+```bash
+mkdir -p tmp/nx-agent
+```
+
+Use stable, descriptive filenames: `<command>-<scope>.<ext>` (examples: `show-projects.json`, `affected-lint.log`, `run-backend-billing-manager-test.log`).
+
+### 2. Capture command output
+
+**Structured (preferred):**
+
+```bash
+nx show projects --json > tmp/nx-agent/show-projects.json 2> tmp/nx-agent/show-projects.stderr; echo $? > tmp/nx-agent/show-projects.exit
+```
+
+**Full combined log (build/test/lint):**
+
+```bash
+nx run my-project:test 2>&1 | tee tmp/nx-agent/run-my-project-test.log; echo ${PIPESTATUS[0]} > tmp/nx-agent/run-my-project-test.exit
+```
+
+**Graph export:**
+
+```bash
+nx graph --file=tmp/nx-agent/graph.html
+```
+
+### 3. Read buffers, do not re-run
+
+- Use the Read tool (or targeted `grep`/`tail` on the buffer file) to inspect results
+- If output was truncated in chat, read the buffer file — **never** re-execute the Nx command solely to see more output
+- Re-run only when inputs changed (code edits, different flags/targets, cache invalidation) or when the prior run failed and you are applying a fix
+
+### 4. Clean up (optional)
+
+Remove `tmp/nx-agent/` when the task is done if buffers are no longer needed. Leaving them is fine for a single session.
+
+## Common Nx commands
+
+Run from repository root. Append buffer redirection from the workflow above.
+
+### Discovery
+
+| Intent | Command | Buffer tip |
+|--------|---------|------------|
+| List all projects | `nx show projects` | `--json` → `show-projects.json` |
+| Project metadata | `nx show project <name> --json` | one file per project |
+| Affected projects | `nx show projects --affected --base=origin/main` | set explicit `--base` on feature branches |
+| Targets for a project | `nx show project <name> --json` | inspect `targets` in JSON |
+
+### Execute targets
+
+| Intent | Command | Notes |
+|--------|---------|-------|
+| Single project | `nx run <project>:<target>` | add `--configuration=<name>` when needed |
+| Affected subset | `nx affected --target=<target> --base=origin/main` | prefer over `run-many` when validating branch changes |
+| Many projects | `nx run-many -t <target> -p proj-a,proj-b` | or `--projects=...` |
+| Format check | `nx format:check` | pair with `nx format:write` only when intentionally fixing format |
+
+Examples aligned with repo practice:
+
+```bash
+nx affected --target=lint --base=origin/main
+nx affected --target=test --base=origin/main
+nx format:check
+```
+
+### Graph and cache
+
+| Intent | Command | Buffer tip |
+|--------|---------|------------|
+| Dependency graph | `nx graph --file=tmp/nx-agent/graph.html` | open file locally if needed; do not re-run for layout |
+| Clear local cache | `nx reset` | log to `reset.log`; use sparingly when cache corruption is suspected |
+
+## Choosing affected vs run vs run-many
+
+- **`nx affected`** – default for verifying changes on the current branch; always pass `--base` when results look empty or wrong
+- **`nx run <project>:<target>`** – when you know the exact project (debugging one failure, single deployable)
+- **`nx run-many`** – when several named projects need the same target and affected scope is too narrow or too broad
+
+Before running heavy targets (build, e2e, docker), write the planned project list to a buffer:
+
+```bash
+nx show projects --affected --base=origin/main --json > tmp/nx-agent/affected-projects.json 2> tmp/nx-agent/affected-projects.stderr
+```
+
+Read that file, then run only what is required.
+
+## Long-running commands
+
+- Set sufficient `block_until_ms` (or run in background) for builds and test suites
+- Still use `tee` into `tmp/nx-agent/` so completion can be verified from the log without re-running
+- On failure, read the buffer tail first; retry only with a concrete change (fix, flag, or target scope)
+
+## Anti-patterns (avoid)
+
+- Re-running `nx show projects`, `nx affected`, or `nx run ...` because terminal output was not fully visible in chat
+- Piping Nx output only to stdout with no file when the result will be analyzed later
+- Using `nx run-many -t test` on the entire workspace when `nx affected -t test` suffices
+- Omitting `--base` on affected commands and concluding nothing changed
+- Running Nx from a subdirectory without a documented reason
+
+## Stop and escalate
+
+- `nx show projects` or graph output contradicts `project.json` layout you see in the tree
+- Module boundary / tag errors require architecture decisions beyond a local fix
+- Repeated failures after reading buffers and applying targeted fixes
+
+State what buffer files you captured, what they show, and propose options rather than looping the same Nx command.

@@ -1,0 +1,208 @@
+x-backend-billing-manager-environment: &backend-billing-manager-environment
+  HOST: ${HOST:-0.0.0.0}
+  PORT: ${PORT:-3200}
+  WEBSOCKET_PORT: ${WEBSOCKET_PORT:-8082}
+  WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-billing}
+  WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
+  NODE_ENV: ${NODE_ENV:-development}
+  DB_HOST: ${DB_HOST:-postgres}
+  DB_PORT: ${DB_PORT:-5432}
+  DB_USERNAME: ${DB_USERNAME:-postgres}
+  DB_PASSWORD: ${DB_PASSWORD:-postgres}
+  DB_DATABASE: ${DB_DATABASE:-postgres}
+  REDIS_HOST: ${REDIS_HOST:-redis}
+  REDIS_PORT: ${REDIS_PORT:-6379}
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+  REDIS_DB: ${REDIS_DB:-0}
+  REDIS_KEY_PREFIX: ${REDIS_KEY_PREFIX:-decabill-billing}
+  QUEUE_WORKER_CONCURRENCY: ${QUEUE_WORKER_CONCURRENCY:-5}
+  QUEUE_BULL_BOARD_ENABLED: ${QUEUE_BULL_BOARD_ENABLED:-false}
+  QUEUE_BULL_BOARD_PATH: ${QUEUE_BULL_BOARD_PATH:-/admin/queues}
+  QUEUE_BULL_BOARD_USERNAME: ${QUEUE_BULL_BOARD_USERNAME:-admin}
+  QUEUE_BULL_BOARD_PASSWORD: ${QUEUE_BULL_BOARD_PASSWORD:-bullmq}
+  HETZNER_API_TOKEN: ${HETZNER_API_TOKEN:-}
+  DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN:-}
+  AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-api-key}
+  DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
+  STATIC_API_KEY: ${STATIC_API_KEY:-}
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+  CORS_ORIGIN: ${CORS_ORIGIN:-}
+  RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
+  RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}
+  RATE_LIMIT_LIMIT: ${RATE_LIMIT_LIMIT:-100}
+  KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL:-}
+  KEYCLOAK_AUTH_SERVER_URL: ${KEYCLOAK_AUTH_SERVER_URL:-}
+  KEYCLOAK_REALM: ${KEYCLOAK_REALM:-}
+  KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-}
+  KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
+  KEYCLOAK_TOKEN_VALIDATION: ${KEYCLOAK_TOKEN_VALIDATION:-online}
+  JWT_SECRET: ${JWT_SECRET:-}
+  SMTP_HOST: ${SMTP_HOST:-mailhog}
+  SMTP_PORT: ${SMTP_PORT:-1025}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  EMAIL_FROM: ${EMAIL_FROM:-noreply@localhost}
+  BILLING_ISSUER_NAME: ${BILLING_ISSUER_NAME:-}
+  BILLING_ISSUER_VAT_ID: ${BILLING_ISSUER_VAT_ID:-}
+  BILLING_ISSUER_ADDRESS_LINE1: ${BILLING_ISSUER_ADDRESS_LINE1:-}
+  BILLING_ISSUER_POSTAL_CODE: ${BILLING_ISSUER_POSTAL_CODE:-}
+  BILLING_ISSUER_CITY: ${BILLING_ISSUER_CITY:-}
+  BILLING_ISSUER_COUNTRY: ${BILLING_ISSUER_COUNTRY:-DE}
+  BILLING_ISSUER_EMAIL: ${BILLING_ISSUER_EMAIL:-}
+  BILLING_ISSUER_BANK: ${BILLING_ISSUER_BANK:-}
+  BILLING_ISSUER_IBAN: ${BILLING_ISSUER_IBAN:-}
+  BILLING_ISSUER_BIC: ${BILLING_ISSUER_BIC:-}
+  BILLING_TAX_RATE_STANDARD: ${BILLING_TAX_RATE_STANDARD:-19}
+  BILLING_TAX_RATE_REDUCED: ${BILLING_TAX_RATE_REDUCED:-7}
+  BILLING_INVOICE_PDF_STORAGE_PATH: ${BILLING_INVOICE_PDF_STORAGE_PATH:-/data/invoices}
+  BILLING_SKIP_FILE_CACHE: ${BILLING_SKIP_FILE_CACHE:-false}
+  BILLING_DEFAULT_PAYMENT_PROCESSOR: ${BILLING_DEFAULT_PAYMENT_PROCESSOR:-stripe}
+  STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+  STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+  STRIPE_CHECKOUT_SUCCESS_URL: ${STRIPE_CHECKOUT_SUCCESS_URL:-http://localhost:4500/invoices?payment=success}
+  STRIPE_CHECKOUT_CANCEL_URL: ${STRIPE_CHECKOUT_CANCEL_URL:-http://localhost:4500/invoices?payment=cancel}
+  BILLING_FRONTEND_URL: ${BILLING_FRONTEND_URL:-http://localhost:4500}
+  TENANT_FRONTEND_URLS: ${TENANT_FRONTEND_URLS:-}
+  BILLING_SCHEDULER_INTERVAL: ${BILLING_SCHEDULER_INTERVAL:-60000}
+  BILLING_SCHEDULER_BATCH_SIZE: ${BILLING_SCHEDULER_BATCH_SIZE:-100}
+  EXPIRATION_SCHEDULER_INTERVAL: ${EXPIRATION_SCHEDULER_INTERVAL:-60000}
+  EXPIRATION_SCHEDULER_BATCH_SIZE: ${EXPIRATION_SCHEDULER_BATCH_SIZE:-100}
+  REMINDER_SCHEDULER_INTERVAL: ${REMINDER_SCHEDULER_INTERVAL:-3600000}
+  REMINDER_SCHEDULER_BATCH_SIZE: ${REMINDER_SCHEDULER_BATCH_SIZE:-100}
+  REMINDER_DAYS: ${REMINDER_DAYS:-3}
+  BACKORDER_RETRY_INTERVAL_MS: ${BACKORDER_RETRY_INTERVAL_MS:-60000}
+  BACKORDER_RETRY_BATCH_SIZE: ${BACKORDER_RETRY_BATCH_SIZE:-100}
+  INVOICE_OVERDUE_SCHEDULER_INTERVAL: ${INVOICE_OVERDUE_SCHEDULER_INTERVAL:-86400000}
+  INVOICE_OVERDUE_SCHEDULER_BATCH_SIZE: ${INVOICE_OVERDUE_SCHEDULER_BATCH_SIZE:-100}
+  OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL: ${OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL:-86400000}
+  SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL: ${SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL:-86400000}
+  STATUS_POLL_INTERVAL: ${STATUS_POLL_INTERVAL:-15000}
+  CLOUDFLARE_API_TOKEN: ${CLOUDFLARE_API_TOKEN:-}
+  CLOUDFLARE_ZONE_ID: ${CLOUDFLARE_ZONE_ID:-}
+  DNS_BASE_DOMAIN: ${DNS_BASE_DOMAIN:-spirde.com}
+  TENANTS: ${TENANTS:-}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: billing-manager-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - billing-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: billing-manager-redis
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '${REDIS_HOST_PORT:-6380}:6379'
+    networks:
+      - billing-network
+    restart: unless-stopped
+
+  backend-billing-manager:
+    image: ghcr.io/forepath/decabill-billing-api:latest
+    pull_policy: never
+    container_name: billing-manager-api
+    environment:
+      <<: *backend-billing-manager-environment
+      QUEUE_ROLE: ${QUEUE_ROLE:-api}
+      QUEUE_BULL_BOARD_ENABLED: ${QUEUE_BULL_BOARD_ENABLED:-true}
+    volumes:
+      - invoice_pdf_data:/data/invoices
+    ports:
+      - '${PORT:-3200}:${PORT:-3200}'
+      - '${WEBSOCKET_PORT:-8082}:${WEBSOCKET_PORT:-8082}'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - billing-network
+    restart: unless-stopped
+
+  backend-billing-manager-worker:
+    image: ghcr.io/forepath/decabill-billing-api:latest
+    pull_policy: never
+    container_name: billing-manager-worker
+    environment:
+      <<: *backend-billing-manager-environment
+      QUEUE_ROLE: worker
+      QUEUE_BULL_BOARD_ENABLED: false
+    volumes:
+      - invoice_pdf_data:/data/invoices
+    depends_on:
+      backend-billing-manager:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - billing-network
+    restart: unless-stopped
+
+  backend-billing-manager-scheduler:
+    image: ghcr.io/forepath/decabill-billing-api:latest
+    pull_policy: never
+    container_name: billing-manager-scheduler
+    environment:
+      <<: *backend-billing-manager-environment
+      QUEUE_ROLE: scheduler
+      QUEUE_BULL_BOARD_ENABLED: false
+    volumes:
+      - invoice_pdf_data:/data/invoices
+    depends_on:
+      backend-billing-manager:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - billing-network
+    restart: unless-stopped
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: billing-manager-mailhog
+    ports:
+      - '${SMTP_PORT:-1026}:${SMTP_PORT:-1025}'
+      - '${MAILHOG_PORT:-8026}:${MAILHOG_PORT:-8025}'
+    networks:
+      - billing-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  invoice_pdf_data:
+
+networks:
+  billing-network:
+    driver: bridge

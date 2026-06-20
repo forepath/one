@@ -169,7 +169,6 @@ function buildOpencodeJson(context: AgenstraContext): Record<string, unknown> {
 
   return {
     $schema: 'https://opencode.ai/config.json',
-    name: context.metadata.appName,
     ...(Object.keys(mcp).length > 0 && { mcp }),
   };
 }

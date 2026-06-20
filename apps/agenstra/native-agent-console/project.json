@@ -3,7 +3,7 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "sourceRoot": "apps/agenstra/native-agent-console/src",
-  "tags": [],
+  "tags": ["domain:agenstra", "type:app", "scope:native"],
   "implicitDependencies": ["agenstra-frontend-agent-console"],
   "targets": {
     "build": {

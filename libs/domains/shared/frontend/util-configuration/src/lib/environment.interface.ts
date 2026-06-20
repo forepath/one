@@ -5,6 +5,8 @@ import type {
   UsersAuthenticationConfig,
 } from '@forepath/identity/frontend';
 
+import type { AuthMarketing } from './auth-marketing.interface';
+
 // Re-export auth config types from identity for backward compatibility
 export type {
   ApiKeyAuthenticationConfig,
@@ -15,6 +17,8 @@ export type {
 
 export interface Environment {
   production: boolean;
+  /** Product name shown in page titles, auth screens, and other branded UI. */
+  productName: string;
   controller: {
     restApiUrl: string;
     websocketUrl: string;
@@ -31,6 +35,8 @@ export interface Environment {
     tenantId?: string;
   };
   authentication: AuthenticationConfig;
+  /** Brand-specific copy for login, registration, and related auth screens. */
+  authMarketing: AuthMarketing;
   chatModelOptions: { [provider: string]: Record<string, string> };
   editor: {
     openInNewWindow: boolean;
@@ -39,6 +45,8 @@ export interface Environment {
     openInNewWindow: boolean;
   };
   cookieConsent: {
+    /** When false, cookie consent UI and providers are omitted (e.g. Decabill billing console). */
+    enabled: boolean;
     domain: string;
     privacyPolicyUrl: string;
     termsUrl: string;

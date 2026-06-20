@@ -6,6 +6,8 @@ import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@a
 import type { IdentityAuthEnvironment } from '../../../../util-auth/src';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { IDENTITY_AUTH_ENVIRONMENT, isAuthenticated } from '../../../../util-auth/src';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { createMockIdentityAuthEnvironment } from '../../../../util-auth/src/lib/auth-environment.test-fixtures';
 
 import { authGuard } from './auth.guard';
 
@@ -65,12 +67,7 @@ describe('authGuard', () => {
     mockRoute = {} as ActivatedRouteSnapshot;
     mockState = {} as RouterStateSnapshot;
 
-    mockEnvironment = {
-      apiUrl: 'http://localhost:3100/api',
-      authentication: {
-        type: 'api-key',
-      },
-    };
+    mockEnvironment = createMockIdentityAuthEnvironment();
 
     mockIsAuthenticated = isAuthenticated as jest.MockedFunction<typeof isAuthenticated>;
 

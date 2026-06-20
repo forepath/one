@@ -1,0 +1,162 @@
+{
+  "name": "decabill-backend-billing-manager",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/decabill/backend-billing-manager/src",
+  "projectType": "application",
+  "tags": ["domain:decabill", "type:app", "scope:backend"],
+  "implicitDependencies": [
+    "shared-platform-authentication",
+    "decabill-backend-feature-billing-manager"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/decabill/backend-billing-manager",
+        "main": "apps/decabill/backend-billing-manager/src/main.ts",
+        "tsConfig": "apps/decabill/backend-billing-manager/tsconfig.app.json",
+        "assets": [
+          "apps/decabill/backend-billing-manager/src/assets",
+          "apps/decabill/backend-billing-manager/src/migrations",
+          {
+            "glob": "invoice-pdf.template.html",
+            "input": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates",
+            "output": "templates"
+          }
+        ],
+        "webpackConfig": "apps/decabill/backend-billing-manager/webpack.config.cjs",
+        "generatePackageJson": true
+      },
+      "configurations": {
+        "development": {
+          "outputHashing": "none"
+        },
+        "production": {}
+      }
+    },
+    "prune-lockfile": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "executor": "@nx/js:prune-lockfile",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/decabill/backend-billing-manager/package.json",
+        "{workspaceRoot}/dist/apps/decabill/backend-billing-manager/package-lock.json"
+      ],
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "copy-workspace-modules": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "outputs": [
+        "{workspaceRoot}/dist/apps/decabill/backend-billing-manager/workspace_modules"
+      ],
+      "executor": "@nx/js:copy-workspace-modules",
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "compile-migrations": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "mkdir -p dist/apps/decabill/backend-billing-manager/src/migrations",
+          "(npx tsc $(find apps/decabill/backend-billing-manager/src/migrations -name '*.ts' 2>/dev/null || echo '') --outDir dist/apps/decabill/backend-billing-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/decabill/backend-billing-manager/src/migrations 2>/dev/null || true)",
+          "npx tsc $(find libs/domains/identity/backend/util-auth/src/lib/migrations -name '*.ts') --outDir dist/apps/decabill/backend-billing-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir libs/domains/identity/backend/util-auth/src/lib/migrations"
+        ]
+      }
+    },
+    "prune": {
+      "dependsOn": [
+        "prune-lockfile",
+        "copy-workspace-modules",
+        "compile-migrations"
+      ],
+      "executor": "nx:noop"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "decabill-backend-billing-manager:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "decabill-backend-billing-manager:build:development"
+        },
+        "production": {
+          "buildTarget": "decabill-backend-billing-manager:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/decabill/backend-billing-manager/jest.config.ts",
+        "passWithNoTests": true
+      }
+    },
+    "api-container-image": {
+      "dependsOn": ["prune"],
+      "cache": false,
+      "executor": "@nx-tools/nx-container:build",
+      "options": {
+        "engine": "docker",
+        "file": "apps/decabill/backend-billing-manager/Dockerfile.api",
+        "context": "dist/apps/decabill/backend-billing-manager"
+      },
+      "configurations": {
+        "test": {
+          "load": true,
+          "tags": ["ghcr.io/forepath/decabill-billing-api:latest"]
+        },
+        "release": {
+          "push": true,
+          "tags": [
+            "ghcr.io/forepath/decabill-billing-api:latest",
+            "ghcr.io/forepath/decabill-billing-api:$VERSION"
+          ]
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "start-containers": {
+      "dependsOn": ["api-container-image"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/decabill/backend-billing-manager",
+        "command": "docker compose up -d --force-recreate --remove-orphans"
+      }
+    },
+    "openapi-client-js": {
+      "cache": true,
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/clients/billing/js"],
+      "options": {
+        "command": "npx @openapitools/openapi-generator-cli generate -i libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml -g typescript-axios -o dist/clients/billing-manager/js --additional-properties=npmName=@forepath/decabill-billing-manager-client,npmVersion=1.0.0,withInterfaces=true && cd dist/clients/billing-manager/js && npm install && npm run build"
+      },
+      "configurations": {
+        "test": {},
+        "release": {
+          "command": "npx @openapitools/openapi-generator-cli generate -i libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml -g typescript-axios -o dist/clients/billing-manager/js --additional-properties=npmName=@forepath/decabill-billing-manager-client,npmVersion=$VERSION,withInterfaces=true && cd dist/clients/billing-manager/js && node -e \"const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json'));pkg.publishConfig={registry:'https://npm.pkg.github.com'};fs.writeFileSync('package.json',JSON.stringify(pkg,null,2));\" && npm install && npm run build && npm publish"
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "sbom": {
+      "executor": "@forepath/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
+    }
+  }
+}

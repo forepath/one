@@ -4,12 +4,14 @@ import {
   Environment,
   KeycloakAuthenticationConfig,
 } from './environment.interface';
+import { agenstraAuthMarketing } from './auth-marketing.agenstra';
 
 describe('Environment interfaces', () => {
   describe('Environment', () => {
     it('should require production property', () => {
       const validEnv: Environment = {
         production: true,
+        productName: 'Agenstra',
         controller: {
           restApiUrl: 'http://localhost:3100/api',
           websocketUrl: 'ws://localhost:8081/clients',
@@ -21,6 +23,7 @@ describe('Environment interfaces', () => {
         authentication: {
           type: 'api-key',
         },
+        authMarketing: agenstraAuthMarketing,
         chatModelOptions: {
           cursor: {
             'composer-1': 'Composer 1',
@@ -36,6 +39,7 @@ describe('Environment interfaces', () => {
           openInNewWindow: false,
         },
         cookieConsent: {
+          enabled: true,
           domain: 'localhost',
           privacyPolicyUrl: 'https://example.com/privacy',
           termsUrl: 'https://example.com/terms',
@@ -48,6 +52,7 @@ describe('Environment interfaces', () => {
     it('should require authentication property', () => {
       const validEnv: Environment = {
         production: false,
+        productName: 'Agenstra',
         controller: {
           restApiUrl: 'http://localhost:3100/api',
           websocketUrl: 'ws://localhost:8081/clients',
@@ -59,6 +64,7 @@ describe('Environment interfaces', () => {
         authentication: {
           type: 'api-key',
         },
+        authMarketing: agenstraAuthMarketing,
         chatModelOptions: {
           cursor: {
             'composer-1': 'Composer 1',
@@ -74,6 +80,7 @@ describe('Environment interfaces', () => {
           openInNewWindow: false,
         },
         cookieConsent: {
+          enabled: true,
           domain: 'localhost',
           privacyPolicyUrl: 'https://example.com/privacy',
           termsUrl: 'https://example.com/terms',
@@ -87,6 +94,7 @@ describe('Environment interfaces', () => {
     it('should allow optional controller property', () => {
       const envWithController: Environment = {
         production: false,
+        productName: 'Agenstra',
         controller: {
           restApiUrl: 'http://localhost:3100/api',
           websocketUrl: 'ws://localhost:8081/clients',
@@ -98,6 +106,7 @@ describe('Environment interfaces', () => {
         authentication: {
           type: 'api-key',
         },
+        authMarketing: agenstraAuthMarketing,
         chatModelOptions: {
           cursor: {
             'composer-1': 'Composer 1',
@@ -113,6 +122,7 @@ describe('Environment interfaces', () => {
           openInNewWindow: false,
         },
         cookieConsent: {
+          enabled: true,
           domain: 'localhost',
           privacyPolicyUrl: 'https://example.com/privacy',
           termsUrl: 'https://example.com/terms',
@@ -127,6 +137,7 @@ describe('Environment interfaces', () => {
     it('should require chatModelOptions map', () => {
       const env: Environment = {
         production: true,
+        productName: 'Agenstra',
         controller: {
           restApiUrl: 'http://localhost:3100/api',
           websocketUrl: 'ws://localhost:8081/clients',
@@ -138,6 +149,7 @@ describe('Environment interfaces', () => {
         authentication: {
           type: 'api-key',
         },
+        authMarketing: agenstraAuthMarketing,
         chatModelOptions: {
           cursor: {
             'composer-1': 'Composer 1',
@@ -153,6 +165,7 @@ describe('Environment interfaces', () => {
           openInNewWindow: false,
         },
         cookieConsent: {
+          enabled: true,
           domain: 'localhost',
           privacyPolicyUrl: 'https://example.com/privacy',
           termsUrl: 'https://example.com/terms',

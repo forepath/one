@@ -20,6 +20,8 @@ export const appConfig: ApplicationConfig = {
     {
       provide: IDENTITY_AUTH_ENVIRONMENT,
       useFactory: (env: Environment) => ({
+        productName: env.productName,
+        authMarketing: env.authMarketing,
         apiUrl: env.controller.restApiUrl,
         authentication: env.authentication,
         controllerApiUrl: env.controller.restApiUrl,
