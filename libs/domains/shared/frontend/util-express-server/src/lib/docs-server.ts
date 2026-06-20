@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 import { APP_BASE_HREF } from '@angular/common';
 import { CommonEngine } from '@angular/ssr/node';
-import express, { type Express } from 'express';
+import express, { type Express, type NextFunction, type Request, type Response } from 'express';
 
 import { registerRuntimeConfigEndpoint } from './runtime-config-route';
 import { createSecurityHeadersMiddleware } from './security-headers';
@@ -31,7 +31,7 @@ export function createDocsServer(apexDomains: readonly string[], bootstrap: Docs
     }),
   );
 
-  app.get('**', (req, res, next) => {
+  app.get('**', (req: Request, res: Response, next: NextFunction) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
 
     commonEngine
@@ -42,8 +42,8 @@ export function createDocsServer(apexDomains: readonly string[], bootstrap: Docs
         publicPath: browserDistFolder,
         providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
       })
-      .then((html) => res.send(html))
-      .catch((err) => next(err));
+      .then((html: string) => res.send(html))
+      .catch((err: unknown) => next(err));
   });
 
   return app;

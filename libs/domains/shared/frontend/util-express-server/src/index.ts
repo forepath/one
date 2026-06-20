@@ -1,4 +1,5 @@
-export { createDocsServer, type DocsServerBootstrap } from './lib/docs-server';
+// Docs SSR factory lives at @forepath/shared/frontend/util-express-server/docs-server
+// so esbuild server bundles (agent/billing console) do not pull in @angular/ssr/node.
 export {
   registerRuntimeConfigEndpoint,
   type RuntimeConfigRouteEnv,

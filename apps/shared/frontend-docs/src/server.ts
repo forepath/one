@@ -1,5 +1,5 @@
 import { isMainModule } from '@angular/ssr/node';
-import { createDocsServer } from '@forepath/shared/frontend/util-express-server';
+import { createDocsServer } from '@forepath/shared/frontend/util-express-server/docs-server';
 import { fileURLToPath } from 'node:url';
 
 import bootstrap from './main.server';

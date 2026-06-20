@@ -1,7 +1,7 @@
 import { isMainModule } from '@angular/ssr/node';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import bootstrap from '@forepath/shared/frontend/util-docs-bootstrap';
-import { createDocsServer } from '@forepath/shared/frontend/util-express-server';
+import { createDocsServer } from '@forepath/shared/frontend/util-express-server/docs-server';
 import { fileURLToPath } from 'node:url';
 
 const app = createDocsServer(['agenstra.com'], bootstrap);
