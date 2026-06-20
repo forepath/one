@@ -36,6 +36,12 @@ x-backend-agent-controller-environment: &backend-agent-controller-environment
   QUEUE_BULL_BOARD_PASSWORD: ${QUEUE_BULL_BOARD_PASSWORD:-bullmq}
   HETZNER_API_TOKEN: ${HETZNER_API_TOKEN:-}
   DIGITALOCEAN_API_TOKEN: ${DIGITALOCEAN_API_TOKEN:-}
+  # Dynamic provider plugins (baked-in runtime deps and/or mounted plugin path)
+  DYNAMIC_PROVISIONING_PROVIDERS: ${DYNAMIC_PROVISIONING_PROVIDERS:-}
+  DYNAMIC_CONTEXT_IMPORT_PROVIDERS: ${DYNAMIC_CONTEXT_IMPORT_PROVIDERS:-}
+  DYNAMIC_PROVIDERS_FAIL_FAST: ${DYNAMIC_PROVIDERS_FAIL_FAST:-false}
+  DYNAMIC_PROVIDER_PLUGIN_PATH: ${DYNAMIC_PROVIDER_PLUGIN_PATH:-}
+  DYNAMIC_PROVIDER_PLUGIN_INSTALL: ${DYNAMIC_PROVIDER_PLUGIN_INSTALL:-}
   AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-api-key}
   DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
   STATIC_API_KEY: ${STATIC_API_KEY:-}
@@ -108,6 +114,8 @@ services:
     ports:
       - '${PORT:-3100}:${PORT:-3100}'
       - '${WEBSOCKET_PORT:-8081}:${WEBSOCKET_PORT:-8081}'
+    volumes:
+      - ./provider-plugins:/var/lib/forepath/provider-plugins
     depends_on:
       postgres:
         condition: service_healthy
@@ -127,6 +135,8 @@ services:
       <<: *backend-agent-controller-environment
       QUEUE_ROLE: worker
       QUEUE_BULL_BOARD_ENABLED: false
+    volumes:
+      - ./provider-plugins:/var/lib/forepath/provider-plugins
     depends_on:
       backend-agent-controller:
         condition: service_healthy
@@ -148,6 +158,8 @@ services:
       <<: *backend-agent-controller-environment
       QUEUE_ROLE: scheduler
       QUEUE_BULL_BOARD_ENABLED: false
+    volumes:
+      - ./provider-plugins:/var/lib/forepath/provider-plugins
     depends_on:
       backend-agent-controller:
         condition: service_healthy

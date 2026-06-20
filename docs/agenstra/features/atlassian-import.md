@@ -6,7 +6,7 @@ The agent controller can **import work from Atlassian Cloud** into Agenstra usin
 
 - **Site connections** – Per-controller records for an Atlassian site: base URL, account email, and API token used for REST calls. Tokens are stored for server-side use only; list and detail APIs do not return secrets (see OpenAPI).
 - **Import configurations** – Each config binds a connection to a **workspace** (`clientId`), an import **kind** (`jira` or `confluence`), optional query scope (JQL, board id, CQL, space key, etc.), and optional **parent** targets in Agenstra (parent ticket for Jira swimlanes, parent folder for Confluence pages). Configs can be enabled or disabled; each run records `lastRunAt` and `lastError` when applicable.
-- **Provider model** – Today the registered provider is **Atlassian** (`atlassian`). The controller uses a small factory so additional providers could be added later without changing the HTTP surface.
+- **Provider model** – Today the registered provider is **Atlassian** (`atlassian`). The controller uses a small factory so additional providers could be added later without changing the HTTP surface. Register extra import backends with `DYNAMIC_CONTEXT_IMPORT_PROVIDERS` (see [Dynamic provider plugins](./dynamic-provider-plugins.md)).
 - **Execution** – A periodic **scheduler** loads enabled configs in batches and invokes the provider with an **item budget** per tick. Admins can also **run** a single config on demand from the console or `POST` the run endpoint.
 
 ## Why controller-native?
@@ -58,6 +58,7 @@ Boards do not embed full import administration; operators manage imports from th
 - **[Tickets and Workspaces](./tickets-and-workspaces.md)** – Target model for Jira imports
 - **[Message Filter Rules](./message-filter-rules.md)** – Same admin / API-key authorization pattern on the controller
 - **[Authentication](./authentication.md)** – Roles and authentication modes
+- **[Dynamic provider plugins](./dynamic-provider-plugins.md)** – `DYNAMIC_CONTEXT_IMPORT_PROVIDERS` and shared loader behavior
 - **[Backend Agent Controller](../applications/backend-agent-controller.md)** – Nest application and `/api` prefix
 - **[Frontend Agent Console](../applications/frontend-agent-console.md)** – Routes and NgRx feature wiring
 - **[API Reference](../api-reference/README.md)** – Where the bundled OpenAPI lives

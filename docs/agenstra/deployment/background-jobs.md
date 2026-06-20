@@ -24,7 +24,7 @@ Workers and schedulers assume the API has already applied schema migrations. Run
 Job registration (queue names, repeatable intervals, job names) lives in one file per app:
 
 - `apps/agenstra/backend-agent-controller/src/queue/job-registry.ts`
-- `apps/agenstra/backend-billing-manager/src/queue/job-registry.ts`
+- `apps/decabill/backend-billing-manager/src/queue/job-registry.ts`
 
 Coordinators fan out **unit jobs** (one subscription, one ticket, one import config, etc.). BullMQ `jobId` values prevent duplicate active work for the same entity. Custom job IDs use `.` separators and only allowed characters (alphanumeric, `.`, `-`, `_`, `~`) — e.g. `coordinator.filter-rules-sync`, `billing.subscription.<uuid>`. Colons and slashes are not valid.
 

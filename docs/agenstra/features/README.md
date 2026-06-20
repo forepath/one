@@ -21,6 +21,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Usage Statistics** - Controller-backed usage and filter metrics (distinct from container stats)
 - **Message Filter Rules** - Global and per-agent regex policies for chat traffic
 - **Atlassian import** - Admin-managed site connections and import configs (Jira and Confluence) into tickets and knowledge
+- **Dynamic provider plugins** - Extend provisioning, agents, pipelines, context import, and chat filters via env-configured packages
 
 ## Features
 
@@ -198,6 +199,18 @@ Admin-only **Atlassian Cloud** integrations: store encrypted site credentials, d
 - Import configuration CRUD with Jira or Confluence parameters and optional parent ticket or folder
 - Scheduled and manual import runs with configurable batching and budgets
 - Marker cleanup and optional marker release on ticket or knowledge delete
+- Optional extra import providers via `DYNAMIC_CONTEXT_IMPORT_PROVIDERS` (see [Dynamic provider plugins](./dynamic-provider-plugins.md))
+
+### [Dynamic provider plugins](./dynamic-provider-plugins.md)
+
+Extend Agenstra backends with extra provider packages **without forking** the controller or manager images. Supports baked-in deploy-graph dependencies and post-build volume mounts with optional startup `npm install`.
+
+**Key Capabilities**:
+
+- Add cloud provisioning providers on the controller (`DYNAMIC_PROVISIONING_PROVIDERS`)
+- Add agent backends, CI/CD providers, and chat filters on the manager
+- Mount `./provider-plugins` or install from registry/tarballs at container startup
+- Tiered fail-fast for critical provisioning registry (`DYNAMIC_PROVIDERS_FAIL_FAST`)
 
 ## Feature Relationships
 
@@ -217,6 +230,7 @@ graph TB
     TK[Tickets and Workspaces]
     ST[Usage Statistics]
     FR[Message Filter Rules]
+    DP[Dynamic Provider Plugins]
 
     SP --> CM
     CM --> AM
@@ -238,6 +252,9 @@ graph TB
     FR --> Chat
     FR --> ST
     TK --> AM
+    DP --> SP
+    DP --> AM
+    DP --> DEP
 ```
 
 ## Related Documentation

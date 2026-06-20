@@ -709,6 +709,15 @@ nx test agenstra-backend-feature-agent-manager --coverage
 - `GIT_AUTHOR_NAME` - Git commit author name (optional, defaults to 'Agenstra')
 - `GIT_AUTHOR_EMAIL` - Git commit author email (optional, defaults to 'noreply@agenstra.com')
 
+### Dynamic provider plugins (optional)
+
+- `DYNAMIC_AGENT_PROVIDERS` - Comma-separated extra agent backend packages (`alias=@forepath/pkg`)
+- `DYNAMIC_PIPELINE_PROVIDERS` - Comma-separated extra CI/CD provider packages
+- `DYNAMIC_CHAT_FILTERS` - Comma-separated extra chat filter packages
+- `DYNAMIC_PROVIDERS_FAIL_FAST` - When `true`, abort startup if critical dynamic providers fail to load
+
+Plugin packages must be runtime dependencies of the agent-manager backend app. See `@forepath/shared/backend/util-dynamic-provider-registry` README.
+
 ### Git Repository Environment Variables
 
 When creating agents, the workspace Git repository is initialized in one of two modes (see `gitRepositorySetupMode` on `CreateAgentDto` or `GIT_REPOSITORY_SETUP_MODE`):

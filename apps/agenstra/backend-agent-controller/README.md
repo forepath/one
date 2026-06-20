@@ -243,6 +243,23 @@ See the [library documentation](../../libs/domains/agenstra/backend/feature-agen
 - `DIGITALOCEAN_API_TOKEN` - DigitalOcean API token (for server provisioning)
 - `ENCRYPTION_KEY` - Encryption key for sensitive data
 
+**Dynamic provider plugins (optional):**
+
+- `DYNAMIC_PROVISIONING_PROVIDERS` - Comma-separated extra provisioning packages (`alias=@forepath/pkg` or `alias=file:dir`)
+- `DYNAMIC_CONTEXT_IMPORT_PROVIDERS` - Comma-separated extra context import provider packages
+- `DYNAMIC_PROVIDERS_FAIL_FAST` - When `true`, abort startup if critical dynamic providers fail to load (recommended in production when `DYNAMIC_PROVISIONING_PROVIDERS` is set)
+- `DYNAMIC_PROVIDER_PLUGIN_PATH` - Absolute plugin root for post-build loading (unset by default; set to `/var/lib/forepath/provider-plugins` when using the compose volume)
+- `DYNAMIC_PROVIDER_PLUGIN_INSTALL` - Comma-separated packages/tarballs to `npm install` into the plugin path at container startup
+
+See `@forepath/shared/backend/util-dynamic-provider-registry` README for plugin export contract, baked-in vs mounted loading, and the post-build operator workflow.
+
+### Post-build plugins (no image rebuild)
+
+1. Build the plugin package (`nx build <plugin-lib>`) to produce compiled JS and `package.json`
+2. Copy the plugin into `./provider-plugins/` on the host (mounted read-only in compose) and/or set `DYNAMIC_PROVIDER_PLUGIN_INSTALL`
+3. Set `DYNAMIC_PROVISIONING_PROVIDERS` (or other `DYNAMIC_*` vars) to reference the package name
+4. Restart the container
+
 ## Docker Deployment
 
 The application includes Dockerfiles for containerized deployment:

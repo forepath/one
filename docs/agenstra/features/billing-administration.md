@@ -2,7 +2,7 @@
 
 Admin-only features in the billing console for manual invoice management and customer billing profile CRUD.
 
-See also: [feature-billing-manager README](../../libs/domains/agenstra/backend/feature-billing-manager/README.md) and [OpenAPI spec](../../libs/domains/agenstra/backend/feature-billing-manager/spec/openapi.yaml).
+See also: [API Reference](../api-reference/README.md#billing-manager-http-api) for the published OpenAPI and AsyncAPI specifications.
 
 ## Access control
 
@@ -21,7 +21,7 @@ All endpoints under `/admin/billing/*` require admin role (`@KeycloakRoles(ADMIN
 3. `POST /admin/billing/invoices/{id}/issue` — issue draft (requires complete customer profile)
 4. `DELETE /admin/billing/invoices/{id}` — delete draft only
 
-Sequence diagram: [manual-invoice-administration.mmd](../../libs/domains/agenstra/backend/feature-billing-manager/docs/manual-invoice-administration.mmd)
+The workflow steps above mirror the manual invoice administration sequence (create draft → update → issue or delete).
 
 **Frontend:** `/administration/billing` in the billing console — split layout with dashboard cards and charts on the left, invoice list (batch-loaded, client-side search, list-group style) on the right.
 

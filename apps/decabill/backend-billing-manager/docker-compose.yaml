@@ -61,6 +61,12 @@ x-backend-billing-manager-environment: &backend-billing-manager-environment
   STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
   STRIPE_CHECKOUT_SUCCESS_URL: ${STRIPE_CHECKOUT_SUCCESS_URL:-http://localhost:4500/invoices?payment=success}
   STRIPE_CHECKOUT_CANCEL_URL: ${STRIPE_CHECKOUT_CANCEL_URL:-http://localhost:4500/invoices?payment=cancel}
+  # Dynamic provider plugins (baked-in runtime deps and/or mounted plugin path)
+  DYNAMIC_PAYMENT_PROCESSORS: ${DYNAMIC_PAYMENT_PROCESSORS:-}
+  DYNAMIC_BILLING_PROVIDER_METADATA: ${DYNAMIC_BILLING_PROVIDER_METADATA:-}
+  DYNAMIC_PROVIDERS_FAIL_FAST: ${DYNAMIC_PROVIDERS_FAIL_FAST:-false}
+  DYNAMIC_PROVIDER_PLUGIN_PATH: ${DYNAMIC_PROVIDER_PLUGIN_PATH:-}
+  DYNAMIC_PROVIDER_PLUGIN_INSTALL: ${DYNAMIC_PROVIDER_PLUGIN_INSTALL:-}
   BILLING_FRONTEND_URL: ${BILLING_FRONTEND_URL:-http://localhost:4500}
   TENANT_FRONTEND_URLS: ${TENANT_FRONTEND_URLS:-}
   BILLING_SCHEDULER_INTERVAL: ${BILLING_SCHEDULER_INTERVAL:-60000}
@@ -128,6 +134,7 @@ services:
       QUEUE_BULL_BOARD_ENABLED: ${QUEUE_BULL_BOARD_ENABLED:-true}
     volumes:
       - invoice_pdf_data:/data/invoices
+      - ./provider-plugins:/var/lib/forepath/provider-plugins
     ports:
       - '${PORT:-3200}:${PORT:-3200}'
       - '${WEBSOCKET_PORT:-8082}:${WEBSOCKET_PORT:-8082}'
@@ -152,6 +159,7 @@ services:
       QUEUE_BULL_BOARD_ENABLED: false
     volumes:
       - invoice_pdf_data:/data/invoices
+      - ./provider-plugins:/var/lib/forepath/provider-plugins
     depends_on:
       backend-billing-manager:
         condition: service_healthy
@@ -175,6 +183,7 @@ services:
       QUEUE_BULL_BOARD_ENABLED: false
     volumes:
       - invoice_pdf_data:/data/invoices
+      - ./provider-plugins:/var/lib/forepath/provider-plugins
     depends_on:
       backend-billing-manager:
         condition: service_healthy

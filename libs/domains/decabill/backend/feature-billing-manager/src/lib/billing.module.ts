@@ -6,6 +6,11 @@ import {
   UsersRepository,
 } from '@forepath/identity/backend';
 import { EmailService } from '@forepath/shared/backend';
+import {
+  DynamicProviderLoaderService,
+  registerDynamicProviderMetadata,
+  registerDynamicProviders,
+} from '@forepath/shared/backend/util-dynamic-provider-registry';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -47,6 +52,7 @@ import { UsageRecordEntity } from './entities/usage-record.entity';
 import { BillingStatusGateway } from './gateways/billing-status.gateway';
 import { TenantUserGuard } from './guards/tenant-user.guard';
 import { PaymentProcessorFactory } from './payment-processors/payment-processor.factory';
+import type { PaymentProcessor } from './payment-processors/payment-processor.interface';
 import { StripePaymentProcessor } from './payment-processors/processors/stripe-payment.processor';
 import { AdminBillNowEnqueueAdapter } from './queue/admin-bill-now-enqueue.adapter';
 import { ADMIN_BILL_NOW_ENQUEUE } from './queue/admin-bill-now-enqueue.token';
@@ -366,15 +372,28 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     InvoiceCreationService,
     PaymentProcessorFactory,
     StripePaymentProcessor,
+    DynamicProviderLoaderService,
     PaymentOrchestrationService,
     {
       provide: PAYMENT_PROCESSOR_INIT,
-      useFactory: (factory: PaymentProcessorFactory, stripe: StripePaymentProcessor) => {
+      useFactory: async (
+        factory: PaymentProcessorFactory,
+        stripe: StripePaymentProcessor,
+        dynamicLoader: DynamicProviderLoaderService,
+      ) => {
         factory.registerProcessor(stripe);
+
+        await registerDynamicProviders<PaymentProcessor>({
+          envKey: 'DYNAMIC_PAYMENT_PROCESSORS',
+          criticality: 'critical',
+          register: (processor) => factory.registerProcessor(processor),
+          dynamicLoader,
+          loggerContext: 'PaymentProcessorFactory',
+        });
 
         return true;
       },
-      inject: [PaymentProcessorFactory, StripePaymentProcessor],
+      inject: [PaymentProcessorFactory, StripePaymentProcessor, DynamicProviderLoaderService],
     },
     ProvisioningService,
     SubscriptionItemServerService,
@@ -466,9 +485,12 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
   ],
 })
 export class BillingModule implements OnModuleInit {
-  constructor(private readonly providerRegistry: ProviderRegistryService) {}
+  constructor(
+    private readonly providerRegistry: ProviderRegistryService,
+    private readonly dynamicLoader: DynamicProviderLoaderService,
+  ) {}
 
-  onModuleInit(): void {
+  async onModuleInit(): Promise<void> {
     this.providerRegistry.register({
       id: 'hetzner',
       displayName: 'Hetzner Cloud',
@@ -478,6 +500,14 @@ export class BillingModule implements OnModuleInit {
       id: 'digital-ocean',
       displayName: 'DigitalOcean',
       configSchema: DIGITALOCEAN_CONFIG_SCHEMA,
+    });
+
+    await registerDynamicProviderMetadata({
+      envKey: 'DYNAMIC_BILLING_PROVIDER_METADATA',
+      criticality: 'optional',
+      register: (metadata) => this.providerRegistry.register(metadata),
+      dynamicLoader: this.dynamicLoader,
+      loggerContext: 'ProviderRegistryService',
     });
   }
 }

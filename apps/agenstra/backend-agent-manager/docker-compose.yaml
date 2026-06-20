@@ -32,6 +32,13 @@ services:
       # Cursor agent configuration
       CURSOR_API_KEY: ${CURSOR_API_KEY:-}
       AGENT_DEFAULT_IMAGE: ${AGENT_DEFAULT_IMAGE:-ghcr.io/forepath/agenstra-manager-worker:latest}
+      # Dynamic provider plugins (baked-in runtime deps and/or mounted plugin path)
+      DYNAMIC_AGENT_PROVIDERS: ${DYNAMIC_AGENT_PROVIDERS:-}
+      DYNAMIC_PIPELINE_PROVIDERS: ${DYNAMIC_PIPELINE_PROVIDERS:-}
+      DYNAMIC_CHAT_FILTERS: ${DYNAMIC_CHAT_FILTERS:-}
+      DYNAMIC_PROVIDERS_FAIL_FAST: ${DYNAMIC_PROVIDERS_FAIL_FAST:-false}
+      DYNAMIC_PROVIDER_PLUGIN_PATH: ${DYNAMIC_PROVIDER_PLUGIN_PATH:-}
+      DYNAMIC_PROVIDER_PLUGIN_INSTALL: ${DYNAMIC_PROVIDER_PLUGIN_INSTALL:-}
       # Database configuration
       DB_HOST: ${DB_HOST:-postgres}
       DB_PORT: ${DB_PORT:-5432}
@@ -79,6 +86,7 @@ services:
     volumes:
       # Mount Docker socket for Docker-in-Docker functionality
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./provider-plugins:/var/lib/forepath/provider-plugins
     depends_on:
       postgres:
         condition: service_healthy

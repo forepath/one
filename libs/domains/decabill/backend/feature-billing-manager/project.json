@@ -8,7 +8,8 @@
     "identity-backend-util-auth",
     "identity-backend-feature-auth",
     "shared-backend-util-crypto",
-    "shared-backend-util-email"
+    "shared-backend-util-email",
+    "shared-backend-util-dynamic-provider-registry"
   ],
   "targets": {
     "test": {

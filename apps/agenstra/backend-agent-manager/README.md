@@ -217,6 +217,17 @@ See the [library documentation](../../libs/domains/agenstra/backend/feature-agen
 - `RATE_LIMIT_TTL` - Time window in seconds (default: `60`)
 - `RATE_LIMIT_LIMIT` - Maximum requests per window (default: `100`)
 
+**Dynamic provider plugins (optional):**
+
+- `DYNAMIC_AGENT_PROVIDERS` - Comma-separated extra agent backend packages
+- `DYNAMIC_PIPELINE_PROVIDERS` - Comma-separated extra CI/CD provider packages
+- `DYNAMIC_CHAT_FILTERS` - Comma-separated extra chat filter packages
+- `DYNAMIC_PROVIDERS_FAIL_FAST` - When `true`, abort startup if critical dynamic providers fail to load
+- `DYNAMIC_PROVIDER_PLUGIN_PATH` - Plugin root for post-build loading (unset by default; set to `/var/lib/forepath/provider-plugins` when using the compose volume)
+- `DYNAMIC_PROVIDER_PLUGIN_INSTALL` - Startup `npm install` targets into the plugin path
+
+See `@forepath/shared/backend/util-dynamic-provider-registry` README for export contract and post-build mount workflow. Mount `./provider-plugins` (see `docker-compose.yaml`) to add providers without rebuilding the image.
+
 ## Docker Deployment
 
 The application includes Dockerfiles for containerized deployment:

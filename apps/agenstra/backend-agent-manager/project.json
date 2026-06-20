@@ -60,14 +60,27 @@
       "dependsOn": ["build"],
       "executor": "nx:run-commands",
       "options": {
-        "command": "mkdir -p dist/apps/agenstra/backend-agent-manager/src/migrations && npx tsc $(find apps/agenstra/backend-agent-manager/src/migrations -name '*.ts') --outDir dist/apps/agenstra/backend-agent-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/agenstra/backend-agent-manager/src/migrations"
+        "commands": [
+          "mkdir -p dist/apps/agenstra/backend-agent-manager/src/migrations",
+          "npx tsc $(find apps/agenstra/backend-agent-manager/src/migrations -name '*.ts') --outDir dist/apps/agenstra/backend-agent-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/agenstra/backend-agent-manager/src/migrations",
+          "npx esbuild apps/agenstra/backend-agent-manager/src/scripts/install-provider-plugins.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/apps/agenstra/backend-agent-manager/install-provider-plugins.js --tsconfig=tsconfig.base.json --packages=external"
+        ]
+      }
+    },
+    "verify-install-provider-plugins": {
+      "dependsOn": ["compile-migrations"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash tools/ci/verify-install-provider-plugins.sh dist/apps/agenstra/backend-agent-manager/install-provider-plugins.js",
+        "cwd": "{workspaceRoot}"
       }
     },
     "prune": {
       "dependsOn": [
         "prune-lockfile",
         "copy-workspace-modules",
-        "compile-migrations"
+        "compile-migrations",
+        "verify-install-provider-plugins"
       ],
       "executor": "nx:noop"
     },

@@ -1,0 +1,8 @@
+{
+  "name": "@forepath/test/app-root-fixture",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@forepath/test/runtime-provider-fixture": "file:../runtime-provider-fixture"
+  }
+}

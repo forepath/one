@@ -59,8 +59,8 @@ RUN . "${NVM_DIR}/nvm.sh" && \
 
 COPY --chown=agenstra:agenstra . /app
 
-RUN mkdir -p /data/invoices && \
-    chown -R agenstra:agenstra /data
+RUN mkdir -p /data/invoices /var/lib/forepath/provider-plugins && \
+    chown -R agenstra:agenstra /data /var/lib/forepath/provider-plugins
 
 RUN printf '%s\n' \
     '#!/bin/bash' \
@@ -69,6 +69,9 @@ RUN printf '%s\n' \
     'mkdir -p "${storage_path}"' \
     'chown -R agenstra:agenstra /data "${storage_path}"' \
     '. "${NVM_DIR}/nvm.sh"' \
+    'if [ -n "${DYNAMIC_PROVIDER_PLUGIN_PATH:-}" ]; then' \
+    '  runuser -u agenstra -g agenstra -- node install-provider-plugins.js' \
+    'fi' \
     'exec runuser -u agenstra -g agenstra -- node main.js' \
     > /usr/local/bin/docker-entrypoint.sh && \
     chmod 755 /usr/local/bin/docker-entrypoint.sh

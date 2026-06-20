@@ -1,3 +1,7 @@
+import {
+  DynamicProviderLoaderService,
+  registerDynamicProviders,
+} from '@forepath/shared/backend/util-dynamic-provider-registry';
 import { PasswordService } from '@forepath/identity/backend';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -22,6 +26,7 @@ import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
+import type { AgentProvider } from '../providers/agent-provider.interface';
 import { CursorAgentProvider } from '../providers/agents/cursor-agent.provider';
 import { OpenClawAgentProvider } from '../providers/agents/openclaw-agent.provider';
 import { OpenCodeAgentProvider } from '../providers/agents/opencode-agent.provider';
@@ -33,6 +38,8 @@ import { IncomingChatFilter } from '../providers/filters/incoming-chat-filter';
 import { NoopChatFilter } from '../providers/filters/noop-chat-filter';
 import { OutgoingChatFilter } from '../providers/filters/outgoing-chat-filter';
 import { PipelineProviderFactory } from '../providers/pipeline-provider.factory';
+import type { PipelineProvider } from '../providers/pipeline-provider.interface';
+import type { ChatFilter } from '../providers/chat-filter.interface';
 import { GitHubProvider } from '../providers/pipelines/github.provider';
 import { GitLabProvider } from '../providers/pipelines/gitlab.provider';
 import { AgentEnvironmentVariablesRepository } from '../repositories/agent-environment-variables.repository';
@@ -132,39 +139,64 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
     WorkspaceConfigurationOverridesService,
     DatabaseRegexIncomingChatFilter,
     DatabaseRegexOutgoingChatFilter,
+    DynamicProviderLoaderService,
     {
       provide: 'AGENT_PROVIDER_INIT',
-      useFactory: (
+      useFactory: async (
         factory: AgentProviderFactory,
         cursorProvider: CursorAgentProvider,
         opencodeProvider: OpenCodeAgentProvider,
         openclawProvider: OpenClawAgentProvider,
+        dynamicLoader: DynamicProviderLoaderService,
       ) => {
         factory.registerProvider(cursorProvider);
         factory.registerProvider(opencodeProvider);
         factory.registerProvider(openclawProvider);
 
+        await registerDynamicProviders<AgentProvider>({
+          envKey: 'DYNAMIC_AGENT_PROVIDERS',
+          criticality: 'optional',
+          register: (provider) => factory.registerProvider(provider),
+          dynamicLoader,
+          loggerContext: 'AgentProviderFactory',
+        });
+
         return true;
       },
-      inject: [AgentProviderFactory, CursorAgentProvider, OpenCodeAgentProvider, OpenClawAgentProvider],
+      inject: [
+        AgentProviderFactory,
+        CursorAgentProvider,
+        OpenCodeAgentProvider,
+        OpenClawAgentProvider,
+        DynamicProviderLoaderService,
+      ],
     },
     {
       provide: 'PIPELINE_PROVIDER_INIT',
-      useFactory: (
+      useFactory: async (
         factory: PipelineProviderFactory,
         githubProvider: GitHubProvider,
         gitlabProvider: GitLabProvider,
+        dynamicLoader: DynamicProviderLoaderService,
       ) => {
         factory.registerProvider(githubProvider);
         factory.registerProvider(gitlabProvider);
 
+        await registerDynamicProviders<PipelineProvider>({
+          envKey: 'DYNAMIC_PIPELINE_PROVIDERS',
+          criticality: 'optional',
+          register: (provider) => factory.registerProvider(provider),
+          dynamicLoader,
+          loggerContext: 'PipelineProviderFactory',
+        });
+
         return true;
       },
-      inject: [PipelineProviderFactory, GitHubProvider, GitLabProvider],
+      inject: [PipelineProviderFactory, GitHubProvider, GitLabProvider, DynamicProviderLoaderService],
     },
     {
       provide: 'CHAT_FILTER_INIT',
-      useFactory: (
+      useFactory: async (
         factory: ChatFilterFactory,
         noopFilter: NoopChatFilter,
         incomingFilter: IncomingChatFilter,
@@ -172,6 +204,7 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
         bidirectionalFilter: BidirectionalChatFilter,
         dbIncoming: DatabaseRegexIncomingChatFilter,
         dbOutgoing: DatabaseRegexOutgoingChatFilter,
+        dynamicLoader: DynamicProviderLoaderService,
       ) => {
         factory.registerFilter(noopFilter);
         factory.registerFilter(incomingFilter);
@@ -179,6 +212,14 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
         factory.registerFilter(bidirectionalFilter);
         factory.registerFilter(dbIncoming);
         factory.registerFilter(dbOutgoing);
+
+        await registerDynamicProviders<ChatFilter>({
+          envKey: 'DYNAMIC_CHAT_FILTERS',
+          criticality: 'optional',
+          register: (filter) => factory.registerFilter(filter),
+          dynamicLoader,
+          loggerContext: 'ChatFilterFactory',
+        });
 
         return true;
       },
@@ -190,6 +231,7 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
         BidirectionalChatFilter,
         DatabaseRegexIncomingChatFilter,
         DatabaseRegexOutgoingChatFilter,
+        DynamicProviderLoaderService,
       ],
     },
   ],

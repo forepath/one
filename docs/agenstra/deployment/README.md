@@ -51,6 +51,7 @@ Complete environment variables reference:
 - Authentication configuration
 - CORS and rate limiting
 - Server provisioning
+- [Dynamic provider plugins](../features/dynamic-provider-plugins.md) — optional runtime extensions for Agenstra backends
 
 ## Deployment Architecture
 

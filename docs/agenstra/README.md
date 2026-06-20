@@ -68,6 +68,7 @@ Comprehensive feature documentation:
 - [VNC Browser Access](./features/vnc-browser-access.md) - Graphical browser access via VNC and noVNC
 - [Authentication](./features/authentication.md) - Multiple authentication methods with configurable user registration
 - [Atlassian import](./features/atlassian-import.md) - Jira and Confluence imports into controller tickets and knowledge (admin)
+- [Dynamic provider plugins](./features/dynamic-provider-plugins.md) - Runtime provider extensions for controller and manager (baked-in or mounted)
 
 ### [Deployment](./deployment/README.md)
 

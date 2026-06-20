@@ -107,6 +107,9 @@
       ],
       "@forepath/decabill/frontend/feature-billing-console": [
         "libs/domains/decabill/frontend/feature-billing-console/src/index.ts"
+      ],
+      "@forepath/shared/backend/util-dynamic-provider-registry": [
+        "libs/domains/shared/backend/util-dynamic-provider-registry/src/index.ts"
       ]
     }
   },

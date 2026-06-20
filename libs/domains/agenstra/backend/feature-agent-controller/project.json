@@ -4,7 +4,10 @@
   "sourceRoot": "libs/domains/agenstra/backend/feature-agent-controller/src",
   "projectType": "library",
   "tags": ["domain:agenstra", "scope:backend", "type:feature"],
-  "implicitDependencies": ["agenstra-backend-feature-agent-manager"],
+  "implicitDependencies": [
+    "agenstra-backend-feature-agent-manager",
+    "shared-backend-util-dynamic-provider-registry"
+  ],
   "targets": {
     "test": {
       "executor": "@nx/jest:jest",
