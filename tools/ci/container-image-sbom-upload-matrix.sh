@@ -15,6 +15,7 @@ fi
 KNOWN_IMAGE_NAMES=(
   decabill-billing-console-server
   decabill-billing-api
+  decabill-landingpage-server
   decabill-docs-server
   agenstra-billing-console-server
   agenstra-console-server

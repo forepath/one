@@ -1,0 +1,55 @@
+<div class="table-responsive comparison-matrix-table shadow-sm border rounded-3">
+  <table class="table table-hover mb-0 align-middle rounded-3">
+    <thead>
+      <tr>
+        <th
+          scope="col"
+          class="comparison-matrix-col-capability p-3"
+          i18n="@@featureDecabillComparison-matrixColCapability"
+        >
+          Capability
+        </th>
+        <th
+          scope="col"
+          class="text-center comparison-matrix-col-vendor bg-body-tertiary p-3"
+          i18n="@@featureDecabillComparison-matrixColDecabill"
+        >
+          Decabill
+        </th>
+        <th scope="col" class="text-center comparison-matrix-col-vendor p-3">{{ competitorColumnLabel }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows; track row.dimension) {
+        <tr>
+          <td class="px-4 py-3">
+            <div class="fw-semibold">{{ row.dimension }}</div>
+            <div class="small text-secondary mt-1 comparison-matrix-question">{{ row.question }}</div>
+          </td>
+          <td class="text-center bg-body-tertiary px-4 py-3">
+            @let db = matrixStrengthVisual(row.decabill);
+            <span
+              class="comparison-matrix-icon d-inline-flex justify-content-center"
+              [attr.title]="row.decabillTooltip"
+              role="img"
+              [attr.aria-label]="db.label + '. Decabill. ' + row.dimension"
+            >
+              <i class="bi fs-4" [ngClass]="[db.iconClass, db.colorClass]" aria-hidden="true"></i>
+            </span>
+          </td>
+          <td class="text-center px-4 py-3">
+            @let co = matrixStrengthVisual(row.competitor);
+            <span
+              class="comparison-matrix-icon d-inline-flex justify-content-center"
+              [attr.title]="row.competitorTooltip"
+              role="img"
+              [attr.aria-label]="co.label + '. ' + competitorColumnLabel + '. ' + row.dimension"
+            >
+              <i class="bi fs-4" [ngClass]="[co.iconClass, co.colorClass]" aria-hidden="true"></i>
+            </span>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

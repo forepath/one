@@ -1,5 +1,5 @@
-import { Environment } from './environment.interface';
 import { decabillAuthMarketing } from './auth-marketing.decabill';
+import { Environment } from './environment.interface';
 
 export const environment: Environment = {
   production: true,
@@ -12,6 +12,7 @@ export const environment: Environment = {
     restApiUrl: 'http://host.docker.internal:3200/api',
     frontendUrl: 'http://host.docker.internal:4500',
     websocketUrl: 'http://host.docker.internal:8082/billing',
+    tenantId: 'decabill',
   },
   authentication: {
     type: 'users',

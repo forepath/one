@@ -239,17 +239,35 @@
       <trans-unit id="featureForepath-navConsulting" datatype="html">
         <source>Consulting</source>
         </trans-unit>
+      <trans-unit id="featureForepath-navConsultingCaption" datatype="html">
+        <source>Shape strategy and architecture with your team</source>
+        </trans-unit>
       <trans-unit id="featureForepath-navItSystems" datatype="html">
         <source>IT Systems</source>
         </trans-unit>
+      <trans-unit id="featureForepath-navItSystemsCaption" datatype="html">
+        <source>Run and support platforms with operators</source>
+        </trans-unit>
       <trans-unit id="featureForepath-navSoftwareDevelopment" datatype="html">
         <source>Software Development</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navSoftwareDevelopmentCaption" datatype="html">
+        <source>Ship and own software in production</source>
         </trans-unit>
       <trans-unit id="featureForepath-navProducts" datatype="html">
         <source>Products</source>
         </trans-unit>
       <trans-unit id="featureForepath-navAgenstra" datatype="html">
         <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navAgenstraCaption" datatype="html">
+        <source>Run and ship with coding agents</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navDecabill" datatype="html">
+        <source>Decabill</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navDecabillCaption" datatype="html">
+        <source>Bill services and SaaS with one platform</source>
         </trans-unit>
       <trans-unit id="featureForepath-navOne" datatype="html">
         <source>One</source>
@@ -280,6 +298,9 @@
         </trans-unit>
       <trans-unit id="featureForepath-footerAgenstraLink" datatype="html">
         <source>Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-footerDecabillLink" datatype="html">
+        <source>Decabill</source>
         </trans-unit>
       <trans-unit id="featureForepath-footerCompany" datatype="html">
         <source>Company</source>

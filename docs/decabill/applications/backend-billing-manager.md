@@ -187,6 +187,18 @@ Disable in production unless tightly access-controlled.
 - **[Billing Administration](../features/billing-administration.md)** - Admin features
 - **[API Reference](../api-reference/README.md)** - OpenAPI and AsyncAPI
 
+## License
+
+This application is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+Copyright (c) 2025 IPvX UG (haftungsbeschränkt)
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the [GNU Affero General Public License](https://www.gnu.org/licenses/agpl-3.0.html) for more details.
+
+**Note**: This component is sublicensed under AGPL-3.0, while other Decabill components (such as the billing console) may use different licenses. Modifications and derivative works of this backend must remain under AGPL-3.0 and must be made available to users, including when accessed over a network.
+
 ---
 
 _Canonical OpenAPI source: `libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml`_

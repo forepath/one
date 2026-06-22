@@ -1,0 +1,997 @@
+<!-- Hero -->
+<section id="hero" class="pt-10 py-lg-6 bg-dark text-white grid-section">
+  <div class="container hero-content grid-section__container grid-section__container--hero-top">
+    <div class="row justify-content-center">
+      <div class="col-12 text-center hero-container">
+        <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureDecabillHome-heroTitle">
+          <span class="text-primary">Billing for agencies</span> and digital products
+        </h1>
+        <p class="hero-lead lead fs-5 mb-4 mx-auto" i18n="@@featureDecabillHome-heroLead">
+          Decabill is one platform for agencies and digital product teams. Bill client services and projects, SaaS
+          subscriptions, and managed hosting without stitching together separate tools.
+        </p>
+        <div class="d-flex gap-2 justify-content-center flex-wrap hero-feature-badges mb-5">
+          <span class="badge bg-success info-badge px-3 py-2">
+            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+            <span i18n="@@featureDecabillHome-heroBadge1">Services &amp; projects</span>
+          </span>
+          <span class="badge bg-success info-badge px-3 py-2">
+            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+            <span i18n="@@featureDecabillHome-heroBadge2">SaaS subscriptions</span>
+          </span>
+          <span class="badge bg-success info-badge px-3 py-2">
+            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+            <span i18n="@@featureDecabillHome-heroBadge3">Managed hosting</span>
+          </span>
+          <span class="badge bg-success info-badge px-3 py-2">
+            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+            <span i18n="@@featureDecabillHome-heroBadge4">ZUGFeRD invoicing</span>
+          </span>
+          <span class="badge bg-success info-badge px-3 py-2">
+            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+            <span i18n="@@featureDecabillHome-heroBadge5">Stripe payments</span>
+          </span>
+          <span class="badge bg-success info-badge px-3 py-2">
+            <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+            <span i18n="@@featureDecabillHome-heroBadge6">Multi-tenant</span>
+          </span>
+        </div>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <a
+            href="https://docs.decabill.com/en/docs/getting-started"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary btn-lg px-4 py-3 rounded-3 cta-btn cta-btn-primary"
+            i18n="@@featureDecabillHome-getStartedHero"
+          >
+            <i class="bi bi-rocket-takeoff me-2" aria-hidden="true"></i>
+            Get started
+          </a>
+          <a
+            routerLink="."
+            fragment="solution"
+            class="btn btn-outline-light btn-lg px-4 py-3 rounded-3 cta-btn cta-btn-secondary"
+            i18n="@@featureDecabillHome-productTour"
+          >
+            <i class="bi bi-trophy me-2" aria-hidden="true"></i>
+            View product tour
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container grid-section__container grid-section__container--hero-bottom">
+    <div class="row">
+      <div class="col-md-12 intent-cards" (mouseenter)="pauseAutoplay()" (mouseleave)="resumeAutoplay()">
+        <img
+          src="assets/images/screenshots/overview-dark_framed.png"
+          alt="Decabill overview dashboard with cloud instances"
+          class="img-fluid intent-card"
+          [class.d-none]="activeSlide() !== 1"
+          i18n-alt="@@featureDecabillHome-heroSlideOverview"
+        />
+        <img
+          src="assets/images/screenshots/plans-dark_framed.png"
+          alt="Decabill plans and subscriptions"
+          class="img-fluid intent-card"
+          [class.d-none]="activeSlide() !== 2"
+          i18n-alt="@@featureDecabillHome-heroSlidePlans"
+        />
+        <img
+          src="assets/images/screenshots/billing-dark_framed.png"
+          alt="Decabill customer billing and invoices"
+          class="img-fluid intent-card"
+          [class.d-none]="activeSlide() !== 3"
+          i18n-alt="@@featureDecabillHome-heroSlideBilling"
+        />
+        <img
+          src="assets/images/screenshots/admin-dark_framed.png"
+          alt="Decabill admin billing and revenue statistics"
+          class="img-fluid intent-card"
+          [class.d-none]="activeSlide() !== 4"
+          i18n-alt="@@featureDecabillHome-heroSlideAdmin"
+        />
+        <div
+          class="intent-card-progress bg-body-tertiary"
+          style="--progress: {{ (activeSlide() / 4) * 75 }}px"
+          (click)="scrollToIntent($event)"
+        ></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Solution (main claim) -->
+<section id="solution" class="py-10 bg-white grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 mx-auto section-title-lg text-dark" i18n="@@featureDecabillHome-solutionTitle">
+        Turn revenue complexity into billing you can trust
+      </h2>
+      <p class="lead mx-auto text-muted section-lead mb-0" i18n="@@featureDecabillHome-solutionLead">
+        Agencies and product teams sell in more than one way. Decabill helps you keep subscriptions, project work, and
+        hosting revenue on one reliable foundation instead of stitching together separate tools.
+      </p>
+    </div>
+
+    <div
+      class="card border rounded-3 shadow-sm overflow-hidden mb-5 home-solution-studio card-capability card-capability-primary"
+    >
+      <div class="row g-0 align-items-center">
+        <div class="col-lg-8 p-4 p-lg-5">
+          <h3 class="h4 fw-semibold mb-3" i18n="@@featureDecabillHome-solutionStudioTitle">
+            Meet the modern billing system
+          </h3>
+          <p class="text-muted mb-0 lh-lg" i18n="@@featureDecabillHome-solutionStudioLead">
+            Your organization's home for revenue operations: publish what you sell, let customers subscribe and pay, and
+            keep finance and support aligned in one experience without rebuilding your product stack around billing glue
+            code.
+          </p>
+        </div>
+        <div class="col-lg-4 p-4 p-lg-5 d-flex align-items-center justify-content-center border-start">
+          <div class="text-center">
+            <i class="bi bi-receipt-cutoff text-primary icon-xl mb-3 d-block" aria-hidden="true"></i>
+            <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionStudioTagline">
+              One platform. Multiple models. Clear books.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ul
+      class="nav nav-pills nav-fill flex-wrap gap-2 justify-content-center mb-4 portal-page-tabs home-solution-tabs"
+      role="tablist"
+    >
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active px-3 py-2"
+          id="solution-tab-unified"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-unified"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-unified"
+          aria-selected="true"
+        >
+          <i class="bi bi-layers me-2" aria-hidden="true"></i>
+          <span i18n="@@featureDecabillHome-solutionAdvantageTabUnified">Unified revenue</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-compliance"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-compliance"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-compliance"
+          aria-selected="false"
+        >
+          <i class="bi bi-shield-check me-2" aria-hidden="true"></i>
+          <span i18n="@@featureDecabillHome-solutionAdvantageTabCompliance">Trust &amp; compliance</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-customers"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-customers"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-customers"
+          aria-selected="false"
+        >
+          <i class="bi bi-person-check me-2" aria-hidden="true"></i>
+          <span i18n="@@featureDecabillHome-solutionAdvantageTabCustomers">Customer clarity</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-operations"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-operations"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-operations"
+          aria-selected="false"
+        >
+          <i class="bi bi-speedometer2 me-2" aria-hidden="true"></i>
+          <span i18n="@@featureDecabillHome-solutionAdvantageTabOperations">Operational calm</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-scale"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-scale"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-scale"
+          aria-selected="false"
+        >
+          <i class="bi bi-graph-up-arrow me-2" aria-hidden="true"></i>
+          <span i18n="@@featureDecabillHome-solutionAdvantageTabScale">Built to scale</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content home-solution-panels">
+      <div
+        class="tab-pane fade show active"
+        id="solution-pane-unified"
+        role="tabpanel"
+        aria-labelledby="solution-tab-unified"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
+          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-layers-fill text-primary icon-xl"></i>
+            </div>
+            <h3
+              class="h4 fw-semibold mb-3 text-center text-lg-start"
+              i18n="@@featureDecabillHome-solutionAdvantageUnifiedHeadline"
+            >
+              One system for how you actually sell
+            </h3>
+            <p
+              class="text-muted mb-0 text-center text-lg-start"
+              i18n="@@featureDecabillHome-solutionAdvantageUnifiedLead"
+            >
+              Leaders stop reconciling agency spreadsheets, SaaS dashboards, and hosting invoices when every revenue
+              stream shares the same billing core.
+            </p>
+          </div>
+          <div class="home-solution-panel-bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-sm-3 g-3">
+              <div class="col">
+                <i class="bi bi-briefcase text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageUnifiedBenefit1Title">
+                  Fewer handoffs
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageUnifiedBenefit1Desc">
+                  Project milestones, recurring plans, and infrastructure products bill through one catalog instead of
+                  three disconnected workflows.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-arrow-left-right text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageUnifiedBenefit2Title">
+                  Consistent customer records
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageUnifiedBenefit2Desc">
+                  The same profile powers orders, invoices, and support context whether the customer buys a retainer or
+                  a hosting plan.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-puzzle text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageUnifiedBenefit3Title">
+                  Less integration debt
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageUnifiedBenefit3Desc">
+                  Your marketing site and product surface stay thin clients over a documented API instead of bespoke
+                  billing glue.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="solution-pane-compliance"
+        role="tabpanel"
+        aria-labelledby="solution-tab-compliance"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
+          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-shield-check text-primary icon-xl"></i>
+            </div>
+            <h3
+              class="h4 fw-semibold mb-3 text-center text-lg-start"
+              i18n="@@featureDecabillHome-solutionAdvantageComplianceHeadline"
+            >
+              Invoices your finance team can stand behind
+            </h3>
+            <p
+              class="text-muted mb-0 text-center text-lg-start"
+              i18n="@@featureDecabillHome-solutionAdvantageComplianceLead"
+            >
+              Compliance is not a bolt-on PDF export. Decabill treats issuance, payment reconciliation, and auditability
+              as part of how billing runs every day.
+            </p>
+          </div>
+          <div class="home-solution-panel-bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-sm-3 g-3">
+              <div class="col">
+                <i class="bi bi-file-earmark-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageComplianceBenefit1Title">
+                  Defensible documents
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageComplianceBenefit1Desc">
+                  ZUGFeRD-style invoices give finance structured data and customer-ready PDFs from the same source of
+                  truth.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-credit-card text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageComplianceBenefit2Title">
+                  Reconciliation you can explain
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageComplianceBenefit2Desc">
+                  Payment events tie back to issued invoices so open balances do not linger as mystery line items.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-clipboard-data text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageComplianceBenefit3Title">
+                  Audit-ready operations
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageComplianceBenefit3Desc">
+                  Admin workflows for manual invoices and adjustments stay inside the same system customers see, not in
+                  side spreadsheets.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="solution-pane-customers"
+        role="tabpanel"
+        aria-labelledby="solution-tab-customers"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
+          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-person-check-fill text-primary icon-xl"></i>
+            </div>
+            <h3
+              class="h4 fw-semibold mb-3 text-center text-lg-start"
+              i18n="@@featureDecabillHome-solutionAdvantageCustomersHeadline"
+            >
+              Self-service that earns customer confidence
+            </h3>
+            <p
+              class="text-muted mb-0 text-center text-lg-start"
+              i18n="@@featureDecabillHome-solutionAdvantageCustomersLead"
+            >
+              Customers expect clarity about what they bought, what they owe, and how to pay. Decabill gives them a
+              billing experience that feels intentional, not like an afterthought.
+            </p>
+          </div>
+          <div class="home-solution-panel-bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-sm-3 g-3">
+              <div class="col">
+                <i class="bi bi-box-seam text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageCustomersBenefit1Title">
+                  Transparent subscriptions
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageCustomersBenefit1Desc">
+                  Plans, status, and lifecycle actions live in one place so customers are not chasing email threads for
+                  basic account changes.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-receipt text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageCustomersBenefit2Title">
+                  Invoices they understand
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageCustomersBenefit2Desc">
+                  Accumulated billing days produce fewer surprises: one clear invoice instead of a drip of
+                  micro-charges.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-headset text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageCustomersBenefit3Title">
+                  Less support load
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageCustomersBenefit3Desc">
+                  When customers can pay, download, and manage subscriptions themselves, your team answers fewer
+                  repetitive billing tickets.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="solution-pane-operations"
+        role="tabpanel"
+        aria-labelledby="solution-tab-operations"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
+          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-speedometer2 text-primary icon-xl"></i>
+            </div>
+            <h3
+              class="h4 fw-semibold mb-3 text-center text-lg-start"
+              i18n="@@featureDecabillHome-solutionAdvantageOperationsHeadline"
+            >
+              Your team stays in control as volume grows
+            </h3>
+            <p
+              class="text-muted mb-0 text-center text-lg-start"
+              i18n="@@featureDecabillHome-solutionAdvantageOperationsLead"
+            >
+              Operations should feel calm even when catalogs, tenants, and provisioning queues get busier. Decabill
+              gives operators one cockpit instead of context switching across tools.
+            </p>
+          </div>
+          <div class="home-solution-panel-bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-sm-3 g-3">
+              <div class="col">
+                <i class="bi bi-kanban text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageOperationsBenefit1Title">
+                  One operations view
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageOperationsBenefit1Desc">
+                  Catalog management, manual billing, and customer profiles share the same admin experience your team
+                  already uses daily.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-broadcast text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageOperationsBenefit2Title">
+                  Live status, less guessing
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageOperationsBenefit2Desc">
+                  Real-time dashboard updates mean provisioning and subscription changes surface before customers open a
+                  ticket.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-lightning-charge text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageOperationsBenefit3Title">
+                  Decisions without fire drills
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageOperationsBenefit3Desc">
+                  Bill-now, backorder retry, and KPI views help operators act on billing exceptions before they become
+                  month-end crises.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="solution-pane-scale"
+        role="tabpanel"
+        aria-labelledby="solution-tab-scale"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
+          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+            <div
+              class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
+              aria-hidden="true"
+            >
+              <i class="bi bi-graph-up-arrow text-primary icon-xl"></i>
+            </div>
+            <h3
+              class="h4 fw-semibold mb-3 text-center text-lg-start"
+              i18n="@@featureDecabillHome-solutionAdvantageScaleHeadline"
+            >
+              Room to add brands without rebuilding billing
+            </h3>
+            <p
+              class="text-muted mb-0 text-center text-lg-start"
+              i18n="@@featureDecabillHome-solutionAdvantageScaleLead"
+            >
+              Agencies run multiple client brands. Product companies expand into hosting. Decabill is built for that
+              trajectory without forcing a rip-and-replace every time the portfolio grows.
+            </p>
+          </div>
+          <div class="home-solution-panel-bottom p-4 p-lg-5">
+            <div class="row row-cols-1 row-cols-sm-3 g-3">
+              <div class="col">
+                <i class="bi bi-diagram-3 text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageScaleBenefit1Title">
+                  Multi-brand by design
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageScaleBenefit1Desc">
+                  Tenant isolation keeps catalogs, customers, and payment provider configuration separated while
+                  operations stay in one platform.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-plugin text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageScaleBenefit2Title">
+                  Extend without forking
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageScaleBenefit2Desc">
+                  Provider plugins and payment processors load at runtime so new integrations do not mean maintaining
+                  custom billing forks.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-cloud-arrow-up text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageScaleBenefit3Title">
+                  Infrastructure when you need it
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionAdvantageScaleBenefit3Desc">
+                  Optional provisioning connects recurring revenue to hosted product stacks as your offers mature, not
+                  before you are ready.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it fits -->
+<section id="how-it-works" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 mx-auto section-title-lg text-dark" i18n="@@featureDecabillHome-howTitle">
+        How Decabill fits the way you already work
+      </h2>
+      <p class="lead mx-auto text-muted section-lead mb-0" i18n="@@featureDecabillHome-howLead">
+        Billing should meet customers where they pay and meet finance where they close the month. Decabill connects your
+        revenue motion to the providers and systems that already run your business.
+      </p>
+    </div>
+
+    <div class="row g-0 align-items-stretch home-how-row">
+      <div class="col-lg-6 home-how-copy">
+        <h3 class="h4 fw-semibold mb-3" i18n="@@featureDecabillHome-howIntegrationsTitle">Integrations that matter</h3>
+        <p class="text-muted mb-4" i18n="@@featureDecabillHome-howIntegrationsLead">
+          Plug in payments, hosting, identity, and bookkeeping without rebuilding your stack around one-off scripts for
+          every new product line.
+        </p>
+        <ul class="list-unstyled mb-5">
+          <li class="mb-2 d-flex gap-2">
+            <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+            <span i18n="@@featureDecabillHome-howPoint1">Customers pay through the processors you already trust</span>
+          </li>
+          <li class="mb-2 d-flex gap-2">
+            <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+            <span i18n="@@featureDecabillHome-howPoint2"
+              >Hosting products provision on the clouds your team already operates</span
+            >
+          </li>
+          <li class="d-flex gap-2">
+            <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i>
+            <span i18n="@@featureDecabillHome-howPoint3"
+              >Finance gets a clean handoff to DATEV when it is time to close the books</span
+            >
+          </li>
+        </ul>
+
+        <article class="card border home-how-example p-4">
+          <p
+            class="small fw-semibold text-primary text-uppercase letter-spacing-wide mb-2"
+            i18n="@@featureDecabillHome-howExampleLabel"
+          >
+            See it in practice
+          </p>
+          <h4 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-howExampleTitle">
+            An agency that ships SaaS and managed hosting
+          </h4>
+          <p class="small text-muted mb-4" i18n="@@featureDecabillHome-howExampleLead">
+            Customers subscribe from the marketing site, pay through Stripe, and receive compliant invoices. Hosting
+            orders provision on Hetzner when plans include infrastructure. At month end, finance exports to DATEV
+            without re-keying line items from side spreadsheets.
+          </p>
+          <div class="d-flex flex-wrap gap-2 align-items-center small text-muted">
+            <span
+              class="badge rounded-pill bg-body-tertiary text-dark border"
+              i18n="@@featureDecabillHome-howExampleStep1"
+              >Subscribe</span
+            >
+            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            <span
+              class="badge rounded-pill bg-body-tertiary text-dark border"
+              i18n="@@featureDecabillHome-howExampleStep2"
+              >Pay</span
+            >
+            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            <span
+              class="badge rounded-pill bg-body-tertiary text-dark border"
+              i18n="@@featureDecabillHome-howExampleStep3"
+              >Provision</span
+            >
+            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            <span
+              class="badge rounded-pill bg-body-tertiary text-dark border"
+              i18n="@@featureDecabillHome-howExampleStep4"
+              >Export</span
+            >
+          </div>
+        </article>
+      </div>
+
+      <div class="col-lg-6 home-integration-grid-col">
+        <div
+          class="home-integration-grid"
+          role="list"
+          i18n-aria-label="@@featureDecabillHome-howIntegrationGridLabel"
+          aria-label="Billing integrations and connected systems"
+        >
+          @for (integration of billingIntegrations; track integration.id) {
+            <div
+              class="home-integration-grid__cell"
+              role="listitem"
+              [style.background-color]="integration.brandColor"
+              [attr.aria-label]="integration.name"
+            >
+              @if (integration.logoUrl) {
+                <img
+                  [src]="integration.logoUrl"
+                  [alt]="integration.name"
+                  class="home-integration-grid__logo"
+                  [ngClass]="integration.logoClass"
+                  loading="lazy"
+                />
+              } @else {
+                <span class="home-integration-grid__wordmark">{{ integration.name }}</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Compliance by design -->
+<section id="compliance" class="py-10 bg-primary text-white home-compliance grid-section">
+  <div class="container grid-section__container">
+    <div class="row justify-content-center text-center pb-10">
+      <div class="col-lg-9">
+        <img
+          src="assets/images/icon_eu.svg"
+          alt=""
+          class="home-compliance-eu-icon mb-3"
+          aria-hidden="true"
+          width="72"
+          height="72"
+        />
+        <h2 class="h2 fw-semibold mb-4" i18n="@@featureDecabillHome-complianceTitle">Compliance by design</h2>
+        <p class="lead mb-0 mx-auto home-compliance-lead" i18n="@@featureDecabillHome-complianceLead">
+          Integrations get revenue moving, and compliance keeps it defensible. Decabill builds structured invoicing,
+          reconciliation, and auditable billing into how the platform works. Those capabilities are not exports you add
+          later. We bill our own products on Decabill, so what you adopt is the same stack we renew, reconcile, and
+          maintain every month.
+        </p>
+      </div>
+    </div>
+    <div class="row g-4 g-lg-5 justify-content-center">
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
+          <i class="bi bi-shield-check text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2 text-dark" i18n="@@featureDecabillHome-compliancePoint1Title">
+            Built in, not bolted on
+          </h3>
+          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-compliancePoint1Desc">
+            Invoices, payments, and audit trails share one system from issuance through finance export. You do not need
+            parallel spreadsheets holding the real numbers.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
+          <i class="bi bi-arrow-repeat text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2 text-dark" i18n="@@featureDecabillHome-compliancePoint2Title">
+            We run what we ship
+          </h3>
+          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-compliancePoint2Desc">
+            Our own subscriptions, plan changes, and customer billing run through Decabill. That is living proof the
+            workflows you sell with actually hold up in production.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
+          <i class="bi bi-tools text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2 text-dark" i18n="@@featureDecabillHome-compliancePoint3Title">
+            Maintained where it counts
+          </h3>
+          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-compliancePoint3Desc">
+            Improvements land in the codebase we operate every day, not in a sandbox demo. Compliance paths stay current
+            as regulations and integrations evolve.
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Built for how you sell -->
+<section id="use-cases" class="py-10 bg-white home-sell grid-section">
+  <div class="container grid-section__container">
+    <div class="row justify-content-center text-center pb-10">
+      <div class="col-lg-9">
+        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featureDecabillHome-useCasesTitle">Built for how you sell</h2>
+        <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureDecabillHome-useCasesLead">
+          Decabill is where your team runs revenue operations. It sits beside the products and services you already sell
+          so billing follows how agencies and product teams actually go to market.
+        </p>
+      </div>
+    </div>
+
+    <div class="home-sell-bento">
+      <div class="row g-3 g-lg-4">
+        <div class="col-lg-8">
+          <div
+            class="card border rounded-3 shadow-sm overflow-hidden h-100 home-sell-visual card-capability card-capability-primary"
+          >
+            <div class="p-3 p-lg-4 pb-0">
+              <span class="badge bg-primary mb-3 bento-badge" i18n="@@featureDecabillHome-sellVisualBadge"
+                >Configure plans and pricing</span
+              >
+            </div>
+            <img
+              src="assets/images/screenshots/product-config-dark_framed.png"
+              alt="Decabill service plan configuration"
+              class="img-fluid w-100 home-sell-screenshot"
+              i18n-alt="@@featureDecabillHome-sellProductConfigAlt"
+            />
+          </div>
+        </div>
+        <div class="col-lg-4 d-flex flex-column gap-3">
+          <article class="card border rounded-3 shadow-sm p-4 h-100 home-sell-tile-subtle">
+            <i class="bi bi-diagram-3 text-primary icon-md mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-sellTile1Title">One revenue home</h3>
+            <p class="small text-muted mb-0" i18n="@@featureDecabillHome-sellItem1">
+              Keep subscriptions, projects, and hosting on shared customer and billing data instead of separate tools
+            </p>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-4 h-100 home-sell-tile-subtle">
+            <i class="bi bi-box-seam text-primary icon-md mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-sellTile2Title">Plans customers trust</h3>
+            <p class="small text-muted mb-0" i18n="@@featureDecabillHome-sellItem2">
+              Publish offerings and checkout flows that match how you price without custom glue code
+            </p>
+          </article>
+        </div>
+      </div>
+      <div class="row g-3 g-lg-4 mt-0 mt-lg-1">
+        <div class="col-md-4">
+          <article class="card border rounded-3 shadow-sm p-4 h-100 home-sell-tile-subtle">
+            <i class="bi bi-person-badge text-primary icon-md mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-sellTile3Title">Self-service by default</h3>
+            <p class="small text-muted mb-0" i18n="@@featureDecabillHome-sellItem3">
+              Let customers subscribe, pay, and manage billing without waiting on your team
+            </p>
+          </article>
+        </div>
+        <div class="col-md-4">
+          <article class="card border rounded-3 shadow-sm p-4 h-100 home-sell-tile-subtle">
+            <i class="bi bi-receipt text-primary icon-md mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-sellTile4Title">Finance in sync</h3>
+            <p class="small text-muted mb-0" i18n="@@featureDecabillHome-sellItem4">
+              Reconciliation and exports sit beside sales so numbers match what customers see
+            </p>
+          </article>
+        </div>
+        <div class="col-md-4">
+          <article class="card border rounded-3 shadow-sm p-4 h-100 home-sell-tile-subtle">
+            <i class="bi bi-building text-primary icon-md mb-3" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-sellTile5Title">Room to diversify</h3>
+            <p class="small text-muted mb-0" i18n="@@featureDecabillHome-sellItem5">
+              Add brands, products, and integrations as your mix changes without starting over
+            </p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- One platform, flexible surfaces -->
+<section id="ecosystem" class="py-10 bg-body-tertiary home-ecosystem grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featureDecabillHome-ecosystemTitle">
+        One platform, flexible surfaces
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureDecabillHome-ecosystemLead">
+        Decabill is the billing platform your team runs revenue on. Deploy the open source stack on your infrastructure
+        or choose Decabill Cloud when you want us to operate the platform.
+      </p>
+    </div>
+
+    <article
+      class="card border rounded-3 shadow-sm home-ecosystem-studio card-capability card-capability-primary mb-4 overflow-hidden"
+    >
+      <div class="row g-0 align-items-lg-stretch">
+        <div class="col-lg-6 p-4 p-lg-5 d-flex flex-column card-capability-primary">
+          <span class="badge bg-primary mb-3 align-self-start" i18n="@@featureDecabillHome-ecosystemOpenSourceBadge"
+            >Open source</span
+          >
+          <h3 class="h3 fw-semibold mb-3" i18n="@@featureDecabillHome-ecosystemOpenSourceTitle">
+            Decabill Open Source
+          </h3>
+          <p class="text-muted mb-4 lh-lg" i18n="@@featureDecabillHome-ecosystemOpenSourceLead">
+            The full billing stack you run yourself: billing manager, customer console, and landing surfaces in one
+            deployable platform your team controls end to end.
+          </p>
+          <p class="small text-muted mb-4" i18n="@@featureDecabillHome-ecosystemOpenSourceAside">
+            Self-hosted on your infrastructure. Same product capabilities without handing operations to a vendor.
+          </p>
+          <div class="mt-auto">
+            <a
+              href="https://docs.decabill.com/en/docs/getting-started"
+              class="btn btn-primary rounded-3"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featureDecabillHome-ecosystemOpenSourceCta"
+              >Get started</a
+            >
+          </div>
+        </div>
+        <div class="col-lg-6 home-ecosystem-studio-surfaces border-start bg-white p-4 p-lg-4">
+          <p class="small fw-semibold text-muted mb-3 mb-lg-4" i18n="@@featureDecabillHome-ecosystemAdvantagesLabel">
+            Why open source
+          </p>
+          <div class="d-flex flex-column gap-3">
+            <article class="home-ecosystem-surface rounded-3 border p-3 p-lg-4">
+              <div class="d-flex gap-3">
+                <i class="bi bi-hdd-stack text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <div>
+                  <h4 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-ecosystemAdvantage1Title">
+                    Your infrastructure
+                  </h4>
+                  <p class="small text-muted mb-3" i18n="@@featureDecabillHome-ecosystemAdvantage1Desc">
+                    Keep billing data, payment configuration, and tenant isolation inside the environments you already
+                    operate and audit.
+                  </p>
+                  <a
+                    href="https://docs.decabill.com/en/docs/architecture/system-overview"
+                    class="small fw-semibold text-decoration-none"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    i18n="@@featureDecabillHome-ecosystemAdvantage1Cta"
+                    >Read architecture docs</a
+                  >
+                </div>
+              </div>
+            </article>
+            <article class="home-ecosystem-surface rounded-3 border p-3 p-lg-4">
+              <div class="d-flex gap-3">
+                <i class="bi bi-code-slash text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <div>
+                  <h4 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-ecosystemAdvantage2Title">
+                    Extend on your terms
+                  </h4>
+                  <p class="small text-muted mb-3" i18n="@@featureDecabillHome-ecosystemAdvantage2Desc">
+                    API-first design, provider plugins, and Docker-based deployment you can inspect, customize, and
+                    integrate without platform lock-in.
+                  </p>
+                  <a
+                    href="https://docs.decabill.com/en/docs/getting-started"
+                    class="small fw-semibold text-decoration-none"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    i18n="@@featureDecabillHome-ecosystemAdvantage2Cta"
+                    >Explore the docs</a
+                  >
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <div class="row g-4 align-items-stretch">
+      <div class="col-12">
+        <article
+          class="card border rounded-3 shadow-sm overflow-hidden home-ecosystem-product home-ecosystem-product--cloud"
+        >
+          <div class="row g-0 align-items-stretch bg-body-tertiary">
+            <div class="col-lg-8 p-4 p-lg-5 bg-white">
+              <div class="mb-3">
+                <i class="bi bi-cloud-check text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+                <h3 class="h5 fw-semibold mb-0" i18n="@@featureDecabillHome-ecosystemCloudTitle">Decabill Cloud</h3>
+              </div>
+              <p class="text-muted mb-4 mb-lg-0" i18n="@@featureDecabillHome-ecosystemCloudDesc">
+                We run the platform for you. Your customers get billing, payments, and self-service while upgrades,
+                scaling, and day-to-day operations are handled by us.
+              </p>
+            </div>
+            <div
+              class="col-lg-4 p-4 p-lg-5 text-center card-capability-primary border-start home-ecosystem-cloud-aside d-flex flex-column justify-content-center"
+            >
+              <p class="small text-muted mb-2" i18n="@@featureDecabillHome-ecosystemCloudStartingAt">Starting at</p>
+              <div class="h2 fw-bold text-primary mb-4">
+                @if (cheapestOfferingLoading() || !cheapestLoaded()) {
+                  <span class="text-muted" aria-hidden="true">…</span>
+                } @else {
+                  @if (cheapestOffering(); as plan) {
+                    €{{ plan.totalPrice | number: '1.2-2'
+                    }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(plan) }}</span>
+                  } @else {
+                    <span class="text-muted fs-6" i18n="@@featureDecabillHome-ecosystemCloudUnavailable"
+                      >Contact us</span
+                    >
+                  }
+                }
+              </div>
+              <a
+                [href]="billingBaseUrl"
+                class="btn btn-primary mb-2"
+                target="_blank"
+                rel="noopener noreferrer"
+                i18n="@@featureDecabillHome-ecosystemCloudGetStarted"
+                >Get started</a
+              >
+              <a
+                routerLink="/pricing"
+                class="text-primary fw-semibold small text-decoration-none"
+                i18n="@@featureDecabillHome-ecosystemCloudExplore"
+                >View plans</a
+              >
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="py-10 bg-dark grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureDecabillHome-ctaTitle">
+        Ready to bill services, SaaS, and hosting on Decabill?
+      </h2>
+      <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featureDecabillHome-ctaLead">
+        Book a demo to see how Decabill fits your agency or product stack. We can also help with managed hosting for
+        your tenants.
+      </p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a
+          href="mailto:hi@decabill.com"
+          class="btn btn-light btn-lg px-5 py-3 rounded-3 fw-semibold cta-btn"
+          i18n="@@featureDecabillHome-ctaBookDemo"
+          >Book a demo</a
+        >
+        <a
+          href="https://docs.decabill.com/en/docs/getting-started"
+          class="btn btn-outline-light btn-lg px-5 py-3 rounded-3 cta-btn"
+          target="_blank"
+          rel="noopener noreferrer"
+          i18n="@@featureDecabillHome-ctaDocs"
+          >Read the docs</a
+        >
+      </div>
+    </div>
+  </div>
+</section>

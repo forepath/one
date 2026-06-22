@@ -1,0 +1,210 @@
+section {
+  scroll-margin-top: 80px;
+}
+
+#hero {
+  position: relative;
+  overflow: hidden;
+
+  &:before,
+  &:after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(110px);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  &:before {
+    animation: hero-orb-float 18s ease-in-out infinite;
+    width: 420px;
+    height: 420px;
+    top: -60px;
+    left: -40px;
+    background: radial-gradient(circle at 30% 30%, #32a852, transparent 60%);
+  }
+
+  &:after {
+    animation: hero-orb-float 22s ease-in-out infinite reverse;
+    width: 520px;
+    height: 520px;
+    bottom: -120px;
+    right: -80px;
+    background: radial-gradient(circle at 70% 70%, #21808d, transparent 65%);
+  }
+}
+
+@keyframes hero-orb-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(12px, -10px, 0);
+  }
+}
+
+.hero-title {
+  color: rgba(245, 245, 245, 0.85);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.hero-lead,
+.hero-cta-line {
+  color: rgba(245, 245, 245, 0.85);
+}
+
+.cta-lead-light {
+  max-width: 700px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.cta-sub-light {
+  max-width: 600px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.max-w-650 {
+  max-width: 650px;
+}
+
+.max-w-700 {
+  max-width: 700px;
+}
+
+.max-w-750 {
+  max-width: 750px;
+}
+
+.icon-md {
+  font-size: 1.5rem;
+}
+
+.icon-solution {
+  font-size: 1.25rem;
+}
+
+.icon-lg {
+  font-size: 2rem;
+}
+
+.icon-xl {
+  font-size: 2.5rem;
+}
+
+.letter-spacing-wide {
+  letter-spacing: 0.08em;
+}
+
+.section-lead {
+  max-width: 700px;
+}
+
+.portal-page-tabs {
+  .nav-link {
+    font-weight: 500;
+    color: var(--bs-secondary);
+    transition: all 0.2s ease;
+
+    &:hover:not(.active) {
+      background-color: rgba(50, 168, 82, 0.08);
+      color: var(--bs-primary);
+    }
+
+    &.active {
+      box-shadow: var(--bs-box-shadow-sm);
+      color: var(--bs-white);
+    }
+  }
+}
+
+.home-governance-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+}
+
+.home-governance-card-text {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.problem-box {
+  background: rgba(255, 84, 89, 0.05);
+}
+
+.problem-icon {
+  color: var(--bs-danger);
+  font-size: 1.25rem;
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(50, 168, 82, 0.1);
+  flex-shrink: 0;
+}
+
+.card-capability-primary {
+  background: linear-gradient(to right, rgba(50, 168, 82, 0.05) 0%, transparent 100%);
+}
+
+.card-capability-success {
+  background: linear-gradient(to right, rgba(33, 128, 141, 0.05) 0%, transparent 100%);
+}
+
+.card-capability-warning {
+  background: linear-gradient(to right, rgba(230, 129, 97, 0.05) 0%, transparent 100%);
+}
+
+.card-capability-secondary {
+  background: linear-gradient(to right, rgba(98, 108, 113, 0.05) 0%, transparent 100%);
+}
+
+.card-integration {
+  background: #fff;
+  border: 2px dashed rgba(33, 128, 141, 0.3) !important;
+}
+
+.card-problem {
+  background: rgba(50, 168, 82, 0.03);
+}
+
+.iteration-badge {
+  width: 32px;
+  height: 32px;
+  font-size: 0.875rem;
+}
+
+.logo-partner {
+  filter: grayscale(100%);
+  opacity: 0.5;
+  transition: all 0.3s ease;
+  max-height: 24px;
+
+  &:hover {
+    filter: grayscale(0%);
+    opacity: 1;
+  }
+}
+
+.logo-partner--small {
+  max-height: 16px;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  font-weight: light;
+
+  i {
+    font-size: 1.25rem;
+  }
+}
+
+.bento-badge {
+  position: relative;
+  z-index: 1;
+}

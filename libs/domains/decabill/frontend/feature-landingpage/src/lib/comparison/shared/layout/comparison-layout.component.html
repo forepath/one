@@ -1,0 +1,129 @@
+<!-- Hero -->
+<section class="py-10 py-lg-6 bg-dark text-white comparison-hero grid-section" id="hero">
+  <div class="container grid-section__container">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 text-center">
+        <h1 class="display-4 fw-semibold mb-4 hero-title">
+          <span class="text-primary">{{ page.competitorDisplayName }}</span>
+          <span class="text-white" i18n="@@featureDecabillComparison-heroVs"> vs. </span>
+          <span class="text-white">Decabill</span>
+        </h1>
+        <p class="lead hero-lead mx-auto section-lead mb-0">{{ page.heroSubtitle }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Overview -->
+<section class="py-10 bg-white comparison-overview grid-section" id="overview">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold text-dark mb-0" i18n="@@featureDecabillComparison-overviewHeading">
+        Two approaches to billing at scale
+      </h2>
+    </div>
+    <div class="row g-4 align-items-stretch">
+      <div class="col-lg-6">
+        <article
+          class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 comparison-vendor-card comparison-vendor-card--competitor"
+        >
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="comparison-vendor-icon comparison-vendor-icon--muted rounded-3" aria-hidden="true">
+              <i class="bi bi-box-seam"></i>
+            </span>
+            <h3 class="h5 fw-semibold mb-0" i18n="@@featureDecabillComparison-overviewThemTitle">
+              What they optimize for
+            </h3>
+          </div>
+          <p class="text-muted mb-0 lh-lg">{{ page.overviewCompetitorLead }}</p>
+        </article>
+      </div>
+      <div class="col-lg-6">
+        <article
+          class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 comparison-vendor-card comparison-vendor-card--decabill card-capability card-capability-primary"
+        >
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="comparison-vendor-icon comparison-vendor-icon--primary rounded-3" aria-hidden="true">
+              <i class="bi bi-receipt-cutoff"></i>
+            </span>
+            <h3 class="h5 fw-semibold mb-0" i18n="@@featureDecabillComparison-overviewUsTitle">What we optimize for</h3>
+          </div>
+          <p class="text-muted mb-0 lh-lg">{{ page.overviewDecabillLead }}</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Matrix -->
+<section class="py-10 bg-body-tertiary comparison-matrix-section grid-section" id="matrix">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featureDecabillComparison-matrixHeading">Feature comparison</h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureDecabillComparison-matrixIntro">
+        The same thirteen capabilities appear on every page. You can compare vendors without chasing different rubrics.
+      </p>
+    </div>
+    <div class="comparison-matrix-shell overflow-hidden">
+      <framework-portal-comparison-matrix [slug]="page.slug" [competitorColumnLabel]="page.competitorDisplayName" />
+      <p class="small text-muted text-center mt-4 mb-0" i18n="@@featureDecabillComparison-matrixLegend">
+        Hover an icon for a short rationale. Ratings follow a public research pass (Strong / Partial / Weak / N.A.) and
+        are meant for orientation. They are not a substitute for your own procurement review.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Fit + more comparisons -->
+<section class="py-10 bg-dark text-white comparison-fit grid-section" id="fit">
+  <div class="container grid-section__container">
+    <div class="row g-4 g-lg-5 align-items-stretch">
+      <div class="col-lg-7">
+        <article class="bg-primary border-0 rounded-4 h-100 p-4 p-lg-5 comparison-fit-main">
+          <h2 class="h2 fw-semibold mb-4" i18n="@@featureDecabillComparison-technologyFitHeading">
+            Build with technology that fits your needs
+          </h2>
+          <p class="lead mb-0 comparison-fit-lead">{{ page.technologyFitLead }}</p>
+          <div class="d-flex flex-wrap gap-3 mt-5">
+            <a
+              href="mailto:hi@decabill.com"
+              class="btn btn-light btn-lg px-4 py-3 rounded-3 fw-semibold"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featureDecabillComparison-ctaDemo"
+            >
+              Book a demo
+            </a>
+            <a
+              routerLink="/pricing"
+              class="btn btn-outline-light btn-lg px-4 py-3 rounded-3"
+              i18n="@@featureDecabillComparison-ctaPricing"
+            >
+              View pricing
+            </a>
+          </div>
+        </article>
+      </div>
+      <div class="col-lg-5">
+        <aside class="border-0 rounded-4 h-100 p-4 p-lg-5 comparison-more-panel">
+          <h2 class="h5 fw-semibold mb-3 text-white" i18n="@@featureDecabillComparison-moreHeading">
+            More comparisons
+          </h2>
+          <ul class="list-unstyled mb-0 comparison-more-list">
+            @for (item of otherComparisons; track item.slug) {
+              <li class="mb-2">
+                <a
+                  [routerLink]="item.routerLink"
+                  class="comparison-more-link text-decoration-none d-flex align-items-center gap-2"
+                >
+                  <i class="bi bi-arrow-right-short flex-shrink-0" aria-hidden="true"></i>
+                  <span>{{ item.label }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        </aside>
+      </div>
+    </div>
+  </div>
+</section>

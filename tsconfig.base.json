@@ -116,6 +116,12 @@
       ],
       "@forepath/shared/frontend/feature-docs": [
         "libs/domains/shared/frontend/feature-docs/src/index.ts"
+      ],
+      "@forepath/decabill/frontend/data-access-portal": [
+        "libs/domains/decabill/frontend/data-access-portal/src/index.ts"
+      ],
+      "@forepath/decabill/frontend/feature-landingpage": [
+        "libs/domains/decabill/frontend/feature-landingpage/src/index.ts"
       ]
     }
   },

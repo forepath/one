@@ -1,0 +1,27 @@
+.comparison-matrix-table {
+  .table {
+    --bs-table-bg: var(--bs-white);
+    --bs-table-hover-bg: rgba(50, 168, 82, 0.04);
+  }
+
+  thead th {
+    font-weight: 600;
+  }
+}
+
+.comparison-matrix-col-capability {
+  min-width: 14rem;
+}
+
+.comparison-matrix-col-vendor {
+  min-width: 6.5rem;
+  width: 22%;
+}
+
+.comparison-matrix-question {
+  max-width: 40rem;
+}
+
+.comparison-matrix-icon {
+  cursor: help;
+}

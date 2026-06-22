@@ -179,3 +179,13 @@ Ensure `CSP_CONNECT_SRC_EXTRA` includes the browser-reachable billing manager or
 ---
 
 _For HTTP request schemas, see **[API Reference](../api-reference/README.md)**._
+
+## License
+
+This application is licensed under the **Business Source License 1.1 (BUSL-1.1)** with an Additional Use Grant.
+
+Copyright (c) 2025 IPvX UG (haftungsbeschränkt)
+
+BUSL permits non-production use and limited production use subject to the Additional Use Grant (typically for organizations below the Total Finances threshold on the [Decabill pricing page](https://decabill.com/pricing)). The license converts to **AGPL-3.0** after the Change Date (three years from release date).
+
+See [LICENSE](../../../apps/decabill/frontend-billing-console/LICENSE) for the full text and alternative commercial licensing at [decabill.com](https://decabill.com).

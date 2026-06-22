@@ -1,0 +1,20 @@
+services:
+  frontend-landingpage-server:
+    image: ${LANDINGPAGE_SERVER_IMAGE:-ghcr.io/forepath/decabill-landingpage-server:latest}
+    pull_policy: never
+    container_name: ${LANDINGPAGE_SERVER_CONTAINER_NAME:-decabill-landingpage-server}
+    environment:
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-4200}
+      NODE_ENV: ${NODE_ENV:-production}
+      DEFAULT_LOCALE: ${DEFAULT_LOCALE:-en}
+      CSP_ENFORCE: ${CSP_ENFORCE:-true}
+    ports:
+      - '${PORT:-4200}:${PORT:-4200}'
+    networks:
+      - landingpage-network
+    restart: unless-stopped
+
+networks:
+  landingpage-network:
+    driver: bridge

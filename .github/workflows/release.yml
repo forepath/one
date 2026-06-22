@@ -845,6 +845,19 @@ jobs:
           autocreate: true
           bomfilename: 'dist/sboms/agenstra-frontend-landingpage.cdx.json'
 
+      - name: Upload decabill-frontend-landingpage SBOM
+        id: upload-sbom-decabill-frontend-landingpage
+        uses: forepath/gh-upload-sbom@v2
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: 'bb6467b6-ebe9-4f90-91f9-2a785f95441e'
+          projectname: 'decabill-frontend-landingpage'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/decabill-frontend-landingpage.cdx.json'
+
       - name: Report DependencyTrack upload outcomes
         if: always()
         run: |
@@ -864,6 +877,7 @@ jobs:
             echo "| shared-mcp-devkit | ${{ steps.upload-sbom-shared-mcp-devkit.outcome }} |"
             echo "| shared-mcp-proxy | ${{ steps.upload-sbom-shared-mcp-proxy.outcome }} |"
             echo "| agenstra-frontend-landingpage | ${{ steps.upload-sbom-agenstra-frontend-landingpage.outcome }} |"
+            echo "| decabill-frontend-landingpage | ${{ steps.upload-sbom-decabill-frontend-landingpage.outcome }} |"
           } >> "$GITHUB_STEP_SUMMARY"
           failed=0
           for outcome in \
@@ -877,7 +891,8 @@ jobs:
             "${{ steps.upload-sbom-decabill-frontend-docs.outcome }}" \
             "${{ steps.upload-sbom-shared-mcp-devkit.outcome }}" \
             "${{ steps.upload-sbom-shared-mcp-proxy.outcome }}" \
-            "${{ steps.upload-sbom-agenstra-frontend-landingpage.outcome }}"
+            "${{ steps.upload-sbom-agenstra-frontend-landingpage.outcome }}" \
+            "${{ steps.upload-sbom-decabill-frontend-landingpage.outcome }}"
           do
             if [ "$outcome" = "failure" ]; then
               failed=1

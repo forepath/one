@@ -85,35 +85,44 @@
                 <li>
                   <a
                     routerLink="/consulting"
-                    class="dropdown-item portal-nav-dropdown-item"
+                    class="dropdown-item portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
                     routerLinkActive="active"
                     [routerLinkActiveOptions]="{ exact: true }"
                     (click)="closeMobileMenu()"
-                    i18n="@@featureForepath-navConsulting"
-                    >Consulting</a
                   >
+                    <span i18n="@@featureForepath-navConsulting">Consulting</span>
+                    <span class="small text-muted" i18n="@@featureForepath-navConsultingCaption"
+                      >Shape strategy and architecture with your team</span
+                    >
+                  </a>
                 </li>
                 <li>
                   <a
                     routerLink="/it-systems"
-                    class="dropdown-item portal-nav-dropdown-item"
+                    class="dropdown-item portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
                     routerLinkActive="active"
                     [routerLinkActiveOptions]="{ exact: true }"
                     (click)="closeMobileMenu()"
-                    i18n="@@featureForepath-navItSystems"
-                    >IT Systems</a
                   >
+                    <span i18n="@@featureForepath-navItSystems">IT Systems</span>
+                    <span class="small text-muted" i18n="@@featureForepath-navItSystemsCaption"
+                      >Run and support platforms with operators</span
+                    >
+                  </a>
                 </li>
                 <li>
                   <a
                     routerLink="/software-development"
-                    class="dropdown-item portal-nav-dropdown-item"
+                    class="dropdown-item portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
                     routerLinkActive="active"
                     [routerLinkActiveOptions]="{ exact: true }"
                     (click)="closeMobileMenu()"
-                    i18n="@@featureForepath-navSoftwareDevelopment"
-                    >Software Development</a
                   >
+                    <span i18n="@@featureForepath-navSoftwareDevelopment">Software Development</span>
+                    <span class="small text-muted" i18n="@@featureForepath-navSoftwareDevelopmentCaption"
+                      >Ship and own software in production</span
+                    >
+                  </a>
                 </li>
               </ul>
             </li>
@@ -138,11 +147,28 @@
                     href="https://agenstra.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="dropdown-item portal-nav-dropdown-item"
+                    class="dropdown-item portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
                     (click)="closeMobileMenu()"
-                    i18n="@@featureForepath-navAgenstra"
-                    >Agenstra</a
                   >
+                    <span i18n="@@featureForepath-navAgenstra">Agenstra</span>
+                    <span class="small text-muted" i18n="@@featureForepath-navAgenstraCaption"
+                      >Run and ship with coding agents</span
+                    >
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://decabill.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="dropdown-item portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
+                    (click)="closeMobileMenu()"
+                  >
+                    <span i18n="@@featureForepath-navDecabill">Decabill</span>
+                    <span class="small text-muted" i18n="@@featureForepath-navDecabillCaption"
+                      >Bill services and SaaS with one platform</span
+                    >
+                  </a>
                 </li>
               </ul>
             </li>
@@ -288,6 +314,16 @@
               class="text-decoration-none footer-link small"
               i18n="@@featureForepath-footerAgenstraLink"
               >Agenstra</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="https://decabill.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureForepath-footerDecabillLink"
+              >Decabill</a
             >
           </li>
         </ul>

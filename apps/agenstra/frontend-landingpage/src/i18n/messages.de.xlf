@@ -652,7 +652,7 @@
       </trans-unit>
       <trans-unit id="featurePortalComparison-matrixLegend" datatype="html">
         <source>Hover an icon for a short rationale. Ratings follow a public research pass (Strong / Partial / Weak / N.A.) and are meant for orientation. They are not a substitute for your own procurement review.</source>
-        <target> Fahren Sie mit der Maus über ein Symbol für eine kurze Begründung. Die Bewertungen folgen einer öffentlichen Research-Runde (stark / teilweise / schwach / n. z.) und dienen der Orientierung. Sie ersetzen keine eigene Beschaffungsprüfung. </target>
+        <target state="translated">Fahren Sie mit der Maus über ein Symbol für eine kurze Begründung. Die Bewertungen basieren auf einer öffentlichen Recherche (stark / teilweise / schwach / n. z.) und dienen der Orientierung. Sie ersetzen keine eigene Beschaffungsprüfung.</target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-technologyFitHeading" datatype="html">
         <source>Build with technology that fits your needs</source>

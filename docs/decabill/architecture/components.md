@@ -12,6 +12,8 @@ This document describes the major runtime components in Decabill, their responsi
 
 **Library implementation**: `libs/domains/decabill/backend/feature-billing-manager` (imported as `BillingManagerModule` and related providers)
 
+**License**: **AGPL-3.0** (Open Source tier)
+
 ### Key responsibilities
 
 - REST controllers for subscriptions, invoices, service catalog, customer profile, admin billing, and public offerings
@@ -59,6 +61,8 @@ This document describes the major runtime components in Decabill, their responsi
 **Feature library**: `libs/domains/decabill/frontend/feature-billing-console`
 
 **Data access**: `libs/domains/decabill/frontend/data-access-billing-console` (NgRx)
+
+**License**: **BUSL-1.1** with Additional Use Grant (Startup tier and above)
 
 ### Key responsibilities
 
