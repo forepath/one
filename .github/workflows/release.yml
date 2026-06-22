@@ -16,7 +16,7 @@ jobs:
       new_release_version: ${{ steps.semantic-release.outputs.new_release_version }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -35,7 +35,7 @@ jobs:
           private_key: ${{ secrets.SEMANTIC_RELEASE_KEY_PEM }}
 
       - name: Semantic release
-        uses: cycjimmy/semantic-release-action@v5
+        uses: cycjimmy/semantic-release-action@v6
         id: semantic-release
         with:
           semantic_version: 22.0.5
@@ -93,7 +93,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -140,7 +140,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -187,7 +187,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -234,7 +234,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -281,7 +281,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -328,7 +328,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -375,7 +375,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -419,7 +419,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -467,7 +467,7 @@ jobs:
       has_windows_bundle: ${{ steps.detect-windows-bundle.outputs.exists }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -533,7 +533,7 @@ jobs:
       needs.build-native-applications-windows.outputs.has_windows_bundle == 'true'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -575,7 +575,7 @@ jobs:
     environment: production
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -679,7 +679,7 @@ jobs:
     environment: production
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
 
       - name: Download build artifacts
         uses: actions/download-artifact@v8
@@ -942,7 +942,7 @@ jobs:
       has_entries: ${{ steps.set-matrix.outputs.has_entries }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6.0.3
 
       - name: Download container image SBOM artifacts
         uses: actions/download-artifact@v8
