@@ -1,0 +1,237 @@
+<header
+  class="header sticky-top bg-dark text-white grid-section grid-section--navigation"
+  [class.shadow]="isScrolled()"
+>
+  <nav class="navbar navbar-expand-md navbar-dark p-0">
+    <div
+      class="container grid-section__container grid-section__container--shadow d-flex align-items-center justify-content-between gap-2 navbar-content"
+    >
+      <div class="d-flex align-items-center">
+        <a routerLink="/" class="brand-icon-container fs-3 bg-primary p-3">
+          <img
+            src="assets/images/icon_light.svg"
+            i18n-alt="@@featureDecabillPortal-brandAlt"
+            alt="Decabill"
+            class="brand-icon"
+          />
+        </a>
+        <div class="d-flex align-items-center gap-2 bg-body-tertiary p-3 overflow-hidden made-in-container">
+          <div class="flag d-flex flex-column overflow-hidden">
+            <span class="flag-color"></span>
+            <span class="flag-color"></span>
+            <span class="flag-color"></span>
+          </div>
+          <div class="text-white text-uppercase lh-1 small made-in">
+            <span class="d-block text-dark" i18n="@@featureDecabillPortal-madeIn">Made in</span>
+            <span class="d-block fw-bold text-dark" i18n="@@featureDecabillPortal-madeInCountry">Germany</span>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-grow-1 justify-content-end">
+        <button
+          class="navbar-toggler d-md-none d-block"
+          type="button"
+          (click)="toggleMobileMenu()"
+          [attr.aria-expanded]="mobileMenuOpen()"
+          aria-controls="navbarNav"
+          i18n-aria-label="@@featureDecabillPortal-toggleNavAriaLabel"
+          aria-label="Toggle navigation"
+        >
+          <i class="bi bi-list fs-4"></i>
+        </button>
+        <div class="collapse navbar-collapse mobile-navbar" [class.mobile-open]="mobileMenuOpen()" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-center">
+            <li class="nav-item">
+              <a
+                routerLink="/"
+                class="nav-link text-white"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }"
+                (click)="closeMobileMenu()"
+                i18n="@@featureDecabillPortal-navPlatform"
+                >Platform</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                routerLink="/pricing"
+                class="nav-link text-white"
+                routerLinkActive="active"
+                (click)="closeMobileMenu()"
+                i18n="@@featureDecabillPortal-navPricing"
+                >Pricing</a
+              >
+            </li>
+            <li class="nav-item dropdown portal-nav-dropdown">
+              <a
+                class="nav-link dropdown-toggle text-white portal-nav-dropdown-toggle"
+                [class.active]="comparisonDropdownActive()"
+                href="#"
+                id="comparisonNavDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <span i18n="@@featureDecabillPortal-navComparison">Comparison</span>
+                <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
+              </a>
+              <ul
+                class="dropdown-menu dropdown-menu-end portal-nav-dropdown-menu portal-nav-dropdown-menu--wide"
+                aria-labelledby="comparisonNavDropdown"
+              >
+                @for (item of comparisonNavItems; track item.slug) {
+                  <li>
+                    <a
+                      class="dropdown-item portal-nav-dropdown-item"
+                      [routerLink]="item.routerLink"
+                      routerLinkActive="active"
+                      [routerLinkActiveOptions]="{ exact: true }"
+                      (click)="closeMobileMenu()"
+                      >{{ item.label }}</a
+                    >
+                  </li>
+                }
+              </ul>
+            </li>
+            <li class="nav-item ms-md-3">
+              <a
+                href="mailto:hi@decabill.com"
+                class="btn btn-primary py-2 px-3 px-md-4"
+                target="_blank"
+                rel="noopener"
+                (click)="closeMobileMenu()"
+              >
+                <span i18n="@@featureDecabillPortal-bookDemoButton">Book a Demo</span>
+              </a>
+            </li>
+          </ul>
+          @if (mobileMenuOpen()) {
+            <div class="mobile-navbar-overlay" (click)="closeMobileMenu()"></div>
+          }
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<router-outlet></router-outlet>
+<footer class="footer bg-dark text-white position-relative overflow-hidden grid-section pt-10">
+  <div class="container grid-section__container grid-section__container--footer-top">
+    <div class="row">
+      <div class="col-md-4 mb-3 mb-md-0">
+        <img
+          src="assets/images/favicon.svg"
+          i18n-alt="@@featureDecabillPortal-brandAlt"
+          alt="Decabill"
+          class="brand-icon"
+        />
+        <h5 class="fw-bold my-3" i18n="@@featureDecabillPortal-footerBrand">Decabill</h5>
+        <p class="fs-6 mb-5" i18n="@@featureDecabillPortal-footerTagline">
+          Billing for agencies and digital product teams. Bill services, projects, SaaS subscriptions, and managed
+          hosting from one multi-tenant platform.
+        </p>
+        <div class="dropdown mt-4">
+          <button
+            class="btn btn-outline-secondary btn-sm dropdown-toggle"
+            type="button"
+            id="footerLanguageDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            i18n-aria-label="@@featureDecabillPortal-languageSwitcherAriaLabel"
+            aria-label="Select language"
+          >
+            <i class="bi bi-globe me-1"></i>
+            <span i18n="@@featureDecabillPortal-language">Language</span>
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="footerLanguageDropdown">
+            @for (locale of localeService.getAvailableLocales(); track locale.code) {
+              <li>
+                <a
+                  class="dropdown-item"
+                  [class.active]="localeService.getCurrentLocale() === locale.code"
+                  [href]="localeService.getLanguageSwitchUrl(locale.code)"
+                  >{{ locale.label }}</a
+                >
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-3 offset-md-2">
+        <h6 class="fw-bold mb-3" i18n="@@featureDecabillPortal-footerProduct">Product</h6>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a routerLink="/" class="text-decoration-none text-white small" i18n="@@featureDecabillPortal-navPlatform"
+              >Platform</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/pricing"
+              class="text-decoration-none text-white small"
+              i18n="@@featureDecabillPortal-footerPricingLink"
+              >Pricing</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="https://docs.decabill.com"
+              class="text-decoration-none text-white small"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featureDecabillPortal-footerDocumentation"
+              >Documentation</a
+            >
+          </li>
+        </ul>
+        <h6 class="fw-bold mb-3 mt-4" i18n="@@featureDecabillPortal-footerComparison">Comparison</h6>
+        <ul class="list-unstyled mb-0">
+          @for (item of comparisonNavItems; track item.slug) {
+            <li class="mb-2">
+              <a [routerLink]="item.routerLink" class="text-decoration-none text-white small">{{ item.label }}</a>
+            </li>
+          }
+        </ul>
+      </div>
+      <div class="col-md-3">
+        <h6 class="fw-bold mb-3" i18n="@@featureDecabillPortal-footerLegal">Legal</h6>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a
+              routerLink="/legal/disclosure"
+              class="text-decoration-none text-white small"
+              i18n="@@featureDecabillPortal-legalDisclosureLink"
+              >Legal Disclosure</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/legal/terms"
+              class="text-decoration-none text-white small"
+              i18n="@@featureDecabillPortal-termsOfServiceLink"
+              >Terms of Service</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/legal/privacy"
+              class="text-decoration-none text-white small"
+              i18n="@@featureDecabillPortal-privacyPolicyLink"
+              >Privacy Policy</a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="text-white py-5">
+    <div class="container grid-section__container grid-section__container--dark grid-section__container--footer-bottom">
+      <div class="row">
+        <div class="col-md-12 text-center">
+          <p class="mb-0 small" i18n="@@featureDecabillPortal-footerCopyright">
+            &copy; 2025 IPvX UG (haftungsbeschränkt). All rights reserved.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

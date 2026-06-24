@@ -1,6 +1,10 @@
 # decabill-frontend-feature-billing-console
 
-This library was generated with [Nx](https://nx.dev).
+Angular feature library for the Decabill billing console (customer and admin UI).
+
+## License
+
+Licensed under **BUSL-1.1** with an Additional Use Grant. See [LICENSE](./LICENSE).
 
 ## Running unit tests
 

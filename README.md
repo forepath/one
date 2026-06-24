@@ -90,7 +90,7 @@ To get started with Agenstra:
 
 ### Decabill
 
-Decabill is the ForePath billing product for subscriptions, invoicing, payment processing, and customer billing administration. Decabill apps and libraries are sublicensed under [BUSL-1.1](./apps/agenstra/backend-agent-controller/LICENSE) (same terms as the Agenstra agent controller).
+Decabill is the ForePath billing product for subscriptions, invoicing, payment processing, and customer billing administration. The **billing manager** (backend API and jobs) is sublicensed under [AGPL-3.0](./apps/decabill/backend-billing-manager/LICENSE). The **billing console** (Angular UI) is sublicensed under [BUSL-1.1](./apps/decabill/frontend-billing-console/LICENSE) with an Additional Use Grant for qualifying startups.
 
 | Component                | Nx project                          | Path                                                                                                                                     | Description                                  |
 | ------------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
@@ -169,6 +169,8 @@ The following components are sublicensed under AGPL-3.0. Modifications and deriv
 - [`libs/domains/shared/frontend/util-runtime-config-server`](./libs/domains/shared/frontend/util-runtime-config-server/) ([LICENSE](./libs/domains/shared/frontend/util-runtime-config-server/LICENSE))
 - [`libs/domains/shared/frontend/util-meta`](./libs/domains/shared/frontend/util-meta/) ([LICENSE](./libs/domains/shared/frontend/util-meta/LICENSE))
 - [`libs/domains/shared/backend/util-http-context`](./libs/domains/shared/backend/util-http-context/) ([LICENSE](./libs/domains/shared/backend/util-http-context/LICENSE))
+- [`apps/decabill/backend-billing-manager`](./apps/decabill/backend-billing-manager/) ([LICENSE](./apps/decabill/backend-billing-manager/LICENSE))
+- [`libs/domains/decabill/backend/feature-billing-manager`](./libs/domains/decabill/backend/feature-billing-manager/) ([LICENSE](./libs/domains/decabill/backend/feature-billing-manager/LICENSE))
 
 ### Business Source License 1.1 (BUSL-1.1)
 
@@ -176,8 +178,6 @@ The following components are sublicensed under BUSL-1.1. They permit non-product
 
 - [`apps/agenstra/backend-agent-controller`](./apps/agenstra/backend-agent-controller/) ([LICENSE](./apps/agenstra/backend-agent-controller/LICENSE))
 - [`libs/domains/agenstra/backend/feature-agent-controller`](./libs/domains/agenstra/backend/feature-agent-controller/) ([LICENSE](./libs/domains/agenstra/backend/feature-agent-controller/LICENSE))
-- [`apps/decabill/backend-billing-manager`](./apps/decabill/backend-billing-manager/) ([LICENSE](./apps/decabill/backend-billing-manager/LICENSE))
-- [`libs/domains/decabill/backend/feature-billing-manager`](./libs/domains/decabill/backend/feature-billing-manager/) ([LICENSE](./libs/domains/decabill/backend/feature-billing-manager/LICENSE))
 - [`apps/decabill/frontend-billing-console`](./apps/decabill/frontend-billing-console/) ([LICENSE](./apps/decabill/frontend-billing-console/LICENSE))
 - [`libs/domains/decabill/frontend/feature-billing-console`](./libs/domains/decabill/frontend/feature-billing-console/) ([LICENSE](./libs/domains/decabill/frontend/feature-billing-console/LICENSE))
 - [`libs/domains/decabill/frontend/data-access-billing-console`](./libs/domains/decabill/frontend/data-access-billing-console/) ([LICENSE](./libs/domains/decabill/frontend/data-access-billing-console/LICENSE))

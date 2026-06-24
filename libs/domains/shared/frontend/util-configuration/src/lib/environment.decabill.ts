@@ -36,7 +36,7 @@ export const environment: Environment = {
     termsUrl: 'https://decabill.com/legal/terms',
   },
   socialPreview: {
-    imageUrl: 'http://localhost:4500/assets/images/og-preview.png',
+    imageUrl: 'http://localhost:4302/assets/images/og-preview.png',
   },
   docs: {
     contentRoot: 'decabill',

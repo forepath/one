@@ -1,6 +1,10 @@
 # decabill-frontend-data-access-billing-console
 
-This library was generated with [Nx](https://nx.dev).
+NgRx data-access layer for the Decabill billing console.
+
+## License
+
+Licensed under **BUSL-1.1** with an Additional Use Grant. See [LICENSE](./LICENSE).
 
 ## Running unit tests
 

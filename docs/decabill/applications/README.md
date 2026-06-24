@@ -11,6 +11,15 @@ Decabill consists of two primary applications:
 
 Both applications live under `apps/decabill/` and delegate feature logic to domain libraries in `libs/domains/decabill/`.
 
+## Licensing
+
+| Application                                               | License      | Notes                                                                                    |
+| --------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------- |
+| [Backend Billing Manager](./backend-billing-manager.md)   | **AGPL-3.0** | Open Source tier; network use triggers source-sharing obligations                        |
+| [Frontend Billing Console](./frontend-billing-console.md) | **BUSL-1.1** | Startup tier and above with Additional Use Grant; converts to AGPL after the Change Date |
+
+---
+
 ## Applications
 
 ### [Frontend Billing Console](./frontend-billing-console.md)

@@ -1,0 +1,250 @@
+@import '../page.component.scss';
+
+.hero-container {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-lead {
+  max-width: 700px;
+  line-height: 1.6;
+}
+
+.hero-feature-badges {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+
+  .info-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.home-feature-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(50, 168, 82, 0.12);
+}
+
+.section-title-lg {
+  max-width: 820px;
+}
+
+.home-solution-icon {
+  width: 72px;
+  height: 72px;
+  background: rgba(50, 168, 82, 0.12);
+}
+
+.home-solution-panel-top {
+  border-color: var(--bs-border-color) !important;
+}
+
+@media (max-width: 991.98px) {
+  .home-solution-studio .border-start {
+    border-left: 0 !important;
+    border-top: 1px solid var(--bs-border-color);
+  }
+}
+
+.home-how-row {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: var(--bs-box-shadow-sm);
+}
+
+.home-how-copy {
+  padding: 2rem 1.5rem;
+
+  @media (min-width: 992px) {
+    padding: 2.5rem;
+  }
+}
+
+.home-how-example {
+  border-left: 4px solid var(--bs-primary);
+  background: linear-gradient(to right, rgba(50, 168, 82, 0.06) 0%, #fff 45%);
+}
+
+.home-integration-grid-col {
+  min-height: 16rem;
+  position: relative;
+  background: var(--bs-body-tertiary);
+
+  @media (min-width: 992px) {
+    min-height: 0;
+    border-left: 1px solid var(--bs-border-color);
+  }
+}
+
+.home-integration-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  width: 100%;
+  height: 100%;
+  min-height: 16rem;
+
+  @media (min-width: 992px) {
+    min-height: 100%;
+  }
+}
+
+.home-integration-grid__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  transition: filter 0.2s ease;
+
+  &:nth-child(3n) {
+    border-right: 0;
+  }
+
+  &:nth-child(n + 4) {
+    border-bottom: 0;
+  }
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+}
+
+.home-integration-grid__logo {
+  max-height: 1.75rem;
+  max-width: 6.5rem;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.home-integration-grid__logo--wide {
+  max-width: 7.75rem;
+  max-height: 1.5rem;
+}
+
+.home-integration-grid__logo--mark {
+  max-height: 2.35rem;
+  max-width: 3.75rem;
+}
+
+.home-integration-grid__wordmark {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.home-ecosystem-studio-surfaces,
+.home-ecosystem-cloud-aside {
+  @media (max-width: 991.98px) {
+    border-left: 0 !important;
+    border-top: 1px solid var(--bs-border-color);
+  }
+}
+
+.home-ecosystem-studio {
+  overflow: visible;
+}
+
+.home-ecosystem-surface {
+  background: var(--bs-body-tertiary);
+}
+
+.home-sell-tile-subtle {
+  background-color: #fff;
+}
+
+.home-sell-screenshot {
+  display: block;
+  margin-top: -8rem;
+}
+
+.home-compliance {
+  --bs-border-color: rgba(255, 255, 255, 0.12);
+}
+
+.home-compliance-lead {
+  color: rgba(255, 255, 255, 0.88);
+  max-width: 46rem;
+}
+
+.home-compliance-eu-icon {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+}
+
+.intent-cards {
+  margin-top: -5rem;
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding-top: 2.5rem;
+    margin-top: 0;
+
+    > .intent-card {
+      display: none;
+    }
+
+    .intent-card-progress {
+      display: none;
+    }
+  }
+
+  @media (max-width: 992px) and (min-width: 768px) {
+    margin-top: -2rem;
+  }
+
+  @media (max-width: 1200px) and (min-width: 992px) {
+    margin-top: -3rem;
+  }
+
+  > .intent-card {
+    position: relative;
+    z-index: 3;
+  }
+
+  .intent-card-progress {
+    position: relative;
+    width: 75px;
+    height: 10px;
+    margin: 0 auto;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: -10px;
+    z-index: 4;
+    top: -1rem;
+    cursor: pointer;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: var(--progress);
+      height: 100%;
+      background-color: var(--bs-primary);
+      transition: width 0.3s ease;
+    }
+  }
+}

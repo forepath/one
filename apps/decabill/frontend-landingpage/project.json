@@ -1,0 +1,210 @@
+{
+  "name": "decabill-frontend-landingpage",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/decabill/frontend-landingpage/src",
+  "i18n": {
+    "sourceLocale": "en",
+    "locales": {
+      "de": "apps/decabill/frontend-landingpage/src/i18n/messages.de.xlf"
+    }
+  },
+  "tags": ["domain:decabill", "type:app", "scope:frontend"],
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/decabill/frontend-landingpage",
+        "index": "apps/decabill/frontend-landingpage/src/index.html",
+        "browser": "apps/decabill/frontend-landingpage/src/main.ts",
+        "polyfills": [
+          "zone.js",
+          "apps/decabill/frontend-landingpage/src/polyfills.ts"
+        ],
+        "tsConfig": "apps/decabill/frontend-landingpage/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/decabill/frontend-landingpage/public"
+          }
+        ],
+        "styles": [
+          "node_modules/cookieconsent/build/cookieconsent.min.css",
+          "apps/decabill/frontend-landingpage/src/styles.scss",
+          "libs/domains/shared/frontend/util-cookie-consent/src/lib/cookie-consent.scss"
+        ],
+        "server": "apps/decabill/frontend-landingpage/src/main.server.ts",
+        "ssr": {
+          "entry": "apps/decabill/frontend-landingpage/src/server.ts"
+        },
+        "prerender": true,
+        "scripts": [
+          "node_modules/cookieconsent/build/cookieconsent.min.js",
+          "node_modules/@popperjs/core/dist/umd/popper.min.js",
+          "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+        ],
+        "localize": true,
+        "i18nMissingTranslation": "warning",
+        "security": {
+          "allowedHosts": [
+            "localhost",
+            "127.0.0.1",
+            "decabill.com",
+            "*.decabill.com"
+          ]
+        }
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.decabill.production.ts"
+            }
+          ]
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.decabill.ts"
+            }
+          ]
+        },
+        "en": {
+          "localize": ["en"]
+        },
+        "de": {
+          "localize": ["de"]
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "hmr": false,
+        "port": 4302
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "decabill-frontend-landingpage:build:production,en"
+        },
+        "development": {
+          "buildTarget": "decabill-frontend-landingpage:build:development,en"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "extract-i18n-angular": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "buildTarget": "decabill-frontend-landingpage:build",
+        "outputPath": "apps/decabill/frontend-landingpage/src/i18n"
+      }
+    },
+    "extract-i18n": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node ../../../remove-context-groups.cjs src/i18n/messages.xlf",
+        "cwd": "apps/decabill/frontend-landingpage"
+      },
+      "dependsOn": ["extract-i18n-angular"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/decabill/frontend-landingpage/jest.config.ts",
+        "tsConfig": "apps/decabill/frontend-landingpage/tsconfig.spec.json"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "decabill-frontend-landingpage:build",
+        "port": 4302,
+        "staticFilePath": "dist/apps/decabill/frontend-landingpage/browser",
+        "spa": true
+      }
+    },
+    "build-delegating-server": {
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/decabill/frontend-landingpage-delegating-server"
+      ],
+      "options": {
+        "command": "mkdir -p dist/apps/decabill/frontend-landingpage-delegating-server/server && npx tsc apps/decabill/frontend-landingpage/src/delegating-server.ts --outDir dist/apps/decabill/frontend-landingpage-delegating-server/server --target es2022 --module esnext --moduleResolution node --allowSyntheticDefaultImports --esModuleInterop --skipLibCheck --declaration false --sourceMap false --removeComments true",
+        "cwd": "."
+      }
+    },
+    "postbuild": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cp dist/apps/decabill/frontend-landingpage-delegating-server/server/delegating-server.js dist/apps/decabill/frontend-landingpage/server/server.mjs && cp -r dist/apps/decabill/frontend-landingpage/browser dist/apps/decabill/frontend-landingpage/server/browser"
+      },
+      "dependsOn": ["build", "build-delegating-server"]
+    },
+    "server-container-image": {
+      "dependsOn": ["postbuild"],
+      "cache": false,
+      "executor": "@nx-tools/nx-container:build",
+      "options": {
+        "engine": "docker",
+        "file": "apps/decabill/frontend-landingpage/Dockerfile.server",
+        "context": "dist/apps/decabill/frontend-landingpage/server"
+      },
+      "configurations": {
+        "test": {
+          "load": true,
+          "tags": ["ghcr.io/forepath/decabill-landingpage-server:latest"]
+        },
+        "release": {
+          "push": true,
+          "tags": [
+            "ghcr.io/forepath/decabill-landingpage-server:latest",
+            "ghcr.io/forepath/decabill-landingpage-server:$VERSION"
+          ]
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "start-containers": {
+      "dependsOn": ["server-container-image"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/decabill/frontend-landingpage",
+        "command": "docker compose up -d --force-recreate --remove-orphans"
+      }
+    },
+    "sbom": {
+      "executor": "@forepath/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
+    }
+  }
+}

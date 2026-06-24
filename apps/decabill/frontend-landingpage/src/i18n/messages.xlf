@@ -1,0 +1,1687 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="featureDecabillComparison-chargebee-metaTitle" datatype="html">
+        <source>Chargebee vs Decabill</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebee-metaDescription" datatype="html">
+        <source>Compare Chargebee subscription billing with Decabill for self-hosted revenue operations, hosting provisioning, EU e-invoicing, and multi-tenant agency billing.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebee-heroSubtitle" datatype="html">
+        <source>Hosted subscription platform versus self-hosted revenue operations for agencies and product teams.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebee-overviewCompetitor" datatype="html">
+        <source>Chargebee is a mature subscription management platform for SaaS companies. It handles plans, coupons, dunning, revenue recognition, and integrations with major payment gateways from a hosted console. It fits when recurring SaaS is your primary model and you want a vendor to run billing logic while you focus on product delivery.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebee-overviewDecabill" datatype="html">
+        <source>Decabill targets teams that outgrow subscription-only tooling. It combines SaaS billing with agency services and managed hosting, ships ZUGFeRD invoices, provisions Hetzner and DigitalOcean servers from subscriptions, and can run on your infrastructure with tenant isolation and Keycloak-backed SSO.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbill-metaTitle" datatype="html">
+        <source>HostBill vs Decabill</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbill-metaDescription" datatype="html">
+        <source>Compare HostBill hosting automation with Decabill for agencies that mix SaaS, projects, managed hosting, EU invoicing, and self-hosted multi-tenant billing.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbill-heroSubtitle" datatype="html">
+        <source>Licensed hosting automation versus open billing for agencies that mix SaaS, projects, and managed hosting.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbill-overviewCompetitor" datatype="html">
+        <source>HostBill targets hosting and domain providers with deep automation for shared hosting, VPS, and email platforms. It offers a licensed self-hosted panel with modules for provisioning and client management. It fits when your core business is traditional hosting resale and you want a polished panel with lifetime licensing options.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbill-overviewDecabill" datatype="html">
+        <source>Decabill gives operators one revenue home for subscriptions, agency services, and cloud-backed hosting. You get customer and admin consoles, ZUGFeRD invoicing, Hetzner and DigitalOcean provisioning, and a multi-tenant model designed for teams that sell across more than one product line.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddle-metaTitle" datatype="html">
+        <source>Paddle vs Decabill</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddle-metaDescription" datatype="html">
+        <source>Compare Paddle merchant-of-record billing with Decabill for operators who want their own PSP relationships, self-hosted billing, hosting lifecycle, and German EU invoicing compliance.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddle-heroSubtitle" datatype="html">
+        <source>Merchant-of-record SaaS versus billing you operate with your own payment and hosting stack.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddle-overviewCompetitor" datatype="html">
+        <source>Paddle acts as merchant of record for SaaS and digital products. It handles checkout, global tax compliance, and subscription management while abstracting payment complexity behind Paddle&apos;s vendor relationship. It fits when you want to outsource tax remittance and MoR liability and your catalog is software subscriptions rather than mixed agency and infrastructure services.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddle-overviewDecabill" datatype="html">
+        <source>Decabill keeps billing under your control. You operate the platform, choose Stripe or extensible processors, bill hosting alongside SaaS, and issue ZUGFeRD invoices for German and EU compliance. Customer and admin consoles, multi-tenancy, and cloud provisioning live in one stack you can self-host or run on Decabill Cloud.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-heroVs" datatype="html">
+        <source> vs. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-overviewHeading" datatype="html">
+        <source> Two approaches to billing at scale </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-overviewThemTitle" datatype="html">
+        <source> What they optimize for </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-overviewUsTitle" datatype="html">
+        <source>What we optimize for</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixHeading" datatype="html">
+        <source>Feature comparison</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixIntro" datatype="html">
+        <source> The same thirteen capabilities appear on every page. You can compare vendors without chasing different rubrics. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixLegend" datatype="html">
+        <source> Hover an icon for a short rationale. Ratings follow a public research pass (Strong / Partial / Weak / N.A.) and are meant for orientation. They are not a substitute for your own procurement review. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-technologyFitHeading" datatype="html">
+        <source> Build with technology that fits your needs </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-ctaDemo" datatype="html">
+        <source> Book a demo </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-ctaPricing" datatype="html">
+        <source> View pricing </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-moreHeading" datatype="html">
+        <source>More comparisons</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-metaKeywords" datatype="html">
+        <source>Decabill comparison, billing platform, subscription billing, agency billing, hosting billing, ZUGFeRD, multi-tenant billing</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim1" datatype="html">
+        <source>Unified revenue models (SaaS + services + hosting)</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ1" datatype="html">
+        <source>Can we bill subscriptions, project or service work, and managed hosting without separate billing stacks?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim2" datatype="html">
+        <source>Multi-tenant operator model</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ2" datatype="html">
+        <source>Can we run multiple brands, agencies, or client tenants from one billing deployment with isolation?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim3" datatype="html">
+        <source>Self-hosted, open source, or private deployment</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ3" datatype="html">
+        <source>Can we run billing on our own infrastructure or VPC with full data control?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim4" datatype="html">
+        <source>Customer self-service billing console</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ4" datatype="html">
+        <source>Can customers subscribe, manage plans, pay invoices, and update billing profiles without tickets to our team?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim5" datatype="html">
+        <source>Admin revenue operations console</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ5" datatype="html">
+        <source>Can finance and ops run bill-now, manual invoices, KPIs, and exception handling in one admin UI?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim6" datatype="html">
+        <source>EU-compliant invoicing (ZUGFeRD / EN 16931)</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ6" datatype="html">
+        <source>Do we get structured, compliant B2B invoices suitable for German and EU bookkeeping, not PDFs alone?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim7" datatype="html">
+        <source>Managed hosting tied to billing</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ7" datatype="html">
+        <source>When we sell hosting, does subscription payment automatically provision and lifecycle-manage servers?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim8" datatype="html">
+        <source>Service catalog and plan configuration</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ8" datatype="html">
+        <source>Can we publish priced plans with provider schemas, highlights, and margins without custom code per product line?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim9" datatype="html">
+        <source>Real-time provisioning and subscription status</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ9" datatype="html">
+        <source>Do operators and customers see live server and subscription state, not batch emails or manual checks?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim10" datatype="html">
+        <source>Finance export and bookkeeping handoff (DATEV ecosystem)</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ10" datatype="html">
+        <source>Can finance close the month without re-keying line items, especially in German agency contexts?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim11" datatype="html">
+        <source>Payment processor flexibility (Stripe + extensibility)</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ11" datatype="html">
+        <source>Can we take payments through Stripe today and add or swap processors without rewriting billing core?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim12" datatype="html">
+        <source>Enterprise SSO / identity integration</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ12" datatype="html">
+        <source>Does it fit corporate IdP patterns (OIDC/SAML) for console access and automation auth?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixDim13" datatype="html">
+        <source>Full billing API and integration surface</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixQ13" datatype="html">
+        <source>Can we integrate ordering, subscriptions, invoices, and admin flows via documented APIs, not screen-scraping?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT1" datatype="html">
+        <source>Single catalog for SaaS subscriptions, agency-style services, and managed hosting in one billing core and console.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT2" datatype="html">
+        <source>Multi-tenant deployment with X-Tenant scoping and per-tenant URLs so agencies can run multiple brands and clients from one stack.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT3" datatype="html">
+        <source>Open-source core with Docker-based self-hosting and optional Decabill Cloud for managed operation.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT4" datatype="html">
+        <source>Dedicated customer console for subscriptions, invoices, payment state, and hosting lifecycle in one view.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT5" datatype="html">
+        <source>Admin billing module with KPIs, open and overdue views, bill-now, and manual invoice lifecycle designed for operators and finance.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT6" datatype="html">
+        <source>Emits ZUGFeRD-style PDFs with embedded EN 16931 XML so invoices align with German and EU e-invoicing mandates.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT7" datatype="html">
+        <source>Built-in Hetzner Cloud and DigitalOcean provisioning via cloud-init, with subscription-driven lifecycle and backorders when capacity is exhausted.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT8" datatype="html">
+        <source>Service types and plans with provider schemas and pricing previews, exposed via a public offerings API for marketing sites.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT9" datatype="html">
+        <source>WebSocket-powered dashboards stream live provisioning and subscription status into operator and customer views.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT10" datatype="html">
+        <source>Structured ZUGFeRD and EN 16931 invoices plus export posture aimed at German DATEV-style workflows and long-term e-archive requirements.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT11" datatype="html">
+        <source>Stripe Checkout and webhook integration combined with pluggable payment providers so operators can keep their own PSP relationships.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT12" datatype="html">
+        <source>Supports Keycloak with OIDC and SAML plus built-in users and API-key based automation for agency and enterprise setups.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-decabillT13" datatype="html">
+        <source>OpenAPI-described REST API for customers, subscriptions, invoices, and admin workflows enables deep integration without scraping UIs.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT1" datatype="html">
+        <source>Optimized for classic hosting, domains, and add-ons. SaaS and project or service billing require custom products and workflows rather than a unified model.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT2" datatype="html">
+        <source>Primarily a single-brand hosting panel. Multi-brand setups rely on separate WHMCS instances or heavy customization rather than a native tenant model.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT3" datatype="html">
+        <source>Self-hosted PHP app on your infrastructure, but closed-source and tied closely to traditional shared-hosting stacks with no modern container-native deployment story.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT4" datatype="html">
+        <source>Client area lets customers view services, invoices, and tickets, but is geared to classic hosting rather than mixed SaaS, projects, and managed infrastructure.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT5" datatype="html">
+        <source>Admin UI covers orders, invoices, and automation but focuses on provisioning workflows. Exception handling and finance workflows for agencies are limited and often require plugins.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT6" datatype="html">
+        <source>Can calculate VAT and show VAT IDs on PDF invoices but does not natively generate structured EN 16931 or ZUGFeRD e-invoices. Operators must bolt on separate tooling.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT7" datatype="html">
+        <source>Deep integrations with cPanel and server panels automate shared and VPS hosting, but modern cloud providers and mixed SaaS or hosting catalogs are not first-class.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT8" datatype="html">
+        <source>Product and addon system works for typical hosting bundles but becomes rigid when modeling complex service engagements or multi-line agency offerings.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT9" datatype="html">
+        <source>Relies on cron-based tasks, email notifications, and third-party panel status. There is no unified real-time infra state across heterogeneous providers.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT10" datatype="html">
+        <source>CSV and PDF exports plus VAT handling help finance teams, but there is no native DATEV or EN 16931 e-invoice export. Deeper compliance requires external systems.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT11" datatype="html">
+        <source>Supports multiple gateways such as Stripe, PayPal, and Authorize.net as classic card processors, not as a modular payment-orchestration layer extendable by operators.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT12" datatype="html">
+        <source>Authentication focuses on local accounts. SSO for staff or clients is not a native core capability and usually depends on community modules or reverse proxies.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcsT13" datatype="html">
+        <source>WHMCS exposes a limited API focused on hosting operations. Many teams rely on custom hooks or unofficial API extensions to cover full billing scenarios.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT1" datatype="html">
+        <source>Strong hosting and domain focus. SaaS or project billing is possible via generic products but lacks the unified services, SaaS, and cloud positioning agencies need.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT2" datatype="html">
+        <source>Built for a single provider brand. Running multiple agencies or white-label tenants typically means separate installations or significant customization.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT3" datatype="html">
+        <source>Licensed, self-hosted PHP application with lifetime-license options but closed source and not container-native by default.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT4" datatype="html">
+        <source>Client portal covers invoices, services, tickets, and downloads, but the UX and data model are tuned to classic hosting scenarios rather than mixed SaaS and agency work.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT5" datatype="html">
+        <source>Rich automation and provisioning UI, yet finance workflows beyond hosting such as projects, retainers, and multi-service accounts require extra configuration and plugins.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT6" datatype="html">
+        <source>Offers VAT calculation and VIES validation plugins but relies on standard PDF invoices. Structured EN 16931 or ZUGFeRD output is not a documented core feature.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT7" datatype="html">
+        <source>Excellent for automating shared hosting, VPS, and email platforms, but public-cloud provider workflows and general-purpose managed hosting catalogs are not central.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT8" datatype="html">
+        <source>Product, addon, and bundle system is powerful for hosting plans but less opinionated for modeling complex agency services or cross-cloud offerings.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT9" datatype="html">
+        <source>Uses automation tasks and provider callbacks. Status is updated but not exposed as a unified real-time stream across all resources.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT10" datatype="html">
+        <source>PDF and CSV exports combined with VAT plugins help EU operators, yet deep DATEV integration and EN 16931 export are not part of the documented offering.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT11" datatype="html">
+        <source>Many gateways and modules exist but are packaged as HostBill-specific integrations. Swapping processors without touching HostBill is harder than with a plugin-centric billing core.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT12" datatype="html">
+        <source>OIDC admin-auth module and related add-ons exist, but enterprise SSO is an optional extension, not a pervasive, first-class identity model across all surfaces.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-hostbillT13" datatype="html">
+        <source>API coverage exists for core entities, but many billing and admin use cases still rely on HostBill modules or GUI workflows, limiting fully headless integration.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT1" datatype="html">
+        <source>Optimized for SaaS subscriptions and usage-based pricing. Service projects and managed hosting require custom modeling and separate tooling.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT2" datatype="html">
+        <source>Account model assumes a single business. Multi-brand setups rely on multiple Stripe accounts or custom segregation, not a self-hosted tenant hierarchy.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT3" datatype="html">
+        <source>Fully hosted SaaS with no option to run Stripe Billing in your own infrastructure or VPC.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT4" datatype="html">
+        <source>Stripe Customer Portal handles subscription updates and payment methods but is a generic hosted surface, not a full customer console spanning hosting and services.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT5" datatype="html">
+        <source>Stripe Dashboard provides strong payment analytics and invoice views, yet many finance workflows such as project billing, hosting bundles, and multi-entity ops require external systems or custom code.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT6" datatype="html">
+        <source>Can issue PDF invoices and calculate VAT with Stripe Tax, but does not claim ZUGFeRD or EN 16931-compliant structured e-invoicing for Germany.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT7" datatype="html">
+        <source>No native concept of servers or hosting lifecycle. Operators must build their own provisioning and status layers on top of billing events.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT8" datatype="html">
+        <source>Price objects and products work well for SaaS plans, but complex agency catalogs and infrastructure bundles require significant custom modeling.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT9" datatype="html">
+        <source>Webhooks provide event notifications, but real-time infra status is not part of Stripe. Teams must wire their own dashboards and polling.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT10" datatype="html">
+        <source>Strong revenue and payout reporting, yet EU finance teams still rely on additional tooling to meet EN 16931 and German DATEV requirements.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT11" datatype="html">
+        <source>Tightly coupled to Stripe&apos;s own payment processing. Using other PSPs for the same billing stack is not supported.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT12" datatype="html">
+        <source>Stripe Dashboard SSO and role management are SaaS features. Customer identity integration for consoles beyond payment pages must be built separately.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripeT13" datatype="html">
+        <source>Excellent APIs for payments and subscriptions, but broader billing-ops surfaces such as manual invoices, hosting lifecycle, and multi-tenant admin live outside Stripe&apos;s scope and must be custom-built.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT1" datatype="html">
+        <source>Subscription-first platform focused on SaaS and recurring revenue. Project work and managed hosting require workarounds or adjacent systems.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT2" datatype="html">
+        <source>Supports multiple sites and entities in higher tiers, but as a hosted SaaS it is not an operator-controlled, self-hosted tenant model.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT3" datatype="html">
+        <source>Fully hosted SaaS only with no open-source or self-hosted edition for private infrastructure.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT4" datatype="html">
+        <source>Offers a customer portal for subscription changes and payments, but not a hosting-aware console tied to infrastructure lifecycle.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT5" datatype="html">
+        <source>Strong subscription analytics and RevRec capabilities, yet operational workflows around infrastructure and mixed services remain outside its core.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT6" datatype="html">
+        <source>Can generate invoices and handle taxes, but does not market EN 16931 or ZUGFeRD-compliant German e-invoices as a core feature.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT7" datatype="html">
+        <source>No native hosting or server provisioning. Infrastructure billing must be built around generic subscription objects.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT8" datatype="html">
+        <source>Excellent for subscription plans, add-ons, and coupons, but not tailored to infra providers and per-server constructs agencies sell.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT9" datatype="html">
+        <source>Subscription changes propagate quickly, but there is no concept of real-time server provisioning state in the billing UI.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT10" datatype="html">
+        <source>Provides revenue reports and accounting exports, yet EN 16931, ZUGFeRD, and DATEV-specific capabilities must be layered through separate tools.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT11" datatype="html">
+        <source>Integrates with Stripe, Braintree, Adyen, and others, but as a closed SaaS platform where processors are configured in Chargebee rather than through an extensible plugin surface.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT12" datatype="html">
+        <source>SSO and role management exist in higher tiers, yet as a hosted app this is primarily for Chargebee&apos;s UI, not a self-hosted identity fabric for customer consoles.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-chargebeeT13" datatype="html">
+        <source>Provides solid APIs around subscriptions and invoices, but deep integration with infra provisioning and multi-tenant admin still requires significant custom work.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT1" datatype="html">
+        <source>Merchant-of-record platform optimized for SaaS and digital products. Project work and managed hosting fall outside its core focus.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT2" datatype="html">
+        <source>Paddle acts as MoR for a single vendor. Multi-brand operation requires separate vendor setups, not a tenant hierarchy you control.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT3" datatype="html">
+        <source>Fully hosted MoR model with no self-hosting or on-premises edition.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT4" datatype="html">
+        <source>Hosted checkout and subscription management surfaces work for SaaS payments, but there is no infra-aware, agency-style customer console.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT5" datatype="html">
+        <source>Strong dashboards for SaaS revenue and churn, yet operational views for services and hosting must live in other tools.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT6" datatype="html">
+        <source>Handles global VAT and sales tax as MoR but does not expose ZUGFeRD or EN 16931 structured invoices for operators&apos; own records.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT7" datatype="html">
+        <source>No concept of servers or managed hosting lifecycle. Paddle&apos;s remit stops at SaaS and digital product transactions.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT8" datatype="html">
+        <source>Handles SaaS pricing and subscriptions, but infra-heavy and agency catalogs require external systems.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT9" datatype="html">
+        <source>Subscription state is available, but infra provisioning is out of scope. Operators must build their own real-time views.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT10" datatype="html">
+        <source>As MoR, Paddle shoulders tax compliance and remittance, but finance data is abstracted. DATEV-style exports rely on Paddle&apos;s reports plus extra processing.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT11" datatype="html">
+        <source>Paddle is an all-in-one MoR. You cannot choose your own underlying PSP or swap processors while keeping Paddle&apos;s billing.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT12" datatype="html">
+        <source>Identity and access management are tied to Paddle&apos;s SaaS dashboards. Deep integration with customer IdPs for a self-hosted console is not the model.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-paddleT13" datatype="html">
+        <source>APIs focus on subscription and payment flows, with less emphasis on exposing MoR internals or integrating infra and tenant-level operations.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixLabelStrong" datatype="html">
+        <source>Strong fit</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixLabelPartial" datatype="html">
+        <source>Partial / gaps</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixLabelWeak" datatype="html">
+        <source>Weak / not a focus</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixLabelNa" datatype="html">
+        <source>Not applicable</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixColCapability" datatype="html">
+        <source> Capability </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-matrixColDecabill" datatype="html">
+        <source> Decabill </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-navWhmcs" datatype="html">
+        <source>WHMCS</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-navHostbill" datatype="html">
+        <source>HostBill</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-navStripe" datatype="html">
+        <source>Stripe Billing</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-navChargebee" datatype="html">
+        <source>Chargebee</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-navPaddle" datatype="html">
+        <source>Paddle</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-technologyFitBody" datatype="html">
+        <source>Your revenue stack depends on choices you make before the next close, not on feature checklists alone. Choosing billing technology that matches how you sell services, SaaS, and hosting is a crucial step toward sustainable operations for agencies and digital product teams. Do you think Decabill could be a good fit for your workflow?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripe-metaTitle" datatype="html">
+        <source>Stripe Billing vs Decabill</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripe-metaDescription" datatype="html">
+        <source>Compare Stripe Billing with Decabill for operators who need self-hosted multi-tenant billing, hosting lifecycle, ZUGFeRD invoices, and admin revenue operations beyond payments.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripe-heroSubtitle" datatype="html">
+        <source>Payments-first SaaS billing versus an operator platform for subscriptions, services, and hosted infrastructure.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripe-overviewCompetitor" datatype="html">
+        <source>Stripe Billing is the subscription and invoicing layer inside Stripe&apos;s payments platform. It excels at recurring SaaS pricing, usage meters, tax calculation, and a hosted customer portal tied to Stripe Checkout. It fits when payments are your center of gravity and you are comfortable building everything else around Stripe&apos;s APIs and hosted surfaces.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-stripe-overviewDecabill" datatype="html">
+        <source>Decabill is a billing platform you operate, not a payments processor you rent. It connects subscriptions, invoices, customer self-service, and cloud provisioning in one stack with ZUGFeRD output, Keycloak SSO, and multi-tenant isolation. You keep Stripe for payments while owning the catalog, consoles, and hosting lifecycle.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcs-metaTitle" datatype="html">
+        <source>WHMCS vs Decabill</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcs-metaDescription" datatype="html">
+        <source>Compare WHMCS hosting automation with Decabill&apos;s unified billing for SaaS, agency services, managed hosting, ZUGFeRD invoicing, and multi-tenant operations.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcs-heroSubtitle" datatype="html">
+        <source>Classic hosting panel automation versus unified billing for SaaS, services, and cloud infrastructure.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcs-overviewCompetitor" datatype="html">
+        <source>WHMCS is the long-standing control panel for hosting providers. It automates orders, domains, shared hosting, and client billing in a PHP stack many resellers already know. It fits when your business is primarily classic hosting and you want a mature panel ecosystem with modules and community extensions.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillComparison-whmcs-overviewDecabill" datatype="html">
+        <source>Decabill is built for agencies and digital product teams that bill more than hosting alone. It unifies SaaS subscriptions, service work, and managed cloud hosting in one multi-tenant platform with ZUGFeRD invoicing, Stripe payments, and operator consoles you can self-host or run on Decabill Cloud.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-brandAlt" datatype="html">
+        <source>Decabill</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-madeIn" datatype="html">
+        <source>Made in</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-madeInCountry" datatype="html">
+        <source>Germany</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-toggleNavAriaLabel" datatype="html">
+        <source>Toggle navigation</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-navPlatform" datatype="html">
+        <source>Platform</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-navPricing" datatype="html">
+        <source>Pricing</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-navComparison" datatype="html">
+        <source>Comparison</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-bookDemoButton" datatype="html">
+        <source>Book a Demo</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-footerBrand" datatype="html">
+        <source>Decabill</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-footerTagline" datatype="html">
+        <source> Billing for agencies and digital product teams. Bill services, projects, SaaS subscriptions, and managed hosting from one multi-tenant platform. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-language" datatype="html">
+        <source>Language</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-footerProduct" datatype="html">
+        <source>Product</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-footerPricingLink" datatype="html">
+        <source>Pricing</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-footerDocumentation" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-footerComparison" datatype="html">
+        <source>Comparison</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-footerLegal" datatype="html">
+        <source>Legal</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-legalDisclosureLink" datatype="html">
+        <source>Legal Disclosure</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-termsOfServiceLink" datatype="html">
+        <source>Terms of Service</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-privacyPolicyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPortal-footerCopyright" datatype="html">
+        <source> © 2025 IPvX UG (haftungsbeschränkt). All rights reserved. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Billing for agencies<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> and digital products </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroLead" datatype="html">
+        <source> Decabill is one platform for agencies and digital product teams. Bill client services and projects, SaaS subscriptions, and managed hosting without stitching together separate tools. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroBadge1" datatype="html">
+        <source>Services &amp; projects</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroBadge2" datatype="html">
+        <source>SaaS subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroBadge3" datatype="html">
+        <source>Managed hosting</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroBadge4" datatype="html">
+        <source>ZUGFeRD invoicing</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroBadge5" datatype="html">
+        <source>Stripe payments</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroBadge6" datatype="html">
+        <source>Multi-tenant</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-getStartedHero" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Get started </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-productTour" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-trophy me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> View product tour </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroSlideOverview" datatype="html">
+        <source>Decabill overview dashboard with cloud instances</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroSlidePlans" datatype="html">
+        <source>Decabill plans and subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroSlideBilling" datatype="html">
+        <source>Decabill customer billing and invoices</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-heroSlideAdmin" datatype="html">
+        <source>Decabill admin billing and revenue statistics</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionTitle" datatype="html">
+        <source> Turn revenue complexity into billing you can trust </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionLead" datatype="html">
+        <source> Agencies and product teams sell in more than one way. Decabill helps you keep subscriptions, project work, and hosting revenue on one reliable foundation instead of stitching together separate tools. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionStudioTitle" datatype="html">
+        <source> Meet the modern billing system </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionStudioLead" datatype="html">
+        <source> Your organization&apos;s home for revenue operations: publish what you sell, let customers subscribe and pay, and keep finance and support aligned in one experience without rebuilding your product stack around billing glue code. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionStudioTagline" datatype="html">
+        <source> One platform. Multiple models. Clear books. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageTabUnified" datatype="html">
+        <source>Unified revenue</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageTabCompliance" datatype="html">
+        <source>Trust &amp; compliance</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageTabCustomers" datatype="html">
+        <source>Customer clarity</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageTabOperations" datatype="html">
+        <source>Operational calm</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageTabScale" datatype="html">
+        <source>Built to scale</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageUnifiedHeadline" datatype="html">
+        <source> One system for how you actually sell </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageUnifiedLead" datatype="html">
+        <source> Leaders stop reconciling agency spreadsheets, SaaS dashboards, and hosting invoices when every revenue stream shares the same billing core. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageUnifiedBenefit1Title" datatype="html">
+        <source> Fewer handoffs </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageUnifiedBenefit1Desc" datatype="html">
+        <source> Project milestones, recurring plans, and infrastructure products bill through one catalog instead of three disconnected workflows. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageUnifiedBenefit2Title" datatype="html">
+        <source> Consistent customer records </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageUnifiedBenefit2Desc" datatype="html">
+        <source> The same profile powers orders, invoices, and support context whether the customer buys a retainer or a hosting plan. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageUnifiedBenefit3Title" datatype="html">
+        <source> Less integration debt </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageUnifiedBenefit3Desc" datatype="html">
+        <source> Your marketing site and product surface stay thin clients over a documented API instead of bespoke billing glue. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageComplianceHeadline" datatype="html">
+        <source> Invoices your finance team can stand behind </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageComplianceLead" datatype="html">
+        <source> Compliance is not a bolt-on PDF export. Decabill treats issuance, payment reconciliation, and auditability as part of how billing runs every day. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageComplianceBenefit1Title" datatype="html">
+        <source> Defensible documents </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageComplianceBenefit1Desc" datatype="html">
+        <source> ZUGFeRD-style invoices give finance structured data and customer-ready PDFs from the same source of truth. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageComplianceBenefit2Title" datatype="html">
+        <source> Reconciliation you can explain </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageComplianceBenefit2Desc" datatype="html">
+        <source> Payment events tie back to issued invoices so open balances do not linger as mystery line items. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageComplianceBenefit3Title" datatype="html">
+        <source> Audit-ready operations </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageComplianceBenefit3Desc" datatype="html">
+        <source> Admin workflows for manual invoices and adjustments stay inside the same system customers see, not in side spreadsheets. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageCustomersHeadline" datatype="html">
+        <source> Self-service that earns customer confidence </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageCustomersLead" datatype="html">
+        <source> Customers expect clarity about what they bought, what they owe, and how to pay. Decabill gives them a billing experience that feels intentional, not like an afterthought. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageCustomersBenefit1Title" datatype="html">
+        <source> Transparent subscriptions </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageCustomersBenefit1Desc" datatype="html">
+        <source> Plans, status, and lifecycle actions live in one place so customers are not chasing email threads for basic account changes. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageCustomersBenefit2Title" datatype="html">
+        <source> Invoices they understand </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageCustomersBenefit2Desc" datatype="html">
+        <source> Accumulated billing days produce fewer surprises: one clear invoice instead of a drip of micro-charges. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageCustomersBenefit3Title" datatype="html">
+        <source> Less support load </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageCustomersBenefit3Desc" datatype="html">
+        <source> When customers can pay, download, and manage subscriptions themselves, your team answers fewer repetitive billing tickets. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageOperationsHeadline" datatype="html">
+        <source> Your team stays in control as volume grows </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageOperationsLead" datatype="html">
+        <source> Operations should feel calm even when catalogs, tenants, and provisioning queues get busier. Decabill gives operators one cockpit instead of context switching across tools. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageOperationsBenefit1Title" datatype="html">
+        <source> One operations view </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageOperationsBenefit1Desc" datatype="html">
+        <source> Catalog management, manual billing, and customer profiles share the same admin experience your team already uses daily. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageOperationsBenefit2Title" datatype="html">
+        <source> Live status, less guessing </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageOperationsBenefit2Desc" datatype="html">
+        <source> Real-time dashboard updates mean provisioning and subscription changes surface before customers open a ticket. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageOperationsBenefit3Title" datatype="html">
+        <source> Decisions without fire drills </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageOperationsBenefit3Desc" datatype="html">
+        <source> Bill-now, backorder retry, and KPI views help operators act on billing exceptions before they become month-end crises. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageScaleHeadline" datatype="html">
+        <source> Room to add brands without rebuilding billing </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageScaleLead" datatype="html">
+        <source> Agencies run multiple client brands. Product companies expand into hosting. Decabill is built for that trajectory without forcing a rip-and-replace every time the portfolio grows. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageScaleBenefit1Title" datatype="html">
+        <source> Multi-brand by design </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageScaleBenefit1Desc" datatype="html">
+        <source> Tenant isolation keeps catalogs, customers, and payment provider configuration separated while operations stay in one platform. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageScaleBenefit2Title" datatype="html">
+        <source> Extend without forking </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageScaleBenefit2Desc" datatype="html">
+        <source> Provider plugins and payment processors load at runtime so new integrations do not mean maintaining custom billing forks. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageScaleBenefit3Title" datatype="html">
+        <source> Infrastructure when you need it </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-solutionAdvantageScaleBenefit3Desc" datatype="html">
+        <source> Optional provisioning connects recurring revenue to hosted product stacks as your offers mature, not before you are ready. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howTitle" datatype="html">
+        <source> How Decabill fits the way you already work </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howLead" datatype="html">
+        <source> Billing should meet customers where they pay and meet finance where they close the month. Decabill connects your revenue motion to the providers and systems that already run your business. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howIntegrationsTitle" datatype="html">
+        <source>Integrations that matter</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howIntegrationsLead" datatype="html">
+        <source> Plug in payments, hosting, identity, and bookkeeping without rebuilding your stack around one-off scripts for every new product line. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howPoint1" datatype="html">
+        <source>Customers pay through the processors you already trust</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howPoint2" datatype="html">
+        <source>Hosting products provision on the clouds your team already operates</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howPoint3" datatype="html">
+        <source>Finance gets a clean handoff to DATEV when it is time to close the books</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howExampleLabel" datatype="html">
+        <source> See it in practice </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howExampleTitle" datatype="html">
+        <source> An agency that ships SaaS and managed hosting </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howExampleLead" datatype="html">
+        <source> Customers subscribe from the marketing site, pay through Stripe, and receive compliant invoices. Hosting orders provision on Hetzner when plans include infrastructure. At month end, finance exports to DATEV without re-keying line items from side spreadsheets. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howExampleStep1" datatype="html">
+        <source>Subscribe</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howExampleStep2" datatype="html">
+        <source>Pay</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howExampleStep3" datatype="html">
+        <source>Provision</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howExampleStep4" datatype="html">
+        <source>Export</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howIntegrationGridLabel" datatype="html">
+        <source>Billing integrations and connected systems</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-complianceTitle" datatype="html">
+        <source>Compliance by design</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-complianceLead" datatype="html">
+        <source> Integrations get revenue moving, and compliance keeps it defensible. Decabill builds structured invoicing, reconciliation, and auditable billing into how the platform works. Those capabilities are not exports you add later. We bill our own products on Decabill, so what you adopt is the same stack we renew, reconcile, and maintain every month. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-compliancePoint1Title" datatype="html">
+        <source> Built in, not bolted on </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-compliancePoint1Desc" datatype="html">
+        <source> Invoices, payments, and audit trails share one system from issuance through finance export. You do not need parallel spreadsheets holding the real numbers. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-compliancePoint2Title" datatype="html">
+        <source> We run what we ship </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-compliancePoint2Desc" datatype="html">
+        <source> Our own subscriptions, plan changes, and customer billing run through Decabill. That is living proof the workflows you sell with actually hold up in production. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-compliancePoint3Title" datatype="html">
+        <source> Maintained where it counts </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-compliancePoint3Desc" datatype="html">
+        <source> Improvements land in the codebase we operate every day, not in a sandbox demo. Compliance paths stay current as regulations and integrations evolve. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-useCasesTitle" datatype="html">
+        <source>Built for how you sell</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-useCasesLead" datatype="html">
+        <source> Decabill is where your team runs revenue operations. It sits beside the products and services you already sell so billing follows how agencies and product teams actually go to market. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-sellVisualBadge" datatype="html">
+        <source>Configure plans and pricing</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-sellProductConfigAlt" datatype="html">
+        <source>Decabill service plan configuration</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-sellTile1Title" datatype="html">
+        <source>One revenue home</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-sellItem1" datatype="html">
+        <source> Keep subscriptions, projects, and hosting on shared customer and billing data instead of separate tools </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-sellTile2Title" datatype="html">
+        <source>Plans customers trust</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-sellItem2" datatype="html">
+        <source> Publish offerings and checkout flows that match how you price without custom glue code </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-sellTile3Title" datatype="html">
+        <source>Self-service by default</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-sellItem3" datatype="html">
+        <source> Let customers subscribe, pay, and manage billing without waiting on your team </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-sellTile4Title" datatype="html">
+        <source>Finance in sync</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-sellItem4" datatype="html">
+        <source> Reconciliation and exports sit beside sales so numbers match what customers see </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-sellTile5Title" datatype="html">
+        <source>Room to diversify</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-sellItem5" datatype="html">
+        <source> Add brands, products, and integrations as your mix changes without starting over </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemTitle" datatype="html">
+        <source> One platform, flexible surfaces </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemLead" datatype="html">
+        <source> Decabill is the billing platform your team runs revenue on. Deploy the open source stack on your infrastructure or choose Decabill Cloud when you want us to operate the platform. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemOpenSourceBadge" datatype="html">
+        <source>Open source</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemOpenSourceTitle" datatype="html">
+        <source> Decabill Open Source </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemOpenSourceLead" datatype="html">
+        <source> The full billing stack you run yourself: billing manager, customer console, and landing surfaces in one deployable platform your team controls end to end. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemOpenSourceAside" datatype="html">
+        <source> Self-hosted on your infrastructure. Same product capabilities without handing operations to a vendor. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemOpenSourceCta" datatype="html">
+        <source>Get started</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemAdvantagesLabel" datatype="html">
+        <source> Why open source </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemAdvantage1Title" datatype="html">
+        <source> Your infrastructure </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemAdvantage1Desc" datatype="html">
+        <source> Keep billing data, payment configuration, and tenant isolation inside the environments you already operate and audit. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemAdvantage1Cta" datatype="html">
+        <source>Read architecture docs</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemAdvantage2Title" datatype="html">
+        <source> Extend on your terms </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemAdvantage2Desc" datatype="html">
+        <source> API-first design, provider plugins, and Docker-based deployment you can inspect, customize, and integrate without platform lock-in. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemAdvantage2Cta" datatype="html">
+        <source>Explore the docs</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemCloudTitle" datatype="html">
+        <source>Decabill Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemCloudDesc" datatype="html">
+        <source> We run the platform for you. Your customers get billing, payments, and self-service while upgrades, scaling, and day-to-day operations are handled by us. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemCloudStartingAt" datatype="html">
+        <source>Starting at</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemCloudUnavailable" datatype="html">
+        <source>Contact us</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemCloudGetStarted" datatype="html">
+        <source>Get started</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ecosystemCloudExplore" datatype="html">
+        <source>View plans</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ctaTitle" datatype="html">
+        <source> Ready to bill services, SaaS, and hosting on Decabill? </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ctaLead" datatype="html">
+        <source> Book a demo to see how Decabill fits your agency or product stack. We can also help with managed hosting for your tenants. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ctaBookDemo" datatype="html">
+        <source>Book a demo</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-ctaDocs" datatype="html">
+        <source>Read the docs</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-howIntegrationApi" datatype="html">
+        <source>REST API</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-metaTitlePage" datatype="html">
+        <source>Billing for agencies and digital products</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-metaDescription" datatype="html">
+        <source>Decabill helps agencies and digital product teams bill services, projects, SaaS subscriptions, and hosting. Invoicing, payments, and customer self-service in one multi-tenant platform.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-metaKeywords" datatype="html">
+        <source>Decabill, agency billing, digital products, SaaS billing, hosting billing, multi-tenant, NestJS, invoicing, Stripe, ZUGFeRD</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceMonth" datatype="html">
+        <source>/month</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceHour" datatype="html">
+        <source>/hour</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceDay" datatype="html">
+        <source>/day</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-title" datatype="html">
+        <source> Legal Disclosure </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-ddgInfo" datatype="html">
+        <source> Information in accordance with Section 5 of the Digital Services Act (DDG) </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-generalInfo" datatype="html">
+        <source>General Information</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-companyName" datatype="html">
+        <source>IPvX UG (haftungsbeschränkt)</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-streetAddress" datatype="html">
+        <source>Leopoldstraße 2-8</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-postalCity" datatype="html">
+        <source>32051 Herford</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-addressRegion" datatype="html">
+        <source>Nordrhein-Westfalen, Germany</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-commercialRegisterLabel" datatype="html">
+        <source>Commercial Register Number:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-registerCourtLabel" datatype="html">
+        <source>Register Court:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-representedByLabel" datatype="html">
+        <source>Represented by:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-contact" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-phoneLabel" datatype="html">
+        <source>Phone:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-faxLabel" datatype="html">
+        <source>Fax:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-emailLabel" datatype="html">
+        <source>Email:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-vatTitle" datatype="html">
+        <source>VAT Identification Number</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-vatId" datatype="html">
+        <source>DE361636567</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-vatNote" datatype="html">
+        <source> (in accordance with Section 27a of the German VAT Act) </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-contentTitle" datatype="html">
+        <source>Content Responsibility</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-contentDesc" datatype="html">
+        <source> Responsible for content in accordance with Section 55, Paragraph 2 of the German Interstate Broadcasting Treaty (RStV): </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-contentResponsibleName" datatype="html">
+        <source>Marcel Menk</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-addressNote" datatype="html">
+        <source>Address as stated above</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-liabilityContentTitle" datatype="html">
+        <source> Liability for Content </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-liabilityContentDesc" datatype="html">
+        <source> As a service provider, we are responsible for our own content on these pages in accordance with general laws. However, according to Article 8 of the Digital Services Act (DSA), as a service provider, we are not obligated to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity. Obligations to remove or block the use of information in accordance with general laws remain unaffected. However, liability in this regard is only possible from the time of knowledge of a specific legal violation. Upon becoming aware of such legal violations, we will remove this content immediately. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-liabilityLinksTitle" datatype="html">
+        <source> Liability for Links </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-liabilityLinksDesc" datatype="html">
+        <source> Our website contains links to external third-party websites, over whose content we have no influence. Therefore, we cannot assume any liability for these external contents. The respective provider or operator of the linked pages is always responsible for the content of the linked pages. The linked pages were checked for possible legal violations at the time of linking. Illegal content was not recognizable at the time of linking. However, a permanent content control of the linked pages is not reasonable without concrete evidence of a legal violation. Upon becoming aware of legal violations, we will remove such links immediately. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-copyrightTitle" datatype="html">
+        <source>Copyright</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-copyrightDesc" datatype="html">
+        <source> The content and works created by the site operators on these pages are subject to German copyright law. The reproduction, processing, distribution and any kind of exploitation outside the limits of copyright require the written consent of the respective author or creator. Downloads and copies of this site are only permitted for private, non-commercial use. Insofar as the content on this site was not created by the operator, the copyrights of third parties are observed. In particular, third-party content is identified as such. Should you nevertheless become aware of a copyright infringement, please inform us accordingly. Upon becoming aware of legal violations, we will remove such content immediately. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-ctaTitle" datatype="html">
+        <source> Questions about our legal disclosure? </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-ctaLead" datatype="html">
+        <source> If you have questions about our company information, registration details, or any other legal matters, we&apos;re happy to help. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-ctaContact" datatype="html">
+        <source> Contact us </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-metaTitlePage" datatype="html">
+        <source>Legal Disclosure</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-metaDescription" datatype="html">
+        <source>Imprint and legal disclosure for Decabill by IPvX UG (haftungsbeschränkt). Company details, representation, and regulatory information for Germany.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalDisclosure-metaKeywords" datatype="html">
+        <source>Decabill, legal disclosure, billing platform</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-title" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-gdprInfo" datatype="html">
+        <source> Information in accordance with Section 13 of the GDPR </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-lastUpdated" datatype="html">
+        <source> Last updated: January 1, 2026 </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-generalInfo" datatype="html">
+        <source>General Information</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-companyName" datatype="html">
+        <source>IPvX UG (haftungsbeschränkt)</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-streetAddress" datatype="html">
+        <source>Leopoldstraße 2-8</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-postalCity" datatype="html">
+        <source>32051 Herford</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-addressRegion" datatype="html">
+        <source>Nordrhein-Westfalen, Germany</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-commercialRegisterLabel" datatype="html">
+        <source>Commercial Register Number:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-registerCourtLabel" datatype="html">
+        <source>Register Court:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-representedByLabel" datatype="html">
+        <source>Represented by:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-contact" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-phoneLabel" datatype="html">
+        <source>Phone:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-faxLabel" datatype="html">
+        <source>Fax:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-emailLabel" datatype="html">
+        <source>Email:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-collectionTitle" datatype="html">
+        <source> Collection of General Information </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-collectionDesc" datatype="html">
+        <source> When you access our website, information of a general nature is automatically collected. This information (server log files) includes, for example, the type of web browser, the operating system used, the domain name of your Internet service provider, and similar information. This is exclusively information that does not allow any conclusions to be drawn about your person. This information is technically necessary to correctly deliver the content of websites requested by you and is mandatory when using the Internet. Anonymous information of this kind is statistically evaluated by us to optimize our Internet presence and the technology behind it. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-personalizedTitle" datatype="html">
+        <source> Personalized Services </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-personalizedDesc" datatype="html">
+        <source> When registering to use our personalized services, some personal data is collected, such as name, address, contact and communication data such as telephone number and email address. If you are registered with us, you can access content and services that we only offer to registered users. Registered users also have the option to change or delete the data provided during registration at any time if necessary. Of course, we will also provide you with information about the personal data we have stored about you at any time. We will be happy to correct or delete this data at your request, provided there are no legal retention obligations to the contrary. To contact us in this regard, please use the contact details provided at the end of this privacy policy. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-sslTitle" datatype="html">
+        <source>SSL Encryption</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-sslDesc" datatype="html">
+        <source> To protect the security of your data during transmission, we use state-of-the-art encryption methods (e.g., SSL) over HTTPS. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-emailTitle" datatype="html">
+        <source>Contact via Email</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-emailDesc" datatype="html">
+        <source> If you contact us by email or contact form, the information you provide will be stored for the purpose of processing your inquiry and for possible follow-up questions. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-rightsTitle" datatype="html">
+        <source> Right to Information, Correction, Blocking, Deletion, and Objection </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-rightsDesc1" datatype="html">
+        <source> You have the right to receive information about your personal data stored by us at any time. You also have the right to correction, blocking or, apart from the prescribed data storage for business processing, deletion of your personal data. Please contact our data protection officer for this purpose. You can find the contact details at the very bottom. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-rightsDesc2" datatype="html">
+        <source> For a data block to be taken into account at any time, this data must be kept in a lock file for control purposes. You can also request the deletion of the data, provided there is no legal archiving obligation. If such an obligation exists, we will block your data upon request. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-rightsDesc3" datatype="html">
+        <source> You can make changes or revoke consent by sending us a corresponding notification with effect for the future. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-cookiesTitle" datatype="html">
+        <source>Cookies</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-cookiesDesc1" datatype="html">
+        <source> Like many other websites, we also use so-called &quot;cookies&quot;. Cookies are small text files that are transferred from a website server to your hard drive. This automatically gives us certain data such as IP address, browser used, operating system about your computer and your connection to the Internet. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-cookiesDesc2" datatype="html">
+        <source> Cookies cannot be used to launch programs or transfer viruses to a computer. Based on the information contained in cookies, we can make navigation easier for you and enable the correct display of our websites. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-cookiesDesc3" datatype="html">
+        <source> Under no circumstances will the data we collect be passed on to third parties or linked to personal data without your consent. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-cookiesDesc4" datatype="html">
+        <source> Of course, you can generally view our website without cookies. Internet browsers are regularly set to accept cookies. You can deactivate the use of cookies at any time via the settings of your browser. Please use the help functions of your Internet browser to find out how to change these settings. Please note that some functions of our website may not work if you have deactivated the use of cookies. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-newsletterTitle" datatype="html">
+        <source>Newsletter</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-newsletterDesc" datatype="html">
+        <source> For sending our newsletter, we use the open-source software Listmonk, which we operate independently on our servers within the European Union. No personal data is passed on to third parties. As part of the newsletter dispatch, we process in particular your email address as well as any other voluntarily provided information (e.g., name or preferences). The processing is carried out exclusively for the purpose of sending and analyzing our newsletter on the basis of your consent in accordance with Art. 6 para. 1 lit. a GDPR. You can revoke your consent at any time with effect for the future, e.g., via the unsubscribe link in the newsletter or by sending us a message. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-liveChatTitle" datatype="html">
+        <source> Live Chat and Support Communication </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-liveChatDesc" datatype="html">
+        <source> For processing support requests and providing a live chat on our website, we use the open-source software Chatwoot, which we operate ourselves on servers within the European Union. The data you provide in the chat, such as name, email address, and the content of the communication, are processed. The processing serves to efficiently process your request and is based on Art. 6 para. 1 lit. b GDPR (fulfillment of a contract or pre-contractual measures) or on the basis of our legitimate interest in accordance with Art. 6 para. 1 lit. f GDPR in user-friendly and fast customer communication. Your data will not be passed on to third parties. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-gtmTitle" datatype="html">
+        <source>Google Tag Manager</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-gtmDesc" datatype="html">
+        <source> We use Google Tag Manager, a service of Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland. Google Tag Manager is used to manage website tags via an interface. The tool itself (which implements the tags) does not process any personal data of users. Google Tag Manager only triggers other tags, which in turn may collect data. Google only receives information about the use of the Tag Manager itself. Further information can be found in Google&apos;s privacy policy at: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://policies.google.com/privacy&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; class=&quot;text-decoration-none&quot;
+                &gt;"/>https://policies.google.com/privacy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. The processing is based on our legitimate interest in accordance with Art. 6 para. 1 lit. f GDPR in an efficient and technically flawless integration of analysis and marketing services. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-cloudflareCdnTitle" datatype="html">
+        <source>Cloudflare CDN</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-cloudflareCdnDesc" datatype="html">
+        <source> We use the Content Delivery Network (CDN) of Cloudflare Germany GmbH, Rosental 7, c/o Mindspace, 80331 Munich, Germany (Cloudflare), to increase the security and delivery speed of our website. This corresponds to our legitimate interest (Art. 6 para. 1 lit. f GDPR). A CDN is a network of servers distributed worldwide that is able to deliver optimized content to website users. For this purpose, personal data may be processed in server log files by Cloudflare. Cloudflare is a recipient of your personal data and acts as a processor for us. Further information on objection and removal options against Cloudflare can be found at: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                href=&quot;https://www.cloudflare.com/resources/assets/slt3lc6tev37/1M1j5uuFDuLTYiZJJDPBag/770322411bcac7f8bcc350e31b1e8319/Customer_DPA_v.3_1_-_de-de_19_Oct_2020.pdf&quot;
+                target=&quot;_blank&quot;
+                rel=&quot;noopener&quot;
+                class=&quot;text-decoration-none&quot;
+                &gt;"/>Cloudflare DPA<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-plausibleTitle" datatype="html">
+        <source>Plausible Analytics</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-plausibleDesc" datatype="html">
+        <source> We use Plausible Analytics, a self-hosted open-source web analytics service running on our own EU-based infrastructure. Plausible collects aggregated, anonymized usage statistics about our website. It does not use cookies, local storage, or any persistent identifiers. Only anonymized data such as page views, referrers, approximate geographic location (country/region), device type, and browser information is processed. No individual user profiles or cross-site tracking occurs. The processing is based on our legitimate interest in accordance with Art. 6 para. 1 lit. f GDPR in understanding and improving the website experience for all visitors. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-cloudflareAnalyticsTitle" datatype="html">
+        <source> Cloudflare Analytics </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-cloudflareAnalyticsDesc" datatype="html">
+        <source> We use Cloudflare Analytics, a service of Cloudflare, Inc., 101 Townsend St, San Francisco, CA 94107, USA (EU representative: Cloudflare Ireland Limited, 5th Floor, One Albert Quay, Cork, Ireland). Cloudflare Analytics is only activated after explicit user consent. It collects aggregated website traffic data such as page views, unique visitors, referrers, and performance metrics. Data is processed in accordance with Cloudflare&apos;s privacy policy at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                href=&quot;https://www.cloudflare.com/privacypolicy/&quot;
+                target=&quot;_blank&quot;
+                rel=&quot;noopener&quot;
+                class=&quot;text-decoration-none&quot;
+                &gt;"/>https://www.cloudflare.com/privacypolicy/<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. The processing is based on user consent in accordance with Art. 6 para. 1 lit. a GDPR and § 25 para. 1 TTDSG. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-gaTitle" datatype="html">
+        <source>Google Analytics</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-gaDesc" datatype="html">
+        <source> We use Google Analytics, a service of Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland (US parent: Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA). Google Analytics is only activated after explicit user consent. It collects data on website usage including page views, sessions, user behavior, and demographics for optimization purposes. IP addresses are anonymized, and data is processed in accordance with Google&apos;s privacy policy at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://policies.google.com/privacy&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; class=&quot;text-decoration-none&quot;
+                &gt;"/>https://policies.google.com/privacy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. The processing is based on user consent in accordance with Art. 6 para. 1 lit. a GDPR and § 25 para. 1 TTDSG. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-mailgunTitle" datatype="html">
+        <source>Mailgun</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-mailgunDesc" datatype="html">
+        <source> For sending system-related emails (e.g., confirmation, notification, or transaction emails), we use the &quot;Mailgun&quot; service of the provider Mailgun Technologies, Inc., 112 E Pecan St. #1135, San Antonio, TX 78205, USA. The sending takes place via server locations within the European Union. Mailgun acts as a processor in accordance with Art. 28 GDPR. A corresponding data processing agreement has been concluded with Mailgun, which ensures compliance with European data protection standards. The processing includes in particular email addresses as well as the content of the sent emails. Further information on data processing by Mailgun can be found at: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                href=&quot;https://www.mailgun.com/de/legal/privacy-policy&quot;
+                target=&quot;_blank&quot;
+                rel=&quot;noopener&quot;
+                class=&quot;text-decoration-none&quot;
+                &gt;"/>https://www.mailgun.com/de/legal/privacy-policy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-changesTitle" datatype="html">
+        <source>Changes</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-changesDesc" datatype="html">
+        <source> We reserve the right to occasionally adapt this privacy policy so that it always complies with current legal requirements or to implement changes to our services in the privacy policy, e.g., when introducing new services. The new privacy policy will then apply to your next visit. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-ctaTitle" datatype="html">
+        <source> Questions about your privacy or data? </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-ctaLead" datatype="html">
+        <source> We take data protection seriously. If you have questions about how we handle your data, want to exercise your rights, or need clarification on any aspect of our privacy policy, please reach out. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-ctaContact" datatype="html">
+        <source> Contact us </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-metaTitlePage" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-metaDescription" datatype="html">
+        <source>How Decabill and IPvX process personal data when you use our platform, websites, and support. Cookies, retention, your rights, and how to contact us.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalPrivacy-metaKeywords" datatype="html">
+        <source>Decabill, privacy policy, billing platform</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-title" datatype="html">
+        <source>Terms of Service</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-heroLead" datatype="html">
+        <source> Terms governing Decabill software, licenses, and managed cloud services under German and European Union law. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-lastUpdated" datatype="html">
+        <source> Last updated: March 23, 2026 </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-generalInfo" datatype="html">
+        <source>General Information</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-companyName" datatype="html">
+        <source>IPvX UG (haftungsbeschränkt)</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-streetAddress" datatype="html">
+        <source>Leopoldstraße 2-8</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-postalCity" datatype="html">
+        <source>32051 Herford</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-addressRegion" datatype="html">
+        <source>Nordrhein-Westfalen, Germany</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-commercialRegisterLabel" datatype="html">
+        <source>Commercial Register Number:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-registerCourtLabel" datatype="html">
+        <source>Register Court:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-representedByLabel" datatype="html">
+        <source>Represented by:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-contact" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-phoneLabel" datatype="html">
+        <source>Phone:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-faxLabel" datatype="html">
+        <source>Fax:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-emailLabel" datatype="html">
+        <source>Email:</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-scopeTitle" datatype="html">
+        <source>Scope and Definitions</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-scopeDesc1" datatype="html">
+        <source> These Terms of Service (&quot;Terms&quot;) apply to all contracts and legal relationships between IPvX UG (haftungsbeschränkt) (&quot;we&quot;, &quot;us&quot;) and you regarding the Decabill software, related documentation, self-hosted license offerings, professional and support services, and our managed cloud offering including provision of the software on infrastructure operated or procured by us (&quot;Cloud Service&quot;), unless expressly agreed otherwise in writing (including individual enterprise agreements or separate order forms). </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-scopeDesc2" datatype="html">
+        <source> &quot;Consumer&quot; means any natural person who enters into a legal transaction for purposes that are predominantly outside their trade, business, or profession (Section 13 of the German Civil Code, Bürgerliches Gesetzbuch - BGB). &quot;Entrepreneur&quot; means a natural or legal person or a partnership with legal personality who or which acts in exercise of their trade, business, or profession when entering into a legal transaction (Section 14 BGB). </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-scopeDesc3" datatype="html">
+        <source> Conflicting or deviating terms of you shall not apply unless we have expressly agreed to their validity in writing. Individual agreements take precedence over these Terms (Section 305b BGB). </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-offeringsTitle" datatype="html">
+        <source> Product Types, License Models, and Services </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-offeringsDesc1" datatype="html">
+        <source> We offer (a) self-hosted software under open-source and source-available license terms (including editions made available under the GNU Affero General Public License version 3 (&quot;AGPL-3.0&quot;) and under the Business Source License 1.1 with Additional Use Grant (&quot;BUSL-1.1&quot;)), (b) paid self-hosted subscriptions and commercial license arrangements (including the &quot;Business&quot; and &quot;Enterprise&quot; tiers described on our pricing pages), (c) ancillary services such as onboarding, support, training, and custom development agreed separately, and (d) the Cloud Service: operation of Decabill on our or our subprocessors&apos; infrastructure, including server hosting, maintenance, scaling, and backup or monitoring measures as specified in the applicable service description or order. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-offeringsDesc2" datatype="html">
+        <source> The respective open-source or source-available license text supplied with the software governs your rights and obligations for the corresponding edition to the extent it is mandatory law or expressly designated as prevailing. Where you obtain a commercial license, subscription, or Cloud Service from us, these Terms supplement and, in case of conflict on commercial and operational matters, prevail over generic source-available terms only to the extent permitted by law and as expressly stated in your order or license grant. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-offeringsDesc3" datatype="html">
+        <source> Features, limits, support channels, and eligibility criteria (such as financial thresholds for specific self-hosted tiers) are as described on our website at the time of order unless otherwise agreed in writing. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-contractFormationTitle" datatype="html">
+        <source> Conclusion of Contract and Pre-Contractual Information </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-contractFormationDesc1" datatype="html">
+        <source> Presentations on our website, in demos, or in marketing materials constitute an invitation to treat (invitatio ad offerendum) and not a binding offer under Sections 145, 146 BGB, unless explicitly marked as binding. A contract is formed when we accept your order, when you accept our written or electronic offer, or when we grant access to paid or Cloud resources, whichever occurs first. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-contractFormationDesc2" datatype="html">
+        <source> For consumers and distance contracts, we comply with the statutory information duties for digital products and services under the BGB and the EU Directives implemented therein (including Articles 246a, 246b, 246c Einführungsgesetz zum BGB - EGBGB as applicable). You will receive confirmation of the contract on a durable medium where required by law. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-contractFormationDesc3" datatype="html">
+        <source> You are responsible for the accuracy of registration and billing data. Automated technical steps (e.g., provisioning of a tenant or license key) may constitute acceptance without a separate declaration if this is customary and you have been informed accordingly. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-pricingTitle" datatype="html">
+        <source>Prices, Taxes, and Payment</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-pricingDesc1" datatype="html">
+        <source> Prices are as stated in the order, checkout flow, or written offer, in euros unless otherwise specified. Statutory value-added tax (Umsatzsteuer) or other applicable taxes are added where required by law. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-pricingDesc2" datatype="html">
+        <source> Payment methods may include payment cards, direct debit where offered, bank transfer (e.g., for annual commitments or purchase orders), and other means we communicate at checkout. Recurring fees for subscriptions and Cloud Service are due in advance for each billing period unless agreed otherwise. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-pricingDesc3" datatype="html">
+        <source> If you default on payment, we may charge statutory default interest (Section 288 BGB) and suspend or terminate services in accordance with law and these Terms. Offsetting against our claims is permitted only with undisputed or legally established counterclaims. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-withdrawalTitle" datatype="html">
+        <source> Statutory Right of Withdrawal for Consumers (EU / Germany) </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-withdrawalDesc1" datatype="html">
+        <source> If you are a Consumer and the contract is a distance or off-premises contract, you generally have a right of withdrawal of fourteen (14) days without giving any reason, in accordance with Sections 355 et seq. BGB and Directive 2011/83/EU (Consumer Rights Directive) as transposed into German law. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-withdrawalDesc2" datatype="html">
+        <source> For contracts concerning digital content not supplied on a tangible medium, the right of withdrawal expires if we have begun performance with your prior express consent and you have acknowledged that you thereby lose your right of withdrawal once performance has begun (Section 356(5) BGB). Similar consequences may apply where you request immediate commencement of a service. We will provide the statutory withdrawal information and, where required, a model withdrawal form in a durable medium before or at contract conclusion. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-withdrawalDesc3" datatype="html">
+        <source> Entrepreneurs are not entitled to a statutory withdrawal right unless individually agreed. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-selfHostedTitle" datatype="html">
+        <source> Self-Hosted Software: Rights of Use and Compliance </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-selfHostedDesc1" datatype="html">
+        <source> Subject to payment (if applicable) and the applicable license text, we grant you a non-exclusive, non-transferable right to install and run the licensed software in your own environment within the agreed scope (e.g., number of instances, production vs. non-production, or organizational limits in enterprise agreements). </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-selfHostedDesc2" datatype="html">
+        <source> You must comply with all applicable license conditions, including AGPL-3.0 and BUSL-1.1 obligations such as source-sharing, network-use, and additional-use-grant limits where they apply. You may not circumvent technical protection measures, remove proprietary notices, or sublicense beyond what the license permits. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-selfHostedDesc3" datatype="html">
+        <source> You operate the infrastructure and are responsible for backups, security hardening, regulatory compliance in your environment, and lawful use of third-party models, APIs, or data you connect to Decabill. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-cloudTitle" datatype="html">
+        <source> Cloud Service, Hosting, and Subprocessors </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-cloudDesc1" datatype="html">
+        <source> For the Cloud Service we provide access to a managed instance of Decabill, including hosting on servers operated by us or by qualified infrastructure providers (subprocessors). The primary place of processing, data residency options, and security measures will be described in the applicable order, product documentation, and our Privacy Policy. Processing of personal data is governed by Regulation (EU) 2016/679 (GDPR) and, where applicable, a data processing agreement (Art. 28 GDPR) concluded with you. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-cloudDesc2" datatype="html">
+        <source> We strive to maintain service availability in line with any SLA expressly agreed in your contract. Unless otherwise stated, planned maintenance will, where reasonably practicable, be announced in advance. Temporary interruptions may occur for security, capacity, or legal reasons. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-cloudDesc3" datatype="html">
+        <source> You retain responsibility for the content and lawfulness of data and workloads you upload or configure, for user management within your organization, and for credentials and API keys you control. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-supportTitle" datatype="html">
+        <source> Support, Service Levels, and Individual Services </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-supportDesc1" datatype="html">
+        <source> Support channels (e.g., community, email, telephone, chat, or Microsoft Teams) and response targets depend on the purchased tier or enterprise agreement. Any uptime percentage or SLA applies only if and as expressly agreed in writing; otherwise statutory remedies remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-supportDesc2" datatype="html">
+        <source> Professional services such as onboarding, training, customization, or development are provided on the basis of separate written specifications, statements of work, or order forms. Unless agreed otherwise, we grant you the rights of use to deliverables as required for the intended use under the contract. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-supportDesc3" datatype="html">
+        <source> Credits or fee reductions for SLA failures, if any, are governed solely by the applicable SLA exhibit. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-conductTitle" datatype="html">
+        <source> Your Obligations and Acceptable Use </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-conductDesc1" datatype="html">
+        <source> You will use Decabill and related services only in compliance with applicable law, including export control, sanctions, telecommunications, and AI-related regulations where relevant. You must not misuse the services (e.g., to distribute malware, infringe third-party rights, conduct illegal surveillance, or overload systems without authorization). </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-conductDesc2" datatype="html">
+        <source> You are obliged to keep access credentials confidential, to inform us without undue delay of security incidents that may affect our systems, and to cooperate reasonably in troubleshooting. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-conductDesc3" datatype="html">
+        <source> We may take proportionate countermeasures, including suspension of access, if you materially breach these obligations or if continued provision would expose us to undue legal or security risk. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-updatesTitle" datatype="html">
+        <source> Updates, Maintenance, and Changes </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-updatesDesc1" datatype="html">
+        <source> We may provide updates, patches, and new versions of the software or Cloud Service. For self-hosted deployments, you decide when to apply updates unless security-critical measures are required by law or expressly mandated under your enterprise agreement. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-updatesDesc2" datatype="html">
+        <source> We may modify the Cloud Service for technical, security, or legal reasons if the contractual purpose remains substantially preserved. Material adverse changes will be communicated with reasonable notice where required by law; your statutory rights remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-updatesDesc3" datatype="html">
+        <source> Beta or preview features may be offered &quot;as is&quot; without warranty of any particular fitness until generally released. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-ipTitle" datatype="html">
+        <source> Intellectual Property and Third-Party Components </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-ipDesc1" datatype="html">
+        <source> We or our licensors retain all rights to Decabill not expressly granted to you. The provisions of the German Act on Copyright and Related Rights (Urheberrechtsgesetz - UrhG) and EU copyright law remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-ipDesc2" datatype="html">
+        <source> The software may include third-party open-source components under their respective licenses. Corresponding notices and license texts are supplied with the software or in documentation. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-ipDesc3" datatype="html">
+        <source> Feedback you provide may be used by us without restriction or royalty, subject to applicable personal data rules. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-dataTitle" datatype="html">
+        <source>Data Protection</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-dataDesc" datatype="html">
+        <source> Processing of personal data in connection with our website, contractual relationship, and Cloud Service is described in our Privacy Policy. That policy explains categories of data, purposes, legal bases under the GDPR (including Art. 6 and, where relevant, Art. 28 GDPR for processing on your instructions), retention, and your data subject rights under Chapter III GDPR. In case of conflict between these Terms and the Privacy Policy on data-protection matters, the Privacy Policy prevails. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-liabilityTitle" datatype="html">
+        <source> Defects, Warranty, and Liability </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-liabilityDesc1" datatype="html">
+        <source> For contracts with Consumers, statutory rights regarding defects in digital products or services (including Sections 327 et seq. BGB and the remedies thereunder) apply without restriction, except where mandatory law permits limitation. For Entrepreneurs, warranty for defects is governed by Sections 434 et seq. BGB unless stricter individual agreements exist. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-liabilityDesc2" datatype="html">
+        <source> We are liable without limitation for intent (Vorsatz) and gross negligence (grobe Fahrlässigkeit), for injury to life, body, or health, under the German Product Liability Act (Produkthaftungsgesetz - ProdHaftG) where applicable, and under a guarantee (Garantie) if assumed. For simple negligence we are liable only for breach of material contractual obligations (Kardinalpflichten), limited to typical, foreseeable damage, except in the cases in the preceding sentence. The above does not imply a reversal of the burden of proof to your disadvantage. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-liabilityDesc3" datatype="html">
+        <source> Any further exclusion or limitation of liability must be measured against Sections 307 et seq. BGB (including transparency control and content control for standard terms, Section 309 BGB for Consumers). Invalid provisions are replaced by the statutory rule closest in economic purpose. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-termTitle" datatype="html">
+        <source>Term, Termination, and Notice</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-termDesc1" datatype="html">
+        <source> Subscriptions and Cloud Service run for the term selected at order (e.g., monthly or annual) and renew for equivalent periods unless terminated with notice. Unless otherwise agreed in your order, ordinary termination of recurring plans may require fourteen (14) days&apos; notice to the end of the current billing period, in line with the arrangements published on our pricing pages. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-termDesc2" datatype="html">
+        <source> Either party may terminate for cause (außerordentliche Kündigung) where good cause exists under Section 314 BGB or applicable special provisions. Good cause for us includes persistent payment default, serious acceptable-use violations, or legally required shutdown. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-termDesc3" datatype="html">
+        <source> Upon termination, your right to use the affected software or Cloud Service ceases; we may delete tenant data after any statutory or agreed retention period. Sections that by nature should survive (e.g., liability, confidentiality, applicable law) remain in effect. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-finalTitle" datatype="html">
+        <source> Amendments, Governing Law, Venue, and Dispute Resolution </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-changesDesc1" datatype="html">
+        <source> We may update these Terms to reflect legal requirements, technical developments, or changed service scope. For Consumers, amendments during an ongoing contract require consent unless the change is exclusively to your benefit, is purely ancillary, or is required by law with no disadvantage to you (Section 305c(2) BGB in conjunction with transparency requirements under Sections 307 et seq. BGB). </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-changesDesc2" datatype="html">
+        <source> For Entrepreneurs, we may notify you of amended Terms with reasonable notice. If you do not object within the stated period, the amendments may be deemed accepted where legally permissible; we will highlight this consequence in the notice. Your statutory rights, including termination rights, remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-finalDesc1" datatype="html">
+        <source> These Terms and the contractual relationship are governed by the laws of the Federal Republic of Germany to the exclusion of the UN Convention on Contracts for the International Sale of Goods (CISG). Mandatory consumer protections of the state in which you habitually reside remain unaffected (Article 6(2) of Regulation (EU) No 593/2008 - Rome I). </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-finalDesc2" datatype="html">
+        <source> If you are a merchant (Kaufmann) within the meaning of the German Commercial Code (Handelsgesetzbuch - HGB), a legal entity under public law, or a special fund (öffentlich-rechtliches Sondervermögen), the exclusive place of jurisdiction for all disputes arising from or in connection with these Terms is our registered seat, where permissible. We remain free to bring action at your general place of jurisdiction. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-finalDesc3" datatype="html">
+        <source> We are not obliged and not willing to participate in dispute resolution proceedings before a consumer arbitration board (Verbraucherschlichtungsstelle) within the meaning of the German Act on Alternative Dispute Resolution in Consumer Matters (Verbraucherstreitbeilegungsgesetz - VSBG), unless we are required to state a different participation status under mandatory law. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-finalDesc4" datatype="html">
+        <source> Should individual provisions of these Terms be or become invalid or unenforceable, the remaining provisions shall remain in effect. The invalid or unenforceable provision shall be replaced by a valid provision that comes closest to the economic purpose of the original, to the extent permitted by law (including Sections 306, 307 BGB for standard terms). </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-ctaTitle" datatype="html">
+        <source>Questions about these terms?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-ctaLead" datatype="html">
+        <source> If you need clarification on licenses, the Cloud Service, or contractual conditions, please contact us using the details above. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-ctaContact" datatype="html">
+        <source> Contact us </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-metaTitlePage" datatype="html">
+        <source>Terms of Service</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-metaDescription" datatype="html">
+        <source>Terms governing use of the Decabill platform, websites, and related services. Accounts, licensing, acceptable use, liability, and contact information.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillLegalTerms-metaKeywords" datatype="html">
+        <source>Decabill, terms of service, billing platform</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-heroTitle" datatype="html">
+        <source> Choose Your <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>License<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-heroDescription" datatype="html">
+        <source> Run Decabill on your own infrastructure or let us host it with predictable pricing as you grow from early deployments to enterprise revenue operations. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-pathsTitle" datatype="html">
+        <source>Two ways to run Decabill</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-pathsLead" datatype="html">
+        <source> Most teams start self-hosted; move to managed cloud when you want us to operate the platform. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-pathSelfHostedTitle" datatype="html">
+        <source>Self-hosted</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-pathSelfHostedDesc" datatype="html">
+        <source> Open source through enterprise licenses. You control data, networking, and upgrades. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-pathSelfHostedCta" datatype="html">
+        <source>See license tiers <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-down ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-pathManagedTitle" datatype="html">
+        <source>Decabill Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-pathManagedDesc" datatype="html">
+        <source> Fully managed platform. We handle infrastructure, updates, and scaling. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-pathManagedCta" datatype="html">
+        <source>See cloud pricing <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-down ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-tiersTitle" datatype="html">
+        <source>License tiers</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-tiersLead" datatype="html">
+        <source> Compare self-hosted plans from open source through enterprise. Swipe or use the arrows to review Startup, Business, and Enterprise. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-scrollPrev" datatype="html">
+        <source>Previous plans</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-scrollNext" datatype="html">
+        <source>Next plans</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-openSourceTitle" datatype="html">
+        <source>Open Source</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-selfHostedBadge" datatype="html">
+        <source>Self-Hosted</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-openSourcePrice" datatype="html">
+        <source> Free </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-openSourceLicense" datatype="html">
+        <source>AGPL-3.0 License</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-openSourceFeature1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Billing manager API<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> includes subscriptions, invoices, and webhooks</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-openSourceFeature2" datatype="html">
+        <source>Single-tenant deployment with Docker</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-openSourceFeature3" datatype="html">
+        <source>Complete source code access to the billing manager</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-openSourceFeature4" datatype="html">
+        <source>Modify and customize freely</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-openSourceNote" datatype="html">
+        <source>Must share modifications if used as a service (AGPL requirement)</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-viewOnGitHub" datatype="html">
+        <source>View on GitHub</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-startupTitle" datatype="html">
+        <source>Startup</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-startupPrice" datatype="html">
+        <source>Free</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-startupLicense" datatype="html">
+        <source> BUSL-1.1 with Additional Use Grant </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-startupFeature1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Everything in Open Source<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-startupFeature2" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Billing console<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> for customer and admin self-service</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-startupFeature3" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Multi-tenant operations<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> with tenant isolation and per-tenant URLs</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-startupFeature4" datatype="html">
+        <source>Automatic product provisioning from subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-startupNote" datatype="html">
+        <source>For businesses with Total Finances &lt; €2,000,000/year</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-mostPopularBadge" datatype="html">
+        <source>Most Popular</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-businessTitle" datatype="html">
+        <source>Business</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-businessPrice" datatype="html">
+        <source> €499/mo </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-businessLicense" datatype="html">
+        <source> BUSL-1.1 with Additional Use Grant </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-businessFeature1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Everything in Startup<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-businessFeature2" datatype="html">
+        <source>Personal onboarding</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-businessFeature3" datatype="html">
+        <source>Standard support (E-Mail, Phone)</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-businessNote" datatype="html">
+        <source>For businesses with Total Finances ≥ €2,000,000/year</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-bookDemo" datatype="html">
+        <source>Book a Demo</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-enterpriseTitle" datatype="html">
+        <source>Enterprise</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-enterprisePrice" datatype="html">
+        <source> Ask Us </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-enterpriseLicense" datatype="html">
+        <source> Commercial License </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-enterpriseFeature1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Everything in Business<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-enterpriseFeature2" datatype="html">
+        <source>Priority support (Microsoft Teams) &amp; SLA</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-enterpriseFeature3" datatype="html">
+        <source>Expert-led module customization and development</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-enterpriseFeature4" datatype="html">
+        <source>Custom licensing terms</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-contactSales" datatype="html">
+        <source>Contact Sales</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-managedTitle" datatype="html">
+        <source>Decabill Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-managedLead" datatype="html">
+        <source> Fully managed hosting with predictable monthly pricing. We operate infrastructure, scaling, and updates so your teams can focus on billing and delivery. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-cloudTitle" datatype="html">
+        <source>Decabill Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-managedBadge" datatype="html">
+        <source>Managed</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-cloudDescription" datatype="html">
+        <source> Fully managed Decabill platform hosted in the cloud. Made for agencies and product teams of any size. No infrastructure setup required. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-cloudFeature1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Fully managed.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> We handle infrastructure, updates, and maintenance</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-cloudFeature2" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Full platform.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Customer console, admin billing, ZUGFeRD invoicing, and provisioning</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-cloudFeature3" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Automatic scaling.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Capacity grows with your catalog and tenants</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-cloudFeature4" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>99.9% uptime SLA<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> for enterprise-grade reliability</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-cloudStartingAt" datatype="html">
+        <source>Starting at</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-cloudPriceUnit" datatype="html">
+        <source>/month</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-cloudPriceUnavailable" datatype="html">
+        <source>Not available</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-getStartedNow" datatype="html">
+        <source>Get Started Now</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-exploreCloud" datatype="html">
+        <source>Explore platform</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-ctaTitle" datatype="html">
+        <source>Ready to get started with Decabill?</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-ctaLead" datatype="html">
+        <source> Whether you are starting with our open source version or need enterprise features, we are here to help you run reliable billing for agencies and digital products. </source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-ctaGetStarted" datatype="html">
+        <source>Get Started Free</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-ctaTalkToSales" datatype="html">
+        <source>Talk to Sales</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-metaTitlePage" datatype="html">
+        <source>Licensing from open source to enterprise</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-metaDescription" datatype="html">
+        <source>Compare open-source, team, and enterprise Decabill plans. Flexible licensing for self-hosted or cloud deployments, with scale and compliance when you need it.</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillPricing-metaKeywords" datatype="html">
+        <source>Decabill pricing, billing platform pricing, subscription billing, self-hosted billing, enterprise billing platform</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-message" datatype="html">
+        <source>This website uses cookies to ensure you get the best experience on our website.</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-dismiss" datatype="html">
+        <source>Got it!</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-allow" datatype="html">
+        <source>Accept</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-deny" datatype="html">
+        <source>Decline</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-link" datatype="html">
+        <source>Learn more</source>
+        </trans-unit>
+    </body>
+  </file>
+</xliff>
