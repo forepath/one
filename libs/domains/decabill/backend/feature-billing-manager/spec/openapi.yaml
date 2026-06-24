@@ -11,9 +11,10 @@ info:
     user's unbilled open positions as line items. This reduces the number of invoices (one per user per billing day).
     Separate from the service plan's billing_day_of_month, which controls subscription period alignment.
 
-    **Multi-tenancy:** Send optional header `X-Tenant` on every request (defaults to `default` when omitted).
-    Allowed values come from the `TENANTS` environment variable. Data is isolated per tenant; the same email may
-    exist in different tenants as separate users. Invalid tenant ids return 400.
+    **Multi-tenancy:** Send optional header `X-Tenant` on every request (defaults to `default` when omitted, unless
+    `TENANTS_ALLOW_DEFAULT=false` — then missing, blank, or `default` values are rejected). Allowed values come from
+    the `TENANTS` environment variable (includes `default` unless disabled). Data is isolated per tenant; the same
+    email may exist in different tenants as separate users. Invalid tenant ids return 400.
   contact:
     name: ForePath
     email: hi@forepath.io
@@ -2221,8 +2222,9 @@ components:
         type: string
         default: default
       description: |
-        Tenant id for request scoping. Defaults to `default` when omitted. Must be listed in the server `TENANTS` env
-        (which always includes `default`). Invalid values return 400.
+        Tenant id for request scoping. Defaults to `default` when omitted (unless `TENANTS_ALLOW_DEFAULT=false`).
+        When default is disabled, missing, blank, or `default` values are rejected. Must be listed in the server
+        `TENANTS` allowlist. Invalid values return 400.
   schemas:
     ErrorResponse:
       type: object

@@ -30,11 +30,11 @@ Resolution is implemented in **`getAuthenticationMethod`** (`libs/domains/identi
 
 ## Billing manager multi-tenancy
 
-| Control                        | Purpose                                                                                                                  |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| **`X-Tenant` header**          | Selects tenant context on HTTP and billing WebSocket handshakes. Validated against **`TENANTS`**; unknown ids → **400**. |
-| **`TenantUserGuard`**          | Ensures authenticated users' **`tenant_id`** matches the request tenant.                                                 |
-| **`STATIC_API_KEY_TENANT_ID`** | Optional bind of API key auth to one tenant.                                                                             |
+| Control                        | Purpose                                                                                                                                                                                                                                       |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`X-Tenant` header**          | Selects tenant context on HTTP and billing WebSocket handshakes. Validated against **`TENANTS`** (includes `default` unless **`TENANTS_ALLOW_DEFAULT=false`**; then missing, blank, or `default` values are rejected); unknown ids → **400**. |
+| **`TenantUserGuard`**          | Ensures authenticated users' **`tenant_id`** matches the request tenant.                                                                                                                                                                      |
+| **`STATIC_API_KEY_TENANT_ID`** | Optional bind of API key auth to one tenant.                                                                                                                                                                                                  |
 
 **Accepted risk [DR-002](./accepted-risks.md#dr-002--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset):** With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, one deployment API key grants **admin access to every tenant** in **`TENANTS`** (tenant chosen per request via **`X-Tenant`**). Interactive **keycloak** / **users** sessions remain limited to the user's tenant.
 

@@ -40,12 +40,13 @@ Complete reference for environment variables used in Decabill.
 
 Billing data and users are partitioned by **`tenant_id`**. HTTP clients send **`X-Tenant`**; the billing console attaches it via `environment.billing.tenantId` (defaults to `default`).
 
-| Variable                   | Description                                                                                                    |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `TENANTS`                  | Comma-separated tenant ids allowed for **`X-Tenant`** (always includes `default`). Unset means only `default`. |
-| `STATIC_API_KEY_TENANT_ID` | When set with **`STATIC_API_KEY`**, API key requests are accepted only when **`X-Tenant`** matches.            |
-| `BILLING_FRONTEND_URL`     | Billing console base URL for the `default` tenant (Stripe return redirects).                                   |
-| `TENANT_FRONTEND_URLS`     | Per-tenant console URLs: `tenantId=https://…` pairs, comma-separated.                                          |
+| Variable                   | Description                                                                                                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TENANTS`                  | Comma-separated tenant ids allowed for **`X-Tenant`**. Includes `default` unless disabled below. Unset means only `default` when default is allowed.                 |
+| `TENANTS_ALLOW_DEFAULT`    | When `false`, excludes `default` from the allowlist and rejects missing, blank, or `default` **`X-Tenant`** values. Unset or any other value keeps current behavior. |
+| `STATIC_API_KEY_TENANT_ID` | When set with **`STATIC_API_KEY`**, API key requests are accepted only when **`X-Tenant`** matches.                                                                  |
+| `BILLING_FRONTEND_URL`     | Billing console base URL for the `default` tenant (Stripe return redirects).                                                                                         |
+| `TENANT_FRONTEND_URLS`     | Per-tenant console URLs: `tenantId=https://…` pairs, comma-separated.                                                                                                |
 
 **API key scope (accepted risk [DR-002](../security/accepted-risks.md#dr-002--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)):** With **`STATIC_API_KEY`** and **without** **`STATIC_API_KEY_TENANT_ID`**, one deployment key grants **admin access to every tenant** in **`TENANTS`**, selected per request via **`X-Tenant`**. Set **`STATIC_API_KEY_TENANT_ID`** to bind the key to one tenant, or use **keycloak** / **users** for interactive multi-tenant console access.
 

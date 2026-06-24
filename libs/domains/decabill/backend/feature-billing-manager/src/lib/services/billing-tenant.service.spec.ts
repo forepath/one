@@ -1,9 +1,10 @@
-import { parseConfiguredTenants, isConfiguredTenant } from '@forepath/shared/backend';
+import { TENANTS_ALLOW_DEFAULT_ENV, parseConfiguredTenants, isConfiguredTenant } from '@forepath/shared/backend';
 
 import { BillingTenantService } from './billing-tenant.service';
 
 describe('BillingTenantService', () => {
   const originalTenants = process.env['TENANTS'];
+  const originalAllowDefault = process.env[TENANTS_ALLOW_DEFAULT_ENV];
   const originalBillingFrontendUrl = process.env['BILLING_FRONTEND_URL'];
   const originalTenantFrontendUrls = process.env['TENANT_FRONTEND_URLS'];
 
@@ -12,6 +13,12 @@ describe('BillingTenantService', () => {
       delete process.env['TENANTS'];
     } else {
       process.env['TENANTS'] = originalTenants;
+    }
+
+    if (originalAllowDefault === undefined) {
+      delete process.env[TENANTS_ALLOW_DEFAULT_ENV];
+    } else {
+      process.env[TENANTS_ALLOW_DEFAULT_ENV] = originalAllowDefault;
     }
 
     if (originalBillingFrontendUrl === undefined) {
@@ -43,6 +50,16 @@ describe('BillingTenantService', () => {
     expect(service.isValidTenant('missing')).toBe(false);
     expect(parseConfiguredTenants()).toEqual(['default', 'alpha']);
     expect(isConfiguredTenant('alpha', parseConfiguredTenants())).toBe(true);
+  });
+
+  it('excludes default tenant when TENANTS_ALLOW_DEFAULT is false', () => {
+    process.env['TENANTS'] = 'alpha,beta';
+    process.env[TENANTS_ALLOW_DEFAULT_ENV] = 'false';
+    const service = new BillingTenantService();
+
+    expect(service.getConfiguredTenants()).toEqual(['alpha', 'beta']);
+    expect(service.isValidTenant('default')).toBe(false);
+    expect(service.isValidTenant('alpha')).toBe(true);
   });
 
   it('resolves frontend url per tenant', () => {

@@ -36,7 +36,7 @@ Automated **Trivy** scans on pull requests; CRITICAL fail gate (fixable issues o
 
 ## Configuration reference
 
-For variable-by-variable deployment settings, including **`CONFIG_*`**, **`CSP_ENFORCE`**, **`TENANTS`**, **`STATIC_API_KEY_TENANT_ID`**, and Stripe variables, see **[Environment configuration](../deployment/environment-configuration.md)** and **[Production checklist](../deployment/production-checklist.md)**.
+For variable-by-variable deployment settings, including **`CONFIG_*`**, **`CSP_ENFORCE`**, **`TENANTS`**, **`TENANTS_ALLOW_DEFAULT`**, **`STATIC_API_KEY_TENANT_ID`**, and Stripe variables, see **[Environment configuration](../deployment/environment-configuration.md)** and **[Production checklist](../deployment/production-checklist.md)**.
 
 ## Related documentation
 

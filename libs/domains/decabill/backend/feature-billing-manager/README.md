@@ -31,7 +31,7 @@ API key auth is supported through the shared HybridAuthGuard at the app level.
 ## Multi-tenancy
 
 - Clients send `X-Tenant` on HTTP requests (frontend: `billing.tenantId` in runtime config; defaults to `default`).
-- Server validates against `TENANTS` env (comma-separated; always includes `default`).
+- Server validates against `TENANTS` env (comma-separated; includes `default` unless `TENANTS_ALLOW_DEFAULT=false`).
 - Per-tenant billing console URLs for Stripe return redirects: `BILLING_FRONTEND_URL` (default tenant) and `TENANT_FRONTEND_URLS` on the backend.
 - Users, service types, invoices, and subscriptions are scoped per tenant; same email can register separately per tenant.
 - Background jobs iterate all configured tenants. Stripe webhooks resolve tenant from checkout session metadata.
@@ -46,7 +46,8 @@ When **`AUTHENTICATION_METHOD=api-key`** (or api-key is inferred from **`STATIC_
 
 ## Environment
 
-- `TENANTS` (optional; comma-separated tenant ids, e.g. `one,two`) – allowed tenant ids for `X-Tenant` requests. Always includes `default`. When unset or empty, only `default` is allowed.
+- `TENANTS` (optional; comma-separated tenant ids, e.g. `one,two`) – allowed tenant ids for `X-Tenant` requests. Includes `default` unless `TENANTS_ALLOW_DEFAULT=false`. When unset or empty and default is allowed, only `default` is allowed.
+- `TENANTS_ALLOW_DEFAULT` (optional; default allow) – set to `false` to exclude `default` from the allowlist. Missing, blank, or `default` **`X-Tenant`** values are then rejected.
 - `STATIC_API_KEY_TENANT_ID` (optional) – when set, API key auth is only accepted for this tenant id (must match `X-Tenant`). When unset, one **`STATIC_API_KEY`** may access **all** configured tenants via **`X-Tenant`** (accepted risk **AR-007**).
 - Public catalog (`/public/service-plan-offerings`) is unauthenticated; tenant is selected via `X-Tenant` (defaults to `default`). Restrict allowed tenants with `TENANTS`.
 - `BILLING_FRONTEND_URL` (optional; default derived from `STRIPE_CHECKOUT_SUCCESS_URL` origin or `http://localhost:4500`) – billing console base URL for the `default` tenant; used for Stripe success/cancel redirects.
