@@ -18,7 +18,8 @@ info:
     the server uses the `STATUS_POLL_INTERVAL` environment variable in milliseconds (default 15000).
 
     **Multi-tenancy:** Pass `X-Tenant` in the Socket.IO handshake `extraHeaders` (Node clients) or `auth.tenantId`
-    (browser clients). Defaults to `default` when omitted. The authenticated user's tenant must match the socket tenant.
+    (browser clients). Defaults to `default` when omitted (unless `TENANTS_ALLOW_DEFAULT=false`; then missing, blank,
+    or `default` values are rejected). The authenticated user's tenant must match the socket tenant.
 servers:
   local:
     host: localhost:8082

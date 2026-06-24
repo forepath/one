@@ -23,7 +23,7 @@ Clients send optional header:
 X-Tenant: one
 ```
 
-When omitted, the server uses `default`.
+When omitted, the server uses `default` unless `TENANTS_ALLOW_DEFAULT=false` — then missing, blank, or `default` values are rejected with 400.
 
 The billing console reads `billing.tenantId` from runtime config and attaches `X-Tenant` on every API call.
 
@@ -37,9 +37,18 @@ TENANTS=default,one,two
 
 Rules:
 
-- `default` is always allowed even when not listed
-- When `TENANTS` is unset or empty, only `default` is allowed
+- `default` is included in the allowlist unless `TENANTS_ALLOW_DEFAULT=false`
+- When `TENANTS_ALLOW_DEFAULT` is unset or not `false`, `default` is allowed even when not listed in `TENANTS`
+- When `TENANTS` is unset or empty and default is allowed, only `default` is allowed
+- When `TENANTS_ALLOW_DEFAULT=false`, missing, blank, or explicit `default` **`X-Tenant`** values are rejected (400)
 - Invalid tenant ids return 400 Bad Request
+
+Example without the default tenant:
+
+```bash
+TENANTS=one,two
+TENANTS_ALLOW_DEFAULT=false
+```
 
 ### Per-tenant Frontend URLs
 
@@ -138,12 +147,13 @@ sequenceDiagram
 
 ## Configuration Summary
 
-| Variable                   | Required | Description                                                    |
-| -------------------------- | -------- | -------------------------------------------------------------- |
-| `TENANTS`                  | No       | Comma-separated allowed tenant ids (always includes `default`) |
-| `STATIC_API_KEY_TENANT_ID` | No       | Bind API key auth to one tenant                                |
-| `BILLING_FRONTEND_URL`     | No       | Default tenant frontend base URL for Stripe redirects          |
-| `TENANT_FRONTEND_URLS`     | No       | Per-tenant frontend URLs for Stripe redirects                  |
+| Variable                   | Required | Description                                                                                 |
+| -------------------------- | -------- | ------------------------------------------------------------------------------------------- |
+| `TENANTS`                  | No       | Comma-separated allowed tenant ids                                                          |
+| `TENANTS_ALLOW_DEFAULT`    | No       | When `false`, excludes `default` and rejects missing, blank, or `default` `X-Tenant` values |
+| `STATIC_API_KEY_TENANT_ID` | No       | Bind API key auth to one tenant                                                             |
+| `BILLING_FRONTEND_URL`     | No       | Default tenant frontend base URL for Stripe redirects                                       |
+| `TENANT_FRONTEND_URLS`     | No       | Per-tenant frontend URLs for Stripe redirects                                               |
 
 ## Related Documentation
 

@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import './express-request-augmentation';
 import { runWithTenantId } from './tenant-id.storage';
 import { TENANT_ID_HEADER, parseConfiguredTenants, resolveTenantIdFromHeader } from './tenant-id.config';
+import { isTenantMiddlewareExcludedPath } from './tenant-middleware-excluded-path';
 
 function readIncomingTenantId(req: Request): string | undefined {
   const raw = req.headers[TENANT_ID_HEADER];
@@ -12,14 +13,27 @@ function readIncomingTenantId(req: Request): string | undefined {
 }
 
 /**
- * - Reads `X-Tenant` header (defaults to `default` when missing/blank).
+ * - Reads `X-Tenant` header (defaults to `default` when missing/blank, unless disabled).
  * - Rejects unknown or malformed tenant ids with `400`.
+ * - Skips health, webhook, and Bull Board paths (no tenant header expected).
  * - Sets `req.tenantId` and binds AsyncLocalStorage for `getTenantId()` during the request.
  *
  * Install after correlation middleware on billing HTTP apps.
  */
 export function createTenantIdMiddleware() {
   return (req: Request, res: Response, next: NextFunction): void => {
+    if (req.method === 'OPTIONS') {
+      next();
+      return;
+    }
+
+    const requestPath = (req.originalUrl ?? req.url ?? '').split('?')[0] ?? '';
+
+    if (isTenantMiddlewareExcludedPath(requestPath)) {
+      next();
+      return;
+    }
+
     const tenantId = readIncomingTenantId(req);
 
     if (!tenantId) {

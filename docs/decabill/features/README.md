@@ -42,6 +42,7 @@ Isolate billing data per tenant while sharing one billing manager deployment. Sa
 
 - `X-Tenant` header on HTTP and WebSocket requests
 - `TENANTS` environment allowlist
+- `TENANTS_ALLOW_DEFAULT=false` to exclude the implicit `default` tenant
 - Per-tenant Stripe return URLs via `TENANT_FRONTEND_URLS`
 - Optional `STATIC_API_KEY_TENANT_ID` to bind API key auth to one tenant
 

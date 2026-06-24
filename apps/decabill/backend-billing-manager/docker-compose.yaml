@@ -87,6 +87,7 @@ x-backend-billing-manager-environment: &backend-billing-manager-environment
   CLOUDFLARE_ZONE_ID: ${CLOUDFLARE_ZONE_ID:-}
   DNS_BASE_DOMAIN: ${DNS_BASE_DOMAIN:-spirde.com}
   TENANTS: ${TENANTS:-}
+  TENANTS_ALLOW_DEFAULT: ${TENANTS_ALLOW_DEFAULT:-true}
 
 services:
   postgres:

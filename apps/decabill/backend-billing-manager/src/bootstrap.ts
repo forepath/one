@@ -56,15 +56,6 @@ export async function bootstrap(): Promise<void> {
     next();
   });
 
-  app.use(
-    createCorrelationIdMiddleware({
-      log: (message: string) => httpLogger.log(message),
-    }),
-  );
-  app.use(createTenantIdMiddleware());
-  app.use(createOriginAllowlistMiddleware(new Logger('OriginAllowlist')));
-  app.useWebSocketAdapter(new TenantAwareSocketIoAdapter(app));
-
   const isProduction = process.env.NODE_ENV === 'production';
   const corsOrigin = process.env.CORS_ORIGIN;
   let origin: string | string[];
@@ -85,6 +76,15 @@ export async function bootstrap(): Promise<void> {
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Correlation-Id', 'X-Request-Id', 'X-Tenant'],
     exposedHeaders: ['Content-Range', 'X-Content-Range', 'X-Correlation-Id'],
   });
+
+  app.use(
+    createCorrelationIdMiddleware({
+      log: (message: string) => httpLogger.log(message),
+    }),
+  );
+  app.use(createTenantIdMiddleware());
+  app.use(createOriginAllowlistMiddleware(new Logger('OriginAllowlist')));
+  app.useWebSocketAdapter(new TenantAwareSocketIoAdapter(app));
 
   await runPendingMigrationsIfRoleAllows(app, role, typeormConfig);
 

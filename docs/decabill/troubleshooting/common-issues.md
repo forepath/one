@@ -45,6 +45,7 @@ Common problems and their solutions in Decabill.
 **Solutions**:
 
 - Send **`X-Tenant`** header matching an id in **`TENANTS`**
+- When **`TENANTS_ALLOW_DEFAULT=false`**, `default` is not allowed; missing, blank, or `default` **`X-Tenant`** values return 400
 - For user auth, ensure user's `tenant_id` matches **`X-Tenant`**
 - With API key auth, set **`STATIC_API_KEY_TENANT_ID`** if the key is bound to one tenant (see **[DR-002](../security/accepted-risks.md#dr-002--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)**)
 

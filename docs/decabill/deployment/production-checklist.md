@@ -14,6 +14,7 @@ Comprehensive checklist for deploying Decabill to production.
 - [ ] `ENCRYPTION_KEY` set to a strong random value (required for encrypted subscription data)
 - [ ] Database credentials are not defaults
 - [ ] `TENANTS` lists only intended tenant ids
+- [ ] `TENANTS_ALLOW_DEFAULT=false` when the `default` tenant must not be reachable (multi-tenant-only deployments)
 - [ ] `STATIC_API_KEY_TENANT_ID` set if API key must not span tenants (see **[DR-002](../security/accepted-risks.md#dr-002--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)**)
 - [ ] `BILLING_FRONTEND_URL` and `TENANT_FRONTEND_URLS` match live console URLs
 - [ ] Stripe keys and webhook secret configured for production mode
@@ -72,6 +73,7 @@ Comprehensive checklist for deploying Decabill to production.
 ### Multi-Tenancy
 
 - Review **`TENANTS`** and **`X-Tenant`** handling before go-live
+- Set **`TENANTS_ALLOW_DEFAULT=false`** when the implicit `default` tenant must not be reachable
 - Prefer per-tenant console URLs via `TENANT_FRONTEND_URLS` for branded tenants
 - Understand shared API key scope documented in **[DR-002](../security/accepted-risks.md#dr-002--billing-multi-tenant-api-key-scope-static_api_key_tenant_id-unset)**
 
