@@ -194,6 +194,11 @@ export class PaymentOrchestrationService {
 
     if (update.status === 'canceled' && attempt) {
       await this.paymentAttemptsRepository.update(attempt.id, { status: PaymentAttemptStatus.CANCELED });
+      return;
+    }
+
+    if (update.status === 'failed' && attempt) {
+      await this.paymentAttemptsRepository.update(attempt.id, { status: PaymentAttemptStatus.FAILED });
     }
   }
 }

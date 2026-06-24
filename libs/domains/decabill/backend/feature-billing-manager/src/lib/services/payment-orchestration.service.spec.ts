@@ -267,6 +267,34 @@ describe('PaymentOrchestrationService', () => {
       });
       expect(invoicesRepository.update).not.toHaveBeenCalled();
     });
+
+    it('marks payment attempt failed on async payment failure', async () => {
+      processor.verifyWebhookSignature.mockReturnValue(true);
+      processor.parseWebhookEvent.mockReturnValue({
+        eventId: 'evt_3',
+        type: 'checkout.session.async_payment_failed',
+        data: {},
+      });
+      processor.mapWebhookToPaymentUpdate.mockReturnValue({
+        invoiceId: 'inv-1',
+        externalId: 'cs_1',
+        status: 'failed',
+        tenantId: 'default',
+      });
+      paymentWebhookEventsRepository.exists.mockResolvedValue(false);
+      paymentWebhookEventsRepository.create.mockResolvedValue({});
+      invoicesRepository.findById.mockResolvedValue({ id: 'inv-1', userId: 'user-1' });
+      paymentAttemptsRepository.findByExternalId.mockResolvedValue({ id: 'attempt-1' });
+      paymentAttemptsRepository.update.mockResolvedValue({});
+
+      await service.handleWebhook('stripe', Buffer.from('{}'), 'sig');
+
+      expect(paymentAttemptsRepository.update).toHaveBeenCalledWith('attempt-1', {
+        status: PaymentAttemptStatus.FAILED,
+      });
+      expect(invoicesRepository.update).not.toHaveBeenCalled();
+    });
+
     it('ignores webhook updates without tenantId metadata', async () => {
       processor.verifyWebhookSignature.mockReturnValue(true);
       processor.parseWebhookEvent.mockReturnValue({

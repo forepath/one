@@ -15,6 +15,7 @@ interface StripeCheckoutSessionPayload {
   metadata?: Record<string, string | undefined>;
   client_reference_id?: string | null;
   amount_total?: number | null;
+  payment_status?: string | null;
 }
 
 @Injectable()
@@ -111,50 +112,49 @@ export class StripePaymentProcessor implements PaymentProcessor {
   }
 
   mapWebhookToPaymentUpdate(event: { type: string; data: unknown }): PaymentStatusUpdate | null {
-    if (event.type === 'checkout.session.completed') {
-      const session = this.extractCheckoutSession(event.data);
+    const status = this.resolveCheckoutSessionStatus(event.type);
 
-      if (!session) {
-        return null;
-      }
-
-      const invoiceId = session.metadata?.invoiceId ?? session.client_reference_id;
-
-      if (!invoiceId) {
-        return null;
-      }
-
-      return {
-        invoiceId,
-        externalId: session.id,
-        status: 'succeeded',
-        amountPaid: session.amount_total != null ? session.amount_total / 100 : undefined,
-        tenantId: session.metadata?.tenantId,
-      };
+    if (!status) {
+      return null;
     }
 
-    if (event.type === 'checkout.session.expired') {
-      const session = this.extractCheckoutSession(event.data);
+    const session = this.extractCheckoutSession(event.data);
 
-      if (!session) {
-        return null;
-      }
-
-      const invoiceId = session.metadata?.invoiceId ?? session.client_reference_id;
-
-      if (!invoiceId) {
-        return null;
-      }
-
-      return {
-        invoiceId,
-        externalId: session.id,
-        status: 'canceled',
-        tenantId: session.metadata?.tenantId,
-      };
+    if (!session) {
+      return null;
     }
 
-    return null;
+    if (event.type === 'checkout.session.completed' && session.payment_status === 'unpaid') {
+      return null;
+    }
+
+    const invoiceId = session.metadata?.invoiceId ?? session.client_reference_id;
+
+    if (!invoiceId) {
+      return null;
+    }
+
+    return {
+      invoiceId,
+      externalId: session.id,
+      status,
+      amountPaid: status === 'succeeded' && session.amount_total != null ? session.amount_total / 100 : undefined,
+      tenantId: session.metadata?.tenantId,
+    };
+  }
+
+  private resolveCheckoutSessionStatus(eventType: string): PaymentStatusUpdate['status'] | null {
+    switch (eventType) {
+      case 'checkout.session.completed':
+      case 'checkout.session.async_payment_succeeded':
+        return 'succeeded';
+      case 'checkout.session.async_payment_failed':
+        return 'failed';
+      case 'checkout.session.expired':
+        return 'canceled';
+      default:
+        return null;
+    }
   }
 
   private extractCheckoutSession(data: unknown): StripeCheckoutSessionPayload | null {
