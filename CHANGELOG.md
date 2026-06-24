@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.9.0](https://github.com/forepath/one/compare/v2.8.4...v2.9.0) (2026-06-24)
+
+
+### Features
+
+* billing console manual invoice issue ([#427](https://github.com/forepath/one/issues/427)) ([58ecf7d](https://github.com/forepath/one/commit/58ecf7d6dc71a0ab8b9c7536b9139c1492b23548))
+* billing console multi-tenancy support ([#428](https://github.com/forepath/one/issues/428)) ([734a41a](https://github.com/forepath/one/commit/734a41a874a7b5497e9af74263239b00c4027f4d))
+* decabill documentation and provisioning ([#440](https://github.com/forepath/one/issues/440)) ([1974965](https://github.com/forepath/one/commit/1974965b915401aa1f83faf14677054e91332d7c))
+* decabill landingpage ([#442](https://github.com/forepath/one/issues/442)) ([087d53d](https://github.com/forepath/one/commit/087d53dfa2e6d4247bf399de7ea9c4feaa93e9e2))
+* dynamic module loading pattern ([#434](https://github.com/forepath/one/issues/434)) ([01aab4f](https://github.com/forepath/one/commit/01aab4f30f660885efd0b0a00bad50690457eb9b))
+
+
+### Bug Fixes
+
+* agent-manager typeorm init logging ([#437](https://github.com/forepath/one/issues/437)) ([bd4c283](https://github.com/forepath/one/commit/bd4c283814576667bc5cba673ea5552d9af0fb8f))
+
+
+### Code Refactoring
+
+* move billing to decabill domain ([#429](https://github.com/forepath/one/issues/429)) ([13ec81d](https://github.com/forepath/one/commit/13ec81d9c134544e99270ff3ecd12b1cd5f42435))
+
 ## [2.8.4](https://github.com/forepath/one/compare/v2.8.3...v2.8.4) (2026-06-17)
 
 
