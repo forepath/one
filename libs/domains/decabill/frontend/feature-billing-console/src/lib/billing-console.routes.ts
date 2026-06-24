@@ -2,7 +2,9 @@ import { Route } from '@angular/router';
 import {
   AdminBillingFacade,
   AdminCustomerProfilesFacade,
+  AdminDatevExportsFacade,
   AdminInvoiceManagerFacade,
+  BillingCapabilitiesFacade,
   adminCustomerProfilesReducer,
   adminInvoiceManagerReducer,
   adminMarkPaid$,
@@ -23,6 +25,8 @@ import {
   updateAdminCustomerProfile$,
   updateManualInvoice$,
   adminBillingReducer,
+  adminDatevExportsReducer,
+  billingCapabilitiesReducer,
   billNow$,
   loadAdminAuditLogs$,
   loadAdminBillingSummary$,
@@ -90,6 +94,14 @@ import {
   updateCustomerProfile$,
   updateServicePlan$,
   updateServiceType$,
+  loadBillingCapabilities$,
+  loadAdminDatevExports$,
+  loadAdminDatevExportsBatch$,
+  triggerDatevExport$,
+  triggerDatevExportSuccessReload$,
+  pollQueuedDatevExports$,
+  expireQueuedDatevExports$,
+  downloadDatevExport$,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { authGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/identity/frontend';
 import { buildPageTitle } from '@forepath/shared/frontend/util-configuration';
@@ -98,8 +110,10 @@ import { provideState } from '@ngrx/store';
 
 import { AdminBillingPageComponent } from './admin-billing-page/admin-billing-page.component';
 import { AdminCustomerProfilesPageComponent } from './admin-customer-profiles-page/admin-customer-profiles-page.component';
+import { AdminDatevExportsPageComponent } from './admin-datev-exports-page/admin-datev-exports-page.component';
 import { BillingConsoleContainerComponent } from './container/container.component';
 import { billingAdminGuard } from './guards/billing-admin.guard';
+import { datevExportEnabledGuard } from './guards/datev-export-enabled.guard';
 import { InvoicesComponent } from './invoices/invoices.component';
 import { OverviewComponent } from './overview/overview.component';
 import { ServicePlansPageComponent } from './service-plans-page/service-plans-page.component';
@@ -164,6 +178,12 @@ export const billingConsoleRoutes: Route[] = [
             component: AdminCustomerProfilesPageComponent,
             title: () => buildPageTitle($localize`:@@featureContainer-adminProfilesPage:Billing Profiles`),
           },
+          {
+            path: 'datev-exports',
+            canActivate: [authGuard, billingAdminGuard, datevExportEnabledGuard],
+            component: AdminDatevExportsPageComponent,
+            title: () => buildPageTitle($localize`:@@featureContainer-adminDatevExportsPage:DATEV Exports`),
+          },
         ],
       },
       {
@@ -180,6 +200,8 @@ export const billingConsoleRoutes: Route[] = [
       ServiceTypesFacade,
       InvoicesFacade,
       AdminBillingFacade,
+      AdminDatevExportsFacade,
+      BillingCapabilitiesFacade,
       AdminInvoiceManagerFacade,
       AdminCustomerProfilesFacade,
       BackordersFacade,
@@ -190,6 +212,8 @@ export const billingConsoleRoutes: Route[] = [
       provideState('serviceTypes', serviceTypesReducer),
       provideState('invoices', invoicesReducer),
       provideState('adminBilling', adminBillingReducer),
+      provideState('billingCapabilities', billingCapabilitiesReducer),
+      provideState('adminDatevExports', adminDatevExportsReducer),
       provideState('adminInvoiceManager', adminInvoiceManagerReducer),
       provideState('adminCustomerProfiles', adminCustomerProfilesReducer),
       provideState('backorders', backordersReducer),
@@ -261,6 +285,14 @@ export const billingConsoleRoutes: Route[] = [
         adminInvoiceManagerMarkUnpaid$,
         loadAdminCustomerProfiles$,
         loadAdminCustomerProfilesBatch$,
+        loadBillingCapabilities$,
+        loadAdminDatevExports$,
+        loadAdminDatevExportsBatch$,
+        triggerDatevExport$,
+        triggerDatevExportSuccessReload$,
+        pollQueuedDatevExports$,
+        expireQueuedDatevExports$,
+        downloadDatevExport$,
         createAdminCustomerProfile$,
         updateAdminCustomerProfile$,
         deleteAdminCustomerProfile$,

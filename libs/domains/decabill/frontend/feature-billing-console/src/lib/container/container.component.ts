@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
+import { BillingCapabilitiesFacade } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade } from '@forepath/identity/frontend';
 import { ENVIRONMENT, LocaleService } from '@forepath/shared/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
@@ -18,6 +19,7 @@ import { ThemeService } from '../theme.service';
 })
 export class BillingConsoleContainerComponent implements OnInit {
   private readonly authenticationFacade = inject(AuthenticationFacade);
+  private readonly billingCapabilitiesFacade = inject(BillingCapabilitiesFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -67,6 +69,8 @@ export class BillingConsoleContainerComponent implements OnInit {
    */
   readonly canAccessAdministration$ = this.authenticationFacade.canAccessBillingAdministration$;
 
+  readonly datevExportEnabled$ = this.billingCapabilitiesFacade.datevExportEnabled$;
+
   /**
    * Display label for the current user's role. Admin for api-key auth, otherwise user.role capitalized.
    */
@@ -107,6 +111,14 @@ export class BillingConsoleContainerComponent implements OnInit {
    */
   ngOnInit(): void {
     this.authenticationFacade.checkAuthentication();
+
+    this.authenticationFacade.canAccessBillingAdministration$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((canAccess) => {
+        if (canAccess) {
+          this.billingCapabilitiesFacade.loadCapabilities();
+        }
+      });
 
     // Check initial query params immediately
     const initialParams = this.route.snapshot.queryParams;

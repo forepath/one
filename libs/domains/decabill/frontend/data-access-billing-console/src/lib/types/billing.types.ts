@@ -669,3 +669,81 @@ export interface AdminCustomerProfileDetail extends CustomerProfileResponse {
   userEmail?: string;
   isComplete: boolean;
 }
+
+export type DatevExportScope = 'tenant' | 'unified';
+
+export type DatevExportStatus = 'pending' | 'running' | 'completed' | 'failed';
+
+export interface BillingCapabilitiesResponse {
+  datevExportEnabled: boolean;
+  unifiedExportAllowed: boolean;
+}
+
+export interface AdminDatevExportListItem {
+  id: string;
+  scope: DatevExportScope;
+  tenantId: string;
+  periodYear: number;
+  periodMonth: number;
+  status: DatevExportStatus;
+  fileName?: string;
+  bookingCount: number;
+  invoiceCount: number;
+  debtorCount: number;
+  includedTenantIds?: string[];
+  errorMessage?: string;
+  triggeredBy?: string;
+  startedAt?: string;
+  completedAt?: string;
+  createdAt: string;
+}
+
+export interface QueuedDatevExport {
+  clientId: string;
+  scope: DatevExportScope;
+  periodYear: number;
+  periodMonth: number;
+  queuedAt: string;
+}
+
+export interface AdminDatevExportQueuedListItem {
+  kind: 'queued';
+  id: string;
+  scope: DatevExportScope;
+  periodYear: number;
+  periodMonth: number;
+}
+
+export type AdminDatevExportListEntry = AdminDatevExportListItem | AdminDatevExportQueuedListItem;
+
+export function isQueuedDatevExportEntry(entry: AdminDatevExportListEntry): entry is AdminDatevExportQueuedListItem {
+  return 'kind' in entry && entry.kind === 'queued';
+}
+
+export interface PaginatedAdminDatevExportsResponse {
+  items: AdminDatevExportListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AdminDatevExportListParams {
+  limit?: number;
+  offset?: number;
+  year?: number;
+  scope?: DatevExportScope;
+}
+
+export interface TriggerDatevExportDto {
+  year: number;
+  month: number;
+  scope?: DatevExportScope;
+  force?: boolean;
+}
+
+export interface TriggerDatevExportResponse {
+  queued: boolean;
+  scope: DatevExportScope;
+  year: number;
+  month: number;
+}

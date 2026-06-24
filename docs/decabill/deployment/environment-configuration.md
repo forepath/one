@@ -70,6 +70,35 @@ Billing data and users are partitioned by **`tenant_id`**. HTTP clients send **`
 | `BILLING_INVOICE_PDF_STORAGE_PATH` | PDF output path (default `/data/invoices`)             |
 | `BILLING_SKIP_FILE_CACHE`          | Skip PDF file cache when `true`                        |
 
+### DATEV EXTF Export
+
+Monthly DATEV Buchungsstapel exports (category 21) with optional PDF document bundle. Disabled entirely when `BILLING_DATEV_EXPORT_ENABLED=false` (no jobs, admin routes return 404, billing console hides the DATEV page via capabilities).
+
+| Variable                                       | Description                                                                 | Default               |
+| ---------------------------------------------- | --------------------------------------------------------------------------- | --------------------- |
+| `BILLING_DATEV_EXPORT_ENABLED`                 | Master kill switch                                                          | `true`                |
+| `BILLING_DATEV_EXPORT_STORAGE_PATH`            | Export ZIP root (shared volume on api/worker/scheduler)                     | `/data/datev-exports` |
+| `BILLING_DATEV_EXPORT_CRON`                    | BullMQ cron for monthly coordinator (1st of month)                          | `0 0 1 * *`           |
+| `BILLING_DATEV_EXPORT_TIMEZONE`                | Timezone for cron and previous-month period calculation                     | `Europe/Berlin`       |
+| `BILLING_DATEV_CONSULTANT_NUMBER`              | DATEV Beraternummer (required per tenant for export)                        | —                     |
+| `BILLING_DATEV_CLIENT_NUMBER`                  | DATEV Mandantennummer (required per tenant for export)                      | —                     |
+| `BILLING_DATEV_CHART_OF_ACCOUNTS`              | `SKR03` or `SKR04`                                                          | `SKR03`               |
+| `BILLING_DATEV_ACCOUNT_LENGTH`                 | Sachkontenlänge in EXTF header                                              | `4`                   |
+| `BILLING_DATEV_REVENUE_ACCOUNT_STANDARD`       | Revenue account for 19% (SKR03 default `8400`, SKR04 `4400`)                | env / chart default   |
+| `BILLING_DATEV_REVENUE_ACCOUNT_REDUCED`        | Revenue account for 7% (SKR03 default `8300`, SKR04 `4300`)                 | env / chart default   |
+| `BILLING_DATEV_DEBTOR_ACCOUNT_START`           | First debtor number in range                                                | `10000`               |
+| `BILLING_DATEV_DEBTOR_ACCOUNT_END`             | Last debtor number in range                                                 | `69999`               |
+| `BILLING_DATEV_BU_KEY_STANDARD`                | Override BU-Schlüssel for standard tax (empty for Automatikkonten)          | empty                 |
+| `BILLING_DATEV_BU_KEY_REDUCED`                 | Override BU-Schlüssel for reduced tax                                       | empty                 |
+| `BILLING_DATEV_EXPORT_INCLUDE_DOCUMENTS`       | Include PDF bundle + Beleglink in Buchungsstapel                            | `true`                |
+| `BILLING_DATEV_EXPORT_DICTATION_ABBR`          | Diktatkürzel in EXTF header                                                 | `DEC`                 |
+| `BILLING_DATEV_FISCAL_YEAR_START_MONTH`        | Wirtschaftsjahresbeginn (1–12)                                              | `1`                   |
+| `BILLING_DATEV_TENANT_CONFIG`                  | JSON map of per-tenant (and optional `unified`) DATEV overrides             | —                     |
+| `BILLING_DATEV_UNIFIED_EXPORT_ENABLED`         | Enable cross-tenant consolidated monthly export                             | `false`               |
+| `BILLING_DATEV_UNIFIED_EXPORT_ALLOWED_TENANTS` | Comma-separated tenant ids allowed to list/trigger/download unified exports | `default` when unset  |
+
+Per-tenant exports are scoped to the request **`X-Tenant`**. Unified exports aggregate all configured tenants but are only accessible from allowlisted operator tenants. Validate sample exports with **DatevFormatPruefProgramm** before production handoff.
+
 ### Stripe and Payment Processors
 
 | Variable                            | Description                                             |
@@ -127,6 +156,14 @@ These variables control repeatable **coordinator** intervals in milliseconds:
 | `OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL` | `86400000` | Open position invoicing          |
 | `SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL`   | `86400000` | Subscription item updates        |
 | `STATUS_POLL_INTERVAL`                     | `15000`    | Dashboard status polling         |
+
+DATEV export uses a **cron** coordinator (not `everyMs`):
+
+| Coordinator job name       | Env variables                                                | Default schedule      |
+| -------------------------- | ------------------------------------------------------------ | --------------------- |
+| `datev-export.coordinator` | `BILLING_DATEV_EXPORT_CRON`, `BILLING_DATEV_EXPORT_TIMEZONE` | `0 0 1 * *` (monthly) |
+
+Registered only when `BILLING_DATEV_EXPORT_ENABLED=true`. Stale repeatables are removed on scheduler startup when the feature is disabled.
 
 See **[Background Jobs](./background-jobs.md)** for queue roles and job names.
 

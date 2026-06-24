@@ -25,6 +25,10 @@ describe('AdminBillingController', () => {
   const auditLogService = { listForInvoice: jest.fn() };
   const invoiceService = { getPdfBuffer: jest.fn(), getVoidPdfBuffer: jest.fn() };
   const invoicesRepository = { findById: jest.fn() };
+  const datevExportConfigService = {
+    isEnabled: jest.fn().mockReturnValue(true),
+    isUnifiedExportAllowedForTenant: jest.fn().mockReturnValue(false),
+  };
   const controller = new AdminBillingController(
     billingAdminService as never,
     adminBillNowService as never,
@@ -34,6 +38,7 @@ describe('AdminBillingController', () => {
     auditLogService as never,
     invoiceService as never,
     invoicesRepository as never,
+    datevExportConfigService as never,
   );
 
   beforeEach(() => {
@@ -46,6 +51,16 @@ describe('AdminBillingController', () => {
 
     expect(keycloakRoles).toContain(UserRole.ADMIN);
     expect(usersRoles).toContain(UserRole.ADMIN);
+  });
+
+  it('getCapabilities returns datev flags', () => {
+    datevExportConfigService.isEnabled.mockReturnValue(false);
+    datevExportConfigService.isUnifiedExportAllowedForTenant.mockReturnValue(true);
+
+    expect(controller.getCapabilities()).toEqual({
+      datevExportEnabled: false,
+      unifiedExportAllowed: true,
+    });
   });
 
   it('getSummary delegates to billing admin service', async () => {

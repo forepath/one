@@ -44,6 +44,11 @@ Comprehensive checklist for deploying Decabill to production.
 - [ ] Rate limiting enabled
 - [ ] Database connections use SSL/TLS where supported
 - [ ] Invoice PDF volume backed up and access-controlled
+- [ ] DATEV export configured when used (`BILLING_DATEV_CONSULTANT_NUMBER`, `BILLING_DATEV_CLIENT_NUMBER`)
+- [ ] `BILLING_DATEV_EXPORT_STORAGE_PATH` volume mounted on api, worker, and scheduler
+- [ ] `BILLING_DATEV_EXPORT_ENABLED=false` verified if DATEV export is not required (UI hidden via capabilities)
+- [ ] Unified DATEV export allowlist reviewed (`BILLING_DATEV_UNIFIED_EXPORT_ALLOWED_TENANTS`)
+- [ ] Sample DATEV export validated with DatevFormatPruefProgramm before accountant handoff
 - [ ] Provisioning SSH and cloud API tokens restricted (see **[DR-001](../security/accepted-risks.md#dr-001--provisioning-ssh-cloud-init-templates)**)
 
 ### Database
@@ -88,6 +93,7 @@ Comprehensive checklist for deploying Decabill to production.
 - Encrypt sensitive fields via `ENCRYPTION_KEY`
 - Protect invoice PDF storage path
 - Restrict database and Redis network access to application subnets
+- Restrict DATEV export ZIP storage to admin download path only (no raw path exposure in API)
 
 ## Performance Optimization
 
@@ -123,6 +129,7 @@ Comprehensive checklist for deploying Decabill to production.
 - Postgres connections and disk usage
 - Redis memory and persistence health
 - Invoice PDF volume disk usage
+- DATEV export volume disk usage (`BILLING_DATEV_EXPORT_STORAGE_PATH`)
 
 ### Logging
 
@@ -142,6 +149,12 @@ Comprehensive checklist for deploying Decabill to production.
 
 - Backup `BILLING_INVOICE_PDF_STORAGE_PATH` volume or object storage mirror
 - Align retention with legal and tax requirements
+
+### DATEV Export Backups
+
+- Backup `BILLING_DATEV_EXPORT_STORAGE_PATH` volume alongside invoice PDFs
+- Retain exports per statutory accounting retention periods
+- Document whether per-tenant or unified exports are used in production
 
 ### Configuration Backups
 

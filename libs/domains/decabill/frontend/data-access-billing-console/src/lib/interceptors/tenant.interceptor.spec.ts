@@ -9,6 +9,7 @@ import {
   BILLING_TENANT_HEADER,
   billingTenantInterceptor,
   DEFAULT_BILLING_TENANT_ID,
+  resolveBillingTenantDisplayName,
   resolveBillingTenantId,
 } from './tenant.interceptor';
 
@@ -51,6 +52,23 @@ describe('billingTenantInterceptor', () => {
         billing: { restApiUrl: 'http://localhost:3200/api', frontendUrl: 'http://localhost:4500', tenantId: 'one' },
       } as never),
     ).toBe('one');
+  });
+
+  it('resolveBillingTenantDisplayName capitalizes the configured tenant id', () => {
+    expect(
+      resolveBillingTenantDisplayName({
+        billing: {
+          restApiUrl: 'http://localhost:3200/api',
+          frontendUrl: 'http://localhost:4500',
+          tenantId: 'decabill',
+        },
+      } as never),
+    ).toBe('Decabill');
+    expect(
+      resolveBillingTenantDisplayName({
+        billing: { restApiUrl: 'http://localhost:3200/api', frontendUrl: 'http://localhost:4500' },
+      } as never),
+    ).toBe('Default');
   });
 
   it('does not modify unrelated requests', (done) => {

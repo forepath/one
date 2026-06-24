@@ -242,4 +242,77 @@ describe('AdminBillingService', () => {
     expect(req.request.responseType).toBe('blob');
     req.flush(blob);
   });
+
+  it('gets billing capabilities', (done) => {
+    service.getCapabilities().subscribe((res) => {
+      expect(res.datevExportEnabled).toBe(true);
+      expect(res.unifiedExportAllowed).toBe(false);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/capabilities`);
+
+    expect(req.request.method).toBe('GET');
+    req.flush({ datevExportEnabled: true, unifiedExportAllowed: false });
+  });
+
+  it('lists datev exports with query params', (done) => {
+    service.listDatevExports({ scope: 'tenant', year: 2026, limit: 10, offset: 0 }).subscribe((res) => {
+      expect(res.items).toHaveLength(1);
+      done();
+    });
+    const req = httpMock.expectOne(
+      (request) =>
+        request.url === `${apiUrl}/admin/billing/datev-exports` &&
+        request.params.get('scope') === 'tenant' &&
+        request.params.get('year') === '2026' &&
+        request.params.get('limit') === '10' &&
+        request.params.get('offset') === '0',
+    );
+
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      items: [
+        {
+          id: 'exp-1',
+          scope: 'tenant',
+          tenantId: 'default',
+          periodYear: 2026,
+          periodMonth: 1,
+          status: 'completed',
+          bookingCount: 1,
+          invoiceCount: 1,
+          debtorCount: 1,
+          createdAt: '2026-02-01T00:00:00Z',
+        },
+      ],
+      total: 1,
+      limit: 10,
+      offset: 0,
+    });
+  });
+
+  it('triggers datev export', (done) => {
+    service.triggerDatevExport({ year: 2026, month: 1 }).subscribe((res) => {
+      expect(res.queued).toBe(true);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/datev-exports`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ year: 2026, month: 1 });
+    req.flush({ queued: true, scope: 'tenant', year: 2026, month: 1 });
+  });
+
+  it('downloads datev export zip', (done) => {
+    const blob = new Blob(['zip']);
+
+    service.downloadDatevExport('exp-1').subscribe((res) => {
+      expect(res).toEqual(blob);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/datev-exports/exp-1/download`);
+
+    expect(req.request.responseType).toBe('blob');
+    req.flush(blob);
+  });
 });

@@ -2154,6 +2154,119 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BillingStatisticsByProduct'
+  /admin/billing/capabilities:
+    get:
+      tags: [Admin Billing]
+      summary: Billing feature capabilities for admin UI (admin only)
+      operationId: getAdminBillingCapabilities
+      responses:
+        '200':
+          description: Feature flags for the current request tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingCapabilitiesResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+  /admin/billing/datev-exports:
+    get:
+      tags: [Admin Billing]
+      summary: List DATEV EXTF exports (admin only; requires BILLING_DATEV_EXPORT_ENABLED)
+      operationId: listAdminDatevExports
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: year
+          in: query
+          schema: { type: integer }
+        - name: scope
+          in: query
+          schema:
+            type: string
+            enum: [tenant, unified]
+            default: tenant
+          description: Unified scope requires allowlisted X-Tenant
+      responses:
+        '200':
+          description: Paginated DATEV export list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminDatevExportsResponse'
+        '403':
+          description: Unified export access denied for this tenant
+        '404':
+          description: DATEV export feature disabled
+    post:
+      tags: [Admin Billing]
+      summary: Trigger DATEV export for a calendar month (admin only)
+      operationId: triggerAdminDatevExport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerDatevExportDto'
+      responses:
+        '200':
+          description: Export job queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerDatevExportResponse'
+        '403':
+          description: Unified export access denied for this tenant
+        '404':
+          description: DATEV export feature disabled
+  /admin/billing/datev-exports/{exportId}:
+    get:
+      tags: [Admin Billing]
+      summary: Get DATEV export metadata (admin only)
+      operationId: getAdminDatevExport
+      parameters:
+        - name: exportId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Export metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminDatevExportListItem'
+        '403':
+          description: Export belongs to another tenant or unified access denied
+        '404':
+          description: Export not found or feature disabled
+  /admin/billing/datev-exports/{exportId}/download:
+    get:
+      tags: [Admin Billing]
+      summary: Download DATEV export ZIP (admin only)
+      operationId: downloadAdminDatevExport
+      parameters:
+        - name: exportId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: ZIP archive (EXTF CSV + optional PDF bundle)
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Export belongs to another tenant or unified access denied
+        '404':
+          description: Export not found, not completed, or feature disabled
 components:
   securitySchemes:
     bearerAuth:
@@ -3010,6 +3123,85 @@ components:
         queued: { type: boolean }
         requestId: { type: string, format: uuid }
         userCount: { type: integer }
+    BillingCapabilitiesResponse:
+      type: object
+      required: [datevExportEnabled, unifiedExportAllowed]
+      properties:
+        datevExportEnabled:
+          type: boolean
+          description: Mirrors BILLING_DATEV_EXPORT_ENABLED
+        unifiedExportAllowed:
+          type: boolean
+          description: True when unified export is enabled and request tenant is in BILLING_DATEV_UNIFIED_EXPORT_ALLOWED_TENANTS
+    DatevExportScope:
+      type: string
+      enum: [tenant, unified]
+    DatevExportStatus:
+      type: string
+      enum: [pending, running, completed, failed]
+    AdminDatevExportListItem:
+      type: object
+      required:
+        - id
+        - scope
+        - tenantId
+        - periodYear
+        - periodMonth
+        - status
+        - bookingCount
+        - invoiceCount
+        - debtorCount
+        - createdAt
+      properties:
+        id: { type: string, format: uuid }
+        scope: { $ref: '#/components/schemas/DatevExportScope' }
+        tenantId: { type: string }
+        periodYear: { type: integer }
+        periodMonth: { type: integer, minimum: 1, maximum: 12 }
+        status: { $ref: '#/components/schemas/DatevExportStatus' }
+        fileName: { type: string, nullable: true }
+        bookingCount: { type: integer }
+        invoiceCount: { type: integer }
+        debtorCount: { type: integer }
+        includedTenantIds:
+          type: array
+          items: { type: string }
+          nullable: true
+        errorMessage: { type: string, nullable: true }
+        triggeredBy: { type: string, nullable: true }
+        startedAt: { type: string, format: date-time, nullable: true }
+        completedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+    PaginatedAdminDatevExportsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminDatevExportListItem'
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+    TriggerDatevExportDto:
+      type: object
+      required: [year, month]
+      properties:
+        year: { type: integer }
+        month: { type: integer, minimum: 1, maximum: 12 }
+        scope: { $ref: '#/components/schemas/DatevExportScope' }
+        force:
+          {
+            type: boolean,
+            description: Re-export even when a completed export exists,
+          }
+    TriggerDatevExportResponse:
+      type: object
+      required: [queued, scope, year, month]
+      properties:
+        queued: { type: boolean }
+        scope: { $ref: '#/components/schemas/DatevExportScope' }
+        year: { type: integer }
+        month: { type: integer }
     AdminInvoiceListItem:
       allOf:
         - $ref: '#/components/schemas/InvoiceResponse'
