@@ -1,0 +1,22 @@
+{
+  "production": true,
+  "controller": {
+    "restApiUrl": "https://backend.forepath.io/api",
+    "websocketUrl": "not_applicable"
+  },
+  "billing": {
+    "restApiUrl": "https://backend.forepath.io/api",
+    "frontendUrl": "https://portal.forepath.io",
+    "websocketUrl": "https://backend.forepath.io/billing",
+    "tenantId": "forepath"
+  },
+  "authentication": {
+    "type": "users",
+    "disableSignup": false
+  },
+  "cookieConsent": {
+    "domain": ".forepath.io",
+    "privacyPolicyUrl": "https://forepath.io/legal/privacy",
+    "termsUrl": "https://forepath.io/legal/terms"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "production": true,
+  "controller": {
+    "restApiUrl": "https://backend.forepath.io/api",
+    "websocketUrl": "not_applicable"
+  },
+  "billing": {
+    "restApiUrl": "https://backend.forepath.io/api",
+    "frontendUrl": "https://portal.agenstra.com",
+    "websocketUrl": "https://backend.forepath.io/billing",
+    "tenantId": "agenstra"
+  },
+  "authentication": {
+    "type": "users",
+    "disableSignup": false
+  },
+  "cookieConsent": {
+    "domain": ".agenstra.com",
+    "privacyPolicyUrl": "https://agenstra.com/legal/privacy",
+    "termsUrl": "https://agenstra.com/legal/terms"
+  }
+}
