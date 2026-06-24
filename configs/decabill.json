@@ -1,0 +1,22 @@
+{
+  "production": true,
+  "controller": {
+    "restApiUrl": "https://backend.forepath.io/api",
+    "websocketUrl": "not_applicable"
+  },
+  "billing": {
+    "restApiUrl": "https://backend.forepath.io/api",
+    "frontendUrl": "https://portal.decabill.com",
+    "websocketUrl": "https://backend.forepath.io/billing",
+    "tenantId": "decabill"
+  },
+  "authentication": {
+    "type": "users",
+    "disableSignup": false
+  },
+  "cookieConsent": {
+    "domain": ".decabill.com",
+    "privacyPolicyUrl": "https://decabill.com/legal/privacy",
+    "termsUrl": "https://decabill.com/legal/terms"
+  }
+}
