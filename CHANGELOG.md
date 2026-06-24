@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.10.0](https://github.com/forepath/one/compare/v2.9.0...v2.10.0) (2026-06-24)
+
+
+### Features
+
+* allow disabling default billing tenant ([#445](https://github.com/forepath/one/issues/445)) ([7223bc7](https://github.com/forepath/one/commit/7223bc70ba6505d25d01b3b63cf340e7e4284fc4))
+* catch stripe async webhooks ([#444](https://github.com/forepath/one/issues/444)) ([4644ea4](https://github.com/forepath/one/commit/4644ea4a33f25b118a55bdbb237b6ee2dc3c7cf8))
+
+
+### Chores
+
+* archive config presets ([#443](https://github.com/forepath/one/issues/443)) ([251204e](https://github.com/forepath/one/commit/251204e8cee5497b14fcaf5951eb326143e3b545))
+
 ## [2.9.0](https://github.com/forepath/one/compare/v2.8.4...v2.9.0) (2026-06-24)
 
 
