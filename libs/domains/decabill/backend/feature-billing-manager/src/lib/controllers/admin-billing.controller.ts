@@ -1,3 +1,4 @@
+import { getTenantIdOrDefault } from '@forepath/shared/backend';
 import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   BadRequestException,
@@ -30,6 +31,7 @@ import type {
   PaginatedAdminInvoicesResponseDto,
   PaginatedBillingAuditLogsResponseDto,
 } from '../dto/admin-billing.dto';
+import type { BillingCapabilitiesResponseDto } from '../dto/admin-datev-export.dto';
 import type { AdminInvoiceListItemDto } from '../dto/admin-billing.dto';
 import type {
   CreateManualInvoiceDto,
@@ -43,6 +45,7 @@ import { AdminBillNowService } from '../services/admin-bill-now.service';
 import { BillingAdminService } from '../services/billing-admin.service';
 import { BillingAuditLogService } from '../services/billing-audit-log.service';
 import { BillingStatisticsQueryService } from '../services/billing-statistics-query.service';
+import { DatevExportConfigService } from '../services/datev-export-config.service';
 import { InvoiceAdminService } from '../services/invoice-admin.service';
 import { InvoiceService } from '../services/invoice.service';
 import { ManualInvoiceService } from '../services/manual-invoice.service';
@@ -62,7 +65,18 @@ export class AdminBillingController {
     private readonly auditLogService: BillingAuditLogService,
     private readonly invoiceService: InvoiceService,
     private readonly invoicesRepository: InvoicesRepository,
+    private readonly datevExportConfigService: DatevExportConfigService,
   ) {}
+
+  @Get('capabilities')
+  getCapabilities(): BillingCapabilitiesResponseDto {
+    const tenantId = getTenantIdOrDefault();
+
+    return {
+      datevExportEnabled: this.datevExportConfigService.isEnabled(),
+      unifiedExportAllowed: this.datevExportConfigService.isUnifiedExportAllowedForTenant(tenantId),
+    };
+  }
 
   @Get('summary')
   async getSummary(): Promise<AdminBillingSummaryResponseDto> {

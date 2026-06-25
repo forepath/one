@@ -1,4 +1,4 @@
-import { AdminBillNowJobName } from '@forepath/decabill/backend';
+import { AdminBillNowJobName, DatevExportJobName } from '@forepath/decabill/backend';
 import { buildCoordinatorJobId } from '@forepath/shared/backend';
 
 /** Central registry for billing-manager BullMQ queues, job names, and coordinator schedules. */
@@ -22,6 +22,8 @@ export const BillingJobName = {
   BACKORDER_RETRY_UNIT: 'backorder-retry.unit',
   ADMIN_BILL_NOW_COORDINATOR: AdminBillNowJobName.COORDINATOR,
   ADMIN_BILL_NOW_UNIT: AdminBillNowJobName.UNIT,
+  DATEV_EXPORT_COORDINATOR: DatevExportJobName.COORDINATOR,
+  DATEV_EXPORT_UNIT: DatevExportJobName.UNIT,
 } as const;
 
 export type BillingJobName = (typeof BillingJobName)[keyof typeof BillingJobName];
@@ -29,7 +31,9 @@ export type BillingJobName = (typeof BillingJobName)[keyof typeof BillingJobName
 export interface BillingRepeatableJobDefinition {
   name: BillingJobName;
   coordinatorJobId: string;
-  everyMs: number;
+  everyMs?: number;
+  pattern?: string;
+  tz?: string;
 }
 
 function parseIntervalMs(envKey: string, fallback: number): number {
@@ -38,9 +42,29 @@ function parseIntervalMs(envKey: string, fallback: number): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function parseBooleanEnv(envKey: string, fallback: boolean): boolean {
+  const raw = process.env[envKey];
+
+  if (raw === undefined || raw.trim() === '') {
+    return fallback;
+  }
+
+  const normalized = raw.trim().toLowerCase();
+
+  if (normalized === 'true' || normalized === '1') {
+    return true;
+  }
+
+  if (normalized === 'false' || normalized === '0') {
+    return false;
+  }
+
+  return fallback;
+}
+
 /** Repeatable coordinator jobs registered on scheduler role startup. */
 export function getBillingRepeatableJobs(): BillingRepeatableJobDefinition[] {
-  return [
+  const jobs: BillingRepeatableJobDefinition[] = [
     {
       name: BillingJobName.SUBSCRIPTION_BILLING_COORDINATOR,
       coordinatorJobId: buildCoordinatorJobId('subscription-billing'),
@@ -77,4 +101,15 @@ export function getBillingRepeatableJobs(): BillingRepeatableJobDefinition[] {
       everyMs: parseIntervalMs('BACKORDER_RETRY_INTERVAL_MS', 60_000),
     },
   ];
+
+  if (parseBooleanEnv('BILLING_DATEV_EXPORT_ENABLED', true)) {
+    jobs.push({
+      name: BillingJobName.DATEV_EXPORT_COORDINATOR,
+      coordinatorJobId: buildCoordinatorJobId('datev-export'),
+      pattern: process.env.BILLING_DATEV_EXPORT_CRON ?? '0 0 1 * *',
+      tz: process.env.BILLING_DATEV_EXPORT_TIMEZONE ?? 'Europe/Berlin',
+    });
+  }
+
+  return jobs;
 }

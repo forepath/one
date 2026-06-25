@@ -3,6 +3,9 @@ import {
   BackorderRetryJobHandler,
   BillingTenantService,
   type AdminBillNowCoordinatorPayload,
+  DatevExportConfigService,
+  DatevExportJobHandler,
+  DatevExportScope,
   InvoiceOverdueJobHandler,
   OpenPositionInvoiceJobHandler,
   SubscriptionBillingJobHandler,
@@ -10,7 +13,7 @@ import {
   SubscriptionItemUpdateJobHandler,
   SubscriptionRenewalReminderJobHandler,
 } from '@forepath/decabill/backend';
-import { enqueueUnitJob, runWithTenantId } from '@forepath/shared/backend';
+import { DEFAULT_TENANT, enqueueUnitJob, runWithTenantId } from '@forepath/shared/backend';
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job, Queue } from 'bullmq';
@@ -39,6 +42,8 @@ export class BillingJobsProcessor extends WorkerHost {
     private readonly subscriptionItemUpdate: SubscriptionItemUpdateJobHandler,
     private readonly backorderRetry: BackorderRetryJobHandler,
     private readonly adminBillNow: AdminBillNowService,
+    private readonly datevExportConfig: DatevExportConfigService,
+    private readonly datevExportJobHandler: DatevExportJobHandler,
   ) {
     super();
   }
@@ -65,6 +70,21 @@ export class BillingJobsProcessor extends WorkerHost {
         break;
       case BillingJobName.BACKORDER_RETRY_COORDINATOR:
         await this.runBackorderRetryCoordinator();
+        break;
+      case BillingJobName.DATEV_EXPORT_COORDINATOR:
+        await this.runDatevExportCoordinator();
+        break;
+      case BillingJobName.DATEV_EXPORT_UNIT:
+        await this.runDatevExportUnit(
+          job.data as {
+            tenantId: string;
+            scope: DatevExportScope;
+            year: number;
+            month: number;
+            triggeredBy: string;
+            force?: boolean;
+          },
+        );
         break;
       case BillingJobName.ADMIN_BILL_NOW_COORDINATOR:
         await this.runWithJobTenant(job, job.data as TenantScopedPayload, () =>
@@ -274,6 +294,93 @@ export class BillingJobsProcessor extends WorkerHost {
         });
       }
     });
+  }
+
+  private async runDatevExportCoordinator(): Promise<void> {
+    if (!this.datevExportConfig.isEnabled()) {
+      this.logger.debug('DATEV export disabled — skipping coordinator');
+
+      return;
+    }
+
+    const { year, month } = this.datevExportJobHandler.resolvePreviousMonth();
+
+    for (const tenantId of this.billingTenantService.getConfiguredTenants()) {
+      const tenantConfig = this.datevExportConfig.resolveForTenant(tenantId);
+
+      if (!tenantConfig) {
+        this.logger.warn(`Skipping DATEV export for tenant ${tenantId} — configuration incomplete`);
+        continue;
+      }
+
+      const skip = await this.datevExportJobHandler.shouldSkipExport(DatevExportScope.TENANT, tenantId, year, month);
+
+      if (skip) {
+        continue;
+      }
+
+      await this.billingQueue.add(
+        BillingJobName.DATEV_EXPORT_UNIT,
+        {
+          tenantId,
+          scope: DatevExportScope.TENANT,
+          year,
+          month,
+          triggeredBy: 'scheduler',
+        },
+        {
+          jobId: `datev-export.tenant.${tenantId}.${year}-${String(month).padStart(2, '0')}`,
+        },
+      );
+    }
+
+    if (this.datevExportConfig.isUnifiedExportEnabled()) {
+      const skipUnified = await this.datevExportJobHandler.shouldSkipExport(
+        DatevExportScope.UNIFIED,
+        DEFAULT_TENANT,
+        year,
+        month,
+      );
+
+      if (!skipUnified) {
+        await this.billingQueue.add(
+          BillingJobName.DATEV_EXPORT_UNIT,
+          {
+            tenantId: DEFAULT_TENANT,
+            scope: DatevExportScope.UNIFIED,
+            year,
+            month,
+            triggeredBy: 'scheduler',
+          },
+          {
+            jobId: `datev-export.unified.${year}-${String(month).padStart(2, '0')}`,
+          },
+        );
+      }
+    }
+  }
+
+  private async runDatevExportUnit(data: {
+    tenantId: string;
+    scope: DatevExportScope;
+    year: number;
+    month: number;
+    triggeredBy: string;
+    force?: boolean;
+  }): Promise<void> {
+    if (!this.datevExportConfig.isEnabled()) {
+      this.logger.debug('DATEV export disabled — skipping unit job');
+
+      return;
+    }
+
+    if (data.scope === DatevExportScope.TENANT) {
+      await runWithTenantId(data.tenantId, () => this.datevExportJobHandler.runUnit(data));
+
+      return;
+    }
+
+    await this.datevExportJobHandler.runUnit(data);
   }
 
   private async runAdminBillNowCoordinator(data: AdminBillNowCoordinatorPayload): Promise<void> {

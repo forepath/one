@@ -22,6 +22,13 @@ import type {
   SubscriptionResponse,
   UpdateManualInvoiceDto,
 } from '../types/billing.types';
+import type {
+  AdminDatevExportListParams,
+  BillingCapabilitiesResponse,
+  PaginatedAdminDatevExportsResponse,
+  TriggerDatevExportDto,
+  TriggerDatevExportResponse,
+} from '../types/billing.types';
 
 @Injectable({
   providedIn: 'root',
@@ -165,6 +172,36 @@ export class AdminBillingService {
 
   downloadVoidDocumentPdf(invoiceRefId: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/void-document/pdf`, {
+      responseType: 'blob',
+    });
+  }
+
+  getCapabilities(): Observable<BillingCapabilitiesResponse> {
+    return this.http.get<BillingCapabilitiesResponse>(`${this.apiUrl}/admin/billing/capabilities`);
+  }
+
+  listDatevExports(params: AdminDatevExportListParams): Observable<PaginatedAdminDatevExportsResponse> {
+    let httpParams = new HttpParams();
+
+    if (params.limit != null) httpParams = httpParams.set('limit', String(params.limit));
+
+    if (params.offset != null) httpParams = httpParams.set('offset', String(params.offset));
+
+    if (params.year != null) httpParams = httpParams.set('year', String(params.year));
+
+    if (params.scope) httpParams = httpParams.set('scope', params.scope);
+
+    return this.http.get<PaginatedAdminDatevExportsResponse>(`${this.apiUrl}/admin/billing/datev-exports`, {
+      params: httpParams,
+    });
+  }
+
+  triggerDatevExport(dto: TriggerDatevExportDto): Observable<TriggerDatevExportResponse> {
+    return this.http.post<TriggerDatevExportResponse>(`${this.apiUrl}/admin/billing/datev-exports`, dto);
+  }
+
+  downloadDatevExport(exportId: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/admin/billing/datev-exports/${exportId}/download`, {
       responseType: 'blob',
     });
   }

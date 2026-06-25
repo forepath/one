@@ -136,6 +136,81 @@ export function getActiveStatusTextClass(isActive: boolean): string {
   return isActive ? 'text-success' : 'text-secondary';
 }
 
+export function getDatevExportStatusLabel(status: string | null | undefined): string {
+  if (status == null || status === '') {
+    return $localize`:@@featureBilling-datevExportStatusEmpty:Unknown`;
+  }
+
+  switch (status) {
+    case 'pending':
+      return $localize`:@@featureAdminDatevExports-statusPending:Pending`;
+    case 'running':
+      return $localize`:@@featureAdminDatevExports-statusRunning:Running`;
+    case 'completed':
+      return $localize`:@@featureAdminDatevExports-statusCompleted:Completed`;
+    case 'failed':
+      return $localize`:@@featureAdminDatevExports-statusFailed:Failed`;
+    default:
+      return $localize`:@@featureBilling-datevExportStatusUnknown:Unknown (${status})`;
+  }
+}
+
+export function getDatevExportStatusBadgeClass(status: string | null | undefined): string {
+  switch (status) {
+    case 'pending':
+      return 'billing-admin__chip--status-draft';
+    case 'running':
+      return 'billing-admin__chip--status-partially-paid';
+    case 'completed':
+      return 'billing-admin__chip--status-paid';
+    case 'failed':
+      return 'billing-admin__chip--status-overdue';
+    default:
+      return 'billing-admin__chip--status-unknown';
+  }
+}
+
+export function getDatevExportStatusTextClass(status: string | null | undefined): string {
+  switch (status) {
+    case 'pending':
+      return 'text-warning';
+    case 'running':
+      return 'text-primary';
+    case 'completed':
+      return 'text-success';
+    case 'failed':
+      return 'text-danger';
+    default:
+      return 'text-secondary';
+  }
+}
+
+export function getDatevExportStatusIconClass(status: string | null | undefined): string {
+  switch (status) {
+    case 'pending':
+      return 'bi-clock';
+    case 'running':
+      return 'bi-arrow-repeat';
+    case 'completed':
+      return 'bi-check-circle';
+    case 'failed':
+      return 'bi-x-circle';
+    default:
+      return 'bi-question-circle';
+  }
+}
+
+export function getDatevExportScopeLabel(scope: string | null | undefined): string {
+  switch (scope) {
+    case 'unified':
+      return $localize`:@@featureAdminDatevExports-scopeUnified:Unified`;
+    case 'tenant':
+      return $localize`:@@featureAdminDatevExports-scopeTenant:This tenant`;
+    default:
+      return scope ?? getUnavailableLabel();
+  }
+}
+
 export function getProfileCompleteLabel(isComplete: boolean): string {
   return isComplete
     ? $localize`:@@featureBilling-profileComplete:Complete`

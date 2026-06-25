@@ -14,6 +14,12 @@ export function resolveBillingTenantId(environment: Environment): string {
   return configured && configured.length > 0 ? configured : DEFAULT_BILLING_TENANT_ID;
 }
 
+export function resolveBillingTenantDisplayName(environment: Environment): string {
+  const tenantId = resolveBillingTenantId(environment);
+
+  return tenantId.charAt(0).toUpperCase() + tenantId.slice(1);
+}
+
 /**
  * HTTP interceptor that attaches `X-Tenant` to billing API requests.
  * Uses `environment.billing.tenantId` when set; otherwise sends `default`.

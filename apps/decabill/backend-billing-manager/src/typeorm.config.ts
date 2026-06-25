@@ -3,6 +3,8 @@ import {
   BackorderEntity,
   BillingAuditLogEntity,
   CustomerProfileEntity,
+  DatevDebtorAccountEntity,
+  DatevExportEntity,
   InvoiceEntity,
   InvoiceVoidDocumentEntity,
   InvoiceLineItemEntity,
@@ -69,6 +71,8 @@ export const typeormConfig: DataSourceOptions = {
     BackorderEntity,
     AvailabilitySnapshotEntity,
     CustomerProfileEntity,
+    DatevDebtorAccountEntity,
+    DatevExportEntity,
     UserEntity,
   ],
   migrations: [

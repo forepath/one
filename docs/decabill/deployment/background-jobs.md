@@ -44,6 +44,9 @@ Registered by the scheduler from `getBillingRepeatableJobs()`:
 | `renewal-reminder.coordinator`         | `REMINDER_SCHEDULER_INTERVAL`              | 1h               |
 | `subscription-item-update.coordinator` | `SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL`   | 24h              |
 | `backorder-retry.coordinator`          | `BACKORDER_RETRY_INTERVAL_MS`              | 60s              |
+| `datev-export.coordinator`             | `BILLING_DATEV_EXPORT_CRON` (cron)         | 1st of month     |
+
+The DATEV coordinator is registered only when `BILLING_DATEV_EXPORT_ENABLED=true`. It enqueues per-tenant unit jobs and optionally one unified unit job when `BILLING_DATEV_UNIFIED_EXPORT_ENABLED=true`.
 
 Coordinator job IDs use dot separators (for example `coordinator.subscription-billing`) via `buildCoordinatorJobId`.
 
@@ -59,8 +62,14 @@ Coordinators fan out unit jobs such as:
 - `subscription-item-update.unit`
 - `backorder-retry.unit`
 - Admin bill-now coordinator and unit jobs (`AdminBillNowJobName`)
+- `datev-export.coordinator` and `datev-export.unit` (when `BILLING_DATEV_EXPORT_ENABLED=true`)
 
 BullMQ `jobId` values prevent duplicate active work for the same entity. Custom job IDs use `.` separators and only allowed characters (alphanumeric, `.`, `-`, `_`, `~`).
+
+DATEV unit job IDs:
+
+- Per-tenant: `datev-export.tenant.{tenantId}.{year}-{month}`
+- Unified: `datev-export.unified.{year}-{month}`
 
 ## Redis and Queue Environment Variables
 

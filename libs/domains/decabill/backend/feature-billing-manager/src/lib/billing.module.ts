@@ -19,6 +19,7 @@ import { KeycloakConnectModule } from 'nest-keycloak-connect';
 import { PAYMENT_PROCESSOR_INIT } from './constants/payment-processor-init.token';
 import { AdminBillingController } from './controllers/admin-billing.controller';
 import { AdminCustomerProfilesController } from './controllers/admin-customer-profiles.controller';
+import { AdminDatevExportsController } from './controllers/admin-datev-exports.controller';
 import { AvailabilityController } from './controllers/availability.controller';
 import { BackordersController } from './controllers/backorders.controller';
 import { CustomerProfilesController } from './controllers/customer-profiles.controller';
@@ -35,6 +36,8 @@ import { AvailabilitySnapshotEntity } from './entities/availability-snapshot.ent
 import { BackorderEntity } from './entities/backorder.entity';
 import { BillingAuditLogEntity } from './entities/billing-audit-log.entity';
 import { CustomerProfileEntity } from './entities/customer-profile.entity';
+import { DatevDebtorAccountEntity } from './entities/datev-debtor-account.entity';
+import { DatevExportEntity } from './entities/datev-export.entity';
 import { InvoiceLineItemEntity } from './entities/invoice-line-item.entity';
 import { InvoiceNumberSequenceEntity } from './entities/invoice-number-sequence.entity';
 import { InvoiceVoidDocumentEntity } from './entities/invoice-void-document.entity';
@@ -50,16 +53,21 @@ import { SubscriptionItemEntity } from './entities/subscription-item.entity';
 import { SubscriptionEntity } from './entities/subscription.entity';
 import { UsageRecordEntity } from './entities/usage-record.entity';
 import { BillingStatusGateway } from './gateways/billing-status.gateway';
+import { DatevExportEnabledGuard } from './guards/datev-export-enabled.guard';
 import { TenantUserGuard } from './guards/tenant-user.guard';
 import { PaymentProcessorFactory } from './payment-processors/payment-processor.factory';
 import type { PaymentProcessor } from './payment-processors/payment-processor.interface';
 import { StripePaymentProcessor } from './payment-processors/processors/stripe-payment.processor';
 import { AdminBillNowEnqueueAdapter } from './queue/admin-bill-now-enqueue.adapter';
 import { ADMIN_BILL_NOW_ENQUEUE } from './queue/admin-bill-now-enqueue.token';
+import { DatevExportEnqueueAdapter } from './queue/datev-export-enqueue.adapter';
+import { DATEV_EXPORT_ENQUEUE } from './queue/datev-export-enqueue.token';
 import { AvailabilitySnapshotsRepository } from './repositories/availability-snapshots.repository';
 import { BackordersRepository } from './repositories/backorders.repository';
 import { BillingAuditLogsRepository } from './repositories/billing-audit-logs.repository';
 import { CustomerProfilesRepository } from './repositories/customer-profiles.repository';
+import { DatevDebtorAccountsRepository } from './repositories/datev-debtor-accounts.repository';
+import { DatevExportRepository } from './repositories/datev-export.repository';
 import { InvoiceLineItemsRepository } from './repositories/invoice-line-items.repository';
 import { InvoiceNumberSequencesRepository } from './repositories/invoice-number-sequences.repository';
 import { InvoiceVoidDocumentsRepository } from './repositories/invoice-void-documents.repository';
@@ -89,6 +97,16 @@ import { CancellationPolicyService } from './services/cancellation-policy.servic
 import { CloudflareDnsService } from './services/cloudflare-dns.service';
 import { CustomerProfilesService } from './services/customer-profiles.service';
 import { CustomerProfilesAdminService } from './services/customer-profiles-admin.service';
+import { DatevBookingMapperService } from './services/datev-booking-mapper.service';
+import { DatevDebtorAccountService } from './services/datev-debtor-account.service';
+import { DatevDebtorMapperService } from './services/datev-debtor-mapper.service';
+import { DatevDocumentArchiveService } from './services/datev-document-archive.service';
+import { DatevExportAdminService } from './services/datev-export-admin.service';
+import { DatevExportConfigService } from './services/datev-export-config.service';
+import { DatevExportJobHandler } from './services/datev-export.job-handler';
+import { DatevExportService } from './services/datev-export.service';
+import { DatevExportStorageService } from './services/datev-export-storage.service';
+import { DatevExtfCsvService } from './services/datev-extf-csv.service';
 import { DigitaloceanProvisioningService } from './services/digitalocean-provisioning.service';
 import { EInvoiceEmbedService } from './services/e-invoice-embed.service';
 import { EInvoiceXmlService } from './services/e-invoice-xml.service';
@@ -315,6 +333,8 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       AvailabilitySnapshotEntity,
       CustomerProfileEntity,
       UserEntity,
+      DatevExportEntity,
+      DatevDebtorAccountEntity,
     ]),
     ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],
@@ -330,6 +350,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     InvoicesController,
     AdminBillingController,
     AdminCustomerProfilesController,
+    AdminDatevExportsController,
     PaymentsWebhookController,
     UsageController,
     CustomerProfilesController,
@@ -350,9 +371,14 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     TaxCalculationService,
     BillingIssuerConfigService,
     AdminBillNowEnqueueAdapter,
+    DatevExportEnqueueAdapter,
     {
       provide: ADMIN_BILL_NOW_ENQUEUE,
       useExisting: AdminBillNowEnqueueAdapter,
+    },
+    {
+      provide: DATEV_EXPORT_ENQUEUE,
+      useExisting: DatevExportEnqueueAdapter,
     },
     AdminBillNowService,
     BillingAdminService,
@@ -428,6 +454,19 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionsRepository,
     UsageRecordsRepository,
     CustomerProfilesRepository,
+    DatevExportRepository,
+    DatevDebtorAccountsRepository,
+    DatevExportConfigService,
+    DatevExportStorageService,
+    DatevBookingMapperService,
+    DatevDebtorMapperService,
+    DatevDebtorAccountService,
+    DatevExtfCsvService,
+    DatevDocumentArchiveService,
+    DatevExportService,
+    DatevExportJobHandler,
+    DatevExportAdminService,
+    DatevExportEnabledGuard,
     InvoiceOverdueJobHandler,
     SshExecutorService,
     UsersRepository,
@@ -481,6 +520,8 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionsRepository,
     UsageRecordsRepository,
     CustomerProfilesRepository,
+    DatevExportJobHandler,
+    DatevExportConfigService,
     ProviderRegistryService,
   ],
 })

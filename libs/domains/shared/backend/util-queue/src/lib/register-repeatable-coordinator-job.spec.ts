@@ -1,7 +1,10 @@
 import type { Queue } from 'bullmq';
 
 import { defaultRemoveOnComplete, defaultRemoveOnFail } from './job-retention';
-import { registerRepeatableCoordinatorJob } from './register-repeatable-coordinator-job';
+import {
+  registerRepeatableCoordinatorJob,
+  removeRepeatableCoordinatorJob,
+} from './register-repeatable-coordinator-job';
 
 describe('registerRepeatableCoordinatorJob', () => {
   it('removes stale repeatables before registering', async () => {
@@ -37,6 +40,71 @@ describe('registerRepeatableCoordinatorJob', () => {
     );
   });
 
+  it('registers cron pattern with timezone', async () => {
+    const add = jest.fn().mockResolvedValue({ id: 'coordinator.datev-export' });
+    const queue = {
+      getRepeatableJobs: jest.fn().mockResolvedValue([]),
+      removeRepeatableByKey: jest.fn(),
+      add,
+    } as unknown as Queue;
+
+    await registerRepeatableCoordinatorJob({
+      queue,
+      name: 'datev-export.coordinator',
+      coordinatorJobId: 'coordinator.datev-export',
+      pattern: '0 0 1 * *',
+      tz: 'Europe/Berlin',
+    });
+
+    expect(add).toHaveBeenCalledWith(
+      'datev-export.coordinator',
+      {},
+      expect.objectContaining({
+        repeat: { pattern: '0 0 1 * *', tz: 'Europe/Berlin' },
+      }),
+    );
+  });
+
+  it('registers cron pattern without timezone', async () => {
+    const add = jest.fn().mockResolvedValue({ id: 'coordinator.datev-export' });
+    const queue = {
+      getRepeatableJobs: jest.fn().mockResolvedValue([]),
+      removeRepeatableByKey: jest.fn(),
+      add,
+    } as unknown as Queue;
+
+    await registerRepeatableCoordinatorJob({
+      queue,
+      name: 'datev-export.coordinator',
+      coordinatorJobId: 'coordinator.datev-export',
+      pattern: '0 0 1 * *',
+    });
+
+    expect(add).toHaveBeenCalledWith(
+      'datev-export.coordinator',
+      {},
+      expect.objectContaining({
+        repeat: { pattern: '0 0 1 * *' },
+      }),
+    );
+  });
+
+  it('throws when neither everyMs nor pattern is configured', async () => {
+    const queue = {
+      getRepeatableJobs: jest.fn().mockResolvedValue([]),
+      removeRepeatableByKey: jest.fn(),
+      add: jest.fn(),
+    } as unknown as Queue;
+
+    await expect(
+      registerRepeatableCoordinatorJob({
+        queue,
+        name: 'invalid.coordinator',
+        coordinatorJobId: 'coordinator.invalid',
+      }),
+    ).rejects.toThrow('Repeatable job "invalid.coordinator" requires everyMs or pattern');
+  });
+
   it('registers when no stale repeatables exist', async () => {
     const add = jest.fn().mockResolvedValue({ id: 'coordinator.billing' });
     const queue = {
@@ -61,5 +129,23 @@ describe('registerRepeatableCoordinatorJob', () => {
         removeOnFail: defaultRemoveOnFail,
       }),
     );
+  });
+});
+
+describe('removeRepeatableCoordinatorJob', () => {
+  it('skips stale repeatables without a key', async () => {
+    const removeRepeatableByKey = jest.fn();
+    const queue = {
+      getRepeatableJobs: jest.fn().mockResolvedValue([
+        { name: 'billing.coordinator', id: 'coordinator.billing' },
+        { name: 'billing.coordinator', id: 'coordinator.billing', key: 'repeat:abc' },
+      ]),
+      removeRepeatableByKey,
+    } as unknown as Queue;
+
+    await removeRepeatableCoordinatorJob(queue, 'billing.coordinator', 'coordinator.billing');
+
+    expect(removeRepeatableByKey).toHaveBeenCalledTimes(1);
+    expect(removeRepeatableByKey).toHaveBeenCalledWith('repeat:abc');
   });
 });

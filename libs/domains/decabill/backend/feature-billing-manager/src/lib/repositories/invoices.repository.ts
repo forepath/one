@@ -338,6 +338,40 @@ export class InvoicesRepository {
     await this.findByIdOrThrow(id);
     await this.repository.delete(id);
   }
+
+  async findIssuedInPeriod(from: Date, to: Date): Promise<InvoiceEntity[]> {
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .leftJoinAndSelect('inv.lineItems', 'lineItems')
+      .where('inv.status IN (:...statuses)', { statuses: BILLED_INVOICE_STATUSES })
+      .andWhere('inv.issued_at IS NOT NULL')
+      .andWhere('inv.issued_at >= :from', { from })
+      .andWhere('inv.issued_at <= :to', { to })
+      .orderBy('inv.issued_at', 'ASC')
+      .addOrderBy('lineItems.position', 'ASC');
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
+  }
+
+  async findVoidedInPeriod(from: Date, to: Date): Promise<InvoiceEntity[]> {
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .leftJoinAndSelect('inv.lineItems', 'lineItems')
+      .where('inv.status = :status', { status: InvoiceStatus.VOID })
+      .andWhere('inv.voided_at IS NOT NULL')
+      .andWhere('inv.voided_at >= :from', { from })
+      .andWhere('inv.voided_at <= :to', { to })
+      .orderBy('inv.voided_at', 'ASC')
+      .addOrderBy('lineItems.position', 'ASC');
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
+  }
 }
 
 /** @deprecated Use InvoicesRepository */

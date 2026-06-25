@@ -1,6 +1,10 @@
 import type { UserResponseDto } from '@forepath/identity/frontend';
 
-import { filterBillingAdminUsers } from './billing-user-select';
+import {
+  filterBillingAdminUsers,
+  resolveBillingAdminUserIconClass,
+  resolveBillingAdminUserLabel,
+} from './billing-user-select';
 
 describe('filterBillingAdminUsers', () => {
   const users: UserResponseDto[] = [
@@ -21,5 +25,31 @@ describe('filterBillingAdminUsers', () => {
 
   it('returns an empty list when nothing matches', () => {
     expect(filterBillingAdminUsers(users, 'missing')).toEqual([]);
+  });
+});
+
+describe('resolveBillingAdminUserLabel', () => {
+  const users: UserResponseDto[] = [{ id: 'user-1', email: 'alice@example.com' } as UserResponseDto];
+
+  it('resolves a user id to email', () => {
+    expect(resolveBillingAdminUserLabel('user-1', users)).toBe('alice@example.com');
+  });
+
+  it('maps known system refs to labels', () => {
+    expect(resolveBillingAdminUserLabel('scheduler', users)).toBe('Scheduler');
+    expect(resolveBillingAdminUserLabel('admin', users)).toBe('System');
+  });
+
+  it('returns N/A for missing or unknown refs', () => {
+    expect(resolveBillingAdminUserLabel(undefined, users)).toBe('N/A');
+    expect(resolveBillingAdminUserLabel('missing-user-id', users)).toBe('N/A');
+  });
+});
+
+describe('resolveBillingAdminUserIconClass', () => {
+  it('uses gear for system refs and envelope for users', () => {
+    expect(resolveBillingAdminUserIconClass('scheduler')).toBe('bi-gear');
+    expect(resolveBillingAdminUserIconClass('admin')).toBe('bi-gear');
+    expect(resolveBillingAdminUserIconClass('user-1')).toBe('bi-envelope');
   });
 });

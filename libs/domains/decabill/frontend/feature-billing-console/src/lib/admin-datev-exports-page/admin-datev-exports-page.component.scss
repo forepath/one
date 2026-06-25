@@ -1,0 +1,19 @@
+@import '../admin-list-page.scss';
+
+.admin-datev-exports {
+  min-height: 0;
+}
+
+.btn-group-options {
+  > .btn-options {
+    border-radius: 0;
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 0;
+    flex: 1 1 auto;
+
+    &:last-child {
+      border-right: 0;
+    }
+  }
+}
