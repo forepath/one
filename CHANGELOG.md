@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.11.0](https://github.com/forepath/one/compare/v2.10.0...v2.11.0) (2026-06-25)
+
+
+### Features
+
+* billing datev export ([#446](https://github.com/forepath/one/issues/446)) ([8877aec](https://github.com/forepath/one/commit/8877aec6ea5705c8084a60578447bd351ae5ae76))
+
 ## [2.10.0](https://github.com/forepath/one/compare/v2.9.0...v2.10.0) (2026-06-24)
 
 
