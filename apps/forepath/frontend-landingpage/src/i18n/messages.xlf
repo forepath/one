@@ -636,6 +636,30 @@
       <trans-unit id="featureForepathItSystems-catMonitoringItem3" datatype="html">
         <source>Monthly operational health reports for stakeholders</source>
         </trans-unit>
+      <trans-unit id="featureForepathItSystems-topiTitle" datatype="html">
+        <source> Rent the hardware you need, month by month </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-topiLead" datatype="html">
+        <source> Through our partnership with topi, you can rent laptops, servers, network gear, and accessories instead of buying them upfront. When hardware ships with ForePath managed services, the service costs can even be part of the same monthly rental. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-topiItem1" datatype="html">
+        <source>Predictable monthly rates that keep capital free for other priorities</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-topiItem2" datatype="html">
+        <source>A digital rental flow with warranty coverage on every device</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-topiItem3" datatype="html">
+        <source>Optional topi Care packages for repair or faster device exchange</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-topiItem4" datatype="html">
+        <source>Scale up or refresh equipment as your team and projects evolve</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-topiClosing" datatype="html">
+        <source> From first deployments to refresh cycles, we help you choose hardware that fits your environment and wrap it in an operating model your teams can rely on. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-topiLogoAlt" datatype="html">
+        <source>topi</source>
+        </trans-unit>
       <trans-unit id="featureForepathItSystems-oneTeaserLead" datatype="html">
         <source> We keep your environment stable. ForePath One connects that operations work with consulting, software delivery, and community we run ourselves. Same engineers, one thread, fewer handoffs between phases. </source>
         </trans-unit>
