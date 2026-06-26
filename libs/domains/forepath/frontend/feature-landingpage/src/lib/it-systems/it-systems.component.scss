@@ -93,3 +93,71 @@
 .it-offerings-title {
   max-width: 800px;
 }
+
+.it-topi-copy {
+  padding-left: var(--bs-gutter-x, 0.75rem);
+  padding-right: var(--bs-gutter-x, 0.75rem);
+
+  @media (min-width: 992px) {
+    padding-left: 2.5rem;
+    padding-right: 0;
+  }
+}
+
+.it-topi-visual-col {
+  min-height: 14rem;
+
+  @media (min-width: 992px) {
+    min-height: 0;
+  }
+}
+
+.it-topi-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 14rem;
+  padding: 2.5rem 1.5rem;
+  background:
+    radial-gradient(circle at 88% 18%, rgb(255 0 98 / 0.45) 0%, transparent 42%),
+    linear-gradient(145deg, #002bff 0%, #001a99 58%, #002bff 100%);
+  border-top: 1px solid var(--bs-border-color);
+  border-bottom: 1px solid var(--bs-border-color);
+  border-right: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin-bottom: 3rem;
+
+  @media (min-width: 768px) {
+    min-height: 21rem;
+    margin-bottom: 6rem;
+  }
+
+  @media (min-width: 992px) {
+    border-top: 0;
+    border-bottom: 0;
+    border-right: 0;
+    border-radius: 0;
+    overflow: visible;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--grid-section-line-left);
+    right: 50%;
+    width: auto;
+    min-height: 100%;
+    margin-bottom: 0;
+  }
+}
+
+.it-topi-logo {
+  width: auto;
+  max-width: 10rem;
+  height: auto;
+  object-fit: contain;
+
+  @media (min-width: 768px) {
+    max-width: 12rem;
+  }
+}
