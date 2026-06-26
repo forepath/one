@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.12.0](https://github.com/forepath/one/compare/v2.11.0...v2.12.0) (2026-06-26)
+
+
+### Features
+
+* forepath landingpage hardware rental feature ([#447](https://github.com/forepath/one/issues/447)) ([661174d](https://github.com/forepath/one/commit/661174da32d9f03535605adef920fb5d0ee34773))
+
 ## [2.11.0](https://github.com/forepath/one/compare/v2.10.0...v2.11.0) (2026-06-25)
 
 
