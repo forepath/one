@@ -99,6 +99,19 @@ Customer payment flow:
 
 See [Payment Processing](./payment-processing.md).
 
+## Project Time Billing
+
+Admins bill tracked project hours via `POST /admin/billing/projects/{projectId}/bill-time`. The operation:
+
+1. Validates the assigned customer's billing profile is complete
+2. Aggregates all unbilled time entries for the project
+3. Creates and immediately issues a draft invoice with one line item (`hours × hourlyRateNet`)
+4. Marks time entries with `invoiceId` and `billedAt`
+
+This is separate from open-position accumulation on the user's billing day. Project invoices link to the project through `projectId` on the invoice record.
+
+See **[Projects](./projects.md)** for KPIs, reassignment rules, and minimum billable amount.
+
 ## Manual Invoice Workflow (Admin)
 
 1. `POST /admin/billing/invoices/manual` - Create draft with user, optional subscription, custom line items
@@ -120,6 +133,7 @@ Full schemas: [Billing Manager OpenAPI](/spec/billing-manager/openapi.yaml).
 - **[Payment Processing](./payment-processing.md)** - Stripe checkout and webhooks
 - **[Billing Administration](./billing-administration.md)** - Manual invoices and KPIs
 - **[Customer Profiles](./customer-profiles.md)** - Required for issuance
+- **[Projects](./projects.md)** - Bill-time from tracked hours
 - **[Subscriptions](./subscriptions.md)** - Source of open positions
 - **[Multi-tenancy](./multi-tenancy.md)** - Tenant-scoped invoice data
 

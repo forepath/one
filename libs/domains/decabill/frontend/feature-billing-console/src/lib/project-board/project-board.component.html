@@ -1,0 +1,750 @@
+<div class="section__content-wrapper d-flex flex-column h-100">
+  <div
+    class="px-3 py-2 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center flex-wrap gap-2"
+  >
+    <h5 class="mb-0 fw-semibold h6" i18n="@@featureProjectBoard-title">Board</h5>
+    <div class="d-flex align-items-center gap-2">
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary"
+        (click)="openGlobalSearchModal()"
+        i18n-title="@@featureProjectBoard-globalSearchOpenTitle"
+        title="Search tickets (Ctrl+F)"
+        i18n-aria-label="@@featureProjectBoard-globalSearchOpenAria"
+        aria-label="Search tickets"
+      >
+        <i class="bi bi-search" aria-hidden="true"></i>
+      </button>
+      @if (isAdmin) {
+        <button type="button" class="btn btn-sm btn-primary" (click)="showCreateTicketModal()">
+          <i class="bi bi-plus-circle me-1"></i>
+          <span i18n="@@featureProjectBoard-add">Add</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center gap-0 d-md-none border-bottom btn-group-options">
+    @for (status of lanes; track status) {
+      <button
+        type="button"
+        class="btn btn-sm btn-options"
+        [class.btn-outline-secondary]="selectedLane() !== status"
+        [class.btn-primary]="selectedLane() === status"
+        (click)="selectedLane.set(status)"
+      >
+        {{ laneLabel(status) }}
+      </button>
+    }
+  </div>
+
+  @if (error$ | async; as err) {
+    <div class="alert alert-danger mb-0 rounded-0" role="alert">{{ err }}</div>
+  }
+
+  @if (loadingList$ | async) {
+    <div class="d-flex justify-content-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+  }
+
+  @if (ticketsBoardRowsByStatus$ | async; as byStatus) {
+    <section class="section__row flex-grow-1 min-h-0">
+      @for (status of lanes; track status) {
+        @let laneRows = filteredLaneRows(status, byStatus[status]);
+        <div
+          class="section__column d-md-flex flex-column border-end min-h-0"
+          [class.d-none]="selectedLane() !== status"
+        >
+          <div class="project-board__lane card h-100 border-0">
+            <div class="card-header py-2 small fw-semibold d-none d-md-block">{{ laneLabel(status) }}</div>
+            <form class="project-board__lane-search">
+              <label
+                [attr.for]="'project-lane-search-' + status"
+                class="visually-hidden"
+                i18n="@@featureProjectBoard-searchLaneLabel"
+                >Search tickets</label
+              >
+              <div class="input-group search-input-container border-bottom">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input
+                  [id]="'project-lane-search-' + status"
+                  type="search"
+                  class="form-control border-0 search-input"
+                  placeholder="Search tickets"
+                  i18n-placeholder="@@featureProjectBoard-searchLanePlaceholder"
+                  [name]="'lane-search-' + status"
+                  [ngModel]="laneSearchQueries()[status]"
+                  (ngModelChange)="setLaneSearchQuery(status, $event)"
+                />
+              </div>
+            </form>
+            <div
+              class="project-board__lane-dropzone list-group list-group-flush project-board__list flex-grow-1"
+              [class.project-board__lane-dropzone--over]="isLaneDragHighlight(status)"
+              (dragover)="onLaneDragOver($event, status)"
+              (dragenter)="onLaneDragEnter($event, status)"
+              (dragleave)="onLaneDragLeave($event, status)"
+              (drop)="onLaneDrop($event, status)"
+            >
+              @for (row of laneRows; track row.ticket.id) {
+                <div
+                  class="list-group-item project-board__card border-bottom"
+                  [class.project-board__card--nested]="row.depth > 0"
+                  [class.project-board__card--draggable]="isTicketDraggable(row.ticket)"
+                  [class.project-board__card--dragging]="draggedTicket()?.id === row.ticket.id"
+                  [style.--project-board-nest-depth]="row.depth"
+                  [attr.draggable]="isTicketDraggable(row.ticket) ? 'true' : null"
+                  (dragstart)="onTicketDragStart($event, row.ticket)"
+                  (dragend)="onTicketDragEnd()"
+                  (dragover)="onCardDragOver($event)"
+                  (drop)="onLaneDrop($event, status)"
+                  (click)="onTicketCardClick(row.ticket)"
+                  (keyup.enter)="onTicketCardClick(row.ticket)"
+                  tabindex="0"
+                  role="button"
+                >
+                  <div class="project-board__card-content">
+                    <div class="d-flex align-items-center gap-2 min-width-0 w-100">
+                      <div class="fw-medium text-truncate flex-grow-1 min-width-0" [title]="row.ticket.title">
+                        @if (row.ticket.shas.short) {
+                          <small class="text-muted small">{{ row.ticket.shas.short }}</small>
+                        }
+                        {{ row.ticket.title }}
+                      </div>
+                    </div>
+                    <div class="project-board__meta-chips d-flex flex-wrap align-items-center gap-1 mt-1">
+                      <small
+                        class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                        [ngClass]="ticketPriorityBadgeClass(row.ticket.priority)"
+                        [attr.title]="row.ticket.priority"
+                        >{{ priorityLabel(row.ticket.priority) }}</small
+                      >
+                      <small
+                        class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                        [ngClass]="ticketStatusBadgeClass(row.ticket.status)"
+                        [attr.title]="row.ticket.status"
+                        >{{ laneLabel(row.ticket.status) }}</small
+                      >
+                      @if (row.ticket.subtaskCounts; as sc) {
+                        @if (sc.open + sc.done > 0) {
+                          <small
+                            class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                            i18n-title="@@featureProjectBoard-subtaskCountTitle"
+                            title="Direct subtasks (done / total)"
+                            >{{ sc.done }}/{{ sc.open + sc.done }}</small
+                          >
+                        }
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+              @if (byStatus[status].length === 0) {
+                <div
+                  class="list-group-item text-muted small py-3 text-center project-board__empty-lane"
+                  i18n="@@featureProjectBoard-dropHere"
+                >
+                  Drop tickets here
+                </div>
+              } @else if (laneRows.length === 0) {
+                <div
+                  class="list-group-item text-muted small py-3 text-center project-board__empty-lane"
+                  i18n="@@featureProjectBoard-noMatchingTickets"
+                >
+                  No matching tickets
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+  }
+</div>
+
+<div #detailModal class="modal fade" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl modal-ticket-detail modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header flex-column align-items-stretch gap-0 pb-2">
+        <div class="d-flex w-100 align-items-center justify-content-between">
+          <h2 class="modal-title h5 mb-0 d-flex align-items-center gap-2 min-width-0 flex-grow-1">
+            @if (detail(); as det) {
+              @if (det.shas.short) {
+                <small class="text-muted small flex-shrink-0">{{ det.shas.short }}</small>
+              }
+              @if (isAdmin && !det.locked) {
+                @if (detailTitleEditing()) {
+                  <input
+                    #detailTitleInput
+                    type="text"
+                    class="form-control form-control-sm flex-grow-1 min-width-0"
+                    [ngModel]="detailTitleDraft()"
+                    (ngModelChange)="detailTitleDraft.set($event)"
+                    [disabled]="saving()"
+                    (blur)="onDetailTitleBlur()"
+                  />
+                } @else {
+                  <span
+                    class="text-truncate min-width-0 project-board__detail-title-clickable"
+                    role="button"
+                    tabindex="0"
+                    [attr.title]="det.title"
+                    (click)="onDetailTitleClick(det)"
+                    (keydown.enter)="onDetailTitleClick(det)"
+                    (keydown.space)="$event.preventDefault(); onDetailTitleClick(det)"
+                    >{{ det.title }}</span
+                  >
+                }
+              } @else {
+                <span class="text-truncate min-width-0" [attr.title]="det.title">{{ det.title }}</span>
+              }
+            } @else {
+              <span i18n="@@featureProjectBoard-modalLoadingTitle">Ticket</span>
+            }
+          </h2>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Close"
+            i18n-aria-label="@@featureProjectBoard-modalCloseAria"
+            (click)="closeDetail()"
+          ></button>
+        </div>
+        @if (detail(); as d) {
+          <div class="d-flex w-100 flex-wrap align-items-center gap-2 my-2 min-width-0">
+            <nav
+              class="info-badge text-muted bg-body-tertiary py-1 px-3 rounded project-board__hierarchy-badge flex-grow-1 min-width-0"
+              [ngClass]="ticketStatusBadgeClass(d.status)"
+              aria-label="Ticket hierarchy"
+              i18n-aria-label="@@featureProjectBoard-breadcrumbNavAria"
+            >
+              <ol class="breadcrumb project-board__breadcrumb mb-0 py-1 small">
+                @for (crumb of detailBreadcrumb$ | async; track crumb.id) {
+                  <li class="breadcrumb-item" [class.active]="crumb.id === d.id">
+                    @if (crumb.id === d.id) {
+                      <span
+                        class="text-truncate d-inline-block project-board__breadcrumb-current"
+                        [title]="crumb.title"
+                        >{{ crumb.title }}</span
+                      >
+                    } @else {
+                      <button
+                        type="button"
+                        class="btn btn-link p-0 text-start text-truncate project-board__breadcrumb-link"
+                        [title]="crumb.title"
+                        (click)="onBreadcrumbNavigate(crumb.id)"
+                      >
+                        {{ crumb.title }}
+                      </button>
+                    }
+                  </li>
+                }
+              </ol>
+            </nav>
+          </div>
+        }
+      </div>
+      <div class="modal-body p-0 d-flex overflow-hidden">
+        @if (loadingDetail$ | async) {
+          <div class="d-flex justify-content-center py-5 w-100">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden" i18n="@@featureProjectBoard-detailLoading">Loading ticket…</span>
+            </div>
+          </div>
+        } @else if (detail(); as d) {
+          <div class="row g-0 w-100 overflow-hidden">
+            <div class="col-lg-7 h-100 overflow-hidden overflow-y-auto p-3">
+              <dl class="row small mb-2 align-items-center">
+                @if (d.shas.short || d.shas.long) {
+                  <dt class="col-sm-3 mb-2" i18n="@@featureProjectBoard-fieldShas">SHAs</dt>
+                  <dd class="col-sm-9 mb-2 d-flex align-items-center gap-2">
+                    @if (d.shas.short) {
+                      <small
+                        class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded project-board__chip--activity-muted"
+                        >{{ d.shas.short }}</small
+                      >
+                    }
+                    @if (d.shas.long) {
+                      <small
+                        class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded project-board__chip--activity-muted"
+                        >{{ d.shas.long }}</small
+                      >
+                    }
+                  </dd>
+                }
+                <dt class="col-sm-3" i18n="@@featureProjectBoard-statusLabel">Status</dt>
+                <dd class="col-sm-9 mb-0">
+                  @if (isAdmin && !d.locked) {
+                    <select
+                      class="form-select form-select-sm"
+                      [ngModel]="d.status"
+                      (ngModelChange)="onDetailStatusChange(d.id, $event)"
+                      [disabled]="saving()"
+                    >
+                      @for (s of statusOptions; track s) {
+                        <option [ngValue]="s">{{ laneLabel(s) }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <small
+                      class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                      [ngClass]="ticketStatusBadgeClass(d.status)"
+                      >{{ laneLabel(d.status) }}</small
+                    >
+                  }
+                </dd>
+                <dt class="col-sm-3 mt-2" i18n="@@featureProjectBoard-priorityLabel">Priority</dt>
+                <dd class="col-sm-9 mt-2 mb-0">
+                  @if (isAdmin && !d.locked) {
+                    <select
+                      class="form-select form-select-sm"
+                      [ngModel]="d.priority"
+                      (ngModelChange)="onDetailPriorityChange(d.id, $event)"
+                      [disabled]="saving()"
+                    >
+                      @for (p of priorityOptions; track p) {
+                        <option [ngValue]="p">{{ priorityLabel(p) }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <small
+                      class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                      [ngClass]="ticketPriorityBadgeClass(d.priority)"
+                      >{{ priorityLabel(d.priority) }}</small
+                    >
+                  }
+                </dd>
+                <dt class="col-sm-3 mt-2" i18n="@@featureProjectBoard-milestoneLabel">Milestone</dt>
+                <dd class="col-sm-9 mt-2 mb-0">
+                  @if (isAdmin && !d.locked) {
+                    <framework-project-milestone-select
+                      inputId="detailTicketMilestone"
+                      [milestones]="milestones()"
+                      [selectedMilestoneId]="d.milestoneId ?? null"
+                      (selectedMilestoneIdChange)="onDetailMilestoneChange(d.id, $event)"
+                      [disabled]="saving()"
+                      [compact]="true"
+                    />
+                  } @else {
+                    <span class="text-muted">{{ milestoneLabel(d.milestoneId) }}</span>
+                  }
+                </dd>
+                @let acceptanceTotal = d.tasks.open + d.tasks.children.open + d.tasks.done + d.tasks.children.done;
+                @if (acceptanceTotal > 0) {
+                  @let acceptancePct = ((d.tasks.done + d.tasks.children.done) / acceptanceTotal) * 100;
+                  <dt
+                    class="col-sm-3 mt-2"
+                    id="projectTicketAcceptanceLabel"
+                    i18n="@@featureProjectBoard-acceptanceLabel"
+                  >
+                    Acceptance
+                    <span class="text-muted small d-block fw-normal" [attr.aria-label]="acceptancePct + '%'"
+                      >{{ acceptancePct | number: '1.0-0' }}%</span
+                    >
+                  </dt>
+                  <dd class="col-sm-9 mt-2 mb-0 d-flex align-items-center gap-2">
+                    <div
+                      class="progress w-100 rounded-pill"
+                      role="progressbar"
+                      aria-labelledby="projectTicketAcceptanceLabel"
+                      [attr.aria-valuenow]="acceptancePct"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      <div class="progress-bar" [style.width]="acceptancePct + '%'"></div>
+                    </div>
+                  </dd>
+                }
+                @if (d.subtaskCounts; as st) {
+                  @let stTotal = st.open + st.done;
+                  @if (stTotal > 0) {
+                    @let stPct = (st.done / stTotal) * 100;
+                    <dt
+                      class="col-sm-3 mt-2"
+                      id="projectTicketSubtaskProgressLabel"
+                      i18n="@@featureProjectBoard-subtaskProgressLabel"
+                    >
+                      Subtasks
+                      <span class="text-muted small d-block fw-normal" [attr.aria-label]="stPct + '%'"
+                        >{{ stPct | number: '1.0-0' }}%</span
+                      >
+                    </dt>
+                    <dd class="col-sm-9 mt-2 mb-0 d-flex align-items-center gap-2">
+                      <div
+                        class="progress w-100 rounded-pill"
+                        role="progressbar"
+                        aria-labelledby="projectTicketSubtaskProgressLabel"
+                        [attr.aria-valuenow]="stPct"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                      >
+                        <div class="progress-bar bg-secondary" [style.width]="stPct + '%'"></div>
+                      </div>
+                    </dd>
+                  }
+                }
+              </dl>
+
+              @if ((isAdmin && !d.locked) || hasTicketDescription(d.content)) {
+                <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+                  <h3 class="h6 mb-2" i18n="@@featureProjectBoard-contentLabel">Description</h3>
+                </div>
+                @if (isAdmin && !d.locked) {
+                  <framework-project-ticket-editor
+                    [markdown]="descriptionDraft()"
+                    (markdownChange)="descriptionDraft.set($event)"
+                    (blurred)="onDescriptionDraftCommit()"
+                  ></framework-project-ticket-editor>
+                } @else {
+                  <div class="mb-4 prose" [innerHTML]="d.content"></div>
+                }
+              }
+
+              @if (isAdmin && !d.locked) {
+                <div class="d-flex flex-wrap align-items-center gap-2 my-3">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    (click)="showCreateSubtaskModal()"
+                    [disabled]="saving()"
+                    i18n="@@featureProjectBoard-addSubtask"
+                  >
+                    Add subtask
+                  </button>
+                </div>
+              }
+
+              @if (detailSubtaskRows().length > 0) {
+                <h3 class="h6 mt-1 mb-2" i18n="@@featureProjectBoard-subtasksHeading">Subtasks</h3>
+                <ul
+                  class="list-group list-group-flush project-board__detail-subtasks border rounded small mb-3"
+                  role="list"
+                >
+                  @for (row of detailSubtaskRows(); track row.ticket.id) {
+                    <li
+                      class="list-group-item project-board__detail-subtask-row py-2 px-3 position-relative"
+                      [class.project-board__detail-subtask--nested]="row.depth > 0"
+                      [style.--project-board-nest-depth]="row.depth"
+                      role="listitem"
+                    >
+                      <button
+                        type="button"
+                        class="btn btn-link p-0 text-start text-decoration-none project-board__detail-subtask-btn"
+                        (click)="openSubtaskDetail(row.ticket.id)"
+                        i18n-title="@@featureProjectBoard-openSubtaskTitle"
+                        title="Open subtask"
+                      >
+                        <span class="d-flex align-items-center gap-2 w-100 min-width-0">
+                          @if (row.ticket.shas.short) {
+                            <small class="text-muted flex-shrink-0 small fw-medium">{{ row.ticket.shas.short }}</small>
+                          }
+                          <span class="fw-medium text-break flex-grow-1 min-width-0">{{ row.ticket.title }}</span>
+                        </span>
+                      </button>
+                      <div class="project-board__meta-chips d-flex flex-wrap align-items-center gap-1 mt-1">
+                        <small
+                          class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                          [ngClass]="ticketPriorityBadgeClass(row.ticket.priority)"
+                          >{{ priorityLabel(row.ticket.priority) }}</small
+                        >
+                        <small
+                          class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                          [ngClass]="ticketStatusBadgeClass(row.ticket.status)"
+                          >{{ laneLabel(row.ticket.status) }}</small
+                        >
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+            <div class="col-lg-5 project-board__detail-sidebar h-100 overflow-hidden overflow-y-auto p-3">
+              <h3 class="h6" i18n="@@featureProjectBoard-commentsHeading">Comments</h3>
+              <div class="input-group input-group-sm mb-3">
+                <textarea
+                  class="form-control"
+                  rows="2"
+                  [ngModel]="commentBody()"
+                  (ngModelChange)="commentBody.set($event)"
+                  i18n-placeholder="@@featureProjectBoard-commentPlaceholder"
+                  placeholder="Add a comment…"
+                ></textarea>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  (click)="submitComment()"
+                  [disabled]="saving()"
+                  i18n="@@featureProjectBoard-addComment"
+                >
+                  Add
+                </button>
+              </div>
+              <ul class="list-unstyled small project-board__scroll">
+                @for (c of comments$ | async; track c.id) {
+                  <li class="mb-2 py-2 px-3 bg-body-tertiary rounded">
+                    <div
+                      class="project-board__activity-line d-flex flex-wrap align-items-center column-gap-2 row-gap-1 mb-1 small"
+                    >
+                      <span class="text-body-secondary">{{ c.createdAt | date: activityOccurredAtFormat }}</span>
+                      @if (c.userEmail) {
+                        <span class="text-body-secondary text-truncate project-board__activity-actor">{{
+                          c.userEmail
+                        }}</span>
+                      } @else {
+                        <span
+                          class="text-body-secondary project-board__activity-actor project-board__comment-author-unknown"
+                          i18n="@@featureProjectBoard-commentAuthorDash"
+                          >—</span
+                        >
+                      }
+                    </div>
+                    <div class="text-break">{{ c.body }}</div>
+                  </li>
+                }
+              </ul>
+
+              <h3 class="h6 mt-3" i18n="@@featureProjectBoard-activityHeading">Activity</h3>
+              <ul class="list-unstyled small project-board__scroll">
+                @for (ev of activity$ | async; track ev.id) {
+                  <li class="mb-2 pb-2 border-bottom border-opacity-50">
+                    <div
+                      class="project-board__activity-line d-flex flex-wrap align-items-center column-gap-2 row-gap-1 small"
+                    >
+                      <small
+                        class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                        [ngClass]="activityActionBadgeClass(ev.actionType)"
+                        [attr.title]="ev.actionType"
+                        >{{ activityActionLabel(ev.actionType) }}</small
+                      >
+                      <span class="text-body-secondary">{{ ev.occurredAt | date: activityOccurredAtFormat }}</span>
+                      @if (ev.actorEmail) {
+                        <span class="text-body-secondary text-truncate project-board__activity-actor">{{
+                          ev.actorEmail
+                        }}</span>
+                      }
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="closeDetail()"
+          i18n="@@featureProjectBoard-close"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #createModal class="modal fade" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5">
+          @if (createParentId()) {
+            <span i18n="@@featureProjectBoard-createSubtaskTitle">New subtask</span>
+          } @else {
+            <span i18n="@@featureProjectBoard-createTitle">New ticket</span>
+          }
+        </h2>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          i18n-aria-label="@@featureProjectBoard-modalCloseAria"
+          (click)="closeCreateModal()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label small fw-semibold" for="createTicketTitle" i18n="@@featureProjectBoard-titleLabel"
+            >Title</label
+          >
+          <input
+            id="createTicketTitle"
+            type="text"
+            class="form-control form-control-sm"
+            [(ngModel)]="createForm.title"
+            name="createTitle"
+            i18n-placeholder="@@featureProjectBoard-createTitlePlaceholder"
+            placeholder="Short summary"
+            required
+          />
+        </div>
+        <div class="mb-2">
+          <label class="form-label small fw-semibold" i18n="@@featureProjectBoard-contentLabel">Description</label>
+          <framework-project-ticket-editor [(markdown)]="createForm.content"></framework-project-ticket-editor>
+        </div>
+        <div class="row g-2">
+          <div class="col-sm-6">
+            <label
+              class="form-label small fw-semibold"
+              for="createTicketStatus"
+              i18n="@@featureProjectBoard-statusLabel"
+              >Status</label
+            >
+            <select
+              id="createTicketStatus"
+              class="form-select form-select-sm"
+              [(ngModel)]="createForm.status"
+              name="createStatus"
+            >
+              @for (s of statusOptions; track s) {
+                <option [ngValue]="s">{{ laneLabel(s) }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label
+              class="form-label small fw-semibold"
+              for="createTicketPriority"
+              i18n="@@featureProjectBoard-priorityLabel"
+              >Priority</label
+            >
+            <select
+              id="createTicketPriority"
+              class="form-select form-select-sm"
+              [(ngModel)]="createForm.priority"
+              name="createPriority"
+            >
+              @for (p of priorityOptions; track p) {
+                <option [ngValue]="p">{{ priorityLabel(p) }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label
+              class="form-label small fw-semibold"
+              for="createTicketMilestone"
+              i18n="@@featureProjectBoard-milestoneLabel"
+              >Milestone</label
+            >
+            <framework-project-milestone-select
+              inputId="createTicketMilestone"
+              [milestones]="milestones()"
+              [selectedMilestoneId]="createForm.milestoneId ?? null"
+              (selectedMilestoneIdChange)="onCreateMilestoneChange($event)"
+              [compact]="true"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="closeCreateModal()"
+          i18n="@@featureProjectBoard-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          (click)="submitCreate()"
+          [disabled]="saving()"
+          i18n="@@featureProjectBoard-create"
+        >
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  #globalSearchModal
+  class="modal fade"
+  tabindex="-1"
+  aria-hidden="true"
+  aria-labelledby="projectBoardGlobalSearchLabel"
+>
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="projectBoardGlobalSearchLabel" i18n="@@featureProjectBoard-globalSearchTitle">
+          Search tickets
+        </h2>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          i18n-aria-label="@@featureProjectBoard-modalCloseAria"
+          (click)="onCloseGlobalSearchModal()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <label
+          class="visually-hidden"
+          for="projectBoardGlobalSearchInput"
+          i18n="@@featureProjectBoard-globalSearchInputLabel"
+          >Search tickets</label
+        >
+        <div class="input-group search-input-container border rounded mb-3">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <input
+            #globalSearchInput
+            id="projectBoardGlobalSearchInput"
+            type="search"
+            class="form-control border-0 search-input"
+            [ngModel]="globalSearchQuery()"
+            (ngModelChange)="globalSearchQuery.set($event)"
+            i18n-placeholder="@@featureProjectBoard-globalSearchPlaceholder"
+            placeholder="Search by title, description, or id"
+          />
+        </div>
+        @if (globalSearchQuery().trim() === '') {
+          <p class="text-muted small mb-0" i18n="@@featureProjectBoard-globalSearchHint">
+            Type to search all tickets in this project, including done and closed.
+          </p>
+        } @else if (globalSearchHits().length === 0) {
+          <p class="text-muted small mb-0" i18n="@@featureProjectBoard-globalSearchNoResults">No matching tickets</p>
+        } @else {
+          <div class="list-group list-group-flush border rounded project-board__global-search-results">
+            @for (hit of globalSearchHits(); track hit.ticket.id) {
+              <button
+                type="button"
+                class="list-group-item list-group-item-action d-flex flex-column align-items-start gap-1 text-start"
+                (click)="onGlobalSearchResultClick(hit)"
+              >
+                <div class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
+                  @if (hit.ticket.shas.short) {
+                    <span class="font-monospace text-muted small flex-shrink-0">{{ hit.ticket.shas.short }}</span>
+                  }
+                  <span class="fw-medium text-break flex-grow-1 min-width-0">{{ hit.ticket.title }}</span>
+                  <small
+                    class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded flex-shrink-0"
+                    [ngClass]="ticketStatusBadgeClass(hit.ticket.status)"
+                    >{{ laneLabel(hit.ticket.status) }}</small
+                  >
+                </div>
+                @if (globalSearchPathDisplay(hit)) {
+                  <small class="text-muted text-truncate w-100">{{ globalSearchPathDisplay(hit) }}</small>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="onCloseGlobalSearchModal()"
+          i18n="@@featureProjectBoard-globalSearchClose"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

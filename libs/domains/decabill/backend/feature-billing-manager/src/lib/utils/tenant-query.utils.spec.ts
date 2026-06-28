@@ -1,6 +1,11 @@
 import { runWithTenantId } from '@forepath/shared/backend';
 
-import { applyServiceTypeTenantFilter, applyUserTenantFilter, getRequiredTenantId } from './tenant-query.utils';
+import {
+  applyProjectTenantFilter,
+  applyServiceTypeTenantFilter,
+  applyUserTenantFilter,
+  getRequiredTenantId,
+} from './tenant-query.utils';
 
 describe('tenant-query.utils', () => {
   it('getRequiredTenantId defaults to default outside async context', () => {
@@ -31,5 +36,16 @@ describe('tenant-query.utils', () => {
     });
 
     expect(qb.andWhere).toHaveBeenCalledWith('st.tenant_id = :tenantId', { tenantId: 'tenant-z' });
+  });
+
+  it('applyProjectTenantFilter joins user and adds tenant predicate', () => {
+    const qb = { innerJoin: jest.fn().mockReturnThis(), andWhere: jest.fn().mockReturnThis() };
+
+    runWithTenantId('tenant-p', () => {
+      applyProjectTenantFilter(qb as never, 'project', 'user');
+    });
+
+    expect(qb.innerJoin).toHaveBeenCalledWith('users', 'user', 'user.id = project.user_id');
+    expect(qb.andWhere).toHaveBeenCalledWith('user.tenant_id = :tenantId', { tenantId: 'tenant-p' });
   });
 });

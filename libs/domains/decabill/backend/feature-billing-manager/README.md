@@ -5,6 +5,8 @@ Backend billing module providing subscription management, backorders, availabili
 ## Contents
 
 - WebSocket dashboard status stream: see [`spec/asyncapi.yaml`](spec/asyncapi.yaml) (namespace `billing`, permission-locked; mirrors REST subscription ownership).
+- WebSocket project board stream: see [`spec/asyncapi.yaml`](spec/asyncapi.yaml) (namespace `projects`, room `project:{projectId}`; see [`docs/project-board-realtime.mmd`](docs/project-board-realtime.mmd)).
+- **Projects:** Customer-assigned work tracking with admin CRUD, milestones, tickets, time entries, KPI summaries, and `POST /admin/billing/projects/{projectId}/bill-time` (see [`docs/project-bill-time.mmd`](docs/project-bill-time.mmd)).
 - Service types and plans (admin endpoints), including optional per-plan customer geography selection when the provider schema supports it.
 - CloudInit config templates (admin CRUD) and order-fields for custom service plans.
 - Subscription ordering, cancel, resume for authenticated users.
@@ -65,6 +67,7 @@ When **`AUTHENTICATION_METHOD=api-key`** (or api-key is inferred from **`STATIC_
 - DNS_BASE_DOMAIN (optional; default `spirde.com`) – base domain for FQDN in SSL certificates and CORS
 - `WEBSOCKET_PORT` (optional; default `8082`) – Socket.IO port for the billing status gateway (HTTP REST stays on `PORT`, default 3200)
 - `WEBSOCKET_NAMESPACE` (optional; default `billing`) – Socket.IO namespace path segment
+- `PROJECTS_WEBSOCKET_NAMESPACE` (optional; default `projects`) – Project board Socket.IO namespace path segment
 - `STATUS_POLL_INTERVAL` (optional; default `15000`) – default dashboard status poll interval in **milliseconds**; optional `subscribeDashboardStatus` body field `pollIntervalMs` is clamped between 10s and 120s
 - `WEBSOCKET_CORS_ORIGIN` (optional; default `*`) – Socket.IO CORS `origin` (same pattern as agent controller / agent manager)
 
@@ -180,6 +183,8 @@ the latest images and recreates containers so updates are applied. Failures are 
 - docs/auth-flow.mmd
 - docs/sequence-invoice-payment.mmd (Stripe checkout + webhook)
 - docs/manual-invoice-administration.mmd (admin manual invoice draft → issue flow)
+- docs/project-board-realtime.mmd (project board WebSocket setProject and room broadcasts)
+- docs/project-bill-time.mmd (admin bill-time → issued invoice)
 - docs/config-validation-flow.mmd
 - docs/customer-location-selection.md (plan flag, customer override rules, backorder retry)
 

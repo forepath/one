@@ -1,0 +1,90 @@
+---
+id: nestjs
+name: NestJS and TypeORM Feature Implementation
+description: Checklist and conventions for backend features in Forepath NestJS apps
+globs: ["apps/**/backend-*/**/*.ts", "libs/domains/**/backend/**/*.ts"]
+alwaysApply: false
+---
+# NestJS and TypeORM Feature Implementation
+
+Use this checklist when adding domain features to NestJS backend apps (for example `apps/<domain>/backend-<name>` backed by `libs/domains/<domain>/backend/feature-*`).
+
+## Feature Implementation Checklist
+
+Complete **every** step below. Registering entities only in `TypeOrmModule.forFeature` is not enough for CLI migrations and shared config.
+
+1. **Entities:** Add TypeORM entities under the feature library (for example `src/lib/<feature>/entities/`).
+2. **Migration:** Add a migration under `apps/<domain>/backend-<name>/src/migrations/`. Do not rely on `synchronize: true`.
+3. **Library exports:** Export new entities (and public DTOs or services as needed) from the feature library `src/index.ts`.
+4. **Nest module:** Register entities in `TypeOrmModule.forFeature([...])`, plus controllers, providers, and repositories in the feature module (for example `billing.module.ts`).
+5. **TypeORM CLI config:** Register the same entities in `apps/<domain>/backend-<name>/src/typeorm.config.ts` (`entities` array and imports from `@forepath/<domain>/backend`).
+6. **OpenAPI:** Extend the feature library OpenAPI spec (`spec/openapi.yaml`) with paths, schemas, and operation IDs.
+7. **AsyncAPI:** When adding WebSocket gateways, extend `spec/asyncapi.yaml` and add gateway unit tests.
+8. **Tests:** Add unit tests for services, repositories, access guards, and gateway behavior.
+9. **Documentation:** Update `docs/<domain>/`, the feature library README, and app docs when the feature is user-facing.
+
+## TypeORM Configuration (Critical)
+
+The app uses a **shared** TypeORM config for NestJS runtime and CLI migrations:
+
+- **Runtime:** `TypeOrmModule.forRoot({ ...typeormConfig })` and `TypeOrmModule.forFeature([...])` in the feature module.
+- **CLI:** `apps/<domain>/backend-<name>/src/typeorm.config.ts` exports `typeormConfig` and a default `DataSource`.
+
+**Rule:** Every new entity must appear in **both** `TypeOrmModule.forFeature` and `typeormConfig.entities`. Missing CLI registration breaks migration generation and leaves schema changes undetected until runtime.
+
+Import entities from the domain package barrel (`@forepath/<domain>/backend`), not deep relative paths, so CLI and app share the same symbols.
+
+## Migrations
+
+- **Location:** `apps/<domain>/backend-<name>/src/migrations/`
+- **Naming:** `<timestamp>_<DescriptiveName>.ts` (match existing migrations in the app).
+- **Content:** Explicit `up` and `down`; include enums, indexes, and foreign keys.
+- **Related tables:** When a feature links to existing tables (for example optional `project_id` on invoices), include those changes in the same or a follow-up migration.
+- **Verify:** Run migration commands against a local database before merging.
+
+## Module Wiring
+
+Follow existing patterns in the target feature module:
+
+- **Controllers:** Customer and admin routes in separate controllers when roles differ.
+- **Repositories:** Thin TypeORM wrappers; inject via `@InjectRepository`.
+- **Services:** Business logic, DTO mapping, and authorization checks.
+- **Guards:** Reuse domain guards (`TenantUserGuard`, role guards) on all new endpoints.
+- **Audit:** Log destructive or billing-sensitive admin actions via existing audit services when the domain provides them.
+
+## Multi-Tenancy (Decabill and Similar Domains)
+
+- **Tenant context:** Resolve tenant from the authenticated user; use `TenantUserGuard` and tenant query helpers.
+- **User-scoped resources:** Do not add `tenant_id` to every table. Scope via assigned user (`resource.userId` joined to `users.tenant_id`) when that matches the domain model.
+- **Query filters:** Extend shared tenant query utilities (for example `tenant-query.utils.ts`) instead of duplicating join logic in each repository.
+- **Access utils:** Centralize read, write, and comment permissions in dedicated utils with unit tests.
+
+## WebSocket Gateways
+
+When adding realtime features:
+
+- **Namespace and rooms:** Define constants; use predictable room names (for example `project:{projectId}`).
+- **Handshake:** Match existing gateway tenant validation (for example billing status gateway patterns).
+- **Emits:** Publish full DTO payloads on create, update, and delete from mutating services.
+- **AsyncAPI:** Document messages, channels, and payloads in `spec/asyncapi.yaml`.
+
+## API and DTO Conventions
+
+- **DTOs:** Separate create, update, and response DTOs; validate with class-validator on the server.
+- **OpenAPI:** Keep operation IDs stable; align response shapes with frontend types.
+- **Errors:** Return generic messages to clients; log details internally (see `error-handling` rule).
+
+## Testing
+
+- **Services:** Mock repositories; cover happy path, authorization failures, and edge cases (for example delete blocked when dependent records exist).
+- **Gateways:** Test join, leave, duplicate subscription, and tenant rejection paths.
+- **Run:** `nx run <domain>-backend-<name>:test` or the feature library test target before finishing.
+
+## Common Mistakes to Avoid
+
+- Registering entities only in `TypeOrmModule.forFeature` but not in `typeorm.config.ts`
+- Forgetting to export entities from the feature library `index.ts`
+- Adding controllers without registering them in the module `controllers` array
+- Skipping OpenAPI or AsyncAPI updates while adding REST or WebSocket surfaces
+- Duplicating tenant filter logic instead of extending shared query utilities
+- Creating migrations without a matching entity registration in CLI config

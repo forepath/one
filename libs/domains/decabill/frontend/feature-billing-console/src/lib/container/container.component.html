@@ -162,6 +162,16 @@
         <i class="bi bi-receipt me-1"></i>
         <span class="small" i18n="@@featureContainer-invoices">Billing</span>
       </a>
+      <a
+        routerLink="/projects"
+        routerLinkActive="active"
+        class="sidebar__item"
+        i18n-title="@@featureContainer-projectsTitle"
+        title="Projects"
+      >
+        <i class="bi bi-kanban me-1"></i>
+        <span class="small" i18n="@@featureContainer-projects">Projects</span>
+      </a>
       @if (canAccessAdministration$ | async) {
         <a
           routerLink="/administration/service-types"
@@ -212,6 +222,22 @@
         >
           <i class="bi bi-person-vcard me-1"></i>
           <span class="small" i18n="@@featureContainer-adminProfiles">Profiles</span>
+        </a>
+        <a
+          routerLink="/administration/projects"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{
+            paths: 'subset',
+            queryParams: 'ignored',
+            fragment: 'ignored',
+            matrixParams: 'ignored',
+          }"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-adminProjectsTitle"
+          title="Projects"
+        >
+          <i class="bi bi-kanban-fill me-1"></i>
+          <span class="small" i18n="@@featureContainer-adminProjects">Projects</span>
         </a>
         <a
           routerLink="/administration/billing"

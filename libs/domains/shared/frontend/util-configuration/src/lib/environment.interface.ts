@@ -31,6 +31,8 @@ export interface Environment {
     restApiUrl: string;
     frontendUrl: string;
     websocketUrl?: string;
+    /** When unset, derived from `websocketUrl` host with `/projects` namespace. */
+    projectsWebsocketUrl?: string;
     /** Optional tenant id sent as `X-Tenant` on billing API requests; defaults to `default`. */
     tenantId?: string;
   };

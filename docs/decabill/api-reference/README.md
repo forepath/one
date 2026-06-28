@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API specifications for the Decabill billing manager. Specifications are published as OpenAPI 3.1.0 (HTTP REST) and AsyncAPI 3.0.0 (dashboard WebSocket gateway).
+Complete API specifications for the Decabill billing manager. Specifications are published as OpenAPI 3.1.0 (HTTP REST) and AsyncAPI 3.0.0 (WebSocket gateways).
 
 ## Billing Manager HTTP API
 
@@ -23,6 +23,7 @@ The HTTP API includes:
 - **Customer profile** - Self-service billing metadata
 - **Invoices and open positions** - Issue, preview, download, void, pay, and billing-day accumulation
 - **Admin billing** - Manual invoices, customer profiles, statistics, audit logs, bill-now
+- **Projects** - Customer project reads, admin CRUD, board tickets/milestones/time entries, bill-time
 - **Authentication and users** - Login, register, and user management when `AUTHENTICATION_METHOD=users`
 - **Stripe webhook** - Signed payment event handling
 - **Configuration** - `GET /config` for operator-visible settings
@@ -45,11 +46,23 @@ Admin CRUD for manual invoices and customer billing profiles is documented in th
 
 Product-oriented guide: **[Billing Administration](../features/billing-administration.md)**
 
-## Billing Manager WebSocket Gateway
+### Projects REST API
 
-The billing manager runs a Socket.IO server on port **8082** (default), namespace **`billing`**, separate from the HTTP listener.
+Project endpoints are tagged **`Projects`**, **`Project Board`**, and **`Admin Billing`** in OpenAPI:
 
-Static API key authentication is **not** sufficient for the dashboard stream. Connections require an end-user JWT or Keycloak identity, matching REST billing rules.
+| Audience | Example paths                                                            | Notes                             |
+| -------- | ------------------------------------------------------------------------ | --------------------------------- |
+| Customer | `GET /projects`, `GET /projects/{projectId}/summary`                     | Assigned projects only; read-only |
+| Board    | `GET/POST /projects/{projectId}/tickets`, `/milestones`, `/time-entries` | Admin write; customer comments    |
+| Admin    | `GET/POST/DELETE /admin/billing/projects`, `POST .../bill-time`          | CRUD and time billing             |
+
+Product guides: **[Projects](../features/projects.md)** and **[Project Board](../features/project-board.md)**
+
+## Billing Manager WebSocket Gateways
+
+The billing manager runs a Socket.IO server on port **8082** (default) with two namespaces, separate from the HTTP listener.
+
+Static API key authentication is **not** sufficient for dashboard or project board streams. Connections require an end-user JWT or Keycloak identity, matching REST billing rules.
 
 ### AsyncAPI Specification
 
@@ -60,7 +73,7 @@ Static API key authentication is **not** sufficient for the dashboard stream. Co
 
 Canonical source in the monorepo: `libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml`
 
-The status gateway provides:
+### Dashboard status (`billing`)
 
 | Direction        | Event                        | Description                                                        |
 | ---------------- | ---------------------------- | ------------------------------------------------------------------ |
@@ -69,9 +82,24 @@ The status gateway provides:
 | Server to client | `dashboardStatusUpdate`      | Periodic status payload (same shape as REST server-info)           |
 | Server to client | `error`                      | Application errors scoped to the initiating socket                 |
 
+Namespace: **`billing`** (env: `WEBSOCKET_NAMESPACE`).
+
 Pass **`X-Tenant`** in handshake metadata (`auth.tenantId` in browser clients, `extraHeaders` in Node clients).
 
 See **[Real-time Status](../features/real-time-status.md)**.
+
+### Project board namespace (`projects`)
+
+| Direction        | Event                                                                                             | Description                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Client to server | `setProject`                                                                                      | Join `project:{projectId}` room after access check |
+| Server to client | `setProjectSuccess`                                                                               | Confirmation for initiating socket                 |
+| Server to client | `ticketUpsert`, `ticketRemoved`, `milestoneUpsert`, `timeEntryUpsert`, `projectSummaryChanged`, … | Room broadcasts after REST mutations               |
+| Server to client | `error`                                                                                           | Application errors scoped to the initiating socket |
+
+Namespace: **`projects`** (env: `PROJECTS_WEBSOCKET_NAMESPACE`).
+
+See **[Project Board](../features/project-board.md)**.
 
 ## Using the Specifications
 

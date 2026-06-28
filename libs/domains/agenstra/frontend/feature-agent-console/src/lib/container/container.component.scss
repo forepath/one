@@ -68,10 +68,23 @@
 }
 
 .sidebar {
+  min-width: calc(2rem + 40.5px);
   width: calc(2rem + 40.5px);
   height: 100%;
   background-color: var(--bs-body-bg);
   border-right: 1px solid var(--bs-border-color);
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  &:hover {
+    &::-webkit-scrollbar {
+      display: block;
+    }
+  }
 
   &__item {
     display: flex;

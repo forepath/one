@@ -1,108 +1,131 @@
 asyncapi: 3.0.0
 info:
-  title: Billing Manager Status Gateway
+  title: Billing Manager WebSocket Gateways
   version: 1.0.0
   description: |
-    Socket.IO events for the billing-manager dashboard status stream (namespace "billing", default port 8082).
-    All connections require authentication via `Authorization` in the handshake (same as HTTP:
-    `Bearer <jwt-token>` for users or Keycloak). Unauthenticated connections are rejected with connect_error "Unauthorized".
+    Socket.IO events for billing-manager gateways on port 8082.
 
-    Static API key authentication is **not** sufficient for this namespace: the server mirrors REST billing rules and
-    rejects `subscribeDashboardStatus` when there is no end-user billing identity (same as "User not authenticated" on REST).
+    **Namespaces:** `billing` (dashboard status polling) and `projects` (live project board).
 
-    The server never uses Socket.IO rooms for this feature: `dashboardStatusUpdate` and `error` are emitted only to the
-    connection that subscribed. Subscription IDs are chosen only from the authenticated user's subscriptions on each
-    poll tick; client-supplied subscription lists are not trusted for authorization.
-
-    Poll interval requested by the client (`pollIntervalMs` on subscribe) is clamped server-side (10s–120s). If omitted,
-    the server uses the `STATUS_POLL_INTERVAL` environment variable in milliseconds (default 15000).
-
-    **Multi-tenancy:** Pass `X-Tenant` in the Socket.IO handshake `extraHeaders` (Node clients) or `auth.tenantId`
-    (browser clients). Defaults to `default` when omitted (unless `TENANTS_ALLOW_DEFAULT=false`; then missing, blank,
-    or `default` values are rejected). The authenticated user's tenant must match the socket tenant.
+    All connections require authentication via `Authorization` in the handshake. Pass `X-Tenant` in handshake
+    `extraHeaders` or `auth.tenantId`. Static API key auth is not sufficient for end-user streams.
 servers:
-  local:
+  billing:
     host: localhost:8082
     protocol: ws
-    description: Socket.IO server (namespace /billing). Pass Authorization in handshake.auth for browser clients.
+    description: Socket.IO namespace /billing
+  projects:
+    host: localhost:8082
+    protocol: ws
+    description: Socket.IO namespace /projects (PROJECTS_WEBSOCKET_NAMESPACE)
 channels:
   billing/subscribeDashboardStatus:
     address: billing/subscribeDashboardStatus
     messages:
       subscribeCommand:
         $ref: '#/components/messages/SubscribeDashboardStatus'
-    description: |
-      Start periodic server-status snapshots for every active subscription item the user may access (same selection as
-      the billing console overview). First tick runs before the handler returns; subsequent ticks use the interval.
   billing/unsubscribeDashboardStatus:
     address: billing/unsubscribeDashboardStatus
     messages:
       unsubscribeCommand:
         $ref: '#/components/messages/UnsubscribeDashboardStatus'
-    description: Stop polling for this socket.
   billing/dashboardStatusUpdate:
     address: billing/dashboardStatusUpdate
     messages:
       statusEvent:
         $ref: '#/components/messages/DashboardStatusUpdate'
-    description: |
-      One emission per poll tick. Each item matches the REST server-info shape for an active provisioned item per subscription.
   billing/error:
     address: billing/error
     messages:
       errorEvent:
         $ref: '#/components/messages/Error'
-    description: |
-      Application-level errors for this socket only. Examples: "User not authenticated", "Failed to load dashboard status".
+  projects/setProject:
+    address: projects/setProject
+    messages:
+      setProjectCommand:
+        $ref: '#/components/messages/SetProject'
+  projects/setProjectSuccess:
+    address: projects/setProjectSuccess
+    messages:
+      setProjectSuccessEvent:
+        $ref: '#/components/messages/SetProjectSuccess'
+  projects/ticketUpsert:
+    address: projects/ticketUpsert
+    messages:
+      ticketUpsertEvent:
+        $ref: '#/components/messages/ProjectTicketUpsert'
+  projects/ticketRemoved:
+    address: projects/ticketRemoved
+    messages:
+      ticketRemovedEvent:
+        $ref: '#/components/messages/ProjectTicketRemoved'
+  projects/ticketCommentCreated:
+    address: projects/ticketCommentCreated
+    messages:
+      ticketCommentCreatedEvent:
+        $ref: '#/components/messages/ProjectTicketCommentCreated'
+  projects/ticketActivityCreated:
+    address: projects/ticketActivityCreated
+    messages:
+      ticketActivityCreatedEvent:
+        $ref: '#/components/messages/ProjectTicketActivityCreated'
+  projects/milestoneUpsert:
+    address: projects/milestoneUpsert
+    messages:
+      milestoneUpsertEvent:
+        $ref: '#/components/messages/ProjectMilestoneUpsert'
+  projects/projectSummaryChanged:
+    address: projects/projectSummaryChanged
+    messages:
+      projectSummaryChangedEvent:
+        $ref: '#/components/messages/ProjectSummaryChanged'
+  projects/error:
+    address: projects/error
+    messages:
+      errorEvent:
+        $ref: '#/components/messages/Error'
 operations:
-  clientSubscribes:
+  clientSubscribesDashboard:
     action: send
     channel:
       $ref: '#/channels/billing~1subscribeDashboardStatus'
-    messages:
-      - $ref: '#/channels/billing~1subscribeDashboardStatus/messages/subscribeCommand'
-  clientUnsubscribes:
-    action: send
-    channel:
-      $ref: '#/channels/billing~1unsubscribeDashboardStatus'
-    messages:
-      - $ref: '#/channels/billing~1unsubscribeDashboardStatus/messages/unsubscribeCommand'
-  serverEmitsStatus:
+  serverEmitsDashboardStatus:
     action: receive
     channel:
       $ref: '#/channels/billing~1dashboardStatusUpdate'
-    messages:
-      - $ref: '#/channels/billing~1dashboardStatusUpdate/messages/statusEvent'
-  serverEmitsError:
+  clientSetsProject:
+    action: send
+    channel:
+      $ref: '#/channels/projects~1setProject'
+  serverSetProjectSuccess:
     action: receive
     channel:
-      $ref: '#/channels/billing~1error'
-    messages:
-      - $ref: '#/channels/billing~1error/messages/errorEvent'
+      $ref: '#/channels/projects~1setProjectSuccess'
+  serverProjectTicketUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/projects~1ticketUpsert'
+  serverProjectsError:
+    action: receive
+    channel:
+      $ref: '#/channels/projects~1error'
 components:
   messages:
     SubscribeDashboardStatus:
       name: SubscribeDashboardStatus
-      title: Subscribe to dashboard status stream
       contentType: application/json
       payload:
         type: object
         properties:
           pollIntervalMs:
             type: integer
-            description: >
-              Desired interval in milliseconds. Server clamps to 10000–120000. If omitted, uses `STATUS_POLL_INTERVAL`
-              (default 15000 ms).
     UnsubscribeDashboardStatus:
       name: UnsubscribeDashboardStatus
-      title: Unsubscribe from dashboard status stream
       contentType: application/json
       payload:
         type: object
-        description: Empty object or omitted.
     DashboardStatusUpdate:
       name: DashboardStatusUpdate
-      title: Dashboard status snapshot
       contentType: application/json
       payload:
         type: object
@@ -115,36 +138,61 @@ components:
             type: array
             items:
               type: object
-              required:
-                [subscriptionId, itemId, service, name, publicIp, status]
-              properties:
-                subscriptionId:
-                  type: string
-                  format: uuid
-                itemId:
-                  type: string
-                  format: uuid
-                service:
-                  type: string
-                  enum: [controller, manager]
-                name:
-                  type: string
-                publicIp:
-                  type: string
-                privateIp:
-                  type: string
-                status:
-                  type: string
-                metadata:
-                  type: object
-                  additionalProperties: true
-                hostname:
-                  type: string
-                hostnameFqdn:
-                  type: string
+    SetProject:
+      name: SetProject
+      contentType: application/json
+      payload:
+        type: object
+        required: [projectId]
+        properties:
+          projectId:
+            type: string
+            format: uuid
+    SetProjectSuccess:
+      name: SetProjectSuccess
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          message: { type: string }
+          projectId: { type: string, format: uuid }
+    ProjectTicketUpsert:
+      name: ProjectTicketUpsert
+      contentType: application/json
+      payload:
+        type: object
+        description: Full ProjectTicketResponse DTO
+    ProjectTicketRemoved:
+      name: ProjectTicketRemoved
+      contentType: application/json
+      payload:
+        type: object
+        required: [id, projectId]
+        properties:
+          id: { type: string, format: uuid }
+          projectId: { type: string, format: uuid }
+    ProjectTicketCommentCreated:
+      name: ProjectTicketCommentCreated
+      contentType: application/json
+      payload:
+        type: object
+    ProjectTicketActivityCreated:
+      name: ProjectTicketActivityCreated
+      contentType: application/json
+      payload:
+        type: object
+    ProjectMilestoneUpsert:
+      name: ProjectMilestoneUpsert
+      contentType: application/json
+      payload:
+        type: object
+    ProjectSummaryChanged:
+      name: ProjectSummaryChanged
+      contentType: application/json
+      payload:
+        type: object
     Error:
       name: Error
-      title: Error event
       contentType: application/json
       payload:
         type: object

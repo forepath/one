@@ -12,3 +12,13 @@ export function applyUserTenantFilter<T>(qb: SelectQueryBuilder<T>, userAlias = 
 export function applyServiceTypeTenantFilter<T>(qb: SelectQueryBuilder<T>, alias = 'st'): SelectQueryBuilder<T> {
   return qb.andWhere(`${alias}.tenant_id = :tenantId`, { tenantId: getRequiredTenantId() });
 }
+
+export function applyProjectTenantFilter<T>(
+  qb: SelectQueryBuilder<T>,
+  projectAlias = 'project',
+  userAlias = 'user',
+): SelectQueryBuilder<T> {
+  return qb
+    .innerJoin('users', userAlias, `${userAlias}.id = ${projectAlias}.user_id`)
+    .andWhere(`${userAlias}.tenant_id = :tenantId`, { tenantId: getRequiredTenantId() });
+}

@@ -6,14 +6,15 @@ Complete reference for environment variables used in Decabill.
 
 ### Application Configuration
 
-| Variable                | Description                              | Default        |
-| ----------------------- | ---------------------------------------- | -------------- |
-| `HOST`                  | HTTP bind address                        | `0.0.0.0`      |
-| `PORT`                  | HTTP API port                            | `3200`         |
-| `WEBSOCKET_PORT`        | WebSocket gateway port                   | `8082`         |
-| `WEBSOCKET_NAMESPACE`   | Socket.IO namespace                      | `billing`      |
-| `WEBSOCKET_CORS_ORIGIN` | WebSocket CORS origins (comma-separated) | `*` in compose |
-| `NODE_ENV`              | `development` or `production`            | `development`  |
+| Variable                       | Description                              | Default        |
+| ------------------------------ | ---------------------------------------- | -------------- |
+| `HOST`                         | HTTP bind address                        | `0.0.0.0`      |
+| `PORT`                         | HTTP API port                            | `3200`         |
+| `WEBSOCKET_PORT`               | WebSocket gateway port                   | `8082`         |
+| `WEBSOCKET_NAMESPACE`          | Dashboard status Socket.IO namespace     | `billing`      |
+| `PROJECTS_WEBSOCKET_NAMESPACE` | Project board Socket.IO namespace        | `projects`     |
+| `WEBSOCKET_CORS_ORIGIN`        | WebSocket CORS origins (comma-separated) | `*` in compose |
+| `NODE_ENV`                     | `development` or `production`            | `development`  |
 
 ### Database Configuration
 
@@ -212,6 +213,8 @@ Billing console compose default: `CSP_CONNECT_SRC_EXTRA=http://host.docker.inter
 | `DEFAULT_LOCALE` | Default locale           | `en`                   |
 | `API_URL`        | Build-time API URL       | See app config         |
 | `WEBSOCKET_URL`  | Build-time WebSocket URL | See app config         |
+
+Runtime `/config` JSON may include `billing.projectsWebsocketUrl` (for example `ws://localhost:8082/projects`). When omitted, the billing console derives the projects URL from `billing.websocketUrl`.
 
 ### Docs Server
 

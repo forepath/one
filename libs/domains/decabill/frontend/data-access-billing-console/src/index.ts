@@ -3,6 +3,7 @@ export * from './lib/interceptors/tenant.interceptor';
 
 // Types
 export * from './lib/types/billing.types';
+export * from './lib/types/projects.types';
 
 // Utils
 export * from './lib/utils/server-info-provider.utils';
@@ -25,6 +26,11 @@ export * from './lib/services/admin-billing.service';
 export * from './lib/services/admin-customer-profiles.service';
 export * from './lib/services/usage.service';
 export * from './lib/services/subscription-items.service';
+export * from './lib/services/projects.service';
+export * from './lib/services/admin-projects.service';
+export * from './lib/services/project-tickets.service';
+export * from './lib/services/project-milestones.service';
+export * from './lib/services/project-time-entries.service';
 
 // Service Types State
 export * from './lib/state/service-types/service-types.actions';
@@ -130,3 +136,41 @@ export * from './lib/state/availability/availability.effects';
 export * from './lib/state/availability/availability.facade';
 export * from './lib/state/availability/availability.reducer';
 export * from './lib/state/availability/availability.selectors';
+
+// Projects State
+export * from './lib/state/projects/projects.actions';
+export * from './lib/state/projects/projects.effects';
+export * from './lib/state/projects/projects.facade';
+export * from './lib/state/projects/projects.reducer';
+export * from './lib/state/projects/projects.selectors';
+
+// Project Tickets State
+export * from './lib/state/project-tickets/project-tickets.actions';
+export * from './lib/state/project-tickets/project-tickets.constants';
+export * from './lib/state/project-tickets/project-ticket-global-search.utils';
+export * from './lib/state/project-tickets/project-tickets.effects';
+export * from './lib/state/project-tickets/project-tickets.facade';
+export * from './lib/state/project-tickets/project-tickets.reducer';
+export * from './lib/state/project-tickets/project-tickets.selectors';
+
+// Project Milestones State
+export * from './lib/state/project-milestones/project-milestones.actions';
+export * from './lib/state/project-milestones/project-milestones.effects';
+export * from './lib/state/project-milestones/project-milestones.facade';
+export * from './lib/state/project-milestones/project-milestones.reducer';
+export * from './lib/state/project-milestones/project-milestones.selectors';
+
+// Project Time Entries State
+export * from './lib/state/project-time-entries/project-time-entries.actions';
+export * from './lib/state/project-time-entries/project-time-entries.effects';
+export * from './lib/state/project-time-entries/project-time-entries.facade';
+export * from './lib/state/project-time-entries/project-time-entries.reducer';
+export * from './lib/state/project-time-entries/project-time-entries.selectors';
+
+// Project Board WebSocket
+export * from './lib/state/project-board-socket/project-board-socket.actions';
+export * from './lib/state/project-board-socket/project-board-socket.constants';
+export * from './lib/state/project-board-socket/project-board-socket.effects';
+export * from './lib/state/project-board-socket/project-board-socket.facade';
+export * from './lib/state/project-board-socket/project-board-socket.reducer';
+export * from './lib/state/project-board-socket/project-board-socket.selectors';

@@ -2478,6 +2478,238 @@ paths:
           description: Export belongs to another tenant or unified access denied
         '404':
           description: Export not found, not completed, or feature disabled
+  /projects:
+    get:
+      tags: [Projects]
+      summary: List projects assigned to the authenticated customer
+      operationId: listCustomerProjects
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Paginated customer projects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProjectsResponse'
+  /projects/{projectId}:
+    get:
+      tags: [Projects]
+      summary: Get project detail (customer read-only)
+      operationId: getCustomerProject
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Project detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+  /projects/{projectId}/summary:
+    get:
+      tags: [Projects]
+      summary: Get project KPI summary
+      operationId: getProjectSummary
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Project summary KPIs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectSummaryResponse'
+  /admin/billing/projects:
+    get:
+      tags: [Admin Billing]
+      summary: List all projects (admin)
+      operationId: listAdminProjects
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: userId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Paginated admin projects
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminProjectsResponse'
+    post:
+      tags: [Admin Billing]
+      summary: Create project (admin)
+      operationId: createAdminProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAdminProjectDto'
+      responses:
+        '201':
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+  /admin/billing/projects/{projectId}:
+    get:
+      tags: [Admin Billing]
+      summary: Get project detail (admin)
+      operationId: getAdminProject
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Project detail with summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProjectDetailResponse'
+    post:
+      tags: [Admin Billing]
+      summary: Update project (admin)
+      operationId: updateAdminProject
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAdminProjectDto'
+      responses:
+        '200':
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponse'
+    delete:
+      tags: [Admin Billing]
+      summary: Delete project when no unbilled time entries
+      operationId: deleteAdminProject
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '204':
+          description: Deleted
+  /admin/billing/projects/{projectId}/bill-time:
+    post:
+      tags: [Admin Billing]
+      summary: Bill all unbilled project time to invoice
+      operationId: billProjectTime
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Billing result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillProjectTimeResponse'
+  /projects/{projectId}/tickets:
+    get:
+      tags: [Project Board]
+      summary: List project tickets
+      operationId: listProjectTickets
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ProjectTicketStatus'
+        - name: parentId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Ticket list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectTicketResponse'
+    post:
+      tags: [Project Board]
+      summary: Create ticket (admin only)
+      operationId: createProjectTicket
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectTicketDto'
+      responses:
+        '201':
+          description: Created ticket
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectTicketResponse'
+  /projects/{projectId}/tickets/{ticketId}/comments:
+    get:
+      tags: [Project Board]
+      summary: List ticket comments
+      operationId: listProjectTicketComments
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/TicketId'
+      responses:
+        '200':
+          description: Comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectTicketCommentResponse'
+    post:
+      tags: [Project Board]
+      summary: Add ticket comment (customer or admin)
+      operationId: createProjectTicketComment
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/TicketId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectTicketCommentDto'
+      responses:
+        '201':
+          description: Created comment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectTicketCommentResponse'
+  /projects/{projectId}/milestones:
+    get:
+      tags: [Projects]
+      summary: List project milestones
+      operationId: listProjectMilestones
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Milestones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectMilestoneResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -2522,6 +2754,22 @@ components:
         type: string
         format: uuid
       description: Subscription ID
+    ProjectId:
+      in: path
+      name: projectId
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Project ID
+    TicketId:
+      in: path
+      name: ticketId
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Project ticket ID
     BackorderId:
       in: path
       name: id
@@ -3689,6 +3937,226 @@ components:
           type: object
           additionalProperties: { type: string }
         isActive: { type: boolean }
+    ProjectStatus:
+      type: string
+      enum: [active, archived]
+    ProjectTicketStatus:
+      type: string
+      enum: [draft, todo, in_progress, prototype, done, closed]
+    ProjectTicketPriority:
+      type: string
+      enum: [low, medium, high, critical]
+    ProjectResponse:
+      type: object
+      required:
+        [
+          id,
+          userId,
+          name,
+          status,
+          hourlyRateNet,
+          currency,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/ProjectStatus' }
+        hourlyRateNet: { type: number }
+        currency: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ProjectListItem:
+      allOf:
+        - $ref: '#/components/schemas/ProjectResponse'
+        - type: object
+          required: [unbilledMinutes, openBillableAmountNet]
+          properties:
+            unbilledMinutes: { type: integer, minimum: 0 }
+            openBillableAmountNet: { type: number, minimum: 0 }
+    PaginatedProjectsResponse:
+      type: object
+      required: [items, total, limit, offset]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ProjectListItem' }
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+    AdminProjectListItem:
+      allOf:
+        - $ref: '#/components/schemas/ProjectListItem'
+        - type: object
+          properties:
+            userEmail: { type: string }
+    PaginatedAdminProjectsResponse:
+      type: object
+      required: [items, total, limit, offset]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AdminProjectListItem' }
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+    ProjectSummaryResponse:
+      type: object
+      required:
+        [
+          projectId,
+          totalTrackedMinutes,
+          unbilledMinutes,
+          openBillableAmountNet,
+          billedAmountNet,
+          openTicketCount,
+          doneTicketCount,
+          milestoneCount,
+        ]
+      properties:
+        projectId: { type: string, format: uuid }
+        totalTrackedMinutes: { type: integer }
+        unbilledMinutes: { type: integer }
+        openBillableAmountNet: { type: number }
+        billedAmountNet: { type: number }
+        openTicketCount: { type: integer }
+        doneTicketCount: { type: integer }
+        milestoneCount: { type: integer }
+    AdminProjectDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/AdminProjectListItem'
+        - type: object
+          properties:
+            summary: { $ref: '#/components/schemas/ProjectSummaryResponse' }
+    CreateAdminProjectDto:
+      type: object
+      required: [userId, name, hourlyRateNet]
+      properties:
+        userId: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        status: { $ref: '#/components/schemas/ProjectStatus' }
+        hourlyRateNet: { type: number }
+        currency: { type: string }
+    UpdateAdminProjectDto:
+      type: object
+      properties:
+        userId: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string }
+        status: { $ref: '#/components/schemas/ProjectStatus' }
+        hourlyRateNet: { type: number }
+        currency: { type: string }
+    BillProjectTimeResponse:
+      type: object
+      required: [invoiceId, billedMinutes, amountNet]
+      properties:
+        invoiceId: { type: string, format: uuid }
+        invoiceNumber: { type: string }
+        billedMinutes: { type: integer }
+        amountNet: { type: number }
+    ProjectTicketResponse:
+      type: object
+      required:
+        [
+          id,
+          projectId,
+          title,
+          status,
+          priority,
+          shas,
+          tasks,
+          locked,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        projectId: { type: string, format: uuid }
+        parentId: { type: string, format: uuid, nullable: true }
+        milestoneId: { type: string, format: uuid, nullable: true }
+        title: { type: string }
+        content: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/ProjectTicketStatus' }
+        priority: { $ref: '#/components/schemas/ProjectTicketPriority' }
+        shas:
+          type: object
+          properties:
+            short: { type: string }
+            long: { type: string }
+        tasks:
+          type: object
+          properties:
+            open: { type: integer }
+            done: { type: integer }
+            children:
+              type: object
+              properties:
+                open: { type: integer }
+                done: { type: integer }
+        createdByUserId: { type: string, format: uuid, nullable: true }
+        createdByEmail: { type: string }
+        locked: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        children:
+          type: array
+          items: { $ref: '#/components/schemas/ProjectTicketResponse' }
+    CreateProjectTicketDto:
+      type: object
+      required: [title]
+      properties:
+        parentId: { type: string, format: uuid }
+        milestoneId: { type: string, format: uuid }
+        title: { type: string }
+        content: { type: string }
+        priority: { $ref: '#/components/schemas/ProjectTicketPriority' }
+        status: { $ref: '#/components/schemas/ProjectTicketStatus' }
+    ProjectTicketCommentResponse:
+      type: object
+      required: [id, ticketId, userId, body, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        ticketId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        userEmail: { type: string }
+        body: { type: string }
+        createdAt: { type: string, format: date-time }
+    CreateProjectTicketCommentDto:
+      type: object
+      required: [body]
+      properties:
+        body: { type: string }
+    ProjectMilestoneResponse:
+      type: object
+      required:
+        [
+          id,
+          projectId,
+          name,
+          sortOrder,
+          progressPercent,
+          openTicketCount,
+          doneTicketCount,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        projectId: { type: string, format: uuid }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        targetDate: { type: string, format: date, nullable: true }
+        sortOrder: { type: integer }
+        lockedAt: { type: string, format: date-time, nullable: true }
+        progressPercent: { type: integer }
+        openTicketCount: { type: integer }
+        doneTicketCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
     UpdateCloudInitConfigDto:
       type: object
       properties:

@@ -1,0 +1,9 @@
+.project-milestone-select__chip {
+  max-width: min(100%, 22rem);
+}
+
+.project-milestone-select__suggestions {
+  z-index: 1070;
+  max-height: 240px;
+  overflow-y: auto;
+}

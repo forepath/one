@@ -1,0 +1,91 @@
+---
+id: angular
+name: Angular Feature Implementation
+description: Checklist and conventions for frontend features in Forepath Angular apps
+globs: ["apps/**/frontend-*/**/*.{ts,html,scss}", "libs/domains/**/frontend/**/*.{ts,html,scss}"]
+alwaysApply: false
+---
+# Angular Feature Implementation
+
+Use this checklist when adding domain features to Angular apps (for example `apps/<domain>/frontend-<name>` with libraries under `libs/domains/<domain>/frontend/`).
+
+## Feature Implementation Checklist
+
+1. **Types:** Add shared API types (for example `<feature>.types.ts`) in the data-access library.
+2. **HTTP services:** Add or extend services that call backend REST endpoints; keep URLs aligned with OpenAPI.
+3. **NgRx state:** Add slices under `data-access-*/src/lib/state/<feature>/` (actions, reducer, effects, selectors, constants, and specs).
+4. **Realtime (if applicable):** Add a dedicated socket slice and effects; mirror reconnect and context-restore patterns from similar features (for example Agenstra tickets board socket).
+5. **Feature UI:** Build pages and components in `feature-*/src/lib/<feature>/`.
+6. **Routes:** Register customer and admin routes in the app routing module.
+7. **Navigation:** Add entries to the shell or container navigation where appropriate.
+8. **i18n:** Add translatable strings to `apps/<domain>/frontend-*/src/i18n/messages.xlf`.
+9. **Environment:** Extend `environment.interface.ts` when new URLs or feature flags are required (for example WebSocket base URLs).
+10. **Tests:** Unit test reducers, effects, selectors, and services; component tests only when they add meaningful coverage.
+11. **Build:** Run `nx run <domain>-frontend-<name>:build` (and data-access test targets) before finishing.
+12. **Documentation:** Update `docs/<domain>/` and app docs when the feature is user-facing.
+
+## Library Layout
+
+| Layer | Path pattern | Responsibility |
+|-------|--------------|----------------|
+| Data access | `libs/domains/<domain>/frontend/data-access-*/` | NgRx, HTTP services, types, socket clients |
+| Feature | `libs/domains/<domain>/frontend/feature-*/` | Routable pages, smart components, facades |
+| UI | `libs/domains/<domain>/frontend/ui-*/` | Presentational components (when split) |
+| App | `apps/<domain>/frontend-*/` | Bootstrap, routes, i18n, environment wiring |
+
+Respect Nx module boundaries (`domain`, `scope`, `type` tags). Import across layers only in the allowed direction (data-access must not import feature UI).
+
+## NgRx Conventions
+
+- **One slice per aggregate:** For example `projects`, `projectTickets`, `projectMilestones`, `projectTimeEntries`, plus a separate slice for board socket state when realtime is involved.
+- **Effects:** Load data on route or user actions; map API errors to slice error state; avoid redundant fetches when selectors already hold fresh data.
+- **Selectors:** Compose list, detail, and board views in selectors; give explicit parameter types when inference becomes circular.
+- **Constants:** Keep board lanes, status enums, and filter defaults next to the slice (mirror backend enums and reference implementations in sibling domains).
+- **Facades (optional):** Expose a small facade service from feature components when it reduces boilerplate across pages.
+
+## Realtime and Live Boards
+
+When implementing live boards or dashboards:
+
+- **Reference parity:** Copy structural patterns from an existing board in the monorepo (for example Agenstra tickets board), adapted to the new scope (project instead of workspace).
+- **Socket lifecycle:** Connect on board entry, disconnect on leave, reconnect with restored context (`setProject` / `setClient` equivalent).
+- **Reducer updates:** Apply upsert and remove events from socket payloads; keep REST loads as source of truth on initial entry.
+- **Environment URL:** Add optional `billing.<feature>WebsocketUrl` (or domain equivalent) to `environment.interface.ts`; derive from an existing websocket URL when unset (same path substitution pattern as sibling features).
+
+## Components and Forms
+
+- **Smart vs dumb:** Pages dispatch actions and select state; presentational components receive inputs and emit outputs.
+- **Forms:** Type reactive forms explicitly (required fields in form group types); reset forms after successful modal close.
+- **Modals:** Use existing mutation modal helpers (for example `watchBillingMutationModalClose`) with **object argument syntax**, not positional parameters.
+- **Role-based UI:** Hide or disable admin-only actions in templates; never rely on UI alone for authorization (backend enforces access).
+
+## Reusing UI from Other Domains
+
+- **Copy, do not re-export:** When parity with another app is required (for example ticket editor), copy the component into the target feature library and adapt imports. Cross-domain re-exports break boundary rules and coupling.
+- **Adapt naming:** Match the target domain prefix, routes, and i18n keys after copying.
+
+## i18n
+
+- **Single catalog per app:** Add `<trans-unit>` entries to the app `messages.xlf`.
+- **Stable IDs:** Use descriptive unit IDs; keep source language text in the xlf file.
+- **Templates:** Use `$localize` or the project's i18n attribute pattern consistently with sibling pages.
+
+## Environment and Configuration
+
+- **Shared interface:** Add new optional fields to `libs/domains/shared/frontend/util-configuration/src/lib/environment.interface.ts`.
+- **Per-app values:** Set concrete URLs in each app's `environment*.ts`; document new variables in `docs/<domain>/` environment sections.
+
+## Testing
+
+- **State tests:** Reducers and selectors are fast to test and should cover edge cases (empty lists, filtered board rows, error flags).
+- **Effects tests:** Use marbles or async patterns; mock HTTP and socket services.
+- **Avoid brittle tests:** Do not assert implementation details of components when state tests already cover behavior.
+
+## Common Mistakes to Avoid
+
+- Adding routes without navigation links or i18n strings
+- Forgetting socket URL configuration for realtime features
+- Using invalid type predicates on destructured effect values (prefer explicit types)
+- Omitting explicit form control types when strict template checking fails
+- Skipping the production build until late (catch template and import errors early)
+- Re-exporting components from another domain instead of copying and adapting

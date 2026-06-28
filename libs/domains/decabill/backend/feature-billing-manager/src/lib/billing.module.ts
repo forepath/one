@@ -23,6 +23,31 @@ import { AdminDatevExportsController } from './controllers/admin-datev-exports.c
 import { AvailabilityController } from './controllers/availability.controller';
 import { BackordersController } from './controllers/backorders.controller';
 import { CustomerProfilesController } from './controllers/customer-profiles.controller';
+import { AdminProjectsController } from './projects/controllers/admin-projects.controller';
+import { ProjectMilestonesController } from './projects/controllers/project-milestones.controller';
+import { ProjectTicketsController } from './projects/controllers/project-tickets.controller';
+import { ProjectTimeEntriesController } from './projects/controllers/project-time-entries.controller';
+import { ProjectsController } from './projects/controllers/projects.controller';
+import { ProjectBoardGateway } from './projects/gateways/project-board.gateway';
+import { ProjectEntity } from './projects/entities/project.entity';
+import { ProjectMilestoneEntity } from './projects/entities/project-milestone.entity';
+import { ProjectTicketActivityEntity } from './projects/entities/project-ticket-activity.entity';
+import { ProjectTicketCommentEntity } from './projects/entities/project-ticket-comment.entity';
+import { ProjectTicketEntity } from './projects/entities/project-ticket.entity';
+import { ProjectTimeEntryEntity } from './projects/entities/project-time-entry.entity';
+import { ProjectMilestonesRepository } from './projects/repositories/project-milestones.repository';
+import { ProjectTicketActivitiesRepository } from './projects/repositories/project-ticket-activities.repository';
+import { ProjectTicketCommentsRepository } from './projects/repositories/project-ticket-comments.repository';
+import { ProjectTicketsRepository } from './projects/repositories/project-tickets.repository';
+import { ProjectTimeEntriesRepository } from './projects/repositories/project-time-entries.repository';
+import { ProjectsRepository } from './projects/repositories/projects.repository';
+import { ProjectBillingService } from './projects/services/project-billing.service';
+import { ProjectBoardRealtimeService } from './projects/services/project-board-realtime.service';
+import { ProjectMilestonesService } from './projects/services/project-milestones.service';
+import { ProjectTicketsService } from './projects/services/project-tickets.service';
+import { ProjectTimeEntriesService } from './projects/services/project-time-entries.service';
+import { ProjectsAdminService } from './projects/services/projects-admin.service';
+import { ProjectsService } from './projects/services/projects.service';
 import { InvoicesController } from './controllers/invoices.controller';
 import { PaymentsWebhookController } from './controllers/payments-webhook.controller';
 import { PricingController } from './controllers/pricing.controller';
@@ -356,6 +381,12 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       UserEntity,
       DatevExportEntity,
       DatevDebtorAccountEntity,
+      ProjectEntity,
+      ProjectMilestoneEntity,
+      ProjectTicketEntity,
+      ProjectTicketCommentEntity,
+      ProjectTicketActivityEntity,
+      ProjectTimeEntryEntity,
     ]),
     ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],
@@ -376,6 +407,11 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     PaymentsWebhookController,
     UsageController,
     CustomerProfilesController,
+    ProjectsController,
+    AdminProjectsController,
+    ProjectMilestonesController,
+    ProjectTicketsController,
+    ProjectTimeEntriesController,
   ],
   providers: [
     AvailabilityService,
@@ -452,6 +488,20 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     UsageService,
     CustomerProfilesService,
     CustomerProfilesAdminService,
+    ProjectsService,
+    ProjectsAdminService,
+    ProjectMilestonesService,
+    ProjectTicketsService,
+    ProjectTimeEntriesService,
+    ProjectBillingService,
+    ProjectBoardRealtimeService,
+    ProjectBoardGateway,
+    ProjectsRepository,
+    ProjectMilestonesRepository,
+    ProjectTicketsRepository,
+    ProjectTicketCommentsRepository,
+    ProjectTicketActivitiesRepository,
+    ProjectTimeEntriesRepository,
     SubscriptionBillingJobHandler,
     SubscriptionExpirationJobHandler,
     SubscriptionRenewalReminderJobHandler,
@@ -544,6 +594,8 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionsRepository,
     UsageRecordsRepository,
     CustomerProfilesRepository,
+    ProjectsService,
+    ProjectsRepository,
     DatevExportJobHandler,
     DatevExportConfigService,
     ProviderRegistryService,

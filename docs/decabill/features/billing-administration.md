@@ -87,10 +87,27 @@ Self-service `GET/POST /customer-profile` remains for end users. See [Customer P
 
 **Frontend:** `/administration/customer-profiles` in the billing console.
 
+## Admin Projects
+
+Projects are managed under `/admin/billing/projects`. Admins assign each project to a customer user, track time, and bill unbilled hours to an invoice.
+
+| Method | Path                                            | Purpose                                     |
+| ------ | ----------------------------------------------- | ------------------------------------------- |
+| GET    | `/admin/billing/projects`                       | Paginated list (`search`, `userId` filters) |
+| POST   | `/admin/billing/projects`                       | Create project                              |
+| POST   | `/admin/billing/projects/{projectId}`           | Update project                              |
+| DELETE | `/admin/billing/projects/{projectId}`           | Delete (no unbilled time)                   |
+| POST   | `/admin/billing/projects/{projectId}/bill-time` | Issue invoice from unbilled time            |
+
+**Frontend:** `/administration/projects`
+
+See **[Projects](./projects.md)** for assignment rules, KPIs, and bill-time preconditions.
+
 ## Related Admin Pages
 
 - **Billing dashboard** (`/administration/billing`) - KPIs, charts, bill-now
 - **Customer profiles** (`/administration/customer-profiles`) - Admin CRUD
+- **Projects** (`/administration/projects`) - Project CRUD and bill-time
 - **Service types and plans** - Catalog administration in the billing console
 - **Users** (`/users`) - Shared identity user manager
 
@@ -98,6 +115,7 @@ Self-service `GET/POST /customer-profile` remains for end users. See [Customer P
 
 - **[Invoices](./invoices.md)** - Status model and open positions
 - **[Customer Profiles](./customer-profiles.md)** - Profile fields and validation
+- **[Projects](./projects.md)** - Admin project CRUD and bill-time
 - **[Multi-tenancy](./multi-tenancy.md)** - Tenant scope and DR-002
 - **[Authentication](./authentication.md)** - Admin role requirements
 - **[Billing Manager OpenAPI](/spec/billing-manager/openapi.yaml)** - Full admin path schemas

@@ -1,0 +1,369 @@
+<div class="project-detail-container border-top d-flex flex-column h-100">
+  @if (selectedProject$ | async; as project) {
+    <div class="p-3 border-bottom bg-body-tertiary">
+      <a
+        [routerLink]="['../..']"
+        [relativeTo]="route"
+        class="small text-decoration-none d-inline-flex align-items-center mb-3"
+        i18n="@@featureProjectDetail-backToAdminProjects"
+      >
+        <i class="bi bi-arrow-left me-1"></i>
+        Back to projects
+      </a>
+      <h5
+        class="fw-semibold"
+        [class.mb-0]="!(isAdminView() && assigneeEmail(project)) && !project.description"
+        [class.mb-1]="(isAdminView() && assigneeEmail(project)) || project.description"
+      >
+        {{ project.name }}
+      </h5>
+      @if (isAdminView() && assigneeEmail(project); as email) {
+        <p class="mb-0 small text-muted" i18n="@@featureProjectDetail-assignee">Assignee: {{ email }}</p>
+      }
+      @if (project.description) {
+        <p class="mb-0 small text-muted">{{ project.description }}</p>
+      }
+    </div>
+  }
+
+  @if (error$ | async; as err) {
+    <div class="alert alert-danger mb-0 rounded-0" role="alert">{{ err }}</div>
+  }
+
+  <div class="customer-billing__summary-bar flex-shrink-0">
+    <div class="row g-0 customer-billing__summary-grid">
+      <div class="col-6 col-md-3">
+        <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--first">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-trackedTime">Tracked time</h6>
+            @if (loadingSummary$ | async) {
+              <span class="spinner-border spinner-border-sm" role="status"></span>
+            } @else if (summary$ | async; as summary) {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ formatMinutes(summary.totalTrackedMinutes) }}</p>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--second">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-unbilledTime">
+              Unbilled time
+            </h6>
+            @if (loadingSummary$ | async) {
+              <span class="spinner-border spinner-border-sm" role="status"></span>
+            } @else if (summary$ | async; as summary) {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ formatMinutes(summary.unbilledMinutes) }}</p>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--third">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-openBillable">
+              Open billable
+            </h6>
+            @if (loadingSummary$ | async) {
+              <span class="spinner-border spinner-border-sm" role="status"></span>
+            } @else if (summary$ | async; as summary) {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openBillableAmountNet | number: '1.2-2' }}€</p>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--fourth">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-openTickets">Open tickets</h6>
+            @if (loadingSummary$ | async) {
+              <span class="spinner-border spinner-border-sm" role="status"></span>
+            } @else if (summary$ | async; as summary) {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openTicketCount }}</p>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center gap-0 border-bottom btn-group-options flex-shrink-0">
+    <button
+      type="button"
+      class="btn btn-sm btn-options"
+      [class.btn-primary]="activeTab() === 'board'"
+      [class.btn-outline-secondary]="activeTab() !== 'board'"
+      (click)="setTab('board')"
+    >
+      {{ tabLabel('board') }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-sm btn-options"
+      [class.btn-primary]="activeTab() === 'milestones'"
+      [class.btn-outline-secondary]="activeTab() !== 'milestones'"
+      (click)="setTab('milestones')"
+    >
+      {{ tabLabel('milestones') }}
+    </button>
+    <button
+      type="button"
+      class="btn btn-sm btn-options"
+      [class.btn-primary]="activeTab() === 'time'"
+      [class.btn-outline-secondary]="activeTab() !== 'time'"
+      (click)="setTab('time')"
+    >
+      {{ tabLabel('time') }}
+    </button>
+  </div>
+
+  <div class="flex-grow-1 min-h-0 overflow-hidden">
+    @if (activeTab() === 'board' && projectId) {
+      <framework-project-board [projectId]="projectId" [isAdmin]="isAdminView()"></framework-project-board>
+    }
+    @if (activeTab() === 'milestones' && projectId) {
+      <framework-project-milestones-panel
+        [projectId]="projectId"
+        [isAdmin]="isAdminView()"
+      ></framework-project-milestones-panel>
+    }
+    @if (activeTab() === 'time' && projectId) {
+      <div class="section__content-wrapper d-flex flex-column h-100">
+        <div class="px-3 py-2 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center gap-2">
+          <h5 class="mb-0 fw-semibold h6" i18n="@@featureProjectDetail-timeEntries">Time entries</h5>
+          @if (isAdminView()) {
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-primary" (click)="openCreateTimeModal()">
+                <i class="bi bi-plus-circle me-1"></i>
+                <span i18n="@@featureProjectDetail-addTime">Add</span>
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary"
+                (click)="billTime()"
+                [disabled]="(billing$ | async) === true"
+              >
+                <i class="bi bi-cash-coin me-1" aria-hidden="true"></i>
+                <span i18n="@@featureProjectDetail-billTime">Bill unbilled time</span>
+              </button>
+            </div>
+          }
+        </div>
+        <div class="flex-grow-1 overflow-auto">
+          @if (timeError$ | async; as timeError) {
+            <div class="alert alert-danger m-3 mb-0" role="alert">{{ timeError }}</div>
+          }
+          @if (timeLoading$ | async) {
+            <div class="d-flex justify-content-center py-4">
+              <div class="spinner-border text-primary" role="status"></div>
+            </div>
+          } @else if (timeEntries$ | async; as entries) {
+            @if (entries.length === 0) {
+              <p class="p-4 text-muted mb-0" i18n="@@featureProjectDetail-timeEntriesEmpty">No time entries yet</p>
+            } @else {
+              <div class="list-group list-group-flush">
+                @for (entry of entries; track entry.id) {
+                  <div class="list-group-item d-flex justify-content-between align-items-start gap-3 border-bottom">
+                    <div class="min-w-0 flex-grow-1">
+                      <div class="fw-semibold mb-1">{{ timeEntryTitle(entry) }}</div>
+                      <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
+                        <span [ngClass]="timeEntryBillingStatusTextClass(entry)">
+                          <i class="bi me-1" [ngClass]="timeEntryBillingStatusIconClass(entry)" aria-hidden="true"></i
+                          >{{ timeEntryBillingStatusLabel(entry) }}
+                        </span>
+                        <span
+                          ><i class="bi bi-calendar3 me-1" aria-hidden="true"></i
+                          >{{ entry.startedAt | date: 'mediumDate' }}</span
+                        >
+                        <span
+                          ><i class="bi bi-clock me-1" aria-hidden="true"></i
+                          >{{ formatTimeEntryClockRange(entry.startedAt, entry.endedAt) }}</span
+                        >
+                        @if (timeEntryShowsDurationInMeta(entry)) {
+                          <span
+                            ><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i
+                            >{{ formatMinutes(entry.durationMinutes) }}</span
+                          >
+                        }
+                      </div>
+                    </div>
+                    @if (isAdminView() && isTimeEntryEditable(entry)) {
+                      <div class="btn-group btn-group-sm flex-shrink-0" role="group">
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary"
+                          (click)="openEditTimeModal(entry)"
+                          i18n-title="@@featureProjectDetail-editTime"
+                          title="Edit"
+                        >
+                          <i class="bi bi-pencil" aria-hidden="true"></i>
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-outline-danger"
+                          (click)="openDeleteTimeModal(entry)"
+                          i18n-title="@@featureProjectDetail-deleteTime"
+                          title="Delete"
+                        >
+                          <i class="bi bi-trash" aria-hidden="true"></i>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+<div #createTimeModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureProjectDetail-createTimeTitle">New time entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="timeStartedAt" i18n="@@featureProjectDetail-startLabel">Start</label>
+          <input
+            id="timeStartedAt"
+            type="datetime-local"
+            class="form-control"
+            [(ngModel)]="timeFormStartedAt"
+            name="timeStartedAt"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="timeEndedAt" i18n="@@featureProjectDetail-endLabel">End</label>
+          <input
+            id="timeEndedAt"
+            type="datetime-local"
+            class="form-control"
+            [(ngModel)]="timeFormEndedAt"
+            name="timeEndedAt"
+            required
+          />
+        </div>
+        <div class="mb-0">
+          <label class="form-label" for="timeDesc" i18n="@@featureProjectDetail-descriptionLabel">Description</label>
+          <input id="timeDesc" class="form-control" [(ngModel)]="timeFormDescription" name="description" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureProjectDetail-cancel">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitTimeEntry()"
+          [disabled]="(timeSaving$ | async) === true || !isTimeFormValid()"
+          i18n="@@featureProjectDetail-createTime"
+        >
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #editTimeModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureProjectDetail-editTimeTitle">Edit time entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="editTimeStartedAt" i18n="@@featureProjectDetail-startLabel">Start</label>
+          <input
+            id="editTimeStartedAt"
+            type="datetime-local"
+            class="form-control"
+            [(ngModel)]="editTimeFormStartedAt"
+            name="editTimeStartedAt"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="editTimeEndedAt" i18n="@@featureProjectDetail-endLabel">End</label>
+          <input
+            id="editTimeEndedAt"
+            type="datetime-local"
+            class="form-control"
+            [(ngModel)]="editTimeFormEndedAt"
+            name="editTimeEndedAt"
+            required
+          />
+        </div>
+        <div class="mb-0">
+          <label class="form-label" for="editTimeDesc" i18n="@@featureProjectDetail-descriptionLabel"
+            >Description</label
+          >
+          <input id="editTimeDesc" class="form-control" [(ngModel)]="editTimeFormDescription" name="editTimeDesc" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureProjectDetail-cancel">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitEditTimeEntry()"
+          [disabled]="(timeSaving$ | async) === true || !isEditTimeFormValid()"
+          i18n="@@featureProjectDetail-saveTime"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #deleteTimeModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureProjectDetail-deleteTimeTitle">Delete time entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (timeEntryToDelete; as entry) {
+          <p class="mb-0" i18n="@@featureProjectDetail-deleteTimeConfirm">
+            Delete this time entry ({{ formatMinutes(entry.durationMinutes) }})? This cannot be undone.
+          </p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureProjectDetail-cancel">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="submitDeleteTimeEntry()"
+          [disabled]="(timeSaving$ | async) === true || !timeEntryToDelete"
+          i18n="@@featureProjectDetail-deleteTime"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

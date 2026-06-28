@@ -10,6 +10,7 @@ Multi-tenancy is enforced on:
 
 - HTTP REST API via the `X-Tenant` header
 - Socket.IO dashboard status via handshake `extraHeaders` or `auth.tenantId`
+- Socket.IO project board via the same handshake rules on namespace **`projects`**
 - Background jobs that iterate all configured tenants
 - Stripe webhook handling that resolves tenant from checkout session metadata
 
@@ -77,6 +78,7 @@ Each tenant has independent:
 - Service types and service plans
 - CloudInit config templates
 - Backorders
+- Projects (scoped via assigned user's `tenant_id`; customers see only their assigned projects)
 
 Admin and user routes filter by the request tenant. Interactive auth (Keycloak or users) additionally requires the authenticated user's `tenant_id` to match the request tenant.
 
@@ -104,6 +106,7 @@ A valid `STATIC_API_KEY` grants admin access to **every** tenant listed in `TENA
 - Prefer Keycloak or users auth for the billing console in multi-tenant production
 - Rotate and protect `STATIC_API_KEY` as a high-value secret
 - WebSocket dashboard status does not stream to API key clients
+- Project board WebSocket does not stream to API key clients
 
 Interactive Keycloak and users sessions always enforce the user's `tenant_id` regardless of the above.
 

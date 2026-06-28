@@ -1,0 +1,227 @@
+<div class="admin-projects-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminProjects-title">Projects</h5>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      (click)="openCreateModal()"
+      [disabled]="(creating$ | async) === true"
+    >
+      <i class="bi bi-plus-circle me-1"></i>
+      <span i18n="@@featureAdminProjects-add">Add</span>
+    </button>
+  </div>
+
+  <div class="input-group search-input-container border-bottom">
+    <i class="bi bi-search"></i>
+    <input
+      type="text"
+      class="form-control border-0 search-input"
+      placeholder="Search projects"
+      i18n-placeholder="@@featureAdminProjects-searchPlaceholder"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+      name="search"
+    />
+  </div>
+
+  <div class="flex-grow-1 overflow-auto">
+    @if (loading$ | async) {
+      <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary" role="status"></div></div>
+    } @else {
+      @if (error$ | async; as error) {
+        <div class="alert alert-danger m-3" role="alert">{{ error }}</div>
+      }
+      @if (projects().length === 0) {
+        <div class="p-4 text-muted text-center" i18n="@@featureAdminProjects-empty">No projects found</div>
+      } @else {
+        <div class="list-group list-group-flush">
+          @for (project of projects(); track project.id) {
+            <div class="list-group-item d-flex justify-content-between align-items-start gap-3 border-bottom">
+              <a
+                [routerLink]="[project.id, 'board']"
+                [relativeTo]="projectsRoute"
+                class="min-w-0 flex-grow-1 text-decoration-none text-body"
+              >
+                <div class="fw-semibold mb-1">{{ project.name }}</div>
+                <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
+                  <span [ngClass]="projectStatusTextClass(project.status)">
+                    <i class="bi me-1" [ngClass]="projectStatusIconClass(project.status)" aria-hidden="true"></i
+                    >{{ projectStatusLabel(project.status) }}
+                  </span>
+                  <span
+                    ><i class="bi bi-cash me-1" aria-hidden="true"></i
+                    >{{ hourlyRateLabel(project.hourlyRateNet, project.currency) }}</span
+                  >
+                  <span
+                    ><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i
+                    >{{ unbilledTimeLabel(project.unbilledMinutes) }}</span
+                  >
+                  <span
+                    ><i class="bi bi-cash-stack me-1" aria-hidden="true"></i
+                    >{{ openBillableLabel(project.openBillableAmountNet, project.currency) }}</span
+                  >
+                  <span
+                    ><i class="bi bi-person me-1" aria-hidden="true"></i>{{ project.userEmail ?? project.userId }}</span
+                  >
+                </div>
+              </a>
+              <div class="btn-group btn-group-sm flex-shrink-0" role="group">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  (click)="$event.preventDefault(); $event.stopPropagation(); openEditModal(project)"
+                  i18n-title="@@featureAdminProjects-edit"
+                  title="Edit"
+                >
+                  <i class="bi bi-pencil" aria-hidden="true"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger"
+                  (click)="$event.preventDefault(); $event.stopPropagation(); openDeleteModal(project)"
+                  i18n-title="@@featureAdminProjects-delete"
+                  title="Delete"
+                >
+                  <i class="bi bi-trash" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminProjects-createTitle">Create project</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <framework-billing-admin-user-select
+          #createUserSelect
+          inputId="createProjectUser"
+          [users]="usersWithoutProject()"
+          [(selectedUserId)]="createForm.userId"
+          [required]="true"
+        />
+        <div class="my-3">
+          <label class="form-label" for="createProjectName" i18n="@@featureAdminProjects-nameLabel">Name</label>
+          <input id="createProjectName" class="form-control" [(ngModel)]="createForm.name" name="createName" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="createProjectRate" i18n="@@featureAdminProjects-rateLabel"
+            >Hourly rate (net)</label
+          >
+          <input
+            id="createProjectRate"
+            type="number"
+            class="form-control"
+            [(ngModel)]="createForm.hourlyRateNet"
+            name="createRate"
+            min="0"
+            step="0.01"
+          />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureAdminProjects-cancel">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitCreate()"
+          [disabled]="(creating$ | async) === true"
+          i18n="@@featureAdminProjects-create"
+        >
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminProjects-editTitle">Edit project</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="editProjectName" i18n="@@featureAdminProjects-nameLabel">Name</label>
+          <input id="editProjectName" class="form-control" [(ngModel)]="editForm.name" name="editName" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="editProjectRate" i18n="@@featureAdminProjects-rateLabel"
+            >Hourly rate (net)</label
+          >
+          <input
+            id="editProjectRate"
+            type="number"
+            class="form-control"
+            [(ngModel)]="editForm.hourlyRateNet"
+            name="editRate"
+            min="0"
+            step="0.01"
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="editProjectStatus" i18n="@@featureAdminProjects-statusLabel">Status</label>
+          <select id="editProjectStatus" class="form-select" [(ngModel)]="editForm.status" name="editStatus">
+            <option value="active" i18n="@@featureAdminProjects-statusActive">Active</option>
+            <option value="archived" i18n="@@featureAdminProjects-statusArchived">Archived</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureAdminProjects-cancel">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitEdit()"
+          [disabled]="(updating$ | async) === true"
+          i18n="@@featureAdminProjects-save"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #deleteModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminProjects-deleteTitle">Delete project</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" i18n="@@featureAdminProjects-deleteConfirm">
+        Delete this project? Unbilled time must be cleared first.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureAdminProjects-cancel">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="submitDelete()"
+          [disabled]="(deleting$ | async) === true"
+          i18n="@@featureAdminProjects-delete"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

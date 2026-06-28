@@ -25,6 +25,7 @@ import { TaxCalculationService } from './tax-calculation.service';
 
 export interface CreateInvoiceDraftParams {
   subscriptionId?: string;
+  projectId?: string;
   userId: string;
   lineInputs: LineItemInput[];
   currency?: string;
@@ -58,6 +59,7 @@ export class InvoiceService {
     const totals = this.taxCalculationService.computeLines(params.lineInputs);
     const invoice = await this.invoicesRepository.create({
       subscriptionId: params.subscriptionId,
+      projectId: params.projectId,
       userId: params.userId,
       status: InvoiceStatus.DRAFT,
       currency: params.currency ?? 'EUR',

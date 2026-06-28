@@ -1,0 +1,231 @@
+<div class="section__content-wrapper d-flex flex-column h-100">
+  <div class="px-3 py-2 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold h6" i18n="@@featureProjectMilestones-title">Milestones</h5>
+    @if (isAdmin) {
+      <button type="button" class="btn btn-sm btn-primary" (click)="openCreateModal()">
+        <i class="bi bi-plus-circle me-1"></i>
+        <span i18n="@@featureProjectMilestones-add">Add</span>
+      </button>
+    }
+  </div>
+
+  <div class="flex-grow-1 overflow-auto">
+    @if (error$ | async; as error) {
+      <div class="alert alert-danger m-3 mb-0" role="alert">{{ error }}</div>
+    }
+
+    @if (loading$ | async) {
+      <div class="d-flex justify-content-center py-4">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+    } @else if (milestones$ | async; as milestones) {
+      @if (milestones.length === 0) {
+        <p class="p-4 text-muted mb-0" i18n="@@featureProjectMilestones-empty">No milestones yet</p>
+      } @else {
+        <div class="list-group list-group-flush">
+          @for (m of milestones; track m.id) {
+            <div class="list-group-item d-flex justify-content-between align-items-start gap-3 border-bottom">
+              <div class="min-w-0 flex-grow-1">
+                <div class="fw-semibold mb-1">{{ m.name }}</div>
+                <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
+                  <span [class]="progressTextClass(m)"
+                    ><i class="bi bi-graph-up me-1" aria-hidden="true"></i>{{ progressLabel(m) }}</span
+                  >
+                  <span><i class="bi bi-circle me-1" aria-hidden="true"></i>{{ openTicketsLabel(m) }}</span>
+                  <span><i class="bi bi-check-circle me-1" aria-hidden="true"></i>{{ doneTicketsLabel(m) }}</span>
+                  @if (m.targetDate) {
+                    <span
+                      ><i class="bi bi-calendar3 me-1" aria-hidden="true"></i
+                      >{{ m.targetDate | date: 'mediumDate' }}</span
+                    >
+                  }
+                  @if (m.lockedAt) {
+                    <span class="text-secondary"
+                      ><i class="bi bi-lock me-1" aria-hidden="true"></i>{{ lockedLabel() }}</span
+                    >
+                  }
+                </div>
+              </div>
+              @if (isAdmin && !m.lockedAt) {
+                <div class="btn-group btn-group-sm flex-shrink-0" role="group">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    (click)="openEditModal(m)"
+                    i18n-title="@@featureProjectMilestones-edit"
+                    title="Edit"
+                  >
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    (click)="lockMilestone(m.id)"
+                    i18n-title="@@featureProjectMilestones-lock"
+                    title="Lock"
+                  >
+                    <i class="bi bi-lock" aria-hidden="true"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    (click)="openDeleteModal(m)"
+                    i18n-title="@@featureProjectMilestones-delete"
+                    title="Delete"
+                  >
+                    <i class="bi bi-trash" aria-hidden="true"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureProjectMilestones-createTitle">New milestone</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label" for="milestoneName" i18n="@@featureProjectMilestones-nameLabel">Name</label>
+        <input
+          id="milestoneName"
+          class="form-control"
+          [(ngModel)]="createForm.name"
+          name="milestoneName"
+          placeholder="Name"
+          i18n-placeholder="@@featureProjectMilestones-namePlaceholder"
+        />
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          i18n="@@featureProjectMilestones-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitCreate()"
+          [disabled]="(saving$ | async) === true || !createForm.name.trim()"
+          i18n="@@featureProjectMilestones-create"
+        >
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureProjectMilestones-editTitle">Edit milestone</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="editMilestoneName" i18n="@@featureProjectMilestones-nameLabel">Name</label>
+          <input
+            id="editMilestoneName"
+            class="form-control"
+            [(ngModel)]="editForm.name"
+            name="editMilestoneName"
+            placeholder="Name"
+            i18n-placeholder="@@featureProjectMilestones-namePlaceholder"
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="editMilestoneDescription" i18n="@@featureProjectMilestones-descriptionLabel"
+            >Description</label
+          >
+          <textarea
+            id="editMilestoneDescription"
+            class="form-control"
+            rows="3"
+            [(ngModel)]="editForm.description"
+            name="editMilestoneDescription"
+          ></textarea>
+        </div>
+        <div class="mb-0">
+          <label class="form-label" for="editMilestoneTargetDate" i18n="@@featureProjectMilestones-targetDateLabel"
+            >Target date</label
+          >
+          <input
+            id="editMilestoneTargetDate"
+            type="date"
+            class="form-control"
+            [(ngModel)]="editForm.targetDate"
+            name="editMilestoneTargetDate"
+          />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          i18n="@@featureProjectMilestones-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitEdit()"
+          [disabled]="(saving$ | async) === true || !editForm.name.trim()"
+          i18n="@@featureProjectMilestones-save"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #deleteModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureProjectMilestones-deleteTitle">Delete milestone</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (milestoneToDelete; as milestone) {
+          <p class="mb-0" i18n="@@featureProjectMilestones-deleteConfirm">
+            Delete milestone "{{ milestone.name }}"? This cannot be undone.
+          </p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          i18n="@@featureProjectMilestones-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="submitDelete()"
+          [disabled]="(saving$ | async) === true || !milestoneToDelete"
+          i18n="@@featureProjectMilestones-delete"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -13,7 +13,7 @@ The stack is built on:
 
 - **Domain-driven modules** in `@forepath/decabill/backend` and `@forepath/decabill/frontend`
 - **RESTful HTTP APIs** for synchronous billing operations
-- **Socket.IO** for dashboard server status streaming
+- **Socket.IO** for dashboard server status and project board streaming
 - **PostgreSQL** for persistent billing and identity data
 - **Redis and BullMQ** for schedulers, workers, and repeatable jobs
 - **Stripe** (and optional dynamic payment plugins) for checkout and webhooks
@@ -41,7 +41,8 @@ Detailed breakdown of runtime components:
 Communication patterns and end-to-end flows:
 
 - HTTP REST for CRUD, checkout initiation, and admin operations
-- WebSocket dashboard status polling
+- WebSocket dashboard status polling (`billing` namespace)
+- WebSocket project board broadcasts (`projects` namespace)
 - Stripe redirect and webhook reconciliation
 - Subscription provisioning and backorder retry
 
@@ -77,8 +78,8 @@ See **[Authentication](../features/authentication.md)** and **[Multi-tenancy](..
 
 ### State Management
 
-- **Frontend** - NgRx facades and effects for subscriptions, invoices, admin billing, and dashboard socket state
-- **Backend** - PostgreSQL as source of truth; Redis for job queues; in-memory socket subscription timers for dashboard polling
+- **Frontend** - NgRx facades and effects for subscriptions, invoices, admin billing, projects, dashboard socket, and project board socket state
+- **Backend** - PostgreSQL as source of truth; Redis for job queues; in-memory socket subscription timers for dashboard polling; project board room broadcasts
 
 ## Related Documentation
 
@@ -93,6 +94,8 @@ See **[Authentication](../features/authentication.md)** and **[Multi-tenancy](..
 - **[Payment Processing](../features/payment-processing.md)** - Stripe checkout and webhooks
 - **[Server Provisioning](../features/server-provisioning.md)** - Cloud-init stacks for eligible plans
 - **[Real-time Status](../features/real-time-status.md)** - Dashboard WebSocket behavior
+- **[Projects](../features/projects.md)** - Customer-assigned work and bill-time
+- **[Project Board](../features/project-board.md)** - Live board WebSocket behavior
 
 ### Deployment
 
@@ -117,7 +120,7 @@ See **[Authentication](../features/authentication.md)** and **[Multi-tenancy](..
 ### Maintainability
 
 - Feature logic lives in `libs/domains/decabill/backend/feature-billing-manager` and frontend libraries consumed by the apps
-- OpenAPI and AsyncAPI specs are the contract for HTTP and dashboard socket events
+- OpenAPI and AsyncAPI specs are the contract for HTTP and WebSocket events (`billing` and `projects` namespaces)
 
 ### Security
 

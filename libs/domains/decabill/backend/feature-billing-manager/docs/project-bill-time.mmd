@@ -1,0 +1,34 @@
+sequenceDiagram
+    participant Admin
+    participant API as ProjectsAdminController
+    participant Billing as ProjectBillingService
+    participant Profile as CustomerProfilesService
+    participant Time as ProjectTimeEntriesRepository
+    participant Invoice as InvoiceService
+    participant Issue as InvoiceIssuanceService
+    participant Audit as BillingAuditLogService
+    participant Summary as ProjectsService
+    participant RT as ProjectBoardRealtimeService
+
+    Admin->>API: POST /admin/billing/projects/{projectId}/bill-time
+    API->>Billing: billUnbilledTime(projectId, adminUserId)
+    Billing->>Billing: findByIdOrThrow(project)
+    Billing->>Profile: getByUserId(project.userId)
+    alt profile incomplete
+        Billing-->>Admin: 400 Assigned customer profile is incomplete
+    end
+    Billing->>Time: findUnbilledByProject(projectId)
+    alt no unbilled entries
+        Billing-->>Admin: 400 No unbilled time entries
+    end
+    Billing->>Billing: compute hours × hourlyRateNet
+    alt amount below minimum
+        Billing-->>Admin: 400 Billable amount below minimum
+    end
+    Billing->>Invoice: createDraft(userId, projectId, line item)
+    Billing->>Issue: issueDraft(draft.id)
+    Billing->>Time: markBilled(entry ids, invoice.id)
+    Billing->>Audit: log project.bill_time
+    Billing->>Summary: buildSummary(project)
+    Billing->>RT: projectSummaryChanged(summary)
+    Billing-->>Admin: 200 { invoiceId, invoiceNumber, billedMinutes, amountNet }

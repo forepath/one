@@ -1,0 +1,66 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+
+import { ProjectsAdminService } from './projects-admin.service';
+
+describe('ProjectsAdminService', () => {
+  const projectsRepository = {
+    findAll: jest.fn(),
+    findByIdOrThrow: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    countBilledTimeEntries: jest.fn(),
+    countUnbilledTimeEntries: jest.fn(),
+  };
+  const projectsService = {
+    mapResponse: jest.fn((p) => p),
+    buildSummary: jest.fn(),
+  };
+  const usersRepository = {
+    findByIdForTenant: jest.fn(),
+  };
+  const projectBillingService = {
+    billUnbilledTime: jest.fn(),
+  };
+
+  let service: ProjectsAdminService;
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    service = new ProjectsAdminService(
+      projectsRepository as never,
+      projectsService as never,
+      usersRepository as never,
+      projectBillingService as never,
+    );
+  });
+
+  it('create requires tenant user via findByIdForTenant', async () => {
+    usersRepository.findByIdForTenant.mockResolvedValue(null);
+
+    await expect(service.create({ userId: 'missing', name: 'P', hourlyRateNet: 100 } as never)).rejects.toThrow(
+      NotFoundException,
+    );
+  });
+
+  it('delete blocked when unbilled time entries exist', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1' });
+    projectsRepository.countUnbilledTimeEntries.mockResolvedValue(2);
+
+    await expect(service.delete('p1')).rejects.toThrow(BadRequestException);
+  });
+
+  it('update blocks userId change after billed time', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'u1', hourlyRateNet: 100 });
+    projectsRepository.countBilledTimeEntries.mockResolvedValue(1);
+
+    await expect(service.update('p1', { userId: 'u2' })).rejects.toThrow(BadRequestException);
+  });
+
+  it('update blocks hourly rate change after first bill', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'u1', hourlyRateNet: 100 });
+    projectsRepository.countBilledTimeEntries.mockResolvedValue(1);
+
+    await expect(service.update('p1', { hourlyRateNet: 120 })).rejects.toThrow(BadRequestException);
+  });
+});
