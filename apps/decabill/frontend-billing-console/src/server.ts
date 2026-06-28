@@ -163,6 +163,22 @@ app.use((req, res, next) => {
   const monacoCssPattern = /\/assets\/monaco\/esm\/vs\/.*\.css$/;
 
   if (monacoCssPattern.test(req.path)) {
+    const fetchDest = req.headers['sec-fetch-dest'];
+    const acceptHeader = String(req.headers['accept'] ?? '').toLowerCase();
+    const expectsScript =
+      fetchDest === 'script' ||
+      fetchDest === 'worker' ||
+      acceptHeader.includes('javascript') ||
+      acceptHeader.includes('ecmascript') ||
+      acceptHeader.includes('text/javascript') ||
+      acceptHeader.includes('application/javascript');
+
+    // Only rewrite to JS module if the browser expects a script/module response.
+    // If this is a normal stylesheet request (e.g. <link rel="stylesheet">), serve the real CSS via static middleware.
+    if (!expectsScript) {
+      return next();
+    }
+
     // Determine locale from path
     let locale = DEFAULT_LOCALE;
     const pathSegments = req.path.split('/').filter(Boolean);
@@ -178,12 +194,14 @@ app.use((req, res, next) => {
         // Return a JavaScript module that dynamically loads the CSS as a stylesheet
         res.type('application/javascript');
 
+        const safeHref = JSON.stringify(pathWithoutLocale);
+
         return res.send(
           `
 // Dynamically load CSS file as stylesheet
 const link = document.createElement('link');
 link.rel = 'stylesheet';
-link.href = '${pathWithoutLocale}';
+link.href = ${safeHref};
 document.head.appendChild(link);
         `.trim(),
         );
@@ -199,12 +217,14 @@ document.head.appendChild(link);
         // Return a JavaScript module that dynamically loads the CSS as a stylesheet
         res.type('application/javascript');
 
+        const safeHref = JSON.stringify(req.path);
+
         return res.send(
           `
 // Dynamically load CSS file as stylesheet
 const link = document.createElement('link');
 link.rel = 'stylesheet';
-link.href = '${req.path}';
+link.href = ${safeHref};
 document.head.appendChild(link);
         `.trim(),
         );

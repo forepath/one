@@ -2,6 +2,7 @@ import {
   AvailabilitySnapshotEntity,
   BackorderEntity,
   BillingAuditLogEntity,
+  CloudInitConfigEntity,
   CustomerProfileEntity,
   DatevDebtorAccountEntity,
   DatevExportEntity,
@@ -55,6 +56,7 @@ export const typeormConfig: DataSourceOptions = {
   entities: [
     ServiceTypeEntity,
     ServicePlanEntity,
+    CloudInitConfigEntity,
     SubscriptionEntity,
     SubscriptionItemEntity,
     ReservedHostnameEntity,

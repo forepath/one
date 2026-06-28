@@ -409,7 +409,7 @@
             @if (getProviderSchema(data.serviceTypes, data.providerDetails, createForm.serviceTypeId); as schema) {
               <div class="mb-3 border rounded p-3 bg-body-secondary">
                 <h6 class="mb-3" i18n="@@featureServicePlans-providerConfigDefaults">Provider default config</h6>
-                @for (key of getProviderConfigKeys(schema); track key) {
+                @for (key of getServerProviderConfigKeys(schema); track key) {
                   <div class="mb-2">
                     <label [attr.for]="'createProviderConfig_' + key" class="form-label">{{ key }}</label>
                     @if (getProviderConfigPropertyDescription(schema, key); as desc) {
@@ -474,6 +474,257 @@
                   </div>
                 }
               </div>
+            }
+            @if (
+              supportsProvisioningOptionsSelection(data.serviceTypes, data.providerDetails, createForm.serviceTypeId)
+            ) {
+              <div class="mb-3 border rounded p-3 bg-body-secondary">
+                <h6 class="mb-2" i18n="@@featureServicePlans-provisioningOptions">Customer-selectable options</h6>
+                <p
+                  class="form-text text-body-secondary small mb-3"
+                  i18n="@@featureServicePlans-provisioningOptionsHelp"
+                >
+                  Choose which integrated stacks and CloudInit configs customers may pick when ordering this plan.
+                </p>
+                @if (
+                  serviceEnumIncludes(data.serviceTypes, data.providerDetails, createForm.serviceTypeId, 'controller')
+                ) {
+                  <div class="form-check mb-2">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="createProvisioningController"
+                      [checked]="isProvisioningOptionSelected('create', 'integrated:controller')"
+                      (change)="
+                        toggleProvisioningOption('create', 'integrated:controller', $any($event.target).checked)
+                      "
+                      [disabled]="(creating$ | async) === true"
+                    />
+                    <label class="form-check-label" for="createProvisioningController">Agenstra Controller</label>
+                  </div>
+                }
+                @if (
+                  serviceEnumIncludes(data.serviceTypes, data.providerDetails, createForm.serviceTypeId, 'manager')
+                ) {
+                  <div class="form-check mb-2">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="createProvisioningManager"
+                      [checked]="isProvisioningOptionSelected('create', 'integrated:manager')"
+                      (change)="toggleProvisioningOption('create', 'integrated:manager', $any($event.target).checked)"
+                      [disabled]="(creating$ | async) === true"
+                    />
+                    <label class="form-check-label" for="createProvisioningManager">Agenstra Manager</label>
+                  </div>
+                }
+                @for (cfg of cloudInitConfigs$ | async; track cfg.id) {
+                  <div class="form-check mb-2">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      [id]="'createProvisioningCustom_' + cfg.id"
+                      [checked]="isProvisioningOptionSelected('create', 'custom:' + cfg.id)"
+                      (change)="toggleProvisioningOption('create', 'custom:' + cfg.id, $any($event.target).checked)"
+                      [disabled]="(creating$ | async) === true"
+                    />
+                    <label class="form-check-label" [for]="'createProvisioningCustom_' + cfg.id">{{ cfg.name }}</label>
+                  </div>
+                }
+              </div>
+            }
+            @if (getProviderSchema(data.serviceTypes, data.providerDetails, createForm.serviceTypeId); as schema) {
+              @if (cloudInitConfigs$ | async; as cloudInitConfigs) {
+                @if (hasProductDefaultsSection('create', schema, cloudInitConfigs)) {
+                  <div class="mb-3 border rounded p-3 bg-body-secondary">
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                      <h6 class="mb-0" i18n="@@featureServicePlans-productDefaults">Product defaults</h6>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-secondary flex-shrink-0"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#createProductDefaults"
+                        [attr.aria-expanded]="createProductDefaultsExpanded()"
+                        aria-controls="createProductDefaults"
+                      >
+                        @if (createProductDefaultsExpanded()) {
+                          <span i18n="@@featureServicePlans-hideProductDefaults">Hide</span>
+                        } @else {
+                          <span i18n="@@featureServicePlans-showProductDefaults">Show</span>
+                        }
+                      </button>
+                    </div>
+                    <div
+                      class="collapse"
+                      id="createProductDefaults"
+                      (shown.bs.collapse)="createProductDefaultsExpanded.set(true)"
+                      (hidden.bs.collapse)="createProductDefaultsExpanded.set(false)"
+                    >
+                      <p
+                        class="form-text text-body-secondary small mb-3 mt-2"
+                        i18n="@@featureServicePlans-productDefaultsHelp"
+                      >
+                        Defaults for integrated stacks and CloudInit environment variables required by the selected
+                        customer options.
+                      </p>
+                      @for (key of getProductProviderConfigKeysForForm('create', schema); track key) {
+                        @if (isProductObjectField(schema, key)) {
+                          <div class="mb-3 border rounded p-3">
+                            <fieldset class="mb-0">
+                              <legend class="form-label fs-6 mb-1">{{ getProductConfigFieldLabel(key) }}</legend>
+                              @if (getProviderConfigPropertyDescription(schema, key); as desc) {
+                                @if (desc.trim()) {
+                                  <small class="text-body-secondary d-block mb-2">{{ desc }}</small>
+                                }
+                              }
+                              @for (nestedKey of getProductObjectFieldKeys(schema, key); track nestedKey) {
+                                <div class="mb-2">
+                                  <label
+                                    [attr.for]="'createProductConfig_' + key + '_' + nestedKey"
+                                    class="form-label"
+                                    >{{ getProductConfigFieldLabel(nestedKey) }}</label
+                                  >
+                                  @if (getProductNestedPropertyDescription(schema, key, nestedKey); as nestedDesc) {
+                                    @if (nestedDesc.trim()) {
+                                      <small class="text-body-secondary d-block mb-1">{{ nestedDesc }}</small>
+                                    }
+                                  }
+                                  @if (getProductNestedPropertyEnum(schema, key, nestedKey); as nestedEnum) {
+                                    <select
+                                      [id]="'createProductConfig_' + key + '_' + nestedKey"
+                                      class="form-select"
+                                      [ngModel]="getProductNestedValue('create', key, nestedKey)"
+                                      (ngModelChange)="setProductNestedValue('create', key, nestedKey, $event)"
+                                      [name]="'createProductConfig_' + key + '_' + nestedKey"
+                                      [disabled]="(creating$ | async) === true"
+                                    >
+                                      <option [ngValue]="''" i18n="@@featureServicePlans-chooseOption">
+                                        Choose...
+                                      </option>
+                                      @for (opt of nestedEnum; track opt) {
+                                        <option [ngValue]="opt">{{ opt }}</option>
+                                      }
+                                    </select>
+                                  } @else if (getProductNestedPropertyType(schema, key, nestedKey) === 'number') {
+                                    <input
+                                      type="number"
+                                      [id]="'createProductConfig_' + key + '_' + nestedKey"
+                                      class="form-control"
+                                      [ngModel]="getProductNestedValue('create', key, nestedKey)"
+                                      (ngModelChange)="setProductNestedValue('create', key, nestedKey, $event)"
+                                      [name]="'createProductConfig_' + key + '_' + nestedKey"
+                                      [disabled]="(creating$ | async) === true"
+                                    />
+                                  } @else {
+                                    <input
+                                      [type]="isSensitiveProductConfigField(nestedKey) ? 'password' : 'text'"
+                                      [id]="'createProductConfig_' + key + '_' + nestedKey"
+                                      class="form-control"
+                                      [ngModel]="getProductNestedValue('create', key, nestedKey)"
+                                      (ngModelChange)="setProductNestedValue('create', key, nestedKey, $event)"
+                                      [name]="'createProductConfig_' + key + '_' + nestedKey"
+                                      [disabled]="(creating$ | async) === true"
+                                      [attr.autocomplete]="
+                                        isSensitiveProductConfigField(nestedKey) ? 'new-password' : 'off'
+                                      "
+                                    />
+                                  }
+                                </div>
+                              }
+                            </fieldset>
+                          </div>
+                        } @else if (getProviderConfigPropertyType(schema, key) === 'boolean') {
+                          <div class="mb-3 border rounded p-3">
+                            <div class="form-check mb-0">
+                              <input
+                                type="checkbox"
+                                class="form-check-input"
+                                [id]="'createProductConfig_' + key"
+                                [(ngModel)]="createForm.providerConfigDefaults![key]"
+                                [name]="'createProductConfig_' + key"
+                                [disabled]="(creating$ | async) === true"
+                              />
+                              <label class="form-check-label" [attr.for]="'createProductConfig_' + key">{{
+                                getProductConfigFieldLabel(key)
+                              }}</label>
+                              @if (getProviderConfigPropertyDescription(schema, key); as desc) {
+                                @if (desc.trim()) {
+                                  <small class="text-body-secondary d-block">{{ desc }}</small>
+                                }
+                              }
+                            </div>
+                          </div>
+                        } @else {
+                          <div class="mb-3 border rounded p-3">
+                            <div class="mb-0">
+                              <label [attr.for]="'createProductConfig_' + key" class="form-label">{{
+                                getProductConfigFieldLabel(key)
+                              }}</label>
+                              @if (getProviderConfigPropertyDescription(schema, key); as desc) {
+                                <small class="text-body-secondary d-block mb-1">{{ desc }}</small>
+                              }
+                              @if (getProviderConfigEnum(schema, key); as enumValues) {
+                                <select
+                                  [id]="'createProductConfig_' + key"
+                                  class="form-select"
+                                  [(ngModel)]="createForm.providerConfigDefaults![key]"
+                                  [name]="'createProductConfig_' + key"
+                                  [disabled]="(creating$ | async) === true"
+                                >
+                                  <option [ngValue]="null" i18n="@@featureServicePlans-chooseOption">Choose...</option>
+                                  @for (opt of enumValues; track opt) {
+                                    <option [ngValue]="opt">{{ opt }}</option>
+                                  }
+                                </select>
+                              } @else if (getProviderConfigPropertyType(schema, key) === 'number') {
+                                <input
+                                  type="number"
+                                  [id]="'createProductConfig_' + key"
+                                  class="form-control"
+                                  [(ngModel)]="createForm.providerConfigDefaults![key]"
+                                  [name]="'createProductConfig_' + key"
+                                  [disabled]="(creating$ | async) === true"
+                                />
+                              } @else {
+                                <input
+                                  [type]="isSensitiveProductConfigField(key) ? 'password' : 'text'"
+                                  [id]="'createProductConfig_' + key"
+                                  class="form-control"
+                                  [(ngModel)]="createForm.providerConfigDefaults![key]"
+                                  [name]="'createProductConfig_' + key"
+                                  [disabled]="(creating$ | async) === true"
+                                  [attr.autocomplete]="isSensitiveProductConfigField(key) ? 'new-password' : 'off'"
+                                />
+                              }
+                            </div>
+                          </div>
+                        }
+                      }
+                      @for (field of getProductCustomEnvFields('create', cloudInitConfigs); track field.key) {
+                        <div class="mb-3 border rounded p-3">
+                          <label [attr.for]="'createProductEnv_' + field.key" class="form-label">{{
+                            field.label
+                          }}</label>
+                          <small class="text-body-secondary d-block mb-1">{{ field.configName }}</small>
+                          @if (field.description?.trim()) {
+                            <small class="text-body-secondary d-block mb-1">{{ field.description }}</small>
+                          }
+                          <input
+                            type="password"
+                            [id]="'createProductEnv_' + field.key"
+                            class="form-control"
+                            [ngModel]="getProductEnvValue('create', field.key)"
+                            (ngModelChange)="setProductEnvValue('create', field.key, $event)"
+                            [name]="'createProductEnv_' + field.key"
+                            [disabled]="(creating$ | async) === true"
+                            autocomplete="new-password"
+                          />
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              }
             }
             @if (supportsCustomerLocationSelection(data.serviceTypes, data.providerDetails, createForm.serviceTypeId)) {
               <div class="form-check mb-3">
@@ -816,7 +1067,7 @@
             ) {
               <div class="mb-3 border rounded p-3 bg-body-secondary">
                 <h6 class="mb-3" i18n="@@featureServicePlans-providerConfigDefaults">Provider default config</h6>
-                @for (key of getProviderConfigKeys(schema); track key) {
+                @for (key of getServerProviderConfigKeys(schema); track key) {
                   <div class="mb-2">
                     <label [attr.for]="'editProviderConfig_' + key" class="form-label">{{ key }}</label>
                     @if (getProviderConfigPropertyDescription(schema, key); as desc) {
@@ -882,6 +1133,263 @@
                   </div>
                 }
               </div>
+            }
+            @if (
+              editingPlan &&
+              supportsProvisioningOptionsSelection(data.serviceTypes, data.providerDetails, editingPlan.serviceTypeId)
+            ) {
+              <div class="mb-3 border rounded p-3 bg-body-secondary">
+                <h6 class="mb-2" i18n="@@featureServicePlans-provisioningOptions">Customer-selectable options</h6>
+                <p
+                  class="form-text text-body-secondary small mb-3"
+                  i18n="@@featureServicePlans-provisioningOptionsHelp"
+                >
+                  Choose which integrated stacks and CloudInit configs customers may pick when ordering this plan.
+                </p>
+                @if (editStaleCustomConfigIds.length > 0) {
+                  <div class="alert alert-warning py-2 small mb-3" role="alert">
+                    <span i18n="@@featureServicePlans-inactiveCustomConfigWarning"
+                      >This plan referenced inactive CloudInit configs. They were removed from provisioning options.
+                      Save to apply the change.</span
+                    >
+                  </div>
+                }
+                @if (
+                  serviceEnumIncludes(data.serviceTypes, data.providerDetails, editingPlan.serviceTypeId, 'controller')
+                ) {
+                  <div class="form-check mb-2">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="editProvisioningController"
+                      [checked]="isProvisioningOptionSelected('edit', 'integrated:controller')"
+                      (change)="toggleProvisioningOption('edit', 'integrated:controller', $any($event.target).checked)"
+                      [disabled]="(updating$ | async) === true"
+                    />
+                    <label class="form-check-label" for="editProvisioningController">Agenstra Controller</label>
+                  </div>
+                }
+                @if (
+                  serviceEnumIncludes(data.serviceTypes, data.providerDetails, editingPlan.serviceTypeId, 'manager')
+                ) {
+                  <div class="form-check mb-2">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="editProvisioningManager"
+                      [checked]="isProvisioningOptionSelected('edit', 'integrated:manager')"
+                      (change)="toggleProvisioningOption('edit', 'integrated:manager', $any($event.target).checked)"
+                      [disabled]="(updating$ | async) === true"
+                    />
+                    <label class="form-check-label" for="editProvisioningManager">Agenstra Manager</label>
+                  </div>
+                }
+                @for (cfg of cloudInitConfigs$ | async; track cfg.id) {
+                  <div class="form-check mb-2">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      [id]="'editProvisioningCustom_' + cfg.id"
+                      [checked]="isProvisioningOptionSelected('edit', 'custom:' + cfg.id)"
+                      (change)="toggleProvisioningOption('edit', 'custom:' + cfg.id, $any($event.target).checked)"
+                      [disabled]="(updating$ | async) === true"
+                    />
+                    <label class="form-check-label" [for]="'editProvisioningCustom_' + cfg.id">{{ cfg.name }}</label>
+                  </div>
+                }
+              </div>
+            }
+            @if (
+              editingPlan && getProviderSchema(data.serviceTypes, data.providerDetails, editingPlan.serviceTypeId);
+              as schema
+            ) {
+              @if (cloudInitConfigs$ | async; as cloudInitConfigs) {
+                @if (hasProductDefaultsSection('edit', schema, cloudInitConfigs)) {
+                  <div class="mb-3 border rounded p-3 bg-body-secondary">
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                      <h6 class="mb-0" i18n="@@featureServicePlans-productDefaults">Product defaults</h6>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-secondary flex-shrink-0"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#editProductDefaults"
+                        [attr.aria-expanded]="editProductDefaultsExpanded()"
+                        aria-controls="editProductDefaults"
+                      >
+                        @if (editProductDefaultsExpanded()) {
+                          <span i18n="@@featureServicePlans-hideProductDefaults">Hide</span>
+                        } @else {
+                          <span i18n="@@featureServicePlans-showProductDefaults">Show</span>
+                        }
+                      </button>
+                    </div>
+                    <div
+                      class="collapse"
+                      id="editProductDefaults"
+                      (shown.bs.collapse)="editProductDefaultsExpanded.set(true)"
+                      (hidden.bs.collapse)="editProductDefaultsExpanded.set(false)"
+                    >
+                      <p
+                        class="form-text text-body-secondary small mb-3 mt-2"
+                        i18n="@@featureServicePlans-productDefaultsHelp"
+                      >
+                        Defaults for integrated stacks and CloudInit environment variables required by the selected
+                        customer options.
+                      </p>
+                      @for (key of getProductProviderConfigKeysForForm('edit', schema); track key) {
+                        @if (isProductObjectField(schema, key)) {
+                          <div class="mb-3 border rounded p-3">
+                            <fieldset class="mb-0">
+                              <legend class="form-label fs-6 mb-1">{{ getProductConfigFieldLabel(key) }}</legend>
+                              @if (getProviderConfigPropertyDescription(schema, key); as desc) {
+                                @if (desc.trim()) {
+                                  <small class="text-body-secondary d-block mb-2">{{ desc }}</small>
+                                }
+                              }
+                              @for (nestedKey of getProductObjectFieldKeys(schema, key); track nestedKey) {
+                                <div class="mb-2">
+                                  <label [attr.for]="'editProductConfig_' + key + '_' + nestedKey" class="form-label">{{
+                                    getProductConfigFieldLabel(nestedKey)
+                                  }}</label>
+                                  @if (getProductNestedPropertyDescription(schema, key, nestedKey); as nestedDesc) {
+                                    @if (nestedDesc.trim()) {
+                                      <small class="text-body-secondary d-block mb-1">{{ nestedDesc }}</small>
+                                    }
+                                  }
+                                  @if (getProductNestedPropertyEnum(schema, key, nestedKey); as nestedEnum) {
+                                    <select
+                                      [id]="'editProductConfig_' + key + '_' + nestedKey"
+                                      class="form-select"
+                                      [ngModel]="getProductNestedValue('edit', key, nestedKey)"
+                                      (ngModelChange)="setProductNestedValue('edit', key, nestedKey, $event)"
+                                      [name]="'editProductConfig_' + key + '_' + nestedKey"
+                                      [disabled]="(updating$ | async) === true"
+                                    >
+                                      <option [ngValue]="''" i18n="@@featureServicePlans-chooseOption">
+                                        Choose...
+                                      </option>
+                                      @for (opt of nestedEnum; track opt) {
+                                        <option [ngValue]="opt">{{ opt }}</option>
+                                      }
+                                    </select>
+                                  } @else if (getProductNestedPropertyType(schema, key, nestedKey) === 'number') {
+                                    <input
+                                      type="number"
+                                      [id]="'editProductConfig_' + key + '_' + nestedKey"
+                                      class="form-control"
+                                      [ngModel]="getProductNestedValue('edit', key, nestedKey)"
+                                      (ngModelChange)="setProductNestedValue('edit', key, nestedKey, $event)"
+                                      [name]="'editProductConfig_' + key + '_' + nestedKey"
+                                      [disabled]="(updating$ | async) === true"
+                                    />
+                                  } @else {
+                                    <input
+                                      [type]="isSensitiveProductConfigField(nestedKey) ? 'password' : 'text'"
+                                      [id]="'editProductConfig_' + key + '_' + nestedKey"
+                                      class="form-control"
+                                      [ngModel]="getProductNestedValue('edit', key, nestedKey)"
+                                      (ngModelChange)="setProductNestedValue('edit', key, nestedKey, $event)"
+                                      [name]="'editProductConfig_' + key + '_' + nestedKey"
+                                      [disabled]="(updating$ | async) === true"
+                                      [attr.autocomplete]="
+                                        isSensitiveProductConfigField(nestedKey) ? 'new-password' : 'off'
+                                      "
+                                    />
+                                  }
+                                </div>
+                              }
+                            </fieldset>
+                          </div>
+                        } @else if (getProviderConfigPropertyType(schema, key) === 'boolean') {
+                          <div class="mb-3 border rounded p-3">
+                            <div class="form-check mb-0">
+                              <input
+                                type="checkbox"
+                                class="form-check-input"
+                                [id]="'editProductConfig_' + key"
+                                [(ngModel)]="editForm.providerConfigDefaults![key]"
+                                [name]="'editProductConfig_' + key"
+                                [disabled]="(updating$ | async) === true"
+                              />
+                              <label class="form-check-label" [attr.for]="'editProductConfig_' + key">{{
+                                getProductConfigFieldLabel(key)
+                              }}</label>
+                              @if (getProviderConfigPropertyDescription(schema, key); as desc) {
+                                @if (desc.trim()) {
+                                  <small class="text-body-secondary d-block">{{ desc }}</small>
+                                }
+                              }
+                            </div>
+                          </div>
+                        } @else {
+                          <div class="mb-3 border rounded p-3">
+                            <div class="mb-0">
+                              <label [attr.for]="'editProductConfig_' + key" class="form-label">{{
+                                getProductConfigFieldLabel(key)
+                              }}</label>
+                              @if (getProviderConfigPropertyDescription(schema, key); as desc) {
+                                <small class="text-body-secondary d-block mb-1">{{ desc }}</small>
+                              }
+                              @if (getProviderConfigEnum(schema, key); as enumValues) {
+                                <select
+                                  [id]="'editProductConfig_' + key"
+                                  class="form-select"
+                                  [(ngModel)]="editForm.providerConfigDefaults![key]"
+                                  [name]="'editProductConfig_' + key"
+                                  [disabled]="(updating$ | async) === true"
+                                >
+                                  <option [ngValue]="null" i18n="@@featureServicePlans-chooseOption">Choose...</option>
+                                  @for (opt of enumValues; track opt) {
+                                    <option [ngValue]="opt">{{ opt }}</option>
+                                  }
+                                </select>
+                              } @else if (getProviderConfigPropertyType(schema, key) === 'number') {
+                                <input
+                                  type="number"
+                                  [id]="'editProductConfig_' + key"
+                                  class="form-control"
+                                  [(ngModel)]="editForm.providerConfigDefaults![key]"
+                                  [name]="'editProductConfig_' + key"
+                                  [disabled]="(updating$ | async) === true"
+                                />
+                              } @else {
+                                <input
+                                  [type]="isSensitiveProductConfigField(key) ? 'password' : 'text'"
+                                  [id]="'editProductConfig_' + key"
+                                  class="form-control"
+                                  [(ngModel)]="editForm.providerConfigDefaults![key]"
+                                  [name]="'editProductConfig_' + key"
+                                  [disabled]="(updating$ | async) === true"
+                                  [attr.autocomplete]="isSensitiveProductConfigField(key) ? 'new-password' : 'off'"
+                                />
+                              }
+                            </div>
+                          </div>
+                        }
+                      }
+                      @for (field of getProductCustomEnvFields('edit', cloudInitConfigs); track field.key) {
+                        <div class="mb-3 border rounded p-3">
+                          <label [attr.for]="'editProductEnv_' + field.key" class="form-label">{{ field.label }}</label>
+                          <small class="text-body-secondary d-block mb-1">{{ field.configName }}</small>
+                          @if (field.description?.trim()) {
+                            <small class="text-body-secondary d-block mb-1">{{ field.description }}</small>
+                          }
+                          <input
+                            type="password"
+                            [id]="'editProductEnv_' + field.key"
+                            class="form-control"
+                            [ngModel]="getProductEnvValue('edit', field.key)"
+                            (ngModelChange)="setProductEnvValue('edit', field.key, $event)"
+                            [name]="'editProductEnv_' + field.key"
+                            [disabled]="(updating$ | async) === true"
+                            autocomplete="new-password"
+                          />
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              }
             }
             @if (
               editingPlan &&

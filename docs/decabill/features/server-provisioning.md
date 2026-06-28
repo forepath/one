@@ -63,6 +63,14 @@ Containers share a defined application directory on the host (typically under `/
 
 Operators choose service kind and image tags through service type and plan configuration; the update scheduler pulls latest tagged images on a schedule.
 
+## Custom Service Kind
+
+Plans may set `providerConfigDefaults.service` to `custom` and reference a CloudInit config id. This third path deploys a single Docker service defined by an admin template instead of the bundled controller or manager stack.
+
+Custom cloud-init installs Docker and runs one compose service with resolved environment variables. It does not install Nginx, Certbot, or the bundled PostgreSQL and product containers. The subscription item update scheduler skips custom items.
+
+See **[CloudInit Configs](./cloud-init-configs.md)** for environment variable metadata, admin UI, and order form behavior.
+
 ## TLS and DNS
 
 TLS uses Let's Encrypt via Certbot installed in cloud-init (pip/venv under `/opt/certbot`):

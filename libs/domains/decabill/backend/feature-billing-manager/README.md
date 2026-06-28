@@ -6,6 +6,7 @@ Backend billing module providing subscription management, backorders, availabili
 
 - WebSocket dashboard status stream: see [`spec/asyncapi.yaml`](spec/asyncapi.yaml) (namespace `billing`, permission-locked; mirrors REST subscription ownership).
 - Service types and plans (admin endpoints), including optional per-plan customer geography selection when the provider schema supports it.
+- CloudInit config templates (admin CRUD) and order-fields for custom service plans.
 - Subscription ordering, cancel, resume for authenticated users.
 - Backorder management for provider capacity failures.
 - Availability snapshots and pricing previews.
@@ -102,6 +103,8 @@ Plugins can be baked into the billing backend deploy graph or mounted after imag
 - `type`: `'string'` or `'number'`
 - `description`: optional label/help text
 - `enum`: optional array of allowed values (e.g. `['fsn1', 'nbg1']`). When present, the billing console renders a select instead of a text/number input.
+- `scope`: optional `server` or `product`. Server fields (`serverType`, geography, `firewallId`) appear under **Provider default config**; product fields appear under **Product defaults** when required by selected customer options.
+- `productServices`: optional list of `controller` and/or `manager` for product-scoped fields.
 
 **Base price from field:** The schema may include a top-level `basePriceFromField` (e.g. `'serverType'`). When set, the billing console fetches options from `GET /service-types/providers/:providerId/server-types` for that field and uses the selected option’s `priceMonthly` as the plan base price when the user selects a server type.
 

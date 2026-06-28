@@ -128,6 +128,8 @@ $agenstra-badge-text-bg-colors: primary, secondary, success, info, warning, dang
 @import 'bootstrap/scss/bootstrap-grid';
 @import 'bootstrap-icons/font/bootstrap-icons';
 @import '@fontsource-variable/plus-jakarta-sans/wght.css';
+@import 'monaco';
+@import '../../../../libs/domains/shared/frontend/scrollable-modal';
 
 // Global scrollbar: thumb tints follow --bs-body-color-rgb, so light/dark switch with [data-bs-theme].
 // Firefox only — Chrome 121+ ignores ::-webkit-scrollbar-* when scrollbar-width is set on the same element.

@@ -22,7 +22,7 @@ import {
   updateServiceTypeFailure,
   updateServiceTypeSuccess,
 } from './service-types.actions';
-import { serviceTypesReducer, initialServiceTypesState, type ServiceTypesState } from './service-types.reducer';
+import { initialServiceTypesState, serviceTypesReducer, type ServiceTypesState } from './service-types.reducer';
 
 describe('serviceTypesReducer', () => {
   const mockServiceType: ServiceTypeResponse = {
@@ -71,7 +71,7 @@ describe('serviceTypesReducer', () => {
   describe('loadProviderDetailsSuccess', () => {
     it('should set provider details and set providerDetailsLoading to false', () => {
       const state: ServiceTypesState = { ...initialServiceTypesState, providerDetailsLoading: true };
-      const providerDetails = [{ id: 'hetzner', displayName: 'Hetzner Cloud', configSchema: {} }];
+      const providerDetails = [{ id: 'hetzner', displayName: 'Hetzner Cloud Instances', configSchema: {} }];
       const newState = serviceTypesReducer(state, loadProviderDetailsSuccess({ providerDetails }));
 
       expect(newState.providerDetails).toEqual(providerDetails);

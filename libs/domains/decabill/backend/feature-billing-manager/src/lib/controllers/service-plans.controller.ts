@@ -15,12 +15,16 @@ import {
 } from '@nestjs/common';
 
 import { CreateServicePlanDto } from '../dto/create-service-plan.dto';
+import { CloudInitConfigOrderFieldDto } from '../dto/cloud-init-config-response.dto';
+import { OrderProvisioningOptionDto } from '../dto/order-provisioning-option.dto';
 import { ServicePlanResponseDto } from '../dto/service-plan-response.dto';
 import { UpdateServicePlanDto } from '../dto/update-service-plan.dto';
 import { ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
+import { CloudInitConfigService } from '../services/cloud-init-config.service';
 import { ProviderRegistryService } from '../services/provider-registry.service';
+import { normalizePlanProviderConfigDefaults } from '../utils/cloud-init/plan-provisioning-options.utils';
 import { effectiveSchemaSupportsLocationSelection } from '../utils/provider-location.utils';
 
 @Controller('service-plans')
@@ -29,6 +33,7 @@ export class ServicePlansController {
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly serviceTypesRepository: ServiceTypesRepository,
     private readonly providerRegistry: ProviderRegistryService,
+    private readonly cloudInitConfigService: CloudInitConfigService,
   ) {}
 
   @Get()
@@ -46,6 +51,23 @@ export class ServicePlansController {
     return rows.map((row) => this.mapToResponse(row));
   }
 
+  @Get(':id/order-provisioning-options')
+  async listOrderProvisioningOptions(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<OrderProvisioningOptionDto[]> {
+    const row = await this.servicePlansRepository.findByIdOrThrow(id);
+
+    return this.cloudInitConfigService.buildOrderProvisioningOptions(row.providerConfigDefaults ?? {});
+  }
+
+  @Get(':id/cloud-init-configs/:configId/order-fields')
+  async getCloudInitOrderFields(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) planId: string,
+    @Param('configId', new ParseUUIDPipe({ version: '4' })) configId: string,
+  ): Promise<CloudInitConfigOrderFieldDto[]> {
+    return this.cloudInitConfigService.getOrderFieldsForPlan(planId, configId);
+  }
+
   @Get(':id')
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<ServicePlanResponseDto> {
     const row = await this.servicePlansRepository.findByIdOrThrow(id);
@@ -58,6 +80,9 @@ export class ServicePlansController {
   @UsersRoles(UserRole.ADMIN)
   async create(@Body() dto: CreateServicePlanDto): Promise<ServicePlanResponseDto> {
     await this.assertAllowLocationAllowed(dto.serviceTypeId, dto.allowCustomerLocationSelection === true);
+    const normalizedDefaults = normalizePlanProviderConfigDefaults(dto.providerConfigDefaults);
+
+    await this.cloudInitConfigService.assertActiveConfigForPlanDefaults(dto.serviceTypeId, normalizedDefaults);
     const row = await this.servicePlansRepository.create({
       serviceTypeId: dto.serviceTypeId,
       name: dto.name,
@@ -71,7 +96,7 @@ export class ServicePlansController {
       basePrice: dto.basePrice,
       marginPercent: dto.marginPercent,
       marginFixed: dto.marginFixed,
-      providerConfigDefaults: dto.providerConfigDefaults ?? {},
+      providerConfigDefaults: normalizedDefaults ?? {},
       orderingHighlights: dto.orderingHighlights ?? [],
       allowCustomerLocationSelection: dto.allowCustomerLocationSelection ?? false,
       isActive: dto.isActive ?? true,
@@ -93,6 +118,12 @@ export class ServicePlansController {
       await this.assertAllowLocationAllowed(existing.serviceTypeId, true);
     }
 
+    if (dto.providerConfigDefaults !== undefined) {
+      const normalizedDefaults = normalizePlanProviderConfigDefaults(dto.providerConfigDefaults);
+
+      await this.cloudInitConfigService.assertActiveConfigForPlanDefaults(existing.serviceTypeId, normalizedDefaults);
+    }
+
     const row = await this.servicePlansRepository.update(id, {
       name: dto.name,
       description: dto.description,
@@ -105,7 +136,10 @@ export class ServicePlansController {
       basePrice: dto.basePrice,
       marginPercent: dto.marginPercent,
       marginFixed: dto.marginFixed,
-      providerConfigDefaults: dto.providerConfigDefaults,
+      providerConfigDefaults:
+        dto.providerConfigDefaults !== undefined
+          ? normalizePlanProviderConfigDefaults(dto.providerConfigDefaults)
+          : undefined,
       ...(dto.orderingHighlights !== undefined ? { orderingHighlights: dto.orderingHighlights } : {}),
       ...(dto.allowCustomerLocationSelection !== undefined
         ? { allowCustomerLocationSelection: dto.allowCustomerLocationSelection }

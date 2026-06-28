@@ -355,6 +355,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /service-plans/{id}/cloud-init-configs/{configId}/order-fields:
+    get:
+      summary: Get order form fields for a CloudInit config on a service plan
+      operationId: getServicePlanCloudInitOrderFields
+      parameters:
+        - $ref: '#/components/parameters/ServicePlanId'
+        - name: configId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Fields shown in the customer order form for the selected plan option
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CloudInitConfigOrderField'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Service plan or CloudInit config not found for this plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /service-plans/{id}:
     get:
       summary: Get service plan
@@ -444,6 +475,186 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Service plan not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /cloud-init-configs:
+    get:
+      summary: List CloudInit configs (admin only)
+      operationId: listCloudInitConfigs
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: CloudInit configs (default values masked in list)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CloudInitConfigResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create CloudInit config (admin only)
+      operationId: createCloudInitConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCloudInitConfigDto'
+      responses:
+        '201':
+          description: CloudInit config created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CloudInitConfigResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /cloud-init-configs/{id}:
+    get:
+      summary: Get CloudInit config (admin only)
+      operationId: getCloudInitConfig
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: CloudInit config including decrypted default values
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CloudInitConfigResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: CloudInit config not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Update CloudInit config (admin only)
+      operationId: updateCloudInitConfig
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCloudInitConfigDto'
+      responses:
+        '200':
+          description: CloudInit config updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CloudInitConfigResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: CloudInit config not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete CloudInit config (admin only)
+      operationId: deleteCloudInitConfig
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: CloudInit config deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: CloudInit config not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Config referenced by active service plan
           content:
             application/json:
               schema:
@@ -2497,7 +2708,8 @@ components:
           type: object
           description: |
             Optional JSON schema for provider-specific configuration when creating subscriptions.
-            - `properties`: each property may include `type`, `description`, and optionally `enum` (array of allowed values).
+            - `properties`: each property may include `type`, `description`, optionally `enum` (array of allowed values), `scope` (`server` or `product`), and `productServices` (`controller`, `manager`).
+              Server-scoped fields appear under provider defaults in the plan editor; product-scoped fields appear under product defaults when required by selected customer options.
             - `basePriceFromField`: optional string (e.g. "serverType") indicating which field's selected option drives the plan base price;
               the UI should fetch options from GET .../providers/{id}/server-types and use the selected option's price as base price.
     ServerType:
@@ -2655,6 +2867,11 @@ components:
           description: Decimal string
         providerConfigDefaults:
           type: object
+          description: |
+            Provider defaults merged with customer requestedConfig on order.
+            Provisioning-enabled plans store customer-selectable stacks in provisioningOptions
+            (integrated controller/manager and/or custom CloudInit config ids).
+            Legacy service and cloudInitConfigId keys are derived at persistence time only for single-option plans.
         orderingHighlights:
           type: array
           maxItems: 50
@@ -2746,10 +2963,20 @@ components:
         For service manager, disableSignup and provisioning tokens are ignored; authenticationMethod must be api-key or keycloak (not users).
       additionalProperties: true
       properties:
+        provisioningOptionKey:
+          type: string
+          description: |
+            Customer choice when the plan offers multiple provisioningOptions entries
+            (for example integrated:controller or custom:<cloud-init-config-uuid>).
+            Required when the plan has more than one option; omitted when the plan has exactly one option.
         service:
           type: string
-          enum: [controller, manager]
-          description: Product service - controller (full stack) or manager (agent manager only). Required when using Hetzner schema.
+          enum: [controller, manager, custom]
+          description: Product service kind. Use controller for the full stack, manager for the agent manager only, or custom for admin-defined Docker templates.
+        env:
+          type: object
+          additionalProperties: { type: string }
+          description: Customer-provided environment variables for custom service plans. Merged with admin defaults server-side.
         region:
           type: string
           description: DigitalOcean-style region; use the key matching the service type schema (region or location).
@@ -2867,8 +3094,10 @@ components:
         service:
           {
             type: string,
-            enum: [controller, manager],
-            description: Product service from config snapshot; controller (full stack) or manager (agent manager only). Defaults to controller.,
+            enum: [controller, manager, custom],
+            description: Product service from config snapshot; controller (full stack),
+            manager (agent manager only),
+            or custom Docker template. Defaults to controller.,
           }
     ServerInfoResponse:
       type: object
@@ -3356,3 +3585,129 @@ components:
           properties:
             userEmail: { type: string, format: email, nullable: true }
             isComplete: { type: boolean }
+    CloudInitConfigEnvVariableDefinition:
+      type: object
+      required: [key, label, showInOrderForm, hasDefault]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        description: { type: string, nullable: true }
+        showInOrderForm: { type: boolean }
+        hasDefault:
+          {
+            type: boolean,
+            description: Whether an admin default value exists (value not returned in list responses).,
+          }
+        useRandomDefault:
+          {
+            type: boolean,
+            description: When true,
+            generates a password-like value at order time instead of using a static default.,
+          }
+        randomDefaultLength:
+          {
+            type: integer,
+            minimum: 21,
+            description: Length for generated random defaults.,
+          }
+        randomDefaultSpecialChars:
+          {
+            type: boolean,
+            description: Include special characters in generated random defaults.,
+          }
+    CloudInitConfigResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        key: { type: string }
+        name: { type: string }
+        provisioningMode:
+          type: string
+          enum: [simple, compose-template, user-data-template]
+        description: { type: string, nullable: true }
+        dockerImage: { type: string, nullable: true }
+        containerPort: { type: integer }
+        hostPort: { type: integer }
+        workDir: { type: string }
+        dockerComposeTemplate: { type: string, nullable: true }
+        userDataTemplate: { type: string, nullable: true }
+        environmentVariables:
+          type: array
+          items:
+            $ref: '#/components/schemas/CloudInitConfigEnvVariableDefinition'
+        defaultValues:
+          type: object
+          additionalProperties: { type: string }
+          description: Decrypted admin defaults. Included on admin GET by id and create/update responses only.
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CloudInitConfigOrderField:
+      type: object
+      required: [key, label, required, hasDefault]
+      properties:
+        key: { type: string }
+        label: { type: string }
+        description: { type: string, nullable: true }
+        required:
+          {
+            type: boolean,
+            description: True when the variable has no admin default and must be supplied at order time.,
+          }
+        hasDefault:
+          {
+            type: boolean,
+            description: True when the admin configured a static or server-generated default. The value is not exposed to customers.,
+          }
+    CreateCloudInitConfigDto:
+      type: object
+      required: [key, name]
+      properties:
+        key: { type: string }
+        name: { type: string }
+        description: { type: string }
+        provisioningMode:
+          type: string
+          enum: [simple, compose-template, user-data-template]
+        dockerImage: { type: string }
+        containerPort: { type: integer, minimum: 1, maximum: 65535 }
+        hostPort: { type: integer, minimum: 1, maximum: 65535 }
+        workDir: { type: string }
+        dockerComposeTemplate: { type: string }
+        userDataTemplate: { type: string }
+        environmentVariables:
+          type: array
+          items:
+            type: object
+            required: [key, label, showInOrderForm]
+            properties:
+              key: { type: string }
+              label: { type: string }
+              description: { type: string }
+              showInOrderForm: { type: boolean }
+        defaultValues:
+          type: object
+          additionalProperties: { type: string }
+        isActive: { type: boolean }
+    UpdateCloudInitConfigDto:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        provisioningMode:
+          type: string
+          enum: [simple, compose-template, user-data-template]
+        dockerImage: { type: string }
+        containerPort: { type: integer, minimum: 1, maximum: 65535 }
+        hostPort: { type: integer, minimum: 1, maximum: 65535 }
+        workDir: { type: string }
+        dockerComposeTemplate: { type: string, nullable: true }
+        userDataTemplate: { type: string, nullable: true }
+        environmentVariables:
+          type: array
+          items:
+            $ref: '#/components/schemas/CloudInitConfigEnvVariableDefinition'
+        defaultValues:
+          type: object
+          additionalProperties: { type: string }
+        isActive: { type: boolean }

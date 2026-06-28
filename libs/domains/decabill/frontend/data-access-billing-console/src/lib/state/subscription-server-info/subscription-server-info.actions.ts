@@ -1,6 +1,10 @@
 import { createAction, props } from '@ngrx/store';
 
-import type { BillingDashboardStatusUpdatePayload, ServerInfoResponse } from '../../types/billing.types';
+import type {
+  BillingDashboardStatusUpdatePayload,
+  ProvisioningServiceKind,
+  ServerInfoResponse,
+} from '../../types/billing.types';
 
 export const loadOverviewServerInfo = createAction('[Subscription Server Info] Load Overview Server Info');
 
@@ -9,8 +13,8 @@ export const loadOverviewServerInfoSuccess = createAction(
   props<{
     serverInfoBySubscriptionId: Record<string, ServerInfoResponse>;
     activeItemIdBySubscriptionId: Record<string, string>;
-    /** Service (controller/manager) per subscription id from active item config. */
-    serviceBySubscriptionId?: Record<string, 'controller' | 'manager'>;
+    /** Service kind per subscription id from active item config. */
+    serviceBySubscriptionId?: Record<string, ProvisioningServiceKind>;
   }>(),
 );
 

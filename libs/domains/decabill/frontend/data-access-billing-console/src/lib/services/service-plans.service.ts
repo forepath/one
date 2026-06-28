@@ -6,7 +6,9 @@ import { Observable } from 'rxjs';
 
 import type {
   CreateServicePlanDto,
+  CloudInitConfigOrderField,
   ListParams,
+  OrderProvisioningOption,
   ServicePlanResponse,
   UpdateServicePlanDto,
 } from '../types/billing.types';
@@ -49,6 +51,18 @@ export class ServicePlansService {
    */
   getServicePlan(id: string): Observable<ServicePlanResponse> {
     return this.http.get<ServicePlanResponse>(`${this.apiUrl}/service-plans/${id}`);
+  }
+
+  getOrderProvisioningOptions(planId: string): Observable<OrderProvisioningOption[]> {
+    return this.http.get<OrderProvisioningOption[]>(
+      `${this.apiUrl}/service-plans/${planId}/order-provisioning-options`,
+    );
+  }
+
+  getCloudInitOrderFields(planId: string, configId: string): Observable<CloudInitConfigOrderField[]> {
+    return this.http.get<CloudInitConfigOrderField[]>(
+      `${this.apiUrl}/service-plans/${planId}/cloud-init-configs/${configId}/order-fields`,
+    );
   }
 
   /**

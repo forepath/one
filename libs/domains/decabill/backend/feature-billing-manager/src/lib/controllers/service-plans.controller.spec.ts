@@ -7,6 +7,7 @@ import { BillingIntervalType, ServicePlanEntity } from '../entities/service-plan
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { ProviderRegistryService } from '../services/provider-registry.service';
+import { CloudInitConfigService } from '../services/cloud-init-config.service';
 
 import { ServicePlansController } from './service-plans.controller';
 
@@ -47,6 +48,11 @@ describe('ServicePlansController', () => {
   const providerRegistryStub = {
     getProviders: jest.fn().mockReturnValue([]),
   };
+  const cloudInitConfigServiceStub = {
+    assertActiveConfigForPlanDefaults: jest.fn().mockResolvedValue(undefined),
+    buildOrderProvisioningOptions: jest.fn().mockResolvedValue([]),
+    getOrderFieldsForPlan: jest.fn().mockResolvedValue([]),
+  };
 
   beforeEach(() => {
     serviceTypesRepoStub.findByIdOrThrow.mockReset();
@@ -57,6 +63,8 @@ describe('ServicePlansController', () => {
     });
     providerRegistryStub.getProviders.mockReset();
     providerRegistryStub.getProviders.mockReturnValue([]);
+    cloudInitConfigServiceStub.assertActiveConfigForPlanDefaults.mockReset();
+    cloudInitConfigServiceStub.assertActiveConfigForPlanDefaults.mockResolvedValue(undefined);
   });
 
   function setupRepositoryMock(mock: Partial<jest.Mocked<ServicePlansRepository>>) {
@@ -66,6 +74,7 @@ describe('ServicePlansController', () => {
         { provide: ServicePlansRepository, useValue: mock },
         { provide: ServiceTypesRepository, useValue: serviceTypesRepoStub },
         { provide: ProviderRegistryService, useValue: providerRegistryStub },
+        { provide: CloudInitConfigService, useValue: cloudInitConfigServiceStub },
       ],
     }).compile();
   }
@@ -169,6 +178,26 @@ describe('ServicePlansController', () => {
       expect.not.objectContaining({ orderingHighlights: expect.anything() }),
     );
     expect(update.mock.calls[0][1]).toEqual(expect.objectContaining({ name: 'Renamed' }));
+    expect(cloudInitConfigServiceStub.assertActiveConfigForPlanDefaults).not.toHaveBeenCalled();
+  });
+
+  it('update validates provisioning options only when providerConfigDefaults are sent', async () => {
+    const update = jest.fn().mockResolvedValue(basePlanRow);
+    const moduleRef = await setupRepositoryMock({
+      findAll: jest.fn(),
+      findByIdOrThrow: jest.fn().mockResolvedValue({
+        ...basePlanRow,
+        providerConfigDefaults: { service: 'manager', region: 'fsn1' },
+      }),
+      create: jest.fn(),
+      update,
+      delete: jest.fn(),
+    });
+    const controller = moduleRef.get(ServicePlansController);
+
+    await controller.update('11111111-1111-4111-8111-111111111111', { name: 'Renamed' } as UpdateServicePlanDto);
+
+    expect(cloudInitConfigServiceStub.assertActiveConfigForPlanDefaults).not.toHaveBeenCalled();
   });
 
   it('update passes orderingHighlights when dto includes it', async () => {
@@ -280,5 +309,152 @@ describe('ServicePlansController', () => {
       allowCustomerLocationSelection: true,
     } as CreateServicePlanDto);
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ allowCustomerLocationSelection: true }));
+  });
+
+  it('create validates custom CloudInit config in current tenant', async () => {
+    const create = jest
+      .fn()
+      .mockImplementation((dto: Partial<ServicePlanEntity>) => Promise.resolve({ ...basePlanRow, ...dto }));
+    const moduleRef = await setupRepositoryMock({
+      findAll: jest.fn(),
+      findByIdOrThrow: jest.fn(),
+      create,
+      update: jest.fn(),
+      delete: jest.fn(),
+    });
+    const controller = moduleRef.get(ServicePlansController);
+    const providerConfigDefaults = {
+      provisioningOptions: [{ type: 'custom', cloudInitConfigId: '33333333-3333-4333-8333-333333333333' }],
+      region: 'fsn1',
+      serverType: 'cx23',
+    };
+
+    await controller.create({
+      serviceTypeId: basePlanRow.serviceTypeId,
+      name: 'Custom plan',
+      billingIntervalType: BillingIntervalType.MONTH,
+      billingIntervalValue: 1,
+      providerConfigDefaults,
+    } as CreateServicePlanDto);
+
+    expect(cloudInitConfigServiceStub.assertActiveConfigForPlanDefaults).toHaveBeenCalledWith(
+      basePlanRow.serviceTypeId,
+      expect.objectContaining({
+        provisioningOptions: [{ type: 'custom', cloudInitConfigId: '33333333-3333-4333-8333-333333333333' }],
+        service: 'custom',
+        cloudInitConfigId: '33333333-3333-4333-8333-333333333333',
+      }),
+    );
+  });
+
+  it('create promotes legacy service-only providerConfigDefaults for API clients', async () => {
+    const create = jest
+      .fn()
+      .mockImplementation((dto: Partial<ServicePlanEntity>) => Promise.resolve({ ...basePlanRow, ...dto }));
+    const moduleRef = await setupRepositoryMock({
+      findAll: jest.fn(),
+      findByIdOrThrow: jest.fn(),
+      create,
+      update: jest.fn(),
+      delete: jest.fn(),
+    });
+    const controller = moduleRef.get(ServicePlansController);
+
+    await controller.create({
+      serviceTypeId: basePlanRow.serviceTypeId,
+      name: 'Legacy manager plan',
+      billingIntervalType: BillingIntervalType.MONTH,
+      billingIntervalValue: 1,
+      providerConfigDefaults: {
+        service: 'manager',
+        region: 'fsn1',
+        serverType: 'cx23',
+      },
+    } as CreateServicePlanDto);
+
+    expect(cloudInitConfigServiceStub.assertActiveConfigForPlanDefaults).toHaveBeenCalledWith(
+      basePlanRow.serviceTypeId,
+      expect.objectContaining({
+        provisioningOptions: [{ type: 'integrated', service: 'manager' }],
+        service: 'manager',
+      }),
+    );
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        providerConfigDefaults: expect.objectContaining({
+          provisioningOptions: [{ type: 'integrated', service: 'manager' }],
+          service: 'manager',
+        }),
+      }),
+    );
+  });
+
+  it('update promotes legacy service-only providerConfigDefaults for API clients', async () => {
+    const update = jest.fn().mockResolvedValue(basePlanRow);
+    const moduleRef = await setupRepositoryMock({
+      findAll: jest.fn(),
+      findByIdOrThrow: jest.fn().mockResolvedValue(basePlanRow),
+      create: jest.fn(),
+      update,
+      delete: jest.fn(),
+    });
+    const controller = moduleRef.get(ServicePlansController);
+
+    await controller.update('11111111-1111-4111-8111-111111111111', {
+      providerConfigDefaults: {
+        service: 'manager',
+        region: 'fsn1',
+        serverType: 'cx23',
+      },
+    } as UpdateServicePlanDto);
+
+    expect(update).toHaveBeenCalledWith(
+      '11111111-1111-4111-8111-111111111111',
+      expect.objectContaining({
+        providerConfigDefaults: expect.objectContaining({
+          provisioningOptions: [{ type: 'integrated', service: 'manager' }],
+          service: 'manager',
+        }),
+      }),
+    );
+  });
+
+  it('lists order provisioning options for a plan', async () => {
+    const options = [
+      { optionKey: 'integrated:controller', type: 'integrated', service: 'controller', label: 'Agenstra Controller' },
+    ];
+    cloudInitConfigServiceStub.buildOrderProvisioningOptions.mockResolvedValue(options);
+    const moduleRef = await setupRepositoryMock({
+      findAll: jest.fn(),
+      findByIdOrThrow: jest.fn().mockResolvedValue(basePlanRow),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    });
+    const controller = moduleRef.get(ServicePlansController);
+
+    await expect(controller.listOrderProvisioningOptions(basePlanRow.id)).resolves.toEqual(options);
+    expect(cloudInitConfigServiceStub.buildOrderProvisioningOptions).toHaveBeenCalledWith({});
+  });
+
+  it('returns plan-scoped cloud init order fields', async () => {
+    const orderFields = [{ key: 'API_KEY', label: 'API Key', required: true, hasDefault: false }];
+    cloudInitConfigServiceStub.getOrderFieldsForPlan.mockResolvedValue(orderFields);
+    const moduleRef = await setupRepositoryMock({
+      findAll: jest.fn(),
+      findByIdOrThrow: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    });
+    const controller = moduleRef.get(ServicePlansController);
+
+    await expect(
+      controller.getCloudInitOrderFields(basePlanRow.id, '33333333-3333-4333-8333-333333333333'),
+    ).resolves.toEqual(orderFields);
+    expect(cloudInitConfigServiceStub.getOrderFieldsForPlan).toHaveBeenCalledWith(
+      basePlanRow.id,
+      '33333333-3333-4333-8333-333333333333',
+    );
   });
 });

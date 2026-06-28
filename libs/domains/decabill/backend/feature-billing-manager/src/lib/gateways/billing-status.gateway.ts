@@ -45,7 +45,7 @@ function clampPollIntervalMs(requested: number | undefined): number {
 export interface DashboardStatusItemPayload {
   subscriptionId: string;
   itemId: string;
-  service: 'controller' | 'manager';
+  service: 'controller' | 'manager' | 'custom';
   name: string;
   publicIp: string;
   privateIp?: string;

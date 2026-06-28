@@ -1,6 +1,6 @@
 <div class="service-types-container border-top d-flex flex-column h-100">
   <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureServiceTypes-title">Service Types</h5>
+    <h5 class="mb-0 fw-semibold" i18n="@@featureServiceTypes-title">Service Providers</h5>
     <button
       type="button"
       class="btn btn-sm btn-primary"
@@ -8,7 +8,7 @@
       [disabled]="(loadingAny$ | async) === true"
     >
       <i class="bi bi-plus-circle me-1"></i>
-      <span i18n="@@featureServiceTypes-add">Add service type</span>
+      <span i18n="@@featureServiceTypes-add">Add service provider</span>
     </button>
   </div>
 
@@ -70,7 +70,7 @@
                 <div
                   class="btn-group btn-group-sm flex-shrink-0"
                   role="group"
-                  aria-label="Service type actions"
+                  aria-label="Service provider actions"
                   i18n-aria-label="@@featureServiceTypes-serviceTypeActionsAria"
                 >
                   <button
@@ -78,7 +78,7 @@
                     class="btn btn-outline-primary"
                     (click)="openEditModal(st)"
                     [disabled]="(loadingAny$ | async) === true"
-                    title="Edit service type"
+                    title="Edit service provider"
                     i18n-title="@@featureServiceTypes-editButtonTitle"
                   >
                     <i class="bi bi-pencil" aria-hidden="true"></i>
@@ -88,7 +88,7 @@
                     class="btn btn-outline-danger"
                     (click)="openDeleteConfirm(st)"
                     [disabled]="(loadingAny$ | async) === true"
-                    title="Delete service type"
+                    title="Delete service provider"
                     i18n-title="@@featureServiceTypes-deleteButtonTitle"
                   >
                     <i class="bi bi-trash" aria-hidden="true"></i>
@@ -116,7 +116,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="createServiceTypeModalLabel" i18n="@@featureServiceTypes-createTitle">
-          Add service type
+          Add service provider
         </h5>
         <button
           type="button"
@@ -254,7 +254,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="editServiceTypeModalLabel" i18n="@@featureServiceTypes-editTitle">
-          Edit service type
+          Edit service provider
         </h5>
         <button
           type="button"
@@ -370,7 +370,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="deleteServiceTypeModalLabel" i18n="@@featureServiceTypes-deleteTitle">
-          Delete service type?
+          Delete service provider?
         </h5>
         <button
           type="button"

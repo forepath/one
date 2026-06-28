@@ -1,0 +1,31 @@
+<div class="monaco-editor-container d-flex flex-column" [style.height]="editorHeight()">
+  <div class="editor-toolbar d-flex align-items-center p-2 border rounded-top bg-body-tertiary">
+    <div class="btn-group btn-group-sm" role="group">
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary"
+        (click)="undo()"
+        [disabled]="readOnly()"
+        title="Undo (Ctrl+Z)"
+      >
+        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary"
+        (click)="redo()"
+        [disabled]="readOnly()"
+        title="Redo (Ctrl+Y)"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+  <div class="editor-section d-flex flex-column flex-grow-1 border border-top-0 rounded-bottom overflow-hidden">
+    <ngx-monaco-editor
+      class="flex-grow-1"
+      [options]="editorOptions()"
+      (onInit)="onEditorInit($event)"
+    ></ngx-monaco-editor>
+  </div>
+</div>

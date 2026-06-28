@@ -6,12 +6,15 @@ export * from './lib/types/billing.types';
 
 // Utils
 export * from './lib/utils/server-info-provider.utils';
+export * from './lib/utils/plan-provisioning-options.utils';
+export * from './lib/utils/provider-config-schema.utils';
 
 // Constants
 export * from './lib/constants/supported-countries';
 
 // Services
 export * from './lib/services/service-types.service';
+export * from './lib/services/cloud-init-configs.service';
 export * from './lib/services/service-plans.service';
 export * from './lib/services/subscriptions.service';
 export * from './lib/services/backorders.service';
@@ -29,6 +32,13 @@ export * from './lib/state/service-types/service-types.effects';
 export * from './lib/state/service-types/service-types.facade';
 export * from './lib/state/service-types/service-types.reducer';
 export * from './lib/state/service-types/service-types.selectors';
+
+// CloudInit Configs State
+export * from './lib/state/cloud-init-configs/cloud-init-configs.actions';
+export * from './lib/state/cloud-init-configs/cloud-init-configs.effects';
+export * from './lib/state/cloud-init-configs/cloud-init-configs.facade';
+export * from './lib/state/cloud-init-configs/cloud-init-configs.reducer';
+export * from './lib/state/cloud-init-configs/cloud-init-configs.selectors';
 
 // Service Plans State
 export * from './lib/state/service-plans/service-plans.actions';

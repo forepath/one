@@ -6,14 +6,11 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+import { buildProvisioningUserData, normalizeCloudInitService } from '../utils/cloud-init/cloud-init-dispatch.utils';
 import {
-  buildBillingCloudInitUserData,
-  buildCloudInitConfigFromRequest,
-} from '../utils/cloud-init/agent-controller.utils';
-import {
-  buildAgentManagerCloudInitConfigFromRequest,
-  buildAgentManagerCloudInitUserData,
-} from '../utils/cloud-init/agent-manager.utils';
+  applyResolvedProvisioningSelectionToConfig,
+  resolveOrderProvisioningSelection,
+} from '../utils/cloud-init/plan-provisioning-options.utils';
 import { validateConfigSchema } from '../utils/config-validation.utils';
 import {
   mirrorGeographyInConfig,
@@ -27,6 +24,7 @@ import { BackorderService } from './backorder.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CancellationPolicyService } from './cancellation-policy.service';
 import { CloudflareDnsService } from './cloudflare-dns.service';
+import { CloudInitConfigService } from './cloud-init-config.service';
 import { CustomerProfilesService } from './customer-profiles.service';
 import { HostnameReservationService } from './hostname-reservation.service';
 import { ProvisioningService } from './provisioning.service';
@@ -48,6 +46,7 @@ export class SubscriptionService {
     private readonly hostnameReservationService: HostnameReservationService,
     private readonly cloudflareDnsService: CloudflareDnsService,
     private readonly customerProfilesService: CustomerProfilesService,
+    private readonly cloudInitConfigService: CloudInitConfigService,
   ) {}
 
   async createSubscription(
@@ -75,6 +74,15 @@ export class SubscriptionService {
       ...(baseConfig || {}),
       ...sanitizedRequested,
     };
+
+    try {
+      const selection = resolveOrderProvisioningSelection(baseConfig, sanitizedRequested);
+
+      applyResolvedProvisioningSelectionToConfig(effectiveConfig, selection);
+    } catch (error) {
+      throw new BadRequestException((error as Error).message);
+    }
+
     const provider = serviceType.provider;
 
     if (provider === 'hetzner' || provider === 'digital-ocean') {
@@ -89,10 +97,29 @@ export class SubscriptionService {
       throw new BadRequestException(validationErrors.join('; '));
     }
 
-    const service = (effectiveConfig.service as string) ?? 'controller';
+    const service = normalizeCloudInitService(effectiveConfig.service as string | undefined);
 
     if (service === 'manager' && (effectiveConfig.authenticationMethod as string) === 'users') {
       effectiveConfig.authenticationMethod = 'api-key';
+    }
+
+    let customTemplate;
+    let resolvedCustomEnv: Record<string, string> | undefined;
+
+    if (service === 'custom') {
+      const cloudInitConfigId = effectiveConfig.cloudInitConfigId as string | undefined;
+
+      if (!cloudInitConfigId?.trim()) {
+        throw new BadRequestException('cloudInitConfigId is required when service is custom');
+      }
+
+      customTemplate = await this.cloudInitConfigService.findByIdForProvisioning(cloudInitConfigId.trim());
+      const requestedEnv = (sanitizedRequested?.['env'] ?? effectiveConfig['env']) as
+        | Record<string, unknown>
+        | undefined;
+
+      resolvedCustomEnv = this.cloudInitConfigService.resolveEnvironmentVariables(customTemplate, requestedEnv);
+      effectiveConfig.env = resolvedCustomEnv;
     }
 
     const region = resolveProvisioningRegion(effectiveConfig, provider);
@@ -144,12 +171,14 @@ export class SubscriptionService {
         await this.subscriptionItemsRepository.updateSshPrivateKey(subscriptionItem.id, privateKey);
         effectiveConfig.sshPublicKey = publicKey;
         const baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
-        const userData =
-          service === 'manager'
-            ? buildAgentManagerCloudInitUserData(
-                buildAgentManagerCloudInitConfigFromRequest(effectiveConfig, hostname, baseDomain),
-              )
-            : buildBillingCloudInitUserData(buildCloudInitConfigFromRequest(effectiveConfig, hostname, baseDomain));
+        const userData = buildProvisioningUserData({
+          service,
+          effectiveConfig,
+          hostname,
+          baseDomain,
+          customTemplate,
+          resolvedCustomEnv,
+        });
         const provisioningConfig = {
           name: hostname,
           serverType,

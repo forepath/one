@@ -1,6 +1,7 @@
 export interface ConfigSchemaProperty {
   type?: 'string' | 'number' | 'boolean' | 'object' | string;
   enum?: unknown[];
+  visible?: boolean;
 }
 
 export interface ConfigSchema {

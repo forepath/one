@@ -247,10 +247,8 @@
         <target>Nach Titel oder ID suchen</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-selectedParentTicket" datatype="html">
-        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentTicketId }}" />
-        </source>
-        <target>Ausgewählt: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentTicketId }}" />
-        </target>
+        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentTicketId }}"/> </source>
+        <target> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentTicketId }}"/> </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-clearSelection" datatype="html">
         <source> Clear </source>
@@ -281,16 +279,12 @@
         <target>Ordner-Titel oder SHA suchen</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-folderSuggestRow" datatype="html">
-        <source> Folder · <x id="INTERPOLATION" equiv-text="{{ n.title }}" />
-        </source>
-        <target>Ordner · <x id="INTERPOLATION" equiv-text="{{ n.title }}" />
-        </target>
+        <source> Folder · <x id="INTERPOLATION" equiv-text="{{ n.title }}"/> </source>
+        <target> Folder · <x id="INTERPOLATION" equiv-text="{{ n.title }}"/> </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-selectedParentFolder" datatype="html">
-        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentFolderId }}" />
-        </source>
-        <target>Ausgewählt: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentFolderId }}" />
-        </target>
+        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentFolderId }}"/> </source>
+        <target> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentFolderId }}"/> </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-editConnectionTitleHeading" datatype="html">
         <source> Edit connection </source>
@@ -313,8 +307,8 @@
         <target>Neuer API-Token (optional)</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-editConfigHeading" datatype="html">
-        <source> Edit import config (<x id="INTERPOLATION" equiv-text="{{ configToEdit.importKind }}" />) </source>
-        <target>Import-Konfiguration bearbeiten (<x id="INTERPOLATION" equiv-text="{{ configToEdit.importKind }}" />)</target>
+        <source> Edit import config (<x id="INTERPOLATION" equiv-text="{{ configToEdit.importKind }}"/>) </source>
+        <target> Edit import config (<x id="INTERPOLATION" equiv-text="{{ configToEdit.importKind }}"/>) </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-editBoardId" datatype="html">
         <source>Board ID</source>
@@ -325,10 +319,8 @@
         <target>Übergeordnetes Ticket (optional)</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-selectedParentTicketEdit" datatype="html">
-        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentTicketId }}" />
-        </source>
-        <target>Ausgewählt: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentTicketId }}" />
-        </target>
+        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentTicketId }}"/> </source>
+        <target> Selected: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentTicketId }}"/> </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-editSpaceKey" datatype="html">
         <source>Space key</source>
@@ -343,18 +335,16 @@
         <target>Übergeordneter Ordner (optional)</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-selectedParentFolderEdit" datatype="html">
-        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentFolderId }}" />
-        </source>
-        <target>Ausgewählt: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentFolderId }}" />
-        </target>
+        <source> Selected: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentFolderId }}"/> </source>
+        <target> Selected: <x id="INTERPOLATION" equiv-text="{{ editConfig.agenstraParentFolderId }}"/> </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-deleteConnectionHeading" datatype="html">
         <source> Delete connection </source>
         <target>Verbindung löschen</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-deleteConnectionBody" datatype="html">
-        <source> Delete connection "<x id="INTERPOLATION" equiv-text="{{ connectionLabel(connectionPendingDelete) }}" />"? Related import configs may stop working. </source>
-        <target> Verbindung "<x id="INTERPOLATION" equiv-text="{{ connectionLabel(connectionPendingDelete) }}" />" löschen? Zugehörige Import-Konfigurationen funktionieren möglicherweise nicht mehr. </target>
+        <source> Delete connection &quot;<x id="INTERPOLATION" equiv-text="{{ connectionLabel(connectionPendingDelete) }}"/>&quot;? Related import configs may stop working. </source>
+        <target> Delete connection &quot;<x id="INTERPOLATION" equiv-text="{{ connectionLabel(connectionPendingDelete) }}"/>&quot;? Related import configs may stop working. </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-deleteConnectionConfirm" datatype="html">
         <source> Delete connection </source>
@@ -365,9 +355,8 @@
         <target> Import-Konfiguration löschen </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-deleteConfigBody" datatype="html">
-        <source> Delete <x id="INTERPOLATION" equiv-text="{{ configPendingDelete.importKind }}" /> import config for workspace <x id="INTERPOLATION_1" equiv-text="{{ clientName(configPendingDelete.clientId) }}" />? </source>
-        <target>
-          <x id="INTERPOLATION" equiv-text="{{ configPendingDelete.importKind }}" />-Import-Konfiguration für den Arbeitsbereich <x id="INTERPOLATION_1" equiv-text="{{ clientName(configPendingDelete.clientId) }}" /> löschen? </target>
+        <source> Delete <x id="INTERPOLATION" equiv-text="{{ configPendingDelete.importKind }}"/> import config for workspace <x id="INTERPOLATION_1" equiv-text="{{ clientName(configPendingDelete.clientId) }}"/>? </source>
+        <target> Delete <x id="INTERPOLATION" equiv-text="{{ configPendingDelete.importKind }}"/> import config for workspace <x id="INTERPOLATION_1" equiv-text="{{ clientName(configPendingDelete.clientId) }}"/>? </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-deleteConfigConfirm" datatype="html">
         <source> Delete config </source>
@@ -378,8 +367,8 @@
         <target> Synchronisations-Markierungen löschen </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-clearMarkersBody" datatype="html">
-        <source> Clear all sync markers for this <x id="INTERPOLATION" equiv-text="{{ configPendingClearMarkers.importKind }}" /> config? External items may be re-imported as duplicates. </source>
-        <target> Alle Synchronisations-Markierungen für diese <x id="INTERPOLATION" equiv-text="{{ configPendingClearMarkers.importKind }}" />-Konfiguration löschen? Externe Elemente könnten erneut importiert und als Duplikate angelegt werden. </target>
+        <source> Clear all sync markers for this <x id="INTERPOLATION" equiv-text="{{ configPendingClearMarkers.importKind }}"/> config? External items may be re-imported as duplicates. </source>
+        <target> Clear all sync markers for this <x id="INTERPOLATION" equiv-text="{{ configPendingClearMarkers.importKind }}"/> config? External items may be re-imported as duplicates. </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-clearMarkersConfirm" datatype="html">
         <source> Clear markers </source>
@@ -426,20 +415,12 @@
         <target>—</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-ticketPick" datatype="html">
-        <source>
-          <x id="title" equiv-text="t.title" /> · <x id="sha" equiv-text="short" />
-        </source>
-        <target>
-          <x id="title" equiv-text="t.title" /> · <x id="sha" equiv-text="short" />
-        </target>
+        <source><x id="title" equiv-text="t.title"/> · <x id="sha" equiv-text="short"/></source>
+        <target><x id="title" equiv-text="t.title"/> · <x id="sha" equiv-text="short"/></target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-folderPick" datatype="html">
-        <source>
-          <x id="title" equiv-text="n.title" /> · <x id="sha" equiv-text="n.shas.short" />
-        </source>
-        <target>
-          <x id="title" equiv-text="n.title" /> · <x id="sha" equiv-text="n.shas.short" />
-        </target>
+        <source><x id="title" equiv-text="n.title"/> · <x id="sha" equiv-text="n.shas.short"/></source>
+        <target><x id="title" equiv-text="n.title"/> · <x id="sha" equiv-text="n.shas.short"/></target>
       </trans-unit>
       <trans-unit id="featureAudit-filtersTitle" datatype="html">
         <source>Filters</source>
@@ -554,9 +535,8 @@
         <target>Keine Einträge</target>
       </trans-unit>
       <trans-unit id="featureAudit-showingOf" datatype="html">
-        <source>Showing <x id="INTERPOLATION" equiv-text="{{ list.data.length }}" /> of <x id="INTERPOLATION_1" equiv-text="{{ list.total }}" />
-        </source>
-        <target>Es werden <x id="INTERPOLATION" equiv-text="{{ list.data.length }}" /> von <x id="INTERPOLATION_1" equiv-text="{{ list.total }}" /> angezeigt</target>
+        <source>Showing <x id="INTERPOLATION" equiv-text="{{ list.data.length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ list.total }}"/></source>
+        <target>Showing <x id="INTERPOLATION" equiv-text="{{ list.data.length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ list.total }}"/></target>
       </trans-unit>
       <trans-unit id="featureAudit-prev" datatype="html">
         <source>Previous</source>
@@ -731,24 +711,20 @@
         <target>Anreicherung</target>
       </trans-unit>
       <trans-unit id="featureChat-agentEventSummaryToolCall" datatype="html">
-        <source>Tool call · <x id="toolName" equiv-text="name" />
-        </source>
-        <target>Tool-Aufruf · <x id="toolName" equiv-text="name" />
-        </target>
+        <source>Tool call · <x id="toolName" equiv-text="name"/></source>
+        <target>Tool call · <x id="toolName" equiv-text="name"/></target>
       </trans-unit>
       <trans-unit id="featureChat-agentEventSummaryEnrichmentResult" datatype="html">
         <source>Enrichment result</source>
         <target>Anreicherungsergebnis</target>
       </trans-unit>
       <trans-unit id="featureChat-agentEventSummaryToolResult" datatype="html">
-        <source>Tool result · <x id="toolName" equiv-text="name" />
-        </source>
-        <target>Tool-Ergebnis · <x id="toolName" equiv-text="name" />
-        </target>
+        <source>Tool result · <x id="toolName" equiv-text="name"/></source>
+        <target>Tool result · <x id="toolName" equiv-text="name"/></target>
       </trans-unit>
       <trans-unit id="featureChat-agentEventSummaryErrorWithCode" datatype="html">
-        <source>Error (<x id="errorCode" equiv-text="code" />)</source>
-        <target>Fehler (<x id="errorCode" equiv-text="code" />)</target>
+        <source>Error (<x id="errorCode" equiv-text="code"/>)</source>
+        <target>Error (<x id="errorCode" equiv-text="code"/>)</target>
       </trans-unit>
       <trans-unit id="featureChat-agentToolInvocationPopover" datatype="html">
         <source>Tool invocation</source>
@@ -1007,9 +983,8 @@
         <target>Verbinde erneut mit Arbeitsbereich...</target>
       </trans-unit>
       <trans-unit id="featureChat-workspaceConnectionFailed" datatype="html">
-        <source>Workspace connection failed: <x id="INTERPOLATION" equiv-text="{{ remoteError }}" />
-        </source>
-        <target>Verbindung zum Arbeitsbereich fehlgeschlagen: </target>
+        <source>Workspace connection failed: <x id="INTERPOLATION" equiv-text="{{ remoteError }}"/></source>
+        <target>Workspace connection failed: <x id="INTERPOLATION" equiv-text="{{ remoteError }}"/></target>
       </trans-unit>
       <trans-unit id="featureChat-dismissEnhanceError" datatype="html">
         <source>Dismiss</source>
@@ -1072,8 +1047,8 @@
         <target> Schritt 1: OpenClaw-Konfiguration anlegen </target>
       </trans-unit>
       <trans-unit id="featureChat-gatewayQuickstartStep1Intro" datatype="html">
-        <source> Create the default OpenClaw configuration file in the container. This writes <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code class=&quot;text-primary border border-primary rounded px-1&quot;&gt;" />.openclaw/openclaw.json<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;" /> so the gateway can load its settings. </source>
-        <target> Legen Sie die Standard-OpenClaw-Konfigurationsdatei im Container an. Dabei wird .openclaw/openclaw.json geschrieben, damit das Gateway seine Einstellungen laden kann. </target>
+        <source> Create the default OpenClaw configuration file in the container. This writes <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code class=&quot;text-primary border border-primary rounded px-1&quot;&gt;"/>.openclaw/openclaw.json<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> so the gateway can load its settings. </source>
+        <target> Create the default OpenClaw configuration file in the container. This writes <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code class=&quot;text-primary border border-primary rounded px-1&quot;&gt;"/>.openclaw/openclaw.json<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> so the gateway can load its settings. </target>
       </trans-unit>
       <trans-unit id="featureChat-gatewayQuickstartCreateConfig" datatype="html">
         <source>Create OpenClaw configuration</source>
@@ -1148,12 +1123,10 @@
         <target>Arbeitsbereich löschen</target>
       </trans-unit>
       <trans-unit id="featureChat-deleteWorkspaceConfirm" datatype="html">
-        <source> Are you sure you want to delete the workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}" />
-          <x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong           &gt;" />? </source>
-        <target> Sind Sie sicher, dass Sie den Arbeitsbereich <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}" />
-          <x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong           &gt;" /> löschen möchten? </target>
+        <source> Are you sure you want to delete the workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+          &gt;"/>? </source>
+        <target> Are you sure you want to delete the workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+          &gt;"/>? </target>
       </trans-unit>
       <trans-unit id="featureChat-provisionedServerDetected" datatype="html">
         <source>Provisioned Server Detected</source>
@@ -1180,12 +1153,10 @@
         <target>Umgebung löschen</target>
       </trans-unit>
       <trans-unit id="featureChat-deleteEnvironmentConfirm" datatype="html">
-        <source> Are you sure you want to delete the environment <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}" />
-          <x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong           &gt;" />? </source>
-        <target> Sind Sie sicher, dass Sie die Umgebung <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}" />
-          <x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong           &gt;" /> löschen möchten? </target>
+        <source> Are you sure you want to delete the environment <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+          &gt;"/>? </source>
+        <target> Are you sure you want to delete the environment <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+          &gt;"/>? </target>
       </trans-unit>
       <trans-unit id="featureChat-existingWorkspace" datatype="html">
         <source> Existing Workspace </source>
@@ -1196,45 +1167,40 @@
         <target>Server bereitstellen</target>
       </trans-unit>
       <trans-unit id="featureChat-nameLabel" datatype="html">
-        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
-        <target>Name *</target>
+        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
       </trans-unit>
       <trans-unit id="featureChat-descriptionLabel" datatype="html">
         <source>Description</source>
         <target>Beschreibung</target>
       </trans-unit>
       <trans-unit id="featureChat-providerLabel" datatype="html">
-        <source>Provider <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
-        <target>Anbieter *</target>
+        <source>Provider <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Provider <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
       </trans-unit>
       <trans-unit id="featureChat-selectProvider" datatype="html">
         <source>Select provider</source>
         <target>Anbieter auswählen</target>
       </trans-unit>
       <trans-unit id="featureChat-serverTypeLabel" datatype="html">
-        <source>Server Type <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
-        <target>Servertyp *</target>
+        <source>Server Type <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Server Type <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
       </trans-unit>
       <trans-unit id="featureChat-selectServerType" datatype="html">
         <source>Select server type</source>
         <target>Servertyp auswählen</target>
       </trans-unit>
       <trans-unit id="featureChat-endpointLabel" datatype="html">
-        <source>Endpoint <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
-        <target>Endpunkt *</target>
+        <source>Endpoint <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Endpoint <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
       </trans-unit>
       <trans-unit id="featureChat-endpointPlaceholder" datatype="html">
         <source>https://example.com</source>
         <target>https://example.com</target>
       </trans-unit>
       <trans-unit id="featureChat-authTypeLabel" datatype="html">
-        <source>Authentication Type <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
-        <target>Authentifizierungstyp *</target>
+        <source>Authentication Type <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Authentication Type <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
       </trans-unit>
       <trans-unit id="featureChat-apiKeyAutoGeneratePlaceholder" datatype="html">
         <source>Leave empty to auto-generate</source>
@@ -1297,8 +1263,8 @@
         <target>Diese Funktionen ignorieren teilweise die internen Berechtigungen und können es Benutzern erlauben, die Dateien des Agenten-Containers ohne Einschränkungen zu ändern.</target>
       </trans-unit>
       <trans-unit id="featureChat-createVirtualWorkspaceHint" datatype="html">
-        <source>Enable VNC access to the environment's virtual workspace. Defaults to disabled.</source>
-        <target>VNC-Zugang zum virtuellen Arbeitsbereich der Umgebung aktivieren. Standardmäßig deaktiviert.</target>
+        <source>Enable VNC access to the environment&apos;s virtual workspace. Defaults to disabled.</source>
+        <target>Enable VNC access to the environment&apos;s virtual workspace. Defaults to disabled.</target>
       </trans-unit>
       <trans-unit id="featureChat-createSshConnectionHint" datatype="html">
         <source>Enable SSH access to the environment container. Defaults to disabled.</source>
@@ -1365,8 +1331,8 @@
         <target>Override löschen</target>
       </trans-unit>
       <trans-unit id="featureChat-envVarsWarning" datatype="html">
-        <source>Changing the environment variables will re-create the agent's container. Context may be lost.</source>
-        <target>Das Ändern der Umgebungsvariablen erstellt den Container des Agents neu. Kontext kann verloren gehen.</target>
+        <source>Changing the environment variables will re-create the agent&apos;s container. Context may be lost.</source>
+        <target>Changing the environment variables will re-create the agent&apos;s container. Context may be lost.</target>
       </trans-unit>
       <trans-unit id="featureChat-close" datatype="html">
         <source>Close</source>
@@ -1461,16 +1427,8 @@
         <target> Zurücksetzen </target>
       </trans-unit>
       <trans-unit id="featureTicketAutonomyManager-save" datatype="html">
-        <source>
-          <x id="START_BLOCK_IF" equiv-text="@if (autonomySaving()) {" />
-          <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;" />
-          <x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-          <x id="CLOSE_BLOCK_IF" equiv-text="}" /> Save </source>
-        <target>
-          <x id="START_BLOCK_IF" equiv-text="@if (autonomySaving()) {" />
-          <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;" />
-          <x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-          <x id="CLOSE_BLOCK_IF" equiv-text="}" /> Speichern </target>
+        <source><x id="START_BLOCK_IF" equiv-text="@if (autonomySaving()) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/> Save </source>
+        <target><x id="START_BLOCK_IF" equiv-text="@if (autonomySaving()) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/> Save </target>
       </trans-unit>
       <trans-unit id="featureChat-manageClientUsersModalTitle" datatype="html">
         <source> Manage Workspace Users </source>
@@ -1525,14 +1483,12 @@
         <target>Workspace-Dateien und Metadaten einbeziehen</target>
       </trans-unit>
       <trans-unit id="featureChat-contextToolbarEnvTitle" datatype="html">
-        <source>Environment context: <x id="agentName" equiv-text="agent.name" />
-        </source>
-        <target>Umgebungskontext: </target>
+        <source>Environment context: <x id="agentName" equiv-text="agent.name"/></source>
+        <target>Environment context: <x id="agentName" equiv-text="agent.name"/></target>
       </trans-unit>
       <trans-unit id="featureChat-contextToolbarEnvUnknownTitle" datatype="html">
-        <source>Environment: <x id="agentId" equiv-text="id" />
-        </source>
-        <target>Umgebung: </target>
+        <source>Environment: <x id="agentId" equiv-text="id"/></source>
+        <target>Environment: <x id="agentId" equiv-text="id"/></target>
       </trans-unit>
       <trans-unit id="featureChat-hideFileTree" datatype="html">
         <source>Hide File Tree</source>
@@ -1727,10 +1683,8 @@
         <target>Import</target>
       </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
-        <source>Role <x id="role" equiv-text="role" />
-        </source>
-        <target>Rolle <x id="role" equiv-text="role" />
-        </target>
+        <source>Role <x id="role" equiv-text="role"/></source>
+        <target>Role <x id="role" equiv-text="role"/></target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-loadingConfig" datatype="html">
         <source>Loading configuration...</source>
@@ -2025,14 +1979,12 @@
         <target>Keine Jobs verfügbar</target>
       </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-startedAt" datatype="html">
-        <source> Started: <x id="INTERPOLATION" equiv-text="{{ formatDate(job.startedAt) }}" />
-        </source>
-        <target> Gestartet:  </target>
+        <source> Started: <x id="INTERPOLATION" equiv-text="{{ formatDate(job.startedAt) }}"/> </source>
+        <target> Started: <x id="INTERPOLATION" equiv-text="{{ formatDate(job.startedAt) }}"/> </target>
       </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-completedAt" datatype="html">
-        <source> Completed: <x id="INTERPOLATION" equiv-text="{{ formatDate(job.completedAt) }}" />
-        </source>
-        <target> Abgeschlossen:  </target>
+        <source> Completed: <x id="INTERPOLATION" equiv-text="{{ formatDate(job.completedAt) }}"/> </source>
+        <target> Completed: <x id="INTERPOLATION" equiv-text="{{ formatDate(job.completedAt) }}"/> </target>
       </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-loadingLogs" datatype="html">
         <source>Loading logs...</source>
@@ -2187,26 +2139,20 @@
         <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureFileEditor-externalChangesMessage" datatype="html">
-        <source> The file <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ fileUpdateNotification()?.filePath }}" />
-          <x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> has been updated by another user while you have unsaved changes. </source>
-        <target> Die Datei <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ fileUpdateNotification()?.filePath }}" />
-          <x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> wurde von einem anderen Benutzer aktualisiert, während Sie ungespeicherte Änderungen haben. </target>
+        <source> The file <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ fileUpdateNotification()?.filePath }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> has been updated by another user while you have unsaved changes. </source>
+        <target> The file <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ fileUpdateNotification()?.filePath }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> has been updated by another user while you have unsaved changes. </target>
       </trans-unit>
       <trans-unit id="featureFileEditor-externalChangesQuestion" datatype="html">
         <source>What would you like to do?</source>
         <target>Was möchten Sie tun?</target>
       </trans-unit>
       <trans-unit id="featureFileEditor-externalChangesAcceptOption" datatype="html">
-        <source>
-          <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Accept:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Reload the file from the server (your unsaved changes will be lost) </source>
-        <target>Akzeptieren: Datei vom Server neu laden (Ihre ungespeicherten Änderungen gehen verloren) </target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Accept:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Reload the file from the server (your unsaved changes will be lost) </source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Accept:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Reload the file from the server (your unsaved changes will be lost) </target>
       </trans-unit>
       <trans-unit id="featureFileEditor-externalChangesRejectOption" datatype="html">
-        <source>
-          <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Reject:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Keep your local changes and override the external changes when you save </source>
-        <target>Ablehnen: Lokale Änderungen behalten und externe Änderungen beim Speichern überschreiben </target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Reject:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Keep your local changes and override the external changes when you save </source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Reject:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Keep your local changes and override the external changes when you save </target>
       </trans-unit>
       <trans-unit id="featureFileEditor-rejectButton" datatype="html">
         <source> Reject </source>
@@ -2221,12 +2167,10 @@
         <target>Neuere Änderungen überschreiben?</target>
       </trans-unit>
       <trans-unit id="featureFileEditor-overrideNewerMessage" datatype="html">
-        <source> You previously rejected external changes to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}" />
-          <x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong           &gt;" />. Saving now will override those newer changes. </source>
-        <target> Sie haben externe Änderungen an <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}" />
-          <x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong           &gt;" /> zuvor abgelehnt. Beim Speichern werden diese neueren Änderungen überschrieben. </target>
+        <source> You previously rejected external changes to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+          &gt;"/>. Saving now will override those newer changes. </source>
+        <target> You previously rejected external changes to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+          &gt;"/>. Saving now will override those newer changes. </target>
       </trans-unit>
       <trans-unit id="featureFileEditor-overrideNewerConfirm" datatype="html">
         <source>Are you sure you want to proceed?</source>
@@ -2337,12 +2281,12 @@
         <target>Zielpfad</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveDestinationPlaceholder" datatype="html">
-        <source>Enter destination path (e.g., 'folder' or 'folder/subfolder')</source>
-        <target>Zielpfad eingeben (z.B. 'ordner' oder 'ordner/unterordner')</target>
+        <source>Enter destination path (e.g., &apos;folder&apos; or &apos;folder/subfolder&apos;)</source>
+        <target>Enter destination path (e.g., &apos;folder&apos; or &apos;folder/subfolder&apos;)</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveDestinationHint" datatype="html">
-        <source> Use '.' for root directory, or enter a relative path like 'folder' or 'folder/subfolder' </source>
-        <target> Verwenden Sie '.' für das Stammverzeichnis oder geben Sie einen relativen Pfad wie 'ordner' oder 'ordner/unterordner' ein </target>
+        <source> Use &apos;.&apos; for root directory, or enter a relative path like &apos;folder&apos; or &apos;folder/subfolder&apos; </source>
+        <target> Use &apos;.&apos; for root directory, or enter a relative path like &apos;folder&apos; or &apos;folder/subfolder&apos; </target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveButton" datatype="html">
         <source> Move </source>
@@ -2369,9 +2313,8 @@
         <target>Merge-Konflikte erkannt - Klicken zum Öffnen der Versionskontrolle</target>
       </trans-unit>
       <trans-unit id="featureFileTree-currentBranchTitle" datatype="html">
-        <source>Current branch: <x id="branch" equiv-text="branch" />
-        </source>
-        <target>Aktueller Branch: </target>
+        <source>Current branch: <x id="branch" equiv-text="branch"/></source>
+        <target>Current branch: <x id="branch" equiv-text="branch"/></target>
       </trans-unit>
       <trans-unit id="featureFileTree-deleteDirectoryTitle" datatype="html">
         <source>Delete Directory</source>
@@ -2382,22 +2325,20 @@
         <target>Datei löschen</target>
       </trans-unit>
       <trans-unit id="featureFileTree-deleteDirectoryMessage" datatype="html">
-        <source>Are you sure you want to delete the directory <x id="PH" equiv-text="path" />?:path:</source>
-        <target>Sind Sie sicher, dass Sie den Ordner  löschen möchten?:path:</target>
+        <source>Are you sure you want to delete the directory <x id="PH" equiv-text="path"/>?:path:</source>
+        <target>Are you sure you want to delete the directory <x id="PH" equiv-text="path"/>?:path:</target>
       </trans-unit>
       <trans-unit id="featureFileTree-deleteFileMessage" datatype="html">
-        <source>Are you sure you want to delete the file <x id="PH" equiv-text="path" />?:path:</source>
-        <target>Sind Sie sicher, dass Sie die Datei  löschen möchten?:path:</target>
+        <source>Are you sure you want to delete the file <x id="PH" equiv-text="path"/>?:path:</source>
+        <target>Are you sure you want to delete the file <x id="PH" equiv-text="path"/>?:path:</target>
       </trans-unit>
       <trans-unit id="featureFileTree-renameDirectoryMessage" datatype="html">
-        <source>Enter a new name for the directory <x id="path" equiv-text="path" />
-        </source>
-        <target>Geben Sie einen neuen Namen für den Ordner  ein</target>
+        <source>Enter a new name for the directory <x id="path" equiv-text="path"/></source>
+        <target>Enter a new name for the directory <x id="path" equiv-text="path"/></target>
       </trans-unit>
       <trans-unit id="featureFileTree-renameFileMessage" datatype="html">
-        <source>Enter a new name for the file <x id="path" equiv-text="path" />
-        </source>
-        <target>Geben Sie einen neuen Namen für die Datei  ein</target>
+        <source>Enter a new name for the file <x id="path" equiv-text="path"/></source>
+        <target>Enter a new name for the file <x id="path" equiv-text="path"/></target>
       </trans-unit>
       <trans-unit id="featureFileTree-renameDirectoryTitle" datatype="html">
         <source>Rename Directory</source>
@@ -2416,22 +2357,20 @@
         <target>Datei verschieben</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveDirectoryMessage" datatype="html">
-        <source>Move the directory <x id="PH" equiv-text="path" /> to::path:</source>
-        <target>Verschieben Sie den Ordner  nach::path:</target>
+        <source>Move the directory <x id="PH" equiv-text="path"/> to::path:</source>
+        <target>Move the directory <x id="PH" equiv-text="path"/> to::path:</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveFileMessage" datatype="html">
-        <source>Move the file <x id="PH" equiv-text="path" /> to::path:</source>
-        <target>Verschieben Sie die Datei  nach::path:</target>
+        <source>Move the file <x id="PH" equiv-text="path"/> to::path:</source>
+        <target>Move the file <x id="PH" equiv-text="path"/> to::path:</target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveDirectoryDestination" datatype="html">
-        <source>The directory will be moved to: <x id="result" equiv-text="result" />
-        </source>
-        <target>Der Ordner wird verschoben nach: </target>
+        <source>The directory will be moved to: <x id="result" equiv-text="result"/></source>
+        <target>The directory will be moved to: <x id="result" equiv-text="result"/></target>
       </trans-unit>
       <trans-unit id="featureFileTree-moveFileDestination" datatype="html">
-        <source>The file will be moved to: <x id="result" equiv-text="result" />
-        </source>
-        <target>Die Datei wird verschoben nach: </target>
+        <source>The file will be moved to: <x id="result" equiv-text="result"/></source>
+        <target>The file will be moved to: <x id="result" equiv-text="result"/></target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-header" datatype="html">
         <source>Git Branches</source>
@@ -2450,8 +2389,8 @@
         <target>Schnell zu Branch wechseln</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-quickSwitchHint" datatype="html">
-        <source> Enter the name (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;" />feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;" />) or a remote ref (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;" />origin/feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;" />).</source>
-        <target> Geben Sie den Namen ein (z.B. feature/new-ui) oder eine Remote-Referenz (z.B. origin/feature/new-ui).</target>
+        <source> Enter the name (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>) or a remote ref (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>origin/feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>).</source>
+        <target> Enter the name (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>) or a remote ref (e.g. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>origin/feature/new-ui<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>).</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-branchNamePlaceholder" datatype="html">
         <source>Enter branch name or remote ref</source>
@@ -2526,14 +2465,8 @@
         <target>Branch erstellen</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-willCreateLabel" datatype="html">
-        <source> Will create: <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ branchName() }}" />
-          <x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;" />
-        </source>
-        <target> Wird erstellt: <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ branchName() }}" />
-          <x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;" />
-        </target>
+        <source> Will create: <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/><x id="INTERPOLATION" equiv-text="{{ branchName() }}"/><x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/></source>
+        <target> Will create: <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/><x id="INTERPOLATION" equiv-text="{{ branchName() }}"/><x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/></target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-closeButton" datatype="html">
         <source> Close </source>
@@ -2680,8 +2613,8 @@
         <target>Keine Terminal-Sitzung</target>
       </trans-unit>
       <trans-unit id="featureTerminal-createSessionHint" datatype="html">
-        <source>Click "New" to create a terminal session</source>
-        <target>Klicken Sie auf „Neu“, um eine Terminal-Sitzung zu erstellen</target>
+        <source>Click &quot;New&quot; to create a terminal session</source>
+        <target>Click &quot;New&quot; to create a terminal session</target>
       </trans-unit>
       <trans-unit id="featureTerminal-newTerminalButton" datatype="html">
         <source>New Terminal</source>
@@ -2800,8 +2733,8 @@
         <target>Workspace wechseln</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-noWorkspaces" datatype="html">
-        <source> You don't have any workspaces yet. </source>
-        <target>Du hast noch keine Workspaces.</target>
+        <source> You don&apos;t have any workspaces yet. </source>
+        <target> You don&apos;t have any workspaces yet. </target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-goToSpaces" datatype="html">
         <source>Go to Spaces</source>
@@ -3272,8 +3205,8 @@
         <target>Workspaces werden geladen…</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherEmpty" datatype="html">
-        <source>You don't have any workspaces yet.</source>
-        <target>Sie haben noch keine Workspaces.</target>
+        <source>You don&apos;t have any workspaces yet.</source>
+        <target>You don&apos;t have any workspaces yet.</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherEmptyHint" datatype="html">
         <source> Create one from Spaces, or open Spaces if a workspace was shared with you. </source>
@@ -3372,20 +3305,20 @@
         <target>Agent wählen…</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-acceptanceLabel" datatype="html">
-        <source> Acceptance <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + '%'&quot;                         &gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ percentage | number: '1.0-0' }}" />%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span                       &gt;" />
-        </source>
-        <target> Abnahme <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + '%'&quot;                         &gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ percentage | number: '1.0-0' }}" />%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span                       &gt;" />
-        </target>
+        <source> Acceptance <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + &apos;%&apos;&quot;
+                        &gt;"/><x id="INTERPOLATION" equiv-text="{{ percentage | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                      &gt;"/></source>
+        <target> Acceptance <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + &apos;%&apos;&quot;
+                        &gt;"/><x id="INTERPOLATION" equiv-text="{{ percentage | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                      &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-subtaskProgressLabel" datatype="html">
-        <source> Subtasks <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;stPct + '%'&quot;                           &gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ stPct | number: '1.0-0' }}" />%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span                         &gt;" />
-        </source>
-        <target> Unteraufgaben <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;stPct + '%'&quot;                           &gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ stPct | number: '1.0-0' }}" />%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span                         &gt;" />
-        </target>
+        <source> Subtasks <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;stPct + &apos;%&apos;&quot;
+                          &gt;"/><x id="INTERPOLATION" equiv-text="{{ stPct | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                        &gt;"/></source>
+        <target> Subtasks <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;stPct + &apos;%&apos;&quot;
+                          &gt;"/><x id="INTERPOLATION" equiv-text="{{ stPct | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                        &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-subtaskProgressAria" datatype="html">
         <source>Subtask progress</source>
@@ -3556,12 +3489,8 @@
         <target>Entfernen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationSaving" datatype="html">
-        <source>
-          <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm text-primary&quot; aria-hidden=&quot;true&quot;&gt;" />
-          <x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /> Saving automation settings… </source>
-        <target>
-          <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm text-primary&quot; aria-hidden=&quot;true&quot;&gt;" />
-          <x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /> Automationseinstellungen werden gespeichert… </target>
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm text-primary&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> Saving automation settings… </source>
+        <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm text-primary&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> Saving automation settings… </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationApprove" datatype="html">
         <source> Approve </source>
@@ -3572,14 +3501,12 @@
         <target> Freigabe aufheben </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationFailures" datatype="html">
-        <source> Consecutive failures: <x id="INTERPOLATION" equiv-text="{{ acfg.consecutiveFailureCount }}" />
-        </source>
-        <target>Aufeinanderfolgende Fehler: </target>
+        <source> Consecutive failures: <x id="INTERPOLATION" equiv-text="{{ acfg.consecutiveFailureCount }}"/> </source>
+        <target> Consecutive failures: <x id="INTERPOLATION" equiv-text="{{ acfg.consecutiveFailureCount }}"/> </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationNextRetry" datatype="html">
-        <source> Next retry: <x id="INTERPOLATION" equiv-text="{{ acfg.nextRetryAt | date: activityOccurredAtFormat }}" />
-        </source>
-        <target>Nächster Wiederholungsversuch: </target>
+        <source> Next retry: <x id="INTERPOLATION" equiv-text="{{ acfg.nextRetryAt | date: activityOccurredAtFormat }}"/> </source>
+        <target> Next retry: <x id="INTERPOLATION" equiv-text="{{ acfg.nextRetryAt | date: activityOccurredAtFormat }}"/> </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationRunsHeading" datatype="html">
         <source>Runs</source>
@@ -4038,16 +3965,12 @@
         <target>Unbekannt</target>
       </trans-unit>
       <trans-unit id="featureUserManager-roleUnknownValue" datatype="html">
-        <source>Unknown (<x id="PH" equiv-text="role" />)</source>
-        <target>Unbekannt (<x id="PH" equiv-text="role" />)</target>
+        <source>Unknown (<x id="PH" equiv-text="role"/>)</source>
+        <target>Unknown (<x id="PH" equiv-text="role"/>)</target>
       </trans-unit>
       <trans-unit id="featureConfirmEmail-title" datatype="html">
         <source>Confirm Your Email</source>
         <target>Bestätigen Sie Ihre E-Mail</target>
-      </trans-unit>
-      <trans-unit id="featureConfirmEmail-description" datatype="html">
-        <source> Enter the 6-character confirmation code you received via email (letters and numbers). You can paste the code or type it in the fields below. </source>
-        <target> Geben Sie den 6-stelligen Bestätigungscode ein, den Sie per E-Mail erhalten haben (Buchstaben und Zahlen). Sie können den Code einfügen oder in die Felder unten eingeben. </target>
       </trans-unit>
       <trans-unit id="featureConfirmEmail-formTitle" datatype="html">
         <source>Email Confirmation</source>
@@ -4105,73 +4028,33 @@
         <source>Back to login</source>
         <target>Zurück zur Anmeldung</target>
       </trans-unit>
-      <trans-unit id="featureAuth-loginTitle" datatype="html">
-        <source>Login :: Agenstra</source>
-        <target>Anmelden :: Agenstra</target>
+      <trans-unit id="featureAuth-loginPage" datatype="html">
+        <source>Login</source>
+        <target>Anmelden</target>
       </trans-unit>
-      <trans-unit id="featureAuth-registerTitle" datatype="html">
-        <source>Register :: Agenstra</source>
-        <target>Registrieren :: Agenstra</target>
+      <trans-unit id="featureAuth-registerPage" datatype="html">
+        <source>Register</source>
+        <target>Registrieren</target>
       </trans-unit>
-      <trans-unit id="featureAuth-requestPasswordResetTitle" datatype="html">
-        <source>Request Password Reset :: Agenstra</source>
-        <target>Passwort zurücksetzen anfordern :: Agenstra</target>
+      <trans-unit id="featureAuth-requestPasswordResetPage" datatype="html">
+        <source>Request Password Reset</source>
+        <target>Passwort zurücksetzen anfordern</target>
       </trans-unit>
-      <trans-unit id="featureAuth-requestPasswordResetConfirmationTitle" datatype="html">
-        <source>Password Reset Requested :: Agenstra</source>
-        <target>Passwort-Reset angefordert :: Agenstra</target>
+      <trans-unit id="featureAuth-requestPasswordResetConfirmationPage" datatype="html">
+        <source>Password Reset Requested</source>
+        <target>Passwort-Reset angefordert</target>
       </trans-unit>
-      <trans-unit id="featureAuth-resetPasswordTitle" datatype="html">
-        <source>Reset Password :: Agenstra</source>
-        <target>Passwort zurücksetzen :: Agenstra</target>
+      <trans-unit id="featureAuth-resetPasswordPage" datatype="html">
+        <source>Reset Password</source>
+        <target>Passwort zurücksetzen</target>
       </trans-unit>
-      <trans-unit id="featureAuth-confirmEmailTitle" datatype="html">
-        <source>Confirm Email :: Agenstra</source>
-        <target>E-Mail bestätigen :: Agenstra</target>
+      <trans-unit id="featureAuth-confirmEmailPage" datatype="html">
+        <source>Confirm Email</source>
+        <target>E-Mail bestätigen</target>
       </trans-unit>
-      <trans-unit id="featureAuth-usersTitle" datatype="html">
-        <source>User Management :: Agenstra</source>
-        <target>Benutzerverwaltung :: Agenstra</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-appName" datatype="html">
-        <source>Agenstra</source>
-        <target>Agenstra</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-appDescription" datatype="html">
-        <source> Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers - all from one powerful dashboard. </source>
-        <target> Zentrale Steuerung für verteilte KI-Agent-Infrastruktur. Verwalten Sie mehrere Agent-Manager-Instanzen, interagieren Sie in Echtzeit mit Agents und bearbeiten Sie Code direkt in deren Containern - alles von einem leistungsstarken Dashboard aus. </target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureDistributedAgent" datatype="html">
-        <source>Distributed Agent Management</source>
-        <target>Verteilte Agent-Verwaltung</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureDistributedAgentDesc" datatype="html">
-        <source>Connect to and manage multiple remote agent-manager services from a single console</source>
-        <target>Verbinden und verwalten Sie mehrere Remote-Agent-Manager-Dienste von einer Konsole aus</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureRealtimeChat" datatype="html">
-        <source>Real-time AI Chat</source>
-        <target>Echtzeit-KI-Chat</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureRealtimeChatDesc" datatype="html">
-        <source>WebSocket-based bidirectional communication with AI agents and instant responses</source>
-        <target>WebSocket-basierte bidirektionale Kommunikation mit KI-Agents und sofortige Antworten</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureCodeEditor" datatype="html">
-        <source>Integrated Code Editor</source>
-        <target>Integrierter Code-Editor</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureCodeEditorDesc" datatype="html">
-        <source>Edit files directly in agent containers with Monaco Editor - read, write, and manage code in real-time</source>
-        <target>Bearbeiten Sie Dateien direkt in Agent-Containern mit Monaco Editor - lesen, schreiben und verwalten Sie Code in Echtzeit</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureContainer" datatype="html">
-        <source>Container Integration</source>
-        <target>Container-Integration</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureContainerDesc" datatype="html">
-        <source>Docker-based agent execution with live log streaming and file system operations</source>
-        <target>Docker-basierte Agent-Ausführung mit Live-Log-Streaming und Dateisystemoperationen</target>
+      <trans-unit id="featureAuth-usersPage" datatype="html">
+        <source>User Management</source>
+        <target>Benutzerverwaltung</target>
       </trans-unit>
       <trans-unit id="featureLogin-title" datatype="html">
         <source>Login</source>
@@ -4238,16 +4121,12 @@
         <target>Anmelden</target>
       </trans-unit>
       <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
-        <source>Character <x id="position" equiv-text="index + 1" /> of 6</source>
-        <target>Zeichen <x id="position" equiv-text="index + 1" /> von 6</target>
+        <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
+        <target>Character <x id="position" equiv-text="index + 1"/> of 6</target>
       </trans-unit>
       <trans-unit id="featureRegister-title" datatype="html">
         <source>Create an Account</source>
         <target>Konto erstellen</target>
-      </trans-unit>
-      <trans-unit id="featureRegister-description" datatype="html">
-        <source> Join Agenstra to manage your AI agent infrastructure. After registration, you will receive an email to confirm your account before you can log in. </source>
-        <target> Treten Sie Agenstra bei, um Ihre KI-Agent-Infrastruktur zu verwalten. Nach der Registrierung erhalten Sie eine E-Mail zur Bestätigung Ihres Kontos, bevor Sie sich anmelden können. </target>
       </trans-unit>
       <trans-unit id="featureRegister-formTitle" datatype="html">
         <source>Register</source>
@@ -4336,10 +4215,6 @@
       <trans-unit id="featureResetPasswordConfirmation-title" datatype="html">
         <source>Check Your Email</source>
         <target>Überprüfen Sie Ihre E-Mail</target>
-      </trans-unit>
-      <trans-unit id="featureResetPasswordConfirmation-description" datatype="html">
-        <source> If an account exists for the email you entered, you will receive a password reset code. Enter the code below and choose a new password. </source>
-        <target> Wenn ein Konto für die eingegebene E-Mail existiert, erhalten Sie einen Passwort-Reset-Code. Geben Sie den Code unten ein und wählen Sie ein neues Passwort. </target>
       </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-formTitle" datatype="html">
         <source> Reset Password </source>
@@ -4445,10 +4320,6 @@
         <source>Reset Your Password</source>
         <target>Passwort zurücksetzen</target>
       </trans-unit>
-      <trans-unit id="featureRequestPasswordReset-description" datatype="html">
-        <source> Enter your email address and we will send you a link to reset your password. If an account exists for that email, you will receive instructions shortly. </source>
-        <target> Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts. Wenn ein Konto für diese E-Mail existiert, erhalten Sie in Kürze Anweisungen. </target>
-      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-formTitle" datatype="html">
         <source> Request Password Reset </source>
         <target> Passwort-Reset anfordern </target>
@@ -4492,10 +4363,6 @@
       <trans-unit id="featureResetPassword-title" datatype="html">
         <source>Set New Password</source>
         <target>Neues Passwort setzen</target>
-      </trans-unit>
-      <trans-unit id="featureResetPassword-description" datatype="html">
-        <source> Enter the reset code you received via email and choose a new password. The code is typically sent when you request a password reset. </source>
-        <target> Geben Sie den Reset-Code ein, den Sie per E-Mail erhalten haben, und wählen Sie ein neues Passwort. Der Code wird normalerweise gesendet, wenn Sie einen Passwort-Reset anfordern. </target>
       </trans-unit>
       <trans-unit id="featureResetPassword-formTitle" datatype="html">
         <source>Reset Password</source>
@@ -4646,20 +4513,16 @@
         <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailLabel" datatype="html">
-        <source>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
-        <target>E-Mail <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </target>
+        <source>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailPlaceholder" datatype="html">
         <source>user@example.com</source>
         <target>user@example.com</target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordLabel" datatype="html">
-        <source>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
-        <target>Passwort <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </target>
+        <source>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordPlaceholder" datatype="html">
         <source>Min. 8 characters</source>
@@ -4702,12 +4565,10 @@
         <target> Benutzer löschen </target>
       </trans-unit>
       <trans-unit id="featureUserManager-deleteUserConfirm" datatype="html">
-        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}" />
-          <x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong             &gt;" />? </source>
-        <target> Sind Sie sicher, dass Sie den Benutzer <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}" />
-          <x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong             &gt;" /> löschen möchten? </target>
+        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+            &gt;"/>? </source>
+        <target> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+            &gt;"/>? </target>
       </trans-unit>
       <trans-unit id="featureUserManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -4716,6 +4577,110 @@
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
         <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureDocsBreadcrumbs-documentation" datatype="html">
+        <source>Documentation</source>
+        <target>Dokumentation</target>
+      </trans-unit>
+      <trans-unit id="featureDocsLayout-documentation" datatype="html">
+        <source>Documentation</source>
+        <target>Dokumentation</target>
+      </trans-unit>
+      <trans-unit id="featureDocsLayout-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        <target>Sprache auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureDocsLayout-githubAriaLabel" datatype="html">
+        <source>GitHub</source>
+        <target>GitHub</target>
+      </trans-unit>
+      <trans-unit id="featureDocsLayout-githubTitle" datatype="html">
+        <source>View on GitHub</source>
+        <target>Auf GitHub ansehen</target>
+      </trans-unit>
+      <trans-unit id="featureDocsLayout-darkModeTitle" datatype="html">
+        <source>Toggle dark mode</source>
+        <target>Dunkelmodus ein-/ausschalten</target>
+      </trans-unit>
+      <trans-unit id="featureDocsLayout-toggleNavAriaLabel" datatype="html">
+        <source>Toggle navigation</source>
+        <target>Navigation ein-/ausblenden</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearch-searchPlaceholder" datatype="html">
+        <source>Search documentation...</source>
+        <target>Dokumentation durchsuchen...</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearch-viewAllResults" datatype="html">
+        <source> View all results </source>
+        <target> Alle Ergebnisse anzeigen </target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearch-noResults" datatype="html">
+        <source>No results found</source>
+        <target>Keine Ergebnisse gefunden</target>
+      </trans-unit>
+      <trans-unit id="featureDocsToc-title" datatype="html">
+        <source>Table of Contents</source>
+        <target>Inhaltsverzeichnis</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-loading" datatype="html">
+        <source>Loading...</source>
+        <target>Laden...</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaTitlePrefix" datatype="html">
+        <source>Documentation</source>
+        <target>Dokumentation</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-title" datatype="html">
+        <source>Search Documentation</source>
+        <target>Dokumentation durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-loading" datatype="html">
+        <source>Loading...</source>
+        <target>Laden...</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-noResultsFor" datatype="html">
+        <source>No results found for &quot;<x id="INTERPOLATION" equiv-text="{{ searchQuery() }}"/>&quot;</source>
+        <target>Keine Ergebnisse für &quot;<x id="INTERPOLATION" equiv-text="{{ searchQuery() }}"/>&quot; gefunden</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-enterQueryHint" datatype="html">
+        <source>Enter a search query above to find documentation.</source>
+        <target>Geben Sie oben eine Suchanfrage ein, um die Dokumentation zu durchsuchen.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
+        <source>Search Documentation</source>
+        <target>Dokumentation durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-foundOneResult" datatype="html">
+        <source>Found <x id="PH" equiv-text="count"/> result for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
+        <target><x id="PH" equiv-text="count"/> Ergebnis für &quot;<x id="PH_1" equiv-text="query"/>&quot; gefunden</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-foundResults" datatype="html">
+        <source>Found <x id="PH" equiv-text="count"/> results for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
+        <target><x id="PH" equiv-text="count"/> Ergebnisse für &quot;<x id="PH_1" equiv-text="query"/>&quot; gefunden</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallbackDecabill" datatype="html">
+        <source>Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.</source>
+        <target>Offizielle Decabill-Dokumentation: Installation, Deployment, Sicherheit und Betrieb von Billing-APIs, Abonnements, Zahlungsanbietern und der Billing-Konsole für Plattformteams.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallback" datatype="html">
+        <source>Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.</source>
+        <target>Offizielle Agenstra-Dokumentation: Installation, Deployment, Sicherheit und Betrieb von Agent-Hosts, Workspaces, Tickets, APIs und Integrationen für Plattformteams.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywordsDecabill" datatype="html">
+        <source>Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing</source>
+        <target>Decabill, Billing, Abonnements, Zahlungsabwicklung, Rechnungsstellung, Stripe, Billing-API, Billing-Konsole, Mandantenfähiges Billing</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywords" datatype="html">
+        <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
+        <target>Agenstra, KI-Agents, Agent-Verwaltung, verteilte Systeme, KI-Agent-Infrastruktur, Agent-Plattform, KI-Agent-Konsole, Container-Verwaltung, WebSocket-Agents, Docker-Agents</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescriptionDecabill" datatype="html">
+        <source>Search Decabill docs for setup guides, API references, security hardening, billing configuration, deployment patterns, and troubleshooting.</source>
+        <target>Durchsuchen Sie die Decabill-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Billing-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
+        <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
+        <target>Durchsuchen Sie die Agenstra-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Agent-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
       </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>

@@ -81,6 +81,14 @@ Provider config keys include `serverType`, `location` or `region`, and optional 
 
 When `allowCustomerLocationSelection` is true on the plan and the provider schema defines `region` or `location` with an enum, customers may override geography in `requestedConfig`. Otherwise geography keys are stripped before merge.
 
+### Custom Service Plans
+
+When the plan sets `providerConfigDefaults.service` to `custom`, customers supply environment variables in `requestedConfig.env` as a string map. The billing console loads order fields from `GET /service-plans/{planId}/cloud-init-configs/{configId}/order-fields` (only for configs offered on the selected plan) and renders only variables with `showInOrderForm`.
+
+The backend merges customer values with decrypted admin defaults. Variables without a default and without a customer value cause a validation error at order time. Controller and manager authentication fields are not used for custom plans.
+
+See **[CloudInit Configs](./cloud-init-configs.md)**.
+
 ## Cancel and Resume
 
 - `POST /subscriptions/{subscriptionId}/cancel` - Schedule cancellation at period end or immediately per plan rules
@@ -102,6 +110,10 @@ Each item tracks:
 ### Server Control
 
 Start, stop, and restart actions are available for provisioned items. See [Dashboard and Server Control](./dashboard-and-server-control.md).
+
+### Automated stack updates
+
+The **subscription-item-update** scheduler refreshes bundled controller and manager Docker stacks on a schedule. **Custom CloudInit subscription items are excluded** from this job; see [CloudInit Configs](./cloud-init-configs.md#automated-image-updates).
 
 ## Usage Records
 
