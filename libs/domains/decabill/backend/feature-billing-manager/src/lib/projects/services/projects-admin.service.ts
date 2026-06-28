@@ -3,11 +3,13 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 
 import type {
   AdminProjectListItemDto,
+  BillProjectTimeDto,
   BillProjectTimeResponseDto,
   CreateAdminProjectDto,
   PaginatedAdminProjectsResponseDto,
   ProjectResponseDto,
   ProjectSummaryResponseDto,
+  ProjectUnbilledTimeBoundsDto,
   UpdateAdminProjectDto,
 } from '../dto/project.dto';
 import type { ProjectEntity } from '../entities/project.entity';
@@ -131,8 +133,15 @@ export class ProjectsAdminService {
     await this.projectsRepository.delete(id);
   }
 
-  async billTime(projectId: string, adminUserId: string): Promise<BillProjectTimeResponseDto> {
-    return await this.projectBillingService.billUnbilledTime(projectId, adminUserId);
+  async billTime(projectId: string, adminUserId: string, dto: BillProjectTimeDto): Promise<BillProjectTimeResponseDto> {
+    return await this.projectBillingService.billUnbilledTime(projectId, adminUserId, {
+      from: new Date(dto.from),
+      to: new Date(dto.to),
+    });
+  }
+
+  async getUnbilledTimeBounds(projectId: string): Promise<ProjectUnbilledTimeBoundsDto> {
+    return await this.projectBillingService.getUnbilledTimeBounds(projectId);
   }
 
   private async mapListItem(project: ProjectEntity, userEmail?: string): Promise<AdminProjectListItemDto> {

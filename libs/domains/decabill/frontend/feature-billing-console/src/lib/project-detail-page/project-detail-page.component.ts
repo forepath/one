@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
+  AdminProjectsService,
   ProjectBoardSocketFacade,
   ProjectTimeEntriesFacade,
   ProjectsFacade,
@@ -36,10 +37,12 @@ export class ProjectDetailPageComponent implements OnInit {
   @ViewChild('createTimeModal', { static: false }) private createTimeModal!: ElementRef<HTMLDivElement>;
   @ViewChild('editTimeModal', { static: false }) private editTimeModal!: ElementRef<HTMLDivElement>;
   @ViewChild('deleteTimeModal', { static: false }) private deleteTimeModal!: ElementRef<HTMLDivElement>;
+  @ViewChild('billTimeModal', { static: false }) private billTimeModal!: ElementRef<HTMLDivElement>;
 
   protected readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly projectsFacade = inject(ProjectsFacade);
+  private readonly adminProjectsService = inject(AdminProjectsService);
   private readonly timeEntriesFacade = inject(ProjectTimeEntriesFacade);
   private readonly socketFacade = inject(ProjectBoardSocketFacade);
   private readonly destroyRef = inject(DestroyRef);
@@ -72,9 +75,15 @@ export class ProjectDetailPageComponent implements OnInit {
   editTimeFormDescription = '';
   timeEntryToDelete: ProjectTimeEntryResponse | null = null;
 
+  billFormFrom = '';
+  billFormTo = '';
+  readonly billBoundsLoading = signal(false);
+  readonly billBoundsEntryCount = signal(0);
+
   ngOnInit(): void {
     this.resetTimeForm();
     this.registerTimeEntryModalCloseWatchers();
+    this.registerBillTimeModalCloseWatcher();
 
     this.router.events
       .pipe(
@@ -163,10 +172,50 @@ export class ProjectDetailPageComponent implements OnInit {
     }
   }
 
-  billTime(): void {
+  openBillTimeModal(): void {
     if (!this.projectId || !this.isAdminView()) return;
 
-    this.projectsFacade.billProjectTime(this.projectId);
+    this.projectsFacade.clearError();
+    this.billBoundsLoading.set(true);
+    this.billBoundsEntryCount.set(0);
+
+    this.adminProjectsService.getUnbilledTimeBounds(this.projectId).subscribe({
+      next: (bounds) => {
+        this.billBoundsEntryCount.set(bounds.entryCount);
+
+        if (bounds.from && bounds.to) {
+          this.billFormFrom = this.toDatetimeLocalValue(new Date(bounds.from));
+          this.billFormTo = this.toDatetimeLocalValue(new Date(bounds.to));
+        } else {
+          this.billFormFrom = '';
+          this.billFormTo = '';
+        }
+
+        this.billBoundsLoading.set(false);
+        showBillingModal(this.billTimeModal);
+      },
+      error: () => {
+        this.billBoundsLoading.set(false);
+      },
+    });
+  }
+
+  submitBillTime(): void {
+    if (!this.projectId || !this.isAdminView() || !this.isBillTimeFormValid() || this.billBoundsEntryCount() === 0) {
+      return;
+    }
+
+    this.projectsFacade.billProjectTime(
+      this.projectId,
+      this.datetimeLocalToIso(this.billFormFrom),
+      this.datetimeLocalToIso(this.billFormTo),
+    );
+  }
+
+  isBillTimeFormValid(): boolean {
+    if (!this.billFormFrom || !this.billFormTo) return false;
+
+    return new Date(this.billFormTo).getTime() > new Date(this.billFormFrom).getTime();
   }
 
   openCreateTimeModal(): void {
@@ -335,6 +384,20 @@ export class ProjectDetailPageComponent implements OnInit {
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.timeEntryToDelete = null;
+      },
+    });
+  }
+
+  private registerBillTimeModalCloseWatcher(): void {
+    watchBillingMutationModalClose({
+      loading$: this.billing$,
+      error$: this.error$,
+      modal: () => this.billTimeModal,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        if (this.projectId && this.activeTab() === 'time') {
+          this.timeEntriesFacade.load(this.projectId);
+        }
       },
     });
   }

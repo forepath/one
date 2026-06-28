@@ -101,12 +101,12 @@ See [Payment Processing](./payment-processing.md).
 
 ## Project Time Billing
 
-Admins bill tracked project hours via `POST /admin/billing/projects/{projectId}/bill-time`. The operation:
+Admins bill tracked project hours via `POST /admin/billing/projects/{projectId}/bill-time` with a `{ from, to }` body. The billing console modal defaults that range from `GET .../unbilled-time-bounds`. The operation:
 
 1. Validates the assigned customer's billing profile is complete
-2. Aggregates all unbilled time entries for the project
+2. Aggregates unbilled time entries fully within the requested range
 3. Creates and immediately issues a draft invoice with one line item (`hours × hourlyRateNet`)
-4. Marks time entries with `invoiceId` and `billedAt`
+4. Marks those time entries with `invoiceId` and `billedAt`
 
 This is separate from open-position accumulation on the user's billing day. Project invoices link to the project through `projectId` on the invoice record.
 

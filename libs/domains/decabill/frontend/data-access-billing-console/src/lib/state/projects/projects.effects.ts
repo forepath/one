@@ -223,8 +223,8 @@ export const billProjectTime$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminProjectsService)) =>
     actions$.pipe(
       ofType(billProjectTime),
-      switchMap(({ projectId }) =>
-        service.billTime(projectId).pipe(
+      switchMap(({ projectId, from, to }) =>
+        service.billTime(projectId, { from, to }).pipe(
           switchMap((result) => of(billProjectTimeSuccess({ projectId, result }), loadProjectSummary({ projectId }))),
           catchError((error) => of(billProjectTimeFailure({ error: normalizeError(error) }))),
         ),

@@ -35,6 +35,7 @@ export enum ProjectTicketActionType {
   MILESTONE_CHANGED = 'MILESTONE_CHANGED',
   DELETED = 'DELETED',
   COMMENT_ADDED = 'COMMENT_ADDED',
+  LOCKED = 'LOCKED',
 }
 
 export const TERMINAL_PROJECT_TICKET_STATUSES: ProjectTicketStatus[] = [

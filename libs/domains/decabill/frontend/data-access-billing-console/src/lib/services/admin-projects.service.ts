@@ -7,10 +7,12 @@ import { Observable } from 'rxjs';
 import type {
   AdminProjectDetailResponse,
   AdminProjectsListParams,
+  BillProjectTimeDto,
   BillProjectTimeResponse,
   CreateAdminProjectDto,
   PaginatedAdminProjectsResponse,
   ProjectResponse,
+  ProjectUnbilledTimeBoundsResponse,
   UpdateAdminProjectDto,
 } from '../types/projects.types';
 
@@ -57,7 +59,13 @@ export class AdminProjectsService {
     return this.http.delete<void>(`${this.apiUrl}/admin/billing/projects/${projectId}`);
   }
 
-  billTime(projectId: string): Observable<BillProjectTimeResponse> {
-    return this.http.post<BillProjectTimeResponse>(`${this.apiUrl}/admin/billing/projects/${projectId}/bill-time`, {});
+  billTime(projectId: string, dto: BillProjectTimeDto): Observable<BillProjectTimeResponse> {
+    return this.http.post<BillProjectTimeResponse>(`${this.apiUrl}/admin/billing/projects/${projectId}/bill-time`, dto);
+  }
+
+  getUnbilledTimeBounds(projectId: string): Observable<ProjectUnbilledTimeBoundsResponse> {
+    return this.http.get<ProjectUnbilledTimeBoundsResponse>(
+      `${this.apiUrl}/admin/billing/projects/${projectId}/unbilled-time-bounds`,
+    );
   }
 }

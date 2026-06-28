@@ -1,5 +1,5 @@
 import { UserRole } from '@forepath/identity/backend';
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
 import type { ProjectEntity } from '../entities/project.entity';
 import type { ProjectMilestoneEntity } from '../entities/project-milestone.entity';
@@ -8,6 +8,7 @@ import {
   ensureProjectAdmin,
   ensureProjectComment,
   ensureProjectReadable,
+  ensureTicketUnlocked,
   isTicketLockedForNonAdmin,
 } from './project-access.utils';
 
@@ -59,5 +60,13 @@ describe('project-access.utils', () => {
     const milestone = { lockedAt: new Date() } as ProjectMilestoneEntity;
 
     expect(isTicketLockedForNonAdmin(ticket, milestone)).toBe(true);
+  });
+
+  it('ensureTicketUnlocked throws when ticket locked', () => {
+    expect(() => ensureTicketUnlocked({ locked: true } as ProjectTicketEntity)).toThrow(BadRequestException);
+  });
+
+  it('ensureTicketUnlocked passes when ticket unlocked', () => {
+    expect(() => ensureTicketUnlocked({ locked: false } as ProjectTicketEntity)).not.toThrow();
   });
 });

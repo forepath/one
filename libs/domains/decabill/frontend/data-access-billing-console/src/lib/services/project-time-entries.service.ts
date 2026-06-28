@@ -12,6 +12,10 @@ import type {
   UpdateProjectTimeEntryDto,
 } from '../types/projects.types';
 
+export interface ProjectTimeEntriesListParams extends ListParams {
+  ticketId?: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -27,12 +31,14 @@ export class ProjectTimeEntriesService {
     return `${this.apiUrl}/projects/${projectId}/time-entries`;
   }
 
-  list(projectId: string, params?: ListParams): Observable<PaginatedProjectTimeEntriesResponse> {
+  list(projectId: string, params?: ProjectTimeEntriesListParams): Observable<PaginatedProjectTimeEntriesResponse> {
     let httpParams = new HttpParams();
 
     if (params?.limit != null) httpParams = httpParams.set('limit', String(params.limit));
 
     if (params?.offset != null) httpParams = httpParams.set('offset', String(params.offset));
+
+    if (params?.ticketId) httpParams = httpParams.set('ticketId', params.ticketId);
 
     return this.http.get<PaginatedProjectTimeEntriesResponse>(this.timeEntriesUrl(projectId), {
       params: httpParams,

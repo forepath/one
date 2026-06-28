@@ -242,6 +242,25 @@
                 }
               </ol>
             </nav>
+            @if (d.locked) {
+              <span class="text-secondary small flex-shrink-0"
+                ><i class="bi bi-lock me-1" aria-hidden="true"></i>{{ lockedTicketLabel() }}</span
+              >
+            }
+            @if (isAdmin && !d.locked) {
+              <button
+                type="button"
+                class="btn btn-outline-secondary flex-shrink-0"
+                (click)="lockTicket(d.id)"
+                [disabled]="saving()"
+                i18n-title="@@featureProjectBoard-lockTicketTitle"
+                i18n-aria-label="@@featureProjectBoard-lockTicketTitle"
+                title="Lock ticket"
+                aria-label="Lock ticket"
+              >
+                <i class="bi bi-lock" aria-hidden="true"></i>
+              </button>
+            }
           </div>
         }
       </div>
@@ -255,7 +274,7 @@
         } @else if (detail(); as d) {
           <div class="row g-0 w-100 overflow-hidden">
             <div class="col-lg-7 h-100 overflow-hidden overflow-y-auto p-3">
-              <dl class="row small mb-2 align-items-center">
+              <dl class="row small mb-2 align-items-center project-board__detail-fields">
                 @if (d.shas.short || d.shas.long) {
                   <dt class="col-sm-3 mb-2" i18n="@@featureProjectBoard-fieldShas">SHAs</dt>
                   <dd class="col-sm-9 mb-2 d-flex align-items-center gap-2">
@@ -386,23 +405,20 @@
                 }
               </dl>
 
-              @if ((isAdmin && !d.locked) || hasTicketDescription(d.content)) {
-                <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
-                  <h3 class="h6 mb-2" i18n="@@featureProjectBoard-contentLabel">Description</h3>
-                </div>
-                @if (isAdmin && !d.locked) {
-                  <framework-project-ticket-editor
-                    [markdown]="descriptionDraft()"
-                    (markdownChange)="descriptionDraft.set($event)"
-                    (blurred)="onDescriptionDraftCommit()"
-                  ></framework-project-ticket-editor>
-                } @else {
-                  <div class="mb-4 prose" [innerHTML]="d.content"></div>
-                }
-              }
+              <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+                <h3 class="h6 mb-2" i18n="@@featureProjectBoard-contentLabel">Description</h3>
+              </div>
+              <framework-project-ticket-editor
+                class="mb-4"
+                [markdown]="isAdmin && !d.locked ? descriptionDraft() : (d.content ?? '')"
+                [readonly]="!isAdmin || d.locked"
+                (markdownChange)="descriptionDraft.set($event)"
+                (blurred)="onDescriptionDraftCommit()"
+              ></framework-project-ticket-editor>
 
-              @if (isAdmin && !d.locked) {
-                <div class="d-flex flex-wrap align-items-center gap-2 my-3">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-1 mb-2">
+                <h3 class="h6 mb-0" i18n="@@featureProjectBoard-subtasksHeading">Subtasks</h3>
+                @if (isAdmin && !d.locked) {
                   <button
                     type="button"
                     class="btn btn-outline-secondary btn-sm"
@@ -412,11 +428,11 @@
                   >
                     Add subtask
                   </button>
-                </div>
-              }
-
-              @if (detailSubtaskRows().length > 0) {
-                <h3 class="h6 mt-1 mb-2" i18n="@@featureProjectBoard-subtasksHeading">Subtasks</h3>
+                }
+              </div>
+              @if (detailSubtaskRows().length === 0) {
+                <p class="text-muted small mb-3" i18n="@@featureProjectBoard-subtasksEmpty">No subtasks yet.</p>
+              } @else {
                 <ul
                   class="list-group list-group-flush project-board__detail-subtasks border rounded small mb-3"
                   role="list"
@@ -458,51 +474,119 @@
                   }
                 </ul>
               }
+
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-1 mb-2">
+                <h3 class="h6 mb-0" i18n="@@featureProjectBoard-timeEntriesHeading">Time entries</h3>
+                @if (isAdmin && !d.locked) {
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    (click)="showCreateTimeEntryModal()"
+                    [disabled]="ticketTimeSaving()"
+                    i18n="@@featureProjectBoard-addTimeEntry"
+                  >
+                    Add time
+                  </button>
+                }
+              </div>
+              @if (ticketTimeError$ | async; as ticketTimeError) {
+                <div class="alert alert-danger py-2 small mb-2" role="alert">{{ ticketTimeError }}</div>
+              }
+              @if (ticketTimeLoading()) {
+                <div class="d-flex justify-content-center py-3">
+                  <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="visually-hidden" i18n="@@featureProjectBoard-timeEntriesLoading">Loading time…</span>
+                  </div>
+                </div>
+              } @else if (ticketTimeEntries().length === 0) {
+                <p class="text-muted small mb-3" i18n="@@featureProjectBoard-timeEntriesEmpty">
+                  No time logged on this ticket yet.
+                </p>
+              } @else {
+                <ul
+                  class="list-group list-group-flush project-board__detail-time-entries border rounded small mb-3"
+                  role="list"
+                >
+                  @for (entry of ticketTimeEntries(); track entry.id) {
+                    <li class="list-group-item py-2 px-3" role="listitem">
+                      <div class="fw-semibold mb-1">{{ timeEntryTitle(entry) }}</div>
+                      <div class="text-muted d-flex align-items-center gap-3 flex-wrap">
+                        <span [ngClass]="timeEntryBillingStatusTextClass(entry)">
+                          <i class="bi me-1" [ngClass]="timeEntryBillingStatusIconClass(entry)" aria-hidden="true"></i
+                          >{{ timeEntryBillingStatusLabel(entry) }}
+                        </span>
+                        <span
+                          ><i class="bi bi-calendar3 me-1" aria-hidden="true"></i
+                          >{{ entry.startedAt | date: 'mediumDate' }}</span
+                        >
+                        <span
+                          ><i class="bi bi-clock me-1" aria-hidden="true"></i
+                          >{{ formatTimeEntryClockRange(entry.startedAt, entry.endedAt) }}</span
+                        >
+                        @if (timeEntryShowsDurationInMeta(entry)) {
+                          <span
+                            ><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i
+                            >{{ formatMinutes(entry.durationMinutes) }}</span
+                          >
+                        }
+                      </div>
+                    </li>
+                  }
+                </ul>
+              }
             </div>
             <div class="col-lg-5 project-board__detail-sidebar h-100 overflow-hidden overflow-y-auto p-3">
-              <h3 class="h6" i18n="@@featureProjectBoard-commentsHeading">Comments</h3>
-              <div class="input-group input-group-sm mb-3">
-                <textarea
-                  class="form-control"
-                  rows="2"
-                  [ngModel]="commentBody()"
-                  (ngModelChange)="commentBody.set($event)"
-                  i18n-placeholder="@@featureProjectBoard-commentPlaceholder"
-                  placeholder="Add a comment…"
-                ></textarea>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  (click)="submitComment()"
-                  [disabled]="saving()"
-                  i18n="@@featureProjectBoard-addComment"
-                >
-                  Add
-                </button>
-              </div>
-              <ul class="list-unstyled small project-board__scroll">
-                @for (c of comments$ | async; track c.id) {
-                  <li class="mb-2 py-2 px-3 bg-body-tertiary rounded">
-                    <div
-                      class="project-board__activity-line d-flex flex-wrap align-items-center column-gap-2 row-gap-1 mb-1 small"
-                    >
-                      <span class="text-body-secondary">{{ c.createdAt | date: activityOccurredAtFormat }}</span>
-                      @if (c.userEmail) {
-                        <span class="text-body-secondary text-truncate project-board__activity-actor">{{
-                          c.userEmail
-                        }}</span>
-                      } @else {
-                        <span
-                          class="text-body-secondary project-board__activity-actor project-board__comment-author-unknown"
-                          i18n="@@featureProjectBoard-commentAuthorDash"
-                          >—</span
-                        >
-                      }
-                    </div>
-                    <div class="text-break">{{ c.body }}</div>
-                  </li>
+              @if (comments$ | async; as comments) {
+                @if (comments.length > 0 || !d.locked) {
+                  <h3 class="h6" i18n="@@featureProjectBoard-commentsHeading">Comments</h3>
                 }
-              </ul>
+                @if (!d.locked) {
+                  <div class="input-group input-group-sm mb-3">
+                    <textarea
+                      class="form-control"
+                      rows="2"
+                      [ngModel]="commentBody()"
+                      (ngModelChange)="commentBody.set($event)"
+                      i18n-placeholder="@@featureProjectBoard-commentPlaceholder"
+                      placeholder="Add a comment…"
+                    ></textarea>
+                    <button
+                      type="button"
+                      class="btn btn-primary"
+                      (click)="submitComment()"
+                      [disabled]="saving()"
+                      i18n="@@featureProjectBoard-addComment"
+                    >
+                      Add
+                    </button>
+                  </div>
+                }
+                @if (comments.length > 0) {
+                  <ul class="list-unstyled small project-board__scroll">
+                    @for (c of comments; track c.id) {
+                      <li class="mb-2 py-2 px-3 bg-body-tertiary rounded">
+                        <div
+                          class="project-board__activity-line d-flex flex-wrap align-items-center column-gap-2 row-gap-1 mb-1 small"
+                        >
+                          <span class="text-body-secondary">{{ c.createdAt | date: activityOccurredAtFormat }}</span>
+                          @if (c.userEmail) {
+                            <span class="text-body-secondary text-truncate project-board__activity-actor">{{
+                              c.userEmail
+                            }}</span>
+                          } @else {
+                            <span
+                              class="text-body-secondary project-board__activity-actor project-board__comment-author-unknown"
+                              i18n="@@featureProjectBoard-commentAuthorDash"
+                              >—</span
+                            >
+                          }
+                        </div>
+                        <div class="text-break">{{ c.body }}</div>
+                      </li>
+                    }
+                  </ul>
+                }
+              }
 
               <h3 class="h6 mt-3" i18n="@@featureProjectBoard-activityHeading">Activity</h3>
               <ul class="list-unstyled small project-board__scroll">
@@ -743,6 +827,66 @@
           i18n="@@featureProjectBoard-globalSearchClose"
         >
           Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #createTimeModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureProjectBoard-createTimeEntryTitle">New time entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" for="ticketTimeStartedAt" i18n="@@featureProjectBoard-timeStartLabel">Start</label>
+          <input
+            id="ticketTimeStartedAt"
+            type="datetime-local"
+            class="form-control"
+            [(ngModel)]="timeFormStartedAt"
+            name="ticketTimeStartedAt"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="ticketTimeEndedAt" i18n="@@featureProjectBoard-timeEndLabel">End</label>
+          <input
+            id="ticketTimeEndedAt"
+            type="datetime-local"
+            class="form-control"
+            [(ngModel)]="timeFormEndedAt"
+            name="ticketTimeEndedAt"
+            required
+          />
+        </div>
+        <div class="mb-0">
+          <label class="form-label" for="ticketTimeDesc" i18n="@@featureProjectBoard-timeDescriptionLabel"
+            >Description</label
+          >
+          <input
+            id="ticketTimeDesc"
+            class="form-control"
+            [(ngModel)]="timeFormDescription"
+            name="ticketTimeDescription"
+          />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureProjectBoard-cancel">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitTicketTimeEntry()"
+          [disabled]="ticketTimeSaving() || !isTicketTimeFormValid()"
+          i18n="@@featureProjectBoard-createTimeEntry"
+        >
+          Create
         </button>
       </div>
     </div>

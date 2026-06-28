@@ -13,6 +13,7 @@ import { ProjectsRepository } from '../repositories/projects.repository';
 import { ensureProjectAdmin, ensureProjectReadable } from '../utils/project-access.utils';
 import { ProjectBoardRealtimeService } from './project-board-realtime.service';
 import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
+import { ProjectBoardSummaryService } from './project-board-summary.service';
 
 @Injectable()
 export class ProjectMilestonesService {
@@ -21,6 +22,7 @@ export class ProjectMilestonesService {
     private readonly milestonesRepository: ProjectMilestonesRepository,
     private readonly ticketsRepository: ProjectTicketsRepository,
     private readonly projectBoardRealtime: ProjectBoardRealtimeService,
+    private readonly projectBoardSummary: ProjectBoardSummaryService,
   ) {}
 
   async list(projectId: string, userInfo: UserInfoFromRequest): Promise<ProjectMilestoneResponseDto[]> {
@@ -54,6 +56,7 @@ export class ProjectMilestonesService {
     const mapped = await this.mapMilestone(milestone);
 
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.milestoneUpsert, mapped);
+    await this.projectBoardSummary.emitSummaryChanged(project);
 
     return mapped;
   }
@@ -88,6 +91,7 @@ export class ProjectMilestonesService {
     const mapped = await this.mapMilestone(updated);
 
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.milestoneUpsert, mapped);
+    await this.projectBoardSummary.emitSummaryChanged(project);
 
     return mapped;
   }
@@ -114,6 +118,7 @@ export class ProjectMilestonesService {
     const mapped = await this.mapMilestone(updated);
 
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.milestoneUpsert, mapped);
+    await this.projectBoardSummary.emitSummaryChanged(project);
 
     return mapped;
   }
@@ -139,6 +144,7 @@ export class ProjectMilestonesService {
       id: milestoneId,
       projectId,
     });
+    await this.projectBoardSummary.emitSummaryChanged(project);
   }
 
   private async mapMilestone(milestone: ProjectMilestoneEntity): Promise<ProjectMilestoneResponseDto> {

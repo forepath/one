@@ -34,7 +34,13 @@ describe('ProjectsFacade', () => {
   });
 
   it('billProjectTime dispatches billProjectTime', () => {
-    facade.billProjectTime('p-1');
-    expect(store.dispatch).toHaveBeenCalledWith(billProjectTime({ projectId: 'p-1' }));
+    facade.billProjectTime('p-1', '2026-06-01T08:00:00.000Z', '2026-06-01T17:00:00.000Z');
+    expect(store.dispatch).toHaveBeenCalledWith(
+      billProjectTime({
+        projectId: 'p-1',
+        from: '2026-06-01T08:00:00.000Z',
+        to: '2026-06-01T17:00:00.000Z',
+      }),
+    );
   });
 });

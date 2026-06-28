@@ -32,6 +32,7 @@ export class ProjectTimeEntriesController {
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
+    @Query('ticketId', new ParseUUIDPipe({ version: '4', optional: true })) ticketId?: string,
     @Req() req?: RequestWithUser,
   ): Promise<PaginatedProjectTimeEntriesResponseDto> {
     return await this.timeEntriesService.list(
@@ -39,6 +40,7 @@ export class ProjectTimeEntriesController {
       limit ?? 10,
       offset ?? 0,
       getUserFromRequest(req || ({} as RequestWithUser)),
+      ticketId,
     );
   }
 

@@ -10,15 +10,21 @@ sequenceDiagram
     participant Summary as ProjectsService
     participant RT as ProjectBoardRealtimeService
 
-    Admin->>API: POST /admin/billing/projects/{projectId}/bill-time
-    API->>Billing: billUnbilledTime(projectId, adminUserId)
+    Admin->>API: GET /admin/billing/projects/{projectId}/unbilled-time-bounds
+    API->>Billing: getUnbilledTimeBounds(projectId)
+    Billing->>Time: findUnbilledTimeBounds(projectId)
+    Billing-->>Admin: 200 { from, to, entryCount }
+
+    Admin->>API: POST /admin/billing/projects/{projectId}/bill-time { from, to }
+    API->>Billing: billUnbilledTime(projectId, adminUserId, range)
+    Billing->>Billing: resolveProjectBillTimeRange(from, to)
     Billing->>Billing: findByIdOrThrow(project)
     Billing->>Profile: getByUserId(project.userId)
     alt profile incomplete
         Billing-->>Admin: 400 Assigned customer profile is incomplete
     end
-    Billing->>Time: findUnbilledByProject(projectId)
-    alt no unbilled entries
+    Billing->>Time: findUnbilledByProjectInRange(projectId, from, to)
+    alt no unbilled entries in range
         Billing-->>Admin: 400 No unbilled time entries
     end
     Billing->>Billing: compute hours × hourlyRateNet

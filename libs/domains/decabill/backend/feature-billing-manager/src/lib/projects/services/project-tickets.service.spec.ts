@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { UserRole } from '@forepath/identity/backend';
 
 import { ProjectTicketActionType, ProjectTicketStatus } from '../entities/project.enums';
@@ -18,6 +18,7 @@ describe('ProjectTicketsService', () => {
   const activitiesRepository = { create: jest.fn(), findAllByTicket: jest.fn().mockResolvedValue([]) };
   const usersRepository = { findByIdForTenant: jest.fn() };
   const projectBoardRealtime = { emitToProject: jest.fn() };
+  const projectBoardSummary = { emitSummaryChanged: jest.fn() };
 
   let service: ProjectTicketsService;
 
@@ -31,6 +32,7 @@ describe('ProjectTicketsService', () => {
       activitiesRepository as never,
       usersRepository as never,
       projectBoardRealtime as never,
+      projectBoardSummary as never,
     );
   });
 
@@ -98,5 +100,109 @@ describe('ProjectTicketsService', () => {
         payload: { from: null, to: 'm1' },
       }),
     );
+    expect(projectBoardSummary.emitSummaryChanged).toHaveBeenCalledWith({ id: 'p1', userId: 'admin-1' });
+  });
+
+  it('lock ticket records LOCKED activity and emits realtime', async () => {
+    const ticket = {
+      id: 't1',
+      projectId: 'p1',
+      title: 'Root',
+      content: '',
+      status: ProjectTicketStatus.TODO,
+      priority: 'medium',
+      milestoneId: null,
+      parentId: null,
+      locked: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const lockedTicket = { ...ticket, locked: true };
+
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    ticketsRepository.findByIdOrThrow.mockResolvedValueOnce(ticket).mockResolvedValueOnce(lockedTicket);
+    ticketsRepository.update.mockResolvedValue(lockedTicket);
+    ticketsRepository.findAllByProject.mockResolvedValue([lockedTicket]);
+
+    const result = await service.update('p1', 't1', { locked: true }, {
+      user: { id: 'admin-1', roles: [UserRole.ADMIN] },
+      apiKeyAuthenticated: false,
+    } as never);
+
+    expect(result.locked).toBe(true);
+    expect(activitiesRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ticketId: 't1',
+        actionType: ProjectTicketActionType.LOCKED,
+      }),
+    );
+    expect(projectBoardRealtime.emitToProject).toHaveBeenCalled();
+    expect(projectBoardSummary.emitSummaryChanged).toHaveBeenCalledWith({ id: 'p1', userId: 'admin-1' });
+  });
+
+  it('update rejects locked ticket', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    ticketsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 't1',
+      projectId: 'p1',
+      title: 'Locked',
+      content: '',
+      status: ProjectTicketStatus.DONE,
+      priority: 'medium',
+      locked: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    await expect(
+      service.update('p1', 't1', { title: 'New title' }, {
+        user: { id: 'admin-1', roles: [UserRole.ADMIN] },
+        apiKeyAuthenticated: false,
+      } as never),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('delete rejects locked ticket', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    ticketsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 't1',
+      projectId: 'p1',
+      title: 'Locked',
+      content: '',
+      status: ProjectTicketStatus.DONE,
+      priority: 'medium',
+      locked: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    await expect(
+      service.delete('p1', 't1', {
+        user: { id: 'admin-1', roles: [UserRole.ADMIN] },
+        apiKeyAuthenticated: false,
+      } as never),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('addComment rejects locked ticket', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'user-1' });
+    ticketsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 't1',
+      projectId: 'p1',
+      title: 'Locked',
+      content: '',
+      status: ProjectTicketStatus.DONE,
+      priority: 'medium',
+      locked: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    await expect(
+      service.addComment('p1', 't1', { body: 'Hello' }, {
+        user: { id: 'user-1', roles: [UserRole.USER] },
+        apiKeyAuthenticated: false,
+      } as never),
+    ).rejects.toThrow(BadRequestException);
   });
 });

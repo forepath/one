@@ -148,8 +148,8 @@
               <button
                 type="button"
                 class="btn btn-sm btn-outline-secondary"
-                (click)="billTime()"
-                [disabled]="(billing$ | async) === true"
+                (click)="openBillTimeModal()"
+                [disabled]="(billing$ | async) === true || billBoundsLoading()"
               >
                 <i class="bi bi-cash-coin me-1" aria-hidden="true"></i>
                 <span i18n="@@featureProjectDetail-billTime">Bill unbilled time</span>
@@ -362,6 +362,73 @@
           i18n="@@featureProjectDetail-deleteTime"
         >
           Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #billTimeModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureProjectDetail-billTimeTitle">Bill unbilled time</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (billBoundsLoading()) {
+          <div class="d-flex justify-content-center py-3">
+            <div class="spinner-border spinner-border-sm text-primary" role="status">
+              <span class="visually-hidden" i18n="@@featureProjectDetail-billTimeLoading">Loading range…</span>
+            </div>
+          </div>
+        } @else {
+          <div class="mb-3">
+            <label class="form-label" for="billTimeFrom" i18n="@@featureProjectDetail-billTimeFromLabel">From</label>
+            <input
+              id="billTimeFrom"
+              type="datetime-local"
+              class="form-control"
+              [(ngModel)]="billFormFrom"
+              name="billTimeFrom"
+              required
+            />
+          </div>
+          <div class="mb-0">
+            <label class="form-label" for="billTimeTo" i18n="@@featureProjectDetail-billTimeToLabel">To</label>
+            <input
+              id="billTimeTo"
+              type="datetime-local"
+              class="form-control"
+              [(ngModel)]="billFormTo"
+              name="billTimeTo"
+              required
+            />
+          </div>
+          @if (billBoundsEntryCount() === 0) {
+            <p class="text-muted small mt-3 mb-0" i18n="@@featureProjectDetail-billTimeNoUnbilled">
+              No unbilled time entries to bill.
+            </p>
+          }
+          @if (error$ | async; as err) {
+            <div class="alert alert-danger mt-3 mb-0" role="alert">{{ err }}</div>
+          }
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureProjectDetail-cancel">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="submitBillTime()"
+          [disabled]="
+            (billing$ | async) === true || billBoundsLoading() || billBoundsEntryCount() === 0 || !isBillTimeFormValid()
+          "
+          i18n="@@featureProjectDetail-confirmBillTime"
+        >
+          Bill time
         </button>
       </div>
     </div>

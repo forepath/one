@@ -125,6 +125,9 @@
 }
 
 .project-board__meta-chips .info-badge {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
   margin-top: 0;
 }
 
@@ -216,6 +219,13 @@
   }
 }
 
+// Global `.info-badge` is block-level flex; in definition-list cells that stretches full column width.
+.project-board__detail-fields > dd > .info-badge {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+}
+
 .project-board__hierarchy-badge {
   display: inline-flex;
   align-items: center;
@@ -276,6 +286,11 @@
 
 .project-board__detail-subtask-btn:hover {
   color: var(--bs-link-hover-color);
+}
+
+.project-board__detail-time-entries {
+  max-height: 16rem;
+  overflow-y: auto;
 }
 
 .project-board__scroll {

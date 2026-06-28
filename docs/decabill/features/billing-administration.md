@@ -91,13 +91,14 @@ Self-service `GET/POST /customer-profile` remains for end users. See [Customer P
 
 Projects are managed under `/admin/billing/projects`. Admins assign each project to a customer user, track time, and bill unbilled hours to an invoice.
 
-| Method | Path                                            | Purpose                                     |
-| ------ | ----------------------------------------------- | ------------------------------------------- |
-| GET    | `/admin/billing/projects`                       | Paginated list (`search`, `userId` filters) |
-| POST   | `/admin/billing/projects`                       | Create project                              |
-| POST   | `/admin/billing/projects/{projectId}`           | Update project                              |
-| DELETE | `/admin/billing/projects/{projectId}`           | Delete (no unbilled time)                   |
-| POST   | `/admin/billing/projects/{projectId}/bill-time` | Issue invoice from unbilled time            |
+| Method | Path                                                       | Purpose                                     |
+| ------ | ---------------------------------------------------------- | ------------------------------------------- |
+| GET    | `/admin/billing/projects`                                  | Paginated list (`search`, `userId` filters) |
+| POST   | `/admin/billing/projects`                                  | Create project                              |
+| POST   | `/admin/billing/projects/{projectId}`                      | Update project                              |
+| DELETE | `/admin/billing/projects/{projectId}`                      | Delete (no unbilled time)                   |
+| GET    | `/admin/billing/projects/{projectId}/unbilled-time-bounds` | Default bill-time range                     |
+| POST   | `/admin/billing/projects/{projectId}/bill-time`            | Issue invoice from unbilled time in range   |
 
 **Frontend:** `/administration/projects`
 

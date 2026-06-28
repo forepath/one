@@ -20,9 +20,71 @@ The UI renders four active lanes plus terminal states:
 | Prototype     | `prototype`      | Admin only                                 |
 | Done / Closed | `done`, `closed` | Admin only (detail editor, not drag lanes) |
 
-Lane labels are localized in the billing console. Locked tickets and tickets under a locked milestone cannot be edited or dragged by admins.
+Lane labels are localized in the billing console. Locked tickets cannot be edited or dragged by admins. See [Locking](#locking).
 
 Customers never see create-ticket or drag-drop controls (`isAdmin=false` on the board component).
+
+## Locking
+
+Locking freezes **delivery scope** on the board — what was agreed and documented — separately from **billing**, which freezes **hours and money**.
+
+### Why lock
+
+Typical reasons to lock work:
+
+- **Sign-off** — Ticket is done and you do not want title, description, or acceptance criteria changed after the customer saw it.
+- **Audit trail** — Each ticket has a stable content SHA; lock marks that version as final and records a `LOCKED` activity entry.
+- **Accident prevention** — Stop later edits to closed work while the project stays active.
+
+Locking is **not** a prerequisite for bill-time and does **not** run automatically when you invoice hours.
+
+### Ticket lock
+
+Admins lock a ticket from the ticket detail modal (lock icon) or via `POST /tickets/{ticketId}` with `{ "locked": true }`. Lock is **one-way** — there is no unlock in the API or UI.
+
+When `locked` is true:
+
+| Blocked                                                         | Still allowed                            |
+| --------------------------------------------------------------- | ---------------------------------------- |
+| Title, description, status, priority, milestone, parent updates | Read (admin and customer)                |
+| Drag between swimlanes                                          | View existing comments                   |
+| Delete                                                          | View existing time entries on the ticket |
+| New comments                                                    |                                          |
+| New time entries linked to the ticket                           |                                          |
+
+The backend rejects update and delete with `400 Cannot update locked ticket` / `Cannot delete locked ticket`. A successful lock emits `ticketUpsert`, `ticketActivityCreated` (`LOCKED`), and `projectSummaryChanged`.
+
+### Milestone lock
+
+Admins lock a milestone from the milestones panel or via `POST /milestones/{id}/lock`. Lock is **one-way**.
+
+When `lockedAt` is set:
+
+| Blocked                                  | Still allowed                                                         |
+| ---------------------------------------- | --------------------------------------------------------------------- |
+| Milestone rename and other field updates | Read milestones and tickets                                           |
+| Milestone delete                         | Ticket and time-entry operations (unless the ticket itself is locked) |
+
+Milestone lock marks a **delivery phase** as closed. Ticket lock is **per item** within a phase.
+
+### Relationship to billing
+
+These mechanisms are related in workflow but **not connected in code** today:
+
+| Mechanism      | What it freezes                                                  |
+| -------------- | ---------------------------------------------------------------- |
+| Ticket lock    | Ticket scope and board position                                  |
+| Milestone lock | Milestone metadata                                               |
+| Bill time      | Unbilled time entries → issued invoice (`billedAt`, `invoiceId`) |
+
+`POST /admin/billing/projects/{projectId}/bill-time` bills unbilled time entries **within the requested datetime range** regardless of ticket or milestone lock. The billing console loads default **From**/**To** values from `GET .../unbilled-time-bounds` before submit. After bill-time, billed time entries are immutable — that is the **billing freeze**, not ticket lock.
+
+See [Projects — Bill Time](./projects.md#bill-time) for invoicing preconditions and results.
+
+### Enforcement status
+
+- **Ticket lock:** Enforced on the backend and in the billing console UI.
+- **Milestone lock on tickets:** Ticket mutations when the assigned milestone is locked are **not yet enforced** on the backend (helper exists; wiring is pending). Milestone lock currently applies to the milestone row only.
 
 ## REST Board Operations
 
@@ -41,17 +103,17 @@ Base path: `/projects/{projectId}`
 | DELETE | `/tickets/{ticketId}`          | Admin only                                                        |
 | POST   | `/tickets/{ticketId}/comments` | Customer or admin                                                 |
 
-Tickets support parent-child hierarchy and optional milestone assignment. Each ticket gets a stable content SHA for traceability.
+Tickets support parent-child hierarchy and optional milestone assignment. Each ticket gets a stable content SHA for traceability. Time entries may reference a ticket (`ticketId` filter on `GET /time-entries`); the ticket detail panel lists linked entries and admins can log time from there. Ticket-scoped time entry changes emit `timeEntryUpsert` / `timeEntryRemoved` on the project board WebSocket.
 
 ### Milestones
 
-| Method | Path                    | Access                                               |
-| ------ | ----------------------- | ---------------------------------------------------- |
-| GET    | `/milestones`           | Customer read, admin read                            |
-| POST   | `/milestones`           | Admin only                                           |
-| POST   | `/milestones/{id}`      | Admin only                                           |
-| POST   | `/milestones/{id}/lock` | Admin only (locks milestone and related board edits) |
-| DELETE | `/milestones/{id}`      | Admin only                                           |
+| Method | Path                    | Access                                                                                         |
+| ------ | ----------------------- | ---------------------------------------------------------------------------------------------- |
+| GET    | `/milestones`           | Customer read, admin read                                                                      |
+| POST   | `/milestones`           | Admin only                                                                                     |
+| POST   | `/milestones/{id}`      | Admin only                                                                                     |
+| POST   | `/milestones/{id}/lock` | Admin only (one-way milestone lock; see [Project Board — Locking](./project-board.md#locking)) |
+| DELETE | `/milestones/{id}`      | Admin only                                                                                     |
 
 ## WebSocket Connection
 
@@ -108,18 +170,18 @@ On success the server emits `setProjectSuccess`. On failure it emits `error` to 
 
 Events are broadcast to the project room (`project:{projectId}`) after successful REST mutations:
 
-| Event                   | Purpose                                      |
-| ----------------------- | -------------------------------------------- |
-| `ticketUpsert`          | Created or updated ticket (full DTO)         |
-| `ticketRemoved`         | `{ id, projectId }`                          |
-| `ticketCommentCreated`  | New comment on a ticket                      |
-| `ticketActivityCreated` | Audit activity entry                         |
-| `milestoneUpsert`       | Created or updated milestone                 |
-| `milestoneRemoved`      | `{ id, projectId }`                          |
-| `timeEntryUpsert`       | Created or updated time entry                |
-| `timeEntryRemoved`      | `{ id, projectId }`                          |
-| `projectSummaryChanged` | Updated KPI summary (e.g. after bill-time)   |
-| `error`                 | Application errors for the initiating socket |
+| Event                   | Purpose                                                            |
+| ----------------------- | ------------------------------------------------------------------ |
+| `ticketUpsert`          | Created or updated ticket (full DTO)                               |
+| `ticketRemoved`         | `{ id, projectId }`                                                |
+| `ticketCommentCreated`  | New comment on a ticket                                            |
+| `ticketActivityCreated` | Audit activity entry                                               |
+| `milestoneUpsert`       | Created or updated milestone                                       |
+| `milestoneRemoved`      | `{ id, projectId }`                                                |
+| `timeEntryUpsert`       | Created or updated time entry                                      |
+| `timeEntryRemoved`      | `{ id, projectId }`                                                |
+| `projectSummaryChanged` | Updated KPI summary (tickets, milestones, time entries, bill-time) |
+| `error`                 | Application errors for the initiating socket                       |
 
 ## Security Model
 

@@ -9,15 +9,14 @@ import type {
   UpdateProjectTimeEntryDto,
 } from '../dto/project-time-entry.dto';
 import type { ProjectTimeEntryEntity } from '../entities/project-time-entry.entity';
-import type { ProjectEntity } from '../entities/project.entity';
 import { ProjectTicketsRepository } from '../repositories/project-tickets.repository';
 import { ProjectTimeEntriesRepository } from '../repositories/project-time-entries.repository';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { resolveProjectTimeEntryRange } from '../utils/project-time-entry-range.utils';
-import { ensureProjectAdmin, ensureProjectReadable } from '../utils/project-access.utils';
+import { ensureProjectAdmin, ensureProjectReadable, ensureTicketUnlocked } from '../utils/project-access.utils';
 import { ProjectBoardRealtimeService } from './project-board-realtime.service';
 import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
-import { ProjectsService } from './projects.service';
+import { ProjectBoardSummaryService } from './project-board-summary.service';
 
 @Injectable()
 export class ProjectTimeEntriesService {
@@ -26,7 +25,7 @@ export class ProjectTimeEntriesService {
     private readonly timeEntriesRepository: ProjectTimeEntriesRepository,
     private readonly ticketsRepository: ProjectTicketsRepository,
     private readonly projectBoardRealtime: ProjectBoardRealtimeService,
-    private readonly projectsService: ProjectsService,
+    private readonly projectBoardSummary: ProjectBoardSummaryService,
   ) {}
 
   async list(
@@ -34,12 +33,21 @@ export class ProjectTimeEntriesService {
     limit: number,
     offset: number,
     userInfo: UserInfoFromRequest,
+    ticketId?: string | null,
   ): Promise<PaginatedProjectTimeEntriesResponseDto> {
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
 
     ensureProjectReadable(userInfo, project);
 
-    const { items, total } = await this.timeEntriesRepository.findAllByProject(projectId, limit, offset);
+    if (ticketId) {
+      const ticket = await this.ticketsRepository.findByIdOrThrow(ticketId);
+
+      if (ticket.projectId !== projectId) {
+        throw new BadRequestException('Ticket does not belong to project');
+      }
+    }
+
+    const { items, total } = await this.timeEntriesRepository.findAllByProject(projectId, limit, offset, ticketId);
 
     return {
       items: items.map((e) => this.mapEntry(e)),
@@ -70,6 +78,8 @@ export class ProjectTimeEntriesService {
       if (ticket.projectId !== projectId) {
         throw new ForbiddenException('Ticket does not belong to project');
       }
+
+      ensureTicketUnlocked(ticket);
     }
 
     const range = resolveProjectTimeEntryRange(new Date(dto.startedAt), new Date(dto.endedAt));
@@ -89,7 +99,7 @@ export class ProjectTimeEntriesService {
 
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.timeEntryUpsert, mapped);
 
-    await this.emitSummaryChanged(project);
+    await this.projectBoardSummary.emitSummaryChanged(project);
 
     return mapped;
   }
@@ -121,6 +131,8 @@ export class ProjectTimeEntriesService {
       if (ticket.projectId !== projectId) {
         throw new ForbiddenException('Ticket does not belong to project');
       }
+
+      ensureTicketUnlocked(ticket);
     }
 
     const patch: Partial<ProjectTimeEntryEntity> = {
@@ -147,7 +159,7 @@ export class ProjectTimeEntriesService {
 
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.timeEntryUpsert, mapped);
 
-    await this.emitSummaryChanged(project);
+    await this.projectBoardSummary.emitSummaryChanged(project);
 
     return mapped;
   }
@@ -175,13 +187,7 @@ export class ProjectTimeEntriesService {
       projectId,
     });
 
-    await this.emitSummaryChanged(project);
-  }
-
-  private async emitSummaryChanged(project: ProjectEntity): Promise<void> {
-    const summary = await this.projectsService.buildSummary(project);
-
-    this.projectBoardRealtime.emitToProject(project.id, PROJECTS_BOARD_EVENTS.projectSummaryChanged, summary);
+    await this.projectBoardSummary.emitSummaryChanged(project);
   }
 
   private mapEntry(entry: ProjectTimeEntryEntity): ProjectTimeEntryResponseDto {

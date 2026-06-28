@@ -15,8 +15,18 @@ import {
   loadProjectsBatch,
   loadProjectsFailure,
   loadProjectsSuccess,
+  billProjectTime,
+  billProjectTimeFailure,
+  billProjectTimeSuccess,
+  loadProjectSummary,
 } from './projects.actions';
-import { loadAdminProjects$, loadAdminProjectsBatch$, loadProjects$, loadProjectsBatch$ } from './projects.effects';
+import {
+  loadAdminProjects$,
+  loadAdminProjectsBatch$,
+  loadProjects$,
+  loadProjectsBatch$,
+  billProjectTime$,
+} from './projects.effects';
 
 describe('ProjectsEffects', () => {
   let actions$: Actions;
@@ -99,6 +109,46 @@ describe('ProjectsEffects', () => {
 
     loadAdminProjectsBatch$(actions$, adminService).subscribe((result) => {
       expect(result).toEqual(loadAdminProjectsSuccess({ adminProjects: [project, project] }));
+      done();
+    });
+  });
+
+  it('billProjectTime$ dispatches success and reloads summary', (done) => {
+    const from = '2026-06-01T08:00:00.000Z';
+    const to = '2026-06-01T17:00:00.000Z';
+    const result = { invoiceId: 'inv-1', billedMinutes: 60, amountNet: 100 };
+
+    actions$ = of(billProjectTime({ projectId: 'p-1', from, to }));
+    adminService.billTime.mockReturnValue(of(result));
+
+    const emissions: unknown[] = [];
+
+    billProjectTime$(actions$, adminService).subscribe((action) => {
+      emissions.push(action);
+
+      if (emissions.length === 2) {
+        expect(adminService.billTime).toHaveBeenCalledWith('p-1', { from, to });
+        expect(emissions).toEqual([
+          billProjectTimeSuccess({ projectId: 'p-1', result }),
+          loadProjectSummary({ projectId: 'p-1' }),
+        ]);
+        done();
+      }
+    });
+  });
+
+  it('billProjectTime$ handles failure', (done) => {
+    actions$ = of(
+      billProjectTime({
+        projectId: 'p-1',
+        from: '2026-06-01T08:00:00.000Z',
+        to: '2026-06-01T17:00:00.000Z',
+      }),
+    );
+    adminService.billTime.mockReturnValue(throwError(() => new Error('bill failed')));
+
+    billProjectTime$(actions$, adminService).subscribe((action) => {
+      expect(action).toEqual(billProjectTimeFailure({ error: 'bill failed' }));
       done();
     });
   });

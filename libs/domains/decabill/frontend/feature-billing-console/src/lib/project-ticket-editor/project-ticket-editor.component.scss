@@ -71,3 +71,11 @@
     min-height: 320px;
   }
 }
+
+:host(.project-ticket-editor--readonly) {
+  .editor-shell {
+    .editor-host {
+      min-height: 0;
+    }
+  }
+}

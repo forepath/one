@@ -43,6 +43,7 @@ import { ProjectTimeEntriesRepository } from './projects/repositories/project-ti
 import { ProjectsRepository } from './projects/repositories/projects.repository';
 import { ProjectBillingService } from './projects/services/project-billing.service';
 import { ProjectBoardRealtimeService } from './projects/services/project-board-realtime.service';
+import { ProjectBoardSummaryService } from './projects/services/project-board-summary.service';
 import { ProjectMilestonesService } from './projects/services/project-milestones.service';
 import { ProjectTicketsService } from './projects/services/project-tickets.service';
 import { ProjectTimeEntriesService } from './projects/services/project-time-entries.service';
@@ -495,6 +496,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     ProjectTimeEntriesService,
     ProjectBillingService,
     ProjectBoardRealtimeService,
+    ProjectBoardSummaryService,
     ProjectBoardGateway,
     ProjectsRepository,
     ProjectMilestonesRepository,

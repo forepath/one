@@ -108,7 +108,10 @@ export const deleteAdminProjectFailure = createAction(
   props<{ error: string }>(),
 );
 
-export const billProjectTime = createAction('[Projects] Bill Project Time', props<{ projectId: string }>());
+export const billProjectTime = createAction(
+  '[Projects] Bill Project Time',
+  props<{ projectId: string; from: string; to: string }>(),
+);
 export const billProjectTimeSuccess = createAction(
   '[Projects] Bill Project Time Success',
   props<{ projectId: string; result: BillProjectTimeResponse }>(),

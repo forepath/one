@@ -5,14 +5,18 @@ import { BillingAuditLogService } from '../../services/billing-audit-log.service
 import { CustomerProfilesService } from '../../services/customer-profiles.service';
 import { InvoiceIssuanceService } from '../../services/invoice-issuance.service';
 import { InvoiceService } from '../../services/invoice.service';
-import type { BillProjectTimeResponseDto } from '../dto/project.dto';
+import type { BillProjectTimeResponseDto, ProjectUnbilledTimeBoundsDto } from '../dto/project.dto';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectTimeEntriesRepository } from '../repositories/project-time-entries.repository';
-import { ProjectBoardRealtimeService } from './project-board-realtime.service';
-import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
-import { ProjectsService } from './projects.service';
+import { resolveProjectBillTimeRange } from '../utils/project-bill-time-range.utils';
+import { ProjectBoardSummaryService } from './project-board-summary.service';
 
 const MIN_BILLABLE_AMOUNT = 0.01;
+
+export interface BillProjectTimeRange {
+  from: Date;
+  to: Date;
+}
 
 @Injectable()
 export class ProjectBillingService {
@@ -23,11 +27,27 @@ export class ProjectBillingService {
     private readonly invoiceService: InvoiceService,
     private readonly invoiceIssuanceService: InvoiceIssuanceService,
     private readonly auditLog: BillingAuditLogService,
-    private readonly projectsService: ProjectsService,
-    private readonly projectBoardRealtime: ProjectBoardRealtimeService,
+    private readonly projectBoardSummary: ProjectBoardSummaryService,
   ) {}
 
-  async billUnbilledTime(projectId: string, adminUserId: string): Promise<BillProjectTimeResponseDto> {
+  async getUnbilledTimeBounds(projectId: string): Promise<ProjectUnbilledTimeBoundsDto> {
+    await this.projectsRepository.findByIdOrThrow(projectId);
+
+    const bounds = await this.timeEntriesRepository.findUnbilledTimeBounds(projectId);
+
+    return {
+      from: bounds.from,
+      to: bounds.to,
+      entryCount: bounds.entryCount,
+    };
+  }
+
+  async billUnbilledTime(
+    projectId: string,
+    adminUserId: string,
+    range: BillProjectTimeRange,
+  ): Promise<BillProjectTimeResponseDto> {
+    const { from, to } = resolveProjectBillTimeRange(range.from, range.to);
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
     const profile = await this.customerProfilesService.getByUserId(project.userId);
 
@@ -35,10 +55,10 @@ export class ProjectBillingService {
       throw new BadRequestException('Assigned customer profile is incomplete');
     }
 
-    const entries = await this.timeEntriesRepository.findUnbilledByProject(projectId);
+    const entries = await this.timeEntriesRepository.findUnbilledByProjectInRange(projectId, from, to);
 
     if (entries.length === 0) {
-      throw new BadRequestException('No unbilled time entries');
+      throw new BadRequestException('No unbilled time entries in range');
     }
 
     const billedMinutes = entries.reduce((sum, e) => sum + e.durationMinutes, 0);
@@ -50,7 +70,7 @@ export class ProjectBillingService {
       throw new BadRequestException('Billable amount below minimum');
     }
 
-    const description = `Project ${project.name} — ${hours.toFixed(2)}h @ ${rate.toFixed(2)}/${project.currency}/h`;
+    const description = `Project ${project.name} — ${hours.toFixed(2)}h @ ${rate.toFixed(2)}/${project.currency}/h (${from.toISOString()} – ${to.toISOString()})`;
 
     const draft = await this.invoiceService.createDraft({
       userId: project.userId,
@@ -81,12 +101,10 @@ export class ProjectBillingService {
       message: 'Admin billed project time',
       invoiceId: issued.id,
       userId: project.userId,
-      context: { adminUserId, projectId, billedMinutes, amountNet },
+      context: { adminUserId, projectId, billedMinutes, amountNet, from: from.toISOString(), to: to.toISOString() },
     });
 
-    const summary = await this.projectsService.buildSummary(project);
-
-    this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.projectSummaryChanged, summary);
+    await this.projectBoardSummary.emitSummaryChanged(project);
 
     return {
       invoiceId: issued.id,

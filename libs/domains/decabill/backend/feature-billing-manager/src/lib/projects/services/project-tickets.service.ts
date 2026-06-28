@@ -23,7 +23,12 @@ import { ProjectTicketActivitiesRepository } from '../repositories/project-ticke
 import { ProjectTicketCommentsRepository } from '../repositories/project-ticket-comments.repository';
 import { ProjectTicketsRepository } from '../repositories/project-tickets.repository';
 import { ProjectsRepository } from '../repositories/projects.repository';
-import { ensureProjectAdmin, ensureProjectComment, ensureProjectReadable } from '../utils/project-access.utils';
+import {
+  ensureProjectAdmin,
+  ensureProjectComment,
+  ensureProjectReadable,
+  ensureTicketUnlocked,
+} from '../utils/project-access.utils';
 import { deriveProjectTicketLongSha, shortShaFromLong } from '../utils/project-ticket-sha.utils';
 import {
   buildDescendantCheckboxTaskTotalsByTicketId,
@@ -31,6 +36,7 @@ import {
 } from '../utils/ticket-content-checkbox-tasks.utils';
 import { ProjectBoardRealtimeService } from './project-board-realtime.service';
 import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
+import { ProjectBoardSummaryService } from './project-board-summary.service';
 
 @Injectable()
 export class ProjectTicketsService {
@@ -42,6 +48,7 @@ export class ProjectTicketsService {
     private readonly activitiesRepository: ProjectTicketActivitiesRepository,
     private readonly usersRepository: UsersRepository,
     private readonly projectBoardRealtime: ProjectBoardRealtimeService,
+    private readonly projectBoardSummary: ProjectBoardSummaryService,
   ) {}
 
   async listTickets(
@@ -146,6 +153,7 @@ export class ProjectTicketsService {
     const mapped = await this.findOne(projectId, saved.id, false, userInfo);
 
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.ticketUpsert, mapped);
+    await this.projectBoardSummary.emitSummaryChanged(project);
 
     return mapped;
   }
@@ -166,6 +174,29 @@ export class ProjectTicketsService {
 
     ensureProjectAdmin(userInfo);
     ensureProjectReadable(userInfo, project);
+
+    if (ticket.locked) {
+      throw new BadRequestException('Cannot update locked ticket');
+    }
+
+    if (dto.locked === true) {
+      await this.ticketsRepository.update(ticketId, { locked: true });
+
+      await this.activitiesRepository.create({
+        ticketId,
+        actorType: ProjectTicketActorType.HUMAN,
+        actorUserId: userInfo.userId ?? null,
+        actionType: ProjectTicketActionType.LOCKED,
+        payload: {},
+      });
+
+      const mapped = await this.findOne(projectId, ticketId, false, userInfo);
+
+      this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.ticketUpsert, mapped);
+      await this.projectBoardSummary.emitSummaryChanged(project);
+
+      return mapped;
+    }
 
     if (dto.parentId !== undefined && dto.parentId) {
       const parent = await this.ticketsRepository.findByIdOrThrow(dto.parentId);
@@ -198,6 +229,7 @@ export class ProjectTicketsService {
     const mapped = await this.findOne(projectId, ticketId, false, userInfo);
 
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.ticketUpsert, mapped);
+    await this.projectBoardSummary.emitSummaryChanged(project);
 
     return mapped;
   }
@@ -214,6 +246,10 @@ export class ProjectTicketsService {
     ensureProjectAdmin(userInfo);
     ensureProjectReadable(userInfo, project);
 
+    if (ticket.locked) {
+      throw new BadRequestException('Cannot delete locked ticket');
+    }
+
     await this.activitiesRepository.create({
       ticketId,
       actorType: ProjectTicketActorType.HUMAN,
@@ -228,6 +264,7 @@ export class ProjectTicketsService {
       id: ticketId,
       projectId,
     });
+    await this.projectBoardSummary.emitSummaryChanged(project);
   }
 
   async listComments(
@@ -257,6 +294,7 @@ export class ProjectTicketsService {
     }
 
     ensureProjectComment(userInfo, project);
+    ensureTicketUnlocked(ticket);
 
     if (!userInfo.userId) {
       throw new BadRequestException('User not authenticated');

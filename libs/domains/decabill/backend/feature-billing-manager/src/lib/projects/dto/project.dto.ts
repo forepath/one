@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, IsUUID, Length, MaxLength, Min } from 'class-validator';
+import { IsDateString, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Length, MaxLength, Min } from 'class-validator';
 
 import { ProjectStatus } from '../entities/project.enums';
 
@@ -113,4 +113,18 @@ export class BillProjectTimeResponseDto {
   invoiceNumber?: string;
   billedMinutes!: number;
   amountNet!: number;
+}
+
+export class BillProjectTimeDto {
+  @IsDateString()
+  from!: string;
+
+  @IsDateString()
+  to!: string;
+}
+
+export class ProjectUnbilledTimeBoundsDto {
+  from?: Date | null;
+  to?: Date | null;
+  entryCount!: number;
 }

@@ -67,3 +67,26 @@ export const projectBoardTimeEntryRemoved = createAction(
   '[ProjectTimeEntries] Board Socket Removed',
   props<{ id: string; projectId: string }>(),
 );
+
+export const loadProjectTicketTimeEntries = createAction(
+  '[ProjectTimeEntries] Load Ticket',
+  props<{ projectId: string; ticketId: string }>(),
+);
+export const loadProjectTicketTimeEntriesBatch = createAction(
+  '[ProjectTimeEntries] Load Ticket Batch',
+  props<{
+    projectId: string;
+    ticketId: string;
+    offset: number;
+    accumulatedEntries: ProjectTimeEntryResponse[];
+  }>(),
+);
+export const loadProjectTicketTimeEntriesSuccess = createAction(
+  '[ProjectTimeEntries] Load Ticket Success',
+  props<{ entries: ProjectTimeEntryResponse[] }>(),
+);
+export const loadProjectTicketTimeEntriesFailure = createAction(
+  '[ProjectTimeEntries] Load Ticket Failure',
+  props<{ error: string }>(),
+);
+export const clearProjectTicketTimeEntries = createAction('[ProjectTimeEntries] Clear Ticket Scope');

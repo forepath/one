@@ -39,15 +39,16 @@ Customers can list and view tickets, milestones, and ticket comments. Ticket cre
 
 All admin routes require admin role (`@KeycloakRoles(ADMIN)` + `@UsersRoles(ADMIN)`).
 
-| Method | Path                                            | Purpose                                                     |
-| ------ | ----------------------------------------------- | ----------------------------------------------------------- |
-| GET    | `/admin/billing/projects`                       | Paginated list (optional `search`, `userId` filter)         |
-| GET    | `/admin/billing/projects/{projectId}`           | Detail with summary and assignee email                      |
-| GET    | `/admin/billing/projects/{projectId}/summary`   | KPI summary                                                 |
-| POST   | `/admin/billing/projects`                       | Create project (requires `userId`, `name`, `hourlyRateNet`) |
-| POST   | `/admin/billing/projects/{projectId}`           | Update project                                              |
-| DELETE | `/admin/billing/projects/{projectId}`           | Delete (blocked when unbilled time entries exist)           |
-| POST   | `/admin/billing/projects/{projectId}/bill-time` | Bill all unbilled time to a issued invoice                  |
+| Method | Path                                                       | Purpose                                                     |
+| ------ | ---------------------------------------------------------- | ----------------------------------------------------------- |
+| GET    | `/admin/billing/projects`                                  | Paginated list (optional `search`, `userId` filter)         |
+| GET    | `/admin/billing/projects/{projectId}`                      | Detail with summary and assignee email                      |
+| GET    | `/admin/billing/projects/{projectId}/summary`              | KPI summary                                                 |
+| POST   | `/admin/billing/projects`                                  | Create project (requires `userId`, `name`, `hourlyRateNet`) |
+| POST   | `/admin/billing/projects/{projectId}`                      | Update project                                              |
+| DELETE | `/admin/billing/projects/{projectId}`                      | Delete (blocked when unbilled time entries exist)           |
+| GET    | `/admin/billing/projects/{projectId}/unbilled-time-bounds` | Oldest/newest unbilled entry range for bill-time defaults   |
+| POST   | `/admin/billing/projects/{projectId}/bill-time`            | Bill unbilled time in range to an issued invoice            |
 
 **Frontend route:** `/administration/projects`
 
@@ -83,17 +84,42 @@ Entries may optionally reference a ticket (`ticketId`). Billed entries (`billedA
 
 ## Bill Time
 
-`POST /admin/billing/projects/{projectId}/bill-time` converts all **unbilled** time entries into one issued invoice line item for the project's assigned customer.
+`POST /admin/billing/projects/{projectId}/bill-time` converts **unbilled** time entries that fall fully within a requested datetime range into one issued invoice line item for the project's assigned customer.
+
+### Unbilled time bounds
+
+`GET /admin/billing/projects/{projectId}/unbilled-time-bounds` returns the default range for the billing console modal:
+
+| Field        | Description                                          |
+| ------------ | ---------------------------------------------------- |
+| `from`       | `startedAt` of the oldest unbilled entry (or `null`) |
+| `to`         | `endedAt` of the newest unbilled entry (or `null`)   |
+| `entryCount` | Number of unbilled entries on the project            |
+
+### Request body
+
+`POST .../bill-time` requires a JSON body:
+
+| Field  | Description                       |
+| ------ | --------------------------------- |
+| `from` | Range start (ISO 8601, inclusive) |
+| `to`   | Range end (ISO 8601, inclusive)   |
+
+Only unbilled entries where `startedAt >= from` and `endedAt <= to` are included. `from` must be strictly before `to`.
 
 ### Preconditions
 
 1. Assigned customer has a **complete** billing profile (same rules as subscription ordering and manual invoice issuance)
-2. At least one unbilled time entry exists
+2. At least one unbilled time entry exists **within the requested range**
 3. Billable net amount is at least **0.01** in project currency
 
 ### Result
 
 The response includes `invoiceId`, `invoiceNumber`, `billedMinutes`, and `amountNet`. Time entries are marked with `invoiceId` and `billedAt`. A `projectSummaryChanged` event is emitted on the project board WebSocket.
+
+The billing console opens a modal with **From** and **To** datetime fields pre-filled from the bounds endpoint before submitting bill-time.
+
+Bill-time does **not** require ticket or milestone lock and does **not** lock tickets automatically. Board scope lock (ticket/milestone) and billing lock (billed time entries) are separate concerns. See [Project Board — Locking](./project-board.md#locking).
 
 ```mermaid
 sequenceDiagram
@@ -103,15 +129,17 @@ sequenceDiagram
     participant Invoice as InvoiceIssuanceService
     participant WS as Project Board Gateway
 
-    Admin->>API: POST /admin/billing/projects/{id}/bill-time
+    Admin->>API: GET /admin/billing/projects/{id}/unbilled-time-bounds
+    API-->>Admin: 200 { from, to, entryCount }
+    Admin->>API: POST /admin/billing/projects/{id}/bill-time { from, to }
     API->>Profile: getByUserId(project.userId)
     alt Profile incomplete
         API-->>Admin: 400 Assigned customer profile is incomplete
-    else No unbilled entries
+    else No unbilled entries in range
         API-->>Admin: 400 No unbilled time entries
     else OK
         API->>Invoice: createDraft + issueDraft
-        API->>API: markBilled(time entry ids)
+        API->>API: markBilled(time entry ids in range)
         API->>WS: projectSummaryChanged
         API-->>Admin: 200 BillProjectTimeResponse
     end

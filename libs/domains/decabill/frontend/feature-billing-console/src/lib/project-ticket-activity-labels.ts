@@ -14,6 +14,8 @@ export function projectTicketActivityActionLabel(actionType: string): string {
       return $localize`:@@featureProjectBoard-activityActionParentChanged:Parent changed`;
     case 'MILESTONE_CHANGED':
       return $localize`:@@featureProjectBoard-activityActionMilestoneChanged:Milestone changed`;
+    case 'LOCKED':
+      return $localize`:@@featureProjectBoard-activityActionLocked:Locked`;
     case 'FIELD_UPDATED':
       return $localize`:@@featureProjectBoard-activityActionFieldUpdated:Details updated`;
     default:
@@ -33,6 +35,8 @@ export function projectTicketActivityActionBadgeClass(actionType: string): strin
       return 'project-board__chip--activity-status';
     case 'PRIORITY_CHANGED':
       return 'project-board__chip--activity-priority';
+    case 'LOCKED':
+      return 'project-board__chip--activity-muted';
     case 'PARENT_CHANGED':
     case 'MILESTONE_CHANGED':
     case 'FIELD_UPDATED':

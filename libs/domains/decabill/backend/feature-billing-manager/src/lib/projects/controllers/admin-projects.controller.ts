@@ -19,11 +19,13 @@ import type { RequestWithUser } from '../../utils/billing-access.utils';
 import { getUserFromRequest } from '../../utils/billing-access.utils';
 
 import type {
+  BillProjectTimeDto,
   BillProjectTimeResponseDto,
   CreateAdminProjectDto,
   PaginatedAdminProjectsResponseDto,
   ProjectResponseDto,
   ProjectSummaryResponseDto,
+  ProjectUnbilledTimeBoundsDto,
   UpdateAdminProjectDto,
 } from '../dto/project.dto';
 import { ProjectsAdminService } from '../services/projects-admin.service';
@@ -67,9 +69,17 @@ export class AdminProjectsController {
     return await this.projectsAdminService.update(id, dto);
   }
 
+  @Get(':id/unbilled-time-bounds')
+  async unbilledTimeBounds(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<ProjectUnbilledTimeBoundsDto> {
+    return await this.projectsAdminService.getUnbilledTimeBounds(id);
+  }
+
   @Post(':id/bill-time')
   async billTime(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: BillProjectTimeDto,
     @Req() req: RequestWithUser,
   ): Promise<BillProjectTimeResponseDto> {
     const userInfo = getUserFromRequest(req);
@@ -78,7 +88,7 @@ export class AdminProjectsController {
       throw new BadRequestException('User not authenticated');
     }
 
-    return await this.projectsAdminService.billTime(id, userInfo.userId);
+    return await this.projectsAdminService.billTime(id, userInfo.userId, dto);
   }
 
   @Delete(':id')

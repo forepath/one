@@ -190,7 +190,8 @@ Customer-assigned project tracking with admin CRUD, time entries, KPI summaries,
 - One project per assigned customer user (`userId`)
 - Admin CRUD under `/admin/billing/projects`
 - Customer read-only list and detail under `/projects`
-- `POST .../bill-time` issues invoice from unbilled time entries
+- `POST .../bill-time` issues invoice from unbilled time entries in a datetime range (independent of board lock)
+- `GET .../unbilled-time-bounds` returns default From/To for the bill-time modal
 - KPI summary with tracked, unbilled, and billed amounts
 
 ### [Project Board](./project-board.md)
@@ -200,8 +201,8 @@ Live Kanban board for project tickets with Socket.IO on namespace **`projects`**
 **Key Capabilities**:
 
 - Swimlanes for draft, todo, in progress, and prototype statuses
-- Admin ticket and milestone CRUD; customer comments
-- Room-based broadcasts after REST mutations
+- Admin ticket and milestone CRUD; one-way lock for delivery scope freeze
+- Customer comments; room-based broadcasts after REST mutations
 - `setProject` handshake to join `project:{projectId}`
 
 ## Feature Relationships

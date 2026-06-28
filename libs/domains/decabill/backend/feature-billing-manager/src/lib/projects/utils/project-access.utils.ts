@@ -1,5 +1,5 @@
 import { UserRole } from '@forepath/identity/backend';
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 
 import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
 import { ensureAdmin } from '../../utils/billing-access.utils';
@@ -34,6 +34,12 @@ export function isTicketLockedForNonAdmin(
   milestone: ProjectMilestoneEntity | null | undefined,
 ): boolean {
   return ticket.locked || isMilestoneLocked(milestone);
+}
+
+export function ensureTicketUnlocked(ticket: ProjectTicketEntity): void {
+  if (ticket.locked) {
+    throw new BadRequestException('Ticket is locked');
+  }
 }
 
 export function ensureProjectBoardWrite(

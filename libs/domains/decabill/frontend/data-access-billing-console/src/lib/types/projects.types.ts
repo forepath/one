@@ -79,6 +79,17 @@ export interface BillProjectTimeResponse {
   amountNet: number;
 }
 
+export interface BillProjectTimeDto {
+  from: string;
+  to: string;
+}
+
+export interface ProjectUnbilledTimeBoundsResponse {
+  from?: string | null;
+  to?: string | null;
+  entryCount: number;
+}
+
 export interface AdminProjectsListParams extends ListParams {
   search?: string;
   userId?: string;

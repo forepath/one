@@ -21,6 +21,7 @@ import {
   BOARD_LANE_STATUSES,
   ProjectMilestonesFacade,
   ProjectTicketsFacade,
+  ProjectTimeEntriesFacade,
   filterTicketsForGlobalSearch,
   type BoardLaneStatus,
   type CreateProjectTicketDto,
@@ -30,10 +31,23 @@ import {
   type ProjectTicketPriority,
   type ProjectTicketResponse,
   type ProjectTicketStatus,
+  type ProjectTimeEntryResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { filter } from 'rxjs';
 
-import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import {
+  hideBillingModal,
+  showBillingModal,
+  swapToOverlayBillingModal,
+  watchBillingMutationModalClose,
+  type BillingModalSwapState,
+} from '../billing-modal';
+import {
+  getProjectTimeEntryBillingStatusIconClass,
+  getProjectTimeEntryBillingStatusLabel,
+  getProjectTimeEntryBillingStatusTextClass,
+  isProjectTimeEntryBilled,
+} from '../billing-status-labels';
 import {
   projectTicketActivityActionBadgeClass,
   projectTicketActivityActionLabel,
@@ -78,12 +92,14 @@ export class ProjectBoardComponent implements OnInit {
 
   @ViewChild('detailModal', { static: false }) private detailModal!: ElementRef<HTMLDivElement>;
   @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
+  @ViewChild('createTimeModal', { static: false }) private createTimeModal!: ElementRef<HTMLDivElement>;
   @ViewChild('globalSearchModal', { static: false }) private globalSearchModal?: ElementRef<HTMLDivElement>;
   @ViewChild('globalSearchInput', { static: false }) private globalSearchInput?: ElementRef<HTMLInputElement>;
 
   private readonly detailTitleInputRef = viewChild<ElementRef<HTMLInputElement>>('detailTitleInput');
   private readonly ticketsFacade = inject(ProjectTicketsFacade);
   private readonly milestonesFacade = inject(ProjectMilestonesFacade);
+  private readonly timeEntriesFacade = inject(ProjectTimeEntriesFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
 
@@ -119,26 +135,12 @@ export class ProjectBoardComponent implements OnInit {
 
   private lastDetailIdForDraft: string | null = null;
   private detailTitleEditSyncDetailId: string | null = null;
-  private detailSuspendedForCreateSubtask = false;
+  private readonly detailModalSwap: BillingModalSwapState = { suspended: false };
   /** Skip opening detail right after a drag ended (browser may emit click). */
   private suppressCardClickUntil = 0;
 
   isTicketDraggable(ticket: ProjectTicketResponse): boolean {
     return this.isAdmin && !ticket.locked;
-  }
-
-  hasTicketDescription(content: string | null | undefined): boolean {
-    if (!content?.trim()) {
-      return false;
-    }
-
-    const text = content
-      .replace(/<[^>]*>/g, ' ')
-      .replace(/&nbsp;/gi, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    return text.length > 0;
   }
 
   readonly ticketsBoardRowsByStatus$ = this.ticketsFacade.boardRowsByStatus$;
@@ -151,8 +153,16 @@ export class ProjectBoardComponent implements OnInit {
   readonly saving$ = this.ticketsFacade.saving$;
   readonly error$ = this.ticketsFacade.error$;
 
+  readonly ticketTimeEntries$ = this.timeEntriesFacade.ticketEntries$;
+  readonly ticketTimeLoading$ = this.timeEntriesFacade.ticketLoading$;
+  readonly ticketTimeError$ = this.timeEntriesFacade.ticketError$;
+  readonly ticketTimeSaving$ = this.timeEntriesFacade.saving$;
+
   readonly detail = toSignal(this.detail$, { initialValue: null as ProjectTicketResponse | null });
   readonly saving = toSignal(this.saving$, { initialValue: false });
+  readonly ticketTimeEntries = toSignal(this.ticketTimeEntries$, { initialValue: [] as ProjectTimeEntryResponse[] });
+  readonly ticketTimeLoading = toSignal(this.ticketTimeLoading$, { initialValue: false });
+  readonly ticketTimeSaving = toSignal(this.ticketTimeSaving$, { initialValue: false });
   readonly milestones = toSignal(this.milestonesFacade.milestones$, {
     initialValue: [] as ProjectMilestoneResponse[],
   });
@@ -171,6 +181,10 @@ export class ProjectBoardComponent implements OnInit {
     priority: 'medium',
     status: 'todo',
   };
+
+  timeFormStartedAt = '';
+  timeFormEndedAt = '';
+  timeFormDescription = '';
 
   constructor() {
     effect(() => {
@@ -220,6 +234,14 @@ export class ProjectBoardComponent implements OnInit {
         this.createParentId.set(null);
         this.resetCreateForm();
       },
+    });
+
+    watchBillingMutationModalClose({
+      loading$: this.ticketTimeSaving$,
+      error$: this.ticketTimeError$,
+      modal: () => this.createTimeModal,
+      destroyRef: this.destroyRef,
+      onSuccess: () => this.resetTicketTimeForm(),
     });
   }
 
@@ -390,7 +412,7 @@ export class ProjectBoardComponent implements OnInit {
   }
 
   closeDetail(): void {
-    this.detailSuspendedForCreateSubtask = false;
+    this.detailModalSwap.suspended = false;
     hideBillingModal(this.detailModal);
     this.detailTitleEditing.set(false);
     this.ticketsFacade.closeDetail();
@@ -421,68 +443,17 @@ export class ProjectBoardComponent implements OnInit {
       milestoneId: parent.milestoneId ?? undefined,
     };
 
-    const createEl = this.createModal?.nativeElement;
-
-    if (createEl?.classList.contains('show')) {
-      return;
-    }
-
-    if (this.detailSuspendedForCreateSubtask) {
-      return;
-    }
-
-    const detailEl = this.detailModal?.nativeElement;
-
-    if (!detailEl?.classList.contains('show')) {
-      queueMicrotask(() => showBillingModal(this.createModal));
-
-      return;
-    }
-
-    this.detailSuspendedForCreateSubtask = true;
-
-    const onDetailHidden = (): void => {
-      queueMicrotask(() => {
-        if (!this.createModal?.nativeElement) {
-          this.detailSuspendedForCreateSubtask = false;
-          showBillingModal(this.detailModal);
-
-          return;
-        }
-
-        showBillingModal(this.createModal);
-        this.registerReopenDetailAfterCreateModal();
-      });
-    };
-
-    detailEl.addEventListener('hidden.bs.modal', onDetailHidden, { once: true });
-    hideBillingModal(this.detailModal);
+    swapToOverlayBillingModal({
+      underlyingModal: this.detailModal,
+      overlayModal: this.createModal,
+      swapState: this.detailModalSwap,
+    });
   }
 
   closeCreateModal(): void {
     hideBillingModal(this.createModal);
     this.createParentId.set(null);
     this.resetCreateForm();
-  }
-
-  /** After create modal hides, restore ticket detail if it was swapped out for subtask creation. */
-  private registerReopenDetailAfterCreateModal(): void {
-    const el = this.createModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const onCreateHidden = (): void => {
-      if (!this.detailSuspendedForCreateSubtask) {
-        return;
-      }
-
-      this.detailSuspendedForCreateSubtask = false;
-      queueMicrotask(() => showBillingModal(this.detailModal));
-    };
-
-    el.addEventListener('hidden.bs.modal', onCreateHidden, { once: true });
   }
 
   submitCreate(): void {
@@ -526,6 +497,95 @@ export class ProjectBoardComponent implements OnInit {
     if (normalized === (d.milestoneId ?? null)) return;
 
     this.ticketsFacade.update(this.projectId, ticketId, { milestoneId: normalized });
+  }
+
+  lockTicket(ticketId: string): void {
+    if (!this.isAdmin) return;
+
+    const d = this.detail();
+
+    if (!d || d.locked) return;
+
+    this.ticketsFacade.update(this.projectId, ticketId, { locked: true });
+  }
+
+  lockedTicketLabel(): string {
+    return $localize`:@@featureProjectBoard-lockedTicket:Locked`;
+  }
+
+  showCreateTimeEntryModal(): void {
+    if (!this.isAdmin || !this.detail()?.id || this.detail()?.locked) return;
+
+    this.resetTicketTimeForm();
+    swapToOverlayBillingModal({
+      underlyingModal: this.detailModal,
+      overlayModal: this.createTimeModal,
+      swapState: this.detailModalSwap,
+    });
+  }
+
+  submitTicketTimeEntry(): void {
+    const ticketId = this.detail()?.id;
+
+    if (!this.isAdmin || !ticketId || this.detail()?.locked || !this.isTicketTimeFormValid()) return;
+
+    this.timeEntriesFacade.create(this.projectId, {
+      ticketId,
+      startedAt: this.datetimeLocalToIso(this.timeFormStartedAt),
+      endedAt: this.datetimeLocalToIso(this.timeFormEndedAt),
+      description: this.timeFormDescription.trim() || undefined,
+    });
+  }
+
+  timeEntryTitle(entry: ProjectTimeEntryResponse): string {
+    const description = entry.description?.trim();
+
+    return description || this.formatMinutes(entry.durationMinutes);
+  }
+
+  timeEntryShowsDurationInMeta(entry: ProjectTimeEntryResponse): boolean {
+    return !!entry.description?.trim();
+  }
+
+  timeEntryBillingStatusLabel(entry: ProjectTimeEntryResponse): string {
+    return getProjectTimeEntryBillingStatusLabel(isProjectTimeEntryBilled(entry));
+  }
+
+  timeEntryBillingStatusTextClass(entry: ProjectTimeEntryResponse): string {
+    return getProjectTimeEntryBillingStatusTextClass(isProjectTimeEntryBilled(entry));
+  }
+
+  timeEntryBillingStatusIconClass(entry: ProjectTimeEntryResponse): string {
+    return getProjectTimeEntryBillingStatusIconClass(isProjectTimeEntryBilled(entry));
+  }
+
+  formatMinutes(minutes: number): string {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  }
+
+  formatTimeEntryClockRange(startedAt: string, endedAt: string): string {
+    const start = new Date(startedAt);
+    const end = new Date(endedAt);
+    const sameDay =
+      start.getFullYear() === end.getFullYear() &&
+      start.getMonth() === end.getMonth() &&
+      start.getDate() === end.getDate();
+    const timeOptions: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
+
+    if (sameDay) {
+      return `${start.toLocaleTimeString([], timeOptions)} – ${end.toLocaleTimeString([], timeOptions)}`;
+    }
+
+    return `${start.toLocaleString()} – ${end.toLocaleString()}`;
+  }
+
+  isTicketTimeFormValid(): boolean {
+    if (!this.timeFormStartedAt || !this.timeFormEndedAt) return false;
+
+    return new Date(this.timeFormEndedAt).getTime() > new Date(this.timeFormStartedAt).getTime();
   }
 
   onDetailTitleClick(ticket: ProjectTicketResponse): void {
@@ -584,7 +644,7 @@ export class ProjectBoardComponent implements OnInit {
     const ticketId = this.detail()?.id;
     const body = this.commentBody().trim();
 
-    if (!ticketId || !body) return;
+    if (!ticketId || !body || this.detail()?.locked) return;
 
     this.ticketsFacade.addComment(this.projectId, ticketId, body);
     this.commentBody.set('');
@@ -721,6 +781,37 @@ export class ProjectBoardComponent implements OnInit {
 
   private resetCreateForm(): void {
     this.createForm = { title: '', content: '', priority: 'medium', status: 'todo' };
+  }
+
+  private resetTicketTimeForm(): void {
+    const { startedAt, endedAt } = this.defaultTicketTimeRangeLocal();
+
+    this.timeFormStartedAt = startedAt;
+    this.timeFormEndedAt = endedAt;
+    this.timeFormDescription = '';
+  }
+
+  private defaultTicketTimeRangeLocal(): { startedAt: string; endedAt: string } {
+    const end = new Date();
+
+    end.setSeconds(0, 0);
+
+    const start = new Date(end.getTime() - 60 * 60 * 1000);
+
+    return {
+      startedAt: this.toDatetimeLocalValue(start),
+      endedAt: this.toDatetimeLocalValue(end),
+    };
+  }
+
+  private toDatetimeLocalValue(date: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  private datetimeLocalToIso(value: string): string {
+    return new Date(value).toISOString();
   }
 
   private showGlobalSearchModal(): void {

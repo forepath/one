@@ -73,7 +73,11 @@ describe('projectsReducer', () => {
     const state = projectsReducer({ ...initialProjectsState, creating: true }, createAdminProjectSuccess({ project }));
 
     expect(state.creating).toBe(false);
-    expect(state.adminProjects[0]).toEqual(project);
+    expect(state.adminProjects[0]).toEqual({
+      ...project,
+      unbilledMinutes: 0,
+      openBillableAmountNet: 0,
+    });
   });
 
   it('stores error on failure', () => {
@@ -104,7 +108,10 @@ describe('projectsReducer', () => {
   });
 
   it('sets billing flag', () => {
-    const billing = projectsReducer(initialProjectsState, billProjectTime({ projectId: 'p-1' }));
+    const billing = projectsReducer(
+      initialProjectsState,
+      billProjectTime({ projectId: 'p-1', from: '2026-06-01T08:00:00.000Z', to: '2026-06-01T17:00:00.000Z' }),
+    );
     const done = projectsReducer(
       billing,
       billProjectTimeSuccess({ projectId: 'p-1', result: { invoiceId: 'i-1', billedMinutes: 30, amountNet: 50 } }),

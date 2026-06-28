@@ -5,6 +5,7 @@ import {
   DestroyRef,
   ElementRef,
   EventEmitter,
+  HostBinding,
   Input,
   OnChanges,
   OnDestroy,
@@ -13,7 +14,7 @@ import {
   ViewChild,
   inject,
 } from '@angular/core';
-import { Crepe } from '@milkdown/crepe';
+import { Crepe, CrepeFeature } from '@milkdown/crepe';
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
 
 @Component({
@@ -28,8 +29,14 @@ export class ProjectTicketEditorComponent implements AfterViewInit, OnChanges, O
   private editorHost!: ElementRef<HTMLDivElement>;
 
   @Input() markdown = '# Hello\n\nStart writing...';
+  @Input() readonly = false;
   @Output() markdownChange = new EventEmitter<string>();
   @Output() blurred = new EventEmitter<void>();
+
+  @HostBinding('class.project-ticket-editor--readonly')
+  get readonlyHostClass(): boolean {
+    return this.readonly;
+  }
 
   private readonly destroyRef = inject(DestroyRef);
   private crepe: Crepe | null = null;
@@ -42,13 +49,24 @@ export class ProjectTicketEditorComponent implements AfterViewInit, OnChanges, O
   }
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    if (!this.viewReady || !this.crepe || !changes['markdown']) return;
+    if (!this.viewReady || !this.crepe) return;
 
-    const nextValue = changes['markdown'].currentValue ?? '';
+    const markdownChanged = !!changes['markdown'];
+    const readonlyChanged = !!changes['readonly'];
 
-    if (nextValue === this.lastEmittedMarkdown) return;
+    if (!markdownChanged && !readonlyChanged) return;
 
-    await this.recreateEditor(nextValue);
+    if (markdownChanged) {
+      const nextValue = changes['markdown'].currentValue ?? '';
+
+      if (nextValue === this.lastEmittedMarkdown && !readonlyChanged) return;
+
+      await this.recreateEditor(nextValue);
+
+      return;
+    }
+
+    await this.recreateEditor(this.markdown ?? '');
   }
 
   async ngOnDestroy(): Promise<void> {
@@ -61,24 +79,31 @@ export class ProjectTicketEditorComponent implements AfterViewInit, OnChanges, O
     const crepe = new Crepe({
       root: this.editorHost.nativeElement,
       defaultValue: initialValue,
+      features: this.readonly ? this.readonlyFeatures() : undefined,
     });
 
-    crepe.editor.use(listener);
-    crepe.editor.config((ctx) => {
-      const listeners = ctx.get(listenerCtx);
+    if (!this.readonly) {
+      crepe.editor.use(listener);
+      crepe.editor.config((ctx) => {
+        const listeners = ctx.get(listenerCtx);
 
-      listeners.markdownUpdated((_, markdown, prevMarkdown) => {
-        if (markdown !== prevMarkdown) {
-          this.lastEmittedMarkdown = markdown;
-          this.markdownChange.emit(markdown);
-        }
+        listeners.markdownUpdated((_, markdown, prevMarkdown) => {
+          if (markdown !== prevMarkdown) {
+            this.lastEmittedMarkdown = markdown;
+            this.markdownChange.emit(markdown);
+          }
+        });
+        listeners.blur(() => {
+          this.blurred.emit();
+        });
       });
-      listeners.blur(() => {
-        this.blurred.emit();
-      });
-    });
+    }
 
     await crepe.create();
+
+    if (this.readonly) {
+      crepe.setReadonly(true);
+    }
 
     if (this.destroyRef.destroyed) {
       await crepe.destroy();
@@ -100,5 +125,13 @@ export class ProjectTicketEditorComponent implements AfterViewInit, OnChanges, O
 
     await this.crepe.destroy();
     this.crepe = null;
+  }
+
+  private readonlyFeatures(): Partial<Record<CrepeFeature, boolean>> {
+    return {
+      [CrepeFeature.Toolbar]: false,
+      [CrepeFeature.BlockEdit]: false,
+      [CrepeFeature.Placeholder]: false,
+    };
   }
 }

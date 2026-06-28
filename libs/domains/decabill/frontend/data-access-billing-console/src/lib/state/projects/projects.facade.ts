@@ -79,8 +79,8 @@ export class ProjectsFacade {
     this.store.dispatch(deleteAdminProject({ projectId }));
   }
 
-  billProjectTime(projectId: string): void {
-    this.store.dispatch(billProjectTime({ projectId }));
+  billProjectTime(projectId: string, from: string, to: string): void {
+    this.store.dispatch(billProjectTime({ projectId, from, to }));
   }
 
   clearError(): void {

@@ -36,10 +36,15 @@ export class ProjectTimeEntriesRepository {
     projectId: string,
     limit: number,
     offset: number,
+    ticketId?: string | null,
   ): Promise<{ items: ProjectTimeEntryEntity[]; total: number }> {
     const qb = this.baseQuery('entry')
       .where('entry.project_id = :projectId', { projectId })
       .orderBy('entry.startedAt', 'DESC');
+
+    if (ticketId) {
+      qb.andWhere('entry.ticket_id = :ticketId', { ticketId });
+    }
 
     applyProjectTenantFilter(qb, 'project');
 
@@ -53,6 +58,42 @@ export class ProjectTimeEntriesRepository {
     const qb = this.baseQuery('entry')
       .where('entry.project_id = :projectId', { projectId })
       .andWhere('entry.billed_at IS NULL')
+      .orderBy('entry.startedAt', 'ASC');
+
+    applyProjectTenantFilter(qb, 'project');
+
+    return await qb.getMany();
+  }
+
+  async findUnbilledTimeBounds(projectId: string): Promise<{
+    from: Date | null;
+    to: Date | null;
+    entryCount: number;
+  }> {
+    const qb = this.baseQuery('entry')
+      .select('MIN(entry.started_at)', 'minStarted')
+      .addSelect('MAX(entry.ended_at)', 'maxEnded')
+      .addSelect('COUNT(entry.id)', 'entryCount')
+      .where('entry.project_id = :projectId', { projectId })
+      .andWhere('entry.billed_at IS NULL');
+
+    applyProjectTenantFilter(qb, 'project');
+
+    const row = await qb.getRawOne<{ minStarted: string | null; maxEnded: string | null; entryCount: string }>();
+
+    return {
+      from: row?.minStarted ? new Date(row.minStarted) : null,
+      to: row?.maxEnded ? new Date(row.maxEnded) : null,
+      entryCount: parseInt(row?.entryCount ?? '0', 10),
+    };
+  }
+
+  async findUnbilledByProjectInRange(projectId: string, from: Date, to: Date): Promise<ProjectTimeEntryEntity[]> {
+    const qb = this.baseQuery('entry')
+      .where('entry.project_id = :projectId', { projectId })
+      .andWhere('entry.billed_at IS NULL')
+      .andWhere('entry.started_at >= :from', { from })
+      .andWhere('entry.ended_at <= :to', { to })
       .orderBy('entry.startedAt', 'ASC');
 
     applyProjectTenantFilter(qb, 'project');

@@ -7,9 +7,13 @@ import {
   createProjectTimeEntry,
   deleteProjectTimeEntry,
   loadProjectTimeEntries,
+  loadProjectTicketTimeEntries,
   updateProjectTimeEntry,
 } from './project-time-entries.actions';
 import {
+  selectProjectTicketTimeEntries,
+  selectProjectTicketTimeEntriesError,
+  selectProjectTicketTimeEntriesLoading,
   selectProjectTimeEntries,
   selectProjectTimeEntriesError,
   selectProjectTimeEntriesLoading,
@@ -27,8 +31,16 @@ export class ProjectTimeEntriesFacade {
   readonly saving$ = this.store.select(selectProjectTimeEntriesSaving);
   readonly error$ = this.store.select(selectProjectTimeEntriesError);
 
+  readonly ticketEntries$ = this.store.select(selectProjectTicketTimeEntries);
+  readonly ticketLoading$ = this.store.select(selectProjectTicketTimeEntriesLoading);
+  readonly ticketError$ = this.store.select(selectProjectTicketTimeEntriesError);
+
   load(projectId: string): void {
     this.store.dispatch(loadProjectTimeEntries({ projectId }));
+  }
+
+  loadForTicket(projectId: string, ticketId: string): void {
+    this.store.dispatch(loadProjectTicketTimeEntries({ projectId, ticketId }));
   }
 
   create(projectId: string, dto: CreateProjectTimeEntryDto): void {
