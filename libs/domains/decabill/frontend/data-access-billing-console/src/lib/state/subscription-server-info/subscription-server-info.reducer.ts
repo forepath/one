@@ -1,6 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 
-import type { ServerInfoResponse } from '../../types/billing.types';
+import type { ServerInfoResponse, ProvisioningServiceKind } from '../../types/billing.types';
 import { billingOptimisticOnlineStatus } from '../../utils/server-info-provider.utils';
 
 import {
@@ -33,8 +33,8 @@ export interface BillingStatusHistoryEntry {
 export interface SubscriptionServerInfoState {
   serverInfoBySubscriptionId: Record<string, ServerInfoResponse>;
   activeItemIdBySubscriptionId: Record<string, string>;
-  /** Service (controller/manager) per subscription id from active item. */
-  serviceBySubscriptionId: Record<string, 'controller' | 'manager'>;
+  /** Service kind per subscription id from active item. */
+  serviceBySubscriptionId: Record<string, ProvisioningServiceKind>;
   loading: boolean;
   error: string | null;
   actionInProgress: Record<string, ServerActionType>;

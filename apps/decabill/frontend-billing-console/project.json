@@ -16,7 +16,20 @@
     "decabill-backend-billing-manager"
   ],
   "targets": {
+    "stage-monaco-assets": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/package-lock.json",
+        "{workspaceRoot}/node_modules/monaco-editor/**/*"
+      ],
+      "outputs": ["{workspaceRoot}/.cache/monaco-editor"],
+      "options": {
+        "command": "node tools/ci/stage-monaco-assets.mjs"
+      }
+    },
     "build": {
+      "dependsOn": ["stage-monaco-assets"],
       "executor": "@angular-devkit/build-angular:application",
       "outputs": ["{options.outputPath}"],
       "options": {
@@ -33,8 +46,14 @@
           {
             "glob": "**/*",
             "input": "apps/decabill/frontend-billing-console/public"
+          },
+          {
+            "glob": "**/*",
+            "input": ".cache/monaco-editor",
+            "output": "/assets/monaco/"
           }
         ],
+        "externalDependencies": ["monaco-editor"],
         "styles": [
           "node_modules/cookieconsent/build/cookieconsent.min.css",
           "apps/decabill/frontend-billing-console/src/styles.scss"

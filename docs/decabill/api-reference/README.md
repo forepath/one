@@ -18,7 +18,7 @@ Canonical source in the monorepo: `libs/domains/decabill/backend/feature-billing
 The HTTP API includes:
 
 - **Public offerings** - Unauthenticated plan listings for marketing pages
-- **Service catalog** - Service types and service plans (admin)
+- **Service catalog** - Service types, service plans, and CloudInit configs (admin)
 - **Subscriptions and backorders** - Order, cancel, resume, retry, and availability
 - **Customer profile** - Self-service billing metadata
 - **Invoices and open positions** - Issue, preview, download, void, pay, and billing-day accumulation

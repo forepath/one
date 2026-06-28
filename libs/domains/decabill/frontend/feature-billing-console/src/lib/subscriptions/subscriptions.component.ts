@@ -18,11 +18,14 @@ import {
   BackordersFacade,
   CustomerProfileFacade,
   ServicePlansFacade,
+  ServicePlansService,
   ServiceTypesFacade,
   SubscriptionsFacade,
   type BackorderResponse,
+  type CloudInitConfigOrderField,
   type CreateSubscriptionDto,
   type CustomerProfileDto,
+  type OrderProvisioningOption,
   type ProviderDetail,
   type ServicePlanResponse,
   type ServiceTypeResponse,
@@ -69,6 +72,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   private readonly subscriptionsFacade = inject(SubscriptionsFacade);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
+  private readonly servicePlansService = inject(ServicePlansService);
   private readonly serviceTypesFacade = inject(ServiceTypesFacade);
   private readonly backordersFacade = inject(BackordersFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
@@ -143,6 +147,17 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   orderGeographyFieldKey: 'region' | 'location' | null = null;
   orderLocationOptions: string[] = [];
   orderProvisioningLocation = '';
+  orderCustomOrderFields: CloudInitConfigOrderField[] = [];
+  orderCustomEnv: Record<string, string> = {};
+  readonly orderFieldDefaultPlaceholder = 'Uses a pre-configured default if left empty';
+  orderProvisioningOptions: OrderProvisioningOption[] = [];
+  orderProvisioningOptionKey = '';
+  orderProvisioningOptionsLoading = false;
+  orderProvisioningOptionsError = false;
+  orderCustomOrderFieldsLoading = false;
+  orderCustomOrderFieldsError = false;
+  private orderProvisioningRequestId = 0;
+  private orderCustomFieldsRequestId = 0;
   /** Signal for reactive conditional form fields; kept in sync with orderRequestedConfig.authenticationMethod. */
   authMethod = signal<'users' | 'api-key' | 'keycloak'>('users');
 
@@ -176,7 +191,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   orderRequestedConfig: {
-    service: 'controller' | 'manager';
+    service: 'controller' | 'manager' | 'custom';
     authenticationMethod: 'users' | 'api-key' | 'keycloak';
     staticApiKey: string;
     disableSignup: boolean;
@@ -414,6 +429,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
           if (matchingPlan) {
             this.orderPlanId = matchingPlan.id;
             this.syncOrderProvisioningLocationState();
+            this.syncOrderProvisioningOptions();
 
             return;
           }
@@ -421,12 +437,190 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
         this.orderPlanId = plans[0].id;
         this.syncOrderProvisioningLocationState();
+        this.syncOrderProvisioningOptions();
       });
     showBillingModal(this.orderPlanModal);
   }
 
   onOrderPlanIdChange(): void {
     this.syncOrderProvisioningLocationState();
+    this.syncOrderProvisioningOptions();
+  }
+
+  showOrderProvisioningPicker(): boolean {
+    return this.orderProvisioningOptions.length > 1;
+  }
+
+  showCustomOrderConfiguration(_plan: ServicePlanResponse | null | undefined): boolean {
+    return this.getSelectedOrderProvisioningOption()?.type === 'custom';
+  }
+
+  showIntegratedOrderConfiguration(_plan: ServicePlanResponse | null | undefined): boolean {
+    return this.getSelectedOrderProvisioningOption()?.type === 'integrated';
+  }
+
+  onOrderProvisioningOptionKeyChange(optionKey: string): void {
+    this.orderProvisioningOptionKey = optionKey;
+    const option = this.orderProvisioningOptions.find((entry) => entry.optionKey === optionKey);
+
+    if (option) {
+      this.applyOrderProvisioningOption(option);
+    }
+  }
+
+  getSelectedOrderProvisioningOption(): OrderProvisioningOption | null {
+    return this.orderProvisioningOptions.find((option) => option.optionKey === this.orderProvisioningOptionKey) ?? null;
+  }
+
+  isOrderProvisioningReady(): boolean {
+    if (!this.orderPlanId?.trim()) {
+      return false;
+    }
+
+    if (this.orderProvisioningOptionsLoading || this.orderProvisioningOptionsError) {
+      return false;
+    }
+
+    if (this.showCustomOrderConfiguration(null)) {
+      if (this.orderCustomOrderFieldsLoading || this.orderCustomOrderFieldsError) {
+        return false;
+      }
+    }
+
+    if (this.orderProvisioningOptions.length > 1 && !this.orderProvisioningOptionKey.trim()) {
+      return false;
+    }
+
+    return true;
+  }
+
+  showOrderFieldDescription(field: CloudInitConfigOrderField): boolean {
+    const description = field.description?.trim();
+
+    if (!description) {
+      return false;
+    }
+
+    return description.toLowerCase() !== field.label.trim().toLowerCase();
+  }
+
+  private syncOrderProvisioningOptions(): void {
+    const planId = this.orderPlanId?.trim();
+    const requestId = ++this.orderProvisioningRequestId;
+
+    this.orderProvisioningOptions = [];
+    this.orderProvisioningOptionKey = '';
+    this.orderCustomOrderFields = [];
+    this.orderCustomEnv = {};
+    this.orderCustomOrderFieldsLoading = false;
+    this.orderCustomOrderFieldsError = false;
+    this.orderProvisioningOptionsError = false;
+
+    if (!planId) {
+      this.orderProvisioningOptionsLoading = false;
+
+      return;
+    }
+
+    this.orderProvisioningOptionsLoading = true;
+
+    this.servicePlansService.getOrderProvisioningOptions(planId).subscribe({
+      next: (options) => {
+        if (requestId !== this.orderProvisioningRequestId) {
+          return;
+        }
+
+        this.orderProvisioningOptions = options;
+        this.orderProvisioningOptionsLoading = false;
+        this.orderProvisioningOptionsError = false;
+
+        if (options.length > 0) {
+          this.orderProvisioningOptionKey = options[0].optionKey;
+          this.applyOrderProvisioningOption(options[0]);
+        }
+
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        if (requestId !== this.orderProvisioningRequestId) {
+          return;
+        }
+
+        this.orderProvisioningOptionsLoading = false;
+        this.orderProvisioningOptionsError = true;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private applyOrderProvisioningOption(option: OrderProvisioningOption): void {
+    if (option.type === 'custom' && option.cloudInitConfigId?.trim()) {
+      this.orderRequestedConfig = { ...this.orderRequestedConfig, service: 'custom' };
+      this.loadCustomOrderFields(option.cloudInitConfigId.trim());
+
+      return;
+    }
+
+    if (option.type === 'integrated' && option.service) {
+      this.orderRequestedConfig = { ...this.orderRequestedConfig, service: option.service };
+
+      if (option.service === 'manager' && this.orderRequestedConfig.authenticationMethod === 'users') {
+        this.orderRequestedConfig = { ...this.orderRequestedConfig, authenticationMethod: 'api-key' };
+        this.authMethod.set('api-key');
+      }
+
+      this.orderCustomOrderFields = [];
+      this.orderCustomEnv = {};
+    }
+  }
+
+  private loadCustomOrderFields(configId: string): void {
+    const planId = this.orderPlanId?.trim();
+
+    if (!planId) {
+      this.orderCustomOrderFields = [];
+      this.orderCustomOrderFieldsLoading = false;
+      this.orderCustomOrderFieldsError = false;
+
+      return;
+    }
+
+    const requestId = ++this.orderCustomFieldsRequestId;
+
+    this.orderCustomOrderFields = [];
+    this.orderCustomEnv = {};
+    this.orderCustomOrderFieldsLoading = true;
+    this.orderCustomOrderFieldsError = false;
+
+    this.servicePlansService.getCloudInitOrderFields(planId, configId).subscribe({
+      next: (fields) => {
+        if (requestId !== this.orderCustomFieldsRequestId) {
+          return;
+        }
+
+        this.orderCustomOrderFields = fields;
+        this.orderCustomEnv = Object.fromEntries(fields.map((field) => [field.key, '']));
+        this.orderCustomOrderFieldsLoading = false;
+        this.orderCustomOrderFieldsError = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        if (requestId !== this.orderCustomFieldsRequestId) {
+          return;
+        }
+
+        this.orderCustomOrderFields = [];
+        this.orderCustomOrderFieldsLoading = false;
+        this.orderCustomOrderFieldsError = true;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private attachProvisioningOptionKey(requestedConfig: Record<string, unknown>): void {
+    if (this.showOrderProvisioningPicker() && this.orderProvisioningOptionKey.trim()) {
+      requestedConfig['provisioningOptionKey'] = this.orderProvisioningOptionKey.trim();
+    }
   }
 
   private getProviderSchemaFullForOrder(
@@ -508,9 +702,43 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   onSubmitOrderPlan(): void {
-    if (!this.orderPlanId?.trim()) return;
+    if (!this.orderPlanId?.trim() || !this.isOrderProvisioningReady()) return;
 
     const cfg = this.orderRequestedConfig;
+
+    if (cfg.service === 'custom') {
+      const env: Record<string, string> = {};
+
+      for (const field of this.orderCustomOrderFields) {
+        const value = (this.orderCustomEnv[field.key] ?? '').trim();
+
+        if (value || field.required) {
+          env[field.key] = value;
+        }
+      }
+
+      const requestedConfig: Record<string, unknown> = {
+        service: 'custom',
+        env,
+      };
+
+      if (this.orderGeographyFieldKey && this.orderProvisioningLocation?.trim()) {
+        requestedConfig[this.orderGeographyFieldKey] = this.orderProvisioningLocation.trim();
+      }
+
+      this.attachProvisioningOptionKey(requestedConfig);
+
+      const dto: CreateSubscriptionDto = {
+        planId: this.orderPlanId.trim(),
+        requestedConfig,
+        autoBackorder: this.orderAutoBackorder,
+      };
+
+      this.subscriptionsFacade.createSubscription(dto);
+
+      return;
+    }
+
     const requestedConfig: Record<string, unknown> = {
       service: cfg.service,
       authenticationMethod: cfg.authenticationMethod,
@@ -575,6 +803,8 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
         requestedConfig['cursorApiKey'] = cfg.cursorApiKey.trim();
       }
     }
+
+    this.attachProvisioningOptionKey(requestedConfig);
 
     const dto: CreateSubscriptionDto = {
       planId: this.orderPlanId.trim(),
@@ -701,6 +931,16 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     this.orderGeographyFieldKey = null;
     this.orderLocationOptions = [];
     this.orderProvisioningLocation = '';
+    this.orderCustomOrderFields = [];
+    this.orderCustomEnv = {};
+    this.orderProvisioningOptions = [];
+    this.orderProvisioningOptionKey = '';
+    this.orderProvisioningOptionsLoading = false;
+    this.orderProvisioningOptionsError = false;
+    this.orderCustomOrderFieldsLoading = false;
+    this.orderCustomOrderFieldsError = false;
+    this.orderProvisioningRequestId++;
+    this.orderCustomFieldsRequestId++;
     this.authMethod.set('users');
     this.orderRequestedConfig = {
       service: 'controller',

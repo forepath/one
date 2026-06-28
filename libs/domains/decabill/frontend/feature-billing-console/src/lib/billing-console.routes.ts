@@ -50,6 +50,14 @@ import {
   createServicePlan$,
   createServiceType$,
   createSubscription$,
+  CloudInitConfigsFacade,
+  cloudInitConfigsReducer,
+  createCloudInitConfig$,
+  updateCloudInitConfig$,
+  deleteCloudInitConfig$,
+  loadCloudInitConfigs$,
+  loadCloudInitConfigsBatch$,
+  loadCloudInitConfig$,
   CustomerProfileFacade,
   customerProfileReducer,
   deleteServicePlan$,
@@ -107,6 +115,7 @@ import { authGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/
 import { buildPageTitle } from '@forepath/shared/frontend/util-configuration';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
+import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 
 import { AdminBillingPageComponent } from './admin-billing-page/admin-billing-page.component';
 import { AdminCustomerProfilesPageComponent } from './admin-customer-profiles-page/admin-customer-profiles-page.component';
@@ -116,6 +125,7 @@ import { billingAdminGuard } from './guards/billing-admin.guard';
 import { datevExportEnabledGuard } from './guards/datev-export-enabled.guard';
 import { InvoicesComponent } from './invoices/invoices.component';
 import { OverviewComponent } from './overview/overview.component';
+import { CloudInitConfigsPageComponent } from './cloud-init-configs-page/cloud-init-configs-page.component';
 import { ServicePlansPageComponent } from './service-plans-page/service-plans-page.component';
 import { ServiceTypesPageComponent } from './service-types-page/service-types-page.component';
 import { SubscriptionsComponent } from './subscriptions/subscriptions.component';
@@ -158,7 +168,13 @@ export const billingConsoleRoutes: Route[] = [
             path: 'service-types',
             canActivate: [authGuard, billingAdminGuard],
             component: ServiceTypesPageComponent,
-            title: () => buildPageTitle($localize`:@@featureContainer-serviceTypesPage:Service Types`),
+            title: () => buildPageTitle($localize`:@@featureContainer-serviceTypesPage:Service Providers`),
+          },
+          {
+            path: 'cloud-init-configs',
+            canActivate: [authGuard, billingAdminGuard],
+            component: CloudInitConfigsPageComponent,
+            title: () => buildPageTitle($localize`:@@featureContainer-cloudInitConfigsPage:Configs`),
           },
           {
             path: 'service-plans',
@@ -193,6 +209,7 @@ export const billingConsoleRoutes: Route[] = [
     ],
     providers: [
       ...identityAuthProviders,
+      CloudInitConfigsFacade,
       SubscriptionsFacade,
       SubscriptionServerInfoFacade,
       BillingDashboardSocketFacade,
@@ -210,6 +227,7 @@ export const billingConsoleRoutes: Route[] = [
       provideState('subscriptions', subscriptionsReducer),
       provideState('servicePlans', servicePlansReducer),
       provideState('serviceTypes', serviceTypesReducer),
+      provideState('cloudInitConfigs', cloudInitConfigsReducer),
       provideState('invoices', invoicesReducer),
       provideState('adminBilling', adminBillingReducer),
       provideState('billingCapabilities', billingCapabilitiesReducer),
@@ -235,6 +253,12 @@ export const billingConsoleRoutes: Route[] = [
         createServiceType$,
         updateServiceType$,
         deleteServiceType$,
+        loadCloudInitConfigs$,
+        loadCloudInitConfigsBatch$,
+        loadCloudInitConfig$,
+        createCloudInitConfig$,
+        updateCloudInitConfig$,
+        deleteCloudInitConfig$,
         loadServicePlans$,
         loadServicePlansBatch$,
         loadServicePlan$,
@@ -297,6 +321,7 @@ export const billingConsoleRoutes: Route[] = [
         updateAdminCustomerProfile$,
         deleteAdminCustomerProfile$,
       }),
+      provideMonacoEditor(),
     ],
   },
 ];

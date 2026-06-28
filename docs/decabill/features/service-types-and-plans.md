@@ -49,13 +49,14 @@ Service plans belong to a service type and define customer-facing pricing and bi
 
 ### Admin Endpoints
 
-| Method | Path                  | Purpose             |
-| ------ | --------------------- | ------------------- |
-| GET    | `/service-plans`      | List service plans  |
-| POST   | `/service-plans`      | Create plan (admin) |
-| GET    | `/service-plans/{id}` | Get plan            |
-| POST   | `/service-plans/{id}` | Update plan (admin) |
-| DELETE | `/service-plans/{id}` | Delete plan (admin) |
+| Method | Path                                             | Purpose                                       |
+| ------ | ------------------------------------------------ | --------------------------------------------- |
+| GET    | `/service-plans`                                 | List service plans                            |
+| POST   | `/service-plans`                                 | Create plan (admin)                           |
+| GET    | `/service-plans/{id}`                            | Get plan                                      |
+| GET    | `/service-plans/{id}/order-provisioning-options` | List customer-selectable provisioning options |
+| POST   | `/service-plans/{id}`                            | Update plan (admin)                           |
+| DELETE | `/service-plans/{id}`                            | Delete plan (admin)                           |
 
 ### Plan Fields (Conceptual)
 
@@ -63,14 +64,20 @@ Service plans belong to a service type and define customer-facing pricing and bi
 - Billing interval (monthly, yearly, etc.)
 - Base price, margin, and computed customer total
 - `providerConfigDefaults` merged with customer `requestedConfig` on order
+- For provisioning plans, customers choose from `provisioningOptions` (integrated `controller`/`manager` and/or custom CloudInit configs). Admins configure these exclusively via **Customer-selectable options** checkboxes in the plan editor; **Product defaults** fields are scoped to the checked options only. New plans default to both Agenstra Controller and Agenstra Manager selected. Existing legacy plans are reconciled by migration `1772000000000_CloudInitAndPlanProvisioningConsolidated`.
 - `billing_day_of_month` for subscription period alignment
 - `allowCustomerLocationSelection` when geography override is supported
+- Provider `configSchema.properties` may set `scope: "server"` or `scope: "product"` with optional `productServices` (`controller`, `manager`) to control the plan editor. Server fields stay under **Provider default config**; product fields appear under **Product defaults** when required by selected customer options.
 
 ### Customer Geography Selection
 
 When `allowCustomerLocationSelection` is true **and** the merged provider schema defines `region` or `location` as a string with a non-empty enum, customers may pass geography in `POST /subscriptions` `requestedConfig`. Setting the flag without a supported schema returns 400.
 
 For Hetzner and DigitalOcean, `region` and `location` are treated as aliases during merge and provisioning.
+
+### CloudInit Configs Admin Route
+
+Operators manage templates at `/administration/cloud-init-configs` in the billing console (sidebar label **Configs**, below **Providers**). See **[CloudInit Configs](./cloud-init-configs.md)**.
 
 ## Public Catalog
 
@@ -115,6 +122,7 @@ flowchart LR
 - **[Subscriptions](./subscriptions.md)** - Ordering against plans
 - **[Server Provisioning](./server-provisioning.md)** - Provider provisioning behavior
 - **[Dynamic Provider Plugins](./dynamic-provider-plugins.md)** - Extra providers and UI metadata
+- **[CloudInit Configs](./cloud-init-configs.md)** - Custom service templates
 - **[Multi-tenancy](./multi-tenancy.md)** - Tenant-scoped catalog
 
 ---

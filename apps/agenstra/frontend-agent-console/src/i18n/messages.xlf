@@ -2975,9 +2975,6 @@
       <trans-unit id="featureConfirmEmail-title" datatype="html">
         <source>Confirm Your Email</source>
         </trans-unit>
-      <trans-unit id="featureConfirmEmail-description" datatype="html">
-        <source> Enter the 6-character confirmation code you received via email (letters and numbers). You can paste the code or type it in the fields below. </source>
-        </trans-unit>
       <trans-unit id="featureConfirmEmail-formTitle" datatype="html">
         <source>Email Confirmation</source>
         </trans-unit>
@@ -3020,56 +3017,26 @@
       <trans-unit id="featureConfirmEmail-backToLogin" datatype="html">
         <source>Back to login</source>
         </trans-unit>
-      <trans-unit id="featureAuth-loginTitle" datatype="html">
-        <source>Login :: Agenstra</source>
+      <trans-unit id="featureAuth-loginPage" datatype="html">
+        <source>Login</source>
         </trans-unit>
-      <trans-unit id="featureAuth-registerTitle" datatype="html">
-        <source>Register :: Agenstra</source>
+      <trans-unit id="featureAuth-registerPage" datatype="html">
+        <source>Register</source>
         </trans-unit>
-      <trans-unit id="featureAuth-requestPasswordResetTitle" datatype="html">
-        <source>Request Password Reset :: Agenstra</source>
+      <trans-unit id="featureAuth-requestPasswordResetPage" datatype="html">
+        <source>Request Password Reset</source>
         </trans-unit>
-      <trans-unit id="featureAuth-requestPasswordResetConfirmationTitle" datatype="html">
-        <source>Password Reset Requested :: Agenstra</source>
+      <trans-unit id="featureAuth-requestPasswordResetConfirmationPage" datatype="html">
+        <source>Password Reset Requested</source>
         </trans-unit>
-      <trans-unit id="featureAuth-resetPasswordTitle" datatype="html">
-        <source>Reset Password :: Agenstra</source>
+      <trans-unit id="featureAuth-resetPasswordPage" datatype="html">
+        <source>Reset Password</source>
         </trans-unit>
-      <trans-unit id="featureAuth-confirmEmailTitle" datatype="html">
-        <source>Confirm Email :: Agenstra</source>
+      <trans-unit id="featureAuth-confirmEmailPage" datatype="html">
+        <source>Confirm Email</source>
         </trans-unit>
-      <trans-unit id="featureAuth-usersTitle" datatype="html">
-        <source>User Management :: Agenstra</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-appName" datatype="html">
-        <source>Agenstra</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-appDescription" datatype="html">
-        <source> Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers - all from one powerful dashboard. </source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureDistributedAgent" datatype="html">
-        <source>Distributed Agent Management</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureDistributedAgentDesc" datatype="html">
-        <source>Connect to and manage multiple remote agent-manager services from a single console</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureRealtimeChat" datatype="html">
-        <source>Real-time AI Chat</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureRealtimeChatDesc" datatype="html">
-        <source>WebSocket-based bidirectional communication with AI agents and instant responses</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureCodeEditor" datatype="html">
-        <source>Integrated Code Editor</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureCodeEditorDesc" datatype="html">
-        <source>Edit files directly in agent containers with Monaco Editor - read, write, and manage code in real-time</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureContainer" datatype="html">
-        <source>Container Integration</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureContainerDesc" datatype="html">
-        <source>Docker-based agent execution with live log streaming and file system operations</source>
+      <trans-unit id="featureAuth-usersPage" datatype="html">
+        <source>User Management</source>
         </trans-unit>
       <trans-unit id="featureLogin-title" datatype="html">
         <source>Login</source>
@@ -3124,9 +3091,6 @@
         </trans-unit>
       <trans-unit id="featureRegister-title" datatype="html">
         <source>Create an Account</source>
-        </trans-unit>
-      <trans-unit id="featureRegister-description" datatype="html">
-        <source> Join Agenstra to manage your AI agent infrastructure. After registration, you will receive an email to confirm your account before you can log in. </source>
         </trans-unit>
       <trans-unit id="featureRegister-formTitle" datatype="html">
         <source>Register</source>
@@ -3193,9 +3157,6 @@
         </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-title" datatype="html">
         <source>Check Your Email</source>
-        </trans-unit>
-      <trans-unit id="featureResetPasswordConfirmation-description" datatype="html">
-        <source> If an account exists for the email you entered, you will receive a password reset code. Enter the code below and choose a new password. </source>
         </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-formTitle" datatype="html">
         <source> Reset Password </source>
@@ -3275,9 +3236,6 @@
       <trans-unit id="featureRequestPasswordReset-title" datatype="html">
         <source>Reset Your Password</source>
         </trans-unit>
-      <trans-unit id="featureRequestPasswordReset-description" datatype="html">
-        <source> Enter your email address and we will send you a link to reset your password. If an account exists for that email, you will receive instructions shortly. </source>
-        </trans-unit>
       <trans-unit id="featureRequestPasswordReset-formTitle" datatype="html">
         <source> Request Password Reset </source>
         </trans-unit>
@@ -3310,9 +3268,6 @@
         </trans-unit>
       <trans-unit id="featureResetPassword-title" datatype="html">
         <source>Set New Password</source>
-        </trans-unit>
-      <trans-unit id="featureResetPassword-description" datatype="html">
-        <source> Enter the reset code you received via email and choose a new password. The code is typically sent when you request a password reset. </source>
         </trans-unit>
       <trans-unit id="featureResetPassword-formTitle" datatype="html">
         <source>Reset Password</source>
@@ -3473,6 +3428,84 @@
         </trans-unit>
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureDocsBreadcrumbs-documentation" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-documentation" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-githubAriaLabel" datatype="html">
+        <source>GitHub</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-githubTitle" datatype="html">
+        <source>View on GitHub</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-darkModeTitle" datatype="html">
+        <source>Toggle dark mode</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-toggleNavAriaLabel" datatype="html">
+        <source>Toggle navigation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-searchPlaceholder" datatype="html">
+        <source>Search documentation...</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-viewAllResults" datatype="html">
+        <source> View all results </source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-noResults" datatype="html">
+        <source>No results found</source>
+        </trans-unit>
+      <trans-unit id="featureDocsToc-title" datatype="html">
+        <source>Table of Contents</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaTitlePrefix" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-title" datatype="html">
+        <source>Search Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-noResultsFor" datatype="html">
+        <source>No results found for &quot;<x id="INTERPOLATION" equiv-text="{{ searchQuery() }}"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-enterQueryHint" datatype="html">
+        <source>Enter a search query above to find documentation.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
+        <source>Search Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-foundOneResult" datatype="html">
+        <source>Found <x id="PH" equiv-text="count"/> result for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-foundResults" datatype="html">
+        <source>Found <x id="PH" equiv-text="count"/> results for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallbackDecabill" datatype="html">
+        <source>Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallback" datatype="html">
+        <source>Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywordsDecabill" datatype="html">
+        <source>Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywords" datatype="html">
+        <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescriptionDecabill" datatype="html">
+        <source>Search Decabill docs for setup guides, API references, security hardening, billing configuration, deployment patterns, and troubleshooting.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
+        <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
         </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>

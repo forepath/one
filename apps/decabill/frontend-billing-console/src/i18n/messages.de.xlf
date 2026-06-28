@@ -151,8 +151,8 @@
         <target>Bestimmter Benutzer</target>
       </trans-unit>
       <trans-unit id="featureAdminBilling-billNowResult" datatype="html">
-        <source>Billing queued for <x id="INTERPOLATION" equiv-text="{{ result.userCount }}" /> user(s). Request ID: <x id="INTERPOLATION_1" equiv-text="{{ result.requestId }}" />.</source>
-        <target>Abrechnung für <x id="INTERPOLATION" equiv-text="{{ result.userCount }}" /> Benutzer in Warteschlange. Anfrage-ID: <x id="INTERPOLATION_1" equiv-text="{{ result.requestId }}" />.</target>
+        <source>Billing queued for <x id="INTERPOLATION" equiv-text="{{ result.userCount }}"/> user(s). Request ID: <x id="INTERPOLATION_1" equiv-text="{{ result.requestId }}"/>.</source>
+        <target>Billing queued for <x id="INTERPOLATION" equiv-text="{{ result.userCount }}"/> user(s). Request ID: <x id="INTERPOLATION_1" equiv-text="{{ result.requestId }}"/>.</target>
       </trans-unit>
       <trans-unit id="featureAdminBilling-cancel" datatype="html">
         <source> Cancel </source>
@@ -306,6 +306,86 @@
         <source>Delete this billing profile?</source>
         <target>Dieses Abrechnungsprofil löschen?</target>
       </trans-unit>
+      <trans-unit id="featureAdminDatevExports-title" datatype="html">
+        <source>DATEV exports</source>
+        <target>DATEV-Exporte</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-trigger" datatype="html">
+        <source>Export month</source>
+        <target>Monat exportieren</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-tabUnified" datatype="html">
+        <source> Unified </source>
+        <target> Unified </target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-searchPlaceholder" datatype="html">
+        <source>Search exports</source>
+        <target>Exporte durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-loading" datatype="html">
+        <source>Loading DATEV exports…</source>
+        <target>DATEV-Exporte werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-empty" datatype="html">
+        <source>No DATEV exports yet.</source>
+        <target>Noch keine DATEV-Exporte.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-statusQueued" datatype="html">
+        <source>Queued</source>
+        <target>In Warteschlange</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-metaBookings" datatype="html">
+        <source>Bookings</source>
+        <target>Buchungen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-metaInvoices" datatype="html">
+        <source>Invoices</source>
+        <target>Rechnungen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-metaDebtors" datatype="html">
+        <source>Debtors</source>
+        <target>Debitoren</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-exportActionsAria" datatype="html">
+        <source>Export actions</source>
+        <target>Exportaktionen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-downloadButtonTitle" datatype="html">
+        <source>Download export</source>
+        <target>Export herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-exportModalTitle" datatype="html">
+        <source>Export month</source>
+        <target>Monat exportieren</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-year" datatype="html">
+        <source>Year</source>
+        <target>Jahr</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-month" datatype="html">
+        <source>Month</source>
+        <target>Monat</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-scope" datatype="html">
+        <source>Scope</source>
+        <target>Bereich</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-scopeUnified" datatype="html">
+        <source>Unified</source>
+        <target>Vereinheitlicht</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-cancel" datatype="html">
+        <source> Cancel </source>
+        <target> Abbrechen </target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-confirmExport" datatype="html">
+        <source>Start export</source>
+        <target>Export starten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-queuedMessage" datatype="html">
+        <source>Queued — waiting for export to start…</source>
+        <target>In Warteschlange — Export wird gestartet…</target>
+      </trans-unit>
       <trans-unit id="featureBillingAdminSubscriptionSelect-clearSelectionAria" datatype="html">
         <source>Clear selected subscription</source>
         <target>Ausgewähltes Abonnement entfernen</target>
@@ -334,33 +414,41 @@
         <source>Search by email or ID</source>
         <target>Nach E-Mail oder ID suchen</target>
       </trans-unit>
-      <trans-unit id="featureContainer-overviewTitle" datatype="html">
-        <source>Overview :: Agenstra</source>
-        <target>Übersicht :: Agenstra</target>
+      <trans-unit id="featureContainer-overviewPage" datatype="html">
+        <source>Overview</source>
+        <target>Übersicht</target>
       </trans-unit>
-      <trans-unit id="featureContainer-subscriptionsTitle" datatype="html">
-        <source>Plans :: Agenstra</source>
-        <target>Pläne :: Agenstra</target>
+      <trans-unit id="featureContainer-subscriptionsPage" datatype="html">
+        <source>Plans</source>
+        <target>Pläne</target>
       </trans-unit>
-      <trans-unit id="featureContainer-invoicesTitle" datatype="html">
-        <source>Invoices :: Agenstra</source>
-        <target>Rechnungen :: Agenstra</target>
+      <trans-unit id="featureContainer-invoicesPage" datatype="html">
+        <source>Invoices</source>
+        <target>Rechnungen</target>
       </trans-unit>
-      <trans-unit id="featureContainer-serviceTypesTitle" datatype="html">
-        <source>Service Types :: Agenstra</source>
-        <target>Service-Typen :: Agenstra</target>
+      <trans-unit id="featureContainer-serviceTypesPage" datatype="html">
+        <source>Service Providers</source>
+        <target>Service-Anbieter</target>
       </trans-unit>
-      <trans-unit id="featureContainer-servicePlansTitle" datatype="html">
-        <source>Service Plans :: Agenstra</source>
-        <target>Service-Pläne :: Agenstra</target>
+      <trans-unit id="featureContainer-cloudInitConfigsPage" datatype="html">
+        <source>Configs</source>
+        <target>Konfigurationen</target>
       </trans-unit>
-      <trans-unit id="featureContainer-adminBillingTitle" datatype="html">
-        <source>Billing :: Agenstra</source>
-        <target>Abrechnung :: Agenstra</target>
+      <trans-unit id="featureContainer-servicePlansPage" datatype="html">
+        <source>Service Plans</source>
+        <target>Servicepläne</target>
       </trans-unit>
-      <trans-unit id="featureContainer-adminProfilesTitle" datatype="html">
-        <source>Billing Profiles :: Agenstra</source>
-        <target>Abrechnungsprofile :: Agenstra</target>
+      <trans-unit id="featureContainer-adminBillingPage" datatype="html">
+        <source>Billing</source>
+        <target>Abrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminProfilesPage" datatype="html">
+        <source>Billing Profiles</source>
+        <target>Abrechnungsprofile</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminDatevExportsPage" datatype="html">
+        <source>DATEV Exports</source>
+        <target>DATEV-Exporte</target>
       </trans-unit>
       <trans-unit id="featureBilling-countryNotAvailable" datatype="html">
         <source>N/A</source>
@@ -391,8 +479,8 @@
         <target>Gekündigt</target>
       </trans-unit>
       <trans-unit id="featureBilling-subscriptionStatusUnknown" datatype="html">
-        <source>Unknown (<x id="PH" equiv-text="status" />)</source>
-        <target>Unbekannt (<x id="PH" equiv-text="status" />)</target>
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        <target>Unknown (<x id="PH" equiv-text="status"/>)</target>
       </trans-unit>
       <trans-unit id="featureBilling-backorderStatusEmpty" datatype="html">
         <source>Unknown</source>
@@ -419,8 +507,8 @@
         <target>Fehlgeschlagen</target>
       </trans-unit>
       <trans-unit id="featureBilling-backorderStatusUnknown" datatype="html">
-        <source>Unknown (<x id="PH" equiv-text="status" />)</source>
-        <target>Unbekannt (<x id="PH" equiv-text="status" />)</target>
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        <target>Unknown (<x id="PH" equiv-text="status"/>)</target>
       </trans-unit>
       <trans-unit id="featureBilling-invoiceStatusEmpty" datatype="html">
         <source>Unknown</source>
@@ -451,8 +539,8 @@
         <target>Storniert</target>
       </trans-unit>
       <trans-unit id="featureBilling-invoiceStatusUnknown" datatype="html">
-        <source>Unknown (<x id="PH" equiv-text="status" />)</source>
-        <target>Unbekannt (<x id="PH" equiv-text="status" />)</target>
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        <target>Unknown (<x id="PH" equiv-text="status"/>)</target>
       </trans-unit>
       <trans-unit id="featureBilling-activeStatusActive" datatype="html">
         <source>Active</source>
@@ -461,6 +549,34 @@
       <trans-unit id="featureBilling-activeStatusInactive" datatype="html">
         <source>Inactive</source>
         <target>Inaktiv</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-datevExportStatusEmpty" datatype="html">
+        <source>Unknown</source>
+        <target>Unbekannt</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-statusPending" datatype="html">
+        <source>Pending</source>
+        <target>Ausstehend</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-statusRunning" datatype="html">
+        <source>Running</source>
+        <target>Läuft</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-statusCompleted" datatype="html">
+        <source>Completed</source>
+        <target>Abgeschlossen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-statusFailed" datatype="html">
+        <source>Failed</source>
+        <target>Fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-datevExportStatusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        <target>Unbekannt (<x id="PH" equiv-text="status"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-scopeTenant" datatype="html">
+        <source>This tenant</source>
+        <target>Dieser Mandant</target>
       </trans-unit>
       <trans-unit id="featureBilling-profileComplete" datatype="html">
         <source>Complete</source>
@@ -483,24 +599,124 @@
         <target>Stündlich</target>
       </trans-unit>
       <trans-unit id="featureBilling-intervalEveryHours" datatype="html">
-        <source>Every <x id="PH" equiv-text="value" /> hours</source>
-        <target>Alle <x id="PH" equiv-text="value" /> Stunden</target>
+        <source>Every <x id="PH" equiv-text="value"/> hours</source>
+        <target>Every <x id="PH" equiv-text="value"/> hours</target>
       </trans-unit>
       <trans-unit id="featureBilling-intervalEveryDays" datatype="html">
-        <source>Every <x id="PH" equiv-text="value" /> days</source>
-        <target>Alle <x id="PH" equiv-text="value" /> Tage</target>
+        <source>Every <x id="PH" equiv-text="value"/> days</source>
+        <target>Every <x id="PH" equiv-text="value"/> days</target>
       </trans-unit>
       <trans-unit id="featureBilling-intervalEveryMonths" datatype="html">
-        <source>Every <x id="PH" equiv-text="value" /> months</source>
-        <target>Alle <x id="PH" equiv-text="value" /> Monate</target>
+        <source>Every <x id="PH" equiv-text="value"/> months</source>
+        <target>Every <x id="PH" equiv-text="value"/> months</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-triggeredByScheduler" datatype="html">
+        <source>Scheduler</source>
+        <target>Scheduler</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-triggeredBySystem" datatype="html">
+        <source>System</source>
+        <target>System</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-title" datatype="html">
+        <source>CloudInit Configs</source>
+        <target>CloudInit-Konfigurationen</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-add" datatype="html">
+        <source>Add config</source>
+        <target>Konfiguration hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-searchPlaceholder" datatype="html">
+        <source>Search configs</source>
+        <target>Konfigurationen durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-loading" datatype="html">
+        <source>Loading...</source>
+        <target>Laden...</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-empty" datatype="html">
+        <source>No CloudInit configs.</source>
+        <target>Keine CloudInit-Konfigurationen.</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-envVarCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ envVarCount(config) }}"/> env vars</source>
+        <target><x id="INTERPOLATION" equiv-text="{{ envVarCount(config) }}"/> Umgebungsvariablen</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-createTitle" datatype="html">
+        <source>Add CloudInit config</source>
+        <target>CloudInit-Konfiguration hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-key" datatype="html">
+        <source>Key</source>
+        <target>Schlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-name" datatype="html">
+        <source>Name</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-description" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-provisioningMode" datatype="html">
+        <source>Provisioning mode</source>
+        <target>Bereitstellungsmodus</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-dockerImage" datatype="html">
+        <source>Docker image</source>
+        <target>Docker-Image</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-containerPort" datatype="html">
+        <source>Container port</source>
+        <target>Container-Port</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-hostPort" datatype="html">
+        <source>Host port</source>
+        <target>Host-Port</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-workDir" datatype="html">
+        <source>Work directory</source>
+        <target>Arbeitsverzeichnis</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-active" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-envVariables" datatype="html">
+        <source>Environment variables</source>
+        <target>Umgebungsvariablen</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-addEnvVar" datatype="html">
+        <source> Add line </source>
+        <target> Zeile hinzufügen </target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-cancel" datatype="html">
+        <source> Cancel </source>
+        <target> Abbrechen </target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-save" datatype="html">
+        <source> Save </source>
+        <target> Speichern </target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-editTitle" datatype="html">
+        <source>Edit CloudInit config</source>
+        <target>CloudInit-Konfiguration bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-deleteTitle" datatype="html">
+        <source>Delete config</source>
+        <target>Konfiguration löschen</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-deleteConfirm" datatype="html">
+        <source>Delete CloudInit config &quot;<x id="INTERPOLATION" equiv-text="{{ configToDelete.name }}"/>&quot;?</source>
+        <target>CloudInit-Konfiguration &quot;<x id="INTERPOLATION" equiv-text="{{ configToDelete.name }}"/>&quot; löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-delete" datatype="html">
+        <source> Delete </source>
+        <target> Löschen </target>
       </trans-unit>
       <trans-unit id="featureContainer-loadingFile" datatype="html">
         <source>Loading file...</source>
         <target>Datei wird geladen...</target>
-      </trans-unit>
-      <trans-unit id="featureContainer-brandAlt" datatype="html">
-        <source>Agenstra</source>
-        <target>Agenstra</target>
       </trans-unit>
       <trans-unit id="featureContainer-languageSwitcherAriaLabel" datatype="html">
         <source>Select language</source>
@@ -514,33 +730,53 @@
         <source>Logout</source>
         <target>Abmelden</target>
       </trans-unit>
+      <trans-unit id="featureContainer-overviewTitle" datatype="html">
+        <source>Overview</source>
+        <target>Übersicht</target>
+      </trans-unit>
       <trans-unit id="featureContainer-overview" datatype="html">
         <source>Overview</source>
         <target>Übersicht</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-subscriptionsTitle" datatype="html">
+        <source>Subscriptions</source>
+        <target>Abonnements</target>
       </trans-unit>
       <trans-unit id="featureContainer-subscriptions" datatype="html">
         <source>Plans</source>
         <target>Pläne</target>
       </trans-unit>
+      <trans-unit id="featureContainer-invoicesTitle" datatype="html">
+        <source>Invoices</source>
+        <target>Rechnungen</target>
+      </trans-unit>
       <trans-unit id="featureContainer-invoices" datatype="html">
         <source>Billing</source>
         <target>Abrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-serviceTypesTitle" datatype="html">
+        <source>Providers</source>
+        <target>Anbieter</target>
       </trans-unit>
       <trans-unit id="featureContainer-serviceTypes" datatype="html">
         <source>Providers</source>
         <target>Anbieter</target>
       </trans-unit>
-      <trans-unit id="featureContainer-servicePlans" datatype="html">
+      <trans-unit id="featureContainer-cloudInitConfigsTitle" datatype="html">
+        <source>Configs</source>
+        <target>Konfigurationen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-cloudInitConfigs" datatype="html">
+        <source>Configs</source>
+        <target>Konfigurationen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-servicePlansTitle" datatype="html">
         <source>Plans</source>
         <target>Pläne</target>
       </trans-unit>
-      <trans-unit id="featureContainer-adminBilling" datatype="html">
-        <source>Billing</source>
-        <target>Abrechnung</target>
-      </trans-unit>
-      <trans-unit id="featureContainer-adminProfiles" datatype="html">
-        <source>Profiles</source>
-        <target>Profile</target>
+      <trans-unit id="featureContainer-servicePlans" datatype="html">
+        <source>Plans</source>
+        <target>Pläne</target>
       </trans-unit>
       <trans-unit id="featureContainer-userManagementTitle" datatype="html">
         <source>User Management</source>
@@ -550,11 +786,33 @@
         <source>Users</source>
         <target>Benutzer</target>
       </trans-unit>
+      <trans-unit id="featureContainer-adminProfilesTitle" datatype="html">
+        <source>Billing Profiles</source>
+        <target>Abrechnungsprofile</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminProfiles" datatype="html">
+        <source>Profiles</source>
+        <target>Profile</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminBillingTitle" datatype="html">
+        <source>Billing</source>
+        <target>Abrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminBilling" datatype="html">
+        <source>Billing</source>
+        <target>Abrechnung</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminDatevExportsTitle" datatype="html">
+        <source>DATEV Exports</source>
+        <target>DATEV-Exporte</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminDatevExports" datatype="html">
+        <source>DATEV</source>
+        <target>DATEV</target>
+      </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
-        <source>Role <x id="role" equiv-text="role" />
-        </source>
-        <target>Rolle <x id="role" equiv-text="role" />
-        </target>
+        <source>Role <x id="role" equiv-text="role"/></source>
+        <target>Role <x id="role" equiv-text="role"/></target>
       </trans-unit>
       <trans-unit id="featureInvoices-title" datatype="html">
         <source>Billing</source>
@@ -836,13 +1094,17 @@
         <source>Open console</source>
         <target>Konsole öffnen</target>
       </trans-unit>
-      <trans-unit id="featureOverview-agenstraManager" datatype="html">
-        <source>Agenstra Manager</source>
-        <target>- Manager</target>
+      <trans-unit id="featureOverview-managerService" datatype="html">
+        <source><x id="productName" equiv-text="productName"/> Manager</source>
+        <target><x id="productName" equiv-text="productName"/> Manager</target>
       </trans-unit>
-      <trans-unit id="featureOverview-agenstraController" datatype="html">
-        <source>Agenstra Controller</source>
-        <target>- Controller</target>
+      <trans-unit id="featureOverview-customService" datatype="html">
+        <source>Custom application</source>
+        <target>Benutzerdefinierte Anwendung</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-controllerService" datatype="html">
+        <source><x id="productName" equiv-text="productName"/> Controller</source>
+        <target><x id="productName" equiv-text="productName"/> Controller</target>
       </trans-unit>
       <trans-unit id="featureOverview-serverStatusOnline" datatype="html">
         <source>Online</source>
@@ -988,6 +1250,30 @@
         <source>Choose...</source>
         <target>Auswählen...</target>
       </trans-unit>
+      <trans-unit id="featureServicePlans-provisioningOptions" datatype="html">
+        <source>Customer-selectable options</source>
+        <target>Vom Kunden wählbare Optionen</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-provisioningOptionsHelp" datatype="html">
+        <source> Choose which integrated stacks and CloudInit configs customers may pick when ordering this plan. </source>
+        <target> Wählen Sie, welche integrierten Stacks und CloudInit-Konfigurationen Kunden bei der Bestellung auswählen dürfen.</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-productDefaults" datatype="html">
+        <source>Product defaults</source>
+        <target>Produktstandards</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-hideProductDefaults" datatype="html">
+        <source>Hide</source>
+        <target>Ausblenden</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-showProductDefaults" datatype="html">
+        <source>Show</source>
+        <target>Anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-productDefaultsHelp" datatype="html">
+        <source> Defaults for integrated stacks and CloudInit environment variables required by the selected customer options. </source>
+        <target> Standardwerte für integrierte Stacks und CloudInit-Umgebungsvariablen, die dieser Plan benötigt.</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-cancelAtPeriodEnd" datatype="html">
         <source>Cancel at period end</source>
         <target>Zum Periodenende kündigen</target>
@@ -1008,6 +1294,10 @@
         <source> Edit service plan </source>
         <target>Serviceplan bearbeiten</target>
       </trans-unit>
+      <trans-unit id="featureServicePlans-inactiveCustomConfigWarning" datatype="html">
+        <source>This plan referenced inactive CloudInit configs. They were removed from provisioning options. Save to apply the change.</source>
+        <target>Dieser Plan verwies auf inaktive CloudInit-Konfigurationen. Sie wurden aus den Bereitstellungsoptionen entfernt.</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-save" datatype="html">
         <source> Save </source>
         <target>Speichern</target>
@@ -1017,8 +1307,8 @@
         <target>Serviceplan löschen?</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-deleteConfirm" datatype="html">
-        <source> Are you sure you want to delete the service plan "<x id="INTERPOLATION" equiv-text="{{ plan.name }}" />"? </source>
-        <target> Möchten Sie den Serviceplan „<x id="INTERPOLATION" equiv-text="{{ plan.name }}" />“ wirklich löschen? </target>
+        <source> Are you sure you want to delete the service plan &quot;<x id="INTERPOLATION" equiv-text="{{ plan.name }}"/>&quot;? </source>
+        <target> Are you sure you want to delete the service plan &quot;<x id="INTERPOLATION" equiv-text="{{ plan.name }}"/>&quot;? </target>
       </trans-unit>
       <trans-unit id="featureServicePlans-confirmDelete" datatype="html">
         <source> Delete </source>
@@ -1029,18 +1319,16 @@
         <target>1 Highlight</target>
       </trans-unit>
       <trans-unit id="featureBilling-planHighlightsPlural" datatype="html">
-        <source>
-          <x id="PH" equiv-text="count" /> highlights</source>
-        <target>
-          <x id="PH" equiv-text="count" /> Highlights</target>
+        <source><x id="PH" equiv-text="count"/> highlights</source>
+        <target><x id="PH" equiv-text="count"/> highlights</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-title" datatype="html">
-        <source>Service Types</source>
-        <target>Servicetypen</target>
+        <source>Service Providers</source>
+        <target>Service Providers</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-add" datatype="html">
-        <source>Add service type</source>
-        <target>Servicetyp hinzufügen</target>
+        <source>Add service provider</source>
+        <target>Add service provider</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-searchPlaceholder" datatype="html">
         <source>Search providers</source>
@@ -1055,20 +1343,20 @@
         <target>Keine Servicetypen.</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-serviceTypeActionsAria" datatype="html">
-        <source>Service type actions</source>
-        <target>Servicetyp-Aktionen</target>
+        <source>Service provider actions</source>
+        <target>Service provider actions</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-editButtonTitle" datatype="html">
-        <source>Edit service type</source>
-        <target>Servicetyp bearbeiten</target>
+        <source>Edit service provider</source>
+        <target>Edit service provider</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-deleteButtonTitle" datatype="html">
-        <source>Delete service type</source>
-        <target>Servicetyp löschen</target>
+        <source>Delete service provider</source>
+        <target>Delete service provider</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-createTitle" datatype="html">
-        <source> Add service type </source>
-        <target>Servicetyp hinzufügen</target>
+        <source> Add service provider </source>
+        <target> Add service provider </target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-key" datatype="html">
         <source>Key</source>
@@ -1115,20 +1403,20 @@
         <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-editTitle" datatype="html">
-        <source> Edit service type </source>
-        <target>Servicetyp bearbeiten</target>
+        <source> Edit service provider </source>
+        <target> Edit service provider </target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-save" datatype="html">
         <source> Save </source>
         <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-deleteTitle" datatype="html">
-        <source> Delete service type? </source>
-        <target>Servicetyp löschen?</target>
+        <source> Delete service provider? </source>
+        <target> Delete service provider? </target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-deleteConfirm" datatype="html">
-        <source> Are you sure you want to delete the service type "<x id="INTERPOLATION" equiv-text="{{ st.name }}" />" (<x id="INTERPOLATION_1" equiv-text="{{ st.key }}" />)? </source>
-        <target> Möchten Sie den Servicetyp „<x id="INTERPOLATION" equiv-text="{{ st.name }}" />“ (<x id="INTERPOLATION_1" equiv-text="{{ st.key }}" />) wirklich löschen? </target>
+        <source> Are you sure you want to delete the service type &quot;<x id="INTERPOLATION" equiv-text="{{ st.name }}"/>&quot; (<x id="INTERPOLATION_1" equiv-text="{{ st.key }}"/>)? </source>
+        <target> Are you sure you want to delete the service type &quot;<x id="INTERPOLATION" equiv-text="{{ st.name }}"/>&quot; (<x id="INTERPOLATION_1" equiv-text="{{ st.key }}"/>)? </target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-confirmDelete" datatype="html">
         <source> Delete </source>
@@ -1262,21 +1550,29 @@
         <source>Instance configuration</source>
         <target>Instanzkonfiguration</target>
       </trans-unit>
-      <trans-unit id="featureSubscriptions-service" datatype="html">
-        <source>Service</source>
-        <target>Dienst</target>
+      <trans-unit id="featureSubscriptions-loadingProvisioningOptions" datatype="html">
+        <source>Loading provisioning options…</source>
+        <target>Bereitstellungsoptionen werden geladen…</target>
       </trans-unit>
-      <trans-unit id="featureSubscriptions-serviceController" datatype="html">
-        <source> Controller </source>
-        <target>Controller</target>
+      <trans-unit id="featureSubscriptions-provisioningOptionsError" datatype="html">
+        <source>Could not load provisioning options for this plan. Choose another plan or try again.</source>
+        <target>Bereitstellungsoptionen für diesen Plan konnten nicht geladen werden. Wählen Sie einen anderen Plan oder versuchen Sie es erneut.</target>
       </trans-unit>
-      <trans-unit id="featureSubscriptions-serviceManager" datatype="html">
-        <source>Manager</source>
-        <target>Manager</target>
+      <trans-unit id="featureSubscriptions-provisioningOption" datatype="html">
+        <source>Provisioning option</source>
+        <target>Bereitstellungsoption</target>
       </trans-unit>
-      <trans-unit id="featureSubscriptions-serviceHelp" datatype="html">
-        <source> Controller runs the full stack; Manager runs the agent manager only. </source>
-        <target>Controller betreibt den vollen Stack; Manager nur den Agent-Manager.</target>
+      <trans-unit id="featureSubscriptions-loadingCustomOrderFields" datatype="html">
+        <source>Loading configuration fields…</source>
+        <target>Konfigurationsfelder werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-customOrderFieldsError" datatype="html">
+        <source>Could not load configuration fields for this option.</source>
+        <target>Konfigurationsfelder für diese Option konnten nicht geladen werden.</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-customConfigNoFields" datatype="html">
+        <source> No additional configuration is required for this plan. </source>
+        <target> Für diesen Plan sind keine zusätzlichen Konfigurationsfelder erforderlich. </target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-authMethod" datatype="html">
         <source>Authentication method</source>
@@ -1291,7 +1587,7 @@
         <target>API-Schlüssel</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-authKeycloak" datatype="html">
-        <source>Keycloak</source>
+        <source> Keycloak </source>
         <target>Keycloak</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-authMethodHelp" datatype="html">
@@ -1515,16 +1811,12 @@
         <target>Unbekannt</target>
       </trans-unit>
       <trans-unit id="featureUserManager-roleUnknownValue" datatype="html">
-        <source>Unknown (<x id="PH" equiv-text="role" />)</source>
-        <target>Unbekannt (<x id="PH" equiv-text="role" />)</target>
+        <source>Unknown (<x id="PH" equiv-text="role"/>)</source>
+        <target>Unknown (<x id="PH" equiv-text="role"/>)</target>
       </trans-unit>
       <trans-unit id="featureConfirmEmail-title" datatype="html">
         <source>Confirm Your Email</source>
         <target>Bestätigen Sie Ihre E-Mail</target>
-      </trans-unit>
-      <trans-unit id="featureConfirmEmail-description" datatype="html">
-        <source> Enter the 6-character confirmation code you received via email (letters and numbers). You can paste the code or type it in the fields below. </source>
-        <target> Geben Sie den 6-stelligen Bestätigungscode ein, den Sie per E-Mail erhalten haben (Buchstaben und Zahlen). Sie können den Code einfügen oder in die Felder unten eingeben. </target>
       </trans-unit>
       <trans-unit id="featureConfirmEmail-formTitle" datatype="html">
         <source>Email Confirmation</source>
@@ -1582,73 +1874,33 @@
         <source>Back to login</source>
         <target>Zurück zur Anmeldung</target>
       </trans-unit>
-      <trans-unit id="featureAuth-loginTitle" datatype="html">
-        <source>Login :: Agenstra</source>
-        <target>Anmelden :: Agenstra</target>
+      <trans-unit id="featureAuth-loginPage" datatype="html">
+        <source>Login</source>
+        <target>Anmelden</target>
       </trans-unit>
-      <trans-unit id="featureAuth-registerTitle" datatype="html">
-        <source>Register :: Agenstra</source>
-        <target>Registrieren :: Agenstra</target>
+      <trans-unit id="featureAuth-registerPage" datatype="html">
+        <source>Register</source>
+        <target>Registrieren</target>
       </trans-unit>
-      <trans-unit id="featureAuth-requestPasswordResetTitle" datatype="html">
-        <source>Request Password Reset :: Agenstra</source>
-        <target>Passwort zurücksetzen anfordern :: Agenstra</target>
+      <trans-unit id="featureAuth-requestPasswordResetPage" datatype="html">
+        <source>Request Password Reset</source>
+        <target>Passwort zurücksetzen anfordern</target>
       </trans-unit>
-      <trans-unit id="featureAuth-requestPasswordResetConfirmationTitle" datatype="html">
-        <source>Password Reset Requested :: Agenstra</source>
-        <target>Passwort-Reset angefordert :: Agenstra</target>
+      <trans-unit id="featureAuth-requestPasswordResetConfirmationPage" datatype="html">
+        <source>Password Reset Requested</source>
+        <target>Passwort-Reset angefordert</target>
       </trans-unit>
-      <trans-unit id="featureAuth-resetPasswordTitle" datatype="html">
-        <source>Reset Password :: Agenstra</source>
-        <target>Passwort zurücksetzen :: Agenstra</target>
+      <trans-unit id="featureAuth-resetPasswordPage" datatype="html">
+        <source>Reset Password</source>
+        <target>Passwort zurücksetzen</target>
       </trans-unit>
-      <trans-unit id="featureAuth-confirmEmailTitle" datatype="html">
-        <source>Confirm Email :: Agenstra</source>
-        <target>E-Mail bestätigen :: Agenstra</target>
+      <trans-unit id="featureAuth-confirmEmailPage" datatype="html">
+        <source>Confirm Email</source>
+        <target>E-Mail bestätigen</target>
       </trans-unit>
-      <trans-unit id="featureAuth-usersTitle" datatype="html">
-        <source>User Management :: Agenstra</source>
-        <target>Benutzerverwaltung :: Agenstra</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-appName" datatype="html">
-        <source>Agenstra</source>
-        <target>Agenstra</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-appDescription" datatype="html">
-        <source> Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers - all from one powerful dashboard. </source>
-        <target> Zentrale Steuerung für verteilte KI-Agent-Infrastruktur. Verwalten Sie mehrere Agent-Manager-Instanzen, interagieren Sie in Echtzeit mit Agents und bearbeiten Sie Code direkt in deren Containern - alles von einem leistungsstarken Dashboard aus. </target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureDistributedAgent" datatype="html">
-        <source>Distributed Agent Management</source>
-        <target>Verteilte Agent-Verwaltung</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureDistributedAgentDesc" datatype="html">
-        <source>Connect to and manage multiple remote agent-manager services from a single console</source>
-        <target>Verbinden und verwalten Sie mehrere Remote-Agent-Manager-Dienste von einer Konsole aus</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureRealtimeChat" datatype="html">
-        <source>Real-time AI Chat</source>
-        <target>Echtzeit-KI-Chat</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureRealtimeChatDesc" datatype="html">
-        <source>WebSocket-based bidirectional communication with AI agents and instant responses</source>
-        <target>WebSocket-basierte bidirektionale Kommunikation mit KI-Agents und sofortige Antworten</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureCodeEditor" datatype="html">
-        <source>Integrated Code Editor</source>
-        <target>Integrierter Code-Editor</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureCodeEditorDesc" datatype="html">
-        <source>Edit files directly in agent containers with Monaco Editor - read, write, and manage code in real-time</source>
-        <target>Bearbeiten Sie Dateien direkt in Agent-Containern mit Monaco Editor - lesen, schreiben und verwalten Sie Code in Echtzeit</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureContainer" datatype="html">
-        <source>Container Integration</source>
-        <target>Container-Integration</target>
-      </trans-unit>
-      <trans-unit id="featureLogin-featureContainerDesc" datatype="html">
-        <source>Docker-based agent execution with live log streaming and file system operations</source>
-        <target>Docker-basierte Agent-Ausführung mit Live-Log-Streaming und Dateisystemoperationen</target>
+      <trans-unit id="featureAuth-usersPage" datatype="html">
+        <source>User Management</source>
+        <target>Benutzerverwaltung</target>
       </trans-unit>
       <trans-unit id="featureLogin-title" datatype="html">
         <source>Login</source>
@@ -1715,16 +1967,12 @@
         <target>Anmelden</target>
       </trans-unit>
       <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
-        <source>Character <x id="position" equiv-text="index + 1" /> of 6</source>
-        <target>Zeichen <x id="position" equiv-text="index + 1" /> von 6</target>
+        <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
+        <target>Character <x id="position" equiv-text="index + 1"/> of 6</target>
       </trans-unit>
       <trans-unit id="featureRegister-title" datatype="html">
         <source>Create an Account</source>
         <target>Konto erstellen</target>
-      </trans-unit>
-      <trans-unit id="featureRegister-description" datatype="html">
-        <source> Join Agenstra to manage your AI agent infrastructure. After registration, you will receive an email to confirm your account before you can log in. </source>
-        <target> Treten Sie Agenstra bei, um Ihre KI-Agent-Infrastruktur zu verwalten. Nach der Registrierung erhalten Sie eine E-Mail zur Bestätigung Ihres Kontos, bevor Sie sich anmelden können. </target>
       </trans-unit>
       <trans-unit id="featureRegister-formTitle" datatype="html">
         <source>Register</source>
@@ -1813,10 +2061,6 @@
       <trans-unit id="featureResetPasswordConfirmation-title" datatype="html">
         <source>Check Your Email</source>
         <target>Überprüfen Sie Ihre E-Mail</target>
-      </trans-unit>
-      <trans-unit id="featureResetPasswordConfirmation-description" datatype="html">
-        <source> If an account exists for the email you entered, you will receive a password reset code. Enter the code below and choose a new password. </source>
-        <target> Wenn ein Konto für die eingegebene E-Mail existiert, erhalten Sie einen Passwort-Reset-Code. Geben Sie den Code unten ein und wählen Sie ein neues Passwort. </target>
       </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-formTitle" datatype="html">
         <source> Reset Password </source>
@@ -1922,10 +2166,6 @@
         <source>Reset Your Password</source>
         <target>Passwort zurücksetzen</target>
       </trans-unit>
-      <trans-unit id="featureRequestPasswordReset-description" datatype="html">
-        <source> Enter your email address and we will send you a link to reset your password. If an account exists for that email, you will receive instructions shortly. </source>
-        <target> Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen Ihres Passworts. Wenn ein Konto für diese E-Mail existiert, erhalten Sie in Kürze Anweisungen. </target>
-      </trans-unit>
       <trans-unit id="featureRequestPasswordReset-formTitle" datatype="html">
         <source> Request Password Reset </source>
         <target> Passwort-Reset anfordern </target>
@@ -1969,10 +2209,6 @@
       <trans-unit id="featureResetPassword-title" datatype="html">
         <source>Set New Password</source>
         <target>Neues Passwort setzen</target>
-      </trans-unit>
-      <trans-unit id="featureResetPassword-description" datatype="html">
-        <source> Enter the reset code you received via email and choose a new password. The code is typically sent when you request a password reset. </source>
-        <target> Geben Sie den Reset-Code ein, den Sie per E-Mail erhalten haben, und wählen Sie ein neues Passwort. Der Code wird normalerweise gesendet, wenn Sie einen Passwort-Reset anfordern. </target>
       </trans-unit>
       <trans-unit id="featureResetPassword-formTitle" datatype="html">
         <source>Reset Password</source>
@@ -2123,20 +2359,16 @@
         <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailLabel" datatype="html">
-        <source>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
-        <target>E-Mail <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </target>
+        <source>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailPlaceholder" datatype="html">
         <source>user@example.com</source>
         <target>user@example.com</target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordLabel" datatype="html">
-        <source>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </source>
-        <target>Passwort <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" />
-        </target>
+        <source>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordPlaceholder" datatype="html">
         <source>Min. 8 characters</source>
@@ -2179,12 +2411,10 @@
         <target> Benutzer löschen </target>
       </trans-unit>
       <trans-unit id="featureUserManager-deleteUserConfirm" datatype="html">
-        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}" />
-          <x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong             &gt;" />? </source>
-        <target> Sind Sie sicher, dass Sie den Benutzer <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
-          <x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}" />
-          <x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> löschen möchten? </target>
+        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+            &gt;"/>? </source>
+        <target> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+            &gt;"/>? </target>
       </trans-unit>
       <trans-unit id="featureUserManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -2193,6 +2423,110 @@
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
         <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureDocsBreadcrumbs-documentation" datatype="html">
+        <source>Documentation</source>
+        <target>Dokumentation</target>
+      </trans-unit>
+      <trans-unit id="featureDocsLayout-documentation" datatype="html">
+        <source>Documentation</source>
+        <target>Dokumentation</target>
+      </trans-unit>
+      <trans-unit id="featureDocsLayout-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        <target>Sprache auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureDocsLayout-githubAriaLabel" datatype="html">
+        <source>GitHub</source>
+        <target>GitHub</target>
+      </trans-unit>
+      <trans-unit id="featureDocsLayout-githubTitle" datatype="html">
+        <source>View on GitHub</source>
+        <target>Auf GitHub ansehen</target>
+      </trans-unit>
+      <trans-unit id="featureDocsLayout-darkModeTitle" datatype="html">
+        <source>Toggle dark mode</source>
+        <target>Dunkelmodus ein-/ausschalten</target>
+      </trans-unit>
+      <trans-unit id="featureDocsLayout-toggleNavAriaLabel" datatype="html">
+        <source>Toggle navigation</source>
+        <target>Navigation ein-/ausblenden</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearch-searchPlaceholder" datatype="html">
+        <source>Search documentation...</source>
+        <target>Dokumentation durchsuchen...</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearch-viewAllResults" datatype="html">
+        <source> View all results </source>
+        <target> Alle Ergebnisse anzeigen </target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearch-noResults" datatype="html">
+        <source>No results found</source>
+        <target>Keine Ergebnisse gefunden</target>
+      </trans-unit>
+      <trans-unit id="featureDocsToc-title" datatype="html">
+        <source>Table of Contents</source>
+        <target>Inhaltsverzeichnis</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-loading" datatype="html">
+        <source>Loading...</source>
+        <target>Laden...</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaTitlePrefix" datatype="html">
+        <source>Documentation</source>
+        <target>Dokumentation</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-title" datatype="html">
+        <source>Search Documentation</source>
+        <target>Dokumentation durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-loading" datatype="html">
+        <source>Loading...</source>
+        <target>Laden...</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-noResultsFor" datatype="html">
+        <source>No results found for &quot;<x id="INTERPOLATION" equiv-text="{{ searchQuery() }}"/>&quot;</source>
+        <target>Keine Ergebnisse für &quot;<x id="INTERPOLATION" equiv-text="{{ searchQuery() }}"/>&quot; gefunden</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-enterQueryHint" datatype="html">
+        <source>Enter a search query above to find documentation.</source>
+        <target>Geben Sie oben eine Suchanfrage ein, um die Dokumentation zu durchsuchen.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
+        <source>Search Documentation</source>
+        <target>Dokumentation durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-foundOneResult" datatype="html">
+        <source>Found <x id="PH" equiv-text="count"/> result for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
+        <target><x id="PH" equiv-text="count"/> Ergebnis für &quot;<x id="PH_1" equiv-text="query"/>&quot; gefunden</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-foundResults" datatype="html">
+        <source>Found <x id="PH" equiv-text="count"/> results for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
+        <target><x id="PH" equiv-text="count"/> Ergebnisse für &quot;<x id="PH_1" equiv-text="query"/>&quot; gefunden</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallbackDecabill" datatype="html">
+        <source>Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.</source>
+        <target>Offizielle Decabill-Dokumentation: Installation, Deployment, Sicherheit und Betrieb von Billing-APIs, Abonnements, Zahlungsanbietern und der Billing-Konsole für Plattformteams.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallback" datatype="html">
+        <source>Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.</source>
+        <target>Offizielle Agenstra-Dokumentation: Installation, Deployment, Sicherheit und Betrieb von Agent-Hosts, Workspaces, Tickets, APIs und Integrationen für Plattformteams.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywordsDecabill" datatype="html">
+        <source>Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing</source>
+        <target>Decabill, Billing, Abonnements, Zahlungsabwicklung, Rechnungsstellung, Stripe, Billing-API, Billing-Konsole, Mandantenfähiges Billing</target>
+      </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywords" datatype="html">
+        <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
+        <target>Agenstra, KI-Agents, Agent-Verwaltung, verteilte Systeme, KI-Agent-Infrastruktur, Agent-Plattform, KI-Agent-Konsole, Container-Verwaltung, WebSocket-Agents, Docker-Agents</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescriptionDecabill" datatype="html">
+        <source>Search Decabill docs for setup guides, API references, security hardening, billing configuration, deployment patterns, and troubleshooting.</source>
+        <target>Durchsuchen Sie die Decabill-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Billing-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
+      </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
+        <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
+        <target>Durchsuchen Sie die Agenstra-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Agent-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
       </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>

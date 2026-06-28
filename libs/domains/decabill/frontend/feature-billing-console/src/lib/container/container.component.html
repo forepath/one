@@ -174,6 +174,16 @@
           <span class="small" i18n="@@featureContainer-serviceTypes">Providers</span>
         </a>
         <a
+          routerLink="/administration/cloud-init-configs"
+          routerLinkActive="active"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-cloudInitConfigsTitle"
+          title="Configs"
+        >
+          <i class="bi bi-sliders me-1"></i>
+          <span class="small" i18n="@@featureContainer-cloudInitConfigs">Configs</span>
+        </a>
+        <a
           routerLink="/administration/service-plans"
           routerLinkActive="active"
           class="sidebar__item"
@@ -184,14 +194,14 @@
           <span class="small" i18n="@@featureContainer-servicePlans">Plans</span>
         </a>
         <a
-          routerLink="/administration/billing"
+          routerLink="/users"
           routerLinkActive="active"
           class="sidebar__item"
-          i18n-title="@@featureContainer-adminBillingTitle"
-          title="Billing"
+          i18n-title="@@featureContainer-userManagementTitle"
+          title="User Management"
         >
-          <i class="bi bi-receipt-cutoff me-1"></i>
-          <span class="small" i18n="@@featureContainer-adminBilling">Billing</span>
+          <i class="bi bi-people me-1"></i>
+          <span class="small" i18n="@@featureContainer-users">Users</span>
         </a>
         <a
           routerLink="/administration/customer-profiles"
@@ -202,6 +212,16 @@
         >
           <i class="bi bi-person-vcard me-1"></i>
           <span class="small" i18n="@@featureContainer-adminProfiles">Profiles</span>
+        </a>
+        <a
+          routerLink="/administration/billing"
+          routerLinkActive="active"
+          class="sidebar__item"
+          i18n-title="@@featureContainer-adminBillingTitle"
+          title="Billing"
+        >
+          <i class="bi bi-receipt-cutoff me-1"></i>
+          <span class="small" i18n="@@featureContainer-adminBilling">Billing</span>
         </a>
         @if (datevExportEnabled$ | async) {
           <a
@@ -215,16 +235,6 @@
             <span class="small" i18n="@@featureContainer-adminDatevExports">DATEV</span>
           </a>
         }
-        <a
-          routerLink="/users"
-          routerLinkActive="active"
-          class="sidebar__item"
-          i18n-title="@@featureContainer-userManagementTitle"
-          title="User Management"
-        >
-          <i class="bi bi-people me-1"></i>
-          <span class="small" i18n="@@featureContainer-users">Users</span>
-        </a>
       }
     </aside>
   }

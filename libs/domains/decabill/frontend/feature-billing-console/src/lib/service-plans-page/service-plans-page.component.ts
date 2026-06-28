@@ -6,7 +6,22 @@ import {
   ServicePlansFacade,
   ServiceTypesFacade,
   ServiceTypesService,
+  CloudInitConfigsFacade,
+  buildProvisioningOptionsFromKeys,
+  collectPlanProductEnvFields,
+  getNestedSchemaProperty,
+  getObjectSchemaPropertyKeys,
+  getProductProviderConfigKeys,
+  getSchemaPropertyType,
+  getServerProviderConfigKeys,
+  humanizeConfigFieldKey,
+  isObjectSchemaProperty,
+  isSensitiveConfigFieldKey,
+  planProvisioningOptionKeysFromDefaults,
+  type IntegratedProductService,
+  type PlanProductEnvField,
   type BillingIntervalType,
+  type CloudInitConfigResponse,
   type CreateServicePlanDto,
   type ProviderDetail,
   type ServerType,
@@ -30,6 +45,10 @@ interface ConfigSchemaProperty {
   type?: string;
   description?: string;
   enum?: (string | number)[];
+  visible?: boolean;
+  scope?: 'server' | 'product' | 'internal';
+  productServices?: IntegratedProductService[];
+  properties?: Record<string, ConfigSchemaProperty>;
 }
 /** Schema properties object: key -> property definition. */
 type ConfigSchemaProperties = Record<string, ConfigSchemaProperty>;
@@ -48,10 +67,13 @@ export class ServicePlansPageComponent implements OnInit {
 
   private readonly plansFacade = inject(ServicePlansFacade);
   private readonly typesFacade = inject(ServiceTypesFacade);
+  private readonly cloudInitConfigsFacade = inject(CloudInitConfigsFacade);
   private readonly serviceTypesService = inject(ServiceTypesService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly searchQuery = signal('');
+  readonly createProductDefaultsExpanded = signal(false);
+  readonly editProductDefaultsExpanded = signal(false);
   readonly searchQuery$ = toObservable(this.searchQuery);
   readonly servicePlans$ = combineLatest([
     this.plansFacade.getServicePlans$(),
@@ -72,6 +94,7 @@ export class ServicePlansPageComponent implements OnInit {
     }),
   );
   readonly serviceTypes$ = this.typesFacade.getServiceTypes$();
+  readonly cloudInitConfigs$ = this.cloudInitConfigsFacade.getActiveCloudInitConfigs$();
   /** Combined service types + provider details for template (single async). */
   readonly typesAndProviders$ = combineLatest([
     this.typesFacade.getServiceTypes$(),
@@ -88,6 +111,9 @@ export class ServicePlansPageComponent implements OnInit {
 
   createForm: CreateServicePlanDto = this.getDefaultCreateForm();
   editForm: UpdateServicePlanDto & { id: string } = this.getDefaultEditForm();
+  createProvisioningOptionKeys = new Set<string>();
+  editProvisioningOptionKeys = new Set<string>();
+  editStaleCustomConfigIds: string[] = [];
   planToDelete: ServicePlanResponse | null = null;
   /** Plan currently being edited; used to resolve provider schema for edit form. */
   editingPlan: ServicePlanResponse | null = null;
@@ -113,6 +139,131 @@ export class ServicePlansPageComponent implements OnInit {
 
   activeStatusTextClass(isActive: boolean): string {
     return getActiveStatusTextClass(isActive);
+  }
+
+  private applyDefaultProvisioningOptionKeys(
+    serviceTypes: ServiceTypeResponse[],
+    providerDetails: ProviderDetail[],
+    serviceTypeId: string,
+    form: 'create' | 'edit',
+  ): void {
+    if (!this.supportsProvisioningOptionsSelection(serviceTypes, providerDetails, serviceTypeId)) {
+      const target = form === 'create' ? this.createProvisioningOptionKeys : this.editProvisioningOptionKeys;
+
+      target.clear();
+
+      return;
+    }
+
+    const target = form === 'create' ? this.createProvisioningOptionKeys : this.editProvisioningOptionKeys;
+
+    target.clear();
+
+    if (this.serviceEnumIncludes(serviceTypes, providerDetails, serviceTypeId, 'controller')) {
+      target.add('integrated:controller');
+    }
+
+    if (this.serviceEnumIncludes(serviceTypes, providerDetails, serviceTypeId, 'manager')) {
+      target.add('integrated:manager');
+    }
+  }
+
+  private pruneInvalidProvisioningOptionKeys(
+    serviceTypes: ServiceTypeResponse[],
+    providerDetails: ProviderDetail[],
+    serviceTypeId: string,
+    form: 'create' | 'edit',
+  ): void {
+    const target = form === 'create' ? this.createProvisioningOptionKeys : this.editProvisioningOptionKeys;
+
+    for (const optionKey of [...target]) {
+      if (
+        optionKey === 'integrated:controller' &&
+        !this.serviceEnumIncludes(serviceTypes, providerDetails, serviceTypeId, 'controller')
+      ) {
+        target.delete(optionKey);
+      }
+
+      if (
+        optionKey === 'integrated:manager' &&
+        !this.serviceEnumIncludes(serviceTypes, providerDetails, serviceTypeId, 'manager')
+      ) {
+        target.delete(optionKey);
+      }
+    }
+  }
+
+  private pruneInactiveCustomProvisioningOptionKeys(
+    configs: CloudInitConfigResponse[] | null,
+    form: 'create' | 'edit',
+  ): string[] {
+    const activeIds = new Set((configs ?? []).map((cfg) => cfg.id));
+    const target = form === 'create' ? this.createProvisioningOptionKeys : this.editProvisioningOptionKeys;
+    const removed: string[] = [];
+
+    for (const optionKey of [...target]) {
+      if (!optionKey.startsWith('custom:')) {
+        continue;
+      }
+
+      const configId = optionKey.slice('custom:'.length).trim();
+
+      if (!configId || activeIds.has(configId)) {
+        continue;
+      }
+
+      target.delete(optionKey);
+      removed.push(configId);
+    }
+
+    return removed;
+  }
+
+  supportsProvisioningOptionsSelection(
+    serviceTypes: ServiceTypeResponse[] | null,
+    providerDetails: ProviderDetail[] | null,
+    serviceTypeId: string,
+  ): boolean {
+    const schema = this.getProviderSchema(serviceTypes, providerDetails, serviceTypeId);
+    const serviceEnum = this.getProviderConfigEnum(schema, 'service');
+
+    if (!serviceEnum?.length) {
+      return false;
+    }
+
+    return serviceEnum.some((value) => value === 'controller' || value === 'manager' || value === 'custom');
+  }
+
+  serviceEnumIncludes(
+    serviceTypes: ServiceTypeResponse[] | null,
+    providerDetails: ProviderDetail[] | null,
+    serviceTypeId: string,
+    value: string,
+  ): boolean {
+    const schema = this.getProviderSchema(serviceTypes, providerDetails, serviceTypeId);
+    const serviceEnum = this.getProviderConfigEnum(schema, 'service');
+
+    return !!serviceEnum?.includes(value);
+  }
+
+  isProvisioningOptionSelected(form: 'create' | 'edit', optionKey: string): boolean {
+    return (form === 'create' ? this.createProvisioningOptionKeys : this.editProvisioningOptionKeys).has(optionKey);
+  }
+
+  toggleProvisioningOption(form: 'create' | 'edit', optionKey: string, checked: boolean): void {
+    const target = form === 'create' ? this.createProvisioningOptionKeys : this.editProvisioningOptionKeys;
+
+    if (checked) {
+      target.add(optionKey);
+    } else {
+      target.delete(optionKey);
+    }
+  }
+
+  private isProvisioningConfigKey(key: string): boolean {
+    return (
+      key === 'service' || key === 'cloudInitConfigId' || key === 'cloudInitConfigIds' || key === 'provisioningOptions'
+    );
   }
 
   highlightsLabel(plan: ServicePlanResponse): string {
@@ -222,14 +373,202 @@ export class ServicePlansPageComponent implements OnInit {
   }
 
   getProviderConfigKeys(schema: ConfigSchemaProperties | null): string[] {
-    return schema ? Object.keys(schema) : [];
+    return schema ? Object.keys(schema).filter((key) => !this.isProvisioningConfigKey(key)) : [];
   }
 
-  getProviderConfigPropertyType(schema: ConfigSchemaProperties | null, key: string): 'string' | 'number' {
-    const prop = schema?.[key];
-    const t = prop && typeof prop === 'object' && 'type' in prop ? String(prop.type) : 'string';
+  getServerProviderConfigKeys(schema: ConfigSchemaProperties | null): string[] {
+    return getServerProviderConfigKeys(schema, this.getProviderConfigKeys(schema));
+  }
 
-    return t === 'number' ? 'number' : 'string';
+  getProductProviderConfigKeysForForm(form: 'create' | 'edit', schema: ConfigSchemaProperties | null): string[] {
+    return getProductProviderConfigKeys(
+      schema,
+      this.getProviderConfigKeys(schema),
+      this.getSelectedIntegratedServices(form),
+    );
+  }
+
+  getSelectedIntegratedServices(form: 'create' | 'edit'): IntegratedProductService[] {
+    const optionKeys = form === 'create' ? this.createProvisioningOptionKeys : this.editProvisioningOptionKeys;
+    const services: IntegratedProductService[] = [];
+
+    if (optionKeys.has('integrated:controller')) {
+      services.push('controller');
+    }
+
+    if (optionKeys.has('integrated:manager')) {
+      services.push('manager');
+    }
+
+    if (services.length > 0) {
+      return services;
+    }
+
+    return [];
+  }
+
+  getSelectedCustomConfigIds(form: 'create' | 'edit'): string[] {
+    const optionKeys = form === 'create' ? this.createProvisioningOptionKeys : this.editProvisioningOptionKeys;
+
+    return [...optionKeys]
+      .filter((key) => key.startsWith('custom:'))
+      .map((key) => key.slice('custom:'.length).trim())
+      .filter((id) => id.length > 0);
+  }
+
+  getProductCustomEnvFields(form: 'create' | 'edit', configs: CloudInitConfigResponse[] | null): PlanProductEnvField[] {
+    return collectPlanProductEnvFields(configs ?? [], this.getSelectedCustomConfigIds(form));
+  }
+
+  hasProductDefaultsSection(
+    form: 'create' | 'edit',
+    schema: ConfigSchemaProperties | null,
+    configs: CloudInitConfigResponse[] | null,
+  ): boolean {
+    return (
+      this.getProductProviderConfigKeysForForm(form, schema).length > 0 ||
+      this.getProductCustomEnvFields(form, configs).length > 0
+    );
+  }
+
+  ensureProductEnvDefaults(form: 'create' | 'edit'): Record<string, string> {
+    const defaultsRef =
+      form === 'create' ? this.createForm.providerConfigDefaults : this.editForm.providerConfigDefaults;
+
+    if (!defaultsRef) {
+      if (form === 'create') {
+        this.createForm.providerConfigDefaults = {};
+      } else {
+        this.editForm.providerConfigDefaults = {};
+      }
+    }
+
+    const defaults = (
+      form === 'create' ? this.createForm.providerConfigDefaults : this.editForm.providerConfigDefaults
+    ) as Record<string, unknown>;
+
+    const existingEnv = defaults['env'];
+
+    if (!existingEnv || typeof existingEnv !== 'object' || Array.isArray(existingEnv)) {
+      defaults['env'] = {};
+    }
+
+    return defaults['env'] as Record<string, string>;
+  }
+
+  getProductEnvValue(form: 'create' | 'edit', key: string): string {
+    const env = this.ensureProductEnvDefaults(form);
+
+    return env[key] ?? '';
+  }
+
+  setProductEnvValue(form: 'create' | 'edit', key: string, value: string): void {
+    const env = this.ensureProductEnvDefaults(form);
+
+    env[key] = value;
+  }
+
+  getProductConfigFieldLabel(key: string): string {
+    return humanizeConfigFieldKey(key);
+  }
+
+  isProductObjectField(schema: ConfigSchemaProperties | null, key: string): boolean {
+    return isObjectSchemaProperty(schema?.[key]);
+  }
+
+  getProductObjectFieldKeys(schema: ConfigSchemaProperties | null, key: string): string[] {
+    return getObjectSchemaPropertyKeys(schema?.[key]);
+  }
+
+  isSensitiveProductConfigField(key: string): boolean {
+    return isSensitiveConfigFieldKey(key);
+  }
+
+  private ensureProductNestedDefaults(form: 'create' | 'edit', parentKey: string): Record<string, unknown> {
+    const defaultsRef =
+      form === 'create' ? this.createForm.providerConfigDefaults : this.editForm.providerConfigDefaults;
+
+    if (!defaultsRef) {
+      if (form === 'create') {
+        this.createForm.providerConfigDefaults = {};
+      } else {
+        this.editForm.providerConfigDefaults = {};
+      }
+    }
+
+    const defaults = (
+      form === 'create' ? this.createForm.providerConfigDefaults : this.editForm.providerConfigDefaults
+    ) as Record<string, unknown>;
+
+    const existing = defaults[parentKey];
+
+    if (!existing || typeof existing !== 'object' || Array.isArray(existing)) {
+      defaults[parentKey] = {};
+    }
+
+    return defaults[parentKey] as Record<string, unknown>;
+  }
+
+  getProductNestedValue(form: 'create' | 'edit', parentKey: string, nestedKey: string): string | number {
+    const nested = this.ensureProductNestedDefaults(form, parentKey);
+    const value = nested[nestedKey];
+
+    if (typeof value === 'number') {
+      return value;
+    }
+
+    return typeof value === 'string' ? value : '';
+  }
+
+  setProductNestedValue(form: 'create' | 'edit', parentKey: string, nestedKey: string, value: string | number): void {
+    const nested = this.ensureProductNestedDefaults(form, parentKey);
+    nested[nestedKey] = value;
+  }
+
+  getProductNestedPropertyDescription(
+    schema: ConfigSchemaProperties | null,
+    parentKey: string,
+    nestedKey: string,
+  ): string {
+    const property = getNestedSchemaProperty(schema?.[parentKey], nestedKey);
+
+    return property?.description?.trim() ?? '';
+  }
+
+  getProductNestedPropertyEnum(
+    schema: ConfigSchemaProperties | null,
+    parentKey: string,
+    nestedKey: string,
+  ): (string | number)[] | null {
+    const property = getNestedSchemaProperty(schema?.[parentKey], nestedKey);
+
+    if (!property?.enum?.length) {
+      return null;
+    }
+
+    const values = property.enum.filter(
+      (value): value is string | number =>
+        value !== undefined && value !== null && (typeof value === 'string' || typeof value === 'number'),
+    );
+
+    return values.length > 0 ? values : null;
+  }
+
+  getProductNestedPropertyType(
+    schema: ConfigSchemaProperties | null,
+    parentKey: string,
+    nestedKey: string,
+  ): 'string' | 'number' | 'boolean' {
+    const type = getSchemaPropertyType(getNestedSchemaProperty(schema?.[parentKey], nestedKey));
+
+    return type === 'number' || type === 'boolean' ? type : 'string';
+  }
+
+  getProviderConfigPropertyType(
+    schema: ConfigSchemaProperties | null,
+    key: string,
+  ): 'string' | 'number' | 'boolean' | 'object' {
+    return getSchemaPropertyType(schema?.[key]);
   }
 
   getProviderConfigPropertyDescription(schema: ConfigSchemaProperties | null, key: string): string {
@@ -262,6 +601,10 @@ export class ServicePlansPageComponent implements OnInit {
       const basePriceField = this.getBasePriceFromField(serviceTypes, providerDetails, this.createForm.serviceTypeId);
 
       for (const key of Object.keys(schema)) {
+        if (this.isProvisioningConfigKey(key)) {
+          continue;
+        }
+
         if (this.createForm.providerConfigDefaults[key] === undefined) {
           if (key === basePriceField) {
             continue;
@@ -271,6 +614,10 @@ export class ServicePlansPageComponent implements OnInit {
 
           if (enumValues && enumValues.length > 0) {
             this.createForm.providerConfigDefaults[key] = enumValues[0];
+          } else if (this.isProductObjectField(schema, key)) {
+            this.createForm.providerConfigDefaults[key] = {};
+          } else if (this.getProviderConfigPropertyType(schema, key) === 'boolean') {
+            this.createForm.providerConfigDefaults[key] = false;
           } else {
             this.createForm.providerConfigDefaults[key] =
               this.getProviderConfigPropertyType(schema, key) === 'number' ? 0 : '';
@@ -292,6 +639,9 @@ export class ServicePlansPageComponent implements OnInit {
     if (!this.supportsCustomerLocationSelection(serviceTypes, providerDetails, this.createForm.serviceTypeId)) {
       this.createForm.allowCustomerLocationSelection = false;
     }
+
+    this.applyDefaultProvisioningOptionKeys(serviceTypes, providerDetails, this.createForm.serviceTypeId, 'create');
+    this.pruneInvalidProvisioningOptionKeys(serviceTypes, providerDetails, this.createForm.serviceTypeId, 'create');
   }
 
   private loadServerTypes(providerId: string): void {
@@ -481,6 +831,7 @@ export class ServicePlansPageComponent implements OnInit {
     this.plansFacade.loadServicePlans();
     this.typesFacade.loadServiceTypes();
     this.typesFacade.loadProviderDetails();
+    this.cloudInitConfigsFacade.loadCloudInitConfigs();
     this.registerModalCloseWatchers();
   }
 
@@ -488,6 +839,7 @@ export class ServicePlansPageComponent implements OnInit {
     this.resetCreateForm();
     this.currentServerTypes = [];
     this.serverTypesLoading = false;
+    this.resetProductDefaultsCollapse('create');
     showBillingModal(this.createModal);
   }
 
@@ -495,6 +847,14 @@ export class ServicePlansPageComponent implements OnInit {
     this.editingPlan = plan;
     this.currentServerTypes = [];
     this.serverTypesLoading = false;
+    this.editProvisioningOptionKeys = new Set(planProvisioningOptionKeysFromDefaults(plan.providerConfigDefaults));
+    this.editStaleCustomConfigIds = [];
+    combineLatest([this.typesAndProviders$, this.cloudInitConfigs$])
+      .pipe(take(1))
+      .subscribe(([{ serviceTypes, providerDetails }, cloudInitConfigs]) => {
+        this.pruneInvalidProvisioningOptionKeys(serviceTypes, providerDetails, plan.serviceTypeId, 'edit');
+        this.editStaleCustomConfigIds = this.pruneInactiveCustomProvisioningOptionKeys(cloudInitConfigs, 'edit');
+      });
     this.editForm = {
       id: plan.id,
       name: plan.name,
@@ -524,6 +884,7 @@ export class ServicePlansPageComponent implements OnInit {
 
       if (basePriceField && providerId) this.loadServerTypes(providerId);
     });
+    this.resetProductDefaultsCollapse('edit');
     showBillingModal(this.editModal);
   }
 
@@ -535,52 +896,84 @@ export class ServicePlansPageComponent implements OnInit {
   onSubmitCreate(): void {
     if (!this.createForm.serviceTypeId?.trim() || !this.createForm.name?.trim()) return;
 
-    const providerConfigDefaults = this.coerceProviderConfigDefaults(this.createForm.providerConfigDefaults);
-    const orderingHighlights = this.sanitizeOrderingHighlights(this.createForm.orderingHighlights);
+    this.typesAndProviders$.pipe(take(1)).subscribe(({ serviceTypes, providerDetails }) => {
+      this.pruneInvalidProvisioningOptionKeys(
+        serviceTypes,
+        providerDetails,
+        this.createForm.serviceTypeId.trim(),
+        'create',
+      );
 
-    this.plansFacade.createServicePlan({
-      serviceTypeId: this.createForm.serviceTypeId.trim(),
-      name: this.createForm.name.trim(),
-      description: this.createForm.description?.trim() || undefined,
-      billingIntervalType: this.createForm.billingIntervalType,
-      billingIntervalValue: Number(this.createForm.billingIntervalValue) || 1,
-      billingDayOfMonth:
-        this.createForm.billingDayOfMonth != null ? Number(this.createForm.billingDayOfMonth) : undefined,
-      cancelAtPeriodEnd: this.createForm.cancelAtPeriodEnd ?? false,
-      minCommitmentDays: Number(this.createForm.minCommitmentDays) || 0,
-      noticeDays: Number(this.createForm.noticeDays) || 0,
-      basePrice: this.createForm.basePrice?.trim() || undefined,
-      marginPercent: this.createForm.marginPercent?.trim() || undefined,
-      marginFixed: this.createForm.marginFixed?.trim() || undefined,
-      providerConfigDefaults: Object.keys(providerConfigDefaults).length > 0 ? providerConfigDefaults : undefined,
-      orderingHighlights: orderingHighlights.length > 0 ? orderingHighlights : undefined,
-      allowCustomerLocationSelection: this.createForm.allowCustomerLocationSelection === true,
-      isActive: this.createForm.isActive ?? true,
+      this.cloudInitConfigs$.pipe(take(1)).subscribe((cloudInitConfigs) => {
+        this.pruneInactiveCustomProvisioningOptionKeys(cloudInitConfigs, 'create');
+
+        const providerConfigDefaults = this.buildProviderConfigDefaultsForSubmit(
+          this.createForm.providerConfigDefaults,
+          this.createProvisioningOptionKeys,
+        );
+        const orderingHighlights = this.sanitizeOrderingHighlights(this.createForm.orderingHighlights);
+
+        this.plansFacade.createServicePlan({
+          serviceTypeId: this.createForm.serviceTypeId.trim(),
+          name: this.createForm.name.trim(),
+          description: this.createForm.description?.trim() || undefined,
+          billingIntervalType: this.createForm.billingIntervalType,
+          billingIntervalValue: Number(this.createForm.billingIntervalValue) || 1,
+          billingDayOfMonth:
+            this.createForm.billingDayOfMonth != null ? Number(this.createForm.billingDayOfMonth) : undefined,
+          cancelAtPeriodEnd: this.createForm.cancelAtPeriodEnd ?? false,
+          minCommitmentDays: Number(this.createForm.minCommitmentDays) || 0,
+          noticeDays: Number(this.createForm.noticeDays) || 0,
+          basePrice: this.createForm.basePrice?.trim() || undefined,
+          marginPercent: this.createForm.marginPercent?.trim() || undefined,
+          marginFixed: this.createForm.marginFixed?.trim() || undefined,
+          providerConfigDefaults: Object.keys(providerConfigDefaults).length > 0 ? providerConfigDefaults : undefined,
+          orderingHighlights: orderingHighlights.length > 0 ? orderingHighlights : undefined,
+          allowCustomerLocationSelection: this.createForm.allowCustomerLocationSelection === true,
+          isActive: this.createForm.isActive ?? true,
+        });
+      });
     });
   }
 
   onSubmitEdit(): void {
     if (!this.editForm.id) return;
 
-    const providerConfigDefaults = this.coerceProviderConfigDefaults(this.editForm.providerConfigDefaults);
-    const orderingHighlights = this.sanitizeOrderingHighlights(this.editForm.orderingHighlights);
+    this.typesAndProviders$.pipe(take(1)).subscribe(({ serviceTypes, providerDetails }) => {
+      const serviceTypeId = this.editingPlan?.serviceTypeId?.trim();
 
-    this.plansFacade.updateServicePlan(this.editForm.id, {
-      name: this.editForm.name,
-      description: this.editForm.description,
-      billingIntervalType: this.editForm.billingIntervalType,
-      billingIntervalValue: Number(this.editForm.billingIntervalValue) ?? 1,
-      billingDayOfMonth: this.editForm.billingDayOfMonth != null ? Number(this.editForm.billingDayOfMonth) : undefined,
-      cancelAtPeriodEnd: this.editForm.cancelAtPeriodEnd,
-      minCommitmentDays: Number(this.editForm.minCommitmentDays) ?? 0,
-      noticeDays: Number(this.editForm.noticeDays) ?? 0,
-      basePrice: this.editForm.basePrice?.trim() || undefined,
-      marginPercent: this.editForm.marginPercent?.trim() || undefined,
-      marginFixed: this.editForm.marginFixed?.trim() || undefined,
-      providerConfigDefaults: Object.keys(providerConfigDefaults).length > 0 ? providerConfigDefaults : undefined,
-      orderingHighlights,
-      allowCustomerLocationSelection: this.editForm.allowCustomerLocationSelection,
-      isActive: this.editForm.isActive,
+      if (serviceTypeId) {
+        this.pruneInvalidProvisioningOptionKeys(serviceTypes, providerDetails, serviceTypeId, 'edit');
+      }
+
+      this.cloudInitConfigs$.pipe(take(1)).subscribe((cloudInitConfigs) => {
+        this.editStaleCustomConfigIds = this.pruneInactiveCustomProvisioningOptionKeys(cloudInitConfigs, 'edit');
+
+        const providerConfigDefaults = this.buildProviderConfigDefaultsForSubmit(
+          this.editForm.providerConfigDefaults,
+          this.editProvisioningOptionKeys,
+        );
+        const orderingHighlights = this.sanitizeOrderingHighlights(this.editForm.orderingHighlights);
+
+        this.plansFacade.updateServicePlan(this.editForm.id, {
+          name: this.editForm.name,
+          description: this.editForm.description,
+          billingIntervalType: this.editForm.billingIntervalType,
+          billingIntervalValue: Number(this.editForm.billingIntervalValue) ?? 1,
+          billingDayOfMonth:
+            this.editForm.billingDayOfMonth != null ? Number(this.editForm.billingDayOfMonth) : undefined,
+          cancelAtPeriodEnd: this.editForm.cancelAtPeriodEnd,
+          minCommitmentDays: Number(this.editForm.minCommitmentDays) ?? 0,
+          noticeDays: Number(this.editForm.noticeDays) ?? 0,
+          basePrice: this.editForm.basePrice?.trim() || undefined,
+          marginPercent: this.editForm.marginPercent?.trim() || undefined,
+          marginFixed: this.editForm.marginFixed?.trim() || undefined,
+          providerConfigDefaults: Object.keys(providerConfigDefaults).length > 0 ? providerConfigDefaults : undefined,
+          orderingHighlights,
+          allowCustomerLocationSelection: this.editForm.allowCustomerLocationSelection,
+          isActive: this.editForm.isActive,
+        });
+      });
     });
   }
 
@@ -597,6 +990,16 @@ export class ServicePlansPageComponent implements OnInit {
     const result: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(defaults)) {
+      if (this.isProvisioningConfigKey(key)) {
+        continue;
+      }
+
+      if (key === 'env' && value && typeof value === 'object' && !Array.isArray(value)) {
+        result[key] = value;
+
+        continue;
+      }
+
       if (value === undefined || value === null || value === '') continue;
 
       const num = Number(value);
@@ -607,13 +1010,40 @@ export class ServicePlansPageComponent implements OnInit {
     return result;
   }
 
+  private buildProviderConfigDefaultsForSubmit(
+    defaults: Record<string, unknown> | undefined,
+    optionKeys: Set<string>,
+  ): Record<string, unknown> {
+    const result = this.coerceProviderConfigDefaults(defaults);
+    const provisioningOptions = buildProvisioningOptionsFromKeys(optionKeys);
+
+    if (provisioningOptions.length > 0) {
+      result['provisioningOptions'] = provisioningOptions;
+    }
+
+    return result;
+  }
+
+  private resetProductDefaultsCollapse(form: 'create' | 'edit'): void {
+    if (form === 'create') {
+      this.createProductDefaultsExpanded.set(false);
+      document.getElementById('createProductDefaults')?.classList.remove('show');
+      return;
+    }
+
+    this.editProductDefaultsExpanded.set(false);
+    document.getElementById('editProductDefaults')?.classList.remove('show');
+  }
+
   private resetCreateForm(): void {
     this.createForm = this.getDefaultCreateForm();
+    this.createProvisioningOptionKeys = new Set();
   }
 
   private resetEditForm(): void {
     this.editForm = this.getDefaultEditForm();
     this.editingPlan = null;
+    this.editStaleCustomConfigIds = [];
   }
 
   private registerModalCloseWatchers(): void {

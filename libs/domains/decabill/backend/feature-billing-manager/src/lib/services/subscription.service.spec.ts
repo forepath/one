@@ -6,20 +6,14 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
-import {
-  buildBillingCloudInitUserData,
-  buildCloudInitConfigFromRequest,
-} from '../utils/cloud-init/agent-controller.utils';
-import {
-  buildAgentManagerCloudInitConfigFromRequest,
-  buildAgentManagerCloudInitUserData,
-} from '../utils/cloud-init/agent-manager.utils';
+import { buildProvisioningUserData, normalizeCloudInitService } from '../utils/cloud-init/cloud-init-dispatch.utils';
 import { validateConfigSchema } from '../utils/config-validation.utils';
 
 import { AvailabilityService } from './availability.service';
 import { BackorderService } from './backorder.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CancellationPolicyService } from './cancellation-policy.service';
+import { CloudInitConfigService } from './cloud-init-config.service';
 import { CustomerProfilesService } from './customer-profiles.service';
 import { SubscriptionService } from './subscription.service';
 
@@ -27,31 +21,21 @@ jest.mock('../utils/config-validation.utils', () => ({
   validateConfigSchema: jest.fn().mockReturnValue([]),
 }));
 
-jest.mock('../utils/cloud-init/agent-controller.utils', () => ({
-  buildCloudInitConfigFromRequest: jest
-    .fn()
-    .mockImplementation((effectiveConfig: Record<string, unknown>, hostname: string, baseDomain?: string) => ({
-      host: {
-        hostname,
-        fqdn: `${hostname}.${baseDomain ?? 'spirde.com'}`,
-      },
-      backend: {
-        authentication: {
-          authenticationMethod: (effectiveConfig.authenticationMethod as string) ?? 'users',
-          disableSignup: false,
-        },
-        encryption: { encryptionKey: 'mock-key', jwtSecret: 'mock-secret' },
-      },
-    })),
-  buildBillingCloudInitUserData: jest.fn().mockReturnValue('#!/bin/bash\necho hello'),
-}));
+jest.mock('../utils/cloud-init/cloud-init-dispatch.utils', () => ({
+  buildProvisioningUserData: jest.fn().mockReturnValue('mock-user-data'),
+  normalizeCloudInitService: jest.fn().mockImplementation((service?: string) => {
+    if (service === 'manager' || service === 'custom') {
+      return service;
+    }
 
-jest.mock('../utils/cloud-init/agent-manager.utils', () => ({
-  buildAgentManagerCloudInitConfigFromRequest: jest.fn().mockReturnValue({ host: {}, backend: {} }),
-  buildAgentManagerCloudInitUserData: jest.fn().mockReturnValue('#!/bin/bash\necho manager'),
+    return 'controller';
+  }),
 }));
 
 describe('SubscriptionService', () => {
+  const controllerProvisioningDefaults = {
+    provisioningOptions: [{ type: 'integrated', service: 'controller' }],
+  };
   const plansRepository = {
     findByIdOrThrow: jest.fn(),
   } as unknown as ServicePlansRepository;
@@ -105,6 +89,10 @@ describe('SubscriptionService', () => {
     getByUserId: jest.fn().mockResolvedValue(completeProfile),
     isProfileComplete: jest.fn().mockReturnValue(true),
   } as unknown as CustomerProfilesService;
+  const cloudInitConfigService = {
+    findByIdForProvisioning: jest.fn(),
+    resolveEnvironmentVariables: jest.fn(),
+  } as unknown as CloudInitConfigService;
   const service = new SubscriptionService(
     plansRepository,
     typesRepository,
@@ -118,29 +106,22 @@ describe('SubscriptionService', () => {
     hostnameReservationService,
     cloudflareDnsService,
     customerProfilesService,
+    cloudInitConfigService,
   );
 
   beforeEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks();
+    (normalizeCloudInitService as jest.Mock).mockImplementation((service?: string) => {
+      if (service === 'manager' || service === 'custom') {
+        return service;
+      }
+
+      return 'controller';
+    });
     (customerProfilesService.getByUserId as jest.Mock).mockResolvedValue(completeProfile);
     (customerProfilesService.isProfileComplete as jest.Mock).mockReturnValue(true);
     (validateConfigSchema as jest.Mock).mockReturnValue([]);
-    (buildCloudInitConfigFromRequest as jest.Mock).mockImplementation(
-      (effectiveConfig: Record<string, unknown>, hostname: string, baseDomain?: string) => ({
-        host: {
-          hostname,
-          fqdn: `${hostname}.${baseDomain ?? 'spirde.com'}`,
-        },
-        backend: {
-          authentication: {
-            authenticationMethod: (effectiveConfig.authenticationMethod as string) ?? 'users',
-            disableSignup: false,
-          },
-          encryption: { encryptionKey: 'mock-key', jwtSecret: 'mock-secret' },
-        },
-      }),
-    );
-    (buildBillingCloudInitUserData as jest.Mock).mockReturnValue('#!/bin/bash\necho hello');
+    (buildProvisioningUserData as jest.Mock).mockReturnValue('mock-user-data');
     hostnameReservationService.reserveHostname.mockResolvedValue('awesome-armadillo-abc12');
     provisioningService.getServerInfo.mockResolvedValue({ publicIp: '1.2.3.4' });
     provisioningService.ensurePublicIpForDns.mockImplementation(
@@ -163,6 +144,7 @@ describe('SubscriptionService', () => {
       billingIntervalType: BillingIntervalType.DAY,
       billingIntervalValue: 1,
       billingDayOfMonth: undefined,
+      providerConfigDefaults: controllerProvisioningDefaults,
     });
     typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
       id: 'stype-1',
@@ -202,6 +184,7 @@ describe('SubscriptionService', () => {
       billingIntervalValue: 1,
       billingDayOfMonth: undefined,
       providerConfigDefaults: {
+        ...controllerProvisioningDefaults,
         region: 'fsn1',
         serverType: 'cx23',
         authenticationMethod: 'api-key',
@@ -236,7 +219,7 @@ describe('SubscriptionService', () => {
       serverType: 'cx23',
       location: 'fsn1',
       firewallId: undefined,
-      userData: '#!/bin/bash\necho hello',
+      userData: 'mock-user-data',
     });
     expect(cloudflareDnsService.createARecord).toHaveBeenCalledWith('awesome-armadillo-abc12', '1.2.3.4');
     expect(itemsRepository.create).toHaveBeenCalledWith(
@@ -254,44 +237,31 @@ describe('SubscriptionService', () => {
     );
     expect(itemsRepository.updateSshPrivateKey).toHaveBeenCalledWith('item-1', expect.any(String));
     expect((itemsRepository.updateSshPrivateKey as jest.Mock).mock.calls[0][1].length).toBeGreaterThan(0);
-    expect(buildCloudInitConfigFromRequest).toHaveBeenCalledWith(
+    expect(buildProvisioningUserData).toHaveBeenCalledWith(
       expect.objectContaining({
-        region: 'fsn1',
-        serverType: 'cx23',
-        authenticationMethod: 'api-key',
-        sshPublicKey: expect.any(String),
-      }),
-      'awesome-armadillo-abc12',
-      'spirde.com',
-    );
-    expect(buildBillingCloudInitUserData).toHaveBeenCalledWith(
-      expect.objectContaining({
-        host: {
-          hostname: 'awesome-armadillo-abc12',
-          fqdn: 'awesome-armadillo-abc12.spirde.com',
-        },
-        backend: expect.objectContaining({
-          authentication: expect.objectContaining({
-            authenticationMethod: 'api-key',
-            disableSignup: false,
-          }),
-          encryption: expect.objectContaining({
-            encryptionKey: expect.any(String),
-            jwtSecret: expect.any(String),
-          }),
+        service: 'controller',
+        hostname: 'awesome-armadillo-abc12',
+        baseDomain: 'spirde.com',
+        effectiveConfig: expect.objectContaining({
+          region: 'fsn1',
+          serverType: 'cx23',
+          authenticationMethod: 'api-key',
+          sshPublicKey: expect.any(String),
         }),
       }),
     );
   });
 
   it('calls manager cloud-init builder when service is manager', async () => {
-    (buildAgentManagerCloudInitUserData as jest.Mock).mockReturnValue('#!/bin/bash\necho manager');
     plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
       id: 'plan-1',
       serviceTypeId: 'stype-1',
       billingIntervalType: BillingIntervalType.DAY,
       billingIntervalValue: 1,
       billingDayOfMonth: undefined,
+      providerConfigDefaults: {
+        provisioningOptions: [{ type: 'integrated', service: 'manager' }],
+      },
     });
     typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
       id: 'stype-1',
@@ -313,17 +283,194 @@ describe('SubscriptionService', () => {
     await service.createSubscription('user-1', 'plan-1', { region: 'fsn1', service: 'manager' });
 
     expect(itemsRepository.updateSshPrivateKey).toHaveBeenCalledWith('item-1', expect.any(String));
-    expect(buildAgentManagerCloudInitConfigFromRequest).toHaveBeenCalledWith(
-      expect.objectContaining({ region: 'fsn1', service: 'manager', sshPublicKey: expect.any(String) }),
-      'awesome-armadillo-abc12',
-      'spirde.com',
+    expect(buildProvisioningUserData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        service: 'manager',
+        hostname: 'awesome-armadillo-abc12',
+        effectiveConfig: expect.objectContaining({
+          region: 'fsn1',
+          service: 'manager',
+          sshPublicKey: expect.any(String),
+        }),
+      }),
     );
-    expect(buildAgentManagerCloudInitUserData).toHaveBeenCalled();
-    expect(buildCloudInitConfigFromRequest).not.toHaveBeenCalled();
-    expect(buildBillingCloudInitUserData).not.toHaveBeenCalled();
     expect(provisioningService.provision).toHaveBeenCalledWith(
       'hetzner',
-      expect.objectContaining({ userData: '#!/bin/bash\necho manager' }),
+      expect.objectContaining({ userData: 'mock-user-data' }),
+    );
+  });
+
+  it('resolves custom CloudInit config and env when service is custom', async () => {
+    const customTemplate = { id: 'cfg-1', isActive: true };
+    (cloudInitConfigService.findByIdForProvisioning as jest.Mock).mockResolvedValue(customTemplate);
+    (cloudInitConfigService.resolveEnvironmentVariables as jest.Mock).mockReturnValue({ API_KEY: 'resolved' });
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      providerConfigDefaults: {
+        provisioningOptions: [{ type: 'custom', cloudInitConfigId: 'cfg-1' }],
+        region: 'fsn1',
+        serverType: 'cx23',
+      },
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+
+    await service.createSubscription('user-1', 'plan-1', { env: { API_KEY: 'customer' } });
+
+    expect(cloudInitConfigService.findByIdForProvisioning).toHaveBeenCalledWith('cfg-1');
+    expect(cloudInitConfigService.resolveEnvironmentVariables).toHaveBeenCalled();
+    expect(buildProvisioningUserData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        service: 'custom',
+        customTemplate,
+        resolvedCustomEnv: { API_KEY: 'resolved' },
+      }),
+    );
+  });
+
+  it('resolves custom config from provisioningOptionKey when plan offers multiple options', async () => {
+    const customTemplate = { id: 'cfg-2', isActive: true };
+    (cloudInitConfigService.findByIdForProvisioning as jest.Mock).mockResolvedValue(customTemplate);
+    (cloudInitConfigService.resolveEnvironmentVariables as jest.Mock).mockReturnValue({ API_KEY: 'resolved' });
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      providerConfigDefaults: {
+        region: 'fsn1',
+        serverType: 'cx23',
+        provisioningOptions: [
+          { type: 'integrated', service: 'controller' },
+          { type: 'custom', cloudInitConfigId: 'cfg-2' },
+        ],
+      },
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+
+    await service.createSubscription('user-1', 'plan-1', {
+      provisioningOptionKey: 'custom:cfg-2',
+      env: { API_KEY: 'customer' },
+    });
+
+    expect(cloudInitConfigService.findByIdForProvisioning).toHaveBeenCalledWith('cfg-2');
+  });
+
+  it('orders legacy manager-only plans using requested service without provisioningOptionKey', async () => {
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      providerConfigDefaults: { service: 'manager', region: 'fsn1', serverType: 'cx23' },
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+
+    await service.createSubscription('user-1', 'plan-1', { service: 'manager', region: 'fsn1' });
+
+    expect(buildProvisioningUserData).toHaveBeenCalledWith(expect.objectContaining({ service: 'manager' }));
+  });
+
+  it('rejects invalid provisioning selections', async () => {
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      providerConfigDefaults: {
+        provisioningOptions: [
+          { type: 'integrated', service: 'controller' },
+          { type: 'custom', cloudInitConfigId: 'cfg-1' },
+        ],
+      },
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: {},
+    });
+
+    await expect(service.createSubscription('user-1', 'plan-1', {})).rejects.toThrow(BadRequestException);
+    await expect(service.createSubscription('user-1', 'plan-1', {})).rejects.toThrow(
+      'provisioningOptionKey is required when the plan offers multiple provisioning options',
+    );
+  });
+
+  it('creates backorder when availability fails and autoBackorder is enabled', async () => {
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      providerConfigDefaults: controllerProvisioningDefaults,
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: {},
+    });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({
+      isAvailable: false,
+      reason: 'Out of stock',
+      alternatives: { region: 'nbg1' },
+    });
+
+    await expect(service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true)).rejects.toThrow(
+      BadRequestException,
+    );
+    expect(backorderService.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user-1',
+        planId: 'plan-1',
+        providerErrors: { reason: 'Out of stock' },
+      }),
     );
   });
 
@@ -334,6 +481,7 @@ describe('SubscriptionService', () => {
       billingIntervalType: BillingIntervalType.DAY,
       billingIntervalValue: 1,
       billingDayOfMonth: undefined,
+      providerConfigDefaults: controllerProvisioningDefaults,
     });
     typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
       id: 'stype-1',
@@ -378,6 +526,7 @@ describe('SubscriptionService', () => {
       billingIntervalType: BillingIntervalType.DAY,
       billingIntervalValue: 1,
       billingDayOfMonth: undefined,
+      providerConfigDefaults: controllerProvisioningDefaults,
     });
     typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
       id: 'stype-1',
@@ -416,6 +565,7 @@ describe('SubscriptionService', () => {
       billingDayOfMonth: undefined,
       allowCustomerLocationSelection: false,
       providerConfigDefaults: {
+        ...controllerProvisioningDefaults,
         region: 'fsn1',
         serverType: 'cx23',
         service: 'controller',
@@ -459,6 +609,7 @@ describe('SubscriptionService', () => {
       billingDayOfMonth: undefined,
       allowCustomerLocationSelection: true,
       providerConfigDefaults: {
+        ...controllerProvisioningDefaults,
         region: 'fsn1',
         serverType: 'cx23',
         service: 'controller',

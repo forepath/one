@@ -28,6 +28,7 @@ import { PaymentsWebhookController } from './controllers/payments-webhook.contro
 import { PricingController } from './controllers/pricing.controller';
 import { PublicServicePlanOfferingsController } from './controllers/public-service-plan-offerings.controller';
 import { ServicePlansController } from './controllers/service-plans.controller';
+import { CloudInitConfigsController } from './controllers/cloud-init-configs.controller';
 import { ServiceTypesController } from './controllers/service-types.controller';
 import { SubscriptionItemsController } from './controllers/subscription-items.controller';
 import { SubscriptionsController } from './controllers/subscriptions.controller';
@@ -47,6 +48,7 @@ import { PaymentAttemptEntity } from './entities/payment-attempt.entity';
 import { PaymentWebhookEventEntity } from './entities/payment-webhook-event.entity';
 import { ProviderPriceSnapshotEntity } from './entities/provider-price-snapshot.entity';
 import { ReservedHostnameEntity } from './entities/reserved-hostname.entity';
+import { CloudInitConfigEntity } from './entities/cloud-init-config.entity';
 import { ServicePlanEntity } from './entities/service-plan.entity';
 import { ServiceTypeEntity } from './entities/service-type.entity';
 import { SubscriptionItemEntity } from './entities/subscription-item.entity';
@@ -77,6 +79,7 @@ import { PaymentAttemptsRepository } from './repositories/payment-attempts.repos
 import { PaymentWebhookEventsRepository } from './repositories/payment-webhook-events.repository';
 import { ProviderPriceSnapshotsRepository } from './repositories/provider-price-snapshots.repository';
 import { ReservedHostnamesRepository } from './repositories/reserved-hostnames.repository';
+import { CloudInitConfigsRepository } from './repositories/cloud-init-configs.repository';
 import { ServicePlansRepository } from './repositories/service-plans.repository';
 import { ServiceTypesRepository } from './repositories/service-types.repository';
 import { SubscriptionItemsRepository } from './repositories/subscription-items.repository';
@@ -94,6 +97,7 @@ import { BillingIssuerConfigService } from './services/billing-issuer-config.ser
 import { BillingScheduleService } from './services/billing-schedule.service';
 import { BillingStatisticsQueryService } from './services/billing-statistics-query.service';
 import { CancellationPolicyService } from './services/cancellation-policy.service';
+import { CloudInitConfigService } from './services/cloud-init-config.service';
 import { CloudflareDnsService } from './services/cloudflare-dns.service';
 import { CustomerProfilesService } from './services/customer-profiles.service';
 import { CustomerProfilesAdminService } from './services/customer-profiles-admin.service';
@@ -139,6 +143,7 @@ import { SubscriptionService } from './services/subscription.service';
 import { TaxCalculationService } from './services/tax-calculation.service';
 import { TaxRateConfigService } from './services/tax-rate-config.service';
 import { UsageService } from './services/usage.service';
+import { applyProviderConfigFieldScopes } from './utils/provider-config-schema.utils';
 
 const authMethod = getAuthenticationMethod();
 /**
@@ -147,168 +152,183 @@ const authMethod = getAuthenticationMethod();
  * - basePriceFromField: when set, the UI fetches options from GET .../server-types and uses the selected option's price as plan base price.
  * - properties may include optional `enum` arrays for static options, or the field named in basePriceFromField gets options from the server-types API.
  */
+const HETZNER_CONFIG_PROPERTIES: Record<string, Record<string, unknown>> = {
+  service: {
+    type: 'string',
+    description:
+      'Product service: controller (full stack), manager (agent manager only), or custom (admin CloudInit template)',
+    enum: ['controller', 'manager', 'custom'],
+  },
+  cloudInitConfigId: {
+    type: 'string',
+    description: 'CloudInit config template id (required when service is custom)',
+  },
+  serverType: {
+    type: 'string',
+    description: 'Hetzner server type (options and price from API)',
+  },
+  location: {
+    type: 'string',
+    description: 'Hetzner location',
+    enum: ['fsn1', 'nbg1', 'hel1', 'ash', 'hil', 'sgp'],
+  },
+  firewallId: { type: 'number', description: 'Optional firewall ID to attach to server' },
+  authenticationMethod: {
+    type: 'string',
+    description: 'Authentication method for the agent (users, api-key, keycloak)',
+  },
+  staticApiKey: {
+    type: 'string',
+    description: 'Static API key (required when authenticationMethod is api-key)',
+  },
+  disableSignup: { type: 'boolean', description: 'Whether to disable user signup' },
+  smtp: {
+    type: 'object',
+    description: 'SMTP configuration for email',
+    properties: {
+      host: { type: 'string' },
+      port: { type: 'number' },
+      user: { type: 'string' },
+      password: { type: 'string' },
+      from: { type: 'string' },
+    },
+  },
+  keycloak: {
+    type: 'object',
+    description: 'Keycloak configuration (when authenticationMethod is keycloak)',
+    properties: {
+      serverUrl: { type: 'string' },
+      authServerUrl: { type: 'string' },
+      realm: { type: 'string' },
+      clientId: { type: 'string' },
+      clientSecret: { type: 'string' },
+    },
+  },
+  hetznerApiToken: {
+    type: 'string',
+    description: 'Optional Hetzner API token for nested provisioning from the instance',
+  },
+  digitaloceanApiToken: {
+    type: 'string',
+    description: 'Optional DigitalOcean API token for nested provisioning from the instance',
+  },
+  git: {
+    type: 'object',
+    description: 'Optional Git configuration for manager instances (GIT_* env vars)',
+    properties: {
+      setupMode: {
+        type: 'string',
+        description: 'Repository setup mode: clone from remote or empty local repository (git init)',
+        enum: ['clone', 'empty'],
+      },
+      repositoryUrl: { type: 'string', description: 'Git repository URL' },
+      username: { type: 'string', description: 'Git username (HTTPS)' },
+      token: { type: 'string', description: 'Git token (e.g. PAT)' },
+      password: { type: 'string', description: 'Git password (alternative to token)' },
+      privateKey: { type: 'string', description: 'SSH private key for git@ URLs' },
+      commitAuthorName: { type: 'string', description: 'Default commit author name' },
+      commitAuthorEmail: { type: 'string', description: 'Default commit author email' },
+    },
+  },
+  cursorApiKey: {
+    type: 'string',
+    description: 'Optional Cursor API key for manager instances (CURSOR_API_KEY env var). Sensitive.',
+  },
+};
+
 const HETZNER_CONFIG_SCHEMA: Record<string, unknown> = {
   required: ['serverType', 'location', 'service'],
   basePriceFromField: 'serverType',
-  properties: {
-    service: {
-      type: 'string',
-      description: 'Product service: controller (full stack) or manager (agent manager only)',
-      enum: ['controller', 'manager'],
-    },
-    serverType: {
-      type: 'string',
-      description: 'Hetzner server type (options and price from API)',
-    },
-    location: {
-      type: 'string',
-      description: 'Hetzner location',
-      enum: ['fsn1', 'nbg1', 'hel1', 'ash', 'hil', 'sgp'],
-    },
-    firewallId: { type: 'number', description: 'Optional firewall ID to attach to server' },
-    authenticationMethod: {
-      type: 'string',
-      description: 'Authentication method for the agent (users, api-key, keycloak)',
-    },
-    staticApiKey: {
-      type: 'string',
-      description: 'Static API key (required when authenticationMethod is api-key)',
-    },
-    disableSignup: { type: 'boolean', description: 'Whether to disable user signup' },
-    smtp: {
-      type: 'object',
-      description: 'SMTP configuration for email',
-      properties: {
-        host: { type: 'string' },
-        port: { type: 'number' },
-        user: { type: 'string' },
-        password: { type: 'string' },
-        from: { type: 'string' },
-      },
-    },
-    keycloak: {
-      type: 'object',
-      description: 'Keycloak configuration (when authenticationMethod is keycloak)',
-      properties: {
-        serverUrl: { type: 'string' },
-        authServerUrl: { type: 'string' },
-        realm: { type: 'string' },
-        clientId: { type: 'string' },
-        clientSecret: { type: 'string' },
-      },
-    },
-    hetznerApiToken: {
-      type: 'string',
-      description: 'Optional Hetzner API token for nested provisioning from the instance',
-    },
-    digitaloceanApiToken: {
-      type: 'string',
-      description: 'Optional DigitalOcean API token for nested provisioning from the instance',
-    },
-    git: {
-      type: 'object',
-      description: 'Optional Git configuration for manager instances (GIT_* env vars)',
-      properties: {
-        setupMode: {
-          type: 'string',
-          description: 'Repository setup mode: clone from remote or empty local repository (git init)',
-          enum: ['clone', 'empty'],
-        },
-        repositoryUrl: { type: 'string', description: 'Git repository URL' },
-        username: { type: 'string', description: 'Git username (HTTPS)' },
-        token: { type: 'string', description: 'Git token (e.g. PAT)' },
-        password: { type: 'string', description: 'Git password (alternative to token)' },
-        privateKey: { type: 'string', description: 'SSH private key for git@ URLs' },
-        commitAuthorName: { type: 'string', description: 'Default commit author name' },
-        commitAuthorEmail: { type: 'string', description: 'Default commit author email' },
-      },
-    },
-    cursorApiKey: {
-      type: 'string',
-      description: 'Optional Cursor API key for manager instances (CURSOR_API_KEY env var). Sensitive.',
+  properties: applyProviderConfigFieldScopes(HETZNER_CONFIG_PROPERTIES, ['serverType', 'location', 'firewallId']),
+};
+
+const DIGITALOCEAN_CONFIG_PROPERTIES: Record<string, Record<string, unknown>> = {
+  service: {
+    type: 'string',
+    description:
+      'Product service: controller (full stack), manager (agent manager only), or custom (admin CloudInit template)',
+    enum: ['controller', 'manager', 'custom'],
+  },
+  cloudInitConfigId: {
+    type: 'string',
+    description: 'CloudInit config template id (required when service is custom)',
+  },
+  serverType: {
+    type: 'string',
+    description: 'DigitalOcean droplet size (options and price from API)',
+  },
+  region: {
+    type: 'string',
+    description: 'DigitalOcean region',
+    enum: ['ams3', 'blr1', 'fra1', 'lon1', 'nyc1', 'nyc3', 'sfo2', 'sfo3', 'sgp1', 'syd1', 'tor1'],
+  },
+  authenticationMethod: {
+    type: 'string',
+    description: 'Authentication method for the agent (users, api-key, keycloak)',
+  },
+  staticApiKey: {
+    type: 'string',
+    description: 'Static API key (required when authenticationMethod is api-key)',
+  },
+  disableSignup: { type: 'boolean', description: 'Whether to disable user signup' },
+  smtp: {
+    type: 'object',
+    description: 'SMTP configuration for email',
+    properties: {
+      host: { type: 'string' },
+      port: { type: 'number' },
+      user: { type: 'string' },
+      password: { type: 'string' },
+      from: { type: 'string' },
     },
   },
+  keycloak: {
+    type: 'object',
+    description: 'Keycloak configuration (when authenticationMethod is keycloak)',
+    properties: {
+      serverUrl: { type: 'string' },
+      authServerUrl: { type: 'string' },
+      realm: { type: 'string' },
+      clientId: { type: 'string' },
+      clientSecret: { type: 'string' },
+    },
+  },
+  hetznerApiToken: {
+    type: 'string',
+    description: 'Optional Hetzner API token for nested provisioning from the instance',
+  },
+  digitaloceanApiToken: {
+    type: 'string',
+    description: 'Optional DigitalOcean API token for nested provisioning from the instance',
+  },
+  git: {
+    type: 'object',
+    description: 'Optional Git configuration for manager instances (GIT_* env vars)',
+    properties: {
+      setupMode: {
+        type: 'string',
+        description: 'Repository setup mode: clone from remote or empty local repository (git init)',
+        enum: ['clone', 'empty'],
+      },
+      repositoryUrl: { type: 'string', description: 'Git repository URL' },
+      username: { type: 'string', description: 'Git username (HTTPS)' },
+      token: { type: 'string', description: 'Git token (e.g. PAT)' },
+      password: { type: 'string', description: 'Git password (alternative to token)' },
+      privateKey: { type: 'string', description: 'SSH private key for git@ URLs' },
+      commitAuthorName: { type: 'string', description: 'Default commit author name' },
+      commitAuthorEmail: { type: 'string', description: 'Default commit author email' },
+    },
+  },
+  cursorApiKey: {
+    type: 'string',
+    description: 'Optional Cursor API key for manager instances (CURSOR_API_KEY env var). Sensitive.',
+  },
 };
+
 const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
   required: ['serverType', 'region', 'service'],
   basePriceFromField: 'serverType',
-  properties: {
-    service: {
-      type: 'string',
-      description: 'Product service: controller (full stack) or manager (agent manager only)',
-      enum: ['controller', 'manager'],
-    },
-    serverType: {
-      type: 'string',
-      description: 'DigitalOcean droplet size (options and price from API)',
-    },
-    region: {
-      type: 'string',
-      description: 'DigitalOcean region',
-      enum: ['ams3', 'blr1', 'fra1', 'lon1', 'nyc1', 'nyc3', 'sfo2', 'sfo3', 'sgp1', 'syd1', 'tor1'],
-    },
-    authenticationMethod: {
-      type: 'string',
-      description: 'Authentication method for the agent (users, api-key, keycloak)',
-    },
-    staticApiKey: {
-      type: 'string',
-      description: 'Static API key (required when authenticationMethod is api-key)',
-    },
-    disableSignup: { type: 'boolean', description: 'Whether to disable user signup' },
-    smtp: {
-      type: 'object',
-      description: 'SMTP configuration for email',
-      properties: {
-        host: { type: 'string' },
-        port: { type: 'number' },
-        user: { type: 'string' },
-        password: { type: 'string' },
-        from: { type: 'string' },
-      },
-    },
-    keycloak: {
-      type: 'object',
-      description: 'Keycloak configuration (when authenticationMethod is keycloak)',
-      properties: {
-        serverUrl: { type: 'string' },
-        authServerUrl: { type: 'string' },
-        realm: { type: 'string' },
-        clientId: { type: 'string' },
-        clientSecret: { type: 'string' },
-      },
-    },
-    hetznerApiToken: {
-      type: 'string',
-      description: 'Optional Hetzner API token for nested provisioning from the instance',
-    },
-    digitaloceanApiToken: {
-      type: 'string',
-      description: 'Optional DigitalOcean API token for nested provisioning from the instance',
-    },
-    git: {
-      type: 'object',
-      description: 'Optional Git configuration for manager instances (GIT_* env vars)',
-      properties: {
-        setupMode: {
-          type: 'string',
-          description: 'Repository setup mode: clone from remote or empty local repository (git init)',
-          enum: ['clone', 'empty'],
-        },
-        repositoryUrl: { type: 'string', description: 'Git repository URL' },
-        username: { type: 'string', description: 'Git username (HTTPS)' },
-        token: { type: 'string', description: 'Git token (e.g. PAT)' },
-        password: { type: 'string', description: 'Git password (alternative to token)' },
-        privateKey: { type: 'string', description: 'SSH private key for git@ URLs' },
-        commitAuthorName: { type: 'string', description: 'Default commit author name' },
-        commitAuthorEmail: { type: 'string', description: 'Default commit author email' },
-      },
-    },
-    cursorApiKey: {
-      type: 'string',
-      description: 'Optional Cursor API key for manager instances (CURSOR_API_KEY env var). Sensitive.',
-    },
-  },
+  properties: applyProviderConfigFieldScopes(DIGITALOCEAN_CONFIG_PROPERTIES, ['serverType', 'region']),
 };
 
 @Module({
@@ -316,6 +336,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     TypeOrmModule.forFeature([
       ServiceTypeEntity,
       ServicePlanEntity,
+      CloudInitConfigEntity,
       SubscriptionEntity,
       SubscriptionItemEntity,
       ReservedHostnameEntity,
@@ -340,6 +361,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
   ],
   controllers: [
     ServiceTypesController,
+    CloudInitConfigsController,
     PublicServicePlanOfferingsController,
     ServicePlansController,
     AvailabilityController,
@@ -361,6 +383,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     BackorderRetryJobHandler,
     BillingScheduleService,
     CancellationPolicyService,
+    CloudInitConfigService,
     CloudflareDnsService,
     DigitaloceanProvisioningService,
     HostnameReservationService,
@@ -447,6 +470,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     OpenPositionsRepository,
     UsersBillingDayRepository,
     ProviderPriceSnapshotsRepository,
+    CloudInitConfigsRepository,
     ServicePlansRepository,
     ServiceTypesRepository,
     ReservedHostnamesRepository,

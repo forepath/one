@@ -16,7 +16,7 @@ This application provides:
 - **Plans** - Browse and order service plans, manage subscription lifecycle
 - **Invoices** - List, detail, download, and Stripe checkout redirect
 - **Customer profile** - Billing metadata required before ordering
-- **Administration** - Service types, service plans, billing KPIs, manual invoices, billing profiles (admin only)
+- **Administration** - Service types, CloudInit configs, service plans, billing KPIs, manual invoices, billing profiles (admin only)
 - **Identity UI** - Login, registration, password reset, email confirmation, user management
 - **Real-time status** - Socket.IO subscription on the overview page
 - **Localization** - English and German builds with locale-prefixed SSR paths
@@ -64,12 +64,13 @@ Stripe return URLs typically land on `/invoices?payment=success` or `?payment=ca
 
 ### Administration routes (`billingAdminGuard` plus `authGuard`)
 
-| Path                                | Component                 | Description                          |
-| ----------------------------------- | ------------------------- | ------------------------------------ |
-| `/administration/service-types`     | ServiceTypesPage          | Provider and service type catalog    |
-| `/administration/service-plans`     | ServicePlansPage          | Priced plans and ordering highlights |
-| `/administration/billing`           | AdminBillingPage          | KPIs, bill-now, open/overdue lists   |
-| `/administration/customer-profiles` | AdminCustomerProfilesPage | Customer billing profile CRUD        |
+| Path                                 | Component                 | Description                          |
+| ------------------------------------ | ------------------------- | ------------------------------------ |
+| `/administration/service-types`      | ServiceTypesPage          | Provider and service type catalog    |
+| `/administration/cloud-init-configs` | CloudInitConfigsPage      | CloudInit config templates           |
+| `/administration/service-plans`      | ServicePlansPage          | Priced plans and ordering highlights |
+| `/administration/billing`            | AdminBillingPage          | KPIs, bill-now, open/overdue lists   |
+| `/administration/customer-profiles`  | AdminCustomerProfilesPage | Customer billing profile CRUD        |
 
 Unknown paths redirect to the shell root (`**` to ``).
 

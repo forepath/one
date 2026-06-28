@@ -1,0 +1,18 @@
+// Scrollable Bootstrap modals: overflow-y on .modal-body only works when nested forms
+// participate in the flex height chain (min-height: 0).
+.modal-dialog-scrollable {
+  .modal-content {
+    > form {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: 100%;
+    }
+  }
+
+  .modal-body {
+    min-height: 0;
+    overflow-y: auto;
+  }
+}

@@ -1,6 +1,6 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
-import type { ServerInfoResponse, SubscriptionResponse } from '../../types/billing.types';
+import type { ProvisioningServiceKind, ServerInfoResponse, SubscriptionResponse } from '../../types/billing.types';
 import { selectSubscriptionsEntities } from '../subscriptions/subscriptions.selectors';
 
 import type { ServerActionType, SubscriptionServerInfoState } from './subscription-server-info.reducer';
@@ -9,8 +9,8 @@ export interface SubscriptionWithServerInfo {
   subscription: SubscriptionResponse;
   serverInfo: ServerInfoResponse;
   itemId: string;
-  /** Product service from active item config: controller or manager. Defaults to controller. */
-  service: 'controller' | 'manager';
+  /** Product service from active item config. Defaults to controller. */
+  service: ProvisioningServiceKind;
 }
 
 const selectSubscriptionServerInfoState = createFeatureSelector<SubscriptionServerInfoState>('subscriptionServerInfo');

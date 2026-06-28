@@ -6,7 +6,7 @@ import { Action, Store } from '@ngrx/store';
 import { Observable, catchError, forkJoin, from, map, mergeMap, of, switchMap, take } from 'rxjs';
 
 import { SubscriptionItemsService } from '../../services/subscription-items.service';
-import type { ServerInfoResponse, SubscriptionResponse } from '../../types/billing.types';
+import type { ServerInfoResponse, SubscriptionResponse, ProvisioningServiceKind } from '../../types/billing.types';
 import { selectSubscriptionsEntities } from '../subscriptions/subscriptions.selectors';
 
 import {
@@ -65,7 +65,7 @@ export function loadOverviewServerInfoEffect(
       ).pipe(
         switchMap((results) => {
           const toFetch: { subscriptionId: string; itemId: string }[] = [];
-          const serviceBySubscriptionId: Record<string, 'controller' | 'manager'> = {};
+          const serviceBySubscriptionId: Record<string, ProvisioningServiceKind> = {};
 
           results.forEach(({ sub, items }) => {
             const active = items.find((i) => i.provisioningStatus === 'active');

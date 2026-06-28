@@ -75,6 +75,7 @@ Each tenant has independent:
 - Subscriptions and subscription items
 - Invoices and open positions
 - Service types and service plans
+- CloudInit config templates
 - Backorders
 
 Admin and user routes filter by the request tenant. Interactive auth (Keycloak or users) additionally requires the authenticated user's `tenant_id` to match the request tenant.

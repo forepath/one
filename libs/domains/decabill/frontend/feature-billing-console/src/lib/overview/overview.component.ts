@@ -137,6 +137,10 @@ export class OverviewComponent implements OnInit {
       return $localize`:@@featureOverview-managerService:${productName}:productName: Manager`;
     }
 
+    if (service === 'custom') {
+      return $localize`:@@featureOverview-customService:Custom application`;
+    }
+
     return $localize`:@@featureOverview-controllerService:${productName}:productName: Controller`;
   }
 

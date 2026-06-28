@@ -100,6 +100,35 @@ describe('ServicePlansService', () => {
     });
   });
 
+  describe('getOrderProvisioningOptions', () => {
+    it('should return order provisioning options for a plan', (done) => {
+      const options = [
+        { optionKey: 'integrated:controller', type: 'integrated', service: 'controller', label: 'Agenstra Controller' },
+      ];
+
+      service.getOrderProvisioningOptions('sp-1').subscribe((result) => {
+        expect(result).toEqual(options);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/service-plans/sp-1/order-provisioning-options`);
+
+      expect(req.request.method).toBe('GET');
+      req.flush(options);
+    });
+  });
+
+  it('fetches plan-scoped cloud init order fields', (done) => {
+    service.getCloudInitOrderFields('sp-1', 'cfg-1').subscribe((fields) => {
+      expect(fields).toEqual([{ key: 'API_KEY', label: 'API Key', required: true, hasDefault: false }]);
+      done();
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/service-plans/sp-1/cloud-init-configs/cfg-1/order-fields`);
+    expect(req.request.method).toBe('GET');
+    req.flush([{ key: 'API_KEY', label: 'API Key', required: true, hasDefault: false }]);
+  });
+
   describe('createServicePlan', () => {
     it('should create a new service plan', (done) => {
       const createDto: CreateServicePlanDto = {

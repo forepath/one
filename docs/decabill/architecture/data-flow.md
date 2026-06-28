@@ -152,6 +152,8 @@ Admin **bill-now** follows a similar coordinator and unit pattern outside the no
 
 When a service plan includes infrastructure, the manager provisions a cloud server and records connection details on the subscription item.
 
+For **custom** plans, the manager loads the linked CloudInit config, merges `requestedConfig.env` with decrypted admin defaults, and passes the result to the custom cloud-init builder before calling the provider. See **[CloudInit Configs](../features/cloud-init-configs.md)**.
+
 ```mermaid
 sequenceDiagram
     participant A as Billing Manager
@@ -170,7 +172,7 @@ sequenceDiagram
     A->>DB: Reserve hostname if applicable
 ```
 
-Later, the **subscription-item-update** scheduler SSHes to the host and runs `docker compose up -d --pull=always` to refresh bundled stacks. See **[Server Provisioning](../features/server-provisioning.md)**.
+Later, the **subscription-item-update** scheduler SSHes to the host and runs `docker compose up -d --pull=always` to refresh bundled stacks. Custom service items are skipped. See **[Server Provisioning](../features/server-provisioning.md)**.
 
 ## Backorder Retry Flow
 

@@ -58,6 +58,107 @@ export interface UpdateServiceTypeDto {
   isActive?: boolean;
 }
 
+// CloudInit Configs
+export type CloudInitProvisioningMode = 'simple' | 'compose-template' | 'user-data-template';
+
+export interface CloudInitConfigEnvVariableDefinition {
+  key: string;
+  label: string;
+  description?: string;
+  showInOrderForm: boolean;
+  hasDefault: boolean;
+  useRandomDefault?: boolean;
+  randomDefaultLength?: number;
+  randomDefaultSpecialChars?: boolean;
+}
+
+export interface CloudInitConfigResponse {
+  id: string;
+  key: string;
+  name: string;
+  provisioningMode: CloudInitProvisioningMode;
+  description?: string | null;
+  dockerImage?: string | null;
+  containerPort: number;
+  hostPort: number;
+  workDir: string;
+  dockerComposeTemplate?: string | null;
+  userDataTemplate?: string | null;
+  environmentVariables: CloudInitConfigEnvVariableDefinition[];
+  defaultValues?: Record<string, string>;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CloudInitConfigOrderField {
+  key: string;
+  label: string;
+  description?: string | null;
+  required: boolean;
+  hasDefault: boolean;
+}
+
+export type PlanProvisioningOption =
+  | { type: 'integrated'; service: 'controller' | 'manager' }
+  | { type: 'custom'; cloudInitConfigId: string };
+
+export interface OrderProvisioningOption {
+  optionKey: string;
+  type: 'integrated' | 'custom';
+  service?: 'controller' | 'manager';
+  cloudInitConfigId?: string;
+  label: string;
+  description?: string | null;
+}
+
+export interface CreateCloudInitConfigDto {
+  key: string;
+  name: string;
+  description?: string;
+  provisioningMode?: CloudInitProvisioningMode;
+  dockerImage?: string;
+  containerPort?: number;
+  hostPort?: number;
+  workDir?: string;
+  dockerComposeTemplate?: string;
+  userDataTemplate?: string;
+  environmentVariables?: Array<{
+    key: string;
+    label: string;
+    description?: string;
+    showInOrderForm: boolean;
+    useRandomDefault?: boolean;
+    randomDefaultLength?: number;
+    randomDefaultSpecialChars?: boolean;
+  }>;
+  defaultValues?: Record<string, string>;
+  isActive?: boolean;
+}
+
+export interface UpdateCloudInitConfigDto {
+  name?: string;
+  description?: string;
+  provisioningMode?: CloudInitProvisioningMode;
+  dockerImage?: string;
+  containerPort?: number;
+  hostPort?: number;
+  workDir?: string;
+  dockerComposeTemplate?: string | null;
+  userDataTemplate?: string | null;
+  environmentVariables?: Array<{
+    key: string;
+    label: string;
+    description?: string;
+    showInOrderForm: boolean;
+    useRandomDefault?: boolean;
+    randomDefaultLength?: number;
+    randomDefaultSpecialChars?: boolean;
+  }>;
+  defaultValues?: Record<string, string>;
+  isActive?: boolean;
+}
+
 // Service Plans
 export interface ServicePlanOrderingHighlight {
   icon: string;
@@ -169,10 +270,13 @@ export interface GitConfig {
   commitAuthorEmail?: string;
 }
 
+/** Provisioned product service kind on a subscription item or cloud-init request. */
+export type ProvisioningServiceKind = 'controller' | 'manager' | 'custom';
+
 /** Cloud-init related part of requestedConfig (authentication, SMTP, optional provisioning tokens). */
 export interface RequestedConfigCloudInit {
-  /** Product service - controller (full stack) or manager (agent manager only). */
-  service?: 'controller' | 'manager';
+  /** Product service - controller, manager, or custom CloudInit template. */
+  service?: ProvisioningServiceKind;
   authenticationMethod?: string;
   staticApiKey?: string;
   disableSignup?: boolean;
@@ -212,8 +316,8 @@ export interface SubscriptionItemResponse {
   serviceTypeId: string;
   provisioningStatus: ProvisioningStatus;
   hostname?: string | null;
-  /** Product service: controller (full stack) or manager (agent manager only). Defaults to controller. */
-  service?: 'controller' | 'manager';
+  /** Product service: controller, manager, or custom CloudInit template. Defaults to controller. */
+  service?: ProvisioningServiceKind;
 }
 
 export interface ServerInfoResponse {
@@ -230,7 +334,7 @@ export interface ServerInfoResponse {
 export interface BillingDashboardStatusItem {
   subscriptionId: string;
   itemId: string;
-  service: 'controller' | 'manager';
+  service: ProvisioningServiceKind;
   name: string;
   publicIp: string;
   privateIp?: string;

@@ -3,6 +3,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { SubscriptionItemResponseDto } from '../dto/subscription-item-response.dto';
 import { ProvisioningStatus } from '../entities/subscription-item.entity';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
+import { normalizeCloudInitService } from '../utils/cloud-init/cloud-init-dispatch.utils';
 import { ServerInfo } from '../utils/provisioning.utils';
 
 import { CloudflareDnsService } from './cloudflare-dns.service';
@@ -27,8 +28,7 @@ export class SubscriptionItemServerService {
     const items = await this.subscriptionItemsRepository.findBySubscription(subscriptionId);
 
     return items.map((item) => {
-      const service = item.configSnapshot?.service as string | undefined;
-      const serviceVal = service === 'manager' ? ('manager' as const) : ('controller' as const);
+      const service = normalizeCloudInitService(item.configSnapshot?.service as string | undefined);
 
       return {
         id: item.id,
@@ -36,7 +36,7 @@ export class SubscriptionItemServerService {
         serviceTypeId: item.serviceTypeId,
         provisioningStatus: item.provisioningStatus,
         hostname: item.hostname,
-        service: serviceVal,
+        service,
       };
     });
   }

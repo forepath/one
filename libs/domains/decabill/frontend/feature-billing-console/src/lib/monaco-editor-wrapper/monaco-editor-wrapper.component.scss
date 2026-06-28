@@ -1,0 +1,33 @@
+:host {
+  display: block;
+}
+
+.monaco-editor-container {
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.editor-toolbar {
+  flex-shrink: 0;
+  min-height: 2.75rem;
+}
+
+.editor-section {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+::ng-deep {
+  .editor-section ngx-monaco-editor {
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto !important;
+  }
+
+  .editor-section .editor-container,
+  .editor-section .monaco-editor {
+    height: 100% !important;
+  }
+}

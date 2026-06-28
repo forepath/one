@@ -1,0 +1,715 @@
+<div class="cloud-init-configs-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureCloudInitConfigs-title">CloudInit Configs</h5>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      (click)="openCreateModal()"
+      [disabled]="(loadingAny$ | async) === true"
+    >
+      <i class="bi bi-plus-circle me-1"></i>
+      <span i18n="@@featureCloudInitConfigs-add">Add config</span>
+    </button>
+  </div>
+
+  <div class="input-group search-input-container border-bottom">
+    <i class="bi bi-search"></i>
+    <input
+      type="text"
+      class="form-control border-0 search-input"
+      placeholder="Search configs"
+      i18n-placeholder="@@featureCloudInitConfigs-searchPlaceholder"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+      name="search"
+    />
+  </div>
+
+  <div class="flex-grow-1 overflow-auto">
+    @if (loading$ | async) {
+      <div class="d-flex justify-content-center align-items-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden" i18n="@@featureCloudInitConfigs-loading">Loading...</span>
+        </div>
+      </div>
+    } @else {
+      @if (error$ | async; as err) {
+        <div class="alert alert-danger m-3" role="alert">{{ err }}</div>
+      }
+      @if (cloudInitConfigs$ | async; as configs) {
+        @if (configs.length === 0) {
+          <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+            <p class="mb-0" i18n="@@featureCloudInitConfigs-empty">No CloudInit configs.</p>
+          </div>
+        } @else {
+          <div class="list-group list-group-flush">
+            @for (config of configs; track config.id) {
+              <div class="list-group-item d-flex justify-content-between align-items-start border-bottom gap-3">
+                <div class="min-w-0">
+                  <div class="fw-semibold mb-1">{{ config.name }}</div>
+                  <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
+                    <span [ngClass]="activeStatusTextClass(config.isActive)">{{
+                      activeStatusLabel(config.isActive)
+                    }}</span>
+                    <span><i class="bi bi-key me-1" aria-hidden="true"></i>{{ configKeyLabel(config.key) }}</span>
+                    <span><i class="bi bi-box me-1" aria-hidden="true"></i>{{ configSummaryLabel(config) }}</span>
+                    <span
+                      ><i class="bi bi-sliders me-1" aria-hidden="true"></i
+                      ><span i18n="@@featureCloudInitConfigs-envVarCount"
+                        >{{ envVarCount(config) }} env vars</span
+                      ></span
+                    >
+                  </div>
+                </div>
+                <div class="btn-group btn-group-sm flex-shrink-0" role="group">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    (click)="openEditModal(config)"
+                    [disabled]="(loadingAny$ | async) === true"
+                  >
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    (click)="openDeleteConfirm(config)"
+                    [disabled]="(loadingAny$ | async) === true"
+                  >
+                    <i class="bi bi-trash" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    }
+  </div>
+</div>
+
+<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureCloudInitConfigs-createTitle">Add CloudInit config</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form (ngSubmit)="onSubmitCreate()">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="createKey" i18n="@@featureCloudInitConfigs-key">Key</label>
+              <input id="createKey" class="form-control" [(ngModel)]="createForm.key" name="createKey" required />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="createName" i18n="@@featureCloudInitConfigs-name">Name</label>
+              <input id="createName" class="form-control" [(ngModel)]="createForm.name" name="createName" required />
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="createDescription" i18n="@@featureCloudInitConfigs-description"
+                >Description</label
+              >
+              <textarea
+                id="createDescription"
+                class="form-control"
+                rows="2"
+                [(ngModel)]="createForm.description"
+                name="createDescription"
+              ></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="createProvisioningMode" i18n="@@featureCloudInitConfigs-provisioningMode"
+                >Provisioning mode</label
+              >
+              <select
+                id="createProvisioningMode"
+                class="form-select"
+                [(ngModel)]="createForm.provisioningMode"
+                name="createProvisioningMode"
+                (ngModelChange)="onProvisioningModeChange('create')"
+              >
+                @for (option of provisioningModeOptions; track option.value) {
+                  <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+            @if (isSimpleMode(createForm)) {
+              <div class="col-12">
+                <label class="form-label" for="createDockerImage" i18n="@@featureCloudInitConfigs-dockerImage"
+                  >Docker image</label
+                >
+                <input
+                  id="createDockerImage"
+                  class="form-control"
+                  [(ngModel)]="createForm.dockerImage"
+                  name="createDockerImage"
+                  required
+                />
+              </div>
+            }
+            @if (isComposeTemplateMode(createForm)) {
+              <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label class="form-label mb-0" for="createComposeTemplate">Docker Compose template</label>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="resetComposeTemplate('create')"
+                  >
+                    Reset to default
+                  </button>
+                </div>
+                <framework-monaco-editor-wrapper
+                  [value]="createForm.dockerComposeTemplate ?? ''"
+                  (valueChange)="createForm.dockerComposeTemplate = $event"
+                  language="yaml"
+                  editorHeight="18rem"
+                ></framework-monaco-editor-wrapper>
+                <div class="form-text">{{ templatePlaceholderHelp }}</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="createDockerImageOptional"
+                  >Docker image (for {{'{{DOCKER_IMAGE}}'}})</label
+                >
+                <input
+                  id="createDockerImageOptional"
+                  class="form-control"
+                  [(ngModel)]="createForm.dockerImage"
+                  name="createDockerImageOptional"
+                />
+              </div>
+            }
+            @if (isUserDataTemplateMode(createForm)) {
+              <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label class="form-label mb-0" for="createUserDataTemplate">Cloud-init user-data script</label>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="resetUserDataTemplate('create')"
+                  >
+                    Load example
+                  </button>
+                </div>
+                <framework-monaco-editor-wrapper
+                  [value]="createForm.userDataTemplate ?? ''"
+                  (valueChange)="createForm.userDataTemplate = $event"
+                  language="shell"
+                  editorHeight="24rem"
+                ></framework-monaco-editor-wrapper>
+                <div class="form-text">{{ templatePlaceholderHelp }}</div>
+              </div>
+            }
+            <div class="col-md-4">
+              <label class="form-label" for="createContainerPort" i18n="@@featureCloudInitConfigs-containerPort"
+                >Container port</label
+              >
+              <input
+                id="createContainerPort"
+                type="number"
+                class="form-control"
+                [(ngModel)]="createForm.containerPort"
+                name="createContainerPort"
+              />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="createHostPort" i18n="@@featureCloudInitConfigs-hostPort">Host port</label>
+              <input
+                id="createHostPort"
+                type="number"
+                class="form-control"
+                [(ngModel)]="createForm.hostPort"
+                name="createHostPort"
+              />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="createWorkDir" i18n="@@featureCloudInitConfigs-workDir"
+                >Work directory</label
+              >
+              <input id="createWorkDir" class="form-control" [(ngModel)]="createForm.workDir" name="createWorkDir" />
+            </div>
+            <div class="col-12">
+              <div class="form-check">
+                <input
+                  id="createActive"
+                  class="form-check-input"
+                  type="checkbox"
+                  [(ngModel)]="createForm.isActive"
+                  name="createActive"
+                />
+                <label class="form-check-label" for="createActive" i18n="@@featureCloudInitConfigs-active"
+                  >Active</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3 border rounded p-3 bg-body-secondary mt-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label mb-0" i18n="@@featureCloudInitConfigs-envVariables">Environment variables</label>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                (click)="addEnvVariable('create')"
+                [disabled]="(creating$ | async) === true"
+                i18n="@@featureCloudInitConfigs-addEnvVar"
+              >
+                Add line
+              </button>
+            </div>
+            @for (row of createForm.environmentVariableRows; track $index; let i = $index) {
+              <div class="row g-2 mb-2 align-items-end">
+                <div class="col-12 col-md-2">
+                  <label class="form-label small mb-0" [for]="'createEnvKey' + i">Key</label>
+                  <input
+                    [id]="'createEnvKey' + i"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="row.key"
+                    [name]="'createEnvKey' + i"
+                  />
+                </div>
+                <div class="col-12 col-md-2">
+                  <label class="form-label small mb-0" [for]="'createEnvLabel' + i">Label</label>
+                  <input
+                    [id]="'createEnvLabel' + i"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="row.label"
+                    [name]="'createEnvLabel' + i"
+                  />
+                </div>
+                <div class="col-12 col-md-3">
+                  <label class="form-label small mb-0" [for]="'createEnvDesc' + i">Description</label>
+                  <input
+                    [id]="'createEnvDesc' + i"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="row.description"
+                    [name]="'createEnvDesc' + i"
+                  />
+                </div>
+                <div class="col-12 col-md-3">
+                  <div class="form-check mb-1">
+                    <input
+                      [id]="'createEnvRandom' + i"
+                      class="form-check-input"
+                      type="checkbox"
+                      [ngModel]="row.useRandomDefault"
+                      (ngModelChange)="onEnvRandomDefaultChange(row, $event)"
+                      [name]="'createEnvRandom' + i"
+                    />
+                    <label class="form-check-label small" [for]="'createEnvRandom' + i">Random</label>
+                  </div>
+                  @if (!row.useRandomDefault) {
+                    <label class="form-label small mb-0" [for]="'createEnvDefault' + i">Default</label>
+                    <input
+                      [id]="'createEnvDefault' + i"
+                      type="password"
+                      class="form-control form-control-sm"
+                      [(ngModel)]="row.defaultValue"
+                      [name]="'createEnvDefault' + i"
+                      autocomplete="new-password"
+                    />
+                  } @else {
+                    <label class="form-label small mb-0" [for]="'createEnvRandomLength' + i">Length</label>
+                    <input
+                      [id]="'createEnvRandomLength' + i"
+                      type="number"
+                      class="form-control form-control-sm mb-1"
+                      [(ngModel)]="row.randomDefaultLength"
+                      [name]="'createEnvRandomLength' + i"
+                      [min]="minRandomDefaultLength"
+                    />
+                    <div class="form-check">
+                      <input
+                        [id]="'createEnvRandomSpecial' + i"
+                        class="form-check-input"
+                        type="checkbox"
+                        [(ngModel)]="row.randomDefaultSpecialChars"
+                        [name]="'createEnvRandomSpecial' + i"
+                      />
+                      <label class="form-check-label small" [for]="'createEnvRandomSpecial' + i">Special chars</label>
+                    </div>
+                  }
+                </div>
+                <div class="col-12 col-md-1">
+                  <div class="form-check mb-1">
+                    <input
+                      [id]="'createEnvShow' + i"
+                      class="form-check-input"
+                      type="checkbox"
+                      [(ngModel)]="row.showInOrderForm"
+                      [name]="'createEnvShow' + i"
+                    />
+                    <label class="form-check-label small" [for]="'createEnvShow' + i">Order</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-2 d-flex gap-1">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="moveEnvVariable('create', i, -1)"
+                    [disabled]="i === 0"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="moveEnvVariable('create', i, 1)"
+                    [disabled]="i === createForm.environmentVariableRows.length - 1"
+                  >
+                    ↓
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeEnvVariable('create', i)">
+                    Remove
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            i18n="@@featureCloudInitConfigs-cancel"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="(creating$ | async) === true"
+            i18n="@@featureCloudInitConfigs-save"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureCloudInitConfigs-editTitle">Edit CloudInit config</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form (ngSubmit)="onSubmitEdit()">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label" for="editName" i18n="@@featureCloudInitConfigs-name">Name</label>
+              <input id="editName" class="form-control" [(ngModel)]="editForm.name" name="editName" required />
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="editDescription" i18n="@@featureCloudInitConfigs-description"
+                >Description</label
+              >
+              <textarea
+                id="editDescription"
+                class="form-control"
+                rows="2"
+                [(ngModel)]="editForm.description"
+                name="editDescription"
+              ></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="editProvisioningMode" i18n="@@featureCloudInitConfigs-provisioningMode"
+                >Provisioning mode</label
+              >
+              <select
+                id="editProvisioningMode"
+                class="form-select"
+                [(ngModel)]="editForm.provisioningMode"
+                name="editProvisioningMode"
+                (ngModelChange)="onProvisioningModeChange('edit')"
+              >
+                @for (option of provisioningModeOptions; track option.value) {
+                  <option [ngValue]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+            @if (isSimpleMode(editForm)) {
+              <div class="col-12">
+                <label class="form-label" for="editDockerImage" i18n="@@featureCloudInitConfigs-dockerImage"
+                  >Docker image</label
+                >
+                <input
+                  id="editDockerImage"
+                  class="form-control"
+                  [(ngModel)]="editForm.dockerImage"
+                  name="editDockerImage"
+                  required
+                />
+              </div>
+            }
+            @if (isComposeTemplateMode(editForm)) {
+              <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label class="form-label mb-0" for="editComposeTemplate">Docker Compose template</label>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="resetComposeTemplate('edit')">
+                    Reset to default
+                  </button>
+                </div>
+                <framework-monaco-editor-wrapper
+                  [value]="editForm.dockerComposeTemplate ?? ''"
+                  (valueChange)="editForm.dockerComposeTemplate = $event"
+                  language="yaml"
+                  editorHeight="18rem"
+                ></framework-monaco-editor-wrapper>
+                <div class="form-text">{{ templatePlaceholderHelp }}</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="editDockerImageOptional"
+                  >Docker image (for {{'{{DOCKER_IMAGE}}'}})</label
+                >
+                <input
+                  id="editDockerImageOptional"
+                  class="form-control"
+                  [(ngModel)]="editForm.dockerImage"
+                  name="editDockerImageOptional"
+                />
+              </div>
+            }
+            @if (isUserDataTemplateMode(editForm)) {
+              <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label class="form-label mb-0" for="editUserDataTemplate">Cloud-init user-data script</label>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="resetUserDataTemplate('edit')"
+                  >
+                    Load example
+                  </button>
+                </div>
+                <framework-monaco-editor-wrapper
+                  [value]="editForm.userDataTemplate ?? ''"
+                  (valueChange)="editForm.userDataTemplate = $event"
+                  language="shell"
+                  editorHeight="24rem"
+                ></framework-monaco-editor-wrapper>
+                <div class="form-text">{{ templatePlaceholderHelp }}</div>
+              </div>
+            }
+            <div class="col-md-4">
+              <label class="form-label" for="editContainerPort" i18n="@@featureCloudInitConfigs-containerPort"
+                >Container port</label
+              >
+              <input
+                id="editContainerPort"
+                type="number"
+                class="form-control"
+                [(ngModel)]="editForm.containerPort"
+                name="editContainerPort"
+              />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="editHostPort" i18n="@@featureCloudInitConfigs-hostPort">Host port</label>
+              <input
+                id="editHostPort"
+                type="number"
+                class="form-control"
+                [(ngModel)]="editForm.hostPort"
+                name="editHostPort"
+              />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="editWorkDir" i18n="@@featureCloudInitConfigs-workDir"
+                >Work directory</label
+              >
+              <input id="editWorkDir" class="form-control" [(ngModel)]="editForm.workDir" name="editWorkDir" />
+            </div>
+            <div class="col-12">
+              <div class="form-check">
+                <input
+                  id="editActive"
+                  class="form-check-input"
+                  type="checkbox"
+                  [(ngModel)]="editForm.isActive"
+                  name="editActive"
+                />
+                <label class="form-check-label" for="editActive" i18n="@@featureCloudInitConfigs-active">Active</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3 border rounded p-3 bg-body-secondary mt-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label mb-0" i18n="@@featureCloudInitConfigs-envVariables">Environment variables</label>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                (click)="addEnvVariable('edit')"
+                [disabled]="(updating$ | async) === true"
+                i18n="@@featureCloudInitConfigs-addEnvVar"
+              >
+                Add line
+              </button>
+            </div>
+            @for (row of editForm.environmentVariableRows; track $index; let i = $index) {
+              <div class="row g-2 mb-2 align-items-end">
+                <div class="col-12 col-md-2">
+                  <label class="form-label small mb-0" [for]="'editEnvKey' + i">Key</label>
+                  <input
+                    [id]="'editEnvKey' + i"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="row.key"
+                    [name]="'editEnvKey' + i"
+                  />
+                </div>
+                <div class="col-12 col-md-2">
+                  <label class="form-label small mb-0" [for]="'editEnvLabel' + i">Label</label>
+                  <input
+                    [id]="'editEnvLabel' + i"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="row.label"
+                    [name]="'editEnvLabel' + i"
+                  />
+                </div>
+                <div class="col-12 col-md-3">
+                  <label class="form-label small mb-0" [for]="'editEnvDesc' + i">Description</label>
+                  <input
+                    [id]="'editEnvDesc' + i"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="row.description"
+                    [name]="'editEnvDesc' + i"
+                  />
+                </div>
+                <div class="col-12 col-md-3">
+                  <div class="form-check mb-1">
+                    <input
+                      [id]="'editEnvRandom' + i"
+                      class="form-check-input"
+                      type="checkbox"
+                      [ngModel]="row.useRandomDefault"
+                      (ngModelChange)="onEnvRandomDefaultChange(row, $event)"
+                      [name]="'editEnvRandom' + i"
+                    />
+                    <label class="form-check-label small" [for]="'editEnvRandom' + i">Random</label>
+                  </div>
+                  @if (!row.useRandomDefault) {
+                    <label class="form-label small mb-0" [for]="'editEnvDefault' + i">Default</label>
+                    <input
+                      [id]="'editEnvDefault' + i"
+                      type="password"
+                      class="form-control form-control-sm"
+                      [(ngModel)]="row.defaultValue"
+                      [name]="'editEnvDefault' + i"
+                      autocomplete="new-password"
+                    />
+                  } @else {
+                    <label class="form-label small mb-0" [for]="'editEnvRandomLength' + i">Length</label>
+                    <input
+                      [id]="'editEnvRandomLength' + i"
+                      type="number"
+                      class="form-control form-control-sm mb-1"
+                      [(ngModel)]="row.randomDefaultLength"
+                      [name]="'editEnvRandomLength' + i"
+                      [min]="minRandomDefaultLength"
+                    />
+                    <div class="form-check">
+                      <input
+                        [id]="'editEnvRandomSpecial' + i"
+                        class="form-check-input"
+                        type="checkbox"
+                        [(ngModel)]="row.randomDefaultSpecialChars"
+                        [name]="'editEnvRandomSpecial' + i"
+                      />
+                      <label class="form-check-label small" [for]="'editEnvRandomSpecial' + i">Special chars</label>
+                    </div>
+                  }
+                </div>
+                <div class="col-12 col-md-1">
+                  <div class="form-check mb-1">
+                    <input
+                      [id]="'editEnvShow' + i"
+                      class="form-check-input"
+                      type="checkbox"
+                      [(ngModel)]="row.showInOrderForm"
+                      [name]="'editEnvShow' + i"
+                    />
+                    <label class="form-check-label small" [for]="'editEnvShow' + i">Order</label>
+                  </div>
+                </div>
+                <div class="col-12 col-md-2 d-flex gap-1">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="moveEnvVariable('edit', i, -1)"
+                    [disabled]="i === 0"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                    (click)="moveEnvVariable('edit', i, 1)"
+                    [disabled]="i === editForm.environmentVariableRows.length - 1"
+                  >
+                    ↓
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeEnvVariable('edit', i)">
+                    Remove
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            i18n="@@featureCloudInitConfigs-cancel"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="(updating$ | async) === true"
+            i18n="@@featureCloudInitConfigs-save"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div #deleteConfirmModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureCloudInitConfigs-deleteTitle">Delete config</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (configToDelete) {
+          <p i18n="@@featureCloudInitConfigs-deleteConfirm">Delete CloudInit config "{{ configToDelete.name }}"?</p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureCloudInitConfigs-cancel">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmDelete()"
+          [disabled]="(deleting$ | async) === true"
+          i18n="@@featureCloudInitConfigs-delete"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -19,6 +19,7 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **Payment Processing** - Stripe checkout and webhook-driven payment state
 - **Dynamic Provider Plugins** - Extend payment processors and billing UI metadata at runtime
 - **Server Provisioning** - Cloud-init deployment of bundled product stacks for eligible plans
+- **CloudInit Configs** - Admin-managed Docker templates for the custom service kind
 
 ## Features
 
@@ -167,6 +168,17 @@ Automated cloud server provisioning via cloud-init when service plans include in
 - Let's Encrypt TLS with DNS A record creation
 - SSH-based subscription item update scheduler
 
+### [CloudInit Configs](./cloud-init-configs.md)
+
+Admin-managed Docker deployment templates for the `custom` service kind on provisioning plans.
+
+**Key Capabilities**:
+
+- Reusable CloudInit templates with Docker image, ports, and work directory
+- Per-variable metadata and encrypted admin defaults
+- Customer order form fields driven by `showInOrderForm`
+- Single-service compose provisioning without Nginx or Let's Encrypt in v1
+
 ## Feature Relationships
 
 ```mermaid
@@ -181,6 +193,7 @@ graph TB
     BA[Billing Administration]
     BO[Backorders]
     SP[Server Provisioning]
+    CIC[CloudInit Configs]
     DASH[Dashboard and Server Control]
     RT[Real-time Status]
     DP[Dynamic Provider Plugins]
@@ -190,6 +203,8 @@ graph TB
     MT --> INV
     MT --> BA
     ST --> SUB
+    ST --> CIC
+    CIC --> SUB
     CP --> SUB
     CP --> INV
     SUB --> SP

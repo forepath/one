@@ -78,7 +78,7 @@
         <source> View pricing </source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-moreHeading" datatype="html">
-        <source>More comparisons</source>
+        <source> More comparisons </source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-metaKeywords" datatype="html">
         <source>Decabill comparison, billing platform, subscription billing, agency billing, hosting billing, ZUGFeRD, multi-tenant billing</source>
@@ -1468,7 +1468,7 @@
         <source> Most teams start self-hosted; move to managed cloud when you want us to operate the platform. </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-pathSelfHostedTitle" datatype="html">
-        <source>Self-hosted</source>
+        <source> Self-hosted </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-pathSelfHostedDesc" datatype="html">
         <source> Open source through enterprise licenses. You control data, networking, and upgrades. </source>
@@ -1478,7 +1478,7 @@
             &gt;"/></source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-pathManagedTitle" datatype="html">
-        <source>Decabill Cloud</source>
+        <source> Decabill Cloud </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-pathManagedDesc" datatype="html">
         <source> Fully managed platform. We handle infrastructure, updates, and scaling. </source>
@@ -1509,7 +1509,7 @@
         <source> Free </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-openSourceLicense" datatype="html">
-        <source>AGPL-3.0 License</source>
+        <source> AGPL-3.0 License </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-openSourceFeature1" datatype="html">
         <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Billing manager API<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> includes subscriptions, invoices, and webhooks</source>
@@ -1533,7 +1533,7 @@
         <source>Startup</source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-startupPrice" datatype="html">
-        <source>Free</source>
+        <source> Free </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-startupLicense" datatype="html">
         <source> BUSL-1.1 with Additional Use Grant </source>

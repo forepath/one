@@ -230,6 +230,66 @@
       <trans-unit id="featureAdminProfiles-deleteConfirm" datatype="html">
         <source>Delete this billing profile?</source>
         </trans-unit>
+      <trans-unit id="featureAdminDatevExports-title" datatype="html">
+        <source>DATEV exports</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-trigger" datatype="html">
+        <source>Export month</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-tabUnified" datatype="html">
+        <source> Unified </source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-searchPlaceholder" datatype="html">
+        <source>Search exports</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-loading" datatype="html">
+        <source>Loading DATEV exports…</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-empty" datatype="html">
+        <source>No DATEV exports yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-statusQueued" datatype="html">
+        <source>Queued</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-metaBookings" datatype="html">
+        <source>Bookings</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-metaInvoices" datatype="html">
+        <source>Invoices</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-metaDebtors" datatype="html">
+        <source>Debtors</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-exportActionsAria" datatype="html">
+        <source>Export actions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-downloadButtonTitle" datatype="html">
+        <source>Download export</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-exportModalTitle" datatype="html">
+        <source>Export month</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-year" datatype="html">
+        <source>Year</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-month" datatype="html">
+        <source>Month</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-scope" datatype="html">
+        <source>Scope</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-scopeUnified" datatype="html">
+        <source>Unified</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-confirmExport" datatype="html">
+        <source>Start export</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-queuedMessage" datatype="html">
+        <source>Queued — waiting for export to start…</source>
+        </trans-unit>
       <trans-unit id="featureBillingAdminSubscriptionSelect-clearSelectionAria" datatype="html">
         <source>Clear selected subscription</source>
         </trans-unit>
@@ -261,7 +321,10 @@
         <source>Invoices</source>
         </trans-unit>
       <trans-unit id="featureContainer-serviceTypesPage" datatype="html">
-        <source>Service Types</source>
+        <source>Service Providers</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-cloudInitConfigsPage" datatype="html">
+        <source>Configs</source>
         </trans-unit>
       <trans-unit id="featureContainer-servicePlansPage" datatype="html">
         <source>Service Plans</source>
@@ -271,6 +334,9 @@
         </trans-unit>
       <trans-unit id="featureContainer-adminProfilesPage" datatype="html">
         <source>Billing Profiles</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminDatevExportsPage" datatype="html">
+        <source>DATEV Exports</source>
         </trans-unit>
       <trans-unit id="featureBilling-countryNotAvailable" datatype="html">
         <source>N/A</source>
@@ -347,6 +413,27 @@
       <trans-unit id="featureBilling-activeStatusInactive" datatype="html">
         <source>Inactive</source>
         </trans-unit>
+      <trans-unit id="featureBilling-datevExportStatusEmpty" datatype="html">
+        <source>Unknown</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-statusPending" datatype="html">
+        <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-statusRunning" datatype="html">
+        <source>Running</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-statusCompleted" datatype="html">
+        <source>Completed</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-statusFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-datevExportStatusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-scopeTenant" datatype="html">
+        <source>This tenant</source>
+        </trans-unit>
       <trans-unit id="featureBilling-profileComplete" datatype="html">
         <source>Complete</source>
         </trans-unit>
@@ -370,6 +457,84 @@
         </trans-unit>
       <trans-unit id="featureBilling-intervalEveryMonths" datatype="html">
         <source>Every <x id="PH" equiv-text="value"/> months</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-triggeredByScheduler" datatype="html">
+        <source>Scheduler</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-triggeredBySystem" datatype="html">
+        <source>System</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-title" datatype="html">
+        <source>CloudInit Configs</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-add" datatype="html">
+        <source>Add config</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-searchPlaceholder" datatype="html">
+        <source>Search configs</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-empty" datatype="html">
+        <source>No CloudInit configs.</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-envVarCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ envVarCount(config) }}"/> env vars</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-createTitle" datatype="html">
+        <source>Add CloudInit config</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-key" datatype="html">
+        <source>Key</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-name" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-description" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-provisioningMode" datatype="html">
+        <source>Provisioning mode</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-dockerImage" datatype="html">
+        <source>Docker image</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-containerPort" datatype="html">
+        <source>Container port</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-hostPort" datatype="html">
+        <source>Host port</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-workDir" datatype="html">
+        <source>Work directory</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-active" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-envVariables" datatype="html">
+        <source>Environment variables</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-addEnvVar" datatype="html">
+        <source> Add line </source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-save" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-editTitle" datatype="html">
+        <source>Edit CloudInit config</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-deleteTitle" datatype="html">
+        <source>Delete config</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-deleteConfirm" datatype="html">
+        <source>Delete CloudInit config &quot;<x id="INTERPOLATION" equiv-text="{{ configToDelete.name }}"/>&quot;?</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-delete" datatype="html">
+        <source> Delete </source>
         </trans-unit>
       <trans-unit id="featureContainer-loadingFile" datatype="html">
         <source>Loading file...</source>
@@ -407,17 +572,23 @@
       <trans-unit id="featureContainer-serviceTypes" datatype="html">
         <source>Providers</source>
         </trans-unit>
+      <trans-unit id="featureContainer-cloudInitConfigsTitle" datatype="html">
+        <source>Configs</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-cloudInitConfigs" datatype="html">
+        <source>Configs</source>
+        </trans-unit>
       <trans-unit id="featureContainer-servicePlansTitle" datatype="html">
         <source>Plans</source>
         </trans-unit>
       <trans-unit id="featureContainer-servicePlans" datatype="html">
         <source>Plans</source>
         </trans-unit>
-      <trans-unit id="featureContainer-adminBillingTitle" datatype="html">
-        <source>Billing</source>
+      <trans-unit id="featureContainer-userManagementTitle" datatype="html">
+        <source>User Management</source>
         </trans-unit>
-      <trans-unit id="featureContainer-adminBilling" datatype="html">
-        <source>Billing</source>
+      <trans-unit id="featureContainer-users" datatype="html">
+        <source>Users</source>
         </trans-unit>
       <trans-unit id="featureContainer-adminProfilesTitle" datatype="html">
         <source>Billing Profiles</source>
@@ -425,11 +596,17 @@
       <trans-unit id="featureContainer-adminProfiles" datatype="html">
         <source>Profiles</source>
         </trans-unit>
-      <trans-unit id="featureContainer-userManagementTitle" datatype="html">
-        <source>User Management</source>
+      <trans-unit id="featureContainer-adminBillingTitle" datatype="html">
+        <source>Billing</source>
         </trans-unit>
-      <trans-unit id="featureContainer-users" datatype="html">
-        <source>Users</source>
+      <trans-unit id="featureContainer-adminBilling" datatype="html">
+        <source>Billing</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminDatevExportsTitle" datatype="html">
+        <source>DATEV Exports</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminDatevExports" datatype="html">
+        <source>DATEV</source>
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
@@ -647,6 +824,9 @@
       <trans-unit id="featureOverview-managerService" datatype="html">
         <source><x id="productName" equiv-text="productName"/> Manager</source>
         </trans-unit>
+      <trans-unit id="featureOverview-customService" datatype="html">
+        <source>Custom application</source>
+        </trans-unit>
       <trans-unit id="featureOverview-controllerService" datatype="html">
         <source><x id="productName" equiv-text="productName"/> Controller</source>
         </trans-unit>
@@ -758,6 +938,24 @@
       <trans-unit id="featureServicePlans-chooseOption" datatype="html">
         <source>Choose...</source>
         </trans-unit>
+      <trans-unit id="featureServicePlans-provisioningOptions" datatype="html">
+        <source>Customer-selectable options</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-provisioningOptionsHelp" datatype="html">
+        <source> Choose which integrated stacks and CloudInit configs customers may pick when ordering this plan. </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-productDefaults" datatype="html">
+        <source>Product defaults</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-hideProductDefaults" datatype="html">
+        <source>Hide</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-showProductDefaults" datatype="html">
+        <source>Show</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-productDefaultsHelp" datatype="html">
+        <source> Defaults for integrated stacks and CloudInit environment variables required by the selected customer options. </source>
+        </trans-unit>
       <trans-unit id="featureServicePlans-cancelAtPeriodEnd" datatype="html">
         <source>Cancel at period end</source>
         </trans-unit>
@@ -772,6 +970,9 @@
         </trans-unit>
       <trans-unit id="featureServicePlans-editTitle" datatype="html">
         <source> Edit service plan </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-inactiveCustomConfigWarning" datatype="html">
+        <source>This plan referenced inactive CloudInit configs. They were removed from provisioning options. Save to apply the change.</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-save" datatype="html">
         <source> Save </source>
@@ -792,10 +993,10 @@
         <source><x id="PH" equiv-text="count"/> highlights</source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-title" datatype="html">
-        <source>Service Types</source>
+        <source>Service Providers</source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-add" datatype="html">
-        <source>Add service type</source>
+        <source>Add service provider</source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-searchPlaceholder" datatype="html">
         <source>Search providers</source>
@@ -807,16 +1008,16 @@
         <source>No service types.</source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-serviceTypeActionsAria" datatype="html">
-        <source>Service type actions</source>
+        <source>Service provider actions</source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-editButtonTitle" datatype="html">
-        <source>Edit service type</source>
+        <source>Edit service provider</source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-deleteButtonTitle" datatype="html">
-        <source>Delete service type</source>
+        <source>Delete service provider</source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-createTitle" datatype="html">
-        <source> Add service type </source>
+        <source> Add service provider </source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-key" datatype="html">
         <source>Key</source>
@@ -852,13 +1053,13 @@
         <source> Create </source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-editTitle" datatype="html">
-        <source> Edit service type </source>
+        <source> Edit service provider </source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-save" datatype="html">
         <source> Save </source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-deleteTitle" datatype="html">
-        <source> Delete service type? </source>
+        <source> Delete service provider? </source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-deleteConfirm" datatype="html">
         <source> Are you sure you want to delete the service type &quot;<x id="INTERPOLATION" equiv-text="{{ st.name }}"/>&quot; (<x id="INTERPOLATION_1" equiv-text="{{ st.key }}"/>)? </source>
@@ -962,17 +1163,23 @@
       <trans-unit id="featureSubscriptions-cloudInitConfig" datatype="html">
         <source>Instance configuration</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-service" datatype="html">
-        <source>Service</source>
+      <trans-unit id="featureSubscriptions-loadingProvisioningOptions" datatype="html">
+        <source>Loading provisioning options…</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-serviceController" datatype="html">
-        <source> Controller </source>
+      <trans-unit id="featureSubscriptions-provisioningOptionsError" datatype="html">
+        <source>Could not load provisioning options for this plan. Choose another plan or try again.</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-serviceManager" datatype="html">
-        <source>Manager</source>
+      <trans-unit id="featureSubscriptions-provisioningOption" datatype="html">
+        <source>Provisioning option</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-serviceHelp" datatype="html">
-        <source> Controller runs the full stack; Manager runs the agent manager only. </source>
+      <trans-unit id="featureSubscriptions-loadingCustomOrderFields" datatype="html">
+        <source>Loading configuration fields…</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-customOrderFieldsError" datatype="html">
+        <source>Could not load configuration fields for this option.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-customConfigNoFields" datatype="html">
+        <source> No additional configuration is required for this plan. </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-authMethod" datatype="html">
         <source>Authentication method</source>
@@ -984,7 +1191,7 @@
         <source>API Key</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-authKeycloak" datatype="html">
-        <source>Keycloak</source>
+        <source> Keycloak </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-authMethodHelp" datatype="html">
         <source> How users authenticate to the agent instance. </source>
@@ -1157,9 +1364,6 @@
       <trans-unit id="featureConfirmEmail-title" datatype="html">
         <source>Confirm Your Email</source>
         </trans-unit>
-      <trans-unit id="featureConfirmEmail-description" datatype="html">
-        <source> Enter the 6-character confirmation code you received via email (letters and numbers). You can paste the code or type it in the fields below. </source>
-        </trans-unit>
       <trans-unit id="featureConfirmEmail-formTitle" datatype="html">
         <source>Email Confirmation</source>
         </trans-unit>
@@ -1222,33 +1426,6 @@
         </trans-unit>
       <trans-unit id="featureAuth-usersPage" datatype="html">
         <source>User Management</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-appDescription" datatype="html">
-        <source> Centralized control for distributed AI agent infrastructure. Manage multiple agent-manager instances, interact with agents in real-time, and edit code directly in their containers - all from one powerful dashboard. </source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureDistributedAgent" datatype="html">
-        <source>Distributed Agent Management</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureDistributedAgentDesc" datatype="html">
-        <source>Connect to and manage multiple remote agent-manager services from a single console</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureRealtimeChat" datatype="html">
-        <source>Real-time AI Chat</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureRealtimeChatDesc" datatype="html">
-        <source>WebSocket-based bidirectional communication with AI agents and instant responses</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureCodeEditor" datatype="html">
-        <source>Integrated Code Editor</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureCodeEditorDesc" datatype="html">
-        <source>Edit files directly in agent containers with Monaco Editor - read, write, and manage code in real-time</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureContainer" datatype="html">
-        <source>Container Integration</source>
-        </trans-unit>
-      <trans-unit id="featureLogin-featureContainerDesc" datatype="html">
-        <source>Docker-based agent execution with live log streaming and file system operations</source>
         </trans-unit>
       <trans-unit id="featureLogin-title" datatype="html">
         <source>Login</source>
@@ -1367,14 +1544,8 @@
       <trans-unit id="featureRegister-alreadyHaveAccount" datatype="html">
         <source>Already have an account? Log in</source>
         </trans-unit>
-      <trans-unit id="featureRegister-description" datatype="html">
-        <source>Join <x id="productName" equiv-text="this.environment.productName"/> to manage your account. After registration, you will receive an email to confirm your account before you can log in.</source>
-        </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-title" datatype="html">
         <source>Check Your Email</source>
-        </trans-unit>
-      <trans-unit id="featureResetPasswordConfirmation-description" datatype="html">
-        <source> If an account exists for the email you entered, you will receive a password reset code. Enter the code below and choose a new password. </source>
         </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-formTitle" datatype="html">
         <source> Reset Password </source>
@@ -1454,9 +1625,6 @@
       <trans-unit id="featureRequestPasswordReset-title" datatype="html">
         <source>Reset Your Password</source>
         </trans-unit>
-      <trans-unit id="featureRequestPasswordReset-description" datatype="html">
-        <source> Enter your email address and we will send you a link to reset your password. If an account exists for that email, you will receive instructions shortly. </source>
-        </trans-unit>
       <trans-unit id="featureRequestPasswordReset-formTitle" datatype="html">
         <source> Request Password Reset </source>
         </trans-unit>
@@ -1489,9 +1657,6 @@
         </trans-unit>
       <trans-unit id="featureResetPassword-title" datatype="html">
         <source>Set New Password</source>
-        </trans-unit>
-      <trans-unit id="featureResetPassword-description" datatype="html">
-        <source> Enter the reset code you received via email and choose a new password. The code is typically sent when you request a password reset. </source>
         </trans-unit>
       <trans-unit id="featureResetPassword-formTitle" datatype="html">
         <source>Reset Password</source>
@@ -1652,6 +1817,84 @@
         </trans-unit>
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureDocsBreadcrumbs-documentation" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-documentation" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-githubAriaLabel" datatype="html">
+        <source>GitHub</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-githubTitle" datatype="html">
+        <source>View on GitHub</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-darkModeTitle" datatype="html">
+        <source>Toggle dark mode</source>
+        </trans-unit>
+      <trans-unit id="featureDocsLayout-toggleNavAriaLabel" datatype="html">
+        <source>Toggle navigation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-searchPlaceholder" datatype="html">
+        <source>Search documentation...</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-viewAllResults" datatype="html">
+        <source> View all results </source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearch-noResults" datatype="html">
+        <source>No results found</source>
+        </trans-unit>
+      <trans-unit id="featureDocsToc-title" datatype="html">
+        <source>Table of Contents</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaTitlePrefix" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-title" datatype="html">
+        <source>Search Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-noResultsFor" datatype="html">
+        <source>No results found for &quot;<x id="INTERPOLATION" equiv-text="{{ searchQuery() }}"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-enterQueryHint" datatype="html">
+        <source>Enter a search query above to find documentation.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
+        <source>Search Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-foundOneResult" datatype="html">
+        <source>Found <x id="PH" equiv-text="count"/> result for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-foundResults" datatype="html">
+        <source>Found <x id="PH" equiv-text="count"/> results for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallbackDecabill" datatype="html">
+        <source>Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaDescriptionFallback" datatype="html">
+        <source>Official Agenstra documentation: install, deploy, secure, and operate agent hosts, workspaces, tickets, APIs, and integrations for platform teams.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywordsDecabill" datatype="html">
+        <source>Decabill, billing, subscriptions, payment processing, invoicing, Stripe, billing API, billing console, multi-tenant billing</source>
+        </trans-unit>
+      <trans-unit id="featureDocsPage-metaKeywords" datatype="html">
+        <source>Agenstra, AI agents, agent management, distributed systems, AI agent infrastructure, agent platform, AI agent console, container management, WebSocket agents, Docker agents</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescriptionDecabill" datatype="html">
+        <source>Search Decabill docs for setup guides, API references, security hardening, billing configuration, deployment patterns, and troubleshooting.</source>
+        </trans-unit>
+      <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
+        <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
         </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>
