@@ -26,6 +26,11 @@
             "glob": "invoice-pdf.template.html",
             "input": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates",
             "output": "templates"
+          },
+          {
+            "glob": "time-report-pdf.template.html",
+            "input": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates",
+            "output": "templates"
           }
         ],
         "webpackConfig": "apps/decabill/backend-billing-manager/webpack.config.cjs",

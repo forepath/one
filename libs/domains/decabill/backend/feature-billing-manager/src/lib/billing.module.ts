@@ -42,6 +42,9 @@ import { ProjectTicketsRepository } from './projects/repositories/project-ticket
 import { ProjectTimeEntriesRepository } from './projects/repositories/project-time-entries.repository';
 import { ProjectsRepository } from './projects/repositories/projects.repository';
 import { ProjectBillingService } from './projects/services/project-billing.service';
+import { ProjectTimeReportPdfService } from './projects/services/project-time-report-pdf.service';
+import { ProjectTimeReportPdfTemplateService } from './projects/services/project-time-report-pdf-template.service';
+import { ProjectTimeReportService } from './projects/services/project-time-report.service';
 import { ProjectBoardRealtimeService } from './projects/services/project-board-realtime.service';
 import { ProjectBoardSummaryService } from './projects/services/project-board-summary.service';
 import { ProjectMilestonesService } from './projects/services/project-milestones.service';
@@ -495,6 +498,9 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     ProjectTicketsService,
     ProjectTimeEntriesService,
     ProjectBillingService,
+    ProjectTimeReportService,
+    ProjectTimeReportPdfService,
+    ProjectTimeReportPdfTemplateService,
     ProjectBoardRealtimeService,
     ProjectBoardSummaryService,
     ProjectBoardGateway,

@@ -19,7 +19,7 @@ import { filter, finalize, map, startWith, switchMap, distinctUntilChanged, EMPT
 import type { Subscription } from 'rxjs';
 
 import { BillingAdminSubscriptionSelectComponent } from '../billing-admin-subscription-select/billing-admin-subscription-select.component';
-import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import {
   getProjectTimeEntryBillingStatusIconClass,
   getProjectTimeEntryBillingStatusLabel,
@@ -55,6 +55,7 @@ export class ProjectDetailPageComponent implements OnInit {
   @ViewChild('editTimeModal', { static: false }) private editTimeModal!: ElementRef<HTMLDivElement>;
   @ViewChild('deleteTimeModal', { static: false }) private deleteTimeModal!: ElementRef<HTMLDivElement>;
   @ViewChild('billTimeModal', { static: false }) private billTimeModal!: ElementRef<HTMLDivElement>;
+  @ViewChild('timeReportModal', { static: false }) private timeReportModal!: ElementRef<HTMLDivElement>;
   @ViewChild('billTimeSubscriptionSelect')
   private billTimeSubscriptionSelect?: BillingAdminSubscriptionSelectComponent;
 
@@ -97,6 +98,12 @@ export class ProjectDetailPageComponent implements OnInit {
 
   billFormFrom = '';
   billFormTo = '';
+  timeReportFormFrom = '';
+  timeReportFormTo = '';
+  timeReportUnbilledOnly = false;
+  readonly timeReportSaving = signal(false);
+  readonly timeReportError = signal<string | null>(null);
+  readonly timeReportBoundsLoading = signal(false);
   billSubscriptionId = '';
   billCustomLineItems: BillTimeFormLineItem[] = [];
   readonly billBoundsLoading = signal(false);
@@ -233,6 +240,70 @@ export class ProjectDetailPageComponent implements OnInit {
         this.billBoundsLoading.set(false);
       },
     });
+  }
+
+  openTimeReportModal(): void {
+    if (!this.projectId || !this.isAdminView()) return;
+
+    this.timeReportError.set(null);
+    this.timeReportUnbilledOnly = false;
+    this.timeReportBoundsLoading.set(true);
+
+    this.adminProjectsService.getUnbilledTimeBounds(this.projectId).subscribe({
+      next: (bounds) => {
+        if (bounds.from && bounds.to) {
+          this.timeReportFormFrom = this.toDatetimeLocalValue(new Date(bounds.from));
+          this.timeReportFormTo = this.toDatetimeLocalValue(new Date(bounds.to));
+        } else {
+          this.timeReportFormFrom = '';
+          this.timeReportFormTo = '';
+        }
+
+        this.timeReportBoundsLoading.set(false);
+        showBillingModal(this.timeReportModal);
+      },
+      error: () => {
+        this.timeReportBoundsLoading.set(false);
+      },
+    });
+  }
+
+  submitTimeReport(): void {
+    if (!this.projectId || !this.isAdminView() || !this.isTimeReportFormValid() || this.timeReportSaving()) {
+      return;
+    }
+
+    this.timeReportSaving.set(true);
+    this.timeReportError.set(null);
+
+    this.adminProjectsService
+      .generateTimeReport(this.projectId, {
+        from: this.datetimeLocalToIso(this.timeReportFormFrom),
+        to: this.datetimeLocalToIso(this.timeReportFormTo),
+        unbilledOnly: this.timeReportUnbilledOnly,
+      })
+      .pipe(finalize(() => this.timeReportSaving.set(false)))
+      .subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          const anchor = document.createElement('a');
+
+          anchor.href = url;
+          anchor.download = `time-report-${this.projectId}.pdf`;
+          anchor.click();
+          URL.revokeObjectURL(url);
+          hideBillingModal(this.timeReportModal);
+        },
+        error: () => {
+          this.timeReportError.set('Failed to generate time report');
+        },
+      });
+  }
+
+  isTimeReportFormValid(): boolean {
+    if (!this.timeReportFormFrom || !this.timeReportFormTo) return false;
+
+    return new Date(this.timeReportFormTo).getTime() > new Date(this.timeReportFormFrom).getTime();
   }
 
   submitBillTime(): void {

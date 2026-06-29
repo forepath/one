@@ -14,6 +14,7 @@ describe('ProjectBillingService', () => {
     markBilled: jest.fn(),
   };
   const subscriptionsRepository = { findByIdOrThrow: jest.fn() };
+  const invoicesRepository = { update: jest.fn() };
   const customerProfilesService = {
     getByUserId: jest.fn(),
     isProfileComplete: jest.fn(),
@@ -23,6 +24,9 @@ describe('ProjectBillingService', () => {
   const taxCalculationService = new TaxCalculationService(new TaxRateConfigService());
   const auditLog = { log: jest.fn() };
   const projectBoardSummary = { emitSummaryChanged: jest.fn() };
+  const projectTimeReportService = {
+    generateAndStoreForBilling: jest.fn().mockResolvedValue('sub-1/inv-1-time-report.pdf'),
+  };
 
   let service: ProjectBillingService;
 
@@ -39,16 +43,19 @@ describe('ProjectBillingService', () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+    projectTimeReportService.generateAndStoreForBilling.mockResolvedValue('sub-1/inv-1-time-report.pdf');
     service = new ProjectBillingService(
       projectsRepository as never,
       timeEntriesRepository as never,
       subscriptionsRepository as never,
+      invoicesRepository as never,
       customerProfilesService as never,
       invoiceService as never,
       invoiceIssuanceService as never,
       taxCalculationService,
       auditLog as never,
       projectBoardSummary as never,
+      projectTimeReportService as never,
     );
   });
 
@@ -106,14 +113,25 @@ describe('ProjectBillingService', () => {
 
     expect(result.billedMinutes).toBe(90);
     expect(result.amountNet).toBe(150);
+    expect(projectTimeReportService.generateAndStoreForBilling).toHaveBeenCalledWith(
+      { id: 'draft-1' },
+      project,
+      expect.any(Array),
+      expect.any(Date),
+      expect.any(Date),
+    );
+    expect(invoicesRepository.update).toHaveBeenCalledWith('draft-1', {
+      timeReportStorageKey: 'sub-1/inv-1-time-report.pdf',
+    });
     expect(invoiceService.createDraft).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: 'u1',
         projectId: 'p1',
         lineInputs: [
           expect.objectContaining({
-            quantity: 1,
-            unitPriceNet: 150,
+            description: expect.stringMatching(/Proj \(.*–.*\)/),
+            quantity: 1.5,
+            unitPriceNet: 100,
             taxCategory: TaxCategory.STANDARD,
           }),
         ],
@@ -145,7 +163,11 @@ describe('ProjectBillingService', () => {
       expect.objectContaining({
         subscriptionId: 'sub-1',
         lineInputs: [
-          expect.objectContaining({ unitPriceNet: 100 }),
+          expect.objectContaining({
+            description: expect.stringMatching(/Proj \(.*–.*\)/),
+            quantity: 1,
+            unitPriceNet: 100,
+          }),
           expect.objectContaining({ description: 'Materials', unitPriceNet: 25 }),
         ],
       }),

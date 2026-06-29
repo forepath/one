@@ -6,6 +6,8 @@ import type { CustomerProfileEntity } from '../entities/customer-profile.entity'
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 
+import { ProjectTimeReportPdfService } from '../projects/services/project-time-report-pdf.service';
+
 import { buildIssuedInvoiceEmailContent, buildVoidDocumentEmailContent } from './invoice-email-message.util';
 import { InvoicePdfService } from './invoice-pdf.service';
 
@@ -18,6 +20,7 @@ export class InvoiceEmailService {
     private readonly customerProfilesRepository: CustomerProfilesRepository,
     private readonly usersRepository: UsersRepository,
     private readonly invoicePdfService: InvoicePdfService,
+    private readonly timeReportPdfService: ProjectTimeReportPdfService,
   ) {}
 
   async notifyInvoiceIssued(invoice: InvoiceEntity, pdfStorageKey: string): Promise<boolean> {
@@ -50,8 +53,18 @@ export class InvoiceEmailService {
       currency: invoice.currency,
       dueDate: invoice.dueDate,
     });
+    const attachments = [{ filename: content.attachmentFilename, content: pdfBuffer }];
 
-    return await this.sendDocumentEmail(email, content, pdfBuffer, `invoice ${invoice.invoiceNumber}`);
+    if (invoice.timeReportStorageKey) {
+      const timeReportBuffer = await this.timeReportPdfService.readPdf(invoice.timeReportStorageKey);
+
+      attachments.push({
+        filename: `time-report-${invoice.invoiceNumber}.pdf`,
+        content: timeReportBuffer,
+      });
+    }
+
+    return await this.sendDocumentEmail(email, content, attachments, `invoice ${invoice.invoiceNumber}`);
   }
 
   async notifyVoidDocument(invoice: InvoiceEntity, pdfStorageKey: string, creditNoteNumber: string): Promise<boolean> {
@@ -77,13 +90,18 @@ export class InvoiceEmailService {
       creditNoteNumber,
     });
 
-    return await this.sendDocumentEmail(email, content, pdfBuffer, `credit note ${creditNoteNumber}`);
+    return await this.sendDocumentEmail(
+      email,
+      content,
+      [{ filename: content.attachmentFilename, content: pdfBuffer }],
+      `credit note ${creditNoteNumber}`,
+    );
   }
 
-  private async sendDocumentEmail(
+  async sendDocumentEmail(
     to: string,
     content: { subject: string; text: string; html: string; attachmentFilename: string },
-    pdfBuffer: Buffer,
+    pdfBuffers: Array<{ filename: string; content: Buffer }>,
     documentLabel: string,
   ): Promise<boolean> {
     const sent = await this.emailService.send({
@@ -91,7 +109,10 @@ export class InvoiceEmailService {
       subject: content.subject,
       text: content.text,
       html: content.html,
-      attachments: [{ filename: content.attachmentFilename, content: pdfBuffer }],
+      attachments: pdfBuffers.map((attachment) => ({
+        filename: attachment.filename,
+        content: attachment.content,
+      })),
     });
 
     if (sent) {

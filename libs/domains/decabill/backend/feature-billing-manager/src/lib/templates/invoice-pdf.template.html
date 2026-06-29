@@ -11,17 +11,15 @@
     />
     <style>
       :root {
-        /* Agenstra design tokens (aligned with frontend styles.scss) */
-        --primary: #7a3fff;
-        --primary-emphasis: #4b2d9e;
-        --primary-subtle: #ece8f6;
-        --primary-border: #d9cff0;
+        /* Neutral print palette (shared with time-report-pdf.template.html) */
         --body-bg: #ffffff;
-        --body-color: #3c3f45;
-        --body-emphasis: #24262c;
+        --body-color: #404040;
+        --body-emphasis: #111111;
         --card-bg: #ffffff;
-        --border-translucent: rgba(15, 15, 17, 0.06);
-        --secondary: #4a5568;
+        --surface-subtle: #f4f4f4;
+        --border: #cccccc;
+        --border-translucent: rgba(0, 0, 0, 0.08);
+        --secondary: #666666;
       }
 
       * {
@@ -104,7 +102,7 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: var(--primary-emphasis);
+        color: var(--body-emphasis);
       }
 
       .address-name {
@@ -129,7 +127,7 @@
       }
 
       .line-items thead {
-        background: var(--primary-subtle);
+        background: var(--surface-subtle);
       }
 
       .line-items th {
@@ -139,8 +137,8 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: var(--primary-emphasis);
-        border-bottom: 1px solid var(--primary-border);
+        color: var(--body-emphasis);
+        border-bottom: 1px solid var(--border);
       }
 
       .line-items th.num,
@@ -185,7 +183,7 @@
       .totals-row.total {
         margin-top: 8px;
         padding-top: 12px;
-        border-top: 1px solid var(--primary-border);
+        border-top: 1px solid var(--border);
         font-size: 16px;
         font-weight: 700;
         color: var(--body-emphasis);
@@ -195,7 +193,7 @@
         margin-top: 4px;
         font-size: 14px;
         font-weight: 600;
-        color: var(--primary-emphasis);
+        color: var(--body-emphasis);
       }
 
       .payment-heading {
@@ -203,7 +201,7 @@
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        color: var(--primary-emphasis);
+        color: var(--body-emphasis);
       }
 
       .payment-grid {
@@ -274,7 +272,7 @@
           {{/if}}
         </section>
         <section class="address-card">
-          <h2 class="address-heading">Bill to</h2>
+          <h2 class="address-heading">To</h2>
           <p class="address-name">{{buyer.name}}</p>
           {{#each buyer.lines}}
           <p class="address-line">{{this}}</p>

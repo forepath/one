@@ -13,6 +13,7 @@ import type {
   PaginatedAdminProjectsResponse,
   ProjectResponse,
   ProjectUnbilledTimeBoundsResponse,
+  ProjectTimeReportRequestDto,
   UpdateAdminProjectDto,
 } from '../types/projects.types';
 
@@ -67,5 +68,11 @@ export class AdminProjectsService {
     return this.http.get<ProjectUnbilledTimeBoundsResponse>(
       `${this.apiUrl}/admin/billing/projects/${projectId}/unbilled-time-bounds`,
     );
+  }
+
+  generateTimeReport(projectId: string, dto: ProjectTimeReportRequestDto): Observable<Blob> {
+    return this.http.post(`${this.apiUrl}/admin/billing/projects/${projectId}/time-report`, dto, {
+      responseType: 'blob',
+    });
   }
 }

@@ -62,6 +62,9 @@ export class InvoiceEntity {
   @Column({ type: 'varchar', length: 512, nullable: true, name: 'pdf_storage_key' })
   pdfStorageKey?: string;
 
+  @Column({ type: 'varchar', length: 512, nullable: true, name: 'time_report_storage_key' })
+  timeReportStorageKey?: string;
+
   @Column({ type: 'varchar', length: 50, nullable: true, name: 'payment_processor' })
   paymentProcessor?: string;
 

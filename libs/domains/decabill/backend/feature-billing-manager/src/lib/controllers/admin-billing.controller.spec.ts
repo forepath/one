@@ -23,7 +23,7 @@ describe('AdminBillingController', () => {
   };
   const statisticsQueryService = { getSummary: jest.fn(), getByProduct: jest.fn() };
   const auditLogService = { listForInvoice: jest.fn() };
-  const invoiceService = { getPdfBuffer: jest.fn(), getVoidPdfBuffer: jest.fn() };
+  const invoiceService = { getPdfBuffer: jest.fn(), getVoidPdfBuffer: jest.fn(), getTimeReportPdfBuffer: jest.fn() };
   const invoicesRepository = { findById: jest.fn() };
   const datevExportConfigService = {
     isEnabled: jest.fn().mockReturnValue(true),
@@ -127,6 +127,22 @@ describe('AdminBillingController', () => {
 
     expect(result).toBeInstanceOf(StreamableFile);
     expect(invoiceService.getVoidPdfBuffer).toHaveBeenCalledWith('inv-1', 'sub-1');
+  });
+
+  it('downloadTimeReportPdf returns streamable file', async () => {
+    const buffer = Buffer.from('time-report-pdf');
+
+    invoicesRepository.findById.mockResolvedValue({
+      id: 'inv-1',
+      invoiceNumber: 'INV-2026-00001',
+      subscriptionId: 'sub-1',
+    });
+    invoiceService.getTimeReportPdfBuffer.mockResolvedValue(buffer);
+
+    const result = await controller.downloadTimeReportPdf('inv-1', { setHeader: jest.fn() } as never);
+
+    expect(result).toBeInstanceOf(StreamableFile);
+    expect(invoiceService.getTimeReportPdfBuffer).toHaveBeenCalledWith('inv-1', 'sub-1');
   });
 
   it('downloadInvoicePdf throws when invoice not found', async () => {

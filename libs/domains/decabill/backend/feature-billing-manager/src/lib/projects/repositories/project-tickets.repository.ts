@@ -33,6 +33,29 @@ export class ProjectTicketsRepository {
     return entity;
   }
 
+  async findTitlesByIds(ids: string[]): Promise<Map<string, string>> {
+    const uniqueIds = [...new Set(ids.filter((id) => id.trim().length > 0))];
+    const titles = new Map<string, string>();
+
+    if (uniqueIds.length === 0) {
+      return titles;
+    }
+
+    const qb = this.baseQuery('ticket')
+      .select(['ticket.id', 'ticket.title'])
+      .where('ticket.id IN (:...ids)', { ids: uniqueIds });
+
+    applyProjectTenantFilter(qb, 'project');
+
+    const rows = await qb.getMany();
+
+    for (const row of rows) {
+      titles.set(row.id, row.title);
+    }
+
+    return titles;
+  }
+
   async findAllByProject(
     projectId: string,
     filters?: { status?: ProjectTicketStatus; parentId?: string | null },

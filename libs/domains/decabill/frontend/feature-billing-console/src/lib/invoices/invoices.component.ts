@@ -220,6 +220,17 @@ export class InvoicesComponent implements OnInit {
     );
   }
 
+  downloadTimeReport(subscriptionId: string | undefined, inv: InvoiceResponse): void {
+    if (!inv.canDownloadTimeReport) return;
+
+    const resolvedSubscriptionId = subscriptionId ?? inv.subscriptionId ?? undefined;
+
+    this.downloadPdfBlob(
+      this.invoicesFacade.downloadTimeReportPdf(resolvedSubscriptionId, inv.id),
+      `time-report-${inv.invoiceNumber ?? inv.id}.pdf`,
+    );
+  }
+
   private downloadPdfBlob(source: Observable<Blob>, filename: string): void {
     source.subscribe({
       next: (blob) => {

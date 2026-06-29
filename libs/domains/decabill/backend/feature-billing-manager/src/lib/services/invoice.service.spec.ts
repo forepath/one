@@ -59,6 +59,9 @@ describe('InvoiceService', () => {
   const auditLog = {
     log: jest.fn(),
   };
+  const projectTimeReportService = {
+    getPdfBufferForInvoice: jest.fn(),
+  };
   const service = new InvoiceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -72,6 +75,7 @@ describe('InvoiceService', () => {
     invoiceEmailService as never,
     billingIssuerConfig as never,
     auditLog as never,
+    projectTimeReportService as never,
   );
   const subscriptionId = 'sub-1';
   const userId = 'user-1';
@@ -368,6 +372,33 @@ describe('InvoiceService', () => {
       invoicesRepository.findByIdForUser.mockResolvedValue(null);
 
       await expect(service.getDetailForUser('missing', userId)).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('getTimeReportPdfBuffer', () => {
+    it('delegates to project time report service', async () => {
+      const buffer = Buffer.from('time-report');
+
+      invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue({
+        id: 'inv-1',
+        subscriptionId,
+        status: InvoiceStatus.ISSUED,
+        projectId: 'p1',
+        timeReportStorageKey: 'sub-1/inv-1-time-report.pdf',
+      });
+      projectTimeReportService.getPdfBufferForInvoice.mockResolvedValue(buffer);
+
+      await expect(service.getTimeReportPdfBuffer('inv-1', subscriptionId)).resolves.toBe(buffer);
+    });
+
+    it('throws when invoice is draft', async () => {
+      invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue({
+        id: 'inv-1',
+        subscriptionId,
+        status: InvoiceStatus.DRAFT,
+      });
+
+      await expect(service.getTimeReportPdfBuffer('inv-1', subscriptionId)).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 

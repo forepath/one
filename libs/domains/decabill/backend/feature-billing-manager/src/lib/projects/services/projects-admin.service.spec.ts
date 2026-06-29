@@ -23,6 +23,9 @@ describe('ProjectsAdminService', () => {
     billUnbilledTime: jest.fn(),
     getUnbilledTimeBounds: jest.fn(),
   };
+  const projectTimeReportService = {
+    generateLivePdf: jest.fn(),
+  };
 
   let service: ProjectsAdminService;
 
@@ -33,6 +36,7 @@ describe('ProjectsAdminService', () => {
       projectsService as never,
       usersRepository as never,
       projectBillingService as never,
+      projectTimeReportService as never,
     );
   });
 
@@ -87,5 +91,19 @@ describe('ProjectsAdminService', () => {
     const bounds = await service.getUnbilledTimeBounds('p1');
 
     expect(bounds.entryCount).toBe(2);
+  });
+
+  it('generateTimeReport delegates to time report service', async () => {
+    const dto = {
+      from: '2026-06-01T08:00:00.000Z',
+      to: '2026-06-01T17:00:00.000Z',
+      unbilledOnly: true,
+    };
+    const buffer = Buffer.from('pdf');
+
+    projectTimeReportService.generateLivePdf.mockResolvedValue(buffer);
+
+    await expect(service.generateTimeReport('p1', dto)).resolves.toBe(buffer);
+    expect(projectTimeReportService.generateLivePdf).toHaveBeenCalledWith('p1', dto);
   });
 });

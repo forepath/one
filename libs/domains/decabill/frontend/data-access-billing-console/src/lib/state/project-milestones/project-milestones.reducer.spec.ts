@@ -2,6 +2,7 @@ import {
   loadProjectMilestones,
   loadProjectMilestonesSuccess,
   createProjectMilestoneSuccess,
+  projectBoardMilestoneUpsert,
 } from './project-milestones.actions';
 import { initialProjectMilestonesState, projectMilestonesReducer } from './project-milestones.reducer';
 
@@ -40,5 +41,16 @@ describe('projectMilestonesReducer', () => {
 
     expect(state.milestones).toEqual([milestone]);
     expect(state.saving).toBe(false);
+  });
+
+  it('does not duplicate milestone when socket upsert arrives before create success', () => {
+    const afterSocket = projectMilestonesReducer(
+      initialProjectMilestonesState,
+      projectBoardMilestoneUpsert({ milestone }),
+    );
+    const afterCreate = projectMilestonesReducer(afterSocket, createProjectMilestoneSuccess({ milestone }));
+
+    expect(afterCreate.milestones).toHaveLength(1);
+    expect(afterCreate.milestones[0]).toEqual(milestone);
   });
 });

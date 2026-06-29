@@ -9,12 +9,14 @@ import type {
   PaginatedAdminProjectsResponseDto,
   ProjectResponseDto,
   ProjectSummaryResponseDto,
+  ProjectTimeReportRequestDto,
   ProjectUnbilledTimeBoundsDto,
   UpdateAdminProjectDto,
 } from '../dto/project.dto';
 import type { ProjectEntity } from '../entities/project.entity';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectBillingService } from './project-billing.service';
+import { ProjectTimeReportService } from './project-time-report.service';
 import { ProjectsService } from './projects.service';
 
 @Injectable()
@@ -24,6 +26,7 @@ export class ProjectsAdminService {
     private readonly projectsService: ProjectsService,
     private readonly usersRepository: UsersRepository,
     private readonly projectBillingService: ProjectBillingService,
+    private readonly projectTimeReportService: ProjectTimeReportService,
   ) {}
 
   async list(
@@ -139,6 +142,10 @@ export class ProjectsAdminService {
 
   async getUnbilledTimeBounds(projectId: string): Promise<ProjectUnbilledTimeBoundsDto> {
     return await this.projectBillingService.getUnbilledTimeBounds(projectId);
+  }
+
+  async generateTimeReport(projectId: string, dto: ProjectTimeReportRequestDto): Promise<Buffer> {
+    return await this.projectTimeReportService.generateLivePdf(projectId, dto);
   }
 
   private async mapListItem(project: ProjectEntity, userEmail?: string): Promise<AdminProjectListItemDto> {

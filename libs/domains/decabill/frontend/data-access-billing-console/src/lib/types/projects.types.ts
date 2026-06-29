@@ -86,6 +86,12 @@ export interface BillProjectTimeDto {
   lineItems?: ManualInvoiceLineItemDto[];
 }
 
+export interface ProjectTimeReportRequestDto {
+  from: string;
+  to: string;
+  unbilledOnly?: boolean;
+}
+
 export interface ProjectUnbilledTimeBoundsResponse {
   from?: string | null;
   to?: string | null;

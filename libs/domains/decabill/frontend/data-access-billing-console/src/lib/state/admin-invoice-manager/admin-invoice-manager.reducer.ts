@@ -80,6 +80,7 @@ function mapDetailToListItem(invoice: {
   canDownload?: boolean;
   canPreview?: boolean;
   canDownloadVoidDocument?: boolean;
+  canDownloadTimeReport?: boolean;
   voidDocumentNumber?: string | null;
 }): AdminInvoiceListItem {
   return {
@@ -96,6 +97,7 @@ function mapDetailToListItem(invoice: {
     canDownload: invoice.canDownload ?? false,
     canPreview: invoice.canPreview ?? false,
     canDownloadVoidDocument: invoice.canDownloadVoidDocument,
+    canDownloadTimeReport: invoice.canDownloadTimeReport,
     voidDocumentNumber: invoice.voidDocumentNumber ?? undefined,
   };
 }

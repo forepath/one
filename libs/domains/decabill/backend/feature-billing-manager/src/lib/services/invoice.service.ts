@@ -11,6 +11,7 @@ import { InvoiceVoidDocumentsRepository } from '../repositories/invoice-void-doc
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+import { ProjectTimeReportService } from '../projects/services/project-time-report.service';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
@@ -46,6 +47,7 @@ export class InvoiceService {
     private readonly invoiceEmailService: InvoiceEmailService,
     private readonly billingIssuerConfig: BillingIssuerConfigService,
     private readonly auditLog: BillingAuditLogService,
+    private readonly projectTimeReportService: ProjectTimeReportService,
   ) {}
 
   async createAndIssue(params: CreateInvoiceDraftParams): Promise<{ invoiceRefId: string; invoiceNumber?: string }> {
@@ -264,6 +266,30 @@ export class InvoiceService {
     return await this.invoicePdfService.readPdf(storageKey);
   }
 
+  async getTimeReportPdfBufferForUser(invoiceId: string, userId: string): Promise<Buffer> {
+    const invoice = await this.invoicesRepository.findByIdForUser(invoiceId, userId);
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    return await this.getTimeReportPdfBuffer(invoiceId, invoice.subscriptionId);
+  }
+
+  async getTimeReportPdfBuffer(invoiceId: string, subscriptionId?: string | null): Promise<Buffer> {
+    const invoice = await this.findInvoiceForAccess(invoiceId, subscriptionId);
+
+    if (invoice.status === InvoiceStatus.DRAFT) {
+      throw new BadRequestException('Draft invoices have no time report');
+    }
+
+    if (!invoice.timeReportStorageKey && !invoice.projectId) {
+      throw new BadRequestException('Time report is not available for this invoice');
+    }
+
+    return await this.projectTimeReportService.getPdfBufferForInvoice(invoice);
+  }
+
   async getPdfBufferForUser(invoiceId: string, userId: string): Promise<Buffer> {
     const invoice = await this.invoicesRepository.findByIdForUser(invoiceId, userId);
 
@@ -399,7 +425,7 @@ export class InvoiceService {
     invoice: InvoiceEntity,
   ): Pick<
     InvoiceResponseDto,
-    'canPay' | 'canDownload' | 'canPreview' | 'canDownloadVoidDocument' | 'voidDocumentNumber'
+    'canPay' | 'canDownload' | 'canPreview' | 'canDownloadVoidDocument' | 'canDownloadTimeReport' | 'voidDocumentNumber'
   > {
     const payable = OPEN_OVERDUE_INVOICE_STATUSES.includes(invoice.status) && Number(invoice.balanceDue) > 0;
     const previewable = invoice.status !== InvoiceStatus.DRAFT;
@@ -410,6 +436,7 @@ export class InvoiceService {
       canDownload: previewable,
       canPreview: previewable,
       canDownloadVoidDocument: voided && Boolean(invoice.invoiceNumber),
+      canDownloadTimeReport: previewable && Boolean(invoice.projectId) && Boolean(invoice.timeReportStorageKey),
       voidDocumentNumber: voided && invoice.invoiceNumber ? buildCreditNoteNumber(invoice.invoiceNumber) : undefined,
     };
   }

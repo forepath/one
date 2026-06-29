@@ -60,4 +60,24 @@ describe('AdminProjectsService', () => {
     expect(req.request.body).toEqual(dto);
     req.flush(response);
   });
+
+  it('posts time-report and returns PDF blob', (done) => {
+    const dto = {
+      from: '2026-06-01T08:00:00.000Z',
+      to: '2026-06-01T17:00:00.000Z',
+      unbilledOnly: true,
+    };
+    const blob = new Blob(['pdf'], { type: 'application/pdf' });
+
+    service.generateTimeReport('p-1', dto).subscribe((res) => {
+      expect(res).toBe(blob);
+      done();
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/projects/p-1/time-report`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(dto);
+    req.flush(blob);
+  });
 });

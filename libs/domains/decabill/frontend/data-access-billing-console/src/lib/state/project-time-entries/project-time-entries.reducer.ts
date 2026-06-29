@@ -124,7 +124,7 @@ export const projectTimeEntriesReducer = createReducer(
   on(createProjectTimeEntrySuccess, (state, { entry }) => ({
     ...state,
     saving: false,
-    entries: [entry, ...state.entries],
+    entries: upsertProjectTimeEntry(state.entries, entry),
     ticketScope:
       state.ticketScope.ticketId === entry.ticketId && state.ticketScope.projectId === entry.projectId
         ? { ...state.ticketScope, entries: upsertProjectTimeEntry(state.ticketScope.entries, entry) }

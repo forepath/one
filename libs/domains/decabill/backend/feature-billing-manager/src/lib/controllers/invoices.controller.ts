@@ -149,6 +149,33 @@ export class InvoicesController {
     return new StreamableFile(buffer);
   }
 
+  @Get('ref/:invoiceRefId/time-report/pdf')
+  @Header('Content-Type', 'application/pdf')
+  async downloadTimeReportPdfByRef(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Req() req?: RequestWithUser,
+    @Res({ passthrough: true }) res?: Response,
+  ): Promise<StreamableFile> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    const invoice = await this.invoicesRepository.findByIdForUser(invoiceRefId, userInfo.userId);
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    const buffer = await this.invoiceService.getTimeReportPdfBufferForUser(invoiceRefId, userInfo.userId);
+    const filename = `time-report-${invoice.invoiceNumber ?? invoiceRefId}.pdf`;
+
+    res?.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    return new StreamableFile(buffer);
+  }
+
   @Post('ref/:invoiceRefId/pay')
   async initiatePaymentByRef(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
@@ -259,6 +286,40 @@ export class InvoicesController {
 
     const buffer = await this.invoiceService.getVoidPdfBuffer(invoiceRefId, subscriptionId);
     const filename = `${invoice.invoiceNumber ?? invoiceRefId}-void.pdf`;
+
+    res?.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    return new StreamableFile(buffer);
+  }
+
+  @Get(':subscriptionId/ref/:invoiceRefId/time-report/pdf')
+  @Header('Content-Type', 'application/pdf')
+  async downloadTimeReportPdf(
+    @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Req() req?: RequestWithUser,
+    @Res({ passthrough: true }) res?: Response,
+  ): Promise<StreamableFile> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
+
+    if (subscription.userId !== userInfo.userId) {
+      ensureAdmin(userInfo);
+    }
+
+    const invoice = await this.invoicesRepository.findByIdAndSubscriptionId(invoiceRefId, subscriptionId);
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    const buffer = await this.invoiceService.getTimeReportPdfBuffer(invoiceRefId, subscriptionId);
+    const filename = `time-report-${invoice.invoiceNumber ?? invoiceRefId}.pdf`;
 
     res?.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 

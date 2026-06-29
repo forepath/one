@@ -2,6 +2,7 @@ import {
   loadProjectTimeEntries,
   loadProjectTimeEntriesSuccess,
   createProjectTimeEntrySuccess,
+  projectBoardTimeEntryUpsert,
 } from './project-time-entries.actions';
 import { initialProjectTimeEntriesState, projectTimeEntriesReducer } from './project-time-entries.reducer';
 
@@ -41,5 +42,16 @@ describe('projectTimeEntriesReducer', () => {
     const state = projectTimeEntriesReducer(initialProjectTimeEntriesState, createProjectTimeEntrySuccess({ entry }));
 
     expect(state.entries[0]).toEqual(entry);
+  });
+
+  it('does not duplicate entry when socket upsert arrives before create success', () => {
+    const afterSocket = projectTimeEntriesReducer(
+      initialProjectTimeEntriesState,
+      projectBoardTimeEntryUpsert({ entry }),
+    );
+    const afterCreate = projectTimeEntriesReducer(afterSocket, createProjectTimeEntrySuccess({ entry }));
+
+    expect(afterCreate.entries).toHaveLength(1);
+    expect(afterCreate.entries[0]).toEqual(entry);
   });
 });

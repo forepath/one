@@ -60,6 +60,14 @@ export class InvoicesService {
     return this.http.get(url, { responseType: 'blob' });
   }
 
+  downloadTimeReportPdf(subscriptionId: string | undefined, invoiceRefId: string): Observable<Blob> {
+    const url = subscriptionId
+      ? `${this.apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}/time-report/pdf`
+      : `${this.apiUrl}/invoices/ref/${invoiceRefId}/time-report/pdf`;
+
+    return this.http.get(url, { responseType: 'blob' });
+  }
+
   initiatePayment(subscriptionId: string | undefined, invoiceRefId: string): Observable<InitiatePaymentResponse> {
     const url = subscriptionId
       ? `${this.apiUrl}/invoices/${subscriptionId}/ref/${invoiceRefId}/pay`

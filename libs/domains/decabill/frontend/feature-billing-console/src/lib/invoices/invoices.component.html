@@ -327,6 +327,17 @@
           <i class="bi bi-file-earmark-x" aria-hidden="true"></i>
         </button>
       }
+      @if (inv.canDownloadTimeReport) {
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          (click)="downloadTimeReport(subscriptionId, inv)"
+          title="Download time report"
+          i18n-title="@@featureInvoices-downloadTimeReportButtonTitle"
+        >
+          <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
+        </button>
+      }
     </div>
   </div>
 </ng-template>

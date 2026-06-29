@@ -107,7 +107,7 @@ Entries may optionally reference a ticket (`ticketId`). Billed entries (`billedA
 | `subscriptionId` | Optional subscription link (must belong to project customer) |
 | `lineItems`      | Optional extra invoice lines (same shape as manual invoices) |
 
-Only unbilled entries where `startedAt >= from` and `endedAt <= to` are included. `from` must be strictly before `to`. The issued invoice always includes one generated line for the billed time range, followed by any optional `lineItems`.
+Only unbilled entries where `startedAt >= from` and `endedAt <= to` are included. `from` must be strictly before `to`. The issued invoice always includes one generated line for the billed time range — **description** = project name plus billed period (`from – to`), **quantity** = billed hours, **unit price (net)** = project hourly rate — followed by any optional `lineItems`. Per-entry detail remains on the attached time report.
 
 ### Preconditions
 
@@ -120,6 +120,22 @@ Only unbilled entries where `startedAt >= from` and `endedAt <= to` are included
 The response includes `invoiceId`, `invoiceNumber`, `billedMinutes`, and `amountNet` (total invoice subtotal net, including optional line items). Time entries are marked with `invoiceId` and `billedAt`. A `projectSummaryChanged` event is emitted on the project board WebSocket.
 
 The billing console opens a modal with **From** and **To** datetime fields pre-filled from the bounds endpoint, optional **Subscription**, and optional **additional line items** (same fields as manual invoice lines) before submitting bill-time.
+
+When bill-time succeeds, a **time report PDF** is generated for the billed entries, stored on the invoice (`timeReportStorageKey`), attached to the invoice email, and available for re-download from admin and customer invoice actions (`canDownloadTimeReport`).
+
+## Time report (admin)
+
+Admins can generate a **live** time report PDF without persisting it:
+
+`POST /admin/billing/projects/{projectId}/time-report`
+
+| Field          | Description                                                       |
+| -------------- | ----------------------------------------------------------------- |
+| `from`         | Range start (ISO 8601, inclusive)                                 |
+| `to`           | Range end (ISO 8601, inclusive)                                   |
+| `unbilledOnly` | When `true`, only entries with `billedAt IS NULL` (default false) |
+
+The modal reuses the same default **From** / **To** values as bill-time (`GET .../unbilled-time-bounds`). The PDF lists time entries (when, duration, description, ticket, billing status) for the selected range.
 
 Bill-time does **not** require ticket or milestone lock and does **not** lock tickets automatically. Board scope lock (ticket/milestone) and billing lock (billed time entries) are separate concerns. See [Project Board — Locking](./project-board.md#locking).
 
@@ -140,11 +156,22 @@ sequenceDiagram
     else No unbilled entries in range
         API-->>Admin: 400 No unbilled time entries
     else OK
-        API->>Invoice: createDraft + issueDraft
+        API->>Invoice: createDraft + store time report + issueDraft
         API->>API: markBilled(time entry ids in range)
         API->>WS: projectSummaryChanged
         API-->>Admin: 200 BillProjectTimeResponse
     end
+```
+
+```mermaid
+sequenceDiagram
+    participant Admin
+    participant API as Billing Manager
+
+    Admin->>API: GET /admin/billing/projects/{id}/unbilled-time-bounds
+    API-->>Admin: 200 { from, to, entryCount }
+    Admin->>API: POST /admin/billing/projects/{id}/time-report { from, to, unbilledOnly? }
+    API-->>Admin: 200 application/pdf
 ```
 
 See also [Invoices](./invoices.md) and [Customer Profiles](./customer-profiles.md).

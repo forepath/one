@@ -141,6 +141,10 @@ export class InvoicesFacade {
     return this.invoicesService.downloadVoidDocumentPdf(subscriptionId, invoiceRefId);
   }
 
+  downloadTimeReportPdf(subscriptionId: string | undefined, invoiceRefId: string): Observable<Blob> {
+    return this.invoicesService.downloadTimeReportPdf(subscriptionId, invoiceRefId);
+  }
+
   voidInvoice(subscriptionId: string, invoiceRefId: string): Observable<InvoiceResponse> {
     return this.invoicesService.voidInvoice(subscriptionId, invoiceRefId);
   }

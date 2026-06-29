@@ -6,13 +6,16 @@ import { CustomerProfilesService } from '../../services/customer-profiles.servic
 import { InvoiceIssuanceService } from '../../services/invoice-issuance.service';
 import { InvoiceService } from '../../services/invoice.service';
 import { SubscriptionsRepository } from '../../repositories/subscriptions.repository';
+import { InvoicesRepository } from '../../repositories/invoices.repository';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
 import { mapManualInvoiceLineItemsToInputs } from '../../utils/map-manual-invoice-line-items.util';
 import type { BillProjectTimeDto, BillProjectTimeResponseDto, ProjectUnbilledTimeBoundsDto } from '../dto/project.dto';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectTimeEntriesRepository } from '../repositories/project-time-entries.repository';
 import { resolveProjectBillTimeRange } from '../utils/project-bill-time-range.utils';
+import { formatProjectTimeReportRange } from '../utils/project-time-report-format.util';
 import { ProjectBoardSummaryService } from './project-board-summary.service';
+import { ProjectTimeReportService } from './project-time-report.service';
 
 const MIN_BILLABLE_AMOUNT = 0.01;
 
@@ -22,12 +25,14 @@ export class ProjectBillingService {
     private readonly projectsRepository: ProjectsRepository,
     private readonly timeEntriesRepository: ProjectTimeEntriesRepository,
     private readonly subscriptionsRepository: SubscriptionsRepository,
+    private readonly invoicesRepository: InvoicesRepository,
     private readonly customerProfilesService: CustomerProfilesService,
     private readonly invoiceService: InvoiceService,
     private readonly invoiceIssuanceService: InvoiceIssuanceService,
     private readonly taxCalculationService: TaxCalculationService,
     private readonly auditLog: BillingAuditLogService,
     private readonly projectBoardSummary: ProjectBoardSummaryService,
+    private readonly projectTimeReportService: ProjectTimeReportService,
   ) {}
 
   async getUnbilledTimeBounds(projectId: string): Promise<ProjectUnbilledTimeBoundsDto> {
@@ -70,16 +75,14 @@ export class ProjectBillingService {
     }
 
     const billedMinutes = entries.reduce((sum, e) => sum + e.durationMinutes, 0);
-    const hours = billedMinutes / 60;
-    const rate = Number(project.hourlyRateNet);
-    const timeAmountNet = hours * rate;
-    const timeDescription = `Project ${project.name} — ${hours.toFixed(2)}h @ ${rate.toFixed(2)}/${project.currency}/h (${from.toISOString()} – ${to.toISOString()})`;
+    const billedHours = billedMinutes / 60;
+    const hourlyRateNet = Number(project.hourlyRateNet);
     const customLineInputs = mapManualInvoiceLineItemsToInputs(dto.lineItems ?? []);
     const lineInputs = [
       {
-        description: timeDescription,
-        quantity: 1,
-        unitPriceNet: timeAmountNet,
+        description: `${project.name} (${formatProjectTimeReportRange(from, to)})`,
+        quantity: billedHours,
+        unitPriceNet: hourlyRateNet,
         taxCategory: TaxCategory.STANDARD,
       },
       ...customLineInputs,
@@ -97,6 +100,16 @@ export class ProjectBillingService {
       currency: project.currency,
       lineInputs,
     });
+
+    const timeReportStorageKey = await this.projectTimeReportService.generateAndStoreForBilling(
+      draft,
+      project,
+      entries,
+      from,
+      to,
+    );
+
+    await this.invoicesRepository.update(draft.id, { timeReportStorageKey });
 
     const issued = await this.invoiceIssuanceService.issueDraft(draft.id);
     const billedAt = new Date();

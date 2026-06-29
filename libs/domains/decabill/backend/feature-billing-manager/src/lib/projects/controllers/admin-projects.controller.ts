@@ -5,6 +5,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Param,
@@ -13,7 +14,10 @@ import {
   Post,
   Query,
   Req,
+  Res,
 } from '@nestjs/common';
+import { StreamableFile } from '@nestjs/common';
+import type { Response } from 'express';
 
 import type { RequestWithUser } from '../../utils/billing-access.utils';
 import { getUserFromRequest } from '../../utils/billing-access.utils';
@@ -25,6 +29,7 @@ import type {
   PaginatedAdminProjectsResponseDto,
   ProjectResponseDto,
   ProjectSummaryResponseDto,
+  ProjectTimeReportRequestDto,
   ProjectUnbilledTimeBoundsDto,
   UpdateAdminProjectDto,
 } from '../dto/project.dto';
@@ -74,6 +79,20 @@ export class AdminProjectsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<ProjectUnbilledTimeBoundsDto> {
     return await this.projectsAdminService.getUnbilledTimeBounds(id);
+  }
+
+  @Post(':id/time-report')
+  @Header('Content-Type', 'application/pdf')
+  async generateTimeReport(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: ProjectTimeReportRequestDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const buffer = await this.projectsAdminService.generateTimeReport(id, dto);
+
+    res.setHeader('Content-Disposition', `attachment; filename="time-report-${id}.pdf"`);
+
+    return new StreamableFile(buffer);
   }
 
   @Post(':id/bill-time')

@@ -1662,6 +1662,31 @@ paths:
           description: Unauthorized
         '404':
           description: Invoice not found
+  /invoices/ref/{invoiceRefId}/time-report/pdf:
+    get:
+      summary: Download time report PDF by reference (no subscription)
+      operationId: downloadInvoiceTimeReportPdfByRef
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Time report PDF for project invoices
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Time report not available
+        '401':
+          description: Unauthorized
+        '404':
+          description: Invoice not found
   /invoices/ref/{invoiceRefId}/pay:
     post:
       summary: Initiate payment by reference (no subscription)
@@ -1813,6 +1838,32 @@ paths:
                 format: binary
         '400':
           description: Invoice is not voided
+        '401':
+          description: Unauthorized
+        '404':
+          description: Invoice not found
+  /invoices/{subscriptionId}/ref/{invoiceRefId}/time-report/pdf:
+    get:
+      summary: Download time report PDF
+      operationId: downloadInvoiceTimeReportPdf
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Time report PDF for project invoices
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Time report not available
         '401':
           description: Unauthorized
         '404':
@@ -2141,6 +2192,32 @@ paths:
                 format: binary
         '400':
           description: Invoice is not voided
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Invoice not found
+  /admin/billing/invoices/{invoiceRefId}/time-report/pdf:
+    get:
+      tags: [Admin Billing]
+      summary: Download stored time report PDF (admin only)
+      operationId: downloadAdminInvoiceTimeReportPdf
+      parameters:
+        - name: invoiceRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Time report PDF for project invoices
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Time report not available
         '401':
           description: Unauthorized
         '403':
@@ -2635,6 +2712,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BillProjectTimeResponse'
+  /admin/billing/projects/{projectId}/time-report:
+    post:
+      tags: [Admin Billing]
+      summary: Generate live time report PDF (admin only)
+      operationId: generateProjectTimeReport
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectTimeReportRequest'
+      responses:
+        '200':
+          description: Time report PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
   /projects/{projectId}/tickets:
     get:
       tags: [Project Board]
@@ -3497,6 +3595,7 @@ components:
         canDownload: { type: boolean }
         canPreview: { type: boolean }
         canDownloadVoidDocument: { type: boolean, nullable: true }
+        canDownloadTimeReport: { type: boolean, nullable: true }
         voidDocumentNumber: { type: string, nullable: true }
     InvoiceDetailResponse:
       type: object
@@ -3525,6 +3624,7 @@ components:
         canDownload: { type: boolean }
         canPreview: { type: boolean }
         canDownloadVoidDocument: { type: boolean, nullable: true }
+        canDownloadTimeReport: { type: boolean, nullable: true }
         voidDocumentNumber: { type: string, nullable: true }
     InvoiceLineItemResponse:
       type: object
@@ -4096,6 +4196,13 @@ components:
         from: { type: string, format: date-time, nullable: true }
         to: { type: string, format: date-time, nullable: true }
         entryCount: { type: integer, minimum: 0 }
+    ProjectTimeReportRequest:
+      type: object
+      required: [from, to]
+      properties:
+        from: { type: string, format: date-time }
+        to: { type: string, format: date-time }
+        unbilledOnly: { type: boolean, default: false }
     ProjectTicketResponse:
       type: object
       required:

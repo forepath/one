@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsNumber,
@@ -144,6 +145,18 @@ export class BillProjectTimeDto {
   @ValidateNested({ each: true })
   @Type(() => ManualInvoiceLineItemDto)
   lineItems?: ManualInvoiceLineItemDto[];
+}
+
+export class ProjectTimeReportRequestDto {
+  @IsDateString()
+  from!: string;
+
+  @IsDateString()
+  to!: string;
+
+  @IsOptional()
+  @Type(() => Boolean)
+  unbilledOnly?: boolean;
 }
 
 export class ProjectUnbilledTimeBoundsDto {

@@ -105,7 +105,7 @@ Admins bill tracked project hours via `POST /admin/billing/projects/{projectId}/
 
 1. Validates the assigned customer's billing profile is complete
 2. Aggregates unbilled time entries fully within the requested range
-3. Creates and immediately issues a draft invoice with one line item (`hours × hourlyRateNet`)
+3. Creates and immediately issues a draft invoice with one line item (project name, quantity = billed hours, unit price net = hourly rate)
 4. Marks those time entries with `invoiceId` and `billedAt`
 
 This is separate from open-position accumulation on the user's billing day. Project invoices link to the project through `projectId` on the invoice record.

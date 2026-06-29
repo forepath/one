@@ -370,6 +370,16 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     this.downloadPdfBlob(source, `${invoice.voidDocumentNumber ?? `${invoice.invoiceNumber ?? invoice.id}-void`}.pdf`);
   }
 
+  downloadTimeReport(invoice: AdminInvoiceListItem): void {
+    if (!invoice.canDownloadTimeReport) return;
+
+    const source = invoice.subscriptionId
+      ? this.invoicesFacade.downloadTimeReportPdf(invoice.subscriptionId, invoice.id)
+      : this.adminBillingService.downloadTimeReportPdf(invoice.id);
+
+    this.downloadPdfBlob(source, `time-report-${invoice.invoiceNumber ?? invoice.id}.pdf`);
+  }
+
   addLineItem(target: 'create' | 'edit'): void {
     if (target === 'create') {
       this.createLineItems = [...this.createLineItems, this.emptyLineItem()];

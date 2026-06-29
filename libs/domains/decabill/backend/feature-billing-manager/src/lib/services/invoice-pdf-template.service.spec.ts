@@ -129,10 +129,10 @@ describe('InvoicePdfTemplateService', () => {
     expect(viewModel.lineItems[0].lineNet).toBe('100.00');
   });
 
-  it('buildHtml includes Agenstra design tokens and invoice content', () => {
+  it('buildHtml includes neutral print palette and invoice content', () => {
     const html = service.buildHtml(invoice, lineItems, issuer, buyer);
 
-    expect(html).toContain('#7a3fff');
+    expect(html).toContain('--surface-subtle: #f4f4f4');
     expect(html).toContain('Plus Jakarta Sans');
     expect(html).toContain('INV-2026-00001');
     expect(html).toContain('Ada Lovelace');

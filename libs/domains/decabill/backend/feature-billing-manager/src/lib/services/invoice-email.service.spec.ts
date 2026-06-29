@@ -17,11 +17,15 @@ describe('InvoiceEmailService', () => {
   const invoicePdfService = {
     readPdf: jest.fn(),
   };
+  const timeReportPdfService = {
+    readPdf: jest.fn(),
+  };
   const service = new InvoiceEmailService(
     emailService as never,
     customerProfilesRepository as never,
     usersRepository as never,
     invoicePdfService as never,
+    timeReportPdfService as never,
   );
   const invoice = {
     id: 'inv-1',
@@ -57,6 +61,28 @@ describe('InvoiceEmailService', () => {
           to: 'jane@example.com',
           subject: 'Your invoice INV-2026-00001 is ready',
           attachments: [{ filename: 'INV-2026-00001.pdf', content: pdfBuffer }],
+        }),
+      );
+    });
+
+    it('attaches time report when storage key is present', async () => {
+      const timeReportBuffer = Buffer.from('time-report');
+
+      timeReportPdfService.readPdf.mockResolvedValue(timeReportBuffer);
+
+      const sent = await service.notifyInvoiceIssued(
+        { ...invoice, timeReportStorageKey: 'sub-1/inv-1-time-report.pdf' } as InvoiceEntity,
+        'sub-1/inv-1.pdf',
+      );
+
+      expect(sent).toBe(true);
+      expect(timeReportPdfService.readPdf).toHaveBeenCalledWith('sub-1/inv-1-time-report.pdf');
+      expect(emailService.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachments: [
+            { filename: 'INV-2026-00001.pdf', content: pdfBuffer },
+            { filename: 'time-report-INV-2026-00001.pdf', content: timeReportBuffer },
+          ],
         }),
       );
     });

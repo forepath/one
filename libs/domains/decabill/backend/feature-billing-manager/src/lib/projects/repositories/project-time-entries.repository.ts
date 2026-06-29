@@ -88,6 +88,37 @@ export class ProjectTimeEntriesRepository {
     };
   }
 
+  async findByProjectInRange(
+    projectId: string,
+    from: Date,
+    to: Date,
+    options?: { unbilledOnly?: boolean },
+  ): Promise<ProjectTimeEntryEntity[]> {
+    const qb = this.baseQuery('entry')
+      .where('entry.project_id = :projectId', { projectId })
+      .andWhere('entry.started_at >= :from', { from })
+      .andWhere('entry.ended_at <= :to', { to })
+      .orderBy('entry.startedAt', 'ASC');
+
+    if (options?.unbilledOnly) {
+      qb.andWhere('entry.billed_at IS NULL');
+    }
+
+    applyProjectTenantFilter(qb, 'project');
+
+    return await qb.getMany();
+  }
+
+  async findByInvoiceId(invoiceId: string): Promise<ProjectTimeEntryEntity[]> {
+    const qb = this.baseQuery('entry')
+      .where('entry.invoice_id = :invoiceId', { invoiceId })
+      .orderBy('entry.startedAt', 'ASC');
+
+    applyProjectTenantFilter(qb, 'project');
+
+    return await qb.getMany();
+  }
+
   async findUnbilledByProjectInRange(projectId: string, from: Date, to: Date): Promise<ProjectTimeEntryEntity[]> {
     const qb = this.baseQuery('entry')
       .where('entry.project_id = :projectId', { projectId })

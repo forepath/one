@@ -21,6 +21,7 @@ import {
   updateProjectMilestoneFailure,
   updateProjectMilestoneSuccess,
 } from './project-milestones.actions';
+import { upsertProjectMilestone } from './project-milestones.utils';
 
 export interface ProjectMilestonesState {
   projectId: string | null;
@@ -60,7 +61,7 @@ export const projectMilestonesReducer = createReducer(
   on(createProjectMilestoneSuccess, (state, { milestone }) => ({
     ...state,
     saving: false,
-    milestones: [...state.milestones, milestone].sort((a, b) => a.sortOrder - b.sortOrder),
+    milestones: upsertProjectMilestone(state.milestones, milestone),
   })),
   on(updateProjectMilestoneSuccess, lockProjectMilestoneSuccess, (state, { milestone }) => ({
     ...state,
@@ -81,13 +82,10 @@ export const projectMilestonesReducer = createReducer(
     deleteProjectMilestoneFailure,
     (state, { error }) => ({ ...state, saving: false, error }),
   ),
-  on(projectBoardMilestoneUpsert, (state, { milestone }) => {
-    const idx = state.milestones.findIndex((m) => m.id === milestone.id);
-    const milestones =
-      idx < 0 ? [...state.milestones, milestone] : state.milestones.map((m) => (m.id === milestone.id ? milestone : m));
-
-    return { ...state, milestones: milestones.sort((a, b) => a.sortOrder - b.sortOrder) };
-  }),
+  on(projectBoardMilestoneUpsert, (state, { milestone }) => ({
+    ...state,
+    milestones: upsertProjectMilestone(state.milestones, milestone),
+  })),
   on(projectBoardMilestoneRemoved, (state, { id, projectId }) => ({
     ...state,
     milestones: state.milestones.filter((m) => !(m.id === id && m.projectId === projectId)),
