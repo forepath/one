@@ -1,9 +1,9 @@
 import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
-import { TaxCategory } from '../constants/tax-category.constants';
 import type { CreateManualInvoiceDto, IssueManualInvoiceDto, UpdateManualInvoiceDto } from '../dto/manual-invoice.dto';
 import type { ManualInvoiceDetailResponseDto } from '../dto/manual-invoice.dto';
+import { mapManualInvoiceLineItemsToInputs } from '../utils/map-manual-invoice-line-items.util';
 import { InvoiceLineItemsRepository } from '../repositories/invoice-line-items.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
@@ -13,7 +13,6 @@ import { BillingAuditLogService } from './billing-audit-log.service';
 import { CustomerProfilesService } from './customer-profiles.service';
 import { InvoiceIssuanceService } from './invoice-issuance.service';
 import { InvoiceService, type CreateInvoiceDraftParams } from './invoice.service';
-import type { LineItemInput } from './tax-calculation.service';
 import { TaxCalculationService } from './tax-calculation.service';
 
 @Injectable()
@@ -45,7 +44,7 @@ export class ManualInvoiceService {
       }
     }
 
-    const lineInputs = this.toLineInputs(dto.lineItems);
+    const lineInputs = mapManualInvoiceLineItemsToInputs(dto.lineItems);
     const draftParams: CreateInvoiceDraftParams = {
       subscriptionId: dto.subscriptionId,
       userId: dto.userId,
@@ -76,7 +75,7 @@ export class ManualInvoiceService {
 
     assertDraftEditable(invoice);
 
-    const lineInputs = this.toLineInputs(dto.lineItems);
+    const lineInputs = mapManualInvoiceLineItemsToInputs(dto.lineItems);
     const totals = this.taxCalculationService.computeLines(lineInputs);
 
     await this.invoiceLineItemsRepository.deleteByInvoiceId(invoiceRefId);
@@ -170,14 +169,5 @@ export class ManualInvoiceService {
       userId: detail.userId!,
       userEmail: user?.email,
     };
-  }
-
-  private toLineInputs(items: CreateManualInvoiceDto['lineItems']): LineItemInput[] {
-    return items.map((item) => ({
-      description: item.description,
-      quantity: item.quantity,
-      unitPriceNet: item.unitPriceNet,
-      taxCategory: item.taxCategory ?? TaxCategory.STANDARD,
-    }));
   }
 }

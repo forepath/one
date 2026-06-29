@@ -1,5 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 
+import { TaxCategory } from '../../constants/tax-category.constants';
+import { TaxCalculationService } from '../../services/tax-calculation.service';
+import { TaxRateConfigService } from '../../services/tax-rate-config.service';
+
 import { ProjectBillingService } from './project-billing.service';
 
 describe('ProjectBillingService', () => {
@@ -9,12 +13,14 @@ describe('ProjectBillingService', () => {
     findUnbilledTimeBounds: jest.fn(),
     markBilled: jest.fn(),
   };
+  const subscriptionsRepository = { findByIdOrThrow: jest.fn() };
   const customerProfilesService = {
     getByUserId: jest.fn(),
     isProfileComplete: jest.fn(),
   };
   const invoiceService = { createDraft: jest.fn() };
   const invoiceIssuanceService = { issueDraft: jest.fn() };
+  const taxCalculationService = new TaxCalculationService(new TaxRateConfigService());
   const auditLog = { log: jest.fn() };
   const projectBoardSummary = { emitSummaryChanged: jest.fn() };
 
@@ -28,17 +34,19 @@ describe('ProjectBillingService', () => {
     currency: 'EUR',
   };
 
-  const from = new Date('2026-06-01T08:00:00.000Z');
-  const to = new Date('2026-06-01T17:00:00.000Z');
+  const from = '2026-06-01T08:00:00.000Z';
+  const to = '2026-06-01T17:00:00.000Z';
 
   beforeEach(() => {
     jest.resetAllMocks();
     service = new ProjectBillingService(
       projectsRepository as never,
       timeEntriesRepository as never,
+      subscriptionsRepository as never,
       customerProfilesService as never,
       invoiceService as never,
       invoiceIssuanceService as never,
+      taxCalculationService,
       auditLog as never,
       projectBoardSummary as never,
     );
@@ -50,6 +58,17 @@ describe('ProjectBillingService', () => {
     customerProfilesService.isProfileComplete.mockReturnValue(false);
 
     await expect(service.billUnbilledTime('p1', 'admin-1', { from, to })).rejects.toThrow(BadRequestException);
+  });
+
+  it('rejects when subscription does not belong to project user', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue(project);
+    customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile' });
+    customerProfilesService.isProfileComplete.mockReturnValue(true);
+    subscriptionsRepository.findByIdOrThrow.mockResolvedValue({ id: 'sub-1', userId: 'other-user' });
+
+    await expect(service.billUnbilledTime('p1', 'admin-1', { from, to, subscriptionId: 'sub-1' })).rejects.toThrow(
+      BadRequestException,
+    );
   });
 
   it('rejects when no unbilled entries in range', async () => {
@@ -87,20 +106,66 @@ describe('ProjectBillingService', () => {
 
     expect(result.billedMinutes).toBe(90);
     expect(result.amountNet).toBe(150);
+    expect(invoiceService.createDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'u1',
+        projectId: 'p1',
+        lineInputs: [
+          expect.objectContaining({
+            quantity: 1,
+            unitPriceNet: 150,
+            taxCategory: TaxCategory.STANDARD,
+          }),
+        ],
+      }),
+    );
     expect(timeEntriesRepository.markBilled).toHaveBeenCalledWith(['e1', 'e2'], 'inv-1', expect.any(Date));
     expect(projectBoardSummary.emitSummaryChanged).toHaveBeenCalledWith(project);
+  });
+
+  it('combines custom line items with generated time line', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue(project);
+    customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile' });
+    customerProfilesService.isProfileComplete.mockReturnValue(true);
+    subscriptionsRepository.findByIdOrThrow.mockResolvedValue({ id: 'sub-1', userId: 'u1' });
+    timeEntriesRepository.findUnbilledByProjectInRange.mockResolvedValue([{ id: 'e1', durationMinutes: 60 }]);
+    invoiceService.createDraft.mockResolvedValue({ id: 'draft-1' });
+    invoiceIssuanceService.issueDraft.mockResolvedValue({ id: 'inv-1', invoiceNumber: 'INV-1' });
+
+    const result = await service.billUnbilledTime('p1', 'admin-1', {
+      from,
+      to,
+      subscriptionId: 'sub-1',
+      lineItems: [{ description: 'Materials', quantity: 1, unitPriceNet: 25 }],
+    });
+
+    expect(result.billedMinutes).toBe(60);
+    expect(result.amountNet).toBe(125);
+    expect(invoiceService.createDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subscriptionId: 'sub-1',
+        lineInputs: [
+          expect.objectContaining({ unitPriceNet: 100 }),
+          expect.objectContaining({ description: 'Materials', unitPriceNet: 25 }),
+        ],
+      }),
+    );
   });
 
   it('returns unbilled time bounds', async () => {
     projectsRepository.findByIdOrThrow.mockResolvedValue(project);
     timeEntriesRepository.findUnbilledTimeBounds.mockResolvedValue({
-      from,
-      to,
+      from: new Date(from),
+      to: new Date(to),
       entryCount: 2,
     });
 
     const bounds = await service.getUnbilledTimeBounds('p1');
 
-    expect(bounds).toEqual({ from, to, entryCount: 2 });
+    expect(bounds).toEqual({
+      from: new Date(from),
+      to: new Date(to),
+      entryCount: 2,
+    });
   });
 });

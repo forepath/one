@@ -1,6 +1,19 @@
 import { Type } from 'class-transformer';
-import { IsDateString, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Length, MaxLength, Min } from 'class-validator';
+import {
+  IsArray,
+  IsDateString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Length,
+  MaxLength,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 
+import { ManualInvoiceLineItemDto } from '../../dto/manual-invoice.dto';
 import { ProjectStatus } from '../entities/project.enums';
 
 export class CreateAdminProjectDto {
@@ -121,6 +134,16 @@ export class BillProjectTimeDto {
 
   @IsDateString()
   to!: string;
+
+  @IsOptional()
+  @IsUUID('4', { message: 'Subscription ID must be a valid UUID' })
+  subscriptionId?: string;
+
+  @IsOptional()
+  @IsArray({ message: 'Line items must be an array' })
+  @ValidateNested({ each: true })
+  @Type(() => ManualInvoiceLineItemDto)
+  lineItems?: ManualInvoiceLineItemDto[];
 }
 
 export class ProjectUnbilledTimeBoundsDto {

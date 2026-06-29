@@ -369,7 +369,7 @@
 </div>
 
 <div #billTimeModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" i18n="@@featureProjectDetail-billTimeTitle">Bill unbilled time</h5>
@@ -394,7 +394,7 @@
               required
             />
           </div>
-          <div class="mb-0">
+          <div class="mb-3">
             <label class="form-label" for="billTimeTo" i18n="@@featureProjectDetail-billTimeToLabel">To</label>
             <input
               id="billTimeTo"
@@ -406,10 +406,37 @@
             />
           </div>
           @if (billBoundsEntryCount() === 0) {
-            <p class="text-muted small mt-3 mb-0" i18n="@@featureProjectDetail-billTimeNoUnbilled">
+            <p class="text-muted small mb-3" i18n="@@featureProjectDetail-billTimeNoUnbilled">
               No unbilled time entries to bill.
             </p>
           }
+          <div class="mb-3">
+            <label class="form-label" for="billTimeSubscription" i18n="@@featureProjectDetail-billTimeSubscription"
+              >Subscription (optional)</label
+            >
+            <framework-billing-admin-subscription-select
+              #billTimeSubscriptionSelect
+              inputId="billTimeSubscription"
+              [subscriptions]="billTimeSubscriptions()"
+              [loading]="billTimeSubscriptionsLoading()"
+              [(selectedSubscriptionId)]="billSubscriptionId"
+            />
+          </div>
+          <h6 class="mb-2" i18n="@@featureProjectDetail-billTimeAdditionalLines">Additional line items (optional)</h6>
+          <p class="text-muted small" i18n="@@featureProjectDetail-billTimeAdditionalLinesHint">
+            Unbilled time is billed as the first invoice line. Add extra lines here if needed.
+          </p>
+          @for (line of billCustomLineItems; track $index; let i = $index) {
+            <ng-container
+              *ngTemplateOutlet="
+                billTimeLineItem;
+                context: { line: line, index: i, itemCount: billCustomLineItems.length }
+              "
+            ></ng-container>
+          }
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addBillTimeLineItem()">
+            <span i18n="@@featureProjectDetail-billTimeAddLine">Add line item</span>
+          </button>
           @if (error$ | async; as err) {
             <div class="alert alert-danger mt-3 mb-0" role="alert">{{ err }}</div>
           }
@@ -424,7 +451,11 @@
           class="btn btn-primary"
           (click)="submitBillTime()"
           [disabled]="
-            (billing$ | async) === true || billBoundsLoading() || billBoundsEntryCount() === 0 || !isBillTimeFormValid()
+            (billing$ | async) === true ||
+            billBoundsLoading() ||
+            billBoundsEntryCount() === 0 ||
+            !isBillTimeFormValid() ||
+            !hasValidBillTimeCustomLineItems()
           "
           i18n="@@featureProjectDetail-confirmBillTime"
         >
@@ -434,3 +465,64 @@
     </div>
   </div>
 </div>
+
+<ng-template #billTimeLineItem let-line="line" let-i="index" let-itemCount="itemCount">
+  <div class="border rounded p-2 mb-2">
+    <label class="form-label" [for]="'billTimeLineDesc' + i" i18n="@@featureAdminInvoices-lineDescription"
+      >Description</label
+    >
+    <input
+      class="form-control mb-2"
+      [id]="'billTimeLineDesc' + i"
+      [(ngModel)]="line.description"
+      [name]="'billTimeDesc' + i"
+    />
+    <div class="row g-2">
+      <div class="col-4">
+        <label class="form-label" [for]="'billTimeLineQty' + i" i18n="@@featureAdminInvoices-lineQuantity"
+          >Quantity</label
+        >
+        <input
+          type="number"
+          class="form-control"
+          [id]="'billTimeLineQty' + i"
+          [(ngModel)]="line.quantity"
+          [name]="'billTimeQty' + i"
+          min="0.0001"
+          step="any"
+        />
+      </div>
+      <div class="col-4">
+        <label class="form-label" [for]="'billTimeLinePrice' + i" i18n="@@featureAdminInvoices-lineUnitPriceNet"
+          >Unit price (net)</label
+        >
+        <input
+          type="number"
+          class="form-control"
+          [id]="'billTimeLinePrice' + i"
+          [(ngModel)]="line.unitPriceNet"
+          [name]="'billTimePrice' + i"
+          min="0"
+          step="any"
+        />
+      </div>
+      <div class="col-4">
+        <label class="form-label" [for]="'billTimeLineTax' + i" i18n="@@featureAdminInvoices-lineTaxCategory"
+          >Tax category</label
+        >
+        <select
+          class="form-select"
+          [id]="'billTimeLineTax' + i"
+          [(ngModel)]="line.taxCategory"
+          [name]="'billTimeTax' + i"
+        >
+          <option value="standard" i18n="@@featureAdminInvoices-taxStandard">Standard</option>
+          <option value="reduced" i18n="@@featureAdminInvoices-taxReduced">Reduced</option>
+        </select>
+      </div>
+    </div>
+    <button type="button" class="btn btn-link btn-sm text-danger p-0 mt-2" (click)="removeBillTimeLineItem(i)">
+      <span i18n="@@featureAdminInvoices-removeLine">Remove line</span>
+    </button>
+  </div>
+</ng-template>

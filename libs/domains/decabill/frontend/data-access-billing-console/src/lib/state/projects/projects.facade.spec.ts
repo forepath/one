@@ -34,13 +34,12 @@ describe('ProjectsFacade', () => {
   });
 
   it('billProjectTime dispatches billProjectTime', () => {
-    facade.billProjectTime('p-1', '2026-06-01T08:00:00.000Z', '2026-06-01T17:00:00.000Z');
-    expect(store.dispatch).toHaveBeenCalledWith(
-      billProjectTime({
-        projectId: 'p-1',
-        from: '2026-06-01T08:00:00.000Z',
-        to: '2026-06-01T17:00:00.000Z',
-      }),
-    );
+    const dto = {
+      from: '2026-06-01T08:00:00.000Z',
+      to: '2026-06-01T17:00:00.000Z',
+      lineItems: [{ description: 'Extra', quantity: 1, unitPriceNet: 10 }],
+    };
+    facade.billProjectTime('p-1', dto);
+    expect(store.dispatch).toHaveBeenCalledWith(billProjectTime({ projectId: 'p-1', dto }));
   });
 });

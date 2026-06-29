@@ -100,24 +100,26 @@ Entries may optionally reference a ticket (`ticketId`). Billed entries (`billedA
 
 `POST .../bill-time` requires a JSON body:
 
-| Field  | Description                       |
-| ------ | --------------------------------- |
-| `from` | Range start (ISO 8601, inclusive) |
-| `to`   | Range end (ISO 8601, inclusive)   |
+| Field            | Description                                                  |
+| ---------------- | ------------------------------------------------------------ |
+| `from`           | Range start (ISO 8601, inclusive)                            |
+| `to`             | Range end (ISO 8601, inclusive)                              |
+| `subscriptionId` | Optional subscription link (must belong to project customer) |
+| `lineItems`      | Optional extra invoice lines (same shape as manual invoices) |
 
-Only unbilled entries where `startedAt >= from` and `endedAt <= to` are included. `from` must be strictly before `to`.
+Only unbilled entries where `startedAt >= from` and `endedAt <= to` are included. `from` must be strictly before `to`. The issued invoice always includes one generated line for the billed time range, followed by any optional `lineItems`.
 
 ### Preconditions
 
 1. Assigned customer has a **complete** billing profile (same rules as subscription ordering and manual invoice issuance)
 2. At least one unbilled time entry exists **within the requested range**
-3. Billable net amount is at least **0.01** in project currency
+3. Billable combined net amount (time line plus optional extras) is at least **0.01** in project currency
 
 ### Result
 
-The response includes `invoiceId`, `invoiceNumber`, `billedMinutes`, and `amountNet`. Time entries are marked with `invoiceId` and `billedAt`. A `projectSummaryChanged` event is emitted on the project board WebSocket.
+The response includes `invoiceId`, `invoiceNumber`, `billedMinutes`, and `amountNet` (total invoice subtotal net, including optional line items). Time entries are marked with `invoiceId` and `billedAt`. A `projectSummaryChanged` event is emitted on the project board WebSocket.
 
-The billing console opens a modal with **From** and **To** datetime fields pre-filled from the bounds endpoint before submitting bill-time.
+The billing console opens a modal with **From** and **To** datetime fields pre-filled from the bounds endpoint, optional **Subscription**, and optional **additional line items** (same fields as manual invoice lines) before submitting bill-time.
 
 Bill-time does **not** require ticket or milestone lock and does **not** lock tickets automatically. Board scope lock (ticket/milestone) and billing lock (billed time entries) are separate concerns. See [Project Board — Locking](./project-board.md#locking).
 

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 
-import type { CreateAdminProjectDto, UpdateAdminProjectDto } from '../../types/projects.types';
+import type { BillProjectTimeDto, CreateAdminProjectDto, UpdateAdminProjectDto } from '../../types/projects.types';
 
 import {
   billProjectTime,
@@ -79,8 +79,8 @@ export class ProjectsFacade {
     this.store.dispatch(deleteAdminProject({ projectId }));
   }
 
-  billProjectTime(projectId: string, from: string, to: string): void {
-    this.store.dispatch(billProjectTime({ projectId, from, to }));
+  billProjectTime(projectId: string, dto: BillProjectTimeDto): void {
+    this.store.dispatch(billProjectTime({ projectId, dto }));
   }
 
   clearError(): void {

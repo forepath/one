@@ -3,6 +3,7 @@ import { createAction, props } from '@ngrx/store';
 import type {
   AdminProjectDetailResponse,
   AdminProjectListItem,
+  BillProjectTimeDto,
   BillProjectTimeResponse,
   CreateAdminProjectDto,
   ProjectListItem,
@@ -110,7 +111,7 @@ export const deleteAdminProjectFailure = createAction(
 
 export const billProjectTime = createAction(
   '[Projects] Bill Project Time',
-  props<{ projectId: string; from: string; to: string }>(),
+  props<{ projectId: string; dto: BillProjectTimeDto }>(),
 );
 export const billProjectTimeSuccess = createAction(
   '[Projects] Bill Project Time Success',

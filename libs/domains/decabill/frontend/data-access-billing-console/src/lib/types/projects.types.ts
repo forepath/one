@@ -1,4 +1,4 @@
-import type { ListParams } from './billing.types';
+import type { ListParams, ManualInvoiceLineItemDto } from './billing.types';
 
 export type ProjectStatus = 'active' | 'archived';
 export type ProjectTicketStatus = 'draft' | 'todo' | 'in_progress' | 'prototype' | 'done' | 'closed';
@@ -82,6 +82,8 @@ export interface BillProjectTimeResponse {
 export interface BillProjectTimeDto {
   from: string;
   to: string;
+  subscriptionId?: string;
+  lineItems?: ManualInvoiceLineItemDto[];
 }
 
 export interface ProjectUnbilledTimeBoundsResponse {

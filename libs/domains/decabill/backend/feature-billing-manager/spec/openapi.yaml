@@ -4084,6 +4084,11 @@ components:
       properties:
         from: { type: string, format: date-time }
         to: { type: string, format: date-time }
+        subscriptionId: { type: string, format: uuid }
+        lineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManualInvoiceLineItemDto'
     ProjectUnbilledTimeBounds:
       type: object
       required: [entryCount]

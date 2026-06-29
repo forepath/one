@@ -4,15 +4,21 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
+  AdminBillingService,
   AdminProjectsService,
   ProjectBoardSocketFacade,
   ProjectTimeEntriesFacade,
   ProjectsFacade,
   type AdminProjectDetailResponse,
+  type BillProjectTimeDto,
+  type ManualInvoiceLineItemDto,
   type ProjectTimeEntryResponse,
+  type SubscriptionResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { filter, map, startWith, switchMap, distinctUntilChanged, EMPTY } from 'rxjs';
+import { filter, finalize, map, startWith, switchMap, distinctUntilChanged, EMPTY, take } from 'rxjs';
+import type { Subscription } from 'rxjs';
 
+import { BillingAdminSubscriptionSelectComponent } from '../billing-admin-subscription-select/billing-admin-subscription-select.component';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import {
   getProjectTimeEntryBillingStatusIconClass,
@@ -26,10 +32,21 @@ import { parseProjectDetailTab, type ProjectDetailTab } from './project-detail-t
 
 type ProjectViewMode = 'admin' | 'customer';
 
+interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
+  taxCategory: 'standard' | 'reduced';
+}
+
 @Component({
   selector: 'framework-project-detail-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ProjectBoardComponent, ProjectMilestonesPanelComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    ProjectBoardComponent,
+    ProjectMilestonesPanelComponent,
+    BillingAdminSubscriptionSelectComponent,
+  ],
   templateUrl: './project-detail-page.component.html',
   styleUrls: ['./project-detail-page.component.scss'],
 })
@@ -38,11 +55,14 @@ export class ProjectDetailPageComponent implements OnInit {
   @ViewChild('editTimeModal', { static: false }) private editTimeModal!: ElementRef<HTMLDivElement>;
   @ViewChild('deleteTimeModal', { static: false }) private deleteTimeModal!: ElementRef<HTMLDivElement>;
   @ViewChild('billTimeModal', { static: false }) private billTimeModal!: ElementRef<HTMLDivElement>;
+  @ViewChild('billTimeSubscriptionSelect')
+  private billTimeSubscriptionSelect?: BillingAdminSubscriptionSelectComponent;
 
   protected readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly projectsFacade = inject(ProjectsFacade);
   private readonly adminProjectsService = inject(AdminProjectsService);
+  private readonly adminBillingService = inject(AdminBillingService);
   private readonly timeEntriesFacade = inject(ProjectTimeEntriesFacade);
   private readonly socketFacade = inject(ProjectBoardSocketFacade);
   private readonly destroyRef = inject(DestroyRef);
@@ -77,8 +97,13 @@ export class ProjectDetailPageComponent implements OnInit {
 
   billFormFrom = '';
   billFormTo = '';
+  billSubscriptionId = '';
+  billCustomLineItems: BillTimeFormLineItem[] = [];
   readonly billBoundsLoading = signal(false);
   readonly billBoundsEntryCount = signal(0);
+  readonly billTimeSubscriptions = signal<SubscriptionResponse[]>([]);
+  readonly billTimeSubscriptionsLoading = signal(false);
+  private billTimeSubscriptionsRequest?: Subscription;
 
   ngOnInit(): void {
     this.resetTimeForm();
@@ -176,8 +201,17 @@ export class ProjectDetailPageComponent implements OnInit {
     if (!this.projectId || !this.isAdminView()) return;
 
     this.projectsFacade.clearError();
+    this.resetBillTimeCustomFields();
     this.billBoundsLoading.set(true);
     this.billBoundsEntryCount.set(0);
+
+    this.selectedProject$.pipe(take(1)).subscribe((project) => {
+      const userId = (project as AdminProjectDetailResponse | null)?.userId;
+
+      if (userId) {
+        this.loadBillTimeSubscriptions(userId);
+      }
+    });
 
     this.adminProjectsService.getUnbilledTimeBounds(this.projectId).subscribe({
       next: (bounds) => {
@@ -193,6 +227,7 @@ export class ProjectDetailPageComponent implements OnInit {
 
         this.billBoundsLoading.set(false);
         showBillingModal(this.billTimeModal);
+        queueMicrotask(() => this.billTimeSubscriptionSelect?.reset());
       },
       error: () => {
         this.billBoundsLoading.set(false);
@@ -201,21 +236,55 @@ export class ProjectDetailPageComponent implements OnInit {
   }
 
   submitBillTime(): void {
-    if (!this.projectId || !this.isAdminView() || !this.isBillTimeFormValid() || this.billBoundsEntryCount() === 0) {
+    if (
+      !this.projectId ||
+      !this.isAdminView() ||
+      !this.isBillTimeFormValid() ||
+      this.billBoundsEntryCount() === 0 ||
+      !this.hasValidBillTimeCustomLineItems()
+    ) {
       return;
     }
 
-    this.projectsFacade.billProjectTime(
-      this.projectId,
-      this.datetimeLocalToIso(this.billFormFrom),
-      this.datetimeLocalToIso(this.billFormTo),
-    );
+    const dto: BillProjectTimeDto = {
+      from: this.datetimeLocalToIso(this.billFormFrom),
+      to: this.datetimeLocalToIso(this.billFormTo),
+      subscriptionId: this.billSubscriptionId.trim() || undefined,
+    };
+
+    if (this.billCustomLineItems.length > 0) {
+      dto.lineItems = this.billCustomLineItems.map((line) => ({
+        description: line.description.trim(),
+        quantity: line.quantity,
+        unitPriceNet: line.unitPriceNet,
+        taxCategory: line.taxCategory,
+      }));
+    }
+
+    this.projectsFacade.billProjectTime(this.projectId, dto);
+  }
+
+  addBillTimeLineItem(): void {
+    this.billCustomLineItems = [...this.billCustomLineItems, this.emptyBillTimeLineItem()];
+  }
+
+  removeBillTimeLineItem(index: number): void {
+    this.billCustomLineItems = this.billCustomLineItems.filter((_, itemIndex) => itemIndex !== index);
   }
 
   isBillTimeFormValid(): boolean {
     if (!this.billFormFrom || !this.billFormTo) return false;
 
     return new Date(this.billFormTo).getTime() > new Date(this.billFormFrom).getTime();
+  }
+
+  hasValidBillTimeCustomLineItems(): boolean {
+    return (
+      this.billCustomLineItems.length === 0 ||
+      this.billCustomLineItems.every(
+        (item) => item.description.trim().length > 0 && item.quantity > 0 && item.unitPriceNet >= 0,
+      )
+    );
   }
 
   openCreateTimeModal(): void {
@@ -395,11 +464,38 @@ export class ProjectDetailPageComponent implements OnInit {
       modal: () => this.billTimeModal,
       destroyRef: this.destroyRef,
       onSuccess: () => {
+        this.resetBillTimeCustomFields();
+
         if (this.projectId && this.activeTab() === 'time') {
           this.timeEntriesFacade.load(this.projectId);
         }
       },
     });
+  }
+
+  private resetBillTimeCustomFields(): void {
+    this.billSubscriptionId = '';
+    this.billCustomLineItems = [];
+    this.billTimeSubscriptions.set([]);
+    this.billTimeSubscriptionsLoading.set(false);
+    this.billTimeSubscriptionsRequest?.unsubscribe();
+    this.billTimeSubscriptionsRequest = undefined;
+  }
+
+  private emptyBillTimeLineItem(): BillTimeFormLineItem {
+    return { description: '', quantity: 1, unitPriceNet: 0, taxCategory: 'standard' };
+  }
+
+  private loadBillTimeSubscriptions(userId: string): void {
+    this.billTimeSubscriptionsRequest?.unsubscribe();
+    this.billTimeSubscriptionsLoading.set(true);
+    this.billTimeSubscriptionsRequest = this.adminBillingService
+      .listUserSubscriptions(userId, { limit: 100 })
+      .pipe(finalize(() => this.billTimeSubscriptionsLoading.set(false)))
+      .subscribe({
+        next: (subscriptions) => this.billTimeSubscriptions.set(subscriptions),
+        error: () => this.billTimeSubscriptions.set([]),
+      });
   }
 
   private readProjectContext(): {

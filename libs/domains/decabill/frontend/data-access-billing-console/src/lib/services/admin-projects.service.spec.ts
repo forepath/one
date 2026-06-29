@@ -40,9 +40,14 @@ describe('AdminProjectsService', () => {
     req.flush(bounds);
   });
 
-  it('posts bill-time with range', (done) => {
-    const dto = { from: '2026-06-01T08:00:00.000Z', to: '2026-06-01T17:00:00.000Z' };
-    const response = { invoiceId: 'inv-1', invoiceNumber: 'INV-1', billedMinutes: 60, amountNet: 100 };
+  it('posts bill-time with range and custom lines', (done) => {
+    const dto = {
+      from: '2026-06-01T08:00:00.000Z',
+      to: '2026-06-01T17:00:00.000Z',
+      subscriptionId: 'sub-1',
+      lineItems: [{ description: 'Materials', quantity: 1, unitPriceNet: 25 }],
+    };
+    const response = { invoiceId: 'inv-1', invoiceNumber: 'INV-1', billedMinutes: 60, amountNet: 125 };
 
     service.billTime('p-1', dto).subscribe((res) => {
       expect(res).toEqual(response);

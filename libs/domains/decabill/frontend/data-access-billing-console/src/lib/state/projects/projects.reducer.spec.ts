@@ -110,7 +110,10 @@ describe('projectsReducer', () => {
   it('sets billing flag', () => {
     const billing = projectsReducer(
       initialProjectsState,
-      billProjectTime({ projectId: 'p-1', from: '2026-06-01T08:00:00.000Z', to: '2026-06-01T17:00:00.000Z' }),
+      billProjectTime({
+        projectId: 'p-1',
+        dto: { from: '2026-06-01T08:00:00.000Z', to: '2026-06-01T17:00:00.000Z' },
+      }),
     );
     const done = projectsReducer(
       billing,

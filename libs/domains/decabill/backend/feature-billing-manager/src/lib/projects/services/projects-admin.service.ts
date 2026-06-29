@@ -134,10 +134,7 @@ export class ProjectsAdminService {
   }
 
   async billTime(projectId: string, adminUserId: string, dto: BillProjectTimeDto): Promise<BillProjectTimeResponseDto> {
-    return await this.projectBillingService.billUnbilledTime(projectId, adminUserId, {
-      from: new Date(dto.from),
-      to: new Date(dto.to),
-    });
+    return await this.projectBillingService.billUnbilledTime(projectId, adminUserId, dto);
   }
 
   async getUnbilledTimeBounds(projectId: string): Promise<ProjectUnbilledTimeBoundsDto> {

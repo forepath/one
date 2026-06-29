@@ -31,7 +31,7 @@ sequenceDiagram
     alt amount below minimum
         Billing-->>Admin: 400 Billable amount below minimum
     end
-    Billing->>Invoice: createDraft(userId, projectId, line item)
+    Billing->>Invoice: createDraft(userId, projectId, subscriptionId?, lines)
     Billing->>Issue: issueDraft(draft.id)
     Billing->>Time: markBilled(entry ids, invoice.id)
     Billing->>Audit: log project.bill_time

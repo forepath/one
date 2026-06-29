@@ -5,7 +5,10 @@ import { BillingAuditLogService } from '../../services/billing-audit-log.service
 import { CustomerProfilesService } from '../../services/customer-profiles.service';
 import { InvoiceIssuanceService } from '../../services/invoice-issuance.service';
 import { InvoiceService } from '../../services/invoice.service';
-import type { BillProjectTimeResponseDto, ProjectUnbilledTimeBoundsDto } from '../dto/project.dto';
+import { SubscriptionsRepository } from '../../repositories/subscriptions.repository';
+import { TaxCalculationService } from '../../services/tax-calculation.service';
+import { mapManualInvoiceLineItemsToInputs } from '../../utils/map-manual-invoice-line-items.util';
+import type { BillProjectTimeDto, BillProjectTimeResponseDto, ProjectUnbilledTimeBoundsDto } from '../dto/project.dto';
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectTimeEntriesRepository } from '../repositories/project-time-entries.repository';
 import { resolveProjectBillTimeRange } from '../utils/project-bill-time-range.utils';
@@ -13,19 +16,16 @@ import { ProjectBoardSummaryService } from './project-board-summary.service';
 
 const MIN_BILLABLE_AMOUNT = 0.01;
 
-export interface BillProjectTimeRange {
-  from: Date;
-  to: Date;
-}
-
 @Injectable()
 export class ProjectBillingService {
   constructor(
     private readonly projectsRepository: ProjectsRepository,
     private readonly timeEntriesRepository: ProjectTimeEntriesRepository,
+    private readonly subscriptionsRepository: SubscriptionsRepository,
     private readonly customerProfilesService: CustomerProfilesService,
     private readonly invoiceService: InvoiceService,
     private readonly invoiceIssuanceService: InvoiceIssuanceService,
+    private readonly taxCalculationService: TaxCalculationService,
     private readonly auditLog: BillingAuditLogService,
     private readonly projectBoardSummary: ProjectBoardSummaryService,
   ) {}
@@ -45,14 +45,22 @@ export class ProjectBillingService {
   async billUnbilledTime(
     projectId: string,
     adminUserId: string,
-    range: BillProjectTimeRange,
+    dto: BillProjectTimeDto,
   ): Promise<BillProjectTimeResponseDto> {
-    const { from, to } = resolveProjectBillTimeRange(range.from, range.to);
+    const { from, to } = resolveProjectBillTimeRange(new Date(dto.from), new Date(dto.to));
     const project = await this.projectsRepository.findByIdOrThrow(projectId);
     const profile = await this.customerProfilesService.getByUserId(project.userId);
 
     if (!this.customerProfilesService.isProfileComplete(profile)) {
       throw new BadRequestException('Assigned customer profile is incomplete');
+    }
+
+    if (dto.subscriptionId) {
+      const subscription = await this.subscriptionsRepository.findByIdOrThrow(dto.subscriptionId);
+
+      if (subscription.userId !== project.userId) {
+        throw new BadRequestException('Subscription does not belong to user');
+      }
     }
 
     const entries = await this.timeEntriesRepository.findUnbilledByProjectInRange(projectId, from, to);
@@ -64,26 +72,30 @@ export class ProjectBillingService {
     const billedMinutes = entries.reduce((sum, e) => sum + e.durationMinutes, 0);
     const hours = billedMinutes / 60;
     const rate = Number(project.hourlyRateNet);
-    const amountNet = hours * rate;
+    const timeAmountNet = hours * rate;
+    const timeDescription = `Project ${project.name} — ${hours.toFixed(2)}h @ ${rate.toFixed(2)}/${project.currency}/h (${from.toISOString()} – ${to.toISOString()})`;
+    const customLineInputs = mapManualInvoiceLineItemsToInputs(dto.lineItems ?? []);
+    const lineInputs = [
+      {
+        description: timeDescription,
+        quantity: 1,
+        unitPriceNet: timeAmountNet,
+        taxCategory: TaxCategory.STANDARD,
+      },
+      ...customLineInputs,
+    ];
+    const totals = this.taxCalculationService.computeLines(lineInputs);
 
-    if (amountNet < MIN_BILLABLE_AMOUNT) {
+    if (totals.subtotalNet < MIN_BILLABLE_AMOUNT) {
       throw new BadRequestException('Billable amount below minimum');
     }
-
-    const description = `Project ${project.name} — ${hours.toFixed(2)}h @ ${rate.toFixed(2)}/${project.currency}/h (${from.toISOString()} – ${to.toISOString()})`;
 
     const draft = await this.invoiceService.createDraft({
       userId: project.userId,
       projectId: project.id,
+      subscriptionId: dto.subscriptionId,
       currency: project.currency,
-      lineInputs: [
-        {
-          description,
-          quantity: 1,
-          unitPriceNet: amountNet,
-          taxCategory: TaxCategory.STANDARD,
-        },
-      ],
+      lineInputs,
     });
 
     const issued = await this.invoiceIssuanceService.issueDraft(draft.id);
@@ -101,7 +113,16 @@ export class ProjectBillingService {
       message: 'Admin billed project time',
       invoiceId: issued.id,
       userId: project.userId,
-      context: { adminUserId, projectId, billedMinutes, amountNet, from: from.toISOString(), to: to.toISOString() },
+      context: {
+        adminUserId,
+        projectId,
+        billedMinutes,
+        amountNet: totals.subtotalNet,
+        from: from.toISOString(),
+        to: to.toISOString(),
+        subscriptionId: dto.subscriptionId,
+        customLineItemCount: customLineInputs.length,
+      },
     });
 
     await this.projectBoardSummary.emitSummaryChanged(project);
@@ -110,7 +131,7 @@ export class ProjectBillingService {
       invoiceId: issued.id,
       invoiceNumber: issued.invoiceNumber,
       billedMinutes,
-      amountNet,
+      amountNet: totals.subtotalNet,
     };
   }
 }

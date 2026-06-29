@@ -113,12 +113,15 @@ describe('ProjectsEffects', () => {
     });
   });
 
-  it('billProjectTime$ dispatches success and reloads summary', (done) => {
-    const from = '2026-06-01T08:00:00.000Z';
-    const to = '2026-06-01T17:00:00.000Z';
-    const result = { invoiceId: 'inv-1', billedMinutes: 60, amountNet: 100 };
+  it('billProjectTime dispatches success and reloads summary', (done) => {
+    const dto = {
+      from: '2026-06-01T08:00:00.000Z',
+      to: '2026-06-01T17:00:00.000Z',
+      lineItems: [{ description: 'Extra', quantity: 1, unitPriceNet: 10 }],
+    };
+    const result = { invoiceId: 'inv-1', billedMinutes: 60, amountNet: 110 };
 
-    actions$ = of(billProjectTime({ projectId: 'p-1', from, to }));
+    actions$ = of(billProjectTime({ projectId: 'p-1', dto }));
     adminService.billTime.mockReturnValue(of(result));
 
     const emissions: unknown[] = [];
@@ -127,7 +130,7 @@ describe('ProjectsEffects', () => {
       emissions.push(action);
 
       if (emissions.length === 2) {
-        expect(adminService.billTime).toHaveBeenCalledWith('p-1', { from, to });
+        expect(adminService.billTime).toHaveBeenCalledWith('p-1', dto);
         expect(emissions).toEqual([
           billProjectTimeSuccess({ projectId: 'p-1', result }),
           loadProjectSummary({ projectId: 'p-1' }),
@@ -138,13 +141,12 @@ describe('ProjectsEffects', () => {
   });
 
   it('billProjectTime$ handles failure', (done) => {
-    actions$ = of(
-      billProjectTime({
-        projectId: 'p-1',
-        from: '2026-06-01T08:00:00.000Z',
-        to: '2026-06-01T17:00:00.000Z',
-      }),
-    );
+    const dto = {
+      from: '2026-06-01T08:00:00.000Z',
+      to: '2026-06-01T17:00:00.000Z',
+    };
+
+    actions$ = of(billProjectTime({ projectId: 'p-1', dto }));
     adminService.billTime.mockReturnValue(throwError(() => new Error('bill failed')));
 
     billProjectTime$(actions$, adminService).subscribe((action) => {
