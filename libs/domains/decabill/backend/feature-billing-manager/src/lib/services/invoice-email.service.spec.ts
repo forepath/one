@@ -106,6 +106,25 @@ describe('InvoiceEmailService', () => {
       expect(sent).toBe(false);
       expect(emailService.send).not.toHaveBeenCalled();
     });
+
+    it('skips when email service is disabled', async () => {
+      emailService.isEnabled.mockReturnValue(false);
+
+      const sent = await service.notifyInvoiceIssued(invoice, 'sub-1/inv-1.pdf');
+
+      expect(sent).toBe(false);
+      expect(emailService.send).not.toHaveBeenCalled();
+    });
+
+    it('skips when invoice number is missing', async () => {
+      const sent = await service.notifyInvoiceIssued(
+        { ...invoice, invoiceNumber: undefined } as InvoiceEntity,
+        'sub-1/inv-1.pdf',
+      );
+
+      expect(sent).toBe(false);
+      expect(emailService.send).not.toHaveBeenCalled();
+    });
   });
 
   describe('notifyVoidDocument', () => {
@@ -131,6 +150,36 @@ describe('InvoiceEmailService', () => {
 
       expect(sent).toBe(false);
       expect(emailService.send).not.toHaveBeenCalled();
+    });
+
+    it('skips when no recipient email is available', async () => {
+      customerProfilesRepository.findByUserId.mockResolvedValue(null);
+      usersRepository.findByIdForTenant.mockResolvedValue(null);
+
+      const sent = await service.notifyVoidDocument(invoice, 'sub-1/inv-1-void.pdf', 'INV-2026-00001-CN');
+
+      expect(sent).toBe(false);
+      expect(emailService.send).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('sendDocumentEmail', () => {
+    it('returns false when send fails', async () => {
+      emailService.send.mockResolvedValue(false);
+
+      const sent = await service.sendDocumentEmail(
+        'jane@example.com',
+        {
+          subject: 'Test',
+          text: 'text',
+          html: 'html',
+          attachmentFilename: 'doc.pdf',
+        },
+        [{ filename: 'doc.pdf', content: pdfBuffer }],
+        'test document',
+      );
+
+      expect(sent).toBe(false);
     });
   });
 });

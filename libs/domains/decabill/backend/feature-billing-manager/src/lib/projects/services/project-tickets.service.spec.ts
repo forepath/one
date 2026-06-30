@@ -205,4 +205,260 @@ describe('ProjectTicketsService', () => {
       } as never),
     ).rejects.toThrow(BadRequestException);
   });
+
+  it('listTickets returns empty array when no tickets', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    ticketsRepository.findAllByProject.mockResolvedValue([]);
+
+    const rows = await service.listTickets('p1', { userId: 'admin-1', userRole: UserRole.ADMIN, isApiKeyAuth: false });
+
+    expect(rows).toEqual([]);
+    expect(ticketsRepository.findAllByProject).toHaveBeenCalledTimes(1);
+  });
+
+  it('findOne rejects ticket from another project', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    ticketsRepository.findByIdOrThrow.mockResolvedValue({ id: 't1', projectId: 'other' });
+
+    await expect(
+      service.findOne('p1', 't1', false, { userId: 'admin-1', userRole: UserRole.ADMIN, isApiKeyAuth: false }),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('findOne includes descendants', async () => {
+    const parent = {
+      id: 't1',
+      projectId: 'p1',
+      title: 'Root',
+      content: '',
+      status: ProjectTicketStatus.TODO,
+      priority: 'medium',
+      parentId: null,
+      locked: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const child = {
+      ...parent,
+      id: 't2',
+      parentId: 't1',
+      title: 'Child',
+    };
+
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    ticketsRepository.findByIdOrThrow.mockResolvedValue(parent);
+    ticketsRepository.findAllByProject.mockResolvedValue([parent, child]);
+
+    const result = await service.findOne('p1', 't1', true, {
+      userId: 'admin-1',
+      userRole: UserRole.ADMIN,
+      isApiKeyAuth: false,
+    });
+
+    expect(result.children).toHaveLength(1);
+    expect(result.children?.[0].title).toBe('Child');
+  });
+
+  it('creates ticket and emits realtime events', async () => {
+    const created = {
+      id: 't1',
+      projectId: 'p1',
+      title: 'New',
+      content: '',
+      status: ProjectTicketStatus.DRAFT,
+      priority: 'medium',
+      parentId: null,
+      milestoneId: null,
+      locked: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    ticketsRepository.create.mockResolvedValue(created);
+    ticketsRepository.update.mockResolvedValue({ ...created, longSha: 'a'.repeat(40) });
+    ticketsRepository.findByIdOrThrow.mockResolvedValue({ ...created, longSha: 'a'.repeat(40) });
+    ticketsRepository.findAllByProject.mockResolvedValue([{ ...created, longSha: 'a'.repeat(40) }]);
+
+    const result = await service.create('p1', { title: 'New' }, {
+      user: { id: 'admin-1', roles: [UserRole.ADMIN] },
+      apiKeyAuthenticated: false,
+    } as never);
+
+    expect(result.title).toBe('New');
+    expect(activitiesRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({ actionType: ProjectTicketActionType.CREATED }),
+    );
+    expect(projectBoardRealtime.emitToProject).toHaveBeenCalled();
+  });
+
+  it('create rejects parent from another project', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    ticketsRepository.findByIdOrThrow.mockResolvedValue({ id: 'parent', projectId: 'other' });
+
+    await expect(
+      service.create('p1', { title: 'New', parentId: 'parent' }, {
+        user: { id: 'admin-1', roles: [UserRole.ADMIN] },
+        apiKeyAuthenticated: false,
+      } as never),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('create rejects milestone from another project', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    milestonesRepository.findByIdOrThrow.mockResolvedValue({ id: 'm1', projectId: 'other' });
+
+    await expect(
+      service.create('p1', { title: 'New', milestoneId: 'm1' }, {
+        user: { id: 'admin-1', roles: [UserRole.ADMIN] },
+        apiKeyAuthenticated: false,
+      } as never),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('deletes ticket and emits removed event', async () => {
+    const ticket = {
+      id: 't1',
+      projectId: 'p1',
+      title: 'Root',
+      content: '',
+      status: ProjectTicketStatus.TODO,
+      priority: 'medium',
+      locked: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    ticketsRepository.findByIdOrThrow.mockResolvedValue(ticket);
+
+    await service.delete('p1', 't1', {
+      user: { id: 'admin-1', roles: [UserRole.ADMIN] },
+      apiKeyAuthenticated: false,
+    } as never);
+
+    expect(ticketsRepository.delete).toHaveBeenCalledWith('t1');
+    expect(projectBoardRealtime.emitToProject).toHaveBeenCalledWith('p1', expect.stringContaining('ticketRemoved'), {
+      id: 't1',
+      projectId: 'p1',
+    });
+  });
+
+  it('lists comments and activity for readable ticket', async () => {
+    const ticket = {
+      id: 't1',
+      projectId: 'p1',
+      title: 'Root',
+      content: '',
+      status: ProjectTicketStatus.TODO,
+      priority: 'medium',
+      locked: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    ticketsRepository.findByIdOrThrow.mockResolvedValue(ticket);
+    commentsRepository.findAllByTicket.mockResolvedValue([
+      { id: 'c1', ticketId: 't1', userId: 'admin-1', body: 'Hi', createdAt: new Date() },
+    ]);
+    activitiesRepository.findAllByTicket.mockResolvedValue([
+      {
+        id: 'a1',
+        ticketId: 't1',
+        occurredAt: new Date(),
+        actorType: 'human',
+        actorUserId: 'admin-1',
+        actionType: 'updated',
+        payload: {},
+      },
+    ]);
+    usersRepository.findByIdForTenant.mockResolvedValue({ email: 'admin@example.com' });
+
+    const comments = await service.listComments('p1', 't1', {
+      userId: 'admin-1',
+      userRole: UserRole.ADMIN,
+      isApiKeyAuth: false,
+    });
+    const activity = await service.listActivity('p1', 't1', 10, 0, {
+      userId: 'admin-1',
+      userRole: UserRole.ADMIN,
+      isApiKeyAuth: false,
+    });
+
+    expect(comments[0].body).toBe('Hi');
+    expect(activity[0].id).toBe('a1');
+  });
+
+  it('addComment creates comment and emits realtime events', async () => {
+    const ticket = {
+      id: 't1',
+      projectId: 'p1',
+      title: 'Root',
+      content: '',
+      status: ProjectTicketStatus.TODO,
+      priority: 'medium',
+      locked: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const comment = { id: 'c1', ticketId: 't1', userId: 'admin-1', body: 'Hello', createdAt: new Date() };
+
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    ticketsRepository.findByIdOrThrow.mockResolvedValue(ticket);
+    commentsRepository.create.mockResolvedValue(comment);
+    activitiesRepository.findAllByTicket.mockResolvedValue([
+      {
+        id: 'a1',
+        ticketId: 't1',
+        occurredAt: new Date(),
+        actorType: 'human',
+        actorUserId: 'admin-1',
+        actionType: ProjectTicketActionType.COMMENT_ADDED,
+        payload: { commentId: 'c1' },
+      },
+    ]);
+    usersRepository.findByIdForTenant.mockResolvedValue({ email: 'admin@example.com' });
+
+    const result = await service.addComment('p1', 't1', { body: 'Hello' }, {
+      user: { id: 'admin-1', roles: [UserRole.ADMIN] },
+      apiKeyAuthenticated: false,
+    } as never);
+
+    expect(result.body).toBe('Hello');
+    expect(projectBoardRealtime.emitToProject).toHaveBeenCalled();
+  });
+
+  it('update records status change in activity log', async () => {
+    const ticket = {
+      id: 't1',
+      projectId: 'p1',
+      title: 'Root',
+      content: '',
+      status: ProjectTicketStatus.TODO,
+      priority: 'medium',
+      milestoneId: null,
+      parentId: null,
+      locked: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'admin-1' });
+    ticketsRepository.findByIdOrThrow.mockResolvedValue(ticket);
+    ticketsRepository.update.mockResolvedValue({ ...ticket, status: ProjectTicketStatus.IN_PROGRESS });
+    ticketsRepository.findAllByProject.mockResolvedValue([{ ...ticket, status: ProjectTicketStatus.IN_PROGRESS }]);
+
+    await service.update('p1', 't1', { status: ProjectTicketStatus.IN_PROGRESS }, {
+      user: { id: 'admin-1', roles: [UserRole.ADMIN] },
+      apiKeyAuthenticated: false,
+    } as never);
+
+    expect(activitiesRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actionType: ProjectTicketActionType.STATUS_CHANGED,
+        payload: { from: ProjectTicketStatus.TODO, to: ProjectTicketStatus.IN_PROGRESS },
+      }),
+    );
+  });
 });

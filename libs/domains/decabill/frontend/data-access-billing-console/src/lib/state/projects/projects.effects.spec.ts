@@ -19,6 +19,23 @@ import {
   billProjectTimeFailure,
   billProjectTimeSuccess,
   loadProjectSummary,
+  loadProjectDetail,
+  loadProjectDetailFailure,
+  loadProjectDetailSuccess,
+  loadProjectSummaryFailure,
+  loadProjectSummarySuccess,
+  loadAdminProjectDetail,
+  loadAdminProjectDetailFailure,
+  loadAdminProjectDetailSuccess,
+  createAdminProject,
+  createAdminProjectFailure,
+  createAdminProjectSuccess,
+  updateAdminProject,
+  updateAdminProjectFailure,
+  updateAdminProjectSuccess,
+  deleteAdminProject,
+  deleteAdminProjectFailure,
+  deleteAdminProjectSuccess,
 } from './projects.actions';
 import {
   loadAdminProjects$,
@@ -26,6 +43,12 @@ import {
   loadProjects$,
   loadProjectsBatch$,
   billProjectTime$,
+  loadProjectDetail$,
+  loadProjectSummary$,
+  loadAdminProjectDetail$,
+  createAdminProject$,
+  updateAdminProject$,
+  deleteAdminProject$,
 } from './projects.effects';
 
 describe('ProjectsEffects', () => {
@@ -151,6 +174,176 @@ describe('ProjectsEffects', () => {
 
     billProjectTime$(actions$, adminService).subscribe((action) => {
       expect(action).toEqual(billProjectTimeFailure({ error: 'bill failed' }));
+      done();
+    });
+  });
+
+  it('loadProjectsBatch$ accumulates and completes', (done) => {
+    actions$ = of(loadProjectsBatch({ offset: 10, accumulatedProjects: [project] }));
+    projectsService.list.mockReturnValue(of({ items: [project], total: 2, limit: 10, offset: 10 }));
+
+    loadProjectsBatch$(actions$, projectsService).subscribe((result) => {
+      expect(result).toEqual(loadProjectsSuccess({ projects: [project, project] }));
+      done();
+    });
+  });
+
+  it('loadProjectsBatch$ chains another batch when full page', (done) => {
+    actions$ = of(loadProjectsBatch({ offset: 10, accumulatedProjects: [project] }));
+    projectsService.list.mockReturnValue(of({ items: Array(10).fill(project), total: 30, limit: 10, offset: 10 }));
+
+    loadProjectsBatch$(actions$, projectsService).subscribe((result) => {
+      expect(result).toEqual(loadProjectsBatch({ offset: 20, accumulatedProjects: Array(11).fill(project) }));
+      done();
+    });
+  });
+
+  it('loadProjectDetail$ returns success', (done) => {
+    actions$ = of(loadProjectDetail({ projectId: 'p-1' }));
+    projectsService.getById.mockReturnValue(of(project));
+
+    loadProjectDetail$(actions$, projectsService).subscribe((result) => {
+      expect(result).toEqual(loadProjectDetailSuccess({ project }));
+      done();
+    });
+  });
+
+  it('loadProjectDetail$ handles failure', (done) => {
+    actions$ = of(loadProjectDetail({ projectId: 'p-1' }));
+    projectsService.getById.mockReturnValue(throwError(() => ({ message: 'missing' })));
+
+    loadProjectDetail$(actions$, projectsService).subscribe((result) => {
+      expect(result).toEqual(loadProjectDetailFailure({ error: 'missing' }));
+      done();
+    });
+  });
+
+  it('loadProjectSummary$ returns success', (done) => {
+    const summary = {
+      projectId: 'p-1',
+      totalTrackedMinutes: 0,
+      unbilledMinutes: 0,
+      openBillableAmountNet: 0,
+      billedAmountNet: 0,
+      openTicketCount: 0,
+      doneTicketCount: 0,
+      milestoneCount: 0,
+    };
+    actions$ = of(loadProjectSummary({ projectId: 'p-1' }));
+    projectsService.getSummary.mockReturnValue(of(summary));
+
+    loadProjectSummary$(actions$, projectsService).subscribe((result) => {
+      expect(result).toEqual(loadProjectSummarySuccess({ summary }));
+      done();
+    });
+  });
+
+  it('loadProjectSummary$ handles failure', (done) => {
+    actions$ = of(loadProjectSummary({ projectId: 'p-1' }));
+    projectsService.getSummary.mockReturnValue(throwError(() => 'summary failed'));
+
+    loadProjectSummary$(actions$, projectsService).subscribe((result) => {
+      expect(result).toEqual(loadProjectSummaryFailure({ error: 'summary failed' }));
+      done();
+    });
+  });
+
+  it('loadAdminProjects$ chains batch when full page', (done) => {
+    actions$ = of(loadAdminProjects());
+    adminService.list.mockReturnValue(of({ items: Array(10).fill(project), total: 20, limit: 10, offset: 0 }));
+
+    loadAdminProjects$(actions$, adminService).subscribe((result) => {
+      expect(result).toEqual(loadAdminProjectsBatch({ offset: 10, accumulatedProjects: Array(10).fill(project) }));
+      done();
+    });
+  });
+
+  it('loadAdminProjects$ handles failure', (done) => {
+    actions$ = of(loadAdminProjects());
+    adminService.list.mockReturnValue(throwError(() => new Error('admin failed')));
+
+    loadAdminProjects$(actions$, adminService).subscribe((result) => {
+      expect(result).toEqual(loadAdminProjectsFailure({ error: 'admin failed' }));
+      done();
+    });
+  });
+
+  it('loadAdminProjectDetail$ returns success', (done) => {
+    actions$ = of(loadAdminProjectDetail({ projectId: 'p-1' }));
+    adminService.getById.mockReturnValue(of(project));
+
+    loadAdminProjectDetail$(actions$, adminService).subscribe((result) => {
+      expect(result).toEqual(loadAdminProjectDetailSuccess({ project }));
+      done();
+    });
+  });
+
+  it('loadAdminProjectDetail$ handles failure', (done) => {
+    actions$ = of(loadAdminProjectDetail({ projectId: 'p-1' }));
+    adminService.getById.mockReturnValue(throwError(() => new Error('missing')));
+
+    loadAdminProjectDetail$(actions$, adminService).subscribe((result) => {
+      expect(result).toEqual(loadAdminProjectDetailFailure({ error: 'missing' }));
+      done();
+    });
+  });
+
+  it('createAdminProject$ returns success', (done) => {
+    actions$ = of(createAdminProject({ dto: { name: 'New', userId: 'u-1', hourlyRateNet: 100, currency: 'EUR' } }));
+    adminService.create.mockReturnValue(of(project));
+
+    createAdminProject$(actions$, adminService).subscribe((result) => {
+      expect(result).toEqual(createAdminProjectSuccess({ project }));
+      done();
+    });
+  });
+
+  it('createAdminProject$ handles failure', (done) => {
+    actions$ = of(createAdminProject({ dto: { name: 'New', userId: 'u-1', hourlyRateNet: 100, currency: 'EUR' } }));
+    adminService.create.mockReturnValue(throwError(() => new Error('create failed')));
+
+    createAdminProject$(actions$, adminService).subscribe((result) => {
+      expect(result).toEqual(createAdminProjectFailure({ error: 'create failed' }));
+      done();
+    });
+  });
+
+  it('updateAdminProject$ returns success', (done) => {
+    actions$ = of(updateAdminProject({ projectId: 'p-1', dto: { name: 'Beta' } }));
+    adminService.update.mockReturnValue(of({ ...project, name: 'Beta' }));
+
+    updateAdminProject$(actions$, adminService).subscribe((result) => {
+      expect(result).toEqual(updateAdminProjectSuccess({ project: { ...project, name: 'Beta' } }));
+      done();
+    });
+  });
+
+  it('updateAdminProject$ handles failure', (done) => {
+    actions$ = of(updateAdminProject({ projectId: 'p-1', dto: { name: 'Beta' } }));
+    adminService.update.mockReturnValue(throwError(() => new Error('update failed')));
+
+    updateAdminProject$(actions$, adminService).subscribe((result) => {
+      expect(result).toEqual(updateAdminProjectFailure({ error: 'update failed' }));
+      done();
+    });
+  });
+
+  it('deleteAdminProject$ returns success', (done) => {
+    actions$ = of(deleteAdminProject({ projectId: 'p-1' }));
+    adminService.delete.mockReturnValue(of(undefined));
+
+    deleteAdminProject$(actions$, adminService).subscribe((result) => {
+      expect(result).toEqual(deleteAdminProjectSuccess({ projectId: 'p-1' }));
+      done();
+    });
+  });
+
+  it('deleteAdminProject$ handles failure', (done) => {
+    actions$ = of(deleteAdminProject({ projectId: 'p-1' }));
+    adminService.delete.mockReturnValue(throwError(() => new Error('delete failed')));
+
+    deleteAdminProject$(actions$, adminService).subscribe((result) => {
+      expect(result).toEqual(deleteAdminProjectFailure({ error: 'delete failed' }));
       done();
     });
   });

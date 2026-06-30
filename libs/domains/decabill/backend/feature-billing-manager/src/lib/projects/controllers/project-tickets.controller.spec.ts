@@ -5,6 +5,13 @@ import { ProjectTicketsController } from './project-tickets.controller';
 describe('ProjectTicketsController', () => {
   const ticketsService = {
     listTickets: jest.fn().mockResolvedValue([]),
+    findOne: jest.fn().mockResolvedValue({ id: 't1' }),
+    create: jest.fn().mockResolvedValue({ id: 't1' }),
+    update: jest.fn().mockResolvedValue({ id: 't1' }),
+    delete: jest.fn().mockResolvedValue(undefined),
+    listComments: jest.fn().mockResolvedValue([]),
+    addComment: jest.fn().mockResolvedValue({ id: 'c1' }),
+    listActivity: jest.fn().mockResolvedValue([]),
   };
   const controller = new ProjectTicketsController(ticketsService as never);
   const authReq = { user: { id: 'user-1' } } as never;
@@ -48,5 +55,26 @@ describe('ProjectTicketsController', () => {
       expect.objectContaining({ userId: 'user-1' }),
       expect.objectContaining({ parentId }),
     );
+  });
+
+  it('delegates detail, mutation, and comment endpoints', async () => {
+    const projectId = '11111111-1111-4111-8111-111111111111';
+    const ticketId = '22222222-2222-4222-8222-222222222222';
+
+    await controller.get(projectId, ticketId, authReq, 'true');
+    await controller.create(projectId, { title: 'Task' }, authReq);
+    await controller.update(projectId, ticketId, { title: 'Updated' }, authReq);
+    await controller.comments(projectId, ticketId, authReq);
+    await controller.addComment(projectId, ticketId, { body: 'Hi' }, authReq);
+    await controller.activity(projectId, ticketId, authReq);
+    await controller.delete(projectId, ticketId, authReq);
+
+    expect(ticketsService.findOne).toHaveBeenCalled();
+    expect(ticketsService.create).toHaveBeenCalled();
+    expect(ticketsService.update).toHaveBeenCalled();
+    expect(ticketsService.listComments).toHaveBeenCalled();
+    expect(ticketsService.addComment).toHaveBeenCalled();
+    expect(ticketsService.listActivity).toHaveBeenCalled();
+    expect(ticketsService.delete).toHaveBeenCalled();
   });
 });
