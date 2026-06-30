@@ -100,11 +100,15 @@ export class InvoiceService {
 
   async voidInvoice(
     invoiceId: string,
-    subscriptionId: string,
+    subscriptionId: string | null | undefined,
     adminUserId?: string,
     auditContext?: Record<string, unknown>,
+    options?: { skipNotification?: boolean },
   ): Promise<InvoiceEntity> {
-    const invoice = await this.invoicesRepository.findByIdAndSubscriptionId(invoiceId, subscriptionId);
+    const invoice =
+      subscriptionId != null && subscriptionId !== ''
+        ? await this.invoicesRepository.findByIdAndSubscriptionId(invoiceId, subscriptionId)
+        : await this.invoicesRepository.findById(invoiceId);
 
     if (!invoice) {
       throw new NotFoundException('Invoice not found');
@@ -125,7 +129,7 @@ export class InvoiceService {
     const voidedAt = new Date();
     const existingVoidDocument = await this.invoiceVoidDocumentsRepository.findByInvoiceId(invoiceId);
 
-    if (!existingVoidDocument) {
+    if (!options?.skipNotification && !existingVoidDocument) {
       const voidDocumentStorageKey = await this.ensureVoidDocumentStored(invoice, voidedAt);
 
       await this.invoiceEmailService.notifyVoidDocument(
@@ -436,7 +440,7 @@ export class InvoiceService {
       canDownload: previewable,
       canPreview: previewable,
       canDownloadVoidDocument: voided && Boolean(invoice.invoiceNumber),
-      canDownloadTimeReport: previewable && Boolean(invoice.projectId) && Boolean(invoice.timeReportStorageKey),
+      canDownloadTimeReport: previewable && Boolean(invoice.projectId),
       voidDocumentNumber: voided && invoice.invoiceNumber ? buildCreditNoteNumber(invoice.invoiceNumber) : undefined,
     };
   }

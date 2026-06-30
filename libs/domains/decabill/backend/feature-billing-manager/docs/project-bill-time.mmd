@@ -23,7 +23,8 @@ sequenceDiagram
     alt profile incomplete
         Billing-->>Admin: 400 Assigned customer profile is incomplete
     end
-    Billing->>Time: findUnbilledByProjectInRange(projectId, from, to)
+    Billing->>Billing: withProjectBillTimeLock(projectId)
+    Billing->>Time: findUnbilledByProjectInRangeForUpdate(projectId, from, to)
     alt no unbilled entries in range
         Billing-->>Admin: 400 No unbilled time entries
     end
@@ -32,8 +33,15 @@ sequenceDiagram
         Billing-->>Admin: 400 Billable amount below minimum
     end
     Billing->>Invoice: createDraft(userId, projectId, subscriptionId?, lines)
-    Billing->>Issue: issueDraft(draft.id)
-    Billing->>Time: markBilled(entry ids, invoice.id)
+    Billing->>Issue: issueDraft(draft.id, skipNotification)
+    Billing->>Time: markBilled(projectId, entry ids, invoice.id) WHERE billed_at IS NULL
+    alt concurrent bill or partial mark
+        Billing->>Invoice: voidInvoice(duplicate, skipNotification)
+        Billing-->>Admin: 409 duplicate invoice voided automatically
+    end
+    Billing->>Billing: generateAndStore time report PDF
+    Billing->>Invoice: update timeReportStorageKey
+    Billing->>Email: notifyInvoiceIssued(invoice + time report)
     Billing->>Audit: log project.bill_time
     Billing->>Summary: buildSummary(project)
     Billing->>RT: projectSummaryChanged(summary)

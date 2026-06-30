@@ -204,6 +204,12 @@ describe('InvoiceIssuanceService', () => {
     expect(result.pdfStorageKey).toBe('manual/user-1/inv-1.pdf');
   });
 
+  it('skips invoice email when skipNotification is set', async () => {
+    await service.issueDraft('inv-1', 14, { skipNotification: true });
+
+    expect(invoiceEmailService.notifyInvoiceIssued).not.toHaveBeenCalled();
+  });
+
   it('throws when invoice is not a draft', async () => {
     invoicesRepository.findByIdOrThrow.mockResolvedValue({
       ...draftInvoice,

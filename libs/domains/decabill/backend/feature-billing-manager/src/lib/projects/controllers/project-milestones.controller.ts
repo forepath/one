@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
 
 import type { RequestWithUser } from '../../utils/billing-access.utils';
-import { getUserFromRequest } from '../../utils/billing-access.utils';
+import { getAuthenticatedUserFromRequest, getUserFromRequest } from '../../utils/billing-access.utils';
 import type {
   CreateProjectMilestoneDto,
   ProjectMilestoneResponseDto,
@@ -18,7 +18,7 @@ export class ProjectMilestonesController {
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
     @Req() req: RequestWithUser,
   ): Promise<ProjectMilestoneResponseDto[]> {
-    return await this.milestonesService.list(projectId, getUserFromRequest(req));
+    return await this.milestonesService.list(projectId, getAuthenticatedUserFromRequest(req));
   }
 
   @Post()

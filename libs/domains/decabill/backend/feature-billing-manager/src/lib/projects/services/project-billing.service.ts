@@ -1,8 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { BillingAuditLogService } from '../../services/billing-audit-log.service';
 import { CustomerProfilesService } from '../../services/customer-profiles.service';
+import { InvoiceEmailService } from '../../services/invoice-email.service';
 import { InvoiceIssuanceService } from '../../services/invoice-issuance.service';
 import { InvoiceService } from '../../services/invoice.service';
 import { SubscriptionsRepository } from '../../repositories/subscriptions.repository';
@@ -13,6 +15,7 @@ import type { BillProjectTimeDto, BillProjectTimeResponseDto, ProjectUnbilledTim
 import { ProjectsRepository } from '../repositories/projects.repository';
 import { ProjectTimeEntriesRepository } from '../repositories/project-time-entries.repository';
 import { resolveProjectBillTimeRange } from '../utils/project-bill-time-range.utils';
+import { withProjectBillTimeLock } from '../utils/project-bill-time-lock.util';
 import { formatProjectTimeReportRange } from '../utils/project-time-report-format.util';
 import { ProjectBoardSummaryService } from './project-board-summary.service';
 import { ProjectTimeReportService } from './project-time-report.service';
@@ -22,6 +25,7 @@ const MIN_BILLABLE_AMOUNT = 0.01;
 @Injectable()
 export class ProjectBillingService {
   constructor(
+    private readonly dataSource: DataSource,
     private readonly projectsRepository: ProjectsRepository,
     private readonly timeEntriesRepository: ProjectTimeEntriesRepository,
     private readonly subscriptionsRepository: SubscriptionsRepository,
@@ -29,6 +33,7 @@ export class ProjectBillingService {
     private readonly customerProfilesService: CustomerProfilesService,
     private readonly invoiceService: InvoiceService,
     private readonly invoiceIssuanceService: InvoiceIssuanceService,
+    private readonly invoiceEmailService: InvoiceEmailService,
     private readonly taxCalculationService: TaxCalculationService,
     private readonly auditLog: BillingAuditLogService,
     private readonly projectBoardSummary: ProjectBoardSummaryService,
@@ -68,7 +73,22 @@ export class ProjectBillingService {
       }
     }
 
-    const entries = await this.timeEntriesRepository.findUnbilledByProjectInRange(projectId, from, to);
+    return await withProjectBillTimeLock(this.dataSource, projectId, async () =>
+      this.billUnbilledTimeWithinLock(projectId, adminUserId, dto, project, from, to),
+    );
+  }
+
+  private async billUnbilledTimeWithinLock(
+    projectId: string,
+    adminUserId: string,
+    dto: BillProjectTimeDto,
+    project: Awaited<ReturnType<ProjectsRepository['findByIdOrThrow']>>,
+    from: Date,
+    to: Date,
+  ): Promise<BillProjectTimeResponseDto> {
+    const entries = await this.dataSource.transaction((manager) =>
+      this.timeEntriesRepository.findUnbilledByProjectInRangeForUpdate(projectId, from, to, manager),
+    );
 
     if (entries.length === 0) {
       throw new BadRequestException('No unbilled time entries in range');
@@ -101,24 +121,44 @@ export class ProjectBillingService {
       lineInputs,
     });
 
+    const issued = await this.invoiceIssuanceService.issueDraft(draft.id, 14, { skipNotification: true });
+    const billedAt = new Date();
+    const markedCount = await this.timeEntriesRepository.markBilled(
+      projectId,
+      entries.map((e) => e.id),
+      issued.id,
+      billedAt,
+    );
+
+    if (markedCount !== entries.length) {
+      await this.invoiceService.voidInvoice(
+        issued.id,
+        issued.subscriptionId,
+        adminUserId,
+        { process: 'project.bill_time', reason: 'concurrent_bill_abort' },
+        { skipNotification: true },
+      );
+
+      throw new ConflictException(
+        'Time entries were billed concurrently; the duplicate invoice was voided automatically',
+      );
+    }
+
     const timeReportStorageKey = await this.projectTimeReportService.generateAndStoreForBilling(
-      draft,
+      issued,
       project,
       entries,
       from,
       to,
     );
 
-    await this.invoicesRepository.update(draft.id, { timeReportStorageKey });
+    const issuedWithTimeReport = await this.invoicesRepository.update(issued.id, { timeReportStorageKey });
 
-    const issued = await this.invoiceIssuanceService.issueDraft(draft.id);
-    const billedAt = new Date();
+    if (!issuedWithTimeReport.pdfStorageKey) {
+      throw new BadRequestException('Issued invoice is missing PDF storage key');
+    }
 
-    await this.timeEntriesRepository.markBilled(
-      entries.map((e) => e.id),
-      issued.id,
-      billedAt,
-    );
+    await this.invoiceEmailService.notifyInvoiceIssued(issuedWithTimeReport, issuedWithTimeReport.pdfStorageKey);
 
     await this.auditLog.log({
       process: 'project.bill_time',

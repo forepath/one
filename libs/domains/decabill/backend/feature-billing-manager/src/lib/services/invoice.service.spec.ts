@@ -11,6 +11,7 @@ import { TaxRateConfigService } from './tax-rate-config.service';
 describe('InvoiceService', () => {
   const invoicesRepository = {
     create: jest.fn(),
+    findById: jest.fn(),
     findByIdAndSubscriptionId: jest.fn(),
     findByIdForUser: jest.fn(),
     findByIdOrThrow: jest.fn(),
@@ -216,6 +217,45 @@ describe('InvoiceService', () => {
       expect(result).toBe(voided);
       expect(invoicesRepository.update).not.toHaveBeenCalled();
     });
+
+    it('voids project invoice without subscription id via findById', async () => {
+      const invoice = {
+        id: 'inv-1',
+        userId,
+        invoiceNumber: 'INV-2026-00002',
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 50,
+      } as InvoiceEntity;
+
+      invoicesRepository.findById.mockResolvedValue(invoice);
+      invoicesRepository.update.mockResolvedValue({ ...invoice, status: InvoiceStatus.VOID, balanceDue: 0 });
+
+      const result = await service.voidInvoice('inv-1', null, 'admin-1', undefined, { skipNotification: true });
+
+      expect(invoicesRepository.findById).toHaveBeenCalledWith('inv-1');
+      expect(result.status).toBe(InvoiceStatus.VOID);
+    });
+
+    it('skips void notification when skipNotification is set', async () => {
+      const invoice = {
+        id: 'inv-1',
+        subscriptionId,
+        userId,
+        invoiceNumber: 'INV-2026-00001',
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 119,
+      } as InvoiceEntity;
+
+      invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue(invoice);
+      invoiceVoidDocumentsRepository.findByInvoiceId.mockResolvedValue(null);
+      invoicesRepository.update.mockResolvedValue({ ...invoice, status: InvoiceStatus.VOID, balanceDue: 0 });
+
+      await service.voidInvoice('inv-1', subscriptionId, 'admin-1', undefined, { skipNotification: true });
+
+      expect(invoicePdfService.generateVoidDocumentAndStore).not.toHaveBeenCalled();
+      expect(invoiceEmailService.notifyVoidDocument).not.toHaveBeenCalled();
+      expect(invoicesRepository.update).toHaveBeenCalled();
+    });
   });
 
   describe('mapToResponse', () => {
@@ -259,6 +299,31 @@ describe('InvoiceService', () => {
       } as InvoiceEntity);
 
       expect(response.canDownload).toBe(true);
+    });
+
+    it('allows time report download for issued project invoices without stored report key', () => {
+      const response = service.mapToResponse({
+        id: 'inv-1',
+        subscriptionId,
+        projectId: 'project-1',
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 50,
+        createdAt: new Date(),
+      } as InvoiceEntity);
+
+      expect(response.canDownloadTimeReport).toBe(true);
+    });
+
+    it('does not allow time report download for non-project invoices', () => {
+      const response = service.mapToResponse({
+        id: 'inv-1',
+        subscriptionId,
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 50,
+        createdAt: new Date(),
+      } as InvoiceEntity);
+
+      expect(response.canDownloadTimeReport).toBe(false);
     });
   });
 

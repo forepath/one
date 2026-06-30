@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 
 import { applyProjectTenantFilter } from '../../utils/tenant-query.utils';
 import { ProjectTimeEntryEntity } from '../entities/project-time-entry.entity';
@@ -132,6 +132,28 @@ export class ProjectTimeEntriesRepository {
     return await qb.getMany();
   }
 
+  async findUnbilledByProjectInRangeForUpdate(
+    projectId: string,
+    from: Date,
+    to: Date,
+    manager: EntityManager,
+  ): Promise<ProjectTimeEntryEntity[]> {
+    const qb = manager
+      .getRepository(ProjectTimeEntryEntity)
+      .createQueryBuilder('entry')
+      .innerJoin('billing_projects', 'project', 'project.id = entry.project_id')
+      .where('entry.project_id = :projectId', { projectId })
+      .andWhere('entry.billed_at IS NULL')
+      .andWhere('entry.started_at >= :from', { from })
+      .andWhere('entry.ended_at <= :to', { to })
+      .orderBy('entry.startedAt', 'ASC')
+      .setLock('pessimistic_write');
+
+    applyProjectTenantFilter(qb, 'project');
+
+    return await qb.getMany();
+  }
+
   async sumDurationMinutes(projectId: string, billed?: boolean): Promise<number> {
     const qb = this.baseQuery('entry')
       .select('COALESCE(SUM(entry.duration_minutes), 0)', 'total')
@@ -174,16 +196,27 @@ export class ProjectTimeEntriesRepository {
     await this.repository.delete(id);
   }
 
-  async markBilled(ids: string[], invoiceId: string, billedAt: Date): Promise<void> {
+  async markBilled(
+    projectId: string,
+    ids: string[],
+    invoiceId: string,
+    billedAt: Date,
+    manager?: EntityManager,
+  ): Promise<number> {
     if (ids.length === 0) {
-      return;
+      return 0;
     }
 
-    await this.repository
+    const repository = manager ? manager.getRepository(ProjectTimeEntryEntity) : this.repository;
+    const result = await repository
       .createQueryBuilder()
       .update(ProjectTimeEntryEntity)
       .set({ invoiceId, billedAt })
       .where('id IN (:...ids)', { ids })
+      .andWhere('project_id = :projectId', { projectId })
+      .andWhere('billed_at IS NULL')
       .execute();
+
+    return result.affected ?? 0;
   }
 }

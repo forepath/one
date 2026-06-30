@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
@@ -7,9 +7,13 @@ import { TaxRateConfigService } from '../../services/tax-rate-config.service';
 import { ProjectBillingService } from './project-billing.service';
 
 describe('ProjectBillingService', () => {
+  const dataSource = {
+    options: { type: 'sqlite' },
+    transaction: jest.fn(async (callback: (manager: unknown) => Promise<unknown>) => callback({})),
+  };
   const projectsRepository = { findByIdOrThrow: jest.fn() };
   const timeEntriesRepository = {
-    findUnbilledByProjectInRange: jest.fn(),
+    findUnbilledByProjectInRangeForUpdate: jest.fn(),
     findUnbilledTimeBounds: jest.fn(),
     markBilled: jest.fn(),
   };
@@ -19,8 +23,9 @@ describe('ProjectBillingService', () => {
     getByUserId: jest.fn(),
     isProfileComplete: jest.fn(),
   };
-  const invoiceService = { createDraft: jest.fn() };
+  const invoiceService = { createDraft: jest.fn(), voidInvoice: jest.fn() };
   const invoiceIssuanceService = { issueDraft: jest.fn() };
+  const invoiceEmailService = { notifyInvoiceIssued: jest.fn().mockResolvedValue(true) };
   const taxCalculationService = new TaxCalculationService(new TaxRateConfigService());
   const auditLog = { log: jest.fn() };
   const projectBoardSummary = { emitSummaryChanged: jest.fn() };
@@ -43,8 +48,12 @@ describe('ProjectBillingService', () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+    dataSource.transaction.mockImplementation(async (callback) => callback({}));
     projectTimeReportService.generateAndStoreForBilling.mockResolvedValue('sub-1/inv-1-time-report.pdf');
+    timeEntriesRepository.markBilled.mockImplementation(async (_projectId: string, ids: string[]) => ids.length);
+    invoiceService.voidInvoice.mockResolvedValue({ id: 'inv-1', status: 'void' });
     service = new ProjectBillingService(
+      dataSource as never,
       projectsRepository as never,
       timeEntriesRepository as never,
       subscriptionsRepository as never,
@@ -52,6 +61,7 @@ describe('ProjectBillingService', () => {
       customerProfilesService as never,
       invoiceService as never,
       invoiceIssuanceService as never,
+      invoiceEmailService as never,
       taxCalculationService,
       auditLog as never,
       projectBoardSummary as never,
@@ -82,9 +92,10 @@ describe('ProjectBillingService', () => {
     projectsRepository.findByIdOrThrow.mockResolvedValue(project);
     customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile' });
     customerProfilesService.isProfileComplete.mockReturnValue(true);
-    timeEntriesRepository.findUnbilledByProjectInRange.mockResolvedValue([]);
+    timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([]);
 
     await expect(service.billUnbilledTime('p1', 'admin-1', { from, to })).rejects.toThrow(BadRequestException);
+    expect(dataSource.transaction).toHaveBeenCalled();
   });
 
   it('rejects invalid range', async () => {
@@ -102,25 +113,44 @@ describe('ProjectBillingService', () => {
     projectsRepository.findByIdOrThrow.mockResolvedValue(project);
     customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile' });
     customerProfilesService.isProfileComplete.mockReturnValue(true);
-    timeEntriesRepository.findUnbilledByProjectInRange.mockResolvedValue([
+    timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([
       { id: 'e1', durationMinutes: 60 },
       { id: 'e2', durationMinutes: 30 },
     ]);
     invoiceService.createDraft.mockResolvedValue({ id: 'draft-1' });
-    invoiceIssuanceService.issueDraft.mockResolvedValue({ id: 'inv-1', invoiceNumber: 'INV-1' });
+    invoiceIssuanceService.issueDraft.mockResolvedValue({
+      id: 'inv-1',
+      invoiceNumber: 'INV-1',
+      pdfStorageKey: 'sub-1/inv-1.pdf',
+    });
+    invoicesRepository.update.mockResolvedValue({
+      id: 'inv-1',
+      invoiceNumber: 'INV-1',
+      pdfStorageKey: 'sub-1/inv-1.pdf',
+      timeReportStorageKey: 'sub-1/inv-1-time-report.pdf',
+    });
 
     const result = await service.billUnbilledTime('p1', 'admin-1', { from, to });
 
     expect(result.billedMinutes).toBe(90);
     expect(result.amountNet).toBe(150);
+    expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith('draft-1', 14, { skipNotification: true });
+    expect(timeEntriesRepository.markBilled).toHaveBeenCalledWith('p1', ['e1', 'e2'], 'inv-1', expect.any(Date));
+    expect(invoiceEmailService.notifyInvoiceIssued).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pdfStorageKey: 'sub-1/inv-1.pdf',
+        timeReportStorageKey: 'sub-1/inv-1-time-report.pdf',
+      }),
+      'sub-1/inv-1.pdf',
+    );
     expect(projectTimeReportService.generateAndStoreForBilling).toHaveBeenCalledWith(
-      { id: 'draft-1' },
+      { id: 'inv-1', invoiceNumber: 'INV-1', pdfStorageKey: 'sub-1/inv-1.pdf' },
       project,
       expect.any(Array),
       expect.any(Date),
       expect.any(Date),
     );
-    expect(invoicesRepository.update).toHaveBeenCalledWith('draft-1', {
+    expect(invoicesRepository.update).toHaveBeenCalledWith('inv-1', {
       timeReportStorageKey: 'sub-1/inv-1-time-report.pdf',
     });
     expect(invoiceService.createDraft).toHaveBeenCalledWith(
@@ -137,8 +167,32 @@ describe('ProjectBillingService', () => {
         ],
       }),
     );
-    expect(timeEntriesRepository.markBilled).toHaveBeenCalledWith(['e1', 'e2'], 'inv-1', expect.any(Date));
     expect(projectBoardSummary.emitSummaryChanged).toHaveBeenCalledWith(project);
+  });
+
+  it('voids duplicate invoice when entries were billed concurrently', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue(project);
+    customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile' });
+    customerProfilesService.isProfileComplete.mockReturnValue(true);
+    timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([
+      { id: 'e1', durationMinutes: 60 },
+      { id: 'e2', durationMinutes: 30 },
+    ]);
+    invoiceService.createDraft.mockResolvedValue({ id: 'draft-1' });
+    invoiceIssuanceService.issueDraft.mockResolvedValue({ id: 'inv-1', invoiceNumber: 'INV-1', subscriptionId: null });
+    timeEntriesRepository.markBilled.mockResolvedValue(1);
+
+    await expect(service.billUnbilledTime('p1', 'admin-1', { from, to })).rejects.toThrow(ConflictException);
+    expect(invoiceService.voidInvoice).toHaveBeenCalledWith(
+      'inv-1',
+      null,
+      'admin-1',
+      expect.objectContaining({ reason: 'concurrent_bill_abort' }),
+      { skipNotification: true },
+    );
+    expect(projectTimeReportService.generateAndStoreForBilling).not.toHaveBeenCalled();
+    expect(invoicesRepository.update).not.toHaveBeenCalled();
+    expect(invoiceEmailService.notifyInvoiceIssued).not.toHaveBeenCalled();
   });
 
   it('combines custom line items with generated time line', async () => {
@@ -146,9 +200,19 @@ describe('ProjectBillingService', () => {
     customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile' });
     customerProfilesService.isProfileComplete.mockReturnValue(true);
     subscriptionsRepository.findByIdOrThrow.mockResolvedValue({ id: 'sub-1', userId: 'u1' });
-    timeEntriesRepository.findUnbilledByProjectInRange.mockResolvedValue([{ id: 'e1', durationMinutes: 60 }]);
+    timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([{ id: 'e1', durationMinutes: 60 }]);
     invoiceService.createDraft.mockResolvedValue({ id: 'draft-1' });
-    invoiceIssuanceService.issueDraft.mockResolvedValue({ id: 'inv-1', invoiceNumber: 'INV-1' });
+    invoiceIssuanceService.issueDraft.mockResolvedValue({
+      id: 'inv-1',
+      invoiceNumber: 'INV-1',
+      pdfStorageKey: 'sub-1/inv-1.pdf',
+    });
+    invoicesRepository.update.mockResolvedValue({
+      id: 'inv-1',
+      invoiceNumber: 'INV-1',
+      pdfStorageKey: 'sub-1/inv-1.pdf',
+      timeReportStorageKey: 'sub-1/inv-1-time-report.pdf',
+    });
 
     const result = await service.billUnbilledTime('p1', 'admin-1', {
       from,

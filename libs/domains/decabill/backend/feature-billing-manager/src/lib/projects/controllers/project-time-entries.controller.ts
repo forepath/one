@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 
 import type { RequestWithUser } from '../../utils/billing-access.utils';
-import { getUserFromRequest } from '../../utils/billing-access.utils';
+import { getAuthenticatedUserFromRequest, getUserFromRequest } from '../../utils/billing-access.utils';
 import type {
   CreateProjectTimeEntryDto,
   PaginatedProjectTimeEntriesResponseDto,
@@ -30,16 +30,16 @@ export class ProjectTimeEntriesController {
   @Get()
   async list(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
+    @Req() req: RequestWithUser,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
     @Query('ticketId', new ParseUUIDPipe({ version: '4', optional: true })) ticketId?: string,
-    @Req() req?: RequestWithUser,
   ): Promise<PaginatedProjectTimeEntriesResponseDto> {
     return await this.timeEntriesService.list(
       projectId,
       limit ?? 10,
       offset ?? 0,
-      getUserFromRequest(req || ({} as RequestWithUser)),
+      getAuthenticatedUserFromRequest(req),
       ticketId,
     );
   }

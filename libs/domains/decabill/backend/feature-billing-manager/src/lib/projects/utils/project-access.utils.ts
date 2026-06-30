@@ -42,30 +42,10 @@ export function ensureTicketUnlocked(ticket: ProjectTicketEntity): void {
   }
 }
 
-export function ensureProjectBoardWrite(
-  userInfo: UserInfoFromRequest,
-  project: ProjectEntity,
-  ticket?: ProjectTicketEntity,
-  milestone?: ProjectMilestoneEntity | null,
-): void {
-  ensureProjectAdmin(userInfo);
-  ensureProjectReadable(userInfo, project);
-
-  if (ticket && isTicketLockedForNonAdmin(ticket, milestone ?? null)) {
-    return;
-  }
-}
-
 export function ensureProjectComment(userInfo: UserInfoFromRequest, project: ProjectEntity): void {
   ensureProjectReadable(userInfo, project);
 
   if (userInfo.isApiKeyAuth || !userInfo.userId) {
     throw new ForbiddenException('User not authenticated');
-  }
-}
-
-export function ensureCustomerTicketReadOnlyWriteBlocked(userInfo: UserInfoFromRequest): void {
-  if (userInfo.userRole !== UserRole.ADMIN) {
-    throw new ForbiddenException('Admin access required');
   }
 }
