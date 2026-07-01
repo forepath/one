@@ -153,5 +153,31 @@ describe('tenant-aware-socket-io.adapter', () => {
 
       ioSpy.mockRestore();
     });
+
+    it('binds tenant middleware for namespaces created via server.of', () => {
+      const fakeNamespace = { on: jest.fn() };
+
+      fakeNamespace.on.mockReturnValue(fakeNamespace);
+
+      const ofMock = jest.fn(() => fakeNamespace);
+      const fakeServer: { on: jest.Mock; of: jest.Mock } = {
+        on: jest.fn(),
+        of: ofMock,
+      };
+
+      fakeServer.on.mockReturnValue(fakeServer);
+
+      const ioSpy = jest.spyOn(IoAdapter.prototype, 'createIOServer').mockReturnValue(fakeServer as never);
+
+      const adapter = new TenantAwareSocketIoAdapter(undefined);
+      const server = adapter.createIOServer(0);
+
+      server.of('/projects');
+
+      expect(ofMock).toHaveBeenCalledWith('/projects', undefined);
+      expect(fakeNamespace.on).toHaveBeenCalledWith('connection', expect.any(Function));
+
+      ioSpy.mockRestore();
+    });
   });
 });

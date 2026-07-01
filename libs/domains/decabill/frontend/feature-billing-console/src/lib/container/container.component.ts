@@ -44,6 +44,7 @@ export class BillingConsoleContainerComponent implements OnInit {
             url.includes('/dashboard') ||
             url.includes('/subscriptions') ||
             url.includes('/invoices') ||
+            url.includes('/projects') ||
             url.includes('/administration') ||
             url.includes('/users'),
         ),
@@ -53,6 +54,7 @@ export class BillingConsoleContainerComponent implements OnInit {
         this.router.url.includes('/dashboard') ||
         this.router.url.includes('/subscriptions') ||
         this.router.url.includes('/invoices') ||
+        this.router.url.includes('/projects') ||
         this.router.url.includes('/administration') ||
         this.router.url.includes('/users'),
     },

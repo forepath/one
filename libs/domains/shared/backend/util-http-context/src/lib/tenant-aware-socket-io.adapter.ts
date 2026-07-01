@@ -30,6 +30,48 @@ export function getOrInitSocketTenantId(socket: Socket): string | undefined {
   return incoming;
 }
 
+function attachSocketTenantContext(socket: Socket): void {
+  const tenantId = getOrInitSocketTenantId(socket);
+
+  if (!tenantId) {
+    socket.disconnect(true);
+
+    return;
+  }
+
+  getOrInitSocketCorrelationId(socket);
+
+  socket.use((packet, next) => {
+    const correlationId = getOrInitSocketCorrelationId(socket);
+    const resolvedTenantId = getOrInitSocketTenantId(socket);
+
+    if (!resolvedTenantId) {
+      next(new Error('Invalid tenant'));
+
+      return;
+    }
+
+    runWithCorrelationId(correlationId, () => {
+      runWithTenantId(resolvedTenantId, () => next());
+    });
+  });
+}
+
+const boundNamespaces = new WeakSet<object>();
+
+type ConnectionBindTarget = {
+  on(event: 'connection', listener: (socket: Socket) => void): unknown;
+};
+
+function bindNamespaceConnections(namespace: ConnectionBindTarget): void {
+  if (boundNamespaces.has(namespace)) {
+    return;
+  }
+
+  boundNamespaces.add(namespace);
+  namespace.on('connection', attachSocketTenantContext);
+}
+
 /**
  * Socket.IO adapter that binds correlation id and tenant id for every inbound event packet.
  *
@@ -40,30 +82,19 @@ export class TenantAwareSocketIoAdapter extends IoAdapter {
   override createIOServer(port: number, options?: ServerOptions): Server {
     const server = super.createIOServer(port, options) as Server;
 
-    server.on('connection', (socket: Socket) => {
-      const tenantId = getOrInitSocketTenantId(socket);
+    bindNamespaceConnections(server as ConnectionBindTarget);
 
-      if (!tenantId) {
-        socket.disconnect(true);
-        return;
-      }
+    if (typeof server.of === 'function') {
+      const originalOf = server.of.bind(server);
 
-      getOrInitSocketCorrelationId(socket);
+      server.of = ((name, fn?) => {
+        const namespace = originalOf(name, fn);
 
-      socket.use((packet, next) => {
-        const correlationId = getOrInitSocketCorrelationId(socket);
-        const resolvedTenantId = getOrInitSocketTenantId(socket);
+        bindNamespaceConnections(namespace as ConnectionBindTarget);
 
-        if (!resolvedTenantId) {
-          next(new Error('Invalid tenant'));
-          return;
-        }
-
-        runWithCorrelationId(correlationId, () => {
-          runWithTenantId(resolvedTenantId, () => next());
-        });
-      });
-    });
+        return namespace;
+      }) as Server['of'];
+    }
 
     return server;
   }

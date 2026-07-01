@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant UI as Billing Console
+    participant GW as ProjectBoardGateway
+    participant Auth as SocketAuthService
+    participant Users as UsersRepository
+    participant Projects as ProjectsRepository
+    participant RT as ProjectBoardRealtimeService
+
+    UI->>GW: connect (Authorization, X-Tenant / auth.tenantId)
+    GW->>Auth: validateAndGetUser
+    Auth-->>GW: userInfo (reject API key)
+    GW-->>UI: connection established
+
+    UI->>GW: setProject { projectId }
+    GW->>Users: findByIdForTenant(userId)
+    GW->>Projects: findByIdOrThrow(projectId)
+    GW->>GW: ensureProjectReadable(userInfo, project)
+    GW->>GW: socket.join(project:projectId)
+    GW-->>UI: setProjectSuccess { projectId }
+
+    Note over UI,RT: Admin or system REST mutation (e.g. ticket update)
+    RT->>GW: emitToProject(projectId, ticketUpsert, dto)
+    GW-->>UI: ticketUpsert (room broadcast)
+
+    UI->>GW: disconnect
+    GW->>GW: socket.leave(project:projectId)

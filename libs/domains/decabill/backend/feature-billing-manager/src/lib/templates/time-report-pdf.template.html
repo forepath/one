@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        /* Neutral print palette (shared with invoice-pdf.template.html) */
+        --body-bg: #ffffff;
+        --body-color: #404040;
+        --body-emphasis: #111111;
+        --card-bg: #ffffff;
+        --surface-subtle: #f4f4f4;
+        --border: #cccccc;
+        --border-translucent: rgba(0, 0, 0, 0.08);
+        --secondary: #666666;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--body-color);
+        background: var(--body-bg);
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        max-width: 794px;
+        margin: 0 auto;
+        padding: 0;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 32px;
+      }
+
+      .header-title {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--body-emphasis);
+        letter-spacing: -0.02em;
+      }
+
+      .header-subtitle {
+        margin: 6px 0 0;
+        font-size: 13px;
+        color: var(--secondary);
+        font-weight: 500;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 40px;
+      }
+
+      .meta-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--secondary);
+        margin-bottom: 4px;
+      }
+
+      .meta-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--body-emphasis);
+      }
+
+      .line-items {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 24px;
+        background: var(--card-bg);
+        overflow: hidden;
+      }
+
+      .line-items thead {
+        background: var(--surface-subtle);
+      }
+
+      .line-items th {
+        padding: 12px 14px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--body-emphasis);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .line-items th.num,
+      .line-items td.num {
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .line-items td {
+        padding: 12px 14px;
+        font-size: 13px;
+        border-bottom: 1px solid var(--border-translucent);
+        vertical-align: top;
+      }
+
+      .line-items tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .line-items .description {
+        font-weight: 500;
+        color: var(--body-emphasis);
+        word-break: break-word;
+      }
+
+      .totals-wrap {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 40px;
+      }
+
+      .totals {
+        width: 280px;
+      }
+
+      .totals-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 13px;
+      }
+
+      .totals-row.total {
+        margin-top: 8px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--body-emphasis);
+      }
+
+      .empty {
+        padding: 24px 0;
+        color: var(--secondary);
+        font-style: italic;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <div>
+          <h1 class="header-title">{{title}}</h1>
+          <p class="header-subtitle">{{companyName}}</p>
+        </div>
+      </header>
+
+      <div class="meta-grid">
+        <div class="meta-card">
+          <span class="meta-label">Project</span>
+          <span class="meta-value">{{projectName}}</span>
+        </div>
+        <div class="meta-card">
+          <span class="meta-label">Period</span>
+          <span class="meta-value">{{rangeLabel}}</span>
+        </div>
+        {{#if invoiceNumber}}
+        <div class="meta-card">
+          <span class="meta-label">Invoice</span>
+          <span class="meta-value">{{invoiceNumber}}</span>
+        </div>
+        {{/if}}
+      </div>
+
+      {{#if entries.length}}
+      <table class="line-items">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Description</th>
+            <th>Ticket</th>
+            <th>Status</th>
+            <th class="num">Duration</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each entries}}
+          <tr>
+            <td>{{period}}</td>
+            <td class="description">{{description}}</td>
+            <td>{{ticket}}</td>
+            <td>{{billingStatus}}</td>
+            <td class="num">{{duration}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+
+      <div class="totals-wrap">
+        <div class="totals">
+          <div class="totals-row total">
+            <span>Total tracked</span>
+            <span>{{totalDuration}}</span>
+          </div>
+        </div>
+      </div>
+      {{else}}
+      <p class="empty">No time entries in this range.</p>
+      {{/if}}
+    </div>
+  </body>
+</html>

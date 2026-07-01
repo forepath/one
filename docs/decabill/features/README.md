@@ -20,6 +20,8 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **Dynamic Provider Plugins** - Extend payment processors and billing UI metadata at runtime
 - **Server Provisioning** - Cloud-init deployment of bundled product stacks for eligible plans
 - **CloudInit Configs** - Admin-managed Docker templates for the custom service kind
+- **Projects** - Customer-assigned work tracking with admin CRUD and billable time
+- **Project Board** - Live ticket board with swimlanes and WebSocket updates
 
 ## Features
 
@@ -179,6 +181,30 @@ Admin-managed Docker deployment templates for the `custom` service kind on provi
 - Customer order form fields driven by `showInOrderForm`
 - Single-service compose provisioning without Nginx or Let's Encrypt in v1
 
+### [Projects](./projects.md)
+
+Customer-assigned project tracking with admin CRUD, time entries, KPI summaries, and bill-time invoicing.
+
+**Key Capabilities**:
+
+- One project per assigned customer user (`userId`)
+- Admin CRUD under `/admin/billing/projects`
+- Customer read-only list and detail under `/projects`
+- `POST .../bill-time` issues invoice from unbilled time entries in a datetime range (independent of board lock)
+- `GET .../unbilled-time-bounds` returns default From/To for the bill-time modal
+- KPI summary with tracked, unbilled, and billed amounts
+
+### [Project Board](./project-board.md)
+
+Live Kanban board for project tickets with Socket.IO on namespace **`projects`**.
+
+**Key Capabilities**:
+
+- Swimlanes for draft, todo, in progress, and prototype statuses
+- Admin ticket and milestone CRUD; one-way lock for delivery scope freeze
+- Customer comments; room-based broadcasts after REST mutations
+- `setProject` handshake to join `project:{projectId}`
+
 ## Feature Relationships
 
 ```mermaid
@@ -197,6 +223,8 @@ graph TB
     DASH[Dashboard and Server Control]
     RT[Real-time Status]
     DP[Dynamic Provider Plugins]
+    PRJ[Projects]
+    PB[Project Board]
 
     AUTH --> MT
     MT --> SUB
@@ -218,6 +246,10 @@ graph TB
     DP --> PP
     DP --> ST
     SUB --> INV
+    BA --> PRJ
+    CP --> PRJ
+    PRJ --> PB
+    PRJ --> INV
 ```
 
 ## Related Documentation

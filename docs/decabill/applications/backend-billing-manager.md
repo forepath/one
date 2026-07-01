@@ -13,7 +13,7 @@ The app module in `apps/decabill/backend-billing-manager` bootstraps shared queu
 This application provides:
 
 - **HTTP REST API** - Subscriptions, invoices, catalog, customer profile, admin billing, public offerings
-- **WebSocket gateway** - Dashboard server status on namespace **`billing`**
+- **WebSocket gateway** - Dashboard server status on namespace **`billing`**; project board on namespace **`projects`**
 - **Background jobs** - Billing cycles, expiration, reminders, overdue handling, backorder retry, SSH stack updates
 - **Stripe integration** - Checkout sessions and signed webhooks
 - **Invoice PDFs** - ZUGFeRD-style generation and filesystem storage
@@ -38,12 +38,13 @@ Domain logic, OpenAPI source, and AsyncAPI source live in `libs/domains/decabill
 
 ## Ports and Network Surfaces
 
-| Variable              | Default   | Description                     |
-| --------------------- | --------- | ------------------------------- |
-| `PORT`                | **3200**  | HTTP API (global prefix `/api`) |
-| `WEBSOCKET_PORT`      | **8082**  | Socket.IO server                |
-| `WEBSOCKET_NAMESPACE` | `billing` | Dashboard status namespace      |
-| `HOST`                | `0.0.0.0` | Bind address                    |
+| Variable                       | Default    | Description                     |
+| ------------------------------ | ---------- | ------------------------------- |
+| `PORT`                         | **3200**   | HTTP API (global prefix `/api`) |
+| `WEBSOCKET_PORT`               | **8082**   | Socket.IO server                |
+| `WEBSOCKET_NAMESPACE`          | `billing`  | Dashboard status namespace      |
+| `PROJECTS_WEBSOCKET_NAMESPACE` | `projects` | Project board namespace         |
+| `HOST`                         | `0.0.0.0`  | Bind address                    |
 
 Health and monitoring endpoints are provided through shared backend utilities where enabled.
 
@@ -119,20 +120,25 @@ See **[Authentication](../features/authentication.md)**.
 
 Full paths and schemas are in **[API Reference](../api-reference/README.md)** and `/spec/billing-manager/openapi.yaml`.
 
-| Area             | Example paths                        | Notes                                           |
-| ---------------- | ------------------------------------ | ----------------------------------------------- |
-| Public offerings | `GET /public/service-plan-offerings` | Unauthenticated marketing data                  |
-| Catalog          | `/service-types`, `/service-plans`   | Admin CRUD                                      |
-| Subscriptions    | `/subscriptions`, `/backorders`      | Order, cancel, resume                           |
-| Invoices         | `/invoices`, open positions          | PDF download, void, pay                         |
-| Customer         | `/customer-profile`                  | Required before ordering                        |
-| Admin billing    | `/admin/billing/*`                   | Manual invoices, profiles, statistics, bill-now |
-| Payments         | `/invoices/{id}/pay`, Stripe webhook | Checkout redirect                               |
-| Availability     | `/availability/check`                | Provider capacity                               |
+| Area             | Example paths                          | Notes                                           |
+| ---------------- | -------------------------------------- | ----------------------------------------------- |
+| Public offerings | `GET /public/service-plan-offerings`   | Unauthenticated marketing data                  |
+| Catalog          | `/service-types`, `/service-plans`     | Admin CRUD                                      |
+| Subscriptions    | `/subscriptions`, `/backorders`        | Order, cancel, resume                           |
+| Invoices         | `/invoices`, open positions            | PDF download, void, pay                         |
+| Customer         | `/customer-profile`                    | Required before ordering                        |
+| Admin billing    | `/admin/billing/*`                     | Manual invoices, profiles, statistics, bill-now |
+| Projects         | `/projects`, `/admin/billing/projects` | Customer read; admin CRUD and bill-time         |
+| Payments         | `/invoices/{id}/pay`, Stripe webhook   | Checkout redirect                               |
+| Availability     | `/availability/check`                  | Provider capacity                               |
 
 Send `X-Tenant` on every request when using multi-tenancy.
 
-## WebSocket Gateway
+## WebSocket Gateways
+
+Both gateways listen on **`WEBSOCKET_PORT`** (default **8082**) as separate Socket.IO namespaces.
+
+### Dashboard status (`billing`)
 
 AsyncAPI documents the **`billing`** namespace:
 
@@ -140,6 +146,19 @@ AsyncAPI documents the **`billing`** namespace:
 - Server: `dashboardStatusUpdate`, `error`
 
 Requires the same user JWT or Keycloak session as interactive REST calls. Connect to `http://<host>:8082/billing` with authorization in the handshake.
+
+See **[Real-time Status](../features/real-time-status.md)**.
+
+### Project board (`projects`)
+
+AsyncAPI documents the **`projects`** namespace (env: `PROJECTS_WEBSOCKET_NAMESPACE`):
+
+- Client: `setProject` with `{ projectId }`
+- Server: `setProjectSuccess`, board mutation events (`ticketUpsert`, `milestoneUpsert`, `timeEntryUpsert`, `projectSummaryChanged`, …), `error`
+
+Clients join room `project:{projectId}` after access validation. API key auth is rejected.
+
+See **[Project Board](../features/project-board.md)**.
 
 Spec: `/spec/billing-manager/asyncapi.yaml`
 

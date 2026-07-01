@@ -167,6 +167,24 @@ describe('outbound-correlation', () => {
       });
     });
 
+    it('buildOutboundCorrelationHeaders returns existing when no correlation id', () => {
+      expect(buildOutboundCorrelationHeaders({ Authorization: 'Bearer a' })).toEqual({ Authorization: 'Bearer a' });
+    });
+
+    it('buildOutboundCorrelationHeaders does not override preset header', () => {
+      runWithCorrelationId('ignored', () => {
+        expect(buildOutboundCorrelationHeaders({ 'X-Correlation-Id': 'preset' })).toEqual({
+          'X-Correlation-Id': 'preset',
+        });
+      });
+    });
+
+    it('applySocketIoClientCorrelationHeaders returns same options when no correlation id', () => {
+      const options = { transports: ['websocket'] as const, extraHeaders: undefined };
+
+      expect(applySocketIoClientCorrelationHeaders(options)).toBe(options);
+    });
+
     it('createCorrelationAwareSocketIoClient forwards options to io() with correlation', () => {
       runWithCorrelationId('ws-3', () => {
         createCorrelationAwareSocketIoClient('http://agent-manager/agents', {

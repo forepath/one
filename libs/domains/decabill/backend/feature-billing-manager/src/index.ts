@@ -61,6 +61,12 @@ export * from './lib/entities/service-type.entity';
 export * from './lib/entities/subscription-item.entity';
 export * from './lib/entities/subscription.entity';
 export * from './lib/entities/usage-record.entity';
+export * from './lib/projects/entities/project.entity';
+export * from './lib/projects/entities/project-milestone.entity';
+export * from './lib/projects/entities/project-ticket.entity';
+export * from './lib/projects/entities/project-ticket-comment.entity';
+export * from './lib/projects/entities/project-ticket-activity.entity';
+export * from './lib/projects/entities/project-time-entry.entity';
 
 export {
   UserEntity as BillingUserEntity,

@@ -1,0 +1,62 @@
+<div class="projects-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureProjects-title">Projects</h5>
+  </div>
+
+  <div class="input-group search-input-container border-bottom">
+    <i class="bi bi-search"></i>
+    <input
+      type="text"
+      class="form-control border-0 search-input"
+      placeholder="Search projects"
+      i18n-placeholder="@@featureProjects-searchPlaceholder"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+      name="search"
+    />
+  </div>
+
+  <div class="flex-grow-1 overflow-auto">
+    @if (loading$ | async) {
+      <div class="d-flex justify-content-center p-4">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+    } @else {
+      @if (error$ | async; as error) {
+        <div class="alert alert-danger m-3" role="alert">{{ error }}</div>
+      }
+      @if (projects().length === 0) {
+        <div class="p-4 text-muted text-center" i18n="@@featureProjects-empty">No projects assigned to you</div>
+      } @else {
+        <div class="list-group list-group-flush">
+          @for (project of projects(); track project.id) {
+            <a
+              [routerLink]="['/projects', project.id, 'board']"
+              class="list-group-item list-group-item-action border-bottom"
+            >
+              <div class="fw-semibold mb-1">{{ project.name }}</div>
+              <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
+                <span [ngClass]="projectStatusTextClass(project.status)">
+                  <i class="bi me-1" [ngClass]="projectStatusIconClass(project.status)" aria-hidden="true"></i
+                  >{{ projectStatusLabel(project.status) }}
+                </span>
+                <span
+                  ><i class="bi bi-cash me-1" aria-hidden="true"></i
+                  >{{ hourlyRateLabel(project.hourlyRateNet, project.currency) }}</span
+                >
+                <span
+                  ><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i
+                  >{{ unbilledTimeLabel(project.unbilledMinutes) }}</span
+                >
+                <span
+                  ><i class="bi bi-cash-stack me-1" aria-hidden="true"></i
+                  >{{ openBillableLabel(project.openBillableAmountNet, project.currency) }}</span
+                >
+              </div>
+            </a>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

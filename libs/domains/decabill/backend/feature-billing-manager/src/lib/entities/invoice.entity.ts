@@ -2,6 +2,8 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, Pri
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 
+import { ProjectEntity } from '../projects/entities/project.entity';
+
 import { InvoiceLineItemEntity } from './invoice-line-item.entity';
 import { SubscriptionEntity } from './subscription.entity';
 
@@ -19,6 +21,13 @@ export class InvoiceEntity {
 
   @Column({ type: 'uuid', name: 'user_id' })
   userId!: string;
+
+  @Column({ type: 'uuid', name: 'project_id', nullable: true })
+  projectId?: string;
+
+  @ManyToOne(() => ProjectEntity, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'project_id' })
+  project?: ProjectEntity;
 
   @Column({ type: 'varchar', length: 64, nullable: true, name: 'invoice_number' })
   invoiceNumber?: string;
@@ -52,6 +61,9 @@ export class InvoiceEntity {
 
   @Column({ type: 'varchar', length: 512, nullable: true, name: 'pdf_storage_key' })
   pdfStorageKey?: string;
+
+  @Column({ type: 'varchar', length: 512, nullable: true, name: 'time_report_storage_key' })
+  timeReportStorageKey?: string;
 
   @Column({ type: 'varchar', length: 50, nullable: true, name: 'payment_processor' })
   paymentProcessor?: string;

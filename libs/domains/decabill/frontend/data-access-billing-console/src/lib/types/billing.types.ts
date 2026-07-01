@@ -453,6 +453,7 @@ export interface InvoiceResponse {
   canDownload: boolean;
   canPreview: boolean;
   canDownloadVoidDocument?: boolean;
+  canDownloadTimeReport?: boolean;
   voidDocumentNumber?: string | null;
 }
 
@@ -492,6 +493,7 @@ export interface InvoiceDetailResponse {
   canDownload: boolean;
   canPreview: boolean;
   canDownloadVoidDocument?: boolean;
+  canDownloadTimeReport?: boolean;
   voidDocumentNumber?: string | null;
 }
 

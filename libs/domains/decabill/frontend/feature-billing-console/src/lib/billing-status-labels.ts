@@ -136,6 +136,85 @@ export function getActiveStatusTextClass(isActive: boolean): string {
   return isActive ? 'text-success' : 'text-secondary';
 }
 
+export function isProjectTimeEntryBilled(entry: { billedAt?: string | null; invoiceId?: string | null }): boolean {
+  return !!(entry.billedAt || entry.invoiceId);
+}
+
+export function getProjectTimeEntryBillingStatusLabel(isBilled: boolean): string {
+  return isBilled
+    ? $localize`:@@featureBilling-timeEntryStatusBilled:Billed`
+    : $localize`:@@featureBilling-timeEntryStatusUnbilled:Unbilled`;
+}
+
+export function getProjectTimeEntryBillingStatusTextClass(isBilled: boolean): string {
+  return isBilled ? 'text-success' : 'text-secondary';
+}
+
+export function getProjectTimeEntryBillingStatusIconClass(isBilled: boolean): string {
+  return isBilled ? 'bi-receipt' : 'bi-receipt-cutoff';
+}
+
+export function getProjectStatusLabel(status: string | null | undefined): string {
+  switch (status) {
+    case 'active':
+      return $localize`:@@featureBilling-projectStatusActive:Active`;
+    case 'archived':
+      return $localize`:@@featureBilling-projectStatusArchived:Archived`;
+    default:
+      return status ?? getUnavailableLabel();
+  }
+}
+
+export function getProjectStatusTextClass(status: string | null | undefined): string {
+  switch (status) {
+    case 'active':
+      return 'text-success';
+    case 'archived':
+      return 'text-secondary';
+    default:
+      return 'text-secondary';
+  }
+}
+
+export function getProjectStatusIconClass(status: string | null | undefined): string {
+  switch (status) {
+    case 'active':
+      return 'bi-check-circle';
+    case 'archived':
+      return 'bi-archive';
+    default:
+      return 'bi-question-circle';
+  }
+}
+
+export function formatProjectHourlyRate(amount: number, currency: string): string {
+  const formatted = Number.isFinite(amount) ? amount.toFixed(2) : '0.00';
+
+  if (currency === 'EUR') {
+    return `${formatted}€ / h`;
+  }
+
+  return `${formatted} ${currency} / h`;
+}
+
+export function formatProjectOpenBillableAmount(amount: number, currency: string): string {
+  const formatted = Number.isFinite(amount) ? amount.toFixed(2) : '0.00';
+
+  if (currency === 'EUR') {
+    return `${formatted}€`;
+  }
+
+  return `${formatted} ${currency}`;
+}
+
+export function formatProjectMinutes(minutes: number): string {
+  const safeMinutes = Number.isFinite(minutes) ? Math.max(0, Math.round(minutes)) : 0;
+  const hours = Math.floor(safeMinutes / 60);
+  const remainder = safeMinutes % 60;
+
+  return hours > 0 ? `${hours}h ${remainder}m` : `${remainder}m`;
+}
+
 export function getDatevExportStatusLabel(status: string | null | undefined): string {
   if (status == null || status === '') {
     return $localize`:@@featureBilling-datevExportStatusEmpty:Unknown`;

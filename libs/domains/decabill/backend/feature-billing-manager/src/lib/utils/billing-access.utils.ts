@@ -1,5 +1,5 @@
 import { UserRole } from '@forepath/identity/backend';
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Request } from 'express';
 
 export interface RequestWithUser extends Request {
@@ -37,6 +37,16 @@ export function getUserFromRequest(req: RequestWithUser): UserInfoFromRequest {
     userRole,
     isApiKeyAuth: false,
   };
+}
+
+export function getAuthenticatedUserFromRequest(req: RequestWithUser): UserInfoFromRequest {
+  const userInfo = getUserFromRequest(req);
+
+  if (!userInfo.userId) {
+    throw new BadRequestException('User not authenticated');
+  }
+
+  return userInfo;
 }
 
 export function ensureAdmin(userInfo: UserInfoFromRequest): void {

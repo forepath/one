@@ -1,0 +1,137 @@
+import { CommonModule } from '@angular/common';
+import {
+  AfterViewInit,
+  Component,
+  DestroyRef,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+  ViewChild,
+  inject,
+} from '@angular/core';
+import { Crepe, CrepeFeature } from '@milkdown/crepe';
+import { listener, listenerCtx } from '@milkdown/plugin-listener';
+
+@Component({
+  selector: 'framework-project-ticket-editor',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './project-ticket-editor.component.html',
+  styleUrls: ['./project-ticket-editor.component.scss'],
+})
+export class ProjectTicketEditorComponent implements AfterViewInit, OnChanges, OnDestroy {
+  @ViewChild('editorHost', { static: true })
+  private editorHost!: ElementRef<HTMLDivElement>;
+
+  @Input() markdown = '# Hello\n\nStart writing...';
+  @Input() readonly = false;
+  @Output() markdownChange = new EventEmitter<string>();
+  @Output() blurred = new EventEmitter<void>();
+
+  @HostBinding('class.project-ticket-editor--readonly')
+  get readonlyHostClass(): boolean {
+    return this.readonly;
+  }
+
+  private readonly destroyRef = inject(DestroyRef);
+  private crepe: Crepe | null = null;
+  private viewReady = false;
+  private lastEmittedMarkdown = '';
+
+  async ngAfterViewInit(): Promise<void> {
+    this.viewReady = true;
+    await this.initEditor();
+  }
+
+  async ngOnChanges(changes: SimpleChanges): Promise<void> {
+    if (!this.viewReady || !this.crepe) return;
+
+    const markdownChanged = !!changes['markdown'];
+    const readonlyChanged = !!changes['readonly'];
+
+    if (!markdownChanged && !readonlyChanged) return;
+
+    if (markdownChanged) {
+      const nextValue = changes['markdown'].currentValue ?? '';
+
+      if (nextValue === this.lastEmittedMarkdown && !readonlyChanged) return;
+
+      await this.recreateEditor(nextValue);
+
+      return;
+    }
+
+    await this.recreateEditor(this.markdown ?? '');
+  }
+
+  async ngOnDestroy(): Promise<void> {
+    await this.destroyEditor();
+  }
+
+  private async initEditor(initialValue = this.markdown): Promise<void> {
+    if (this.destroyRef.destroyed) return;
+
+    const crepe = new Crepe({
+      root: this.editorHost.nativeElement,
+      defaultValue: initialValue,
+      features: this.readonly ? this.readonlyFeatures() : undefined,
+    });
+
+    if (!this.readonly) {
+      crepe.editor.use(listener);
+      crepe.editor.config((ctx) => {
+        const listeners = ctx.get(listenerCtx);
+
+        listeners.markdownUpdated((_, markdown, prevMarkdown) => {
+          if (markdown !== prevMarkdown) {
+            this.lastEmittedMarkdown = markdown;
+            this.markdownChange.emit(markdown);
+          }
+        });
+        listeners.blur(() => {
+          this.blurred.emit();
+        });
+      });
+    }
+
+    await crepe.create();
+
+    if (this.readonly) {
+      crepe.setReadonly(true);
+    }
+
+    if (this.destroyRef.destroyed) {
+      await crepe.destroy();
+
+      return;
+    }
+
+    this.crepe = crepe;
+    this.lastEmittedMarkdown = initialValue;
+  }
+
+  private async recreateEditor(value: string): Promise<void> {
+    await this.destroyEditor();
+    await this.initEditor(value);
+  }
+
+  private async destroyEditor(): Promise<void> {
+    if (!this.crepe) return;
+
+    await this.crepe.destroy();
+    this.crepe = null;
+  }
+
+  private readonlyFeatures(): Partial<Record<CrepeFeature, boolean>> {
+    return {
+      [CrepeFeature.Toolbar]: false,
+      [CrepeFeature.BlockEdit]: false,
+      [CrepeFeature.Placeholder]: false,
+    };
+  }
+}

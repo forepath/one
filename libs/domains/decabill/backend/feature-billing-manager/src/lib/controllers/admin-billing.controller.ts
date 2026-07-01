@@ -281,6 +281,26 @@ export class AdminBillingController {
     return new StreamableFile(buffer);
   }
 
+  @Get('invoices/:invoiceRefId/time-report/pdf')
+  @Header('Content-Type', 'application/pdf')
+  async downloadTimeReportPdf(
+    @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
+    @Res({ passthrough: true }) res?: Response,
+  ): Promise<StreamableFile> {
+    const invoice = await this.invoicesRepository.findById(invoiceRefId);
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    const buffer = await this.invoiceService.getTimeReportPdfBuffer(invoiceRefId, invoice.subscriptionId);
+    const filename = `time-report-${invoice.invoiceNumber ?? invoiceRefId}.pdf`;
+
+    res?.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+    return new StreamableFile(buffer);
+  }
+
   @Get('invoices/:invoiceRefId/audit-logs')
   async listAuditLogs(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,

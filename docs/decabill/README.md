@@ -12,6 +12,7 @@ Decabill lets operators and customers manage billing in one place:
 - **Administration** for manual invoices, customer billing profiles, and operational dashboards
 - **Multi-tenant deployments** with tenant-scoped data and configurable frontends
 - **Server provisioning** for bundled product stacks via cloud-init when service plans include infrastructure
+- **Projects and project boards** for customer-assigned work, time tracking, and billable-hours invoicing
 
 ## Documentation Structure
 
@@ -32,7 +33,7 @@ Prerequisites, installation, and your first login to the billing console.
 
 ### [Features](./features/README.md)
 
-Product capabilities including subscriptions, invoices, administration, multi-tenancy, payments, and real-time dashboard status.
+Product capabilities including subscriptions, invoices, administration, projects, multi-tenancy, payments, and real-time dashboard status.
 
 ### [Deployment](./deployment/README.md)
 

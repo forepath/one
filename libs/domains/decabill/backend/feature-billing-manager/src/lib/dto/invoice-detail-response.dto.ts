@@ -37,5 +37,6 @@ export class InvoiceDetailResponseDto {
   canDownload!: boolean;
   canPreview!: boolean;
   canDownloadVoidDocument?: boolean;
+  canDownloadTimeReport?: boolean;
   voidDocumentNumber?: string;
 }

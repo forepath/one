@@ -13,7 +13,7 @@ describe('invoice-pdf-template.loader', () => {
 
     expect(template.toLowerCase()).toContain('<!doctype html>');
     expect(template).toContain('{{invoiceNumber}}');
-    expect(template).toContain('--primary: #7a3fff');
+    expect(template).toContain('--surface-subtle: #f4f4f4');
     expect(fs.existsSync(path.join(__dirname, 'invoice-pdf.template.html'))).toBe(true);
   });
 });

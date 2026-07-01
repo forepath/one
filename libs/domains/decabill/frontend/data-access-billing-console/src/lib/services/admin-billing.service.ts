@@ -176,6 +176,12 @@ export class AdminBillingService {
     });
   }
 
+  downloadTimeReportPdf(invoiceRefId: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/admin/billing/invoices/${invoiceRefId}/time-report/pdf`, {
+      responseType: 'blob',
+    });
+  }
+
   getCapabilities(): Observable<BillingCapabilitiesResponse> {
     return this.http.get<BillingCapabilitiesResponse>(`${this.apiUrl}/admin/billing/capabilities`);
   }

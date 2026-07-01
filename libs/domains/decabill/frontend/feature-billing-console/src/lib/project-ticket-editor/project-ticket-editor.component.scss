@@ -1,0 +1,81 @@
+:host {
+  display: block;
+
+  ::ng-deep {
+    .milkdown {
+      --crepe-color-background: var(--bs-body-bg, #ffffff);
+      --crepe-color-on-background: var(--bs-body-color, #212529);
+      --crepe-color-surface: var(--bs-tertiary-bg, #f1f3f5);
+      --crepe-color-surface-low: var(--bs-secondary-bg, #e9ecef);
+      --crepe-color-on-surface: var(--bs-emphasis-color, #1c1c1c);
+      --crepe-color-on-surface-variant: var(--bs-secondary-color, #495057);
+      --crepe-color-outline: var(--bs-secondary-color, #6c757d);
+      --crepe-color-primary: var(--bs-primary, #0d6efd);
+      --crepe-color-secondary: var(--bs-secondary, #6c757d);
+      --crepe-color-on-secondary: var(--bs-secondary-text-emphasis, #495057);
+      --crepe-color-inverse: var(--bs-emphasis-color, #212529);
+      --crepe-color-on-inverse: var(--bs-body-bg, #ffffff);
+      --crepe-color-inline-code: var(--bs-danger-text-emphasis, #842029);
+      --crepe-color-error: var(--bs-danger, #dc3545);
+      --crepe-color-hover: color-mix(in srgb, var(--bs-primary, #0d6efd) 18%, var(--bs-body-bg, #ffffff));
+      --crepe-color-selected: color-mix(in srgb, var(--bs-primary, #0d6efd) 28%, var(--bs-body-bg, #ffffff));
+      --crepe-color-inline-area: color-mix(in srgb, var(--bs-primary, #0d6efd) 12%, var(--bs-secondary-bg, #f8f9fa));
+
+      --crepe-font-title: var(
+        --bs-heading-font-family,
+        var(--bs-body-font-family, 'Plus Jakarta Sans Variable', sans-serif)
+      );
+      --crepe-font-default: var(--bs-body-font-family, 'Plus Jakarta Sans Variable', sans-serif);
+      --crepe-font-code: var(
+        --bs-font-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        'Liberation Mono',
+        'Courier New',
+        monospace
+      );
+
+      --crepe-shadow-1: var(--bs-box-shadow-sm, 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075));
+      --crepe-shadow-2: var(--bs-box-shadow, 0 0.5rem 1rem rgba(0, 0, 0, 0.15));
+    }
+  }
+}
+
+:host-context(html[data-bs-theme='dark']) {
+  :host {
+    ::ng-deep {
+      .milkdown {
+        --crepe-color-on-surface-variant: color-mix(in srgb, var(--bs-body-color, #dee2e6) 80%, white);
+        --crepe-color-outline: color-mix(in srgb, var(--bs-body-color, #dee2e6) 45%, transparent);
+        --crepe-color-secondary: color-mix(in srgb, var(--bs-body-color, #dee2e6) 35%, var(--bs-secondary-bg, #2b3035));
+        --crepe-color-on-secondary: var(--bs-body-color, #dee2e6);
+        --crepe-color-hover: color-mix(in srgb, var(--bs-primary, #6ea8fe) 30%, var(--bs-body-bg, #212529));
+        --crepe-color-selected: color-mix(in srgb, var(--bs-primary, #6ea8fe) 42%, var(--bs-body-bg, #212529));
+        --crepe-color-inverse: var(--bs-secondary-bg, #2b3035);
+        --crepe-color-on-inverse: var(--bs-body-color, #dee2e6);
+      }
+    }
+  }
+}
+
+.editor-shell {
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-sm);
+  overflow: visible;
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+
+  .editor-host {
+    min-height: 320px;
+  }
+}
+
+:host(.project-ticket-editor--readonly) {
+  .editor-shell {
+    .editor-host {
+      min-height: 0;
+    }
+  }
+}

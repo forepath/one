@@ -1911,6 +1911,216 @@
       <trans-unit id="utilCookieConsent-link" datatype="html">
         <source>Learn more</source>
         </trans-unit>
+      <trans-unit id="featureContainer-projectsPage" datatype="html">
+        <source>Projects</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-projectDetailPage" datatype="html">
+        <source>Project</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminProjectsPage" datatype="html">
+        <source>Projects</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-projectsTitle" datatype="html">
+        <source>Projects</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-projects" datatype="html">
+        <source>Projects</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminProjectsTitle" datatype="html">
+        <source>Projects</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminProjects" datatype="html">
+        <source>Projects</source>
+      </trans-unit>
+      <trans-unit id="featureProjects-title" datatype="html">
+        <source>Projects</source>
+      </trans-unit>
+      <trans-unit id="featureProjects-searchPlaceholder" datatype="html">
+        <source>Search projects</source>
+      </trans-unit>
+      <trans-unit id="featureProjects-empty" datatype="html">
+        <source>No projects assigned to you</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-title" datatype="html">
+        <source>Projects</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-add" datatype="html">
+        <source>Add</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-searchPlaceholder" datatype="html">
+        <source>Search projects</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-empty" datatype="html">
+        <source>No projects found</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-edit" datatype="html">
+        <source>Edit</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-delete" datatype="html">
+        <source>Delete</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-createTitle" datatype="html">
+        <source>Create project</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-nameLabel" datatype="html">
+        <source>Name</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-rateLabel" datatype="html">
+        <source>Hourly rate (net)</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-cancel" datatype="html">
+        <source>Cancel</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-create" datatype="html">
+        <source>Create</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-editTitle" datatype="html">
+        <source>Edit project</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-statusLabel" datatype="html">
+        <source>Status</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-statusActive" datatype="html">
+        <source>Active</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-statusArchived" datatype="html">
+        <source>Archived</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-save" datatype="html">
+        <source>Save</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-deleteTitle" datatype="html">
+        <source>Delete project</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-deleteConfirm" datatype="html">
+        <source>Delete this project? Unbilled time must be cleared first.</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-trackedTime" datatype="html">
+        <source>Tracked time</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-unbilledTime" datatype="html">
+        <source>Unbilled time</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-openBillable" datatype="html">
+        <source>Open billable</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-openTickets" datatype="html">
+        <source>Open tickets</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-tabBoard" datatype="html">
+        <source>Board</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-tabMilestones" datatype="html">
+        <source>Milestones</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-tabTime" datatype="html">
+        <source>Time</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-timeEntries" datatype="html">
+        <source>Time entries</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-billTime" datatype="html">
+        <source>Bill unbilled time</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-durationLabel" datatype="html">
+        <source>Minutes</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-dateLabel" datatype="html">
+        <source>Date</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-descriptionLabel" datatype="html">
+        <source>Description</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-addTime" datatype="html">
+        <source>Add</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-backToAdminProjects" datatype="html">
+        <source>Back to projects</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-assignee" datatype="html">
+        <source>Assignee: <x id="INTERPOLATION" equiv-text="{{ email }}"/></source>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminProjectDetailPage" datatype="html">
+        <source>Project</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-title" datatype="html">
+        <source>Board</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-addTicket" datatype="html">
+        <source>Add ticket</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-emptyLane" datatype="html">
+        <source>No tickets</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-titleLabel" datatype="html">
+        <source>Title</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-contentLabel" datatype="html">
+        <source>Content</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-priorityLabel" datatype="html">
+        <source>Priority</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-statusLabel" datatype="html">
+        <source>Status</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-save" datatype="html">
+        <source>Save</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-comments" datatype="html">
+        <source>Comments</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-commentPlaceholder" datatype="html">
+        <source>Add a comment</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-addComment" datatype="html">
+        <source>Comment</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-createTitle" datatype="html">
+        <source>New ticket</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-cancel" datatype="html">
+        <source>Cancel</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-create" datatype="html">
+        <source>Create</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-laneDraft" datatype="html">
+        <source>Draft</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-laneTodo" datatype="html">
+        <source>To do</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-laneInProgress" datatype="html">
+        <source>In progress</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-lanePrototype" datatype="html">
+        <source>Prototype</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-laneDone" datatype="html">
+        <source>Done</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-laneClosed" datatype="html">
+        <source>Closed</source>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-title" datatype="html">
+        <source>Milestones</source>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-add" datatype="html">
+        <source>Add</source>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-namePlaceholder" datatype="html">
+        <source>Name</source>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-create" datatype="html">
+        <source>Create</source>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-empty" datatype="html">
+        <source>No milestones yet</source>
+      </trans-unit>
+      <trans-unit id="featureProjectMilestones-lock" datatype="html">
+        <source>Lock</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

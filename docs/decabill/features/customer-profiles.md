@@ -61,6 +61,8 @@ flowchart TD
 
 Manual invoice issuance uses the same completeness rules for the target user.
 
+Project bill-time (`POST /admin/billing/projects/{projectId}/bill-time`) also requires a complete profile for the project's assigned customer. See **[Projects](./projects.md)**.
+
 ## Data Storage
 
 Profiles are stored in `billing_customer_profiles` in PostgreSQL, scoped by tenant through the user's `tenant_id`.
@@ -75,6 +77,7 @@ The user's registration date (day of month, capped at 28) defaults as their **bi
 
 - **[Subscriptions](./subscriptions.md)** - Profile required at order time
 - **[Invoices](./invoices.md)** - Issuer and customer data on PDFs
+- **[Projects](./projects.md)** - Profile required for project bill-time
 - **[Billing Administration](./billing-administration.md)** - Admin profile CRUD
 - **[Payment Processing](./payment-processing.md)** - Stripe customer linkage
 - **[Billing Manager OpenAPI](/spec/billing-manager/openapi.yaml)** - Profile DTO schemas

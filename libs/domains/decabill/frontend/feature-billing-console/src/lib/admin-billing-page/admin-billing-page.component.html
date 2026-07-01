@@ -427,6 +427,17 @@
                             <i class="bi bi-file-earmark-x" aria-hidden="true"></i>
                           </button>
                         }
+                        @if (invoice.canDownloadTimeReport) {
+                          <button
+                            type="button"
+                            class="btn btn-outline-secondary"
+                            (click)="downloadTimeReport(invoice)"
+                            title="Download time report"
+                            i18n-title="@@featureAdminInvoices-downloadTimeReportButtonTitle"
+                          >
+                            <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
+                          </button>
+                        }
                         <button
                           type="button"
                           class="btn btn-outline-secondary"

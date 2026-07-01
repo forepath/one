@@ -16,6 +16,10 @@ import { InvoicePdfService } from './invoice-pdf.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
 
+export interface IssueDraftOptions {
+  skipNotification?: boolean;
+}
+
 @Injectable()
 export class InvoiceIssuanceService {
   constructor(
@@ -31,7 +35,7 @@ export class InvoiceIssuanceService {
     private readonly auditLog: BillingAuditLogService,
   ) {}
 
-  async issueDraft(invoiceId: string, dueInDays = 14): Promise<InvoiceEntity> {
+  async issueDraft(invoiceId: string, dueInDays = 14, options?: IssueDraftOptions): Promise<InvoiceEntity> {
     const invoice = await this.invoicesRepository.findByIdOrThrow(invoiceId);
 
     if (invoice.status !== InvoiceStatus.DRAFT) {
@@ -85,7 +89,9 @@ export class InvoiceIssuanceService {
       context: { invoiceNumber, totalGross: issued.totalGross },
     });
 
-    await this.invoiceEmailService.notifyInvoiceIssued(issued, pdfStorageKey);
+    if (!options?.skipNotification) {
+      await this.invoiceEmailService.notifyInvoiceIssued(issued, pdfStorageKey);
+    }
 
     return issued;
   }

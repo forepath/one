@@ -1,0 +1,48 @@
+sequenceDiagram
+    participant Admin
+    participant API as ProjectsAdminController
+    participant Billing as ProjectBillingService
+    participant Profile as CustomerProfilesService
+    participant Time as ProjectTimeEntriesRepository
+    participant Invoice as InvoiceService
+    participant Issue as InvoiceIssuanceService
+    participant Audit as BillingAuditLogService
+    participant Summary as ProjectsService
+    participant RT as ProjectBoardRealtimeService
+
+    Admin->>API: GET /admin/billing/projects/{projectId}/unbilled-time-bounds
+    API->>Billing: getUnbilledTimeBounds(projectId)
+    Billing->>Time: findUnbilledTimeBounds(projectId)
+    Billing-->>Admin: 200 { from, to, entryCount }
+
+    Admin->>API: POST /admin/billing/projects/{projectId}/bill-time { from, to }
+    API->>Billing: billUnbilledTime(projectId, adminUserId, range)
+    Billing->>Billing: resolveProjectBillTimeRange(from, to)
+    Billing->>Billing: findByIdOrThrow(project)
+    Billing->>Profile: getByUserId(project.userId)
+    alt profile incomplete
+        Billing-->>Admin: 400 Assigned customer profile is incomplete
+    end
+    Billing->>Billing: withProjectBillTimeLock(projectId)
+    Billing->>Time: findUnbilledByProjectInRangeForUpdate(projectId, from, to)
+    alt no unbilled entries in range
+        Billing-->>Admin: 400 No unbilled time entries
+    end
+    Billing->>Billing: compute hours × hourlyRateNet
+    alt amount below minimum
+        Billing-->>Admin: 400 Billable amount below minimum
+    end
+    Billing->>Invoice: createDraft(userId, projectId, subscriptionId?, lines)
+    Billing->>Issue: issueDraft(draft.id, skipNotification)
+    Billing->>Time: markBilled(projectId, entry ids, invoice.id) WHERE billed_at IS NULL
+    alt concurrent bill or partial mark
+        Billing->>Invoice: voidInvoice(duplicate, skipNotification)
+        Billing-->>Admin: 409 duplicate invoice voided automatically
+    end
+    Billing->>Billing: generateAndStore time report PDF
+    Billing->>Invoice: update timeReportStorageKey
+    Billing->>Email: notifyInvoiceIssued(invoice + time report)
+    Billing->>Audit: log project.bill_time
+    Billing->>Summary: buildSummary(project)
+    Billing->>RT: projectSummaryChanged(summary)
+    Billing-->>Admin: 200 { invoiceId, invoiceNumber, billedMinutes, amountNet }

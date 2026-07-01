@@ -19,6 +19,8 @@ This application provides:
 - **Administration** - Service types, CloudInit configs, service plans, billing KPIs, manual invoices, billing profiles (admin only)
 - **Identity UI** - Login, registration, password reset, email confirmation, user management
 - **Real-time status** - Socket.IO subscription on the overview page
+- **Projects** - Assigned project list, read-only board, and ticket comments
+- **Project board WebSocket** - Live ticket updates on the `projects` namespace
 - **Localization** - English and German builds with locale-prefixed SSR paths
 - **Runtime configuration** - Express `/config` endpoint for deployed environments
 
@@ -41,12 +43,14 @@ All routes render inside `BillingConsoleContainerComponent` unless noted. Paths 
 
 ### Default and customer routes
 
-| Path             | Guard       | Component     | Description                              |
-| ---------------- | ----------- | ------------- | ---------------------------------------- |
-| `/`              | none        | redirect      | Redirects to `dashboard`                 |
-| `/dashboard`     | `authGuard` | Overview      | Subscription overview and server control |
-| `/subscriptions` | `authGuard` | Subscriptions | Plans list and ordering                  |
-| `/invoices`      | `authGuard` | Invoices      | Invoice list, payment, and detail        |
+| Path                   | Guard       | Component      | Description                              |
+| ---------------------- | ----------- | -------------- | ---------------------------------------- |
+| `/`                    | none        | redirect       | Redirects to `dashboard`                 |
+| `/dashboard`           | `authGuard` | Overview       | Subscription overview and server control |
+| `/subscriptions`       | `authGuard` | Subscriptions  | Plans list and ordering                  |
+| `/invoices`            | `authGuard` | Invoices       | Invoice list, payment, and detail        |
+| `/projects`            | `authGuard` | Projects       | Assigned projects list                   |
+| `/projects/:projectId` | `authGuard` | Project detail | Read-only board and KPI summary          |
 
 Stripe return URLs typically land on `/invoices?payment=success` or `?payment=cancel`.
 
@@ -71,6 +75,7 @@ Stripe return URLs typically land on `/invoices?payment=success` or `?payment=ca
 | `/administration/service-plans`      | ServicePlansPage          | Priced plans and ordering highlights |
 | `/administration/billing`            | AdminBillingPage          | KPIs, bill-now, open/overdue lists   |
 | `/administration/customer-profiles`  | AdminCustomerProfilesPage | Customer billing profile CRUD        |
+| `/administration/projects`           | AdminProjectsPage         | Project CRUD, time billing, board    |
 
 Unknown paths redirect to the shell root (`**` to ``).
 
@@ -110,6 +115,7 @@ billing: {
   restApiUrl: 'http://localhost:3200/api',
   frontendUrl: 'http://localhost:4500',
   websocketUrl: 'http://localhost:8082/billing',
+  projectsWebsocketUrl: 'http://localhost:8082/projects',
   tenantId: 'decabill',
 },
 authentication: {
@@ -119,6 +125,8 @@ authentication: {
 ```
 
 Production uses `environment.decabill.production.ts`. Align `authentication.type` with backend `AUTHENTICATION_METHOD`.
+
+When `projectsWebsocketUrl` is omitted, the console derives it from `websocketUrl` by swapping the `/billing` path for `/projects`.
 
 ### Docker image
 
@@ -138,8 +146,10 @@ The route providers register facades and reducers for:
 
 - `subscriptions`, `subscriptionServerInfo`, `servicePlans`, `serviceTypes`
 - `invoices`, `customerProfile`, `backorders`, `availability`
-- `adminBilling`, `adminInvoiceManager`, `adminCustomerProfiles`
+- `adminBilling`, `adminInvoiceManager`, `adminCustomerProfiles`, `adminProjects`
+- `projects`, `projectTickets`, `projectMilestones`, `projectTimeEntries`
 - `billingDashboardSocket` (WebSocket lifecycle and status payloads)
+- `projectBoardSocket` (projects namespace lifecycle and board events)
 
 Effects call the billing manager HTTP client and socket service; see `billing-console.routes.ts` for the full effect list.
 
@@ -174,6 +184,8 @@ Ensure `CSP_CONNECT_SRC_EXTRA` includes the browser-reachable billing manager or
 - **[Authentication](../features/authentication.md)** - Login methods
 - **[Dashboard and Server Control](../features/dashboard-and-server-control.md)** - Overview behavior
 - **[Real-time Status](../features/real-time-status.md)** - WebSocket events
+- **[Projects](../features/projects.md)** - Assignment, CRUD, and bill-time
+- **[Project Board](../features/project-board.md)** - Live board and `projects` WebSocket
 - **[Getting Started](../getting-started.md)** - Local setup
 - **[Docker Deployment](../deployment/docker-deployment.md)** - Container deployment
 

@@ -11,6 +11,7 @@ import { InvoiceVoidDocumentsRepository } from '../repositories/invoice-void-doc
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+import { ProjectTimeReportService } from '../projects/services/project-time-report.service';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
@@ -25,6 +26,7 @@ import { TaxCalculationService } from './tax-calculation.service';
 
 export interface CreateInvoiceDraftParams {
   subscriptionId?: string;
+  projectId?: string;
   userId: string;
   lineInputs: LineItemInput[];
   currency?: string;
@@ -45,6 +47,7 @@ export class InvoiceService {
     private readonly invoiceEmailService: InvoiceEmailService,
     private readonly billingIssuerConfig: BillingIssuerConfigService,
     private readonly auditLog: BillingAuditLogService,
+    private readonly projectTimeReportService: ProjectTimeReportService,
   ) {}
 
   async createAndIssue(params: CreateInvoiceDraftParams): Promise<{ invoiceRefId: string; invoiceNumber?: string }> {
@@ -58,6 +61,7 @@ export class InvoiceService {
     const totals = this.taxCalculationService.computeLines(params.lineInputs);
     const invoice = await this.invoicesRepository.create({
       subscriptionId: params.subscriptionId,
+      projectId: params.projectId,
       userId: params.userId,
       status: InvoiceStatus.DRAFT,
       currency: params.currency ?? 'EUR',
@@ -96,11 +100,15 @@ export class InvoiceService {
 
   async voidInvoice(
     invoiceId: string,
-    subscriptionId: string,
+    subscriptionId: string | null | undefined,
     adminUserId?: string,
     auditContext?: Record<string, unknown>,
+    options?: { skipNotification?: boolean },
   ): Promise<InvoiceEntity> {
-    const invoice = await this.invoicesRepository.findByIdAndSubscriptionId(invoiceId, subscriptionId);
+    const invoice =
+      subscriptionId != null && subscriptionId !== ''
+        ? await this.invoicesRepository.findByIdAndSubscriptionId(invoiceId, subscriptionId)
+        : await this.invoicesRepository.findById(invoiceId);
 
     if (!invoice) {
       throw new NotFoundException('Invoice not found');
@@ -121,7 +129,7 @@ export class InvoiceService {
     const voidedAt = new Date();
     const existingVoidDocument = await this.invoiceVoidDocumentsRepository.findByInvoiceId(invoiceId);
 
-    if (!existingVoidDocument) {
+    if (!options?.skipNotification && !existingVoidDocument) {
       const voidDocumentStorageKey = await this.ensureVoidDocumentStored(invoice, voidedAt);
 
       await this.invoiceEmailService.notifyVoidDocument(
@@ -262,6 +270,30 @@ export class InvoiceService {
     return await this.invoicePdfService.readPdf(storageKey);
   }
 
+  async getTimeReportPdfBufferForUser(invoiceId: string, userId: string): Promise<Buffer> {
+    const invoice = await this.invoicesRepository.findByIdForUser(invoiceId, userId);
+
+    if (!invoice) {
+      throw new NotFoundException('Invoice not found');
+    }
+
+    return await this.getTimeReportPdfBuffer(invoiceId, invoice.subscriptionId);
+  }
+
+  async getTimeReportPdfBuffer(invoiceId: string, subscriptionId?: string | null): Promise<Buffer> {
+    const invoice = await this.findInvoiceForAccess(invoiceId, subscriptionId);
+
+    if (invoice.status === InvoiceStatus.DRAFT) {
+      throw new BadRequestException('Draft invoices have no time report');
+    }
+
+    if (!invoice.timeReportStorageKey && !invoice.projectId) {
+      throw new BadRequestException('Time report is not available for this invoice');
+    }
+
+    return await this.projectTimeReportService.getPdfBufferForInvoice(invoice);
+  }
+
   async getPdfBufferForUser(invoiceId: string, userId: string): Promise<Buffer> {
     const invoice = await this.invoicesRepository.findByIdForUser(invoiceId, userId);
 
@@ -397,7 +429,7 @@ export class InvoiceService {
     invoice: InvoiceEntity,
   ): Pick<
     InvoiceResponseDto,
-    'canPay' | 'canDownload' | 'canPreview' | 'canDownloadVoidDocument' | 'voidDocumentNumber'
+    'canPay' | 'canDownload' | 'canPreview' | 'canDownloadVoidDocument' | 'canDownloadTimeReport' | 'voidDocumentNumber'
   > {
     const payable = OPEN_OVERDUE_INVOICE_STATUSES.includes(invoice.status) && Number(invoice.balanceDue) > 0;
     const previewable = invoice.status !== InvoiceStatus.DRAFT;
@@ -408,6 +440,7 @@ export class InvoiceService {
       canDownload: previewable,
       canPreview: previewable,
       canDownloadVoidDocument: voided && Boolean(invoice.invoiceNumber),
+      canDownloadTimeReport: previewable && Boolean(invoice.projectId),
       voidDocumentNumber: voided && invoice.invoiceNumber ? buildCreditNoteNumber(invoice.invoiceNumber) : undefined,
     };
   }
