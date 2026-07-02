@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.13.0](https://github.com/forepath/one/compare/v2.12.0...v2.13.0) (2026-07-02)
+
+
+### Features
+
+* custom cloud-init config support ([#448](https://github.com/forepath/one/issues/448)) ([32e9e63](https://github.com/forepath/one/commit/32e9e637356ddded0957954e5a2bc4a6840254e3))
+* decabill project management ([#449](https://github.com/forepath/one/issues/449)) ([a86079d](https://github.com/forepath/one/commit/a86079d7855240c0f3ebecb9b2aba04704d9bb88))
+
 ## [2.12.0](https://github.com/forepath/one/compare/v2.11.0...v2.12.0) (2026-06-26)
 
 
