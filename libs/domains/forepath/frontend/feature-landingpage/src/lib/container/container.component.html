@@ -124,6 +124,18 @@
                     >
                   </a>
                 </li>
+                <li>
+                  <a
+                    routerLink="/pricing/estimate"
+                    class="dropdown-item portal-nav-dropdown-item portal-nav-dropdown-item--stacked bg-primary text-white border border-primary"
+                    (click)="closeMobileMenu()"
+                  >
+                    <span i18n="@@featureForepath-navProjectEstimate">Project estimate</span>
+                    <span class="small text-white-50" i18n="@@featureForepath-navProjectEstimateCaption"
+                      >Get a ballpark quote from your project description</span
+                    >
+                  </a>
+                </li>
               </ul>
             </li>
             <li class="nav-item dropdown portal-nav-dropdown">
@@ -334,6 +346,14 @@
           <li class="mb-2">
             <a routerLink="/pricing" class="text-decoration-none footer-link small" i18n="@@featureForepath-navPricing"
               >Pricing</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/pricing/estimate"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureForepath-navProjectEstimate"
+              >Project estimate</a
             >
           </li>
         </ul>

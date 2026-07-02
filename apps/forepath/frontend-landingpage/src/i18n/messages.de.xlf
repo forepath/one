@@ -1774,12 +1774,16 @@
         <target>Notfallzuschläge sind auf der Tarifkarte veröffentlicht</target>
       </trans-unit>
       <trans-unit id="featureForepathOne-ctaTitle" datatype="html">
-        <source>Interested in early access?</source>
-        <target> Interesse an Early Access? </target>
+        <source> Want to see how the pieces fit your roadmap? </source>
+        <target> Möchten Sie sehen, wie die Bausteine in Ihre Roadmap passen? </target>
       </trans-unit>
       <trans-unit id="featureForepathOne-ctaLead" datatype="html">
-        <source> We share roadmap previews with teams facing similar problems. Reach out if you want to shape what comes next. </source>
-        <target> Wir teilen Roadmap-Vorschauen mit Teams, die ähnliche Probleme haben. Melden Sie sich, wenn Sie die nächsten Schritte mitgestalten möchten. </target>
+        <source> Tell us where you are today and where you want to be. We will map which services and products make sense, and in what order. </source>
+        <target> Sagen Sie uns, wo Sie heute stehen und wohin Sie möchten. Wir zeigen, welche Services und Produkte sinnvoll sind – und in welcher Reihenfolge. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathOne-ctaEstimateButton" datatype="html">
+        <source>Estimate your project</source>
+        <target>Projekt schätzen</target>
       </trans-unit>
       <trans-unit id="featureForepathOne-ctaButton" datatype="html">
         <source>Contact us</source>
@@ -2068,6 +2072,294 @@
       <trans-unit id="featureForepathSoftwareDevelopment-metaKeywords" datatype="html">
         <source>ForePath software development, platform engineering, integrations, custom applications</source>
         <target> ForePath Softwareentwicklung, Platform Engineering, Integrationen, individuelle Anwendungen </target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-metaTitle" datatype="html">
+        <source>Project estimate :: ForePath</source>
+        <target>Projektschätzung :: ForePath</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-metaDescription" datatype="html">
+        <source>Describe your project and get a local, indicative ForePath pricing estimate without sending your data to a remote API.</source>
+        <target>Beschreiben Sie Ihr Projekt und erhalten Sie eine lokale, indikative ForePath-Preisschätzung, ohne Ihre Daten an eine Remote-API zu senden.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-metaKeywords" datatype="html">
+        <source>ForePath project estimate, IT pricing calculator, software development estimate, consulting estimate</source>
+        <target>ForePath Projektschätzung, IT-Preisrechner, Softwareentwicklung Schätzung, Beratung Schätzung</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-heroTitle" datatype="html">
+        <source>Describe your project, get a <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>ballpark estimate<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Beschreiben Sie Ihr Projekt, erhalten Sie eine <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>grobe Schätzung<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-heroDescription" datatype="html">
+        <source>Tell us what you want to build or improve. A local model on your device maps your request to ForePath services and returns an indicative price range without sending your text to a remote API.</source>
+        <target>Erzählen Sie uns, was Sie aufbauen oder verbessern möchten. Ein lokales Modell auf Ihrem Gerät ordnet Ihre Anfrage ForePath-Leistungen zu und liefert eine indikative Preisspanne, ohne Ihren Text an eine Remote-API zu senden.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-checkingDevice" datatype="html">
+        <source>Checking whether this device can run the local estimation model...</source>
+        <target>Es wird geprüft, ob dieses Gerät das lokale Schätzmodell ausführen kann...</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-unsupportedTitle" datatype="html">
+        <source>Local estimation is not available on this device</source>
+        <target>Lokale Schätzung ist auf diesem Gerät nicht verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-gpuPermissionTitle" datatype="html">
+        <source>GPU access required for local estimation</source>
+        <target>GPU-Zugriff für lokale Schätzung erforderlich</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-gpuPermissionDescription" datatype="html">
+        <source>The estimator runs a local model on your device using WebGPU. Allow GPU access below to start the analysis. Your request stays on this device and is not sent to a remote API.</source>
+        <target>Der Schätzer nutzt ein lokales Modell auf Ihrem Gerät über WebGPU. Erlauben Sie den GPU-Zugriff unten, um die Analyse zu starten. Ihre Anfrage bleibt auf diesem Gerät und wird nicht an eine Remote-API gesendet.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-gpuPermissionButton" datatype="html">
+        <source>Allow GPU access</source>
+        <target>GPU-Zugriff erlauben</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-unsupportedHelp" datatype="html">
+        <source>We can still review your project manually and provide a tailored quote.</source>
+        <target>Wir können Ihr Projekt dennoch manuell prüfen und ein individuelles Angebot erstellen.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactButton" datatype="html">
+        <source>Contact us</source>
+        <target>Kontakt aufnehmen</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-chatTitle" datatype="html">
+        <source>Project estimator</source>
+        <target>Projektschätzer</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-chatHint" datatype="html">
+        <source>Example: “We need a customer portal, API integration, and managed hosting support for 3 months.”</source>
+        <target>Beispiel: „Wir brauchen ein Kundenportal, API-Integration und Managed-Hosting-Support für 3 Monate.“</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-modelLoading" datatype="html">
+        <source>Loading local model...</source>
+        <target>Lokales Modell wird geladen...</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-emptyState" datatype="html">
+        <source>Share your goals, timeline, and systems involved to receive an indicative estimate.</source>
+        <target>Teilen Sie Ziele, Zeitplan und beteiligte Systeme mit, um eine indikative Schätzung zu erhalten.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-resultTitle" datatype="html">
+        <source>Indicative estimate</source>
+        <target>Indikative Schätzung</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-colService" datatype="html">
+        <source>Service</source>
+        <target>Leistung</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-colDescription" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-colAmount" datatype="html">
+        <source>Amount</source>
+        <target>Betrag</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-subtotal" datatype="html">
+        <source>Subtotal (net):</source>
+        <target>Zwischensumme (netto):</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-assumptions" datatype="html">
+        <source>Assumptions</source>
+        <target>Annahmen</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-disclaimerAriaLabel" datatype="html">
+        <source>Estimate disclaimer</source>
+        <target>Hinweis zur Schätzung</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generating" datatype="html">
+        <source>Generating your estimate...</source>
+        <target>Ihre Schätzung wird erstellt...</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupTitle" datatype="html">
+        <source>Preparing your local estimator</source>
+        <target>Lokaler Schätzer wird vorbereitet</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingTitle" datatype="html">
+        <source>Building your estimate</source>
+        <target>Ihre Schätzung wird erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg1" datatype="html">
+        <source>Getting the estimator ready on your device...</source>
+        <target>Der Schätzer wird auf Ihrem Gerät vorbereitet...</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg2" datatype="html">
+        <source>First visit can take a minute. Later loads will be much faster.</source>
+        <target>Der erste Besuch kann eine Minute dauern. Spätere Aufrufe sind deutlich schneller.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg3" datatype="html">
+        <source>Everything runs locally in your browser. Your request stays private.</source>
+        <target>Alles läuft lokal in Ihrem Browser. Ihre Anfrage bleibt privat.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg4" datatype="html">
+        <source>We are preparing ForePath services so we can map your project accurately.</source>
+        <target>Wir bereiten ForePath-Leistungen vor, um Ihr Projekt präzise zuzuordnen.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg5" datatype="html">
+        <source>Almost there. Thanks for your patience while we warm up.</source>
+        <target>Fast geschafft. Danke für Ihre Geduld beim Aufwärmen.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg6" datatype="html">
+        <source>Still faster than scheduling a call. We promise!</source>
+        <target>Immer noch schneller als einen Termin zu vereinbaren. Versprochen!</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg7" datatype="html">
+        <source>Your data stays on this device. No cloud, no cold calls.</source>
+        <target>Ihre Daten bleiben auf diesem Gerät. Keine Cloud, kein Kaltakquise-Anruf.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupMsg8" datatype="html">
+        <source>Loading once so your next estimate can be quicker.</source>
+        <target>Einmal laden, damit die nächste Schätzung schneller geht.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupProgressLabel" datatype="html">
+        <source>Progress:</source>
+        <target>Fortschritt:</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupCacheDisclaimer" datatype="html">
+        <source> The first load downloads the model to your device and can take a minute or longer. Later visits load from your browser cache and start much faster. </source>
+        <target> Beim ersten Laden wird das Modell auf Ihr Gerät heruntergeladen – das kann eine Minute oder länger dauern. Spätere Besuche laden aus dem Browser-Cache und starten deutlich schneller. </target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupCacheDisclaimerAriaLabel" datatype="html">
+        <source>Model load time notice</source>
+        <target>Hinweis zur Modell-Ladezeit</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-warmupOverlayAriaLabel" datatype="html">
+        <source>Preparing the local project estimator</source>
+        <target>Lokaler Projektschätzer wird vorbereitet</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg1" datatype="html">
+        <source>Reading your request...</source>
+        <target>Ihre Anfrage wird gelesen...</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg2" datatype="html">
+        <source>Matching your needs to ForePath services...</source>
+        <target>Ihre Anforderungen werden ForePath-Leistungen zugeordnet...</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg3" datatype="html">
+        <source>Calculating indicative line items...</source>
+        <target>Indikative Positionen werden berechnet...</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg4" datatype="html">
+        <source>Putting together your ballpark estimate...</source>
+        <target>Ihre grobe Schätzung wird zusammengestellt...</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg5" datatype="html">
+        <source>This can take a moment. Hang tight.</source>
+        <target>Das kann einen Moment dauern. Bitte kurz warten.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg6" datatype="html">
+        <source>It's faster than a call. We promise!</source>
+        <target>Schneller als ein Telefonat. Versprochen!</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg7" datatype="html">
+        <source>Crunching numbers without sending your request anywhere.</source>
+        <target>Zahlen werden geknackt, ohne Ihre Anfrage irgendwohin zu senden.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingMsg8" datatype="html">
+        <source>Preparing for take-off...</source>
+        <target>Wir machen uns startklar...</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingHint" datatype="html">
+        <source>Your request is processed locally on this device.</source>
+        <target>Ihre Anfrage wird lokal auf diesem Gerät verarbeitet.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-generatingOverlayAriaLabel" datatype="html">
+        <source>Generating your project estimate</source>
+        <target>Projektschätzung wird erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-inputLabel" datatype="html">
+        <source>Describe your project</source>
+        <target>Beschreiben Sie Ihr Projekt</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-inputPlaceholder" datatype="html">
+        <source>Tell us about the scope, systems, timeline, and support needs for your project.</source>
+        <target>Erzählen Sie uns von Umfang, Systemen, Zeitplan und Supportbedarf Ihres Projekts.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-sendAriaLabel" datatype="html">
+        <source>Send project description</source>
+        <target>Projektbeschreibung senden</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-sendButton" datatype="html">
+        <source>Send</source>
+        <target>Senden</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-keyboardHint" datatype="html">
+        <source>Press Enter to send. Use Ctrl+Enter for a new line.</source>
+        <target>Enter zum Senden. Strg+Enter für eine neue Zeile.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-activeModelProfileLabel" datatype="html">
+        <source>Analysis effort</source>
+        <target>Analyseaufwand</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-memoryProfileSwitcherAriaLabel" datatype="html">
+        <source>Analysis effort profile</source>
+        <target>Profil für Analyseaufwand</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-liteProfileWarningAriaLabel" datatype="html">
+        <source>Lite analysis effort warning</source>
+        <target>Hinweis zur Lite-Analyse</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-liteProfileWarning" datatype="html">
+        <source>Lite analysis may significantly underestimate your project and rely heavily on baseline assumptions.</source>
+        <target>Die Lite-Analyse kann Ihr Projekt deutlich unterschätzen und stark auf Standardannahmen zurückgreifen.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-liteProfileUpgradeHint" datatype="html">
+        <source>Choose Balanced or Standard above if available for more realistic results.</source>
+        <target>Wählen Sie Balanced oder Standard oben, sofern verfügbar, für realistischere Ergebnisse.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-profileLite" datatype="html">
+        <source>Lite</source>
+        <target>Lite</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-profileBalanced" datatype="html">
+        <source>Balanced</source>
+        <target>Ausgewogen</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-profileStandard" datatype="html">
+        <source>Standard</source>
+        <target>Standard</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-switchToLighter" datatype="html">
+        <source>Use lighter model:</source>
+        <target>Leichteres Modell verwenden:</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-startOverButton" datatype="html">
+        <source>Start over</source>
+        <target>Neu starten</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-startOverHint" datatype="html">
+        <source>Clear this estimate and describe a new project.</source>
+        <target>Diese Schätzung löschen und ein neues Projekt beschreiben.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-ctaTitle" datatype="html">
+        <source>Need a confirmed quote?</source>
+        <target>Benötigen Sie ein verbindliches Angebot?</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-ctaLead" datatype="html">
+        <source>The estimator is indicative. We are happy to refine scope and provide a formal proposal.</source>
+        <target>Die Schätzung ist indikativ. Wir präzisieren gerne den Umfang und erstellen ein formelles Angebot.</target>
+      </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-ctaButton" datatype="html">
+        <source>Contact us</source>
+        <target>Kontakt aufnehmen</target>
+      </trans-unit>
+      <trans-unit id="featureForepath-navProjectEstimate" datatype="html">
+        <source>Project estimate</source>
+        <target>Projektschätzung</target>
+      </trans-unit>
+      <trans-unit id="featureForepath-navProjectEstimateCaption" datatype="html">
+        <source>Get a ballpark quote from your project description</source>
+        <target>Erhalten Sie eine grobe Kostenschätzung aus Ihrer Projektbeschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureForepathHome-heroEstimate" datatype="html">
+        <source>Get a ballpark estimate</source>
+        <target>Grobe Schätzung erhalten</target>
+      </trans-unit>
+      <trans-unit id="featureForepathPricing-heroEstimateCta" datatype="html">
+        <source>Estimate your project</source>
+        <target>Projekt schätzen</target>
+      </trans-unit>
+      <trans-unit id="featureForepathPricing-ctaEstimateButton" datatype="html">
+        <source>Estimate your project</source>
+        <target>Projekt schätzen</target>
       </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>

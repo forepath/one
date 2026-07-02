@@ -122,6 +122,9 @@
       ],
       "@forepath/decabill/frontend/feature-landingpage": [
         "libs/domains/decabill/frontend/feature-landingpage/src/index.ts"
+      ],
+      "@forepath/forepath/frontend/data-access-project-estimator": [
+        "libs/domains/forepath/frontend/data-access-project-estimator/src/index.ts"
       ]
     }
   },

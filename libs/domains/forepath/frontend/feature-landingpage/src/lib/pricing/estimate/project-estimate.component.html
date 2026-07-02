@@ -1,0 +1,273 @@
+<!-- Hero -->
+<section id="hero" class="py-10 py-lg-6 bg-body-tertiary position-relative overflow-hidden grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center">
+      <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathProjectEstimate-heroTitle">
+        Describe your project, get a <span class="text-primary">ballpark estimate</span>
+      </h1>
+      <p class="lead mb-0 mx-auto hero-lead section-lead" i18n="@@featureForepathProjectEstimate-heroDescription">
+        Tell us what you want to build or improve. A local model on your device maps your request to ForePath services
+        and returns an indicative price range without sending your text to a remote API.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="py-10 bg-white grid-section">
+  <div class="container grid-section__container">
+    @if (showDebugPanel()) {
+      <framework-forepath-project-estimate-debug-panel
+        [activePreset]="activeDebugPreset()"
+        (presetSelected)="applyDebugPreset($event)"
+        (runInitialize)="runRealInitialize()"
+      />
+    }
+
+    <div class="estimate-chat card border rounded-3 shadow-sm p-5">
+      @if (isCheckingDevice()) {
+        <framework-forepath-project-estimate-loading-panel mode="checking" />
+      } @else if (isAwaitingGpuPermission()) {
+        <div class="estimate-chat__overlay-card text-center w-100">
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathProjectEstimate-gpuPermissionTitle">
+            GPU access required for local estimation
+          </h3>
+          <p class="text-muted mb-4" i18n="@@featureForepathProjectEstimate-gpuPermissionDescription">
+            The estimator runs a local model on your device using WebGPU. Allow GPU access below to start the analysis.
+            Your request stays on this device and is not sent to a remote API.
+          </p>
+          <button
+            type="button"
+            class="btn btn-primary btn-lg px-5 py-3 rounded-3 cta-btn"
+            (click)="requestGpuAccess()"
+            [disabled]="isRequestingGpuAccess()"
+            i18n="@@featureForepathProjectEstimate-gpuPermissionButton"
+          >
+            Allow GPU access
+          </button>
+        </div>
+      } @else if (isDeviceUnsupported()) {
+        <div class="estimate-chat__overlay-card text-center w-100">
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathProjectEstimate-unsupportedTitle">
+            Local estimation is not available on this device
+          </h3>
+          <p class="text-muted mb-4">
+            {{ facade.unsupportedReason$ | async }}
+          </p>
+          <p class="text-muted mb-4" i18n="@@featureForepathProjectEstimate-unsupportedHelp">
+            We can still review your project manually and provide a tailored quote.
+          </p>
+          <a
+            [href]="'mailto:' + contact.email"
+            class="btn btn-primary btn-lg px-5 py-3 rounded-3 cta-btn"
+            i18n="@@featureForepathProjectEstimate-contactButton"
+          >
+            Contact us
+          </a>
+        </div>
+      } @else if (showOverlay()) {
+        <framework-forepath-project-estimate-loading-panel [mode]="overlayKind()!" />
+      } @else {
+        @if (hasMessages()) {
+          <div
+            #messageViewport
+            class="estimate-chat__messages px-4 pt-4 pb-0"
+            [class.border-bottom]="!hasEstimate()"
+            aria-live="polite"
+            aria-relevant="additions"
+          >
+            @for (message of facade.messages$ | async; track message.id) {
+              <article
+                class="estimate-message mb-4"
+                [ngClass]="message.role === 'user' ? 'estimate-message--user' : 'estimate-message--assistant'"
+              >
+                <div class="estimate-message__bubble rounded-2">
+                  <p class="mb-0">{{ message.content }}</p>
+
+                  @if (message.estimate) {
+                    <div class="estimate-result mt-4">
+                      <h3 class="h6 fw-semibold mb-3" i18n="@@featureForepathProjectEstimate-resultTitle">
+                        Indicative estimate
+                      </h3>
+                      <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-3 estimate-result__table">
+                          <thead>
+                            <tr>
+                              <th scope="col" i18n="@@featureForepathProjectEstimate-colService">Service</th>
+                              <th scope="col" i18n="@@featureForepathProjectEstimate-colDescription">Description</th>
+                              <th scope="col" class="text-end" i18n="@@featureForepathProjectEstimate-colAmount">
+                                Amount
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (lineItem of message.estimate.lineItems; track lineItem.description) {
+                              <tr>
+                                <td>{{ lineItem.serviceName }}</td>
+                                <td>{{ lineItem.description }}</td>
+                                <td class="text-end fw-semibold">
+                                  {{ lineItem.lineTotal | currency: 'EUR' : 'symbol' : '1.2-2' }}
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                      <p class="fw-semibold mb-2">
+                        <span i18n="@@featureForepathProjectEstimate-subtotal">Subtotal (net):</span>
+                        {{ message.estimate.subtotalNet | currency: 'EUR' : 'symbol' : '1.2-2' }}
+                      </p>
+                      @if (message.estimate.assumptions.length > 0) {
+                        <div class="mb-3">
+                          <p class="small fw-semibold mb-1" i18n="@@featureForepathProjectEstimate-assumptions">
+                            Assumptions
+                          </p>
+                          <ul class="small text-muted mb-0">
+                            @for (assumption of message.estimate.assumptions; track assumption) {
+                              <li>{{ assumption }}</li>
+                            }
+                          </ul>
+                        </div>
+                      }
+                      <div
+                        class="alert alert-warning estimate-notice-alert mb-0"
+                        role="alert"
+                        i18n-aria-label="@@featureForepathProjectEstimate-disclaimerAriaLabel"
+                        aria-label="Estimate disclaimer"
+                      >
+                        <p class="mb-0">{{ message.estimate.disclaimer }}</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </article>
+            }
+          </div>
+        }
+
+        @if (facade.error$ | async; as error) {
+          <div class="alert alert-danger mx-4 mt-0 mb-4" role="alert">
+            {{ error }}
+          </div>
+        }
+
+        @if (hasEstimate()) {
+          <div class="estimate-chat__footer px-4 bg-white mt-4">
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              (click)="startOver()"
+              i18n="@@featureForepathProjectEstimate-startOverButton"
+            >
+              Start over
+            </button>
+          </div>
+        } @else {
+          <div
+            class="estimate-chat__composer px-4 bg-white"
+            [class.pt-4]="hasMessages() && showMemoryProfile()"
+            [class.border-top]="hasMessages()"
+          >
+            @if (showMemoryProfile()) {
+              <div class="estimate-chat__memory-profile mb-3">
+                <div class="d-flex flex-column flex-sm-row flex-sm-wrap align-items-sm-center gap-2 gap-sm-3">
+                  <span
+                    class="small fw-semibold text-body"
+                    i18n="@@featureForepathProjectEstimate-activeModelProfileLabel"
+                  >
+                    Analysis effort
+                  </span>
+                  <div
+                    class="btn-group btn-group-sm estimate-chat__memory-profile-switcher"
+                    role="group"
+                    i18n-aria-label="@@featureForepathProjectEstimate-memoryProfileSwitcherAriaLabel"
+                    aria-label="Analysis effort profile"
+                  >
+                    @for (option of memoryProfileOptions(); track option.profileId) {
+                      @if (option.isActive) {
+                        <button type="button" class="btn btn-primary" disabled>
+                          {{ profileLabel(option.profileId) }}
+                        </button>
+                      } @else if (option.canSelect) {
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary"
+                          (click)="switchMemoryProfile(option.profileId)"
+                          [disabled]="isEstimating() || isModelLoading()"
+                        >
+                          {{ profileLabel(option.profileId) }}
+                        </button>
+                      }
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+            @if (showLiteProfileWarning()) {
+              <div
+                class="alert alert-warning estimate-notice-alert mb-3"
+                role="alert"
+                i18n-aria-label="@@featureForepathProjectEstimate-liteProfileWarningAriaLabel"
+                aria-label="Lite analysis effort warning"
+              >
+                <p class="mb-0" i18n="@@featureForepathProjectEstimate-liteProfileWarning">
+                  Lite analysis may significantly underestimate your project and rely heavily on baseline assumptions.
+                </p>
+                @if (hasHigherProfileAvailable()) {
+                  <p class="mb-0 mt-2" i18n="@@featureForepathProjectEstimate-liteProfileUpgradeHint">
+                    Choose Balanced or Standard above if available for more realistic results.
+                  </p>
+                }
+              </div>
+            }
+            <div class="d-flex flex-column flex-md-row gap-3">
+              <textarea
+                #promptInput
+                id="project-estimate-prompt"
+                class="form-control bg-white"
+                rows="4"
+                [ngModel]="prompt()"
+                (ngModelChange)="prompt.set($event)"
+                (keydown)="onPromptKeydown($event)"
+                i18n-placeholder="@@featureForepathProjectEstimate-inputPlaceholder"
+                i18n-aria-label="@@featureForepathProjectEstimate-inputPlaceholder"
+                placeholder="Tell us about the scope, systems, timeline, and support needs for your project."
+                aria-label="Tell us about the scope, systems, timeline, and support needs for your project."
+              ></textarea>
+              <button
+                type="button"
+                class="btn btn-primary px-4 align-self-md-end"
+                (click)="submitPrompt()"
+                [disabled]="!canSubmit() || !prompt().trim()"
+                i18n-aria-label="@@featureForepathProjectEstimate-sendAriaLabel"
+                aria-label="Send project description"
+              >
+                <span i18n="@@featureForepathProjectEstimate-sendButton">Send</span>
+              </button>
+            </div>
+            <p class="small text-muted mt-2 mb-0" i18n="@@featureForepathProjectEstimate-keyboardHint">
+              Press Enter to send. Use Ctrl+Enter for a new line.
+            </p>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</section>
+
+<section id="cta" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathProjectEstimate-ctaTitle">Need a confirmed quote?</h2>
+      <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featureForepathProjectEstimate-ctaLead">
+        The estimator is indicative. We are happy to refine scope and provide a formal proposal.
+      </p>
+      <a
+        [href]="'mailto:' + contact.email"
+        class="btn btn-light btn-lg px-5 py-3 rounded-3 fw-semibold cta-btn"
+        i18n="@@featureForepathProjectEstimate-ctaButton"
+      >
+        Contact us
+      </a>
+    </div>
+  </div>
+</section>

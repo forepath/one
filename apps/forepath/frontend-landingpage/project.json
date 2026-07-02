@@ -20,10 +20,12 @@
         "index": "apps/forepath/frontend-landingpage/src/index.html",
         "browser": "apps/forepath/frontend-landingpage/src/main.ts",
         "polyfills": [
+          "apps/forepath/frontend-landingpage/src/zone-flags.ts",
           "zone.js",
           "apps/forepath/frontend-landingpage/src/polyfills.ts"
         ],
         "tsConfig": "apps/forepath/frontend-landingpage/tsconfig.app.json",
+        "webWorkerTsConfig": "apps/forepath/frontend-landingpage/tsconfig.worker.json",
         "inlineStyleLanguage": "scss",
         "assets": [
           {

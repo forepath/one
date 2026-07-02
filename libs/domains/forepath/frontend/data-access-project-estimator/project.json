@@ -1,0 +1,21 @@
+{
+  "name": "forepath-frontend-data-access-project-estimator",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/forepath/frontend/data-access-project-estimator/src",
+  "prefix": "forepath",
+  "projectType": "library",
+  "tags": ["domain:forepath", "scope:frontend", "type:data-access"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/forepath/frontend/data-access-project-estimator/jest.config.cts",
+        "tsConfig": "libs/domains/forepath/frontend/data-access-project-estimator/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}
