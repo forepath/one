@@ -21,7 +21,9 @@ function forepathRoutePathFromRouterUrl(url: string): string {
 }
 
 function isServicesDropdownRoutePath(path: string): boolean {
-  return path === 'consulting' || path === 'it-systems' || path === 'software-development';
+  return (
+    path === 'consulting' || path === 'it-systems' || path === 'software-development' || path === 'pricing/estimate'
+  );
 }
 
 @Component({

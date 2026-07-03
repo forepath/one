@@ -5,9 +5,16 @@
       <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathPricing-heroTitle">
         Transparent <span class="text-primary">service pricing</span> for predictable IT investment
       </h1>
-      <p class="lead mb-0 mx-auto hero-lead section-lead" i18n="@@featureForepathPricing-heroDescription">
+      <p class="lead mb-4 mx-auto hero-lead section-lead" i18n="@@featureForepathPricing-heroDescription">
         Clear structures build trust. See exactly what IT systems and software development cost before you commit.
       </p>
+      <a
+        routerLink="/pricing/estimate"
+        class="btn btn-primary btn-lg px-4 py-3 rounded-3 cta-btn"
+        i18n="@@featureForepathPricing-heroEstimateCta"
+      >
+        Estimate your project
+      </a>
     </div>
   </div>
 </section>
@@ -213,12 +220,21 @@
       <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featureForepathPricing-ctaLead">
         We are happy to walk through your scenario and recommend the right engagement model before work begins.
       </p>
-      <a
-        href="mailto:hi@forepath.io"
-        class="btn btn-light btn-lg px-5 py-3 rounded-3 fw-semibold cta-btn"
-        i18n="@@featureForepathPricing-ctaButton"
-        >Contact us</a
-      >
+      <div class="d-flex flex-wrap gap-3 justify-content-center">
+        <a
+          routerLink="/pricing/estimate"
+          class="btn btn-light btn-lg px-5 py-3 rounded-3 fw-semibold cta-btn"
+          i18n="@@featureForepathPricing-ctaEstimateButton"
+        >
+          Estimate your project
+        </a>
+        <a
+          href="mailto:hi@forepath.io"
+          class="btn btn-outline-light btn-lg px-5 py-3 rounded-3 fw-semibold cta-btn"
+          i18n="@@featureForepathPricing-ctaButton"
+          >Contact us</a
+        >
+      </div>
     </div>
   </div>
 </section>

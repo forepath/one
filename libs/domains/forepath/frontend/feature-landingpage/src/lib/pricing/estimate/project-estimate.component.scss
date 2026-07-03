@@ -1,0 +1,58 @@
+@import '../../page.component.scss';
+
+.estimate-chat__messages {
+  min-height: 24rem;
+  overflow-y: auto;
+  background: var(--bs-white);
+}
+
+.estimate-chat__composer .form-control {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.estimate-chat__memory-profile-switcher .btn {
+  min-width: 5.5rem;
+}
+
+.estimate-message {
+  display: flex;
+}
+
+.estimate-message--user {
+  justify-content: flex-end;
+}
+
+.estimate-message--assistant {
+  justify-content: flex-start;
+}
+
+.estimate-message__bubble {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  background: var(--bs-tertiary-bg);
+}
+
+.estimate-message--user .estimate-message__bubble {
+  background: rgba(255, 107, 53, 0.12);
+}
+
+.estimate-result {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.estimate-result__table {
+  --bs-table-bg: var(--bs-tertiary-bg);
+}
+
+.estimate-notice-alert {
+  --bs-alert-bg: rgba(var(--bs-warning-rgb), 0.12);
+  --bs-alert-border-color: rgba(var(--bs-warning-rgb), 0.35);
+  --bs-alert-color: var(--bs-body-color);
+}
+
+.estimate-notice-alert p:last-child {
+  margin-bottom: 0;
+}
