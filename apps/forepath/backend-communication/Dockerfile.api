@@ -1,0 +1,67 @@
+# -----------------------------------------------------------------------------
+# Image:      forepath-communication-api
+# Project:    backend-communication — Nx target `api-container-image`
+# Registry:   ghcr.io/forepath/forepath-communication-api
+# Base:       debian:trixie-slim
+# User:       agenstra (APP_UID / APP_GID, default 10001)
+# Exposes:    3300 (HTTP API)
+# Build:      npx nx run forepath-backend-communication:api-container-image
+# Run:        nx run forepath-backend-communication:start-containers
+# Notes:      Configure via runtime env; see docs/forepath/applications/backend-communication.md
+# -----------------------------------------------------------------------------
+#
+FROM docker.io/debian:trixie-slim
+
+ARG APP_UID=10001
+ARG APP_GID=10001
+
+ENV HOST=0.0.0.0
+ENV PORT=3300
+ENV NVM_DIR=/home/agenstra/.nvm
+ENV NODE_VERSION=24.14.1
+ENV HOME=/home/agenstra
+ENV PATH="/home/agenstra/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
+
+WORKDIR /app
+
+EXPOSE ${PORT}
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    bash \
+    ca-certificates \
+    util-linux && \
+    groupadd --gid "${APP_GID}" agenstra && \
+    useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --home-dir /home/agenstra --shell /bin/bash agenstra && \
+    chown agenstra:agenstra /app && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | PROFILE=/dev/null bash && \
+    . "${NVM_DIR}/nvm.sh" && \
+    nvm install "${NODE_VERSION}" && \
+    nvm alias default "${NODE_VERSION}" && \
+    chown -R agenstra:agenstra /home/agenstra
+
+COPY --chown=agenstra:agenstra package*.json ./
+
+RUN . "${NVM_DIR}/nvm.sh" && \
+    npm i && \
+    npm cache clean --force && \
+    chown -R agenstra:agenstra /app
+
+COPY --chown=agenstra:agenstra . /app
+
+RUN printf '%s\n' \
+    '#!/bin/bash' \
+    'set -euo pipefail' \
+    '. "${NVM_DIR}/nvm.sh"' \
+    'exec runuser -u agenstra -g agenstra -- node main.js' \
+    > /usr/local/bin/docker-entrypoint.sh && \
+    chmod 755 /usr/local/bin/docker-entrypoint.sh
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f "http://localhost:${PORT}/api/health" || exit 1
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

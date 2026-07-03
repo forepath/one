@@ -76,16 +76,14 @@ export type EstimateLoadingMode = 'checking' | 'warmup' | 'generating';
 
       @if (mode() === 'checking') {
         <p class="mb-0" i18n="@@featureForepathProjectEstimate-checkingDevice">
-          Checking whether this device can run the local estimation model...
+          Checking whether we can prepare your quote...
         </p>
       } @else {
         @if (mode() === 'warmup') {
-          <h3 class="h5 fw-semibold mb-2" i18n="@@featureForepathProjectEstimate-warmupTitle">
-            Preparing your local estimator
-          </h3>
+          <h3 class="h5 fw-semibold mb-2" i18n="@@featureForepathProjectEstimate-warmupTitle">Preparing to quote</h3>
         } @else {
           <h3 class="h5 fw-semibold mb-2" i18n="@@featureForepathProjectEstimate-generatingTitle">
-            Building your estimate
+            Building your quote
           </h3>
         }
 
@@ -98,11 +96,10 @@ export type EstimateLoadingMode = 'checking' | 'warmup' | 'generating';
             class="alert alert-warning estimate-notice-alert mt-3 mb-0 text-start"
             role="note"
             i18n-aria-label="@@featureForepathProjectEstimate-warmupCacheDisclaimerAriaLabel"
-            aria-label="Model load time notice"
+            aria-label="First visit load time notice"
           >
             <p class="mb-0" i18n="@@featureForepathProjectEstimate-warmupCacheDisclaimer">
-              The first load downloads the model to your device and can take a minute or longer. Later visits load from
-              your browser cache and start much faster.
+              The first visit can take a minute or longer. Later visits start much faster.
             </p>
           </div>
         }
@@ -123,7 +120,7 @@ export type EstimateLoadingMode = 'checking' | 'warmup' | 'generating';
           </p>
         } @else {
           <p class="small text-muted mb-0 mt-3" i18n="@@featureForepathProjectEstimate-generatingHint">
-            Your request is processed locally on this device.
+            Your project details stay private.
           </p>
         }
       }
@@ -136,8 +133,8 @@ export class ForepathProjectEstimateLoadingPanelComponent {
   readonly rotatingMessage = signal('');
   readonly progressPercent = signal(0);
 
-  readonly warmupOverlayAriaLabel = $localize`:@@featureForepathProjectEstimate-warmupOverlayAriaLabel:Preparing the local project estimator`;
-  readonly generatingOverlayAriaLabel = $localize`:@@featureForepathProjectEstimate-generatingOverlayAriaLabel:Generating your project estimate`;
+  readonly warmupOverlayAriaLabel = $localize`:@@featureForepathProjectEstimate-warmupOverlayAriaLabel:Preparing to quote`;
+  readonly generatingOverlayAriaLabel = $localize`:@@featureForepathProjectEstimate-generatingOverlayAriaLabel:Generating your instant quote`;
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly ngZone = inject(NgZone);

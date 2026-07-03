@@ -48,7 +48,7 @@ export function toModelLoadErrorMessage(error: unknown): string {
     message.includes('OOM') ||
     message.includes('Failed to execute')
   ) {
-    return 'The local model ran out of GPU memory. Close other tabs, reload this page, and try a shorter project description.';
+    return 'We ran out of memory preparing your quote. Close other tabs, reload this page, and try a shorter project description.';
   }
 
   if (message.includes('low on memory')) {
@@ -56,7 +56,7 @@ export function toModelLoadErrorMessage(error: unknown): string {
   }
 
   if (isHtmlJsonParseError(error)) {
-    return 'Local model files could not be loaded. The model may not be deployed yet on this environment.';
+    return 'The quote tool could not be loaded. Please try again later or contact us for a quote.';
   }
 
   if (error instanceof Error) {
@@ -71,5 +71,5 @@ export function toModelLoadErrorMessage(error: unknown): string {
     return String((error as { message: unknown }).message);
   }
 
-  return 'Failed to load the local estimation model.';
+  return 'Failed to load the quote tool. Please refresh the page or contact us.';
 }

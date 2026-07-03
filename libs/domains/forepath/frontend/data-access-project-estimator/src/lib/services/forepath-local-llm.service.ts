@@ -21,6 +21,12 @@ import { cloneProjectBreakdown } from '../utils/forepath-breakdown-clone.utils';
 import { calibrateProjectBreakdown } from '../utils/forepath-breakdown-calibration.utils';
 import { isSelfHostedModelAvailable, toModelLoadErrorMessage } from '../utils/forepath-model-assets.utils';
 import { hashStringToSeed, normalizeProjectDescription } from '../utils/forepath-prompt-hash.utils';
+import {
+  fitUserPromptToContextWindow,
+  computeMaxOutputTokens,
+  estimatePromptTokenCount,
+} from '../utils/forepath-prompt-token-budget.utils';
+import { PROJECT_ESTIMATE_PROMPT_TEMPLATE_OVERHEAD_TOKENS } from '../constants/forepath-prompt-input.constants';
 
 import { ForepathEstimateParserService } from './forepath-estimate-parser.service';
 import { ForepathLlmMemoryProfileService } from './forepath-llm-memory-profile.service';
@@ -69,9 +75,15 @@ export class ForepathLocalLlmService {
   ): Promise<ProjectBreakdown> {
     this.memoryProfileService.assertMemoryHeadroom();
 
-    const normalizedPrompt = normalizeProjectDescription(userPrompt);
-    const profileId = this.memoryProfileService.getProfile().profileId;
-    const cacheKey = `${profileId}:${normalizedPrompt}`;
+    const profile = this.memoryProfileService.getProfile();
+    const systemPrompt = this.buildSystemPrompt();
+    const fittedUserPrompt = fitUserPromptToContextWindow({
+      userPrompt,
+      contextWindowSize: profile.contextWindowSize,
+      systemPrompt,
+    });
+    const normalizedPrompt = normalizeProjectDescription(fittedUserPrompt);
+    const cacheKey = `${profile.profileId}:${normalizedPrompt}`;
     const cachedBreakdown = this.breakdownCache.get(cacheKey);
 
     if (cachedBreakdown) {
@@ -79,8 +91,8 @@ export class ForepathLocalLlmService {
     }
 
     const engine = await this.ensureEngine(onProgress);
-    const messages = this.buildMessages(userPrompt);
-    const completionParams = this.buildCompletionParams(messages, normalizedPrompt);
+    const messages = this.buildMessages(fittedUserPrompt, systemPrompt);
+    const completionParams = this.buildCompletionParams(messages, normalizedPrompt, systemPrompt, fittedUserPrompt);
     const response = await engine.chat.completions.create(completionParams);
 
     const content = response.choices[0]?.message?.content;
@@ -108,7 +120,7 @@ export class ForepathLocalLlmService {
       ];
 
       const retryResponse = await engine.chat.completions.create({
-        ...this.buildCompletionParams(retryMessages, normalizedPrompt),
+        ...this.buildCompletionParams(retryMessages, normalizedPrompt, systemPrompt, fittedUserPrompt),
       });
 
       const retryContent = retryResponse.choices[0]?.message?.content;
@@ -126,8 +138,19 @@ export class ForepathLocalLlmService {
 
   buildSystemPrompt(): string {
     const profile = this.memoryProfileService.getProfile();
-    const catalog = this.pricingCalculator.buildCatalogPromptContext(profile.useCompactPrompt);
-    const guidelines = profile.useCompactPrompt
+    let systemPrompt = this.composeSystemPrompt(profile.useCompactPrompt);
+    const maxPrefillTokens = profile.contextWindowSize - PROJECT_ESTIMATE_PROMPT_TEMPLATE_OVERHEAD_TOKENS;
+
+    if (estimatePromptTokenCount(systemPrompt) > maxPrefillTokens) {
+      systemPrompt = this.composeSystemPrompt(true);
+    }
+
+    return systemPrompt;
+  }
+
+  private composeSystemPrompt(compact: boolean): string {
+    const catalog = this.pricingCalculator.buildCatalogPromptContext(compact);
+    const guidelines = compact
       ? FOREPATH_ESTIMATE_CALCULATION_GUIDELINES_COMPACT
       : FOREPATH_ESTIMATE_CALCULATION_GUIDELINES;
 
@@ -162,6 +185,8 @@ export class ForepathLocalLlmService {
   private buildCompletionParams(
     messages: ChatCompletionMessageParam[],
     normalizedPrompt: string,
+    systemPrompt: string,
+    userPrompt: string,
   ): {
     messages: ChatCompletionMessageParam[];
     temperature: number;
@@ -171,13 +196,19 @@ export class ForepathLocalLlmService {
     response_format: JsonObjectResponseFormat;
   } {
     const profile = this.memoryProfileService.getProfile();
+    const maxTokens = computeMaxOutputTokens({
+      contextWindowSize: profile.contextWindowSize,
+      systemPrompt,
+      userPrompt,
+      requestedMaxTokens: profile.maxTokens,
+    });
 
     return {
       messages,
       temperature: FOREPATH_ESTIMATE_LLM_TEMPERATURE,
       top_p: FOREPATH_ESTIMATE_LLM_TOP_P,
       seed: hashStringToSeed(normalizedPrompt),
-      max_tokens: profile.maxTokens,
+      max_tokens: maxTokens,
       response_format: this.jsonResponseFormat,
     };
   }
@@ -190,9 +221,9 @@ export class ForepathLocalLlmService {
     };
   }
 
-  private buildMessages(userPrompt: string): ChatCompletionMessageParam[] {
+  private buildMessages(userPrompt: string, systemPrompt = this.buildSystemPrompt()): ChatCompletionMessageParam[] {
     return [
-      { role: 'system', content: this.buildSystemPrompt() },
+      { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt.trim() },
     ];
   }

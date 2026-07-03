@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
+import { RouterModule } from '@angular/router';
 import { ForepathOneTeaserComponent } from '../forepath-one-teaser/forepath-one-teaser.component';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 
 @Component({
   selector: 'framework-forepath-consulting',
-  imports: [CommonModule, ForepathOneTeaserComponent],
+  imports: [CommonModule, RouterModule, ForepathOneTeaserComponent],
   styleUrls: ['./consulting.component.scss'],
   templateUrl: './consulting.component.html',
   standalone: true,

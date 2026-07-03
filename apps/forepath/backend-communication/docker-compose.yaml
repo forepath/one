@@ -1,0 +1,30 @@
+x-backend-communication-environment: &backend-communication-environment
+  HOST: ${HOST:-0.0.0.0}
+  PORT: ${PORT:-3300}
+  NODE_ENV: ${NODE_ENV:-development}
+  CORS_ORIGIN: ${CORS_ORIGIN:-}
+  RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
+  RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}
+  RATE_LIMIT_LIMIT: ${RATE_LIMIT_LIMIT:-100}
+  CLOUDFLARE_TURNSTILE_SECRET_KEY: ${CLOUDFLARE_TURNSTILE_SECRET_KEY:-}
+  CHATWOOT_BASE_URL: ${CHATWOOT_BASE_URL:-}
+  CHATWOOT_API_ACCESS_TOKEN: ${CHATWOOT_API_ACCESS_TOKEN:-}
+  CHATWOOT_ACCOUNT_ID: ${CHATWOOT_ACCOUNT_ID:-}
+  CHATWOOT_INBOX_ID: ${CHATWOOT_INBOX_ID:-}
+
+services:
+  backend-communication:
+    image: ghcr.io/forepath/forepath-communication-api:latest
+    pull_policy: never
+    container_name: forepath-communication-api
+    environment:
+      <<: *backend-communication-environment
+    ports:
+      - '${PORT:-3300}:${PORT:-3300}'
+    networks:
+      - communication-network
+    restart: unless-stopped
+
+networks:
+  communication-network:
+    driver: bridge

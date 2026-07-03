@@ -1,4 +1,5 @@
-import { IS_PUBLIC_KEY } from '@forepath/identity/backend';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { IS_PUBLIC_KEY } from '@forepath/identity/backend/util-auth/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { META_PUBLIC } from 'nest-keycloak-connect';
 

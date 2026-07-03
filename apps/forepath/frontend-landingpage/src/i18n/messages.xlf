@@ -1347,7 +1347,7 @@
         <source> Tell us where you are today and where you want to be. We will map which services and products make sense, and in what order. </source>
         </trans-unit>
       <trans-unit id="featureForepathOne-ctaEstimateButton" datatype="html">
-        <source>Estimate your project</source>
+        <source>Get an instant quote</source>
         </trans-unit>
       <trans-unit id="featureForepathOne-ctaButton" datatype="html">
         <source>Contact us</source>
@@ -1566,34 +1566,34 @@
         <source>ForePath software development, platform engineering, integrations, custom applications</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-metaTitle" datatype="html">
-        <source>Project estimate :: ForePath</source>
+        <source>Instant quote :: ForePath</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-metaDescription" datatype="html">
-        <source>Describe your project and get a local, indicative ForePath pricing estimate without sending your data to a remote API.</source>
+        <source>Describe your project and get an instant indicative quote from ForePath. Your project details stay private and are not sent to our servers.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-metaKeywords" datatype="html">
-        <source>ForePath project estimate, IT pricing calculator, software development estimate, consulting estimate</source>
+        <source>ForePath instant quote, IT pricing calculator, software development quote, consulting quote</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-heroTitle" datatype="html">
-        <source>Describe your project, get a <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>ballpark estimate<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>Describe your project, get an <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>instant quote<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-heroDescription" datatype="html">
-        <source>Tell us what you want to build or improve. A local model on your device maps your request to ForePath services and returns an indicative price range without sending your text to a remote API.</source>
+        <source>Tell us what you want to build or improve. We match your brief to ForePath services and show an indicative price range. Your details stay private and are not sent to our servers.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-checkingDevice" datatype="html">
-        <source>Checking whether this device can run the local estimation model...</source>
+        <source>Checking whether we can prepare your quote...</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-unsupportedTitle" datatype="html">
-        <source>Local estimation is not available on this device</source>
+        <source>Instant quote is not available here</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-gpuPermissionTitle" datatype="html">
-        <source>GPU access required for local estimation</source>
+        <source>One more step to continue</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-gpuPermissionDescription" datatype="html">
-        <source>The estimator runs a local model on your device using WebGPU. Allow GPU access below to start the analysis. Your request stays on this device and is not sent to a remote API.</source>
+        <source>Allow the permission below to generate your quote. Your project details stay private and are not sent to our servers.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-gpuPermissionButton" datatype="html">
-        <source>Allow GPU access</source>
+        <source>Continue securely</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-unsupportedHelp" datatype="html">
         <source>We can still review your project manually and provide a tailored quote.</source>
@@ -1602,19 +1602,19 @@
         <source>Contact us</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-chatTitle" datatype="html">
-        <source>Project estimator</source>
+        <source>Instant quote</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-chatHint" datatype="html">
         <source>Example: “We need a customer portal, API integration, and managed hosting support for 3 months.”</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-modelLoading" datatype="html">
-        <source>Loading local model...</source>
+        <source>Almost ready...</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-emptyState" datatype="html">
-        <source>Share your goals, timeline, and systems involved to receive an indicative estimate.</source>
+        <source>Share your goals, timeline, and systems involved to receive an indicative quote.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-resultTitle" datatype="html">
-        <source>Indicative estimate</source>
+        <source>Indicative quote</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-colService" datatype="html">
         <source>Service</source>
@@ -1632,52 +1632,52 @@
         <source>Assumptions</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-disclaimerAriaLabel" datatype="html">
-        <source>Estimate disclaimer</source>
+        <source>Quote disclaimer</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-generating" datatype="html">
-        <source>Generating your estimate...</source>
+        <source>Generating your quote...</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupTitle" datatype="html">
-        <source>Preparing your local estimator</source>
+        <source>Preparing to quote</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-generatingTitle" datatype="html">
-        <source>Building your estimate</source>
+        <source>Building your quote</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupMsg1" datatype="html">
-        <source>Getting the estimator ready on your device...</source>
+        <source>Getting ready to build your quote...</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupMsg2" datatype="html">
-        <source>First visit can take a minute. Later loads will be much faster.</source>
+        <source>First visit can take a minute. Later visits are much faster.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupMsg3" datatype="html">
-        <source>Everything runs locally in your browser. Your request stays private.</source>
+        <source>Your project details stay private and secure.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupMsg4" datatype="html">
         <source>We are preparing ForePath services so we can map your project accurately.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupMsg5" datatype="html">
-        <source>Almost there. Thanks for your patience while we warm up.</source>
+        <source>Almost there. Thanks for your patience.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupMsg6" datatype="html">
         <source>Still faster than scheduling a call. We promise!</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupMsg7" datatype="html">
-        <source>Your data stays on this device. No cloud, no cold calls.</source>
+        <source>Your information stays with you. No unwanted follow-up calls.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupMsg8" datatype="html">
-        <source>Loading once so your next estimate can be quicker.</source>
+        <source>Loading once so your next quote loads faster.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupProgressLabel" datatype="html">
         <source>Progress:</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupCacheDisclaimer" datatype="html">
-        <source> The first load downloads the model to your device and can take a minute or longer. Later visits load from your browser cache and start much faster. </source>
+        <source> The first visit can take a minute or longer. Later visits start much faster. </source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupCacheDisclaimerAriaLabel" datatype="html">
-        <source>Model load time notice</source>
+        <source>First visit load time notice</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupOverlayAriaLabel" datatype="html">
-        <source>Preparing the local project estimator</source>
+        <source>Preparing to quote</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-generatingMsg1" datatype="html">
         <source>Reading your request...</source>
@@ -1689,7 +1689,7 @@
         <source>Calculating indicative line items...</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-generatingMsg4" datatype="html">
-        <source>Putting together your ballpark estimate...</source>
+        <source>Preparing your instant quote...</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-generatingMsg5" datatype="html">
         <source>This can take a moment. Hang tight.</source>
@@ -1698,16 +1698,16 @@
         <source>It's faster than a call. We promise!</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-generatingMsg7" datatype="html">
-        <source>Crunching numbers without sending your request anywhere.</source>
+        <source>Working on your quote without sharing your project details.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-generatingMsg8" datatype="html">
         <source>Preparing for take-off...</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-generatingHint" datatype="html">
-        <source>Your request is processed locally on this device.</source>
+        <source>Your project details stay private.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-generatingOverlayAriaLabel" datatype="html">
-        <source>Generating your project estimate</source>
+        <source>Generating your instant quote</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-inputLabel" datatype="html">
         <source>Describe your project</source>
@@ -1749,37 +1749,58 @@
         <source>Standard</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-switchToLighter" datatype="html">
-        <source>Use lighter model:</source>
+        <source>Use quicker analysis:</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-startOverButton" datatype="html">
         <source>Start over</source>
         </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactAboutQuoteButton" datatype="html">
+        <source>Contact us about this quote</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactPrefillIntro" datatype="html">
+        <source>I would like to discuss the following instant quote from ForePath.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactPrefillProjectDescription" datatype="html">
+        <source>Project description</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactPrefillSummary" datatype="html">
+        <source>Summary</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactPrefillLineItems" datatype="html">
+        <source>Line items</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactPrefillSubtotal" datatype="html">
+        <source>Subtotal (net):</source>
+        </trans-unit>
+      <trans-unit id="featureForepathProjectEstimate-contactPrefillAssumptions" datatype="html">
+        <source>Assumptions</source>
+        </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-startOverHint" datatype="html">
-        <source>Clear this estimate and describe a new project.</source>
+        <source>Clear this quote and describe a new project.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-ctaTitle" datatype="html">
         <source>Need a confirmed quote?</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-ctaLead" datatype="html">
-        <source>The estimator is indicative. We are happy to refine scope and provide a formal proposal.</source>
+        <source>The quote above is indicative. We are happy to refine scope and provide a formal proposal.</source>
         </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-ctaButton" datatype="html">
         <source>Contact us</source>
         </trans-unit>
       <trans-unit id="featureForepath-navProjectEstimate" datatype="html">
-        <source>Project estimate</source>
+        <source>Instant quote</source>
         </trans-unit>
       <trans-unit id="featureForepath-navProjectEstimateCaption" datatype="html">
-        <source>Get a ballpark quote from your project description</source>
+        <source>From your project description, in seconds</source>
         </trans-unit>
       <trans-unit id="featureForepathHome-heroEstimate" datatype="html">
-        <source>Get a ballpark estimate</source>
+        <source>Get an instant quote</source>
         </trans-unit>
       <trans-unit id="featureForepathPricing-heroEstimateCta" datatype="html">
-        <source>Estimate your project</source>
+        <source>Get an instant quote</source>
         </trans-unit>
       <trans-unit id="featureForepathPricing-ctaEstimateButton" datatype="html">
-        <source>Estimate your project</source>
+        <source>Get an instant quote</source>
         </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>
@@ -1795,6 +1816,99 @@
         </trans-unit>
       <trans-unit id="utilCookieConsent-link" datatype="html">
         <source>Learn more</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaTitle" datatype="html">
+        <source>Contact :: <x id="productName" equiv-text="productName"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaDescription" datatype="html">
+        <source>Send us a message. We typically reply within one business day.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaKeywords" datatype="html">
+        <source>contact, support, <x id="productName" equiv-text="productName"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Contact<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> us</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-heroLead" datatype="html">
+        <source>Tell us about your project or question. We typically reply within one business day.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-successTitle" datatype="html">
+        <source>Message sent</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-successLead" datatype="html">
+        <source>Thank you for reaching out. We received your message and will get back to you soon.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-referenceLabel" datatype="html">
+        <source>Reference:</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-sendAnother" datatype="html">
+        <source>Send another message</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-nameLabel" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
+        <source>Phone <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
+        <source>Company <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
+        <source>Message</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-nameRequired" datatype="html">
+        <source>Name is required.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailInvalid" datatype="html">
+        <source>Enter a valid email address.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-messageRequired" datatype="html">
+        <source>Message is required.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyAcceptPrefix" datatype="html">
+        <source>I accept the</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyPolicyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyRequired" datatype="html">
+        <source>You must accept the Privacy Policy to send your message.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-submitting" datatype="html">
+        <source>Sending…</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-submit" datatype="html">
+        <source>Send message</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-footerLink" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsAriaLabel" datatype="html">
+        <source>Contact information</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsTitle" datatype="html">
+        <source>Contact information</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsLead" datatype="html">
+        <source>Prefer to reach us directly? Use the details below.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsEmailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsPhoneLabel" datatype="html">
+        <source>Phone</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsFaxLabel" datatype="html">
+        <source>Fax</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsWebLabel" datatype="html">
+        <source>Web</source>
         </trans-unit>
     </body>
   </file>

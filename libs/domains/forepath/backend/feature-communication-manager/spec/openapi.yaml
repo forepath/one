@@ -1,0 +1,127 @@
+openapi: 3.1.0
+info:
+  title: Forepath Communication API
+  version: 1.0.0
+  description: |
+    Stateless HTTP API that proxies public contact requests to Chatwoot.
+
+    Submissions require a valid Cloudflare Turnstile token. The service finds or creates a
+    Chatwoot contact and opens a new conversation in the configured API channel inbox.
+  contact:
+    name: ForePath
+    email: hi@forepath.io
+    url: https://forepath.io
+servers:
+  - url: http://localhost:3300/api
+    description: Local development
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /public/contact-requests:
+    post:
+      summary: Submit a public contact request
+      description: |
+        Accepts a contact form submission protected by Cloudflare Turnstile. Creates or reuses a
+        Chatwoot contact and opens a new conversation with the formatted message body.
+      operationId: submitPublicContactRequest
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContactRequest'
+      responses:
+        '201':
+          description: Contact request accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactRequestResponse'
+        '400':
+          description: Validation or captcha failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: Upstream Chatwoot error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    CreateContactRequest:
+      type: object
+      required:
+        - name
+        - email
+        - message
+        - turnstileToken
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        message:
+          type: string
+          minLength: 1
+          maxLength: 5000
+        phone:
+          type: string
+          maxLength: 30
+        company:
+          type: string
+          maxLength: 200
+        turnstileToken:
+          type: string
+          description: Cloudflare Turnstile response token
+    ContactRequestResponse:
+      type: object
+      required:
+        - accepted
+        - referenceId
+      properties:
+        accepted:
+          type: boolean
+          enum: [true]
+        referenceId:
+          type: string
+          description: Opaque conversation reference id
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        error:
+          type: string

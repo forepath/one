@@ -1,4 +1,5 @@
 import { forepathAuthMarketing } from './auth-marketing.forepath';
+import { CLOUDFLARE_TURNSTILE_TEST_SITE_KEY } from './communication.constants';
 import { Environment } from './environment.interface';
 
 export const environment: Environment = {
@@ -40,5 +41,9 @@ export const environment: Environment = {
   },
   docs: {
     contentRoot: 'forepath',
+  },
+  communication: {
+    restApiUrl: 'http://localhost:3300/api',
+    turnstileSiteKey: CLOUDFLARE_TURNSTILE_TEST_SITE_KEY,
   },
 };

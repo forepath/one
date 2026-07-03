@@ -106,14 +106,15 @@ describe('projectEstimatorEffects', () => {
     actions$ = of(ProjectEstimatorActions.initializeEstimator());
     capabilityService.probeEnvironment.mockReturnValue({
       awaitingGpuPermission: false,
-      unsupportedReason: 'WebGPU is required to run the local estimation model on this device.',
+      unsupportedReason:
+        'This browser cannot run the instant quote tool. Try a recent version of Chrome, Edge, or Firefox.',
     });
 
     initializeEstimator$(actions$, capabilityService).subscribe((action) => {
       expect(action).toEqual(
         ProjectEstimatorActions.checkDeviceCapabilitySuccess({
           supported: false,
-          reason: 'WebGPU is required to run the local estimation model on this device.',
+          reason: 'This browser cannot run the instant quote tool. Try a recent version of Chrome, Edge, or Firefox.',
         }),
       );
       done();

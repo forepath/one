@@ -60,4 +60,9 @@ export interface Environment {
     /** Folder name under /docs/ and docs/ repo root, e.g. "agenstra" | "decabill" */
     contentRoot: string;
   };
+  /** Public contact form API (Forepath Communication service) and Cloudflare Turnstile site key. */
+  communication: {
+    restApiUrl: string;
+    turnstileSiteKey: string;
+  };
 }

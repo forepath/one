@@ -1,0 +1,86 @@
+section {
+  scroll-margin-top: 80px;
+
+  @media (min-width: 768px) {
+    scroll-margin-top: calc(80px + var(--forepath-topbar-height, 0px));
+  }
+}
+
+#hero.contact-hero--forepath {
+  &:before,
+  &:after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(110px);
+    opacity: 0.22;
+    pointer-events: none;
+  }
+
+  &:before {
+    animation: contact-hero-orb-float 18s ease-in-out infinite;
+    width: 420px;
+    height: 420px;
+    top: -60px;
+    left: -40px;
+    background: radial-gradient(circle at 30% 30%, #ff8c5a, transparent 60%);
+  }
+
+  &:after {
+    animation: contact-hero-orb-float 22s ease-in-out infinite reverse;
+    width: 520px;
+    height: 520px;
+    bottom: -120px;
+    right: -80px;
+    background: radial-gradient(circle at 70% 70%, #21808d, transparent 65%);
+  }
+}
+
+@keyframes contact-hero-orb-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, 18px, 0);
+  }
+}
+
+.hero-lead,
+.section-lead {
+  max-width: 42rem;
+}
+
+.icon-lg {
+  font-size: 2.5rem;
+}
+
+.icon-md {
+  font-size: 1.5rem;
+}
+
+.contact-form .form-check-input[type='checkbox'] {
+  background-color: var(--bs-white);
+
+  &:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+  }
+}
+
+.contact-details__panel p:last-child {
+  margin-bottom: 0;
+}
+
+.contact-details__link {
+  color: var(--bs-body-color);
+  text-decoration: none;
+  font-weight: 600;
+  word-break: break-word;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-primary);
+  }
+}
