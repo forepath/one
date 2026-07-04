@@ -130,9 +130,9 @@
                     class="dropdown-item portal-nav-dropdown-item portal-nav-dropdown-item--stacked bg-primary text-white border border-primary"
                     (click)="closeMobileMenu()"
                   >
-                    <span i18n="@@featureForepath-navProjectEstimate">Project estimate</span>
+                    <span i18n="@@featureForepath-navProjectEstimate">Instant quote</span>
                     <span class="small text-white-50" i18n="@@featureForepath-navProjectEstimateCaption"
-                      >Get a ballpark quote from your project description</span
+                      >From your project description, in seconds</span
                     >
                   </a>
                 </li>
@@ -195,7 +195,7 @@
               >
             </li>
             <li class="nav-item ms-md-3">
-              <a href="mailto:hi@forepath.io" class="btn btn-primary py-2 px-3 px-md-4" target="_blank" rel="noopener">
+              <a routerLink="/contact" class="btn btn-primary py-2 px-3 px-md-4" (click)="closeMobileMenu()">
                 <span i18n="@@featureForepath-contactUsButton">Contact us</span>
               </a>
             </li>
@@ -353,7 +353,15 @@
               routerLink="/pricing/estimate"
               class="text-decoration-none footer-link small"
               i18n="@@featureForepath-navProjectEstimate"
-              >Project estimate</a
+              >Instant quote</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/contact"
+              class="text-decoration-none footer-link small"
+              i18n="@@sharedFeatureLandingpageContact-footerLink"
+              >Contact</a
             >
           </li>
         </ul>

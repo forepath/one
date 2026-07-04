@@ -108,7 +108,8 @@ export function buildProjectEstimatorDebugState(preset: ProjectEstimatorDebugPre
         ...initialProjectEstimatorState,
         deviceCapability: 'unsupported',
         gpuAccessStatus: 'not-applicable',
-        unsupportedReason: 'WebGPU is not available in this browser.',
+        unsupportedReason:
+          'This browser cannot run the instant quote tool. Try a recent version of Chrome, Edge, or Firefox.',
         modelStatus: 'idle',
         estimating: false,
         error: null,

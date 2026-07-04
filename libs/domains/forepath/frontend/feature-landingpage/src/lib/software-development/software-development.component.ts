@@ -11,6 +11,8 @@ import {
   signal,
 } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
+import { RouterModule } from '@angular/router';
+
 import { ForepathOneTeaserComponent } from '../forepath-one-teaser/forepath-one-teaser.component';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
@@ -101,7 +103,7 @@ const SKELETON_LANGUAGES: readonly SkeletonLanguage[] = [
 
 @Component({
   selector: 'framework-forepath-software-development',
-  imports: [CommonModule, ForepathOneTeaserComponent],
+  imports: [CommonModule, RouterModule, ForepathOneTeaserComponent],
   styleUrls: ['./software-development.component.scss'],
   templateUrl: './software-development.component.html',
   standalone: true,

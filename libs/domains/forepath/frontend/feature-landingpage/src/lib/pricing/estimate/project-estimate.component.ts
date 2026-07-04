@@ -16,17 +16,19 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import {
   ProjectEstimatorFacade,
+  formatProjectEstimateContactMessage,
   listMemoryProfileSwitcherOptions,
   type DeviceCapabilityStatus,
   type ForepathLlmMemoryProfileId,
   type ProjectEstimatorDebugPreset,
 } from '@forepath/forepath/frontend/data-access-project-estimator';
+import { storeContactMessagePrefill } from '@forepath/shared/frontend/feature-landingpage';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
-import { map } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 
 import { FOREPATH_CONTACT } from '../../forepath-contact.config';
 import { ForepathProjectEstimateDebugPanelComponent } from './project-estimate-debug-panel.component';
@@ -58,6 +60,7 @@ export class ForepathProjectEstimateComponent implements OnInit {
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly router = inject(Router);
   readonly facade = inject(ProjectEstimatorFacade);
 
   readonly contact = FOREPATH_CONTACT;
@@ -136,8 +139,8 @@ export class ForepathProjectEstimateComponent implements OnInit {
   readonly activeDebugPreset = signal<ProjectEstimatorDebugPreset | null>(null);
 
   ngOnInit(): void {
-    const metaTitle = $localize`:@@featureForepathProjectEstimate-metaTitle:Project estimate :: ForePath`;
-    const metaDescription = $localize`:@@featureForepathProjectEstimate-metaDescription:Describe your project and get a local, indicative ForePath pricing estimate without sending your data to a remote API.`;
+    const metaTitle = $localize`:@@featureForepathProjectEstimate-metaTitle:Instant quote :: ForePath`;
+    const metaDescription = $localize`:@@featureForepathProjectEstimate-metaDescription:Describe your project and get an instant indicative quote from ForePath. Your project details stay private and are not sent to our servers.`;
 
     this.titleService.setTitle(metaTitle);
     this.destroyRef.onDestroy(
@@ -145,7 +148,7 @@ export class ForepathProjectEstimateComponent implements OnInit {
         this.metaService,
         buildPageMetaTags({
           description: metaDescription,
-          keywords: $localize`:@@featureForepathProjectEstimate-metaKeywords:ForePath project estimate, IT pricing calculator, software development estimate, consulting estimate`,
+          keywords: $localize`:@@featureForepathProjectEstimate-metaKeywords:ForePath instant quote, IT pricing calculator, software development quote, consulting quote`,
           author: 'IPvX UG (haftungsbeschränkt)',
           robots: 'index, follow',
           canonicalUrl: 'https://forepath.io/pricing/estimate',
@@ -219,6 +222,64 @@ export class ForepathProjectEstimateComponent implements OnInit {
     this.prompt.set('');
     this.facade.startOver();
     this.focusPrompt();
+  }
+
+  async contactAboutQuote(): Promise<void> {
+    const estimate = await firstValueFrom(this.facade.currentEstimate$);
+
+    if (!estimate) {
+      return;
+    }
+
+    const messages = await firstValueFrom(this.facade.messages$);
+    const userDescription = messages.find((message) => message.role === 'user')?.content ?? '';
+    const message = formatProjectEstimateContactMessage({
+      userDescription,
+      estimate,
+      labels: this.contactMessageLabels(),
+      formatCurrency: (amount) => this.formatCurrency(amount),
+    });
+
+    storeContactMessagePrefill(message);
+    await this.router.navigate(['/contact']);
+  }
+
+  private contactMessageLabels(): {
+    intro: string;
+    projectDescriptionHeading: string;
+    summaryHeading: string;
+    lineItemsHeading: string;
+    subtotalLabel: string;
+    assumptionsHeading: string;
+  } {
+    return {
+      intro: $localize`:@@featureForepathProjectEstimate-contactPrefillIntro:I would like to discuss the following instant quote from ForePath.`,
+      projectDescriptionHeading: $localize`:@@featureForepathProjectEstimate-contactPrefillProjectDescription:Project description`,
+      summaryHeading: $localize`:@@featureForepathProjectEstimate-contactPrefillSummary:Summary`,
+      lineItemsHeading: $localize`:@@featureForepathProjectEstimate-contactPrefillLineItems:Line items`,
+      subtotalLabel: $localize`:@@featureForepathProjectEstimate-contactPrefillSubtotal:Subtotal (net):`,
+      assumptionsHeading: $localize`:@@featureForepathProjectEstimate-contactPrefillAssumptions:Assumptions`,
+    };
+  }
+
+  private formatCurrency(amount: number): string {
+    return new Intl.NumberFormat(this.locale, {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  }
+
+  profileIconClass(profileId: ForepathLlmMemoryProfileId): string {
+    switch (profileId) {
+      case 'lite':
+        return 'bi-chevron-up';
+      case 'balanced':
+        return 'bi-chevron-bar-up';
+      case 'standard':
+        return 'bi-chevron-double-up';
+    }
   }
 
   profileLabel(profileId: ForepathLlmMemoryProfileId): string {

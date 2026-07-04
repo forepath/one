@@ -45,6 +45,12 @@ describe('environment', () => {
     });
   });
 
+  it('should require communication configuration', () => {
+    expect(environment.communication).toBeDefined();
+    expect(typeof environment.communication.restApiUrl).toBe('string');
+    expect(typeof environment.communication.turnstileSiteKey).toBe('string');
+  });
+
   it('should have authentication type property', () => {
     expect(environment.authentication).toHaveProperty('type');
     expect(['keycloak', 'api-key', 'users']).toContain(environment.authentication.type);

@@ -19,6 +19,8 @@ import { provideState } from '@ngrx/store';
 
 import { createForepathLocalLlmWorker } from './workers/create-forepath-local-llm-worker';
 
+import { createSharedContactRoute, createBrandContactDetails } from '@forepath/shared/frontend/feature-landingpage';
+
 import { ForepathConsultingComponent } from './consulting/consulting.component';
 import { ForepathContainerComponent } from './container/container.component';
 import { ForepathHomeComponent } from './home/home.component';
@@ -96,6 +98,14 @@ export const forepathRoutes: Route[] = [
         path: 'legal/terms',
         component: ForepathLegalTermsComponent,
       },
+      createSharedContactRoute({
+        canonicalUrl: 'https://forepath.io/contact',
+        heroTheme: 'forepath',
+        contactDetails: createBrandContactDetails({
+          email: 'hi@forepath.io',
+          websiteUrl: 'https://forepath.io',
+        }),
+      }),
       {
         path: '**',
         redirectTo: '',

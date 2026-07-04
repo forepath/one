@@ -5,3 +5,4 @@ export * from './lib/environment.token';
 export * from './lib/page-title.util';
 export * from './lib/locale.provider';
 export * from './lib/locale.service';
+export * from './lib/communication.constants';

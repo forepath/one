@@ -28,6 +28,15 @@
         "libs/domains/shared/frontend/util-runtime-config-server/src/index.ts"
       ],
       "@forepath/identity/backend": ["libs/domains/identity/backend/index.ts"],
+      "@forepath/identity/backend/util-auth": [
+        "libs/domains/identity/backend/util-auth/src/index.ts"
+      ],
+      "@forepath/identity/backend/util-auth/core": [
+        "libs/domains/identity/backend/util-auth/src/core/index.ts"
+      ],
+      "@forepath/identity/backend/feature-auth": [
+        "libs/domains/identity/backend/feature-auth/src/index.ts"
+      ],
       "@forepath/identity/frontend": [
         "libs/domains/identity/frontend/index.ts"
       ],
@@ -69,6 +78,9 @@
       ],
       "@forepath/shared/backend/util-http-context": [
         "libs/domains/shared/backend/util-http-context/src/index.ts"
+      ],
+      "@forepath/shared/backend/feature-monitoring": [
+        "libs/domains/shared/backend/feature-monitoring/src/index.ts"
       ],
       "@forepath/agenstra/backend/feature-agent-manager": [
         "libs/domains/agenstra/backend/feature-agent-manager/src/index.ts"
@@ -125,6 +137,15 @@
       ],
       "@forepath/forepath/frontend/data-access-project-estimator": [
         "libs/domains/forepath/frontend/data-access-project-estimator/src/index.ts"
+      ],
+      "@forepath/forepath/backend/feature-communication-manager": [
+        "libs/domains/forepath/backend/feature-communication-manager/src/index.ts"
+      ],
+      "@forepath/shared/frontend/data-access-communication": [
+        "libs/domains/shared/frontend/data-access-communication/src/index.ts"
+      ],
+      "@forepath/shared/frontend/feature-landingpage": [
+        "libs/domains/shared/frontend/feature-landingpage/src/index.ts"
       ]
     }
   },

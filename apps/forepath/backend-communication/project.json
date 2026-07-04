@@ -1,0 +1,138 @@
+{
+  "name": "forepath-backend-communication",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/forepath/backend-communication/src",
+  "projectType": "application",
+  "tags": ["domain:forepath", "type:app", "scope:backend"],
+  "implicitDependencies": ["forepath-backend-feature-communication-manager"],
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/forepath/backend-communication",
+        "main": "apps/forepath/backend-communication/src/main.ts",
+        "tsConfig": "apps/forepath/backend-communication/tsconfig.app.json",
+        "assets": ["apps/forepath/backend-communication/src/assets"],
+        "webpackConfig": "apps/forepath/backend-communication/webpack.config.cjs",
+        "generatePackageJson": true
+      },
+      "configurations": {
+        "development": {
+          "outputHashing": "none"
+        },
+        "production": {}
+      }
+    },
+    "prune-lockfile": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "executor": "@nx/js:prune-lockfile",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/forepath/backend-communication/package.json",
+        "{workspaceRoot}/dist/apps/forepath/backend-communication/package-lock.json"
+      ],
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "copy-workspace-modules": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "outputs": [
+        "{workspaceRoot}/dist/apps/forepath/backend-communication/workspace_modules"
+      ],
+      "executor": "@nx/js:copy-workspace-modules",
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "prune": {
+      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
+      "executor": "nx:noop"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "forepath-backend-communication:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "forepath-backend-communication:build:development"
+        },
+        "production": {
+          "buildTarget": "forepath-backend-communication:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/forepath/backend-communication/jest.config.cts",
+        "passWithNoTests": true
+      }
+    },
+    "api-container-image": {
+      "dependsOn": ["prune"],
+      "cache": false,
+      "executor": "@nx-tools/nx-container:build",
+      "options": {
+        "engine": "docker",
+        "file": "apps/forepath/backend-communication/Dockerfile.api",
+        "context": "dist/apps/forepath/backend-communication"
+      },
+      "configurations": {
+        "test": {
+          "load": true,
+          "tags": ["ghcr.io/forepath/forepath-communication-api:latest"]
+        },
+        "release": {
+          "push": true,
+          "tags": [
+            "ghcr.io/forepath/forepath-communication-api:latest",
+            "ghcr.io/forepath/forepath-communication-api:$VERSION"
+          ]
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "start-containers": {
+      "dependsOn": ["api-container-image"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/forepath/backend-communication",
+        "command": "docker compose up -d --force-recreate --remove-orphans"
+      }
+    },
+    "openapi-client-js": {
+      "cache": true,
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/dist/clients/forepath-communication-manager/js"
+      ],
+      "options": {
+        "command": "npx @openapitools/openapi-generator-cli generate -i libs/domains/forepath/backend/feature-communication-manager/spec/openapi.yaml -g typescript-axios -o dist/clients/forepath-communication-manager/js --additional-properties=npmName=@forepath/forepath-communication-manager-client,npmVersion=1.0.0,withInterfaces=true && cd dist/clients/forepath-communication-manager/js && npm install && npm run build"
+      },
+      "configurations": {
+        "test": {},
+        "release": {
+          "command": "npx @openapitools/openapi-generator-cli generate -i libs/domains/forepath/backend/feature-communication-manager/spec/openapi.yaml -g typescript-axios -o dist/clients/forepath-communication-manager/js --additional-properties=npmName=@forepath/forepath-communication-manager-client,npmVersion=$VERSION,withInterfaces=true && cd dist/clients/forepath-communication-manager/js && node -e \"const fs=require('fs');const pkg=JSON.parse(fs.readFileSync('package.json'));pkg.publishConfig={registry:'https://npm.pkg.github.com'};fs.writeFileSync('package.json',JSON.stringify(pkg,null,2));\" && npm install && npm run build && npm publish"
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "sbom": {
+      "executor": "@forepath/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
+    }
+  }
+}

@@ -1,4 +1,5 @@
-import { Public as HybridPublic } from '@forepath/identity/backend';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { Public as HybridPublic } from '@forepath/identity/backend/util-auth/core';
 import { Controller, Get } from '@nestjs/common';
 import { Public as KeycloakPublic } from 'nest-keycloak-connect';
 

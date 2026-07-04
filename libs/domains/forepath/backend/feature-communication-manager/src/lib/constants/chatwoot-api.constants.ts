@@ -1,0 +1,3 @@
+export const CHATWOOT_API_TIMEOUT_MS = 10_000;
+
+export const CHATWOOT_CONTACT_SEARCH_PAGE_SIZE = 15;

@@ -1,5 +1,6 @@
 import { Environment } from './environment.interface';
 import { agenstraAuthMarketing } from './auth-marketing.agenstra';
+import { CLOUDFLARE_TURNSTILE_TEST_SITE_KEY } from './communication.constants';
 
 export const environment: Environment = {
   production: true,
@@ -48,5 +49,9 @@ export const environment: Environment = {
   },
   docs: {
     contentRoot: 'agenstra',
+  },
+  communication: {
+    restApiUrl: 'http://host.docker.internal:3300/api',
+    turnstileSiteKey: CLOUDFLARE_TURNSTILE_TEST_SITE_KEY,
   },
 };

@@ -1,4 +1,5 @@
 import { Route } from '@angular/router';
+import { createSharedContactRoute, createBrandContactDetails } from '@forepath/shared/frontend/feature-landingpage';
 import {
   ServicePlansFacade,
   loadCheapestServicePlanOffering$,
@@ -100,6 +101,14 @@ export const portalRoutes: Route[] = [
         path: 'legal/terms',
         component: PortalLegalTermsComponent,
       },
+      createSharedContactRoute({
+        canonicalUrl: 'https://agenstra.com/contact',
+        heroTheme: 'dark',
+        contactDetails: createBrandContactDetails({
+          email: 'hi@agenstra.com',
+          websiteUrl: 'https://agenstra.com',
+        }),
+      }),
       {
         path: '**',
         redirectTo: '',

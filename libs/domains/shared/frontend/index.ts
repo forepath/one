@@ -5,3 +5,5 @@ export * from './feature-docs/src';
 export * from './util-docs-parser/src';
 export * from './util-loading-indicator/src';
 export * from './util-meta/src';
+export * from './data-access-communication/src';
+export * from './feature-landingpage/src';

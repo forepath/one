@@ -1,2 +1,2 @@
 // forepath domain backend exports
-export const NAME = 'forepath-backend';
+export * from './feature-communication-manager/src';

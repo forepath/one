@@ -3,11 +3,11 @@
   <div class="container grid-section__container">
     <div class="text-center">
       <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathProjectEstimate-heroTitle">
-        Describe your project, get a <span class="text-primary">ballpark estimate</span>
+        Describe your project, get an <span class="text-primary">instant quote</span>
       </h1>
       <p class="lead mb-0 mx-auto hero-lead section-lead" i18n="@@featureForepathProjectEstimate-heroDescription">
-        Tell us what you want to build or improve. A local model on your device maps your request to ForePath services
-        and returns an indicative price range without sending your text to a remote API.
+        Tell us what you want to build or improve. We match your brief to ForePath services and show an indicative price
+        range. Your details stay private and are not sent to our servers.
       </p>
     </div>
   </div>
@@ -29,11 +29,11 @@
       } @else if (isAwaitingGpuPermission()) {
         <div class="estimate-chat__overlay-card text-center w-100">
           <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathProjectEstimate-gpuPermissionTitle">
-            GPU access required for local estimation
+            One more step to continue
           </h3>
           <p class="text-muted mb-4" i18n="@@featureForepathProjectEstimate-gpuPermissionDescription">
-            The estimator runs a local model on your device using WebGPU. Allow GPU access below to start the analysis.
-            Your request stays on this device and is not sent to a remote API.
+            Allow the permission below to generate your quote. Your project details stay private and are not sent to our
+            servers.
           </p>
           <button
             type="button"
@@ -42,13 +42,13 @@
             [disabled]="isRequestingGpuAccess()"
             i18n="@@featureForepathProjectEstimate-gpuPermissionButton"
           >
-            Allow GPU access
+            Continue securely
           </button>
         </div>
       } @else if (isDeviceUnsupported()) {
         <div class="estimate-chat__overlay-card text-center w-100">
           <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathProjectEstimate-unsupportedTitle">
-            Local estimation is not available on this device
+            Instant quote is not available here
           </h3>
           <p class="text-muted mb-4">
             {{ facade.unsupportedReason$ | async }}
@@ -57,7 +57,7 @@
             We can still review your project manually and provide a tailored quote.
           </p>
           <a
-            [href]="'mailto:' + contact.email"
+            routerLink="/contact"
             class="btn btn-primary btn-lg px-5 py-3 rounded-3 cta-btn"
             i18n="@@featureForepathProjectEstimate-contactButton"
           >
@@ -86,7 +86,7 @@
                   @if (message.estimate) {
                     <div class="estimate-result mt-4">
                       <h3 class="h6 fw-semibold mb-3" i18n="@@featureForepathProjectEstimate-resultTitle">
-                        Indicative estimate
+                        Indicative quote
                       </h3>
                       <div class="table-responsive">
                         <table class="table table-sm align-middle mb-3 estimate-result__table">
@@ -151,7 +151,15 @@
         }
 
         @if (hasEstimate()) {
-          <div class="estimate-chat__footer px-4 bg-white mt-4">
+          <div class="estimate-chat__footer px-4 bg-white mt-4 d-flex flex-wrap gap-3">
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="contactAboutQuote()"
+              i18n="@@featureForepathProjectEstimate-contactAboutQuoteButton"
+            >
+              Contact us about this quote
+            </button>
             <button
               type="button"
               class="btn btn-outline-primary"
@@ -168,8 +176,8 @@
             [class.border-top]="hasMessages()"
           >
             @if (showMemoryProfile()) {
-              <div class="estimate-chat__memory-profile mb-3">
-                <div class="d-flex flex-column flex-sm-row flex-sm-wrap align-items-sm-center gap-2 gap-sm-3">
+              <div class="estimate-chat__memory-profile mb-3 d-flex justify-content-end">
+                <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 gap-sm-3">
                   <span
                     class="small fw-semibold text-body"
                     i18n="@@featureForepathProjectEstimate-activeModelProfileLabel"
@@ -177,24 +185,32 @@
                     Analysis effort
                   </span>
                   <div
-                    class="btn-group btn-group-sm estimate-chat__memory-profile-switcher"
+                    class="estimate-chat__memory-profile-switcher"
                     role="group"
                     i18n-aria-label="@@featureForepathProjectEstimate-memoryProfileSwitcherAriaLabel"
                     aria-label="Analysis effort profile"
                   >
                     @for (option of memoryProfileOptions(); track option.profileId) {
                       @if (option.isActive) {
-                        <button type="button" class="btn btn-primary" disabled>
-                          {{ profileLabel(option.profileId) }}
+                        <button
+                          type="button"
+                          class="btn btn-primary estimate-chat__memory-profile-btn"
+                          disabled
+                          [attr.aria-label]="profileLabel(option.profileId)"
+                          aria-pressed="true"
+                        >
+                          <i class="bi {{ profileIconClass(option.profileId) }}" aria-hidden="true"></i>
                         </button>
                       } @else if (option.canSelect) {
                         <button
                           type="button"
-                          class="btn btn-outline-secondary"
+                          class="btn btn-outline-secondary estimate-chat__memory-profile-btn"
                           (click)="switchMemoryProfile(option.profileId)"
                           [disabled]="isEstimating() || isModelLoading()"
+                          [attr.aria-label]="profileLabel(option.profileId)"
+                          aria-pressed="false"
                         >
-                          {{ profileLabel(option.profileId) }}
+                          <i class="bi {{ profileIconClass(option.profileId) }}" aria-hidden="true"></i>
                         </button>
                       }
                     }
@@ -219,23 +235,23 @@
                 }
               </div>
             }
-            <div class="d-flex flex-column flex-md-row gap-3">
-              <textarea
-                #promptInput
-                id="project-estimate-prompt"
-                class="form-control bg-white"
-                rows="4"
-                [ngModel]="prompt()"
-                (ngModelChange)="prompt.set($event)"
-                (keydown)="onPromptKeydown($event)"
-                i18n-placeholder="@@featureForepathProjectEstimate-inputPlaceholder"
-                i18n-aria-label="@@featureForepathProjectEstimate-inputPlaceholder"
-                placeholder="Tell us about the scope, systems, timeline, and support needs for your project."
-                aria-label="Tell us about the scope, systems, timeline, and support needs for your project."
-              ></textarea>
+            <textarea
+              #promptInput
+              id="project-estimate-prompt"
+              class="form-control bg-white w-100"
+              rows="4"
+              [ngModel]="prompt()"
+              (ngModelChange)="prompt.set($event)"
+              (keydown)="onPromptKeydown($event)"
+              i18n-placeholder="@@featureForepathProjectEstimate-inputPlaceholder"
+              i18n-aria-label="@@featureForepathProjectEstimate-inputPlaceholder"
+              placeholder="Tell us about the scope, systems, timeline, and support needs for your project."
+              aria-label="Tell us about the scope, systems, timeline, and support needs for your project."
+            ></textarea>
+            <div class="d-grid d-md-flex justify-content-md-end mt-3">
               <button
                 type="button"
-                class="btn btn-primary px-4 align-self-md-end"
+                class="btn btn-primary px-4"
                 (click)="submitPrompt()"
                 [disabled]="!canSubmit() || !prompt().trim()"
                 i18n-aria-label="@@featureForepathProjectEstimate-sendAriaLabel"
@@ -244,7 +260,7 @@
                 <span i18n="@@featureForepathProjectEstimate-sendButton">Send</span>
               </button>
             </div>
-            <p class="small text-muted mt-2 mb-0" i18n="@@featureForepathProjectEstimate-keyboardHint">
+            <p class="small text-muted mt-2 mb-0 text-end" i18n="@@featureForepathProjectEstimate-keyboardHint">
               Press Enter to send. Use Ctrl+Enter for a new line.
             </p>
           </div>
@@ -259,10 +275,10 @@
     <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
       <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathProjectEstimate-ctaTitle">Need a confirmed quote?</h2>
       <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featureForepathProjectEstimate-ctaLead">
-        The estimator is indicative. We are happy to refine scope and provide a formal proposal.
+        The quote above is indicative. We are happy to refine scope and provide a formal proposal.
       </p>
       <a
-        [href]="'mailto:' + contact.email"
+        routerLink="/contact"
         class="btn btn-light btn-lg px-5 py-3 rounded-3 fw-semibold cta-btn"
         i18n="@@featureForepathProjectEstimate-ctaButton"
       >

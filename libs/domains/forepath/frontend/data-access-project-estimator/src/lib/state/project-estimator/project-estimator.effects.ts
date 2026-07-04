@@ -23,7 +23,7 @@ import { selectActiveMemoryProfileId, selectDeviceMaxMemoryProfileId } from './p
 function normalizeError(error: unknown): string {
   const friendlyModelMessage = toModelLoadErrorMessage(error);
 
-  if (friendlyModelMessage.includes('Local model files could not be loaded')) {
+  if (friendlyModelMessage.includes('The quote tool could not be loaded')) {
     return friendlyModelMessage;
   }
 
@@ -39,7 +39,7 @@ function normalizeError(error: unknown): string {
     return String((error as { message: unknown }).message);
   }
 
-  return 'An unexpected error occurred while generating the estimate.';
+  return 'An unexpected error occurred while generating your quote.';
 }
 
 function createMessageId(prefix: string): string {
@@ -266,13 +266,17 @@ export const changeMemoryProfile$ = createEffect(
       withLatestFrom(store.select(selectActiveMemoryProfileId), store.select(selectDeviceMaxMemoryProfileId)),
       switchMap(([{ profileId }, activeProfileId, deviceMaxProfileId]) => {
         if (!activeProfileId || !deviceMaxProfileId) {
-          return of(ProjectEstimatorActions.preloadModelFailure({ error: 'Local model profile is not ready yet.' }));
+          return of(
+            ProjectEstimatorActions.preloadModelFailure({
+              error: 'The quote tool is not ready yet. Please wait a moment and try again.',
+            }),
+          );
         }
 
         if (!canSwitchToMemoryProfile(profileId, activeProfileId, deviceMaxProfileId)) {
           return of(
             ProjectEstimatorActions.preloadModelFailure({
-              error: 'The selected local model is not supported on this device.',
+              error: 'This analysis setting is not available on your device.',
             }),
           );
         }

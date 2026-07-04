@@ -94,13 +94,7 @@
               </ul>
             </li>
             <li class="nav-item ms-md-3">
-              <a
-                href="mailto:hi@decabill.com"
-                class="btn btn-primary py-2 px-3 px-md-4"
-                target="_blank"
-                rel="noopener"
-                (click)="closeMobileMenu()"
-              >
+              <a routerLink="/contact" class="btn btn-primary py-2 px-3 px-md-4" (click)="closeMobileMenu()">
                 <span i18n="@@featureDecabillPortal-bookDemoButton">Book a Demo</span>
               </a>
             </li>
@@ -193,7 +187,18 @@
         </ul>
       </div>
       <div class="col-md-3">
-        <h6 class="fw-bold mb-3" i18n="@@featureDecabillPortal-footerLegal">Legal</h6>
+        <h6 class="fw-bold mb-3" i18n="@@featureDecabillPortal-footerCompany">Company</h6>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a
+              routerLink="/contact"
+              class="text-decoration-none text-white small"
+              i18n="@@sharedFeatureLandingpageContact-footerLink"
+              >Contact</a
+            >
+          </li>
+        </ul>
+        <h6 class="fw-bold mb-3 mt-4" i18n="@@featureDecabillPortal-footerLegal">Legal</h6>
         <ul class="list-unstyled mb-0">
           <li class="mb-2">
             <a

@@ -1366,6 +1366,10 @@
         <source>Comparison</source>
         <target> Vergleich </target>
       </trans-unit>
+      <trans-unit id="featurePortal-footerCompany" datatype="html">
+        <source>Company</source>
+        <target>Unternehmen</target>
+      </trans-unit>
       <trans-unit id="featurePortal-footerLegal" datatype="html">
         <source>Legal</source>
         <target> Rechtliches </target>
@@ -3229,6 +3233,130 @@
       <trans-unit id="featurePortalPricing-metaDescription" datatype="html">
         <source>Compare open-source, team, and enterprise Agenstra plans. Flexible licensing for self-hosted or cloud deployments, with governance and scale when you need it.</source>
         <target> Vergleichen Sie Open-Source-, Team- und Enterprise-Pläne für Agenstra. Flexible Lizenzen für Self-Hosting oder Cloud, mit Governance und Skalierung bei Bedarf. </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaTitle" datatype="html">
+        <source>Contact :: <x id="productName" equiv-text="productName"/></source>
+        <target> Kontakt :: <x id="productName" equiv-text="productName"/> </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaDescription" datatype="html">
+        <source>Send us a message. We typically reply within one business day.</source>
+        <target> Senden Sie uns eine Nachricht. Wir antworten in der Regel innerhalb eines Werktags. </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaKeywords" datatype="html">
+        <source>contact, support, <x id="productName" equiv-text="productName"/></source>
+        <target> Kontakt, Support, <x id="productName" equiv-text="productName"/> </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Contact<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> us</source>
+        <target> <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Kontakt<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> aufnehmen </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-heroLead" datatype="html">
+        <source>Tell us about your project or question. We typically reply within one business day.</source>
+        <target> Erzählen Sie uns von Ihrem Projekt oder Ihrer Frage. Wir antworten in der Regel innerhalb eines Werktags. </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-successTitle" datatype="html">
+        <source>Message sent</source>
+        <target> Nachricht gesendet </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-successLead" datatype="html">
+        <source>Thank you for reaching out. We received your message and will get back to you soon.</source>
+        <target> Vielen Dank für Ihre Nachricht. Wir haben sie erhalten und melden uns in Kürze bei Ihnen. </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-referenceLabel" datatype="html">
+        <source>Reference:</source>
+        <target> Referenz: </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-sendAnother" datatype="html">
+        <source>Send another message</source>
+        <target> Weitere Nachricht senden </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-nameLabel" datatype="html">
+        <source>Name</source>
+        <target> Name </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailLabel" datatype="html">
+        <source>Email</source>
+        <target> E-Mail </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
+        <source>Phone <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target> Telefon <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
+        <source>Company <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target> Unternehmen <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
+        <source>Message</source>
+        <target> Nachricht </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-nameRequired" datatype="html">
+        <source>Name is required.</source>
+        <target> Name ist erforderlich. </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        <target> E-Mail ist erforderlich. </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailInvalid" datatype="html">
+        <source>Enter a valid email address.</source>
+        <target> Bitte geben Sie eine gültige E-Mail-Adresse ein. </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-messageRequired" datatype="html">
+        <source>Message is required.</source>
+        <target> Nachricht ist erforderlich. </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyAcceptPrefix" datatype="html">
+        <source>I accept the</source>
+        <target> Ich akzeptiere die </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyPolicyLink" datatype="html">
+        <source>Privacy Policy</source>
+        <target> Datenschutzerklärung </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyRequired" datatype="html">
+        <source>You must accept the Privacy Policy to send your message.</source>
+        <target> Sie müssen die Datenschutzerklärung akzeptieren, um Ihre Nachricht zu senden. </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-submitting" datatype="html">
+        <source>Sending…</source>
+        <target> Wird gesendet… </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-submit" datatype="html">
+        <source>Send message</source>
+        <target> Nachricht senden </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-footerLink" datatype="html">
+        <source>Contact</source>
+        <target> Kontakt </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsAriaLabel" datatype="html">
+        <source>Contact information</source>
+        <target> Kontaktinformationen </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsTitle" datatype="html">
+        <source>Contact information</source>
+        <target> Kontaktinformationen </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsLead" datatype="html">
+        <source>Prefer to reach us directly? Use the details below.</source>
+        <target> Lieber direkt? Nutzen Sie die Angaben unten. </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsEmailLabel" datatype="html">
+        <source>Email</source>
+        <target> E-Mail </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsPhoneLabel" datatype="html">
+        <source>Phone</source>
+        <target> Telefon </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsFaxLabel" datatype="html">
+        <source>Fax</source>
+        <target> Fax </target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsWebLabel" datatype="html">
+        <source>Web</source>
+        <target> Web </target>
       </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>

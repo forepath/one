@@ -11,6 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
+import { RouterModule } from '@angular/router';
 import { ForepathOneTeaserComponent } from '../forepath-one-teaser/forepath-one-teaser.component';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
@@ -67,7 +68,7 @@ const VENDOR_LOGO_SLOTS: readonly (readonly VendorLogo[])[] = [
 
 @Component({
   selector: 'framework-forepath-it-systems',
-  imports: [CommonModule, ForepathOneTeaserComponent],
+  imports: [CommonModule, RouterModule, ForepathOneTeaserComponent],
   styleUrls: ['./it-systems.component.scss'],
   templateUrl: './it-systems.component.html',
   standalone: true,

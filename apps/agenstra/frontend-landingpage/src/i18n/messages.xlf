@@ -1025,6 +1025,9 @@
       <trans-unit id="featurePortal-footerComparison" datatype="html">
         <source>Comparison</source>
         </trans-unit>
+      <trans-unit id="featurePortal-footerCompany" datatype="html">
+        <source>Company</source>
+        </trans-unit>
       <trans-unit id="featurePortal-footerLegal" datatype="html">
         <source>Legal</source>
         </trans-unit>
@@ -2443,6 +2446,99 @@
         </trans-unit>
       <trans-unit id="utilCookieConsent-link" datatype="html">
         <source>Learn more</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaTitle" datatype="html">
+        <source>Contact :: <x id="productName" equiv-text="productName"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaDescription" datatype="html">
+        <source>Send us a message. We typically reply within one business day.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaKeywords" datatype="html">
+        <source>contact, support, <x id="productName" equiv-text="productName"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Contact<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> us</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-heroLead" datatype="html">
+        <source>Tell us about your project or question. We typically reply within one business day.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-successTitle" datatype="html">
+        <source>Message sent</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-successLead" datatype="html">
+        <source>Thank you for reaching out. We received your message and will get back to you soon.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-referenceLabel" datatype="html">
+        <source>Reference:</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-sendAnother" datatype="html">
+        <source>Send another message</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-nameLabel" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
+        <source>Phone <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
+        <source>Company <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
+        <source>Message</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-nameRequired" datatype="html">
+        <source>Name is required.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailInvalid" datatype="html">
+        <source>Enter a valid email address.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-messageRequired" datatype="html">
+        <source>Message is required.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyAcceptPrefix" datatype="html">
+        <source>I accept the</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyPolicyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyRequired" datatype="html">
+        <source>You must accept the Privacy Policy to send your message.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-submitting" datatype="html">
+        <source>Sending…</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-submit" datatype="html">
+        <source>Send message</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-footerLink" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsAriaLabel" datatype="html">
+        <source>Contact information</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsTitle" datatype="html">
+        <source>Contact information</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsLead" datatype="html">
+        <source>Prefer to reach us directly? Use the details below.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsEmailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsPhoneLabel" datatype="html">
+        <source>Phone</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsFaxLabel" datatype="html">
+        <source>Fax</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsWebLabel" datatype="html">
+        <source>Web</source>
         </trans-unit>
     </body>
   </file>

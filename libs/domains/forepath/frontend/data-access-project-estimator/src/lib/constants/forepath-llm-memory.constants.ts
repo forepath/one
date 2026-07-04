@@ -12,7 +12,7 @@ export const FOREPATH_MEMORY_PRESSURE_MESSAGE =
   'Your browser is low on memory. Close other tabs or apps, then reload this page before trying again.';
 
 export const FOREPATH_DEVICE_LOST_MESSAGE =
-  'The local model ran out of GPU memory. Close other tabs, reload this page, and try a shorter project description.';
+  'We ran out of memory preparing your quote. Close other tabs, reload this page, and try a shorter project description.';
 
 export interface ForepathLlmMemoryProfile {
   modelId: string;

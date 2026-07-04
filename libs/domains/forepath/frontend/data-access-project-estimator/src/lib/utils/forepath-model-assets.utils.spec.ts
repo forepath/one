@@ -43,7 +43,7 @@ describe('forepathModelAssetsUtils', () => {
   it('should map HTML JSON parse failures to a friendly message', () => {
     expect(isHtmlJsonParseError(new Error('Unexpected token \'<\', "<!DOCTYPE "... is not valid JSON'))).toBe(true);
     expect(toModelLoadErrorMessage(new Error('Unexpected token \'<\', "<!DOCTYPE "... is not valid JSON'))).toContain(
-      'Local model files could not be loaded',
+      'The quote tool could not be loaded',
     );
   });
 });

@@ -36,7 +36,7 @@ describe('ForepathDeviceCapabilityService', () => {
 
     expect(service.probeEnvironment()).toEqual({
       awaitingGpuPermission: false,
-      unsupportedReason: 'Local estimation is only available in the browser.',
+      unsupportedReason: 'Please open this page in a supported browser to get an instant quote.',
     });
   });
 
@@ -59,7 +59,7 @@ describe('ForepathDeviceCapabilityService', () => {
 
     await expect(service.checkCapability()).resolves.toEqual({
       supported: false,
-      reason: 'Local estimation is only available in the browser.',
+      reason: 'Please open this page in a supported browser to get an instant quote.',
       memoryProfile: null,
     });
   });
@@ -70,7 +70,7 @@ describe('ForepathDeviceCapabilityService', () => {
 
     await expect(service.checkCapability()).resolves.toMatchObject({
       supported: false,
-      reason: expect.stringContaining('WebGPU'),
+      reason: expect.stringContaining('instant quote tool'),
     });
   });
 
@@ -105,7 +105,7 @@ describe('ForepathDeviceCapabilityService', () => {
 
     await expect(service.checkCapability()).resolves.toMatchObject({
       supported: false,
-      reason: expect.stringContaining('device memory'),
+      reason: expect.stringContaining('memory'),
     });
   });
 });

@@ -18,14 +18,15 @@ export class ForepathDeviceCapabilityService {
     if (!isPlatformBrowser(this.platformId)) {
       return {
         awaitingGpuPermission: false,
-        unsupportedReason: 'Local estimation is only available in the browser.',
+        unsupportedReason: 'Please open this page in a supported browser to get an instant quote.',
       };
     }
 
     if (!('gpu' in navigator) || !navigator.gpu) {
       return {
         awaitingGpuPermission: false,
-        unsupportedReason: 'WebGPU is required to run the local estimation model on this device.',
+        unsupportedReason:
+          'This browser cannot run the instant quote tool. Try a recent version of Chrome, Edge, or Firefox.',
       };
     }
 
@@ -39,7 +40,7 @@ export class ForepathDeviceCapabilityService {
     if (!isPlatformBrowser(this.platformId)) {
       return {
         supported: false,
-        reason: 'Local estimation is only available in the browser.',
+        reason: 'Please open this page in a supported browser to get an instant quote.',
         memoryProfile: null,
       };
     }
@@ -47,7 +48,7 @@ export class ForepathDeviceCapabilityService {
     if (!('gpu' in navigator) || !navigator.gpu) {
       return {
         supported: false,
-        reason: 'WebGPU is required to run the local estimation model on this device.',
+        reason: 'This browser cannot run the instant quote tool. Try a recent version of Chrome, Edge, or Firefox.',
         memoryProfile: null,
       };
     }
@@ -60,7 +61,7 @@ export class ForepathDeviceCapabilityService {
     } catch {
       return {
         supported: false,
-        reason: 'WebGPU initialization failed on this device.',
+        reason: 'We could not start the quote tool in this browser. Try refreshing the page or using another browser.',
         memoryProfile: null,
       };
     }

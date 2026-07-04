@@ -95,16 +95,69 @@ describe('ForepathLocalLlmService', () => {
     jest.restoreAllMocks();
   });
 
-  it('should use the full catalog for balanced profiles and compact catalog for lite', () => {
+  it('should prefer the full catalog for balanced profiles when it fits the context window', () => {
     memoryProfileService.setProfile(FOREPATH_LLM_MEMORY_PROFILE_BALANCED);
     service.buildSystemPrompt();
-    expect(pricingCalculator.buildCatalogPromptContext).toHaveBeenCalledWith(false);
 
+    expect(pricingCalculator.buildCatalogPromptContext).toHaveBeenCalledWith(false);
+    expect(pricingCalculator.buildCatalogPromptContext).not.toHaveBeenCalledWith(true);
+  });
+
+  it('should fall back to compact system prompt when the full prompt exceeds the context window', () => {
+    memoryProfileService.setProfile(FOREPATH_LLM_MEMORY_PROFILE_BALANCED);
+    pricingCalculator.buildCatalogPromptContext.mockImplementation((compact = false) =>
+      compact ? 'compact-catalog'.repeat(200) : 'full-catalog'.repeat(500),
+    );
+
+    const prompt = service.buildSystemPrompt();
+
+    expect(pricingCalculator.buildCatalogPromptContext).toHaveBeenCalledWith(false);
+    expect(pricingCalculator.buildCatalogPromptContext).toHaveBeenCalledWith(true);
+    expect(prompt).toContain('compact-catalog');
+  });
+
+  it('should use compact catalog for lite profiles', () => {
     memoryProfileService.setProfile(FOREPATH_LLM_MEMORY_PROFILE_LITE);
     const litePrompt = service.buildSystemPrompt();
+
     expect(pricingCalculator.buildCatalogPromptContext).toHaveBeenCalledWith(true);
     expect(litePrompt).toContain('520 units');
     expect(litePrompt).toContain('Default to ZERO travel');
+  });
+
+  it('should truncate long user prompts to fit the active context window', async () => {
+    globalThis.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+    } as Response);
+
+    const breakdown = {
+      summary: 'Estimate',
+      lineItems: [
+        {
+          serviceId: 'consulting' as const,
+          description: 'Workshop',
+          billingUnits: 4,
+        },
+      ],
+      assumptions: [],
+      confidence: 'medium' as const,
+    };
+
+    chatCreate.mockResolvedValue({
+      choices: [{ message: { content: JSON.stringify(breakdown) } }],
+    });
+    parser.parseModelOutput.mockReturnValue(breakdown);
+
+    const longPrompt = 'scope '.repeat(5_000);
+    await service.generateBreakdown(longPrompt);
+
+    const createCall = chatCreate.mock.calls[0]?.[0] as {
+      messages: Array<{ role: string; content: string }>;
+    };
+    const userMessage = createCall.messages.find((message) => message.role === 'user');
+
+    expect(userMessage?.content.length).toBeLessThan(longPrompt.trim().length);
+    expect(userMessage?.content.length).toBeGreaterThan(0);
   });
 
   it('should generate and parse a breakdown from the local engine', async () => {
@@ -143,7 +196,7 @@ describe('ForepathLocalLlmService', () => {
         temperature: FOREPATH_ESTIMATE_LLM_TEMPERATURE,
         top_p: FOREPATH_ESTIMATE_LLM_TOP_P,
         seed: hashStringToSeed(normalizeProjectDescription('Need a workshop')),
-        max_tokens: FOREPATH_LLM_MEMORY_PROFILE_BALANCED.maxTokens,
+        max_tokens: expect.any(Number),
         response_format: {
           type: 'json_object',
           schema: FOREPATH_PROJECT_BREAKDOWN_JSON_SCHEMA,

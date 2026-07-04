@@ -44,8 +44,15 @@ describe('Environment interfaces', () => {
           privacyPolicyUrl: 'https://example.com/privacy',
           termsUrl: 'https://example.com/terms',
         },
+        socialPreview: {
+          imageUrl: 'https://example.com/og.png',
+        },
         docs: {
           contentRoot: 'agenstra',
+        },
+        communication: {
+          restApiUrl: 'http://localhost:3300/api',
+          turnstileSiteKey: 'test-site-key',
         },
       };
 
@@ -88,8 +95,15 @@ describe('Environment interfaces', () => {
           privacyPolicyUrl: 'https://example.com/privacy',
           termsUrl: 'https://example.com/terms',
         },
+        socialPreview: {
+          imageUrl: 'https://example.com/og.png',
+        },
         docs: {
           contentRoot: 'agenstra',
+        },
+        communication: {
+          restApiUrl: 'http://localhost:3300/api',
+          turnstileSiteKey: 'test-site-key',
         },
       };
 
@@ -133,8 +147,15 @@ describe('Environment interfaces', () => {
           privacyPolicyUrl: 'https://example.com/privacy',
           termsUrl: 'https://example.com/terms',
         },
+        socialPreview: {
+          imageUrl: 'https://example.com/og.png',
+        },
         docs: {
           contentRoot: 'agenstra',
+        },
+        communication: {
+          restApiUrl: 'http://localhost:3300/api',
+          turnstileSiteKey: 'test-site-key',
         },
       };
 
@@ -179,8 +200,15 @@ describe('Environment interfaces', () => {
           privacyPolicyUrl: 'https://example.com/privacy',
           termsUrl: 'https://example.com/terms',
         },
+        socialPreview: {
+          imageUrl: 'https://example.com/og.png',
+        },
         docs: {
           contentRoot: 'agenstra',
+        },
+        communication: {
+          restApiUrl: 'http://localhost:3300/api',
+          turnstileSiteKey: 'test-site-key',
         },
       };
 

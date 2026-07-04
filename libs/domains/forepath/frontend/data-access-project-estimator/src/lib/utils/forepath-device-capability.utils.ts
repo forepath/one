@@ -15,7 +15,7 @@ export function evaluateDeviceCapability(navigatorLike: Navigator, hasWebGpuAdap
   if (!hasWebGpuAdapter) {
     return {
       supported: false,
-      reason: 'WebGPU adapter could not be initialized on this device.',
+      reason: 'We could not start the quote tool in this browser. Try refreshing the page or using another browser.',
       memoryProfile: null,
     };
   }
@@ -27,7 +27,7 @@ export function evaluateDeviceCapability(navigatorLike: Navigator, hasWebGpuAdap
   if (!memoryProfile) {
     return {
       supported: false,
-      reason: 'At least 4 GB of device memory is required for local estimation.',
+      reason: 'This device does not have enough memory for the instant quote tool. Contact us for a tailored quote.',
       memoryProfile: null,
     };
   }
