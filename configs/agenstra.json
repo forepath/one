@@ -18,5 +18,9 @@
     "domain": ".agenstra.com",
     "privacyPolicyUrl": "https://agenstra.com/legal/privacy",
     "termsUrl": "https://agenstra.com/legal/terms"
+  },
+  "communication": {
+    "restApiUrl": "https://communication.forepath.io/api",
+    "turnstileSiteKey": "0x4AAAAAADvf6PCeLddoJ7Ur"
   }
 }

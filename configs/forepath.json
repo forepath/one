@@ -18,5 +18,9 @@
     "domain": ".forepath.io",
     "privacyPolicyUrl": "https://forepath.io/legal/privacy",
     "termsUrl": "https://forepath.io/legal/terms"
+  },
+  "communication": {
+    "restApiUrl": "https://communication.forepath.io/api",
+    "turnstileSiteKey": "0x4AAAAAADvf6PCeLddoJ7Ur"
   }
 }

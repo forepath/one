@@ -18,5 +18,9 @@
     "domain": ".decabill.com",
     "privacyPolicyUrl": "https://decabill.com/legal/privacy",
     "termsUrl": "https://decabill.com/legal/terms"
+  },
+  "communication": {
+    "restApiUrl": "https://communication.forepath.io/api",
+    "turnstileSiteKey": "0x4AAAAAADvf6PCeLddoJ7Ur"
   }
 }

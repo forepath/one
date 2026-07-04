@@ -23,7 +23,10 @@
     <div class="row g-4 justify-content-center align-items-stretch">
       <div class="col-lg-8 col-xl-7">
         @if (submitted$ | async) {
-          <div class="card border rounded-3 shadow-sm p-4 p-md-5 text-center bg-white text-body h-100" role="status">
+          <div
+            class="card border rounded-3 shadow-sm p-4 p-md-5 text-center bg-white text-body h-100 justify-content-center align-items-center"
+            role="status"
+          >
             <i class="bi bi-check-circle-fill text-success icon-lg mb-3" aria-hidden="true"></i>
             <h2 class="h4 fw-semibold mb-3" i18n="@@sharedFeatureLandingpageContact-successTitle">Message sent</h2>
             <p class="text-muted mb-0" i18n="@@sharedFeatureLandingpageContact-successLead">
