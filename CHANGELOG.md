@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.14.0](https://github.com/forepath/one/compare/v2.13.0...v2.14.0) (2026-07-04)
+
+
+### Features
+
+* communications service ([#456](https://github.com/forepath/one/issues/456)) ([066f619](https://github.com/forepath/one/commit/066f619f2bc8aa1a7ca2d0b9ee4c2f0fc1b62a1c))
+* dynamic pricing estimates based on local llm hosted through webgpu ([#455](https://github.com/forepath/one/issues/455)) ([2c165d3](https://github.com/forepath/one/commit/2c165d39777f5f69688285d9ef7f4ea987d56e62))
+
 ## [2.13.0](https://github.com/forepath/one/compare/v2.12.0...v2.13.0) (2026-07-02)
 
 
