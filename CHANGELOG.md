@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.14.1](https://github.com/forepath/one/compare/v2.14.0...v2.14.1) (2026-07-04)
+
+
+### Chores
+
+* archive configuration and fix success message position ([a2b631e](https://github.com/forepath/one/commit/a2b631ea354de3a47e4ce7e83ae1017cf2c616b7))
+
 ## [2.14.0](https://github.com/forepath/one/compare/v2.13.0...v2.14.0) (2026-07-04)
 
 
