@@ -67,6 +67,7 @@ x-backend-billing-manager-environment: &backend-billing-manager-environment
   BILLING_DEFAULT_PAYMENT_PROCESSOR: ${BILLING_DEFAULT_PAYMENT_PROCESSOR:-stripe}
   STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
   STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+  STRIPE_CHECKOUT_FRAUD_PROTECTION_ENABLED: ${STRIPE_CHECKOUT_FRAUD_PROTECTION_ENABLED:-true}
   STRIPE_CHECKOUT_SUCCESS_URL: ${STRIPE_CHECKOUT_SUCCESS_URL:-http://localhost:4500/invoices?payment=success}
   STRIPE_CHECKOUT_CANCEL_URL: ${STRIPE_CHECKOUT_CANCEL_URL:-http://localhost:4500/invoices?payment=cancel}
   # Dynamic provider plugins (baked-in runtime deps and/or mounted plugin path)

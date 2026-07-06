@@ -7,6 +7,8 @@ import {
   PaymentProcessor,
   PaymentStatusUpdate,
 } from '../payment-processor.interface';
+import { isStripeCheckoutFraudProtectionEnabled } from '../stripe-checkout.config';
+import { buildStripeCheckoutSessionCreateParams } from '../stripe-checkout-session.utils';
 
 type StripeClient = ReturnType<typeof StripeCtor>;
 
@@ -48,30 +50,9 @@ export class StripePaymentProcessor implements PaymentProcessor {
   }
 
   async createCheckoutSession(params: CreateCheckoutSessionParams): Promise<CheckoutSessionResult> {
-    const sessionParams = {
-      mode: 'payment' as const,
-      success_url: params.successUrl,
-      cancel_url: params.cancelUrl,
-      client_reference_id: params.invoiceId,
-      metadata: params.metadata,
-      line_items: [
-        {
-          price_data: {
-            currency: params.currency.toLowerCase(),
-            unit_amount: Math.round(params.amount * 100),
-            product_data: {
-              name: `Invoice ${params.metadata.invoiceNumber ?? params.invoiceId}`,
-            },
-          },
-          quantity: 1,
-        },
-      ],
-      ...(params.stripeCustomerId
-        ? { customer: params.stripeCustomerId }
-        : params.customerEmail
-          ? { customer_email: params.customerEmail }
-          : {}),
-    };
+    const sessionParams = buildStripeCheckoutSessionCreateParams(params, {
+      fraudProtectionEnabled: isStripeCheckoutFraudProtectionEnabled(),
+    });
     const session = await this.client().checkout.sessions.create(sessionParams, {
       idempotencyKey: params.idempotencyKey,
     });
