@@ -56,6 +56,9 @@ export class SubscriptionEntity {
   @Column({ type: 'timestamp', nullable: true, name: 'resumed_at' })
   resumedAt?: Date;
 
+  @Column({ type: 'timestamp', nullable: true, name: 'withdrawn_at' })
+  withdrawnAt?: Date;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

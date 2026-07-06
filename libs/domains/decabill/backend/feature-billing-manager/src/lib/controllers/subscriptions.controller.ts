@@ -15,7 +15,7 @@ import { CancelSubscriptionDto } from '../dto/cancel-subscription.dto';
 import { CreateSubscriptionDto } from '../dto/create-subscription.dto';
 import { ResumeSubscriptionDto } from '../dto/resume-subscription.dto';
 import { SubscriptionResponseDto } from '../dto/subscription-response.dto';
-import { SubscriptionEntity } from '../entities/subscription.entity';
+import { WithdrawSubscriptionDto } from '../dto/withdraw-subscription.dto';
 import { SubscriptionService } from '../services/subscription.service';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
@@ -38,7 +38,7 @@ export class SubscriptionsController {
       dto.autoBackorder ?? false,
     );
 
-    return this.mapToResponse(subscription);
+    return (await this.subscriptionService.mapManyToResponses([subscription]))[0];
   }
 
   @Get()
@@ -55,7 +55,7 @@ export class SubscriptionsController {
 
     const rows = await this.subscriptionService.listSubscriptions(userInfo.userId, limit ?? 10, offset ?? 0);
 
-    return rows.map((row) => this.mapToResponse(row));
+    return await this.subscriptionService.mapManyToResponses(rows);
   }
 
   @Get(':id')
@@ -71,7 +71,7 @@ export class SubscriptionsController {
 
     const row = await this.subscriptionService.getSubscription(id, userInfo.userId);
 
-    return this.mapToResponse(row);
+    return (await this.subscriptionService.mapManyToResponses([row]))[0];
   }
 
   @Post(':id/cancel')
@@ -88,7 +88,24 @@ export class SubscriptionsController {
 
     const row = await this.subscriptionService.cancelSubscription(id, userInfo.userId);
 
-    return this.mapToResponse(row);
+    return (await this.subscriptionService.mapManyToResponses([row]))[0];
+  }
+
+  @Post(':id/withdraw')
+  async withdraw(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() _dto: WithdrawSubscriptionDto,
+    @Req() req?: RequestWithUser,
+  ): Promise<SubscriptionResponseDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    const { subscription, withdrawalResult } = await this.subscriptionService.withdrawSubscription(id, userInfo.userId);
+
+    return this.subscriptionService.mapToResponse(subscription, [], undefined, withdrawalResult);
   }
 
   @Post(':id/resume')
@@ -105,24 +122,6 @@ export class SubscriptionsController {
 
     const row = await this.subscriptionService.resumeSubscription(id, userInfo.userId);
 
-    return this.mapToResponse(row);
-  }
-
-  private mapToResponse(row: SubscriptionEntity): SubscriptionResponseDto {
-    return {
-      id: row.id,
-      number: row.number,
-      planId: row.planId,
-      userId: row.userId,
-      status: row.status,
-      currentPeriodStart: row.currentPeriodStart,
-      currentPeriodEnd: row.currentPeriodEnd,
-      nextBillingAt: row.nextBillingAt,
-      cancelRequestedAt: row.cancelRequestedAt,
-      cancelEffectiveAt: row.cancelEffectiveAt,
-      resumedAt: row.resumedAt,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
+    return (await this.subscriptionService.mapManyToResponses([row]))[0];
   }
 }

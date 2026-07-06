@@ -66,6 +66,8 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   readonly backordersSearch = signal('');
   @ViewChild('orderPlanModal', { static: false }) private orderPlanModal!: ElementRef<HTMLDivElement>;
   @ViewChild('cancelSubscriptionModal', { static: false }) private cancelSubscriptionModal!: ElementRef<HTMLDivElement>;
+  @ViewChild('withdrawSubscriptionModal', { static: false })
+  private withdrawSubscriptionModal!: ElementRef<HTMLDivElement>;
   @ViewChild('resumeConfirmModal', { static: false }) private resumeConfirmModal!: ElementRef<HTMLDivElement>;
   @ViewChild('cancelBackorderModal', { static: false }) private cancelBackorderModal!: ElementRef<HTMLDivElement>;
   @ViewChild('editProfileModal', { static: false }) private editProfileModal!: ElementRef<HTMLDivElement>;
@@ -91,6 +93,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     initialValue: false,
   });
   readonly subscriptionsCanceling$ = this.subscriptionsFacade.getSubscriptionsCanceling$();
+  readonly subscriptionsWithdrawing$ = this.subscriptionsFacade.getSubscriptionsWithdrawing$();
   readonly subscriptionsResuming$ = this.subscriptionsFacade.getSubscriptionsResuming$();
   readonly backordersCanceling$ = this.backordersFacade.getBackordersCanceling$();
 
@@ -244,6 +247,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     cursorApiKey: '',
   };
   subscriptionToCancel: SubscriptionResponse | null = null;
+  subscriptionToWithdraw: SubscriptionResponse | null = null;
   subscriptionToResume: SubscriptionResponse | null = null;
   backorderToRetry: BackorderResponse | null = null;
   backorderToCancel: BackorderResponse | null = null;
@@ -361,7 +365,11 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
     if (total === null) return '—';
 
-    return `€${Number.isInteger(total) ? String(total) : total.toFixed(2)}`;
+    return this.formatCurrencyAmount(total);
+  }
+
+  formatCurrencyAmount(amount: number): string {
+    return `€${Number.isInteger(amount) ? String(amount) : amount.toFixed(2)}`;
   }
 
   /** Option label for plan select: name + price + billing interval. */
@@ -826,6 +834,17 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     this.subscriptionsFacade.cancelSubscription(this.subscriptionToCancel.id);
   }
 
+  openWithdrawConfirm(sub: SubscriptionResponse): void {
+    this.subscriptionToWithdraw = sub;
+    showBillingModal(this.withdrawSubscriptionModal);
+  }
+
+  confirmWithdrawSubscription(): void {
+    if (!this.subscriptionToWithdraw) return;
+
+    this.subscriptionsFacade.withdrawSubscription(this.subscriptionToWithdraw.id);
+  }
+
   openResumeConfirm(sub: SubscriptionResponse): void {
     this.subscriptionToResume = sub;
     showBillingModal(this.resumeConfirmModal);
@@ -905,6 +924,15 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.subscriptionToCancel = null;
+      },
+    });
+    watchBillingMutationModalClose({
+      loading$: this.subscriptionsWithdrawing$,
+      error$: this.subscriptionsError$,
+      modal: () => this.withdrawSubscriptionModal,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        this.subscriptionToWithdraw = null;
       },
     });
     watchBillingMutationModalClose({

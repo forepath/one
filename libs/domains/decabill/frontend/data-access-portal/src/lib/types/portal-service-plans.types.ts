@@ -7,6 +7,13 @@ export interface ServicePlanOrderingHighlight {
   text: string;
 }
 
+export interface WithdrawalPolicy {
+  periodDays: number;
+  allowedAfterProvisioning: boolean;
+  unprovisionedAlwaysWithdrawable: true;
+  provisionedRefundPolicy: 'unused_period_prorated';
+}
+
 export interface PublicServicePlanOffering {
   id: string;
   name: string;
@@ -17,6 +24,7 @@ export interface PublicServicePlanOffering {
   billingIntervalValue: number;
   totalPrice: number;
   orderingHighlights: ServicePlanOrderingHighlight[];
+  withdrawalPolicy: WithdrawalPolicy;
 }
 
 export interface PublicServicePlanOfferingsListParams {

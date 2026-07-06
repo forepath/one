@@ -34,6 +34,26 @@ export function buildCreditNoteNumber(invoiceNumber: string): string {
   return `${invoiceNumber}-CN`;
 }
 
+export function buildPartialCreditNoteNumber(invoiceNumber: string, suffix: string): string {
+  return `${invoiceNumber}-CN-${suffix}`;
+}
+
+export function buildPartialCreditNoteDocumentOptions(
+  creditNoteNumber: string,
+  issuedAt: Date,
+  originalInvoiceNumber: string,
+  creditGross: number,
+): EInvoiceDocumentOptions {
+  return {
+    typeCode: '381',
+    documentId: creditNoteNumber,
+    issueDate: issuedAt,
+    duePayableAmount: creditGross,
+    includePaymentMeans: false,
+    referencedInvoiceNumber: originalInvoiceNumber,
+  };
+}
+
 export function buildInvoiceDocumentOptions(invoice: {
   invoiceNumber?: string;
   id: string;

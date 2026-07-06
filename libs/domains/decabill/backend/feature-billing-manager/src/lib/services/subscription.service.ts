@@ -1,7 +1,10 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
+import type { SubscriptionResponseDto } from '../dto/subscription-response.dto';
+import type { WithdrawalEligibilityDto, WithdrawalResultDto } from '../dto/withdrawal-policy.dto';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
+import { BackordersRepository } from '../repositories/backorders.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
@@ -23,6 +26,9 @@ import { AvailabilityService } from './availability.service';
 import { BackorderService } from './backorder.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CancellationPolicyService } from './cancellation-policy.service';
+import { SubscriptionTeardownService } from './subscription-teardown.service';
+import { WithdrawalPolicyService } from './withdrawal-policy.service';
+import { WithdrawalRefundService } from './withdrawal-refund.service';
 import { CloudflareDnsService } from './cloudflare-dns.service';
 import { CloudInitConfigService } from './cloud-init-config.service';
 import { CustomerProfilesService } from './customer-profiles.service';
@@ -47,6 +53,10 @@ export class SubscriptionService {
     private readonly cloudflareDnsService: CloudflareDnsService,
     private readonly customerProfilesService: CustomerProfilesService,
     private readonly cloudInitConfigService: CloudInitConfigService,
+    private readonly withdrawalPolicyService: WithdrawalPolicyService,
+    private readonly withdrawalRefundService: WithdrawalRefundService,
+    private readonly subscriptionTeardownService: SubscriptionTeardownService,
+    private readonly backordersRepository: BackordersRepository,
   ) {}
 
   async createSubscription(
@@ -296,5 +306,129 @@ export class SubscriptionService {
       cancelRequestedAt: null,
       cancelEffectiveAt: null,
     });
+  }
+
+  async withdrawSubscription(
+    subscriptionId: string,
+    userId: string,
+  ): Promise<{ subscription: SubscriptionEntity; withdrawalResult?: WithdrawalResultDto }> {
+    const subscription = await this.getSubscription(subscriptionId, userId);
+    const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
+    const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
+    const items = await this.subscriptionItemsRepository.findBySubscription(subscriptionId);
+    const decision = this.withdrawalPolicyService.evaluate({
+      subscriptionStatus: subscription.status,
+      items,
+      serviceType,
+    });
+
+    if (!decision.canWithdraw) {
+      throw new BadRequestException(decision.reason || 'Withdrawal not permitted');
+    }
+
+    await this.backordersRepository.cancelPendingForUserPlan(userId, subscription.planId);
+
+    const withdrawnAt = new Date();
+    let withdrawalResult: WithdrawalResultDto | undefined;
+
+    if (decision.phase === 'withdrawal_period') {
+      withdrawalResult = await this.withdrawalRefundService.applyProvisionedWithdrawalRefund(subscription, withdrawnAt);
+    }
+
+    await this.subscriptionTeardownService.teardownImmediate(subscriptionId, {
+      withdrawn: true,
+      billUntil: withdrawnAt,
+      ...(decision.phase === 'unprovisioned' ? { skipOpenPosition: true } : {}),
+    });
+
+    const updated = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
+
+    return { subscription: updated, withdrawalResult };
+  }
+
+  async mapToResponse(
+    subscription: SubscriptionEntity,
+    items = [] as Awaited<ReturnType<SubscriptionItemsRepository['findBySubscription']>>,
+    serviceType?: Awaited<ReturnType<ServiceTypesRepository['findByIdOrThrow']>>,
+    withdrawalResult?: WithdrawalResultDto,
+  ): Promise<SubscriptionResponseDto> {
+    let eligibility: WithdrawalEligibilityDto | undefined;
+
+    if (serviceType) {
+      const decision = this.withdrawalPolicyService.evaluate({
+        subscriptionStatus: subscription.status,
+        items,
+        serviceType,
+      });
+      let estimatedRefundGross: number | undefined;
+
+      if (decision.phase === 'withdrawal_period') {
+        estimatedRefundGross = await this.withdrawalRefundService.estimateRefundGross(subscription);
+      }
+
+      eligibility = {
+        canWithdraw: decision.canWithdraw,
+        phase: decision.phase,
+        deadline: decision.deadline,
+        reason: decision.reason,
+        estimatedRefundGross,
+      };
+    }
+
+    return {
+      id: subscription.id,
+      number: subscription.number,
+      planId: subscription.planId,
+      userId: subscription.userId,
+      status: subscription.status,
+      currentPeriodStart: subscription.currentPeriodStart,
+      currentPeriodEnd: subscription.currentPeriodEnd,
+      nextBillingAt: subscription.nextBillingAt,
+      cancelRequestedAt: subscription.cancelRequestedAt,
+      cancelEffectiveAt: subscription.cancelEffectiveAt,
+      resumedAt: subscription.resumedAt,
+      withdrawnAt: subscription.withdrawnAt,
+      withdrawalEligibility: eligibility,
+      withdrawalResult,
+      createdAt: subscription.createdAt,
+      updatedAt: subscription.updatedAt,
+    };
+  }
+
+  async mapManyToResponses(subscriptions: SubscriptionEntity[]): Promise<SubscriptionResponseDto[]> {
+    if (subscriptions.length === 0) {
+      return [];
+    }
+
+    const subscriptionIds = subscriptions.map((s) => s.id);
+    const items = await this.subscriptionItemsRepository.findBySubscriptionIds(subscriptionIds);
+    const itemsBySubscription = new Map<string, typeof items>();
+
+    for (const item of items) {
+      const list = itemsBySubscription.get(item.subscriptionId) ?? [];
+
+      list.push(item);
+      itemsBySubscription.set(item.subscriptionId, list);
+    }
+
+    const planIds = [...new Set(subscriptions.map((s) => s.planId))];
+    const serviceTypesByPlan = new Map<string, Awaited<ReturnType<ServiceTypesRepository['findByIdOrThrow']>>>();
+
+    for (const planId of planIds) {
+      const plan = await this.servicePlansRepository.findByIdOrThrow(planId);
+      const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
+
+      serviceTypesByPlan.set(planId, serviceType);
+    }
+
+    return await Promise.all(
+      subscriptions.map((subscription) =>
+        this.mapToResponse(
+          subscription,
+          itemsBySubscription.get(subscription.id) ?? [],
+          serviceTypesByPlan.get(subscription.planId),
+        ),
+      ),
+    );
   }
 }

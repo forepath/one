@@ -47,6 +47,7 @@ describe('PaymentOrchestrationService', () => {
       verifyWebhookSignature: jest.fn(),
       parseWebhookEvent: jest.fn(),
       mapWebhookToPaymentUpdate: jest.fn(),
+      refundPayment: jest.fn(),
     };
     factory = new PaymentProcessorFactory();
     factory.registerProcessor(processor);

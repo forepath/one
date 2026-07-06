@@ -141,6 +141,35 @@ describe('SubscriptionsService', () => {
     });
   });
 
+  describe('withdrawSubscription', () => {
+    it('should withdraw a subscription', (done) => {
+      const id = 'sub-1';
+      const dto = { reason: 'test' };
+
+      service.withdrawSubscription(id, dto).subscribe((subscription) => {
+        expect(subscription).toEqual({ ...mockSubscription, status: 'canceled' });
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/subscriptions/${id}/withdraw`);
+
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(dto);
+      req.flush({ ...mockSubscription, status: 'canceled' });
+    });
+
+    it('should send empty object when dto not provided', (done) => {
+      const id = 'sub-1';
+
+      service.withdrawSubscription(id).subscribe(() => done());
+
+      const req = httpMock.expectOne(`${apiUrl}/subscriptions/${id}/withdraw`);
+
+      expect(req.request.body).toEqual({});
+      req.flush(mockSubscription);
+    });
+  });
+
   describe('resumeSubscription', () => {
     it('should resume a subscription', (done) => {
       const id = 'sub-1';

@@ -8,7 +8,11 @@ import { CustomerProfilesRepository } from '../repositories/customer-profiles.re
 
 import { ProjectTimeReportPdfService } from '../projects/services/project-time-report-pdf.service';
 
-import { buildIssuedInvoiceEmailContent, buildVoidDocumentEmailContent } from './invoice-email-message.util';
+import {
+  buildIssuedInvoiceEmailContent,
+  buildPartialCreditDocumentEmailContent,
+  buildVoidDocumentEmailContent,
+} from './invoice-email-message.util';
 import { InvoicePdfService } from './invoice-pdf.service';
 
 @Injectable()
@@ -95,6 +99,42 @@ export class InvoiceEmailService {
       content,
       [{ filename: content.attachmentFilename, content: pdfBuffer }],
       `credit note ${creditNoteNumber}`,
+    );
+  }
+
+  async notifyPartialCreditDocument(
+    invoice: InvoiceEntity,
+    pdfStorageKey: string,
+    creditNoteNumber: string,
+    creditGross: number,
+  ): Promise<boolean> {
+    const profile = await this.customerProfilesRepository.findByUserId(invoice.userId);
+    const email = await this.resolveRecipientEmail(invoice.userId, profile);
+
+    if (!email) {
+      this.logger.warn(`No billing email found for user ${invoice.userId}, skipping partial credit notification`);
+
+      return false;
+    }
+
+    if (!invoice.invoiceNumber) {
+      return false;
+    }
+
+    const pdfBuffer = await this.invoicePdfService.readPdf(pdfStorageKey);
+    const content = buildPartialCreditDocumentEmailContent({
+      recipient: profile,
+      invoiceNumber: invoice.invoiceNumber,
+      creditNoteNumber,
+      creditGross,
+      currency: invoice.currency,
+    });
+
+    return await this.sendDocumentEmail(
+      email,
+      content,
+      [{ filename: content.attachmentFilename, content: pdfBuffer }],
+      `partial credit note ${creditNoteNumber}`,
     );
   }
 

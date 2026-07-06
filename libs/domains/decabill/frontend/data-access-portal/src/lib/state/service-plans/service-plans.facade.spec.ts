@@ -20,6 +20,12 @@ describe('ServicePlansFacade', () => {
     billingIntervalValue: 1,
     totalPrice: 99,
     orderingHighlights: [],
+    withdrawalPolicy: {
+      periodDays: 14,
+      allowedAfterProvisioning: true,
+      unprovisionedAlwaysWithdrawable: true,
+      provisionedRefundPolicy: 'unused_period_prorated',
+    },
   };
 
   beforeEach(() => {

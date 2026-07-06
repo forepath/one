@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import { BillingIntervalType, ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { PricingService } from '../services/pricing.service';
+import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
 
 import { PublicServicePlanOfferingsController } from './public-service-plan-offerings.controller';
 
@@ -41,6 +42,7 @@ describe('PublicServicePlanOfferingsController', () => {
           useValue: { findActiveWithServiceType, findAllActiveWithServiceType },
         },
         { provide: PricingService, useValue: { calculate } },
+        { provide: WithdrawalPolicyService, useValue: new WithdrawalPolicyService() },
       ],
     }).compile();
 
@@ -64,6 +66,12 @@ describe('PublicServicePlanOfferingsController', () => {
       totalPrice: 12,
       orderingHighlights: [{ icon: 'check', text: 'Included' }],
       allowCustomerLocationSelection: false,
+      withdrawalPolicy: {
+        periodDays: 14,
+        allowedAfterProvisioning: true,
+        unprovisionedAlwaysWithdrawable: true,
+        provisionedRefundPolicy: 'unused_period_prorated',
+      },
     });
   });
 

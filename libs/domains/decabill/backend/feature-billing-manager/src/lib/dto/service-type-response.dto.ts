@@ -6,6 +6,7 @@ export class ServiceTypeResponseDto {
   provider!: string;
   configSchema!: Record<string, unknown>;
   isActive!: boolean;
+  disallowStatutoryWithdrawal!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
 }

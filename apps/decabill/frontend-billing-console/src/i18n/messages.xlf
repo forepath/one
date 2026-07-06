@@ -1046,6 +1046,9 @@
       <trans-unit id="featureServiceTypes-active" datatype="html">
         <source>Active</source>
         </trans-unit>
+      <trans-unit id="featureServiceTypes-disallowStatutoryWithdrawal" datatype="html">
+        <source>Disallow statutory withdrawal after provisioning</source>
+        </trans-unit>
       <trans-unit id="featureServiceTypes-close" datatype="html">
         <source> Close </source>
         </trans-unit>
@@ -1124,6 +1127,9 @@
       <trans-unit id="featureSubscriptions-cancelButtonTitle" datatype="html">
         <source>Cancel subscription</source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawButtonTitle" datatype="html">
+        <source>Withdraw subscription</source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-resumeButtonTitle" datatype="html">
         <source>Resume subscription</source>
         </trans-unit>
@@ -1133,8 +1139,8 @@
       <trans-unit id="featureSubscriptions-retryButtonTitle" datatype="html">
         <source>Retry backorder</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-cancelBackorderButtonTitle" datatype="html">
-        <source>Cancel backorder</source>
+      <trans-unit id="featureSubscriptions-withdrawOrderButtonTitle" datatype="html">
+        <source>Withdraw order</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-orderPlanTitle" datatype="html">
         <source>Order plan</source>
@@ -1159,6 +1165,18 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-noticeDays" datatype="html">
         <source>Notice period</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawalPolicyTitle" datatype="html">
+        <source>Statutory withdrawal</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawalPeriodDays" datatype="html">
+        <source>Withdrawal period</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawalAfterProvisioning" datatype="html">
+        <source>You may withdraw within the statutory period after the service is provisioned. Refunds for unused time are calculated on a pro-rata basis.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawalBeforeProvisioningOnly" datatype="html">
+        <source>Statutory withdrawal is only available before the service is provisioned.</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-cloudInitConfig" datatype="html">
         <source>Instance configuration</source>
@@ -1286,6 +1304,21 @@
       <trans-unit id="featureSubscriptions-confirmCancel" datatype="html">
         <source> Confirm cancel </source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawSubscriptionTitle" datatype="html">
+        <source> Withdraw subscription? </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawSubscriptionConfirm" datatype="html">
+        <source> Are you sure you want to exercise your statutory right of withdrawal? The subscription will end immediately and provisioned services will be removed. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawalDeadline" datatype="html">
+        <source>Withdrawal deadline</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-estimatedRefund" datatype="html">
+        <source>Estimated refund</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-confirmWithdraw" datatype="html">
+        <source> Confirm withdrawal </source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-resumeSubscriptionTitle" datatype="html">
         <source> Resume subscription? </source>
         </trans-unit>
@@ -1295,11 +1328,14 @@
       <trans-unit id="featureSubscriptions-confirmResume" datatype="html">
         <source> Resume </source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-cancelBackorderTitle" datatype="html">
-        <source> Cancel backorder? </source>
+      <trans-unit id="featureSubscriptions-withdrawOrderTitle" datatype="html">
+        <source> Withdraw order? </source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-cancelBackorderConfirm" datatype="html">
-        <source>Are you sure you want to cancel this backorder?</source>
+      <trans-unit id="featureSubscriptions-withdrawOrderConfirm" datatype="html">
+        <source>Are you sure you want to withdraw this order?</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-confirmWithdrawOrder" datatype="html">
+        <source> Confirm withdrawal </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-editProfileTitle" datatype="html">
         <source> Edit customer profile </source>

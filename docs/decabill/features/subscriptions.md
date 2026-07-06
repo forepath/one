@@ -94,6 +94,39 @@ See **[CloudInit Configs](./cloud-init-configs.md)**.
 - `POST /subscriptions/{subscriptionId}/cancel` - Schedule cancellation at period end or immediately per plan rules
 - `POST /subscriptions/{subscriptionId}/resume` - Reverse a pending cancel before `effective_at`
 
+## Statutory Withdrawal (Widerruf)
+
+Statutory withdrawal is separate from commercial cancellation. Customers exercise a **Withdraw** action when eligible; **Cancel** remains for period-end or commitment-based termination.
+
+### Eligibility
+
+| Phase             | Condition                                                                                               | Withdraw allowed                 |
+| ----------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| Unprovisioned     | No subscription item is `active`                                                                        | Always                           |
+| Withdrawal period | Item provisioned within `BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS` (default 14) and service type allows | Yes                              |
+| Expired           | Statutory window elapsed                                                                                | No (use Cancel per plan rules)   |
+| Excluded type     | Service type has `disallowStatutoryWithdrawal` and item is provisioned                                  | No (unprovisioned still allowed) |
+
+`GET /subscriptions` and `GET /subscriptions/{id}` include `withdrawalEligibility` with `canWithdraw`, `phase`, optional `deadline`, and `estimatedRefundGross` for provisioned withdrawals.
+
+### Withdraw vs Cancel
+
+- **Withdraw** (`POST /subscriptions/{subscriptionId}/withdraw`) — immediate teardown, bypasses `CancellationPolicyService` (e.g. works during `minCommitmentDays`).
+- **Cancel** — commercial cancellation subject to notice and commitment rules.
+
+### Refunds on provisioned withdrawal
+
+When withdrawal occurs after provisioning and within the statutory window:
+
+1. Unused time from `withdrawnAt` to `currentPeriodEnd` is prorated using the same logic as invoice creation.
+2. A **partial credit note** PDF is generated and emailed.
+3. **Paid** invoices: Stripe refund (or configured processor) for the credited gross amount, capped by amount paid.
+4. **Unpaid** issued/overdue invoices: `balance_due` is reduced; no payment processor call.
+5. **Unprovisioned** withdrawal: no partial refund; no open position (no billing).
+6. **Provisioned** withdrawal: open position bills only from `provisionedAt` to `withdrawnAt`; unused period refunded when applicable.
+
+Withdrawal policy is exposed on service plan reads as `withdrawalPolicy` (`periodDays`, `allowedAfterProvisioning`, `provisionedRefundPolicy`) for checkout disclosure.
+
 ## Subscription Items
 
 Each item tracks:
@@ -136,6 +169,7 @@ Usage-based plans accept metering via `POST /usage/record`. Usage is included in
 | POST   | `/subscriptions`                                                 | Create subscription       |
 | GET    | `/subscriptions/{subscriptionId}`                                | Get subscription detail   |
 | POST   | `/subscriptions/{subscriptionId}/cancel`                         | Cancel subscription       |
+| POST   | `/subscriptions/{subscriptionId}/withdraw`                       | Statutory withdrawal      |
 | POST   | `/subscriptions/{subscriptionId}/resume`                         | Resume pending cancel     |
 | GET    | `/subscriptions/{subscriptionId}/items`                          | List subscription items   |
 | GET    | `/subscriptions/{subscriptionId}/items/{itemId}/server-info`     | Live server info          |

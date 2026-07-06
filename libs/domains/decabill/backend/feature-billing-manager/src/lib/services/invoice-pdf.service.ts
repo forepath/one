@@ -7,16 +7,23 @@ import type { CustomerProfileEntity } from '../entities/customer-profile.entity'
 import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 
+import { TaxCategory } from '../constants/tax-category.constants';
 import type { BillingIssuerConfig } from './billing-issuer-config.service';
 import {
   buildCreditNoteDocumentOptions,
   buildCreditNoteNumber,
   buildInvoiceDocumentOptions,
+  buildPartialCreditNoteDocumentOptions,
+  buildPartialCreditNoteNumber,
 } from './e-invoice-document-options';
 import { EInvoiceEmbedService } from './e-invoice-embed.service';
 import { EInvoiceXmlService } from './e-invoice-xml.service';
 import { InvoicePdfHtmlRendererService } from './invoice-pdf-html-renderer.service';
-import { buildCreditNotePdfPresentation, buildInvoicePdfPresentation } from './invoice-pdf-presentation.util';
+import {
+  buildCreditNotePdfPresentation,
+  buildInvoicePdfPresentation,
+  buildPartialCreditNotePdfPresentation,
+} from './invoice-pdf-presentation.util';
 import { InvoicePdfTemplateService } from './invoice-pdf-template.service';
 import type { InvoicingPeriod } from './invoicing-period.util';
 import { buildInvoicePdfStorageKey } from '../utils/invoice-pdf-storage.util';
@@ -109,6 +116,70 @@ export class InvoicePdfService {
     const pdfBytes = await this.renderPdf(invoice, lineItems, issuer, buyer, presentation);
     const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
     const storageKey = buildInvoicePdfStorageKey(invoice, '-void.pdf');
+    const absolute = this.resolveAbsolutePath(storageKey);
+
+    await fs.promises.mkdir(path.dirname(absolute), { recursive: true });
+    await fs.promises.writeFile(absolute, embedded);
+
+    return { storageKey, documentNumber };
+  }
+
+  async generatePartialCreditDocumentAndStore(
+    invoice: InvoiceEntity,
+    issuedAt: Date,
+    issuer: BillingIssuerConfig,
+    buyer: CustomerProfileEntity,
+    purchaseOrderReference: string,
+    invoicingPeriod: InvoicingPeriod,
+    creditNet: number,
+    creditGross: number,
+    lineDescription: string,
+    suffix: string,
+  ): Promise<{ storageKey: string; documentNumber: string }> {
+    const originalInvoiceNumber = invoice.invoiceNumber;
+
+    if (!originalInvoiceNumber) {
+      throw new Error('Cannot generate partial credit document without an invoice number');
+    }
+
+    const documentNumber = buildPartialCreditNoteNumber(originalInvoiceNumber, suffix);
+    const syntheticLine = {
+      id: 'synthetic-credit-line',
+      invoiceId: invoice.id,
+      position: 0,
+      description: lineDescription,
+      quantity: 1,
+      unitPriceNet: creditNet,
+      taxCategory: TaxCategory.STANDARD,
+      taxRate: creditNet > 0 ? Math.round(((creditGross - creditNet) / creditNet) * 10000) / 100 : 0,
+      lineNet: creditNet,
+      lineTax: Math.round((creditGross - creditNet) * 100) / 100,
+      lineGross: creditGross,
+    } as InvoiceLineItemEntity;
+    const documentOptions = buildPartialCreditNoteDocumentOptions(
+      documentNumber,
+      issuedAt,
+      originalInvoiceNumber,
+      creditGross,
+    );
+    const xml = this.eInvoiceXmlService.buildEn16931Xml(
+      invoice,
+      [syntheticLine],
+      issuer,
+      buyer,
+      purchaseOrderReference,
+      invoicingPeriod,
+      documentOptions,
+    );
+    const presentation = buildPartialCreditNotePdfPresentation(
+      documentNumber,
+      issuedAt,
+      originalInvoiceNumber,
+      creditGross,
+    );
+    const pdfBytes = await this.renderPdf(invoice, [syntheticLine], issuer, buyer, presentation);
+    const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
+    const storageKey = buildInvoicePdfStorageKey(invoice, `-credit-${suffix}.pdf`);
     const absolute = this.resolveAbsolutePath(storageKey);
 
     await fs.promises.mkdir(path.dirname(absolute), { recursive: true });

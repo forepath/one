@@ -28,6 +28,12 @@ describe('Portal Service Plans Selectors', () => {
     billingIntervalValue: 1,
     totalPrice: 99,
     orderingHighlights: [],
+    withdrawalPolicy: {
+      periodDays: 14,
+      allowedAfterProvisioning: true,
+      unprovisionedAlwaysWithdrawable: true,
+      provisionedRefundPolicy: 'unused_period_prorated',
+    },
   };
   const mockOffering2: PublicServicePlanOffering = {
     id: 'sp-2',
@@ -39,6 +45,12 @@ describe('Portal Service Plans Selectors', () => {
     billingIntervalValue: 1,
     totalPrice: 199,
     orderingHighlights: [],
+    withdrawalPolicy: {
+      periodDays: 14,
+      allowedAfterProvisioning: true,
+      unprovisionedAlwaysWithdrawable: true,
+      provisionedRefundPolicy: 'unused_period_prorated',
+    },
   };
   const createState = (overrides?: Partial<ServicePlansState>): ServicePlansState => ({
     ...initialServicePlansState,

@@ -18,6 +18,7 @@ import {
   selectSubscriptionsLoadingAny,
   selectSubscriptionsResuming,
   selectSubscriptionsState,
+  selectSubscriptionsWithdrawing,
   selectSubscriptionLoading,
 } from './subscriptions.selectors';
 
@@ -117,6 +118,16 @@ describe('Subscriptions Selectors', () => {
     });
   });
 
+  describe('selectSubscriptionsWithdrawing', () => {
+    it('should return withdrawing state', () => {
+      const state = createState({ withdrawing: true });
+      const rootState = { subscriptions: state };
+      const result = selectSubscriptionsWithdrawing(rootState as never);
+
+      expect(result).toBe(true);
+    });
+  });
+
   describe('selectSubscriptionsResuming', () => {
     it('should return resuming state', () => {
       const state = createState({ resuming: true });
@@ -154,12 +165,21 @@ describe('Subscriptions Selectors', () => {
       expect(result).toBe(true);
     });
 
+    it('should return true when withdrawing', () => {
+      const state = createState({ withdrawing: true });
+      const rootState = { subscriptions: state };
+      const result = selectSubscriptionsLoadingAny(rootState as never);
+
+      expect(result).toBe(true);
+    });
+
     it('should return false when all loading states are false', () => {
       const state = createState({
         loading: false,
         loadingSubscription: false,
         creating: false,
         canceling: false,
+        withdrawing: false,
         resuming: false,
       });
       const rootState = { subscriptions: state };

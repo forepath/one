@@ -8,6 +8,7 @@ import type {
   ListParams,
   ResumeSubscriptionDto,
   SubscriptionResponse,
+  WithdrawSubscriptionDto,
 } from '../../types/billing.types';
 
 import {
@@ -17,6 +18,7 @@ import {
   loadSubscription,
   loadSubscriptions,
   resumeSubscription,
+  withdrawSubscription,
 } from './subscriptions.actions';
 import {
   selectActiveSubscriptions,
@@ -35,6 +37,7 @@ import {
   selectSubscriptionsLoading,
   selectSubscriptionsLoadingAny,
   selectSubscriptionsResuming,
+  selectSubscriptionsWithdrawing,
 } from './subscriptions.selectors';
 
 @Injectable({
@@ -65,6 +68,10 @@ export class SubscriptionsFacade {
 
   getSubscriptionsCanceling$(): Observable<boolean> {
     return this.store.select(selectSubscriptionsCanceling);
+  }
+
+  getSubscriptionsWithdrawing$(): Observable<boolean> {
+    return this.store.select(selectSubscriptionsWithdrawing);
   }
 
   getSubscriptionsResuming$(): Observable<boolean> {
@@ -121,6 +128,10 @@ export class SubscriptionsFacade {
 
   cancelSubscription(id: string, dto?: CancelSubscriptionDto): void {
     this.store.dispatch(cancelSubscription({ id, dto }));
+  }
+
+  withdrawSubscription(id: string, dto?: WithdrawSubscriptionDto): void {
+    this.store.dispatch(withdrawSubscription({ id, dto }));
   }
 
   resumeSubscription(id: string, dto?: ResumeSubscriptionDto): void {

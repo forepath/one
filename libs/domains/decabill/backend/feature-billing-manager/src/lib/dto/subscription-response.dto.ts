@@ -1,5 +1,7 @@
 import { SubscriptionStatus } from '../entities/subscription.entity';
 
+import { WithdrawalEligibilityDto, WithdrawalResultDto } from './withdrawal-policy.dto';
+
 export class SubscriptionResponseDto {
   id!: string;
   number!: string;
@@ -12,6 +14,9 @@ export class SubscriptionResponseDto {
   cancelRequestedAt?: Date;
   cancelEffectiveAt?: Date;
   resumedAt?: Date;
+  withdrawnAt?: Date;
+  withdrawalEligibility?: WithdrawalEligibilityDto;
+  withdrawalResult?: WithdrawalResultDto;
   createdAt!: Date;
   updatedAt!: Date;
 }

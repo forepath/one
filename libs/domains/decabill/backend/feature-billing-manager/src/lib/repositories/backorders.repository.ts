@@ -63,4 +63,15 @@ export class BackordersRepository {
 
     return await this.repository.save(entity);
   }
+
+  async cancelPendingForUserPlan(userId: string, planId: string): Promise<void> {
+    await this.repository
+      .createQueryBuilder()
+      .update(BackorderEntity)
+      .set({ status: BackorderStatus.CANCELLED })
+      .where('user_id = :userId', { userId })
+      .andWhere('plan_id = :planId', { planId })
+      .andWhere('status IN (:...statuses)', { statuses: [BackorderStatus.PENDING, BackorderStatus.RETRYING] })
+      .execute();
+  }
 }

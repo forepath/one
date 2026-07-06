@@ -1178,6 +1178,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/withdraw:
+    post:
+      summary: Statutory withdrawal (Widerruf)
+      operationId: withdrawSubscription
+      description: |
+        Exercises the statutory withdrawal right, distinct from commercial cancellation.
+        Unprovisioned orders are always withdrawable. Provisioned orders may withdraw within
+        BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS unless the service type disallows post-provisioning withdrawal.
+        Provisioned withdrawals trigger prorated partial refunds for the unused billing period.
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawSubscriptionDto'
+      responses:
+        '200':
+          description: Subscription withdrawn
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        '400':
+          description: Withdrawal not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /subscriptions/{subscriptionId}/items:
     get:
       summary: List subscription items
@@ -3113,6 +3149,9 @@ components:
         isActive:
           type: boolean
           description: Whether the service type is active
+        disallowStatutoryWithdrawal:
+          type: boolean
+          description: When true, statutory withdrawal is blocked after provisioning (unprovisioned orders remain withdrawable).
     UpdateServiceTypeDto:
       type: object
       properties:
@@ -3126,6 +3165,9 @@ components:
           type: object
         isActive:
           type: boolean
+        disallowStatutoryWithdrawal:
+          type: boolean
+          description: When true, statutory withdrawal is blocked after provisioning.
     ServiceTypeResponse:
       type: object
       properties:
@@ -3136,6 +3178,7 @@ components:
         provider: { type: string }
         configSchema: { type: object }
         isActive: { type: boolean }
+        disallowStatutoryWithdrawal: { type: boolean }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     ServicePlanOrderingHighlight:
@@ -3194,6 +3237,8 @@ components:
         allowCustomerLocationSelection:
           type: boolean
           description: When true, authenticated checkout may send region or location in subscription requestedConfig (schema must define a string enum for that field on the service type).
+        withdrawalPolicy:
+          $ref: '#/components/schemas/WithdrawalPolicy'
     CreateServicePlanDto:
       type: object
       required: [serviceTypeId, name, billingIntervalType, billingIntervalValue]
@@ -3299,6 +3344,8 @@ components:
         isActive: { type: boolean }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+        withdrawalPolicy:
+          $ref: '#/components/schemas/WithdrawalPolicy'
     AvailabilityCheckDto:
       type: object
       required: [serviceTypeId, region, serverType]
@@ -3434,8 +3481,58 @@ components:
         cancelRequestedAt: { type: string, format: date-time, nullable: true }
         cancelEffectiveAt: { type: string, format: date-time, nullable: true }
         resumedAt: { type: string, format: date-time, nullable: true }
+        withdrawnAt: { type: string, format: date-time, nullable: true }
+        withdrawalEligibility:
+          $ref: '#/components/schemas/WithdrawalEligibility'
+        withdrawalResult:
+          $ref: '#/components/schemas/WithdrawalResult'
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+    WithdrawSubscriptionDto:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+    WithdrawalPolicy:
+      type: object
+      required:
+        - periodDays
+        - allowedAfterProvisioning
+        - unprovisionedAlwaysWithdrawable
+        - provisionedRefundPolicy
+      properties:
+        periodDays:
+          type: integer
+          description: Statutory withdrawal window in days after provisioning (from BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS).
+        allowedAfterProvisioning:
+          type: boolean
+          description: False when the service type disallows post-provisioning withdrawal.
+        unprovisionedAlwaysWithdrawable:
+          type: boolean
+          enum: [true]
+        provisionedRefundPolicy:
+          type: string
+          enum: [unused_period_prorated]
+    WithdrawalEligibility:
+      type: object
+      properties:
+        canWithdraw: { type: boolean }
+        phase:
+          type: string
+          description: unprovisioned, withdrawal_period, expired, or excluded_by_service_type
+        deadline: { type: string, format: date-time, nullable: true }
+        reason: { type: string, nullable: true }
+        estimatedRefundGross: { type: number, nullable: true }
+    WithdrawalResult:
+      type: object
+      properties:
+        refundNet: { type: number, nullable: true }
+        refundGross: { type: number, nullable: true }
+        creditNoteNumber: { type: string, nullable: true }
+        paymentRefundStatus:
+          type: string
+          enum: [not_applicable, pending, succeeded, failed]
     CancelSubscriptionDto:
       type: object
       properties:

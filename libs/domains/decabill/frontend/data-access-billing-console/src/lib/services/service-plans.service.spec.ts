@@ -21,6 +21,13 @@ describe('ServicePlansService', () => {
     noticeDays: 0,
     providerConfigDefaults: {},
     orderingHighlights: [],
+    allowCustomerLocationSelection: false,
+    withdrawalPolicy: {
+      periodDays: 14,
+      allowedAfterProvisioning: true,
+      unprovisionedAlwaysWithdrawable: true,
+      provisionedRefundPolicy: 'unused_period_prorated',
+    },
     isActive: true,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',

@@ -6,6 +6,8 @@ import {
   CheckoutSessionResult,
   PaymentProcessor,
   PaymentStatusUpdate,
+  RefundPaymentParams,
+  RefundPaymentResult,
 } from '../payment-processor.interface';
 import { isStripeCheckoutFraudProtectionEnabled } from '../stripe-checkout.config';
 import { buildStripeCheckoutSessionCreateParams } from '../stripe-checkout-session.utils';
@@ -150,5 +152,26 @@ export class StripePaymentProcessor implements PaymentProcessor {
     }
 
     return data as StripeCheckoutSessionPayload;
+  }
+
+  async refundPayment(params: RefundPaymentParams): Promise<RefundPaymentResult> {
+    const session = await this.client().checkout.sessions.retrieve(params.externalCheckoutSessionId, {
+      expand: ['payment_intent'],
+    });
+    const paymentIntent = session.payment_intent;
+
+    if (!paymentIntent || typeof paymentIntent === 'string') {
+      throw new Error('Stripe checkout session has no payment intent');
+    }
+
+    const refund = await this.client().refunds.create(
+      {
+        payment_intent: paymentIntent.id,
+        amount: Math.round(params.amount * 100),
+      },
+      { idempotencyKey: params.idempotencyKey },
+    );
+
+    return { externalRefundId: refund.id };
   }
 }

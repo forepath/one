@@ -217,6 +217,22 @@
             />
             <label class="form-check-label" for="createIsActive" i18n="@@featureServiceTypes-active">Active</label>
           </div>
+          <div class="form-check mt-2">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id="createDisallowStatutoryWithdrawal"
+              name="disallowStatutoryWithdrawal"
+              [(ngModel)]="createForm.disallowStatutoryWithdrawal"
+              [disabled]="(creating$ | async) === true"
+            />
+            <label
+              class="form-check-label"
+              for="createDisallowStatutoryWithdrawal"
+              i18n="@@featureServiceTypes-disallowStatutoryWithdrawal"
+              >Disallow statutory withdrawal after provisioning</label
+            >
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureServiceTypes-close">
@@ -337,6 +353,22 @@
               [disabled]="(updating$ | async) === true"
             />
             <label class="form-check-label" for="editIsActive" i18n="@@featureServiceTypes-active">Active</label>
+          </div>
+          <div class="form-check mt-2">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id="editDisallowStatutoryWithdrawal"
+              name="disallowStatutoryWithdrawal"
+              [(ngModel)]="editForm.disallowStatutoryWithdrawal"
+              [disabled]="(updating$ | async) === true"
+            />
+            <label
+              class="form-check-label"
+              for="editDisallowStatutoryWithdrawal"
+              i18n="@@featureServiceTypes-disallowStatutoryWithdrawal"
+              >Disallow statutory withdrawal after provisioning</label
+            >
           </div>
         </div>
         <div class="modal-footer">

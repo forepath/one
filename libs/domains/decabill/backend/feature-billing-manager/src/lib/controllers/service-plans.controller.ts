@@ -24,6 +24,7 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { CloudInitConfigService } from '../services/cloud-init-config.service';
 import { ProviderRegistryService } from '../services/provider-registry.service';
+import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
 import { normalizePlanProviderConfigDefaults } from '../utils/cloud-init/plan-provisioning-options.utils';
 import { effectiveSchemaSupportsLocationSelection } from '../utils/provider-location.utils';
 
@@ -34,6 +35,7 @@ export class ServicePlansController {
     private readonly serviceTypesRepository: ServiceTypesRepository,
     private readonly providerRegistry: ProviderRegistryService,
     private readonly cloudInitConfigService: CloudInitConfigService,
+    private readonly withdrawalPolicyService: WithdrawalPolicyService,
   ) {}
 
   @Get()
@@ -48,7 +50,7 @@ export class ServicePlansController {
       rows = rows.filter((row) => row.serviceTypeId === serviceTypeId);
     }
 
-    return rows.map((row) => this.mapToResponse(row));
+    return await Promise.all(rows.map((row) => this.mapToResponse(row)));
   }
 
   @Get(':id/order-provisioning-options')
@@ -72,7 +74,7 @@ export class ServicePlansController {
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<ServicePlanResponseDto> {
     const row = await this.servicePlansRepository.findByIdOrThrow(id);
 
-    return this.mapToResponse(row);
+    return await this.mapToResponse(row);
   }
 
   @Post()
@@ -102,7 +104,7 @@ export class ServicePlansController {
       isActive: dto.isActive ?? true,
     });
 
-    return this.mapToResponse(row);
+    return await this.mapToResponse(row);
   }
 
   @Post(':id')
@@ -147,7 +149,7 @@ export class ServicePlansController {
       isActive: dto.isActive,
     });
 
-    return this.mapToResponse(row);
+    return await this.mapToResponse(row);
   }
 
   @Delete(':id')
@@ -158,7 +160,9 @@ export class ServicePlansController {
     await this.servicePlansRepository.delete(id);
   }
 
-  private mapToResponse(row: ServicePlanEntity): ServicePlanResponseDto {
+  private async mapToResponse(row: ServicePlanEntity): Promise<ServicePlanResponseDto> {
+    const serviceType = await this.serviceTypesRepository.findByIdOrThrow(row.serviceTypeId);
+
     return {
       id: row.id,
       serviceTypeId: row.serviceTypeId,
@@ -176,6 +180,7 @@ export class ServicePlansController {
       providerConfigDefaults: row.providerConfigDefaults ?? {},
       orderingHighlights: row.orderingHighlights ?? [],
       allowCustomerLocationSelection: row.allowCustomerLocationSelection === true,
+      withdrawalPolicy: this.withdrawalPolicyService.buildPolicyInfo(serviceType),
       isActive: row.isActive,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

@@ -20,4 +20,8 @@ export class UpdateServiceTypeDto {
   @IsOptional()
   @IsBoolean({ message: 'isActive must be a boolean' })
   isActive?: boolean;
+
+  @IsOptional()
+  @IsBoolean({ message: 'disallowStatutoryWithdrawal must be a boolean' })
+  disallowStatutoryWithdrawal?: boolean;
 }

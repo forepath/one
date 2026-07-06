@@ -2,6 +2,8 @@ import { BillingScheduleService } from './billing-schedule.service';
 import { InvoiceCreationService } from './invoice-creation.service';
 
 describe('InvoiceCreationService', () => {
+  const subscriptionItemsRepository = { findBySubscription: jest.fn().mockResolvedValue([]) } as any;
+
   it('creates invoice for subscription', async () => {
     const subscriptionsRepository = {
       findByIdOrThrow: jest.fn().mockResolvedValue({
@@ -44,6 +46,7 @@ describe('InvoiceCreationService', () => {
       billingScheduleService,
       openPositionsRepository,
       invoicesRepository,
+      subscriptionItemsRepository,
     );
     const result = await service.createInvoice('sub-1', 'user-1', 'Test');
 
@@ -93,6 +96,7 @@ describe('InvoiceCreationService', () => {
       billingScheduleService,
       openPositionsRepository,
       invoicesRepository,
+      subscriptionItemsRepository,
     );
 
     await service.createInvoice('sub-1', 'user-1', 'Manual', { billUntil });
@@ -144,6 +148,7 @@ describe('InvoiceCreationService', () => {
       billingScheduleService,
       openPositionsRepository,
       invoicesRepository,
+      subscriptionItemsRepository,
     );
 
     await service.createInvoice('sub-1', 'user-1', 'Final', { billUntil });
@@ -193,6 +198,7 @@ describe('InvoiceCreationService', () => {
       billingScheduleService,
       openPositionsRepository,
       invoicesRepository,
+      subscriptionItemsRepository,
     );
 
     (service as any).calculateBaseAmountSinceLastBilling = jest.fn().mockResolvedValue(0.005);
@@ -243,6 +249,7 @@ describe('InvoiceCreationService', () => {
       billingScheduleService,
       openPositionsRepository,
       invoicesRepository,
+      subscriptionItemsRepository,
     );
 
     (service as any).calculateBaseAmountSinceLastBilling = jest.fn().mockResolvedValue(0.005);
@@ -316,6 +323,7 @@ describe('InvoiceCreationService', () => {
         billingScheduleService,
         openPositionsRepository,
         invoicesRepository,
+        subscriptionItemsRepository,
       );
       const result = await service.createAccumulatedInvoice('user-1', positions);
 
@@ -372,6 +380,7 @@ describe('InvoiceCreationService', () => {
         billingScheduleService,
         openPositionsRepository,
         invoicesRepository,
+        subscriptionItemsRepository,
       );
 
       (service as any).getBillableAmountForPosition = jest.fn().mockResolvedValue(10);
@@ -398,6 +407,7 @@ describe('InvoiceCreationService', () => {
         new BillingScheduleService(),
         openPositionsRepository,
         {} as any,
+        subscriptionItemsRepository,
       );
       const result = await service.createAccumulatedInvoice('user-1', []);
 
@@ -433,6 +443,7 @@ describe('InvoiceCreationService', () => {
         billingScheduleService,
         openPositionsRepository,
         invoicesRepository,
+        subscriptionItemsRepository,
       );
 
       (service as any).calculateBaseAmountSinceLastBilling = jest.fn().mockResolvedValue(0.005);
@@ -459,11 +470,109 @@ describe('InvoiceCreationService', () => {
         new BillingScheduleService(),
         openPositionsRepository,
         {} as any,
+        subscriptionItemsRepository,
       );
       const result = await service.getUnbilledTotalForUser('user-1');
 
       expect(result).toBe(0);
       expect(openPositionsRepository.findUnbilledByUserId).toHaveBeenCalledWith('user-1');
+    });
+  });
+
+  describe('withdrawn subscription billing', () => {
+    it('returns zero billable amount for unprovisioned statutory withdrawal', async () => {
+      const subscriptionsRepository = {
+        findByIdOrThrow: jest.fn().mockResolvedValue({
+          id: 'sub-1',
+          userId: 'user-1',
+          planId: 'plan-1',
+          createdAt: new Date('2024-01-01T00:00:00Z'),
+          currentPeriodStart: new Date('2024-01-01T00:00:00Z'),
+          withdrawnAt: new Date('2024-01-05T00:00:00Z'),
+        }),
+      } as any;
+      const plansRepository = {
+        findByIdOrThrow: jest.fn().mockResolvedValue({
+          id: 'plan-1',
+          billingIntervalType: 'day',
+          billingIntervalValue: 1,
+        }),
+      } as any;
+      const invoicesRepository = { findLatestBySubscription: jest.fn().mockResolvedValue(null) } as any;
+      const itemsRepository = {
+        findBySubscription: jest
+          .fn()
+          .mockResolvedValue([{ provisioningStatus: 'pending', createdAt: new Date('2024-01-01T00:00:00Z') }]),
+      } as any;
+      const service = new InvoiceCreationService(
+        subscriptionsRepository,
+        {} as any,
+        { calculate: jest.fn().mockReturnValue({ totalPrice: 30 }) } as any,
+        {} as any,
+        {} as any,
+        new BillingScheduleService(),
+        {} as any,
+        invoicesRepository,
+        itemsRepository,
+      );
+
+      const amount = await (service as any).calculateBaseAmountSinceLastBilling(
+        await subscriptionsRepository.findByIdOrThrow('sub-1'),
+        await plansRepository.findByIdOrThrow('plan-1'),
+        30,
+        new Date('2024-01-05T00:00:00Z'),
+      );
+
+      expect(amount).toBe(0);
+    });
+
+    it('bills only from earliest provisionedAt for withdrawn provisioned subscription', async () => {
+      const periodStart = new Date('2024-01-01T00:00:00Z');
+      const provisionedAt = new Date('2024-01-07T00:00:00Z');
+      const withdrawnAt = new Date('2024-01-10T00:00:00Z');
+      const subscriptionsRepository = {
+        findByIdOrThrow: jest.fn().mockResolvedValue({
+          id: 'sub-1',
+          userId: 'user-1',
+          planId: 'plan-1',
+          createdAt: periodStart,
+          currentPeriodStart: periodStart,
+          withdrawnAt,
+        }),
+      } as any;
+      const plansRepository = {
+        findByIdOrThrow: jest.fn().mockResolvedValue({
+          id: 'plan-1',
+          billingIntervalType: 'day',
+          billingIntervalValue: 1,
+        }),
+      } as any;
+      const invoicesRepository = { findLatestBySubscription: jest.fn().mockResolvedValue(null) } as any;
+      const itemsRepository = {
+        findBySubscription: jest
+          .fn()
+          .mockResolvedValue([{ provisioningStatus: 'active', provisionedAt, createdAt: periodStart }]),
+      } as any;
+      const service = new InvoiceCreationService(
+        subscriptionsRepository,
+        plansRepository,
+        { calculate: jest.fn().mockReturnValue({ totalPrice: 30 }) } as any,
+        {} as any,
+        {} as any,
+        new BillingScheduleService(),
+        {} as any,
+        invoicesRepository,
+        itemsRepository,
+      );
+
+      const amount = await (service as any).calculateBaseAmountSinceLastBilling(
+        await subscriptionsRepository.findByIdOrThrow('sub-1'),
+        await plansRepository.findByIdOrThrow('plan-1'),
+        30,
+        withdrawnAt,
+      );
+
+      expect(amount).toBe(90);
     });
   });
 });

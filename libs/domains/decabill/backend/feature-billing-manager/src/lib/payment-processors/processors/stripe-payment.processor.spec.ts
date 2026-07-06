@@ -1,9 +1,17 @@
 const checkoutSessionsCreate = jest.fn();
+const checkoutSessionsRetrieve = jest.fn();
+const refundsCreate = jest.fn();
 
 jest.mock('stripe', () => ({
   __esModule: true,
   default: jest.fn(() => ({
-    checkout: { sessions: { create: checkoutSessionsCreate } },
+    checkout: {
+      sessions: {
+        create: checkoutSessionsCreate,
+        retrieve: checkoutSessionsRetrieve,
+      },
+    },
+    refunds: { create: refundsCreate },
     webhooks: { constructEvent: jest.fn() },
   })),
 }));
@@ -19,6 +27,8 @@ describe('StripePaymentProcessor', () => {
   beforeEach(() => {
     process.env.STRIPE_SECRET_KEY = 'sk_test_example';
     checkoutSessionsCreate.mockReset();
+    checkoutSessionsRetrieve.mockReset();
+    refundsCreate.mockReset();
     processor = new StripePaymentProcessor();
   });
 
@@ -162,5 +172,39 @@ describe('StripePaymentProcessor', () => {
       amountPaid: undefined,
       tenantId: 'forepath',
     });
+  });
+
+  it('refunds payment via checkout session payment intent', async () => {
+    checkoutSessionsRetrieve.mockResolvedValue({
+      payment_intent: { id: 'pi_test' },
+    });
+    refundsCreate.mockResolvedValue({ id: 're_test' });
+
+    const result = await processor.refundPayment({
+      externalCheckoutSessionId: 'cs_test',
+      amount: 49.5,
+      currency: 'EUR',
+      idempotencyKey: 'withdraw-refund-inv-1',
+    });
+
+    expect(checkoutSessionsRetrieve).toHaveBeenCalledWith('cs_test', { expand: ['payment_intent'] });
+    expect(refundsCreate).toHaveBeenCalledWith(
+      { payment_intent: 'pi_test', amount: 4950 },
+      { idempotencyKey: 'withdraw-refund-inv-1' },
+    );
+    expect(result).toEqual({ externalRefundId: 're_test' });
+  });
+
+  it('throws when checkout session has no payment intent', async () => {
+    checkoutSessionsRetrieve.mockResolvedValue({ payment_intent: null });
+
+    await expect(
+      processor.refundPayment({
+        externalCheckoutSessionId: 'cs_test',
+        amount: 10,
+        currency: 'EUR',
+        idempotencyKey: 'key-1',
+      }),
+    ).rejects.toThrow('Stripe checkout session has no payment intent');
   });
 });

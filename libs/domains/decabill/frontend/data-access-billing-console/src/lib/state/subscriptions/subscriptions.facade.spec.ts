@@ -8,6 +8,7 @@ import type {
   ListParams,
   ResumeSubscriptionDto,
   SubscriptionResponse,
+  WithdrawSubscriptionDto,
 } from '../../types/billing.types';
 
 import {
@@ -17,6 +18,7 @@ import {
   loadSubscription,
   loadSubscriptions,
   resumeSubscription,
+  withdrawSubscription,
 } from './subscriptions.actions';
 import { SubscriptionsFacade } from './subscriptions.facade';
 
@@ -156,6 +158,14 @@ describe('SubscriptionsFacade', () => {
       facade.cancelSubscription('sub-1', dto);
 
       expect(store.dispatch).toHaveBeenCalledWith(cancelSubscription({ id: 'sub-1', dto }));
+    });
+
+    it('should dispatch withdrawSubscription action', () => {
+      const dto: WithdrawSubscriptionDto = { reason: 'test' };
+
+      facade.withdrawSubscription('sub-1', dto);
+
+      expect(store.dispatch).toHaveBeenCalledWith(withdrawSubscription({ id: 'sub-1', dto }));
     });
 
     it('should dispatch resumeSubscription action', () => {

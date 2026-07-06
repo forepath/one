@@ -66,6 +66,21 @@ export class PaymentAttemptsRepository {
     return await qb.getOne();
   }
 
+  async findLatestSucceededByInvoiceId(invoiceId: string): Promise<PaymentAttemptEntity | null> {
+    const qb = this.repository
+      .createQueryBuilder('attempt')
+      .innerJoin('attempt.invoice', 'inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('attempt.invoice_id = :invoiceId', { invoiceId })
+      .andWhere('attempt.status = :status', { status: PaymentAttemptStatus.SUCCEEDED })
+      .orderBy('attempt.createdAt', 'DESC')
+      .take(1);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getOne();
+  }
+
   private async findByIdInTenant(id: string): Promise<PaymentAttemptEntity> {
     const entity = await this.repository
       .createQueryBuilder('attempt')

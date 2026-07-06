@@ -70,6 +70,23 @@ export class InvoicesRepository {
     return await qb.getOne();
   }
 
+  async findLatestBillableBySubscription(subscriptionId: string): Promise<InvoiceEntity | null> {
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.subscription_id = :subscriptionId', { subscriptionId })
+      .andWhere('inv.status IN (:...statuses)', {
+        statuses: [InvoiceStatus.ISSUED, InvoiceStatus.PAID, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.OVERDUE],
+      })
+      .andWhere('inv.invoice_number IS NOT NULL')
+      .orderBy('inv.createdAt', 'DESC')
+      .take(1);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getOne();
+  }
+
   async findByIdAndSubscriptionId(id: string, subscriptionId: string): Promise<InvoiceEntity | null> {
     const qb = this.repository
       .createQueryBuilder('inv')

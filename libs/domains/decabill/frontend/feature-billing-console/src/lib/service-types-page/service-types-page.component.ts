@@ -58,8 +58,22 @@ export class ServiceTypesPageComponent implements OnInit {
   readonly updating$ = this.facade.getServiceTypesUpdating$();
   readonly deleting$ = this.facade.getServiceTypesDeleting$();
 
-  createForm: CreateServiceTypeDto = { key: '', name: '', description: '', provider: '', isActive: true };
-  editForm: UpdateServiceTypeDto & { id: string } = { id: '', name: '', description: '', provider: '', isActive: true };
+  createForm: CreateServiceTypeDto = {
+    key: '',
+    name: '',
+    description: '',
+    provider: '',
+    disallowStatutoryWithdrawal: false,
+    isActive: true,
+  };
+  editForm: UpdateServiceTypeDto & { id: string } = {
+    id: '',
+    name: '',
+    description: '',
+    provider: '',
+    disallowStatutoryWithdrawal: false,
+    isActive: true,
+  };
   serviceTypeToDelete: ServiceTypeResponse | null = null;
 
   ngOnInit(): void {
@@ -79,6 +93,7 @@ export class ServiceTypesPageComponent implements OnInit {
       name: st.name,
       description: st.description ?? '',
       provider: st.provider,
+      disallowStatutoryWithdrawal: st.disallowStatutoryWithdrawal,
       isActive: st.isActive,
     };
     showBillingModal(this.editModal);
@@ -115,6 +130,7 @@ export class ServiceTypesPageComponent implements OnInit {
       name: this.createForm.name.trim(),
       description: this.createForm.description?.trim() || undefined,
       provider: this.createForm.provider.trim(),
+      disallowStatutoryWithdrawal: this.createForm.disallowStatutoryWithdrawal ?? false,
       isActive: this.createForm.isActive ?? true,
     });
   }
@@ -126,6 +142,7 @@ export class ServiceTypesPageComponent implements OnInit {
       name: this.editForm.name,
       description: this.editForm.description,
       provider: this.editForm.provider,
+      disallowStatutoryWithdrawal: this.editForm.disallowStatutoryWithdrawal,
       isActive: this.editForm.isActive,
     });
   }
@@ -137,11 +154,25 @@ export class ServiceTypesPageComponent implements OnInit {
   }
 
   private resetCreateForm(): void {
-    this.createForm = { key: '', name: '', description: '', provider: '', isActive: true };
+    this.createForm = {
+      key: '',
+      name: '',
+      description: '',
+      provider: '',
+      disallowStatutoryWithdrawal: false,
+      isActive: true,
+    };
   }
 
   private resetEditForm(): void {
-    this.editForm = { id: '', name: '', description: '', provider: '', isActive: true };
+    this.editForm = {
+      id: '',
+      name: '',
+      description: '',
+      provider: '',
+      disallowStatutoryWithdrawal: false,
+      isActive: true,
+    };
   }
 
   private registerModalCloseWatchers(): void {

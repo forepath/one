@@ -9,8 +9,11 @@ import { InvoicesRepository } from '../repositories/invoices.repository';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { UsageRecordsRepository } from '../repositories/usage-records.repository';
 import { groupOpenPositionsBySubscription } from '../utils/open-position-grouping.util';
+import { calculateProratedAmount } from '../utils/billing-proration.util';
+import { getEarliestProvisionedAt } from '../utils/provisioned-billing.util';
 
 import { BillingScheduleService } from './billing-schedule.service';
 import { InvoiceService } from './invoice.service';
@@ -34,6 +37,7 @@ export class InvoiceCreationService {
     private readonly billingScheduleService: BillingScheduleService,
     private readonly openPositionsRepository: OpenPositionsRepository,
     private readonly invoicesRepository: InvoicesRepository,
+    private readonly subscriptionItemsRepository: SubscriptionItemsRepository,
   ) {}
 
   async createInvoice(subscriptionId: string, userId: string, description?: string, options?: InvoiceCreationOptions) {
@@ -243,46 +247,23 @@ export class InvoiceCreationService {
       lastBillingAt = subscriptionStart;
     }
 
+    if (subscription.withdrawnAt) {
+      const items = await this.subscriptionItemsRepository.findBySubscription(subscription.id);
+      const provisionedFrom = getEarliestProvisionedAt(items);
+
+      if (!provisionedFrom) {
+        return 0;
+      }
+
+      if (!lastBillingAt || lastBillingAt < provisionedFrom) {
+        lastBillingAt = provisionedFrom;
+      }
+    }
+
     if (effectiveUntil <= lastBillingAt) {
       return 0;
     }
 
-    let remainingMs = effectiveUntil.getTime() - lastBillingAt.getTime();
-    let cursor = new Date(lastBillingAt);
-    let amount = 0;
-    let iterations = 0;
-    const maxIterations = 1000;
-
-    while (remainingMs > 0 && iterations < maxIterations) {
-      iterations += 1;
-
-      const schedule = this.billingScheduleService.calculateSchedule(
-        plan.billingIntervalType as BillingIntervalType,
-        plan.billingIntervalValue,
-        plan.billingDayOfMonth,
-        cursor,
-      );
-      const cycleEnd = schedule.currentPeriodEnd;
-
-      if (!cycleEnd || cycleEnd <= cursor) {
-        amount += fullPeriodPrice;
-        break;
-      }
-
-      const cycleMs = cycleEnd.getTime() - cursor.getTime();
-
-      if (cycleMs <= 0) {
-        break;
-      }
-
-      const segmentMs = Math.min(remainingMs, cycleMs);
-
-      amount += fullPeriodPrice * (segmentMs / cycleMs);
-
-      remainingMs -= segmentMs;
-      cursor = cycleEnd;
-    }
-
-    return amount;
+    return calculateProratedAmount(plan, fullPeriodPrice, lastBillingAt, effectiveUntil, this.billingScheduleService);
   }
 }
