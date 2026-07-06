@@ -1,0 +1,60 @@
+<div class="presentations-page p-4 overflow-auto h-100">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 mb-1">Presentations</h1>
+      <p class="text-secondary mb-0">Create and edit Marp slide decks.</p>
+    </div>
+  </div>
+
+  <form class="card mb-4" [formGroup]="createForm" (ngSubmit)="createPresentation()">
+    <div class="card-body d-flex flex-wrap gap-2 align-items-end">
+      <div class="flex-grow-1">
+        <label class="form-label" for="presentationTitle">New presentation title</label>
+        <input id="presentationTitle" class="form-control" type="text" formControlName="title" />
+      </div>
+      <button class="btn btn-primary" type="submit" [disabled]="createForm.invalid || (creating$ | async)">
+        @if (creating$ | async) {
+          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+        }
+        Create
+      </button>
+    </div>
+  </form>
+
+  @if (error$ | async; as error) {
+    <div class="alert alert-danger" role="alert">{{ error }}</div>
+  }
+
+  @if (loading$ | async) {
+    <div class="d-flex justify-content-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading presentations</span>
+      </div>
+    </div>
+  } @else {
+    <div class="row g-3">
+      @for (presentation of presentations$ | async; track presentation.id) {
+        <div class="col-md-6 col-xl-4">
+          <div class="card h-100 presentation-card">
+            <div class="card-body">
+              <h2 class="h5 card-title">{{ presentation.title }}</h2>
+              <p class="text-secondary small mb-3">Updated {{ presentation.updatedAt | date: 'medium' }}</p>
+              <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-sm" type="button" (click)="openPresentation(presentation.id)">
+                  Open
+                </button>
+                <button class="btn btn-outline-danger btn-sm" type="button" (click)="deletePresentation(presentation.id)">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="col-12">
+          <div class="text-center text-secondary py-5">No presentations yet. Create your first deck above.</div>
+        </div>
+      }
+    </div>
+  }
+</div>

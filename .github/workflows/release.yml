@@ -871,6 +871,32 @@ jobs:
           autocreate: true
           bomfilename: 'dist/sboms/forepath-backend-communication.cdx.json'
 
+      - name: Upload marpdown-frontend-editor SBOM
+        id: upload-sbom-marpdown-frontend-editor
+        uses: forepath/gh-upload-sbom@v2
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: 'bb6467b6-ebe9-4f90-91f9-2a785f95441e'
+          projectname: 'marpdown-frontend-editor'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/marpdown-frontend-editor.cdx.json'
+
+      - name: Upload marpdown-backend-data-manager SBOM
+        id: upload-sbom-marpdown-backend-data-manager
+        uses: forepath/gh-upload-sbom@v2
+        continue-on-error: true
+        with:
+          serverhostname: dependencytrack.forepath.io
+          apikey: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          parent: 'bb6467b6-ebe9-4f90-91f9-2a785f95441e'
+          projectname: 'marpdown-backend-data-manager'
+          projectversion: ${{ needs.publish.outputs.new_release_version }}
+          autocreate: true
+          bomfilename: 'dist/sboms/marpdown-backend-data-manager.cdx.json'
+
       - name: Report DependencyTrack upload outcomes
         if: always()
         run: |
@@ -892,6 +918,8 @@ jobs:
             echo "| agenstra-frontend-landingpage | ${{ steps.upload-sbom-agenstra-frontend-landingpage.outcome }} |"
             echo "| decabill-frontend-landingpage | ${{ steps.upload-sbom-decabill-frontend-landingpage.outcome }} |"
             echo "| forepath-backend-communication | ${{ steps.upload-sbom-forepath-backend-communication.outcome }} |"
+            echo "| marpdown-frontend-editor | ${{ steps.upload-sbom-marpdown-frontend-editor.outcome }} |"
+            echo "| marpdown-backend-data-manager | ${{ steps.upload-sbom-marpdown-backend-data-manager.outcome }} |"
           } >> "$GITHUB_STEP_SUMMARY"
           failed=0
           for outcome in \
@@ -907,7 +935,9 @@ jobs:
             "${{ steps.upload-sbom-shared-mcp-proxy.outcome }}" \
             "${{ steps.upload-sbom-agenstra-frontend-landingpage.outcome }}" \
             "${{ steps.upload-sbom-decabill-frontend-landingpage.outcome }}" \
-            "${{ steps.upload-sbom-forepath-backend-communication.outcome }}"
+            "${{ steps.upload-sbom-forepath-backend-communication.outcome }}" \
+            "${{ steps.upload-sbom-marpdown-frontend-editor.outcome }}" \
+            "${{ steps.upload-sbom-marpdown-backend-data-manager.outcome }}"
           do
             if [ "$outcome" = "failure" ]; then
               failed=1
@@ -951,6 +981,24 @@ jobs:
           tools/ci/upload-release-sboms-by-domain.sh decabill dist/sboms \
             "${{ needs.publish.outputs.new_release_version }}" \
             "${DECABILL_AWS_BUCKET}" \
+            "${CLOUDFLARE_R2_ENDPOINT}"
+
+      - name: Upload marpdown SBOMs to Cloudflare R2 bucket
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          CLOUDFLARE_R2_ENDPOINT: ${{ secrets.MARPDOWN_CLOUDFLARE_R2_ENDPOINT }}
+          MARPDOWN_AWS_BUCKET: ${{ secrets.MARPDOWN_AWS_BUCKET }}
+        run: |
+          chmod +x tools/ci/upload-release-sboms-by-domain.sh
+          if [ -z "${MARPDOWN_AWS_BUCKET}" ]; then
+            echo "::error::MARPDOWN_AWS_BUCKET must be configured"
+            exit 1
+          fi
+          tools/ci/upload-release-sboms-by-domain.sh marpdown dist/sboms \
+            "${{ needs.publish.outputs.new_release_version }}" \
+            "${MARPDOWN_AWS_BUCKET}" \
             "${CLOUDFLARE_R2_ENDPOINT}"
 
   prepare-container-image-sbom-uploads:

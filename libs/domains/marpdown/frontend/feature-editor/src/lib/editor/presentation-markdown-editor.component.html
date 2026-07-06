@@ -1,0 +1,41 @@
+<div class="editor-shell">
+  <section class="marp-frontmatter" aria-label="Marp deck settings">
+    <div class="marp-frontmatter__header">
+      <div>
+        <h2 class="marp-frontmatter__title">Deck settings</h2>
+        <p class="marp-frontmatter__hint">
+          Marp frontmatter. Use Code mode for HTML directives and advanced options.
+        </p>
+      </div>
+      <div class="marp-frontmatter__actions">
+        <span class="badge text-bg-secondary">{{ slideCount }} {{ slideCount === 1 ? 'slide' : 'slides' }}</span>
+        <button class="btn btn-outline-secondary btn-sm" type="button" (click)="insertSlideBreak()">
+          Insert slide break
+        </button>
+        @if (!frontmatter) {
+          <button class="btn btn-outline-primary btn-sm" type="button" (click)="addDefaultFrontmatter()">
+            Add Marp frontmatter
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (frontmatter !== null) {
+      <textarea
+        class="form-control form-control-sm marp-frontmatter__input"
+        rows="4"
+        spellcheck="false"
+        aria-label="Marp frontmatter YAML"
+        [value]="frontmatter"
+        (input)="onFrontmatterInput($event)"
+      ></textarea>
+    } @else {
+      <p class="marp-frontmatter__warning mb-0">
+        No Marp frontmatter detected. Slides still split on <code>---</code>, but preview needs
+        <code>marp: true</code>.
+      </p>
+    }
+  </section>
+
+  <div #editorHost class="editor-host"></div>
+</div>

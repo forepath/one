@@ -17,6 +17,8 @@ KNOWN_IMAGE_NAMES=(
   decabill-billing-api
   decabill-landingpage-server
   decabill-docs-server
+  marpdown-editor-server
+  marpdown-data-manager-api
   agenstra-billing-console-server
   agenstra-console-server
   agenstra-controller-api

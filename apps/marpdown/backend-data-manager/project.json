@@ -1,0 +1,132 @@
+{
+  "name": "marpdown-backend-data-manager",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/marpdown/backend-data-manager/src",
+  "projectType": "application",
+  "tags": ["domain:marpdown", "type:app", "scope:backend"],
+  "implicitDependencies": ["marpdown-backend-feature-data-manager", "shared-platform-authentication"],
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/marpdown/backend-data-manager",
+        "main": "apps/marpdown/backend-data-manager/src/main.ts",
+        "tsConfig": "apps/marpdown/backend-data-manager/tsconfig.app.json",
+        "assets": [
+          "apps/marpdown/backend-data-manager/src/assets",
+          "apps/marpdown/backend-data-manager/src/migrations"
+        ],
+        "webpackConfig": "apps/marpdown/backend-data-manager/webpack.config.cjs",
+        "generatePackageJson": true
+      },
+      "configurations": {
+        "development": {
+          "outputHashing": "none"
+        },
+        "production": {}
+      }
+    },
+    "prune-lockfile": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "executor": "@nx/js:prune-lockfile",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/marpdown/backend-data-manager/package.json",
+        "{workspaceRoot}/dist/apps/marpdown/backend-data-manager/package-lock.json"
+      ],
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "copy-workspace-modules": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "outputs": ["{workspaceRoot}/dist/apps/marpdown/backend-data-manager/workspace_modules"],
+      "executor": "@nx/js:copy-workspace-modules",
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "compile-migrations": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "mkdir -p dist/apps/marpdown/backend-data-manager/src/migrations",
+          "(npx tsc $(find apps/marpdown/backend-data-manager/src/migrations -name '*.ts' 2>/dev/null || echo '') --outDir dist/apps/marpdown/backend-data-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/marpdown/backend-data-manager/src/migrations 2>/dev/null || true)",
+          "npx tsc $(find libs/domains/identity/backend/util-auth/src/lib/migrations -name '*.ts') --outDir dist/apps/marpdown/backend-data-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir libs/domains/identity/backend/util-auth/src/lib/migrations"
+        ]
+      }
+    },
+    "prune": {
+      "dependsOn": ["prune-lockfile", "copy-workspace-modules", "compile-migrations"],
+      "executor": "nx:noop"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "marpdown-backend-data-manager:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "marpdown-backend-data-manager:build:development"
+        },
+        "production": {
+          "buildTarget": "marpdown-backend-data-manager:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/marpdown/backend-data-manager/jest.config.cts"
+      }
+    },
+    "api-container-image": {
+      "dependsOn": ["prune"],
+      "cache": false,
+      "executor": "@nx-tools/nx-container:build",
+      "options": {
+        "engine": "docker",
+        "file": "apps/marpdown/backend-data-manager/Dockerfile.api",
+        "context": "dist/apps/marpdown/backend-data-manager"
+      },
+      "configurations": {
+        "test": {
+          "load": true,
+          "tags": ["ghcr.io/forepath/marpdown-data-manager-api:latest"]
+        },
+        "release": {
+          "push": true,
+          "tags": [
+            "ghcr.io/forepath/marpdown-data-manager-api:latest",
+            "ghcr.io/forepath/marpdown-data-manager-api:$VERSION"
+          ]
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "start-containers": {
+      "dependsOn": ["api-container-image"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/marpdown/backend-data-manager",
+        "command": "MARPDOWN_DATA_MANAGER_API_IMAGE=ghcr.io/forepath/marpdown-data-manager-api:latest MARPDOWN_DATA_MANAGER_API_CONTAINER_NAME=marpdown-data-manager-api docker compose up -d --force-recreate --remove-orphans"
+      }
+    },
+    "sbom": {
+      "executor": "@forepath/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
+    }
+  }
+}

@@ -1,0 +1,66 @@
+@import 'bootstrap/scss/functions';
+
+$primary: #4287f5;
+$secondary: #4a5568;
+$tertiary: #6c9cb8;
+$success: #21808d;
+$warning: #e68161;
+$danger: #ff5459;
+$info: #3b82c4;
+$light: mix($primary, #f8f8f5, 3.5%);
+$dark: #0f0f11;
+
+$code-color: mix($primary, #2a2d31, 28%);
+
+$gray-100: mix($primary, #f3f4f6, 4%);
+$gray-200: mix($primary, #e5e7eb, 3%);
+$gray-300: #d1d5db;
+$gray-400: #9ca3af;
+$gray-500: #6b7280;
+$gray-600: #4b5563;
+$gray-700: #2a2d31;
+$gray-800: #18191d;
+$gray-900: #0f0f11;
+
+$light-text-emphasis-dark: #f3f4f6;
+
+$border-color: rgba(15, 15, 17, 0.1);
+$border-color-dark: rgba(255, 255, 255, 0.08);
+$border-color-translucent: rgba(15, 15, 17, 0.06);
+$border-color-translucent-dark: rgba(255, 255, 255, 0.06);
+
+$body-bg: mix($primary, #f5f7fb, 5.5%);
+$body-color: #3c3f45;
+$body-emphasis-color: #24262c;
+$body-secondary-bg: mix($primary, #ebeff5, 4%);
+$body-tertiary-bg: mix($primary, #ebeff5, 4%);
+
+$link-color: mix($primary, $gray-700, 28%);
+
+$primary-text-emphasis: #2f5fb8;
+$primary-bg-subtle: #e8f0fe;
+$primary-border-subtle: #c9dcfc;
+
+$font-family-base: 'Plus Jakarta Sans Variable', sans-serif;
+$font-size-base: 0.875rem;
+
+@import 'bootstrap/scss/bootstrap';
+
+:root {
+  --bs-primary-dark: #2f5fb8;
+  --bs-body-bg-alt: #f7f9fd;
+}
+
+@import 'bootstrap/scss/bootstrap-grid';
+@import 'bootstrap-icons/font/bootstrap-icons';
+@import '@fontsource-variable/plus-jakarta-sans/wght.css';
+@import '@milkdown/crepe/theme/classic.css';
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}

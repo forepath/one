@@ -1,0 +1,67 @@
+<div class="toolbar d-flex flex-wrap align-items-center gap-2 px-3 py-2 border-bottom bg-body-tertiary">
+  <div class="flex-grow-1">
+    <h1 class="h5 mb-0">{{ title }}</h1>
+    @if (isDirty) {
+      <span class="badge text-bg-warning">Unsaved changes</span>
+    }
+    @if (!persistenceEnabled) {
+      <span class="badge text-bg-secondary ms-1">Local draft — sign in to save</span>
+    }
+  </div>
+  <div class="btn-group btn-group-sm" role="group" aria-label="Editor mode">
+    <button
+      class="btn btn-outline-secondary btn-sm"
+      type="button"
+      [class.active]="editorMode() === 'monaco'"
+      (click)="setEditorMode('monaco')"
+      title="Code editor (Monaco)"
+    >
+      <i class="bi bi-code-slash" aria-hidden="true"></i>
+      Code
+    </button>
+    <button
+      class="btn btn-outline-secondary btn-sm"
+      type="button"
+      [class.active]="editorMode() === 'milkdown'"
+      (click)="setEditorMode('milkdown')"
+      title="Visual markdown editor"
+    >
+      <i class="bi bi-markdown" aria-hidden="true"></i>
+      Visual
+    </button>
+  </div>
+  <div class="btn-group" role="group" aria-label="Editor history">
+    <button class="btn btn-outline-secondary btn-sm" type="button" (click)="undo.emit()" title="Undo">
+      <i class="bi bi-arrow-counterclockwise"></i>
+    </button>
+    <button class="btn btn-outline-secondary btn-sm" type="button" (click)="redo.emit()" title="Redo">
+      <i class="bi bi-arrow-clockwise"></i>
+    </button>
+  </div>
+  <button class="btn btn-outline-primary btn-sm" type="button" (click)="present.emit()" title="Start presenter mode">
+    <i class="bi bi-easel" aria-hidden="true"></i>
+    Present
+  </button>
+  <button class="btn btn-outline-secondary btn-sm" type="button" (click)="importMarkdown.emit()" [disabled]="importing">
+    @if (importing) {
+      <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+    }
+    Import .md
+  </button>
+  @if (persistenceEnabled) {
+    <button class="btn btn-primary btn-sm" type="button" (click)="save.emit()" [disabled]="saving || !isDirty">
+      @if (saving) {
+        <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+      }
+      Save
+    </button>
+    <div class="btn-group" role="group" aria-label="Export presentation">
+      <button class="btn btn-outline-primary btn-sm" type="button" (click)="exportPdf.emit()" [disabled]="exporting">
+        PDF
+      </button>
+      <button class="btn btn-outline-primary btn-sm" type="button" (click)="exportPptx.emit()" [disabled]="exporting">
+        PPTX
+      </button>
+    </div>
+  }
+</div>

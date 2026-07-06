@@ -1,0 +1,8 @@
+.presentation-card {
+  border-color: rgba(var(--bs-primary-rgb), 0.15);
+  transition: box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 0.5rem 1rem rgba(var(--bs-primary-rgb), 0.12);
+  }
+}

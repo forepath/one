@@ -1,0 +1,115 @@
+export {
+  getAuthInterceptor,
+  getUsersSessionInvalidationInterceptor,
+  AuthService,
+  AuthenticationFacade,
+  authenticationReducer,
+  login,
+  loginSuccess,
+  loginFailure,
+  logout,
+  logoutSuccess,
+  logoutFailure,
+  checkAuthentication,
+  checkAuthenticationSuccess,
+  checkAuthenticationFailure,
+  register,
+  registerSuccess,
+  registerFailure,
+  confirmEmail,
+  confirmEmailSuccess,
+  confirmEmailFailure,
+  requestPasswordReset,
+  requestPasswordResetSuccess,
+  requestPasswordResetFailure,
+  resetPassword,
+  resetPasswordSuccess,
+  resetPasswordFailure,
+  changePassword,
+  changePasswordSuccess,
+  changePasswordFailure,
+  clearError,
+  clearSuccessMessage,
+  loadUsers,
+  loadUsersSuccess,
+  loadUsersFailure,
+  loadUsersBatch,
+  createUser,
+  createUserSuccess,
+  createUserFailure,
+  updateUser,
+  updateUserSuccess,
+  updateUserFailure,
+  deleteUser,
+  deleteUserSuccess,
+  deleteUserFailure,
+  selectAuthenticationState,
+  selectIsAuthenticated,
+  selectAuthenticationType,
+  selectUser,
+  selectAuthenticationLoading,
+  selectAuthenticationError,
+  selectSuccessMessage,
+  selectIsNotAuthenticated,
+  selectRegistering,
+  selectConfirmingEmail,
+  selectRequestingPasswordReset,
+  selectResettingPassword,
+  selectChangingPassword,
+  selectUsers,
+  selectUsersLoading,
+  selectUsersError,
+  selectCreatingUser,
+  selectUpdatingUser,
+  selectDeletingUser,
+  selectIsAdmin,
+  selectCanAccessUserManager,
+  login$,
+  loginSuccessRedirect$,
+  logout$,
+  logoutSuccessRedirect$,
+  checkAuthentication$,
+  register$,
+  registerSuccessRedirect$,
+  confirmEmail$,
+  confirmEmailSuccessRedirect$,
+  requestPasswordReset$,
+  requestPasswordResetSuccessRedirect$,
+  resetPassword$,
+  resetPasswordSuccessRedirect$,
+  changePassword$,
+  loadUsers$,
+  loadUsersBatch$,
+  createUser$,
+  updateUser$,
+  deleteUser$,
+  type AuthenticationState,
+  type UserInfo,
+  type UserRole,
+  type LoginResponse,
+  type RegisterResponse,
+  type UserResponseDto,
+  type CreateUserDto,
+  type UpdateUserDto,
+  type ListUsersParams,
+} from '@forepath/identity/frontend';
+
+export * from './lib/types/presentation.types';
+export * from './lib/services/presentations.service';
+export * from './lib/services/presentation-assets.service';
+export * from './lib/services/presentation-export.service';
+export * from './lib/state/presentations/presentations.actions';
+export * from './lib/state/presentations/presentations.effects';
+export * from './lib/state/presentations/presentations.facade';
+export * from './lib/state/presentations/presentations.reducer';
+export * from './lib/state/presentations/presentations.selectors';
+export * from './lib/state/editor/editor.actions';
+export * from './lib/state/editor/editor.effects';
+export * from './lib/state/editor/editor.facade';
+export * from './lib/state/editor/editor.reducer';
+export * from './lib/state/editor/editor.selectors';
+export * from './lib/state/assets/assets.actions';
+export * from './lib/state/assets/assets.effects';
+export * from './lib/state/assets/assets.facade';
+export * from './lib/state/assets/assets.reducer';
+export * from './lib/state/assets/assets.selectors';

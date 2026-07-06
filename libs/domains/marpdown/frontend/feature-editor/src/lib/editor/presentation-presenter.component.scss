@@ -1,0 +1,115 @@
+:host {
+  display: contents;
+}
+
+.presenter-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  color: #fff;
+  color-scheme: light;
+  outline: none;
+}
+
+.presenter-root--dark {
+  color-scheme: dark;
+}
+
+.presenter-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.presenter-stage {
+  flex: 1 1 auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
+  cursor: pointer;
+}
+
+.presenter-slides {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+:host ::ng-deep .presenter-slides .marpit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+:host ::ng-deep .presenter-slides svg[data-marpit-svg] {
+  display: none;
+  width: min(100vw, calc(100vh * 16 / 9));
+  height: auto;
+  max-height: 100vh;
+  box-shadow: none;
+}
+
+:host ::ng-deep .presenter-slides svg[data-marpit-svg].presenter-slide--active {
+  display: block;
+}
+
+.presenter-end-slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: light-dark(#f6f8fa, #151b23);
+  color: light-dark(#57606a, #adbac7);
+  text-align: center;
+}
+
+.presenter-end-slide.presenter-slide--active {
+  display: flex;
+}
+
+.presenter-end-slide__message {
+  margin: 0;
+  font-size: clamp(1.125rem, 2.5vw, 1.75rem);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.presenter-hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.55));
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.presenter-hud__hint {
+  color: rgb(255 255 255 / 0.75);
+}

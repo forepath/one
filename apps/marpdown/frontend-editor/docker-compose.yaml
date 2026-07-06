@@ -1,0 +1,21 @@
+services:
+  frontend-editor-server:
+    image: ${MARPDOWN_EDITOR_SERVER_IMAGE:-ghcr.io/forepath/marpdown-editor-server:latest}
+    pull_policy: never
+    container_name: ${MARPDOWN_EDITOR_SERVER_CONTAINER_NAME:-marpdown-editor-server}
+    environment:
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-4600}
+      NODE_ENV: ${NODE_ENV:-production}
+      DEFAULT_LOCALE: ${DEFAULT_LOCALE:-en}
+      CSP_ENFORCE: ${CSP_ENFORCE:-true}
+      CSP_CONNECT_SRC_EXTRA: ${CSP_CONNECT_SRC_EXTRA:-http://host.docker.internal:3400}
+    ports:
+      - '${PORT:-4600}:${PORT:-4600}'
+    networks:
+      - marpdown-editor-network
+    restart: unless-stopped
+
+networks:
+  marpdown-editor-network:
+    driver: bridge

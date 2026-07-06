@@ -1,0 +1,83 @@
+x-backend-data-manager-environment: &backend-data-manager-environment
+  HOST: ${HOST:-0.0.0.0}
+  PORT: ${PORT:-3400}
+  NODE_ENV: ${NODE_ENV:-development}
+  DB_HOST: ${DB_HOST:-postgres}
+  DB_PORT: ${DB_PORT:-5432}
+  DB_USERNAME: ${DB_USERNAME:-postgres}
+  DB_PASSWORD: ${DB_PASSWORD:-postgres}
+  DB_DATABASE: ${DB_DATABASE:-marpdown}
+  AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-users}
+  DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+  CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4600}
+  RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
+  RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}
+  RATE_LIMIT_LIMIT: ${RATE_LIMIT_LIMIT:-100}
+  KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL:-}
+  KEYCLOAK_AUTH_SERVER_URL: ${KEYCLOAK_AUTH_SERVER_URL:-}
+  KEYCLOAK_REALM: ${KEYCLOAK_REALM:-}
+  KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-}
+  KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
+  KEYCLOAK_TOKEN_VALIDATION: ${KEYCLOAK_TOKEN_VALIDATION:-online}
+  JWT_SECRET: ${JWT_SECRET:-}
+  SMTP_HOST: ${SMTP_HOST:-mailhog}
+  SMTP_PORT: ${SMTP_PORT:-1025}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  EMAIL_FROM: ${EMAIL_FROM:-noreply@localhost}
+  MARPDOWN_MAX_ASSET_BYTES: ${MARPDOWN_MAX_ASSET_BYTES:-10485760}
+  PLAYWRIGHT_BROWSERS_PATH: ${PLAYWRIGHT_BROWSERS_PATH:-/ms-playwright}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: marpdown-data-manager-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: marpdown
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - marpdown-data-manager-network
+    restart: unless-stopped
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: marpdown-data-manager-mailhog
+    ports:
+      - '${SMTP_HOST_PORT:-1027}:1025'
+      - '${MAILHOG_PORT:-8027}:8025'
+    networks:
+      - marpdown-data-manager-network
+    restart: unless-stopped
+
+  backend-data-manager:
+    image: ${MARPDOWN_DATA_MANAGER_API_IMAGE:-ghcr.io/forepath/marpdown-data-manager-api:latest}
+    pull_policy: never
+    container_name: ${MARPDOWN_DATA_MANAGER_API_CONTAINER_NAME:-marpdown-data-manager-api}
+    environment:
+      <<: *backend-data-manager-environment
+    ports:
+      - '${PORT:-3400}:${PORT:-3400}'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    networks:
+      - marpdown-data-manager-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  marpdown-data-manager-network:
+    driver: bridge

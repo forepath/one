@@ -1,0 +1,41 @@
+<div class="asset-tree h-100 d-flex flex-column">
+  <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+    <span class="fw-semibold small">Assets</span>
+    <button class="btn btn-sm btn-outline-secondary" type="button" (click)="refreshRoot()" title="Refresh">
+      <i class="bi bi-arrow-clockwise"></i>
+    </button>
+  </div>
+  <div class="flex-grow-1 overflow-auto p-2">
+    @if (loading && rootNodes.length === 0) {
+      <div class="text-center py-3">
+        <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
+      </div>
+    } @else {
+      <ng-container *ngTemplateOutlet="directoryTemplate; context: { nodes: getNodes('.'), depth: 0, parentPath: '.' }"></ng-container>
+    }
+  </div>
+</div>
+
+<ng-template #directoryTemplate let-nodes="nodes" let-depth="depth" let-parentPath="parentPath">
+  @for (node of nodes; track node.path) {
+    <div class="tree-row" [style.padding-left.px]="depth * 12">
+      @if (node.type === 'directory') {
+        <button class="btn btn-link btn-sm text-start p-0 tree-button" type="button" (click)="toggleDirectory(node.path)">
+          <i class="bi" [class.bi-folder-fill]="isExpanded(node.path)" [class.bi-folder]="!isExpanded(node.path)"></i>
+          {{ node.name }}
+        </button>
+        @if (isExpanded(node.path)) {
+          <ng-container
+            *ngTemplateOutlet="directoryTemplate; context: { nodes: getNodes(node.path), depth: depth + 1, parentPath: node.path }"
+          ></ng-container>
+        }
+      } @else {
+        <div class="tree-file text-truncate">
+          <i class="bi bi-file-earmark-image me-1"></i>{{ node.name }}
+        </div>
+      }
+    </div>
+  } @empty {
+    <div class="text-secondary small px-1">No assets</div>
+  }
+</ng-template>

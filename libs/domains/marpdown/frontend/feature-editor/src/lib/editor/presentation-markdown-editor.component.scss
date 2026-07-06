@@ -1,0 +1,278 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-body-bg);
+  overflow: hidden;
+}
+
+.marp-frontmatter {
+  flex: 0 0 auto;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  background: var(--bs-body-tertiary-bg);
+}
+
+.marp-frontmatter__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.marp-frontmatter__title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.marp-frontmatter__hint,
+.marp-frontmatter__warning {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+.marp-frontmatter__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.marp-frontmatter__input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.8125rem;
+  resize: vertical;
+  min-height: 5rem;
+}
+
+.editor-host {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--bs-body-bg);
+}
+
+:host ::ng-deep {
+  .editor-host > .milkdown {
+    --crepe-color-background: var(--bs-body-bg, #ffffff);
+    --crepe-color-on-background: var(--bs-body-color, #212529);
+    --crepe-color-surface: var(--bs-tertiary-bg, #f1f3f5);
+    --crepe-color-surface-low: var(--bs-secondary-bg, #e9ecef);
+    --crepe-color-on-surface: var(--bs-emphasis-color, #1c1c1c);
+    --crepe-color-on-surface-variant: var(--bs-secondary-color, #495057);
+    --crepe-color-outline: var(--bs-secondary-color, #6c757d);
+    --crepe-color-primary: var(--bs-primary, #0d6efd);
+    --crepe-color-secondary: var(--bs-secondary, #6c757d);
+    --crepe-color-on-secondary: var(--bs-secondary-text-emphasis, #495057);
+    --crepe-color-inverse: var(--bs-emphasis-color, #212529);
+    --crepe-color-on-inverse: var(--bs-body-bg, #ffffff);
+    --crepe-color-inline-code: var(--bs-danger-text-emphasis, #842029);
+    --crepe-color-error: var(--bs-danger, #dc3545);
+    --crepe-color-hover: color-mix(in srgb, var(--bs-primary, #0d6efd) 18%, var(--bs-body-bg, #ffffff));
+    --crepe-color-selected: color-mix(in srgb, var(--bs-primary, #0d6efd) 28%, var(--bs-body-bg, #ffffff));
+    --crepe-color-inline-area: color-mix(in srgb, var(--bs-primary, #0d6efd) 12%, var(--bs-secondary-bg, #f8f9fa));
+    --crepe-font-title: var(
+      --bs-heading-font-family,
+      var(--bs-body-font-family, 'Plus Jakarta Sans Variable', sans-serif)
+    );
+    --crepe-font-default: var(--bs-body-font-family, 'Plus Jakarta Sans Variable', sans-serif);
+    --crepe-font-code: var(
+      --bs-font-monospace,
+      SFMono-Regular,
+      Menlo,
+      Monaco,
+      Consolas,
+      'Liberation Mono',
+      'Courier New',
+      monospace
+    );
+
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    grid-row: 1;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    background: var(--crepe-color-background);
+  }
+
+  .milkdown .milkdown-block-handle {
+    z-index: 1;
+  }
+
+  .milkdown .milkdown-top-bar {
+    position: relative;
+    top: auto;
+    flex: 0 0 auto;
+    z-index: 5;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    background: var(--crepe-color-surface);
+  }
+
+  .milkdown > .editor {
+    box-sizing: border-box;
+    flex: 1 1 0;
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    min-width: 0;
+    padding: 0.75rem 1rem 1.5rem 4.5rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    color: var(--crepe-color-on-background);
+    caret-color: var(--bs-primary);
+  }
+
+  .milkdown > .editor.ProseMirror-focused {
+    caret-color: var(--bs-primary);
+  }
+
+  .milkdown > .editor:focus,
+  .milkdown > .editor.ProseMirror-focused {
+    outline: none;
+  }
+
+  .milkdown > .editor ::selection {
+    background: var(--crepe-color-selected);
+  }
+
+  .milkdown > .editor p.ProseMirror-selectednode,
+  .milkdown > .editor h1.ProseMirror-selectednode,
+  .milkdown > .editor h2.ProseMirror-selectednode,
+  .milkdown > .editor h3.ProseMirror-selectednode,
+  .milkdown > .editor h4.ProseMirror-selectednode,
+  .milkdown > .editor h5.ProseMirror-selectednode,
+  .milkdown > .editor h6.ProseMirror-selectednode,
+  .milkdown > .editor blockquote.ProseMirror-selectednode {
+    background: transparent;
+    box-shadow: inset 3px 0 0 var(--bs-primary);
+  }
+
+  .marpdown-html-node {
+    display: block;
+    margin: 0.5rem 0;
+    padding: 0.5rem 0.625rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-sm);
+    background: var(--bs-body-tertiary-bg);
+  }
+
+  .marpdown-html-node.ProseMirror-selectednode {
+    border-color: var(--bs-primary);
+    box-shadow: inset 3px 0 0 var(--bs-primary);
+    background: color-mix(in srgb, var(--bs-primary) 8%, var(--bs-body-tertiary-bg));
+  }
+
+  .marpdown-html-node__label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+  }
+
+  .marpdown-html-node__editor {
+    width: 100%;
+    min-height: 2.5rem;
+    overflow: hidden;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-sm);
+    background: var(--bs-body-bg);
+  }
+
+  .marpdown-html-node.ProseMirror-selectednode .marpdown-html-node__editor {
+    border-color: var(--bs-primary);
+    outline: 2px solid color-mix(in srgb, var(--bs-primary) 35%, transparent);
+    outline-offset: 0;
+  }
+
+  .marpdown-monaco-embed {
+    width: 100%;
+  }
+
+  .marpdown-monaco-embed .monaco-editor,
+  .marpdown-monaco-embed .monaco-editor-background,
+  .marpdown-monaco-embed .margin {
+    background-color: transparent !important;
+  }
+
+  .milkdown > .editor img,
+  .milkdown > .editor pre,
+  .milkdown > .editor table {
+    max-width: 100%;
+  }
+
+  .milkdown > .editor pre {
+    overflow-x: auto;
+  }
+
+  .milkdown hr {
+    position: relative;
+    margin: 1.75rem 0;
+    border: 0;
+    border-top: 2px dashed var(--bs-primary);
+    opacity: 0.85;
+    background: transparent;
+    background-clip: unset;
+    padding: 0;
+    height: auto;
+  }
+
+  .milkdown hr::after {
+    content: 'Slide break';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0.125rem 0.625rem;
+    border-radius: 999px;
+    background: var(--bs-body-bg);
+    color: var(--bs-primary);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+}
+
+:host-context(html[data-bs-theme='dark']) ::ng-deep .milkdown {
+  --crepe-color-on-surface-variant: color-mix(in srgb, var(--bs-body-color, #dee2e6) 80%, white);
+  --crepe-color-outline: color-mix(in srgb, var(--bs-body-color, #dee2e6) 45%, transparent);
+  --crepe-color-secondary: color-mix(in srgb, var(--bs-body-color, #dee2e6) 35%, var(--bs-secondary-bg, #2b3035));
+  --crepe-color-on-secondary: var(--bs-body-color, #dee2e6);
+  --crepe-color-hover: color-mix(in srgb, var(--bs-primary, #6ea8fe) 30%, var(--bs-body-bg, #212529));
+  --crepe-color-selected: color-mix(in srgb, var(--bs-primary, #6ea8fe) 42%, var(--bs-body-bg, #212529));
+  --crepe-color-inverse: var(--bs-secondary-bg, #2b3035);
+  --crepe-color-on-inverse: var(--bs-body-color, #dee2e6);
+}

@@ -96,6 +96,10 @@
                   "domain:identity",
                   "domain:shared"
                 ]
+              },
+              {
+                "sourceTag": "domain:marpdown",
+                "onlyDependOnLibsWithTags": ["domain:marpdown", "domain:shared"]
               }
             ]
           }

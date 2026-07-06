@@ -1,0 +1,225 @@
+{
+  "name": "marpdown-frontend-editor",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/marpdown/frontend-editor/src",
+  "tags": ["domain:marpdown", "type:app", "scope:frontend"],
+  "i18n": {
+    "sourceLocale": "en",
+    "locales": {
+      "de": "apps/marpdown/frontend-editor/src/i18n/messages.de.xlf"
+    }
+  },
+  "targets": {
+    "stage-monaco-assets": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/package-lock.json",
+        "{workspaceRoot}/node_modules/monaco-editor/**/*"
+      ],
+      "outputs": ["{workspaceRoot}/.cache/monaco-editor"],
+      "options": {
+        "command": "node tools/ci/stage-monaco-assets.mjs"
+      }
+    },
+    "build": {
+      "dependsOn": ["stage-monaco-assets"],
+      "executor": "@angular-devkit/build-angular:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/marpdown/frontend-editor",
+        "index": "apps/marpdown/frontend-editor/src/index.html",
+        "browser": "apps/marpdown/frontend-editor/src/main.ts",
+        "polyfills": [
+          "zone.js",
+          "apps/marpdown/frontend-editor/src/polyfills.ts"
+        ],
+        "tsConfig": "apps/marpdown/frontend-editor/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/marpdown/frontend-editor/public"
+          },
+          {
+            "glob": "**/*",
+            "input": ".cache/monaco-editor",
+            "output": "/assets/monaco/"
+          }
+        ],
+        "externalDependencies": ["monaco-editor"],
+        "styles": [
+          "apps/marpdown/frontend-editor/src/styles.scss",
+          "@milkdown/crepe/theme/common/style.css"
+        ],
+        "scripts": [
+          "node_modules/@popperjs/core/dist/umd/popper.min.js",
+          "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+        ],
+        "localize": true,
+        "i18nMissingTranslation": "warning"
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "5mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "16kb",
+              "maximumError": "32kb"
+            }
+          ],
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.marpdown.production.ts"
+            }
+          ]
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "fileReplacements": [
+            {
+              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.marpdown.ts"
+            }
+          ]
+        },
+        "serve": {
+          "externalDependencies": []
+        },
+        "en": {
+          "localize": ["en"]
+        },
+        "de": {
+          "localize": ["de"]
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "hmr": false,
+        "port": 4600
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "marpdown-frontend-editor:build:development,serve,en"
+        },
+        "production": {
+          "buildTarget": "marpdown-frontend-editor:build:production,serve,en"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/marpdown/frontend-editor/jest.config.cts",
+        "tsConfig": "apps/marpdown/frontend-editor/tsconfig.spec.json"
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "marpdown-frontend-editor:build",
+        "port": 4600,
+        "staticFilePath": "dist/apps/marpdown/frontend-editor/browser",
+        "spa": true
+      }
+    },
+    "prebuild-server": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/apps/marpdown/frontend-editor/server",
+        "format": ["cjs"],
+        "bundle": true,
+        "main": "apps/marpdown/frontend-editor/src/server.ts",
+        "tsConfig": "apps/marpdown/frontend-editor/tsconfig.server.json",
+        "assets": [],
+        "generatePackageJson": true,
+        "external": ["express"],
+        "deleteOutputPath": false,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      },
+      "dependsOn": ["build"]
+    },
+    "server": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/apps/marpdown/frontend-editor/server/browser"],
+      "options": {
+        "command": "bash -c \"test -d dist/apps/marpdown/frontend-editor/browser && mkdir -p dist/apps/marpdown/frontend-editor/server && cp -r dist/apps/marpdown/frontend-editor/browser dist/apps/marpdown/frontend-editor/server/browser || (echo 'Error: Browser directory not found. Please run build first.' && exit 1)\""
+      },
+      "dependsOn": ["prebuild-server"]
+    },
+    "server-container-image": {
+      "dependsOn": ["server"],
+      "cache": false,
+      "executor": "@nx-tools/nx-container:build",
+      "options": {
+        "engine": "docker",
+        "file": "apps/marpdown/frontend-editor/Dockerfile.server",
+        "context": "dist/apps/marpdown/frontend-editor/server"
+      },
+      "configurations": {
+        "test": {
+          "load": true,
+          "tags": ["ghcr.io/forepath/marpdown-editor-server:latest"]
+        },
+        "release": {
+          "push": true,
+          "tags": [
+            "ghcr.io/forepath/marpdown-editor-server:latest",
+            "ghcr.io/forepath/marpdown-editor-server:$VERSION"
+          ]
+        }
+      },
+      "defaultConfiguration": "test"
+    },
+    "start-containers": {
+      "dependsOn": ["server-container-image"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/marpdown/frontend-editor",
+        "command": "MARPDOWN_EDITOR_SERVER_IMAGE=ghcr.io/forepath/marpdown-editor-server:latest MARPDOWN_EDITOR_SERVER_CONTAINER_NAME=marpdown-editor-server docker compose up -d --force-recreate --remove-orphans"
+      }
+    },
+    "sbom": {
+      "executor": "@forepath/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
+    }
+  }
+}

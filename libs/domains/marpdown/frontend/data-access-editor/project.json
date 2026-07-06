@@ -1,0 +1,21 @@
+{
+  "name": "marpdown-frontend-data-access-editor",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/marpdown/frontend/data-access-editor/src",
+  "prefix": "marpdown",
+  "projectType": "library",
+  "tags": ["domain:marpdown", "scope:frontend", "type:data-access"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/marpdown/frontend/data-access-editor/jest.config.cts",
+        "tsConfig": "libs/domains/marpdown/frontend/data-access-editor/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

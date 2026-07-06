@@ -10,10 +10,10 @@ BUCKET="${4:-}"
 ENDPOINT_URL="${5:-}"
 
 usage() {
-  echo "Usage: $0 <agenstra|decabill> [sbom-dir] <release-version> <bucket> <endpoint-url>" >&2
+  echo "Usage: $0 <agenstra|decabill|marpdown> [sbom-dir] <release-version> <bucket> <endpoint-url>" >&2
 }
 
-if [ "$DOMAIN" != "agenstra" ] && [ "$DOMAIN" != "decabill" ]; then
+if [ "$DOMAIN" != "agenstra" ] && [ "$DOMAIN" != "decabill" ] && [ "$DOMAIN" != "marpdown" ]; then
   usage
   exit 1
 fi
@@ -40,11 +40,22 @@ is_decabill_sbom() {
   esac
 }
 
+is_marpdown_sbom() {
+  local filename="$1"
+  case "$filename" in
+    marpdown-*.cdx.json) return 0 ;;
+    container-marpdown-*.cdx.json) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 # Docs SBOM routing (no script changes required — covered by patterns above):
 #   agenstra-frontend-docs.cdx.json              -> agenstra bucket
 #   decabill-frontend-docs.cdx.json              -> decabill bucket
 #   container-agenstra-docs-server.cdx.json      -> agenstra bucket
 #   container-decabill-docs-server.cdx.json      -> decabill bucket
+#   marpdown-frontend-editor.cdx.json            -> marpdown bucket
+#   container-marpdown-editor-server.cdx.json    -> marpdown bucket
 
 staging_dir="$(mktemp -d)"
 trap 'rm -rf "$staging_dir"' EXIT
@@ -58,7 +69,12 @@ for bom_path in "${SBOM_DIR}"/*.cdx.json; do
       cp "$bom_path" "${staging_dir}/${filename}"
       matched=1
     fi
-  elif ! is_decabill_sbom "$filename"; then
+  elif [ "$DOMAIN" = "marpdown" ]; then
+    if is_marpdown_sbom "$filename"; then
+      cp "$bom_path" "${staging_dir}/${filename}"
+      matched=1
+    fi
+  elif ! is_decabill_sbom "$filename" && ! is_marpdown_sbom "$filename"; then
     cp "$bom_path" "${staging_dir}/${filename}"
     matched=1
   fi

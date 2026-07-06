@@ -1,0 +1,55 @@
+<div class="editor-page d-flex flex-column overflow-hidden">
+  @if (title$ | async; as title) {
+    <marpdown-presentation-toolbar
+      [title]="title"
+      [isDirty]="(isDirty$ | async) ?? false"
+      [saving]="(saving$ | async) ?? false"
+      [importing]="(importing$ | async) ?? false"
+      [exporting]="exporting"
+      [persistenceEnabled]="!guestMode"
+      (save)="save()"
+      (importMarkdown)="importMarkdown()"
+      (exportPdf)="export(ExportFormat.PDF)"
+      (exportPptx)="export(ExportFormat.PPTX)"
+      (undo)="undo()"
+      (redo)="redo()"
+      (present)="startPresenter()"
+    ></marpdown-presentation-toolbar>
+  }
+
+  <div class="editor-layout flex-grow-1 overflow-hidden" [class.editor-layout--guest]="guestMode">
+    @if (!guestMode) {
+      <div class="editor-column editor-column--assets">
+        <marpdown-presentation-asset-tree [presentationId]="presentationId"></marpdown-presentation-asset-tree>
+      </div>
+    }
+    <div class="editor-column editor-column--markdown">
+      @if (markdown$ | async; as markdown) {
+        @if (editorMode() === 'monaco') {
+          <marpdown-presentation-monaco-editor
+            [markdown]="markdown"
+            (markdownChange)="onMarkdownChange($event)"
+          ></marpdown-presentation-monaco-editor>
+        } @else {
+          <marpdown-presentation-markdown-editor
+            [markdown]="markdown"
+            (markdownChange)="onMarkdownChange($event)"
+          ></marpdown-presentation-markdown-editor>
+        }
+      }
+    </div>
+    <div class="editor-column editor-column--preview">
+      @if (markdown$ | async; as markdown) {
+        <marpdown-presentation-preview [presentationId]="presentationId" [markdown]="markdown"></marpdown-presentation-preview>
+      }
+    </div>
+  </div>
+
+  @if (presenterOpen) {
+    <marpdown-presentation-presenter
+      [presentationId]="presentationId"
+      [markdown]="presenterMarkdown"
+      (closed)="closePresenter()"
+    ></marpdown-presentation-presenter>
+  }
+</div>

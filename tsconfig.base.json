@@ -146,6 +146,27 @@
       ],
       "@forepath/shared/frontend/feature-landingpage": [
         "libs/domains/shared/frontend/feature-landingpage/src/index.ts"
+      ],
+      "@forepath/marpdown/marpdown/backend": [
+        "libs/domains/marpdown/backend/index.ts"
+      ],
+      "@forepath/marpdown/marpdown/frontend": [
+        "libs/domains/marpdown/frontend/index.ts"
+      ],
+      "@forepath/marpdown/marpdown/keycloak": [
+        "libs/domains/marpdown/keycloak/index.ts"
+      ],
+      "@forepath/marpdown/marpdown/shared": [
+        "libs/domains/marpdown/shared/index.ts"
+      ],
+      "@forepath/marpdown/frontend/data-access-editor": [
+        "libs/domains/marpdown/frontend/data-access-editor/src/index.ts"
+      ],
+      "@forepath/marpdown/frontend/feature-editor": [
+        "libs/domains/marpdown/frontend/feature-editor/src/index.ts"
+      ],
+      "@forepath/marpdown/backend/feature-data-manager": [
+        "libs/domains/marpdown/backend/feature-data-manager/src/index.ts"
       ]
     }
   },

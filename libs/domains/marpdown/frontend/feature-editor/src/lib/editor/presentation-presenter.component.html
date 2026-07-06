@@ -1,0 +1,34 @@
+<div
+  #presenterRoot
+  class="presenter-root"
+  [class.presenter-root--dark]="themeService.isDarkMode()"
+  tabindex="-1"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Presenter mode"
+>
+  @if (rendering) {
+    <div class="presenter-status" aria-live="polite">Preparing presentation…</div>
+  } @else if (!isEndSlide) {
+    <div class="presenter-status" aria-live="polite">
+      Slide {{ activeSlideIndex + 1 }} of {{ contentSlideCount }}
+    </div>
+  } @else {
+    <div class="presenter-status" aria-live="polite">Press any key to end the presentation</div>
+  }
+
+  <div class="presenter-stage" (click)="onStageClick($event)">
+    <div #slidesHost class="presenter-slides"></div>
+
+    <div class="presenter-end-slide" [class.presenter-slide--active]="isEndSlide">
+      <p class="presenter-end-slide__message">Press any key to end the presentation…</p>
+    </div>
+  </div>
+
+  @if (!isEndSlide) {
+    <div class="presenter-hud" aria-hidden="true">
+      <span>{{ activeSlideIndex + 1 }} / {{ contentSlideCount }}</span>
+      <span class="presenter-hud__hint">← → Space · Esc to exit</span>
+    </div>
+  }
+</div>

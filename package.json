@@ -119,6 +119,8 @@
     "@bull-board/ui": "7.1.5",
     "@fontsource-variable/plus-jakarta-sans": "5.2.8",
     "@keycloakify/angular": "21.0.5",
+    "@marp-team/marp-cli": "4.4.0",
+    "@marp-team/marp-core": "4.3.0",
     "@milkdown/crepe": "7.20.0",
     "@mlc-ai/web-llm": "^0.2.84",
     "@modelcontextprotocol/sdk": "1.18.2",

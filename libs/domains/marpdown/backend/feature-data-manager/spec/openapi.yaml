@@ -1,0 +1,470 @@
+openapi: 3.1.0
+info:
+  title: Marpdown Data Manager API
+  version: 1.0.0
+  description: |
+    HTTP API for Marp presentation editing, asset storage, and PDF/PPTX export.
+
+    Presentations and assets are scoped to the authenticated user (`user_id`). API key
+    authentication is not supported for presentation endpoints.
+  contact:
+    name: ForePath
+    email: hi@forepath.io
+    url: https://forepath.io
+servers:
+  - url: http://localhost:3400/api
+    description: Local development
+security:
+  - bearerAuth: []
+paths:
+  /presentations:
+    get:
+      summary: List presentations for the authenticated user
+      operationId: listPresentations
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Paginated presentation summaries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPresentationsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: Create a presentation
+      operationId: createPresentation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePresentationRequest'
+      responses:
+        '201':
+          description: Created presentation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /presentations/{id}:
+    parameters:
+      - $ref: '#/components/parameters/PresentationId'
+    get:
+      summary: Get a presentation
+      operationId: getPresentation
+      responses:
+        '200':
+          description: Presentation with markdown
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      summary: Update presentation title and/or markdown
+      operationId: updatePresentation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePresentationRequest'
+      responses:
+        '200':
+          description: Updated presentation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      summary: Delete a presentation
+      operationId: deletePresentation
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /presentations/{id}/import:
+    parameters:
+      - $ref: '#/components/parameters/PresentationId'
+    post:
+      summary: Replace presentation markdown from import
+      operationId: importPresentationMarkdown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportPresentationRequest'
+      responses:
+        '200':
+          description: Updated presentation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresentationResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /presentations/{presentationId}/export:
+    parameters:
+      - $ref: '#/components/parameters/PresentationIdPath'
+    post:
+      summary: Export presentation to PDF or PPTX
+      operationId: exportPresentation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportPresentationRequest'
+      responses:
+        '200':
+          description: Exported file stream
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.presentationml.presentation:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /presentations/{presentationId}/assets:
+    parameters:
+      - $ref: '#/components/parameters/PresentationIdPath'
+    get:
+      summary: List assets in a directory
+      operationId: listPresentationAssets
+      parameters:
+        - name: path
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Directory path (defaults to asset root)
+      responses:
+        '200':
+          description: Directory entries (excludes presentation.md)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FileNode'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /presentations/{presentationId}/assets/{assetPath}:
+    parameters:
+      - $ref: '#/components/parameters/PresentationIdPath'
+      - $ref: '#/components/parameters/AssetPath'
+    get:
+      summary: Read asset content
+      operationId: readPresentationAsset
+      responses:
+        '200':
+          description: Asset payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetContent'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Write or upsert asset content
+      operationId: writePresentationAsset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WriteAssetRequest'
+      responses:
+        '204':
+          description: Written
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      summary: Create file or directory
+      operationId: createPresentationAsset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAssetRequest'
+      responses:
+        '204':
+          description: Created
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      summary: Move or rename asset
+      operationId: movePresentationAsset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveAssetRequest'
+      responses:
+        '204':
+          description: Moved
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      summary: Delete asset or directory
+      operationId: deletePresentationAsset
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    Offset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    PresentationId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PresentationIdPath:
+      name: presentationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AssetPath:
+      name: assetPath
+      in: path
+      required: true
+      schema:
+        type: string
+      description: URL-encoded relative asset path (wildcard)
+  schemas:
+    CreatePresentationRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          maxLength: 500
+        markdown:
+          type: string
+    UpdatePresentationRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 500
+        markdown:
+          type: string
+    ImportPresentationRequest:
+      type: object
+      required: [markdown]
+      properties:
+        markdown:
+          type: string
+    ExportPresentationRequest:
+      type: object
+      required: [format]
+      properties:
+        format:
+          type: string
+          enum: [pdf, pptx]
+    PresentationSummary:
+      type: object
+      required: [id, title, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PresentationResponse:
+      allOf:
+        - $ref: '#/components/schemas/PresentationSummary'
+        - type: object
+          required: [markdown]
+          properties:
+            markdown:
+              type: string
+    PaginatedPresentationsResponse:
+      type: object
+      required: [items, total, limit, offset]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PresentationSummary'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+    FileNode:
+      type: object
+      required: [name, path, type]
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        type:
+          type: string
+          enum: [file, directory]
+        size:
+          type: integer
+        modifiedAt:
+          type: string
+          format: date-time
+    WriteAssetRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+        encoding:
+          type: string
+          enum: [utf-8, base64]
+    CreateAssetRequest:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [file, directory]
+        content:
+          type: string
+        encoding:
+          type: string
+          enum: [utf-8, base64]
+        mimeType:
+          type: string
+    MoveAssetRequest:
+      type: object
+      required: [destinationPath]
+      properties:
+        destinationPath:
+          type: string
+    AssetContent:
+      type: object
+      required: [content, encoding, mimeType, size]
+      properties:
+        content:
+          type: string
+        encoding:
+          type: string
+          enum: [base64]
+        mimeType:
+          type: string
+        size:
+          type: integer
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

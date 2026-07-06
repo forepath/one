@@ -1,0 +1,23 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.asset-tree {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-body-bg);
+}
+
+.tree-button {
+  color: var(--bs-body-color);
+  text-decoration: none;
+}
+
+.tree-file {
+  color: var(--bs-secondary-color);
+  font-size: 0.875rem;
+}

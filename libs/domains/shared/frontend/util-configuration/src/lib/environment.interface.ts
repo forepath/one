@@ -65,4 +65,8 @@ export interface Environment {
     restApiUrl: string;
     turnstileSiteKey: string;
   };
+  /** Marpdown presentation editor API. */
+  marpdown?: {
+    restApiUrl: string;
+  };
 }

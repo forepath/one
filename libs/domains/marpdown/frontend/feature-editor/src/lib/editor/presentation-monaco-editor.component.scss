@@ -1,0 +1,37 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.monaco-editor-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-body-bg);
+  overflow: hidden;
+}
+
+.monaco-editor-host {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+:host ::ng-deep {
+  .monaco-editor-host {
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto !important;
+  }
+
+  .monaco-editor-host .editor-container,
+  .monaco-editor-host .monaco-editor {
+    height: 100% !important;
+  }
+}

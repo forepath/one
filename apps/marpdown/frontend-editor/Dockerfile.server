@@ -1,0 +1,28 @@
+# -----------------------------------------------------------------------------
+# Image:      marpdown-editor-server
+# Project:    frontend-editor — Nx target `server-container-image`
+# Registry:   ghcr.io/forepath/marpdown-editor-server
+# Base:       node:24.14.1-alpine
+# Exposes:    4200 (Express static server)
+# -----------------------------------------------------------------------------
+FROM docker.io/node:24.14.1-alpine
+
+ARG APP_UID=1000
+ARG APP_GID=1000
+
+ENV HOST=0.0.0.0
+ENV PORT=4200
+
+WORKDIR /app
+
+EXPOSE ${PORT}
+
+COPY --chown=${APP_UID}:${APP_GID} package*.json ./
+
+RUN npm i --omit=dev && npm cache clean --force && chown -R "${APP_UID}:${APP_GID}" /app
+
+COPY --chown=${APP_UID}:${APP_GID} . /app
+
+USER ${APP_UID}:${APP_GID}
+
+CMD [ "node", "server.cjs" ]
