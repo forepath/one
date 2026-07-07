@@ -6,7 +6,9 @@
   "tags": ["domain:agenstra", "scope:backend", "type:feature"],
   "implicitDependencies": [
     "agenstra-backend-feature-agent-manager",
-    "shared-backend-util-dynamic-provider-registry"
+    "shared-backend-util-dynamic-provider-registry",
+    "shared-backend-util-provisioning-geography",
+    "shared-backend-util-redis-cache"
   ],
   "targets": {
     "test": {

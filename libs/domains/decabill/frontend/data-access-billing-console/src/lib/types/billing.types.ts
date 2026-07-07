@@ -10,10 +10,18 @@ export type BackorderStatus = 'pending' | 'retrying' | 'fulfilled' | 'cancelled'
 export type UserRole = 'user' | 'admin';
 
 // Provider details (GET /service-types/providers)
+export interface ProviderEnvDefaultField {
+  envKey: string;
+  label: string;
+  sensitive: boolean;
+  type: 'string';
+}
+
 export interface ProviderDetail {
   id: string;
   displayName: string;
   configSchema?: Record<string, unknown>;
+  envDefaultFields?: ProviderEnvDefaultField[];
 }
 
 // Provider server type with specs and pricing (GET .../providers/:id/server-types)
@@ -26,6 +34,14 @@ export interface ServerType {
   priceMonthly?: number;
   priceHourly?: number;
   description?: string;
+}
+
+// Provider geography option (GET .../providers/:id/locations)
+export interface ProviderLocation {
+  id: string;
+  name: string;
+  city?: string;
+  country?: string;
 }
 
 // Statutory withdrawal
@@ -61,6 +77,7 @@ export interface ServiceTypeResponse {
   configSchema: Record<string, unknown>;
   disallowStatutoryWithdrawal: boolean;
   isActive: boolean;
+  providerDefaultsConfigured?: Record<string, boolean>;
   createdAt: string;
   updatedAt: string;
 }
@@ -73,6 +90,7 @@ export interface CreateServiceTypeDto {
   configSchema?: Record<string, unknown>;
   disallowStatutoryWithdrawal?: boolean;
   isActive?: boolean;
+  providerDefaults?: Record<string, string>;
 }
 
 export interface UpdateServiceTypeDto {
@@ -82,6 +100,7 @@ export interface UpdateServiceTypeDto {
   configSchema?: Record<string, unknown>;
   disallowStatutoryWithdrawal?: boolean;
   isActive?: boolean;
+  providerDefaults?: Record<string, string>;
 }
 
 // CloudInit Configs
@@ -208,6 +227,9 @@ export interface ServicePlanResponse {
   providerConfigDefaults: Record<string, unknown>;
   orderingHighlights: ServicePlanOrderingHighlight[];
   allowCustomerLocationSelection: boolean;
+  allowCustomerServerTypeSelection: boolean;
+  allowedServerTypes: string[];
+  taxCategory?: TaxCategory;
   withdrawalPolicy: WithdrawalPolicy;
   isActive: boolean;
   createdAt: string;
@@ -230,6 +252,9 @@ export interface CreateServicePlanDto {
   providerConfigDefaults?: Record<string, unknown>;
   orderingHighlights?: ServicePlanOrderingHighlight[];
   allowCustomerLocationSelection?: boolean;
+  allowCustomerServerTypeSelection?: boolean;
+  allowedServerTypes?: string[];
+  taxCategory?: TaxCategory;
   isActive?: boolean;
 }
 
@@ -248,6 +273,9 @@ export interface UpdateServicePlanDto {
   providerConfigDefaults?: Record<string, unknown>;
   orderingHighlights?: ServicePlanOrderingHighlight[];
   allowCustomerLocationSelection?: boolean;
+  allowCustomerServerTypeSelection?: boolean;
+  allowedServerTypes?: string[];
+  taxCategory?: TaxCategory;
   isActive?: boolean;
 }
 
@@ -267,6 +295,7 @@ export interface SubscriptionResponse {
   withdrawnAt?: string | null;
   withdrawalEligibility?: WithdrawalEligibility;
   withdrawalResult?: WithdrawalResult;
+  periodTotalPrice?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -396,6 +425,7 @@ export interface BackorderResponse {
   providerErrors: Record<string, unknown>;
   preferredAlternatives: Record<string, unknown>;
   retryAfter?: string | null;
+  periodTotalPrice?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -433,7 +463,12 @@ export interface PricingPreviewResponse {
   basePrice: number;
   marginPercent: number;
   marginFixed: number;
+  /** Net price per billing period (excl. VAT). */
   totalPrice: number;
+  taxTotal: number;
+  totalGross: number;
+  taxRate: number;
+  taxCategory?: TaxCategory;
 }
 
 // Customer Profile

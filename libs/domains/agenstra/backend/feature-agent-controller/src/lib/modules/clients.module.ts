@@ -2,6 +2,7 @@ import {
   DynamicProviderLoaderService,
   registerDynamicProviders,
 } from '@forepath/shared/backend/util-dynamic-provider-registry';
+import { RedisCacheModule } from '@forepath/shared/backend/util-redis-cache';
 import {
   ClientAgentCredentialEntity,
   ClientAgentCredentialsRepository,
@@ -119,6 +120,7 @@ const authMethod = getAuthenticationMethod();
       KnowledgeRelationEntity,
       UserEnvironmentReadStateEntity,
     ]),
+    RedisCacheModule,
     StatisticsModule,
     forwardRef(() => FilterRulesModule),
     forwardRef(() => ContextImportModule),

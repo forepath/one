@@ -18,6 +18,7 @@ import type {
   ProvisionServerDto,
   ProvisionedServerResponseDto,
   ProvisioningProviderInfo,
+  ProviderLocation,
   ServerInfo,
   ServerType,
   UpdateClientDto,
@@ -96,6 +97,13 @@ export class ClientsService {
    */
   getServerTypes(providerType: string): Observable<ServerType[]> {
     return this.http.get<ServerType[]>(`${this.apiUrl}/clients/provisioning/providers/${providerType}/server-types`);
+  }
+
+  /**
+   * Get available geography options for a provisioning provider.
+   */
+  getLocations(providerType: string): Observable<ProviderLocation[]> {
+    return this.http.get<ProviderLocation[]>(`${this.apiUrl}/clients/provisioning/providers/${providerType}/locations`);
   }
 
   /**

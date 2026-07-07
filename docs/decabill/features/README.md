@@ -16,6 +16,7 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **Dashboard and Server Control** - Overview of subscriptions with start, stop, and restart actions
 - **Real-time Status** - WebSocket dashboard stream for provisioned server status
 - **Backorders** - Queue and retry when provider capacity is unavailable
+- **Public Withdrawal** - Statutory withdrawal without login at `/withdrawal`
 - **Payment Processing** - Stripe checkout and webhook-driven payment state
 - **Dynamic Provider Plugins** - Extend payment processors and billing UI metadata at runtime
 - **Server Provisioning** - Cloud-init deployment of bundled product stacks for eligible plans
@@ -136,6 +137,17 @@ Queue subscription requests when provider capacity is unavailable and retry auto
 - Scheduled retry processor for pending and retrying backorders
 - Manual retry and cancel via API
 - Encrypted requested config snapshot at rest
+
+### [Public Statutory Withdrawal](./public-withdrawal.md)
+
+Public `/withdrawal` page for customers who are not logged in. Matches billing profile and subscription dates, verifies email with a time-limited code, and executes the same withdrawal pipeline as the authenticated API.
+
+**Key Capabilities**:
+
+- No login required; session resume within TTL without duplicate email
+- Billing-profile matching (not login email)
+- GCM-encrypted confirmation codes at rest
+- Seller addressee display from `BILLING_ISSUER_*`
 
 ### [Payment Processing](./payment-processing.md)
 

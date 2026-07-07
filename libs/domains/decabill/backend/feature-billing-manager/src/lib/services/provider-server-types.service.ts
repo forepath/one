@@ -2,9 +2,20 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
 
 import { ServerTypeDto } from '../dto/server-type.dto';
+import { resolveProviderApiToken } from '../utils/provider-env-defaults.utils';
 
 const HETZNER_API_BASE = 'https://api.hetzner.cloud/v1';
 const DIGITALOCEAN_API_BASE = 'https://api.digitalocean.com/v2';
+
+function parseProviderPrice(value: number | string | null | undefined): number | undefined {
+  if (value == null) {
+    return undefined;
+  }
+
+  const parsed = typeof value === 'number' ? value : Number(value);
+
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
 
 interface HetznerServerType {
   id: number;
@@ -39,20 +50,20 @@ interface DigitalOceanSize {
  */
 @Injectable()
 export class ProviderServerTypesService {
-  async getServerTypes(providerId: string): Promise<ServerTypeDto[]> {
+  async getServerTypes(providerId: string, providerDefaults?: Record<string, string>): Promise<ServerTypeDto[]> {
     if (providerId === 'hetzner') {
-      return this.getHetznerServerTypes();
+      return this.getHetznerServerTypes(providerDefaults);
     }
 
     if (providerId === 'digital-ocean') {
-      return this.getDigitaloceanServerTypes();
+      return this.getDigitaloceanServerTypes(providerDefaults);
     }
 
     return [];
   }
 
-  private async getHetznerServerTypes(): Promise<ServerTypeDto[]> {
-    const apiToken = process.env.HETZNER_API_TOKEN;
+  private async getHetznerServerTypes(providerDefaults?: Record<string, string>): Promise<ServerTypeDto[]> {
+    const apiToken = resolveProviderApiToken('hetzner', providerDefaults);
 
     if (!apiToken) {
       throw new BadRequestException('HETZNER_API_TOKEN environment variable is not set');
@@ -75,8 +86,8 @@ export class ProviderServerTypesService {
             cores: st.cores,
             memory: st.memory,
             disk: st.disk,
-            priceMonthly: priceFsn1?.price_monthly?.gross,
-            priceHourly: priceFsn1?.price_hourly?.gross,
+            priceMonthly: parseProviderPrice(priceFsn1?.price_monthly?.gross),
+            priceHourly: parseProviderPrice(priceFsn1?.price_hourly?.gross),
             description: st.description,
           };
         });
@@ -87,8 +98,8 @@ export class ProviderServerTypesService {
     }
   }
 
-  private async getDigitaloceanServerTypes(): Promise<ServerTypeDto[]> {
-    const apiToken = process.env.DIGITALOCEAN_API_TOKEN;
+  private async getDigitaloceanServerTypes(providerDefaults?: Record<string, string>): Promise<ServerTypeDto[]> {
+    const apiToken = resolveProviderApiToken('digital-ocean', providerDefaults);
 
     if (!apiToken) {
       throw new BadRequestException('DIGITALOCEAN_API_TOKEN environment variable is not set');
@@ -108,8 +119,8 @@ export class ProviderServerTypesService {
           cores: size.vcpus,
           memory: size.memory / 1024,
           disk: size.disk,
-          priceMonthly: size.price_monthly,
-          priceHourly: size.price_hourly,
+          priceMonthly: parseProviderPrice(size.price_monthly),
+          priceHourly: parseProviderPrice(size.price_hourly),
           description: size.description || size.slug,
         }));
     } catch (error) {

@@ -30,7 +30,10 @@ describe('Portal ServicePlansEffects', () => {
     billingIntervalType: 'month',
     billingIntervalValue: 1,
     totalPrice: 99,
+    totalGross: 117.81,
+    taxRate: 19,
     orderingHighlights: [],
+    allowCustomerServerTypeSelection: false,
   };
   const createOfferings = (count: number): PublicServicePlanOffering[] =>
     Array.from({ length: count }, (_, index) => ({

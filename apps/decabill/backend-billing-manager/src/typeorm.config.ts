@@ -27,6 +27,7 @@ import {
   ServiceTypeEntity,
   SubscriptionEntity,
   SubscriptionItemEntity,
+  PublicWithdrawalRequestEntity,
   UsageRecordEntity,
 } from '@forepath/decabill/backend';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
@@ -91,6 +92,7 @@ export const typeormConfig: DataSourceOptions = {
     ProjectTicketCommentEntity,
     ProjectTicketActivityEntity,
     ProjectTimeEntryEntity,
+    PublicWithdrawalRequestEntity,
     UserEntity,
   ],
   migrations: [

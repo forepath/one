@@ -67,6 +67,30 @@ describe('ProviderServerTypesService', () => {
       process.env.HETZNER_API_TOKEN = env;
     });
 
+    it('should coerce string gross prices from Hetzner API responses', async () => {
+      process.env.HETZNER_API_TOKEN = 'test-token';
+      mockedAxios.get.mockResolvedValue({
+        data: {
+          server_types: [
+            {
+              id: 22,
+              name: 'cpx22',
+              description: 'CPX22',
+              cores: 4,
+              memory: 8,
+              disk: 160,
+              deprecated: false,
+              prices: [{ location: 'fsn1', price_monthly: { gross: '19.4900000000000000' } }],
+            },
+          ],
+        },
+      });
+
+      const result = await service.getServerTypes('hetzner');
+
+      expect(result[0]?.priceMonthly).toBe(19.49);
+    });
+
     it('should filter out deprecated server types', async () => {
       process.env.HETZNER_API_TOKEN = 'test-token';
       mockedAxios.get.mockResolvedValue({

@@ -9,7 +9,9 @@
     "identity-backend-feature-auth",
     "shared-backend-util-crypto",
     "shared-backend-util-email",
-    "shared-backend-util-dynamic-provider-registry"
+    "shared-backend-util-dynamic-provider-registry",
+    "shared-backend-util-provisioning-geography",
+    "shared-backend-util-redis-cache"
   ],
   "targets": {
     "test": {

@@ -13,6 +13,8 @@ export const decabillAuthMarketing: AuthMarketing = {
     'Enter the reset code you received via email and choose a new password for your Decabill account.',
   confirmEmailDescription:
     'Enter the 6-character confirmation code you received via email (letters and numbers). You can paste the code or type it in the fields below.',
+  publicWithdrawalDescription:
+    'Exercise your statutory right of withdrawal (Widerruf) without logging in. Enter your subscription and billing profile details, confirm your identity by email, and submit your withdrawal request.',
   features: [
     {
       title: 'Plans & Subscriptions',

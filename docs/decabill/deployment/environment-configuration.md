@@ -65,7 +65,8 @@ Billing data and users are partitioned by **`tenant_id`**. HTTP clients send **`
 | Variable                                   | Description                                                                         |
 | ------------------------------------------ | ----------------------------------------------------------------------------------- |
 | `ENCRYPTION_KEY`                           | Encrypts sensitive stored data (API tokens, snapshots)                              |
-| `BILLING_ISSUER_*`                         | Legal entity on invoices (name, VAT, address, bank)                                 |
+| `BILLING_ISSUER_*`                         | Legal entity on invoices and public withdrawal addressee (name, VAT, address, bank) |
+| `PUBLIC_WITHDRAWAL_CONFIRMATION_TTL_HOURS` | Hours until a public withdrawal confirmation code expires (default `48`)            |
 | `BILLING_TAX_RATE_STANDARD`                | Default standard tax rate (default `19`)                                            |
 | `BILLING_TAX_RATE_REDUCED`                 | Reduced tax rate (default `7`)                                                      |
 | `BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS` | Days after provisioning during which statutory withdrawal is allowed (default `14`) |
@@ -128,13 +129,15 @@ Per-tenant exports are scoped to the request **`X-Tenant`**. Unified exports agg
 
 ### Provisioning and DNS
 
-| Variable                 | Description                           |
-| ------------------------ | ------------------------------------- |
-| `HETZNER_API_TOKEN`      | Hetzner Cloud API token               |
-| `DIGITALOCEAN_API_TOKEN` | DigitalOcean API token                |
-| `CLOUDFLARE_API_TOKEN`   | Cloudflare API token                  |
-| `CLOUDFLARE_ZONE_ID`     | Cloudflare zone for DNS records       |
-| `DNS_BASE_DOMAIN`        | Base domain for provisioned hostnames |
+| Variable                 | Description                                             |
+| ------------------------ | ------------------------------------------------------- |
+| `HETZNER_API_TOKEN`      | Hetzner Cloud API token (default for all service types) |
+| `DIGITALOCEAN_API_TOKEN` | DigitalOcean API token (default for all service types)  |
+| `CLOUDFLARE_API_TOKEN`   | Cloudflare API token                                    |
+| `CLOUDFLARE_ZONE_ID`     | Cloudflare zone for DNS records                         |
+| `DNS_BASE_DOMAIN`        | Base domain for provisioned hostnames                   |
+
+Per-service-type overrides for `HETZNER_API_TOKEN` and `DIGITALOCEAN_API_TOKEN` can be configured in the billing console under **Administration → Service Providers → Provider defaults**. Overrides are stored encrypted in the database using `ENCRYPTION_KEY` (AES-256-GCM). When unset for a service type, the global environment variables above apply.
 
 Provisioning SSH posture is documented under accepted risk **[DR-001](../security/accepted-risks.md#dr-001--provisioning-ssh-cloud-init-templates)**.
 

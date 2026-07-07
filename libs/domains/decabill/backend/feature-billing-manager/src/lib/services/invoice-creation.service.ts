@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
-import { TaxCategory } from '../constants/tax-category.constants';
 import type { OpenPositionEntity } from '../entities/open-position.entity';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
@@ -14,10 +13,13 @@ import { UsageRecordsRepository } from '../repositories/usage-records.repository
 import { groupOpenPositionsBySubscription } from '../utils/open-position-grouping.util';
 import { calculateProratedAmount } from '../utils/billing-proration.util';
 import { getEarliestProvisionedAt } from '../utils/provisioned-billing.util';
+import { resolveSubscriptionBillingBaseOverride } from '../utils/server-type-billing.utils';
+import { resolvePlanTaxCategory } from '../utils/plan-tax.utils';
 
 import { BillingScheduleService } from './billing-schedule.service';
 import { InvoiceService } from './invoice.service';
 import { PricingService } from './pricing.service';
+import { ProviderServerTypesService } from './provider-server-types.service';
 
 interface InvoiceCreationOptions {
   billUntil?: Date;
@@ -38,6 +40,7 @@ export class InvoiceCreationService {
     private readonly openPositionsRepository: OpenPositionsRepository,
     private readonly invoicesRepository: InvoicesRepository,
     private readonly subscriptionItemsRepository: SubscriptionItemsRepository,
+    private readonly providerServerTypesService: ProviderServerTypesService,
   ) {}
 
   async createInvoice(subscriptionId: string, userId: string, description?: string, options?: InvoiceCreationOptions) {
@@ -48,7 +51,7 @@ export class InvoiceCreationService {
     }
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
-    const pricing = this.pricingService.calculate(plan);
+    const pricing = await this.resolveSubscriptionPricing(subscriptionId, plan);
     const usage = await this.usageRecordsRepository.findLatestForSubscription(subscriptionId);
     const usageCost = usage ? this.extractUsageCost(usage.usagePayload) : 0;
     const billUntil = options?.billUntil ?? new Date();
@@ -69,6 +72,7 @@ export class InvoiceCreationService {
     }
 
     const roundedTotal = Math.round(total * 100) / 100;
+    const taxCategory = resolvePlanTaxCategory(plan);
 
     return await this.invoiceService.createAndIssue({
       subscriptionId,
@@ -78,7 +82,7 @@ export class InvoiceCreationService {
           description: description || 'Subscription charge',
           quantity: 1,
           unitPriceNet: roundedTotal,
-          taxCategory: TaxCategory.STANDARD,
+          taxCategory,
         },
       ],
     });
@@ -116,12 +120,19 @@ export class InvoiceCreationService {
       return undefined;
     }
 
-    const lineInputs = billableGroups.map(({ group, amount }) => ({
-      description: group.representative.description ?? 'Subscription',
-      quantity: 1,
-      unitPriceNet: Math.round(amount * 100) / 100,
-      taxCategory: TaxCategory.STANDARD,
-    }));
+    const lineInputs = await Promise.all(
+      billableGroups.map(async ({ group, amount }) => {
+        const subscription = await this.subscriptionsRepository.findByIdOrThrow(group.subscriptionId);
+        const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
+
+        return {
+          description: group.representative.description ?? 'Subscription',
+          quantity: 1,
+          unitPriceNet: Math.round(amount * 100) / 100,
+          taxCategory: resolvePlanTaxCategory(plan),
+        };
+      }),
+    );
     const primarySubscriptionId = billableGroups[0].group.subscriptionId;
     const result = await this.invoiceService.createAndIssue({
       subscriptionId: primarySubscriptionId,
@@ -159,7 +170,7 @@ export class InvoiceCreationService {
     }
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
-    const pricing = this.pricingService.calculate(plan);
+    const pricing = await this.resolveSubscriptionPricing(position.subscriptionId, plan);
     const usage = await this.usageRecordsRepository.findLatestForSubscription(position.subscriptionId);
     const usageCost = usage ? this.extractUsageCost(usage.usagePayload) : 0;
     const baseAmount = await this.calculateBaseAmountSinceLastBilling(
@@ -265,5 +276,12 @@ export class InvoiceCreationService {
     }
 
     return calculateProratedAmount(plan, fullPeriodPrice, lastBillingAt, effectiveUntil, this.billingScheduleService);
+  }
+
+  private async resolveSubscriptionPricing(subscriptionId: string, plan: ServicePlanEntity) {
+    const items = await this.subscriptionItemsRepository.findBySubscription(subscriptionId);
+    const basePriceOverride = await resolveSubscriptionBillingBaseOverride(items, this.providerServerTypesService);
+
+    return this.pricingService.calculate(plan, basePriceOverride);
   }
 }

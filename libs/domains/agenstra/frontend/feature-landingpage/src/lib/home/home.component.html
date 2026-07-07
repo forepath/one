@@ -1201,8 +1201,10 @@
                   <span class="text-muted" aria-hidden="true">…</span>
                 } @else {
                   @if (cheapestOffering(); as cloudPlan) {
-                    €{{ cloudPlan.totalPrice | number: '1.2-2'
-                    }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(cloudPlan) }}</span>
+                    @if (formatPublicOfferingPrice(cloudPlan); as price) {
+                      {{ price.prefix }}€{{ price.amount | number: '1.2-2'
+                      }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(cloudPlan) }}</span>
+                    }
                   } @else {
                     <span class="text-muted" i18n="@@featurePortalPricing-cloudPriceUnavailable">Not available</span>
                   }

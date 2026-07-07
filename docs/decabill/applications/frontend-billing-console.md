@@ -56,15 +56,16 @@ Stripe return URLs typically land on `/invoices?payment=success` or `?payment=ca
 
 ### Identity routes (from `identityAuthRoutes`)
 
-| Path                                   | Guard                               | Description                        |
-| -------------------------------------- | ----------------------------------- | ---------------------------------- |
-| `/login`                               | `loginGuard`                        | Email/password or Keycloak entry   |
-| `/register`                            | `signupDisabledGuard`, `loginGuard` | Self-service registration          |
-| `/request-password-reset`              | `loginGuard`                        | Request reset code                 |
-| `/request-password-reset-confirmation` | `loginGuard`                        | Confirmation message               |
-| `/reset-password`                      | `loginGuard`                        | Submit reset code and new password |
-| `/confirm-email`                       | `loginGuard`                        | Email confirmation code            |
-| `/users`                               | `authGuard`, `adminGuard`           | Admin user management              |
+| Path                                   | Guard                               | Description                                                                   |
+| -------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------- |
+| `/login`                               | `loginGuard`                        | Email/password or Keycloak entry                                              |
+| `/register`                            | `signupDisabledGuard`, `loginGuard` | Self-service registration                                                     |
+| `/request-password-reset`              | `loginGuard`                        | Request reset code                                                            |
+| `/request-password-reset-confirmation` | `loginGuard`                        | Confirmation message                                                          |
+| `/reset-password`                      | `loginGuard`                        | Submit reset code and new password                                            |
+| `/confirm-email`                       | `loginGuard`                        | Email confirmation code                                                       |
+| `/withdrawal`                          | `publicWithdrawalAccessGuard`       | Public statutory withdrawal form (authenticated users go to `/subscriptions`) |
+| `/users`                               | `authGuard`, `adminGuard`           | Admin user management                                                         |
 
 ### Administration routes (`billingAdminGuard` plus `authGuard`)
 

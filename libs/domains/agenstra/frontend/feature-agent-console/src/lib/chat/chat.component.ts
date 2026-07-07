@@ -955,6 +955,16 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       return this.clientsFacade.getLoadingServerTypes$(providerType);
     }),
   );
+
+  readonly locations$ = toObservable(this.selectedProvider).pipe(
+    switchMap((providerType) => {
+      if (!providerType) {
+        return of([]);
+      }
+
+      return this.clientsFacade.getLocations$(providerType);
+    }),
+  );
   readonly newAgent = signal<Partial<CreateAgentDto>>({
     name: '',
     description: '',
@@ -3556,15 +3566,39 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onProviderChange(providerType: string): void {
     this.selectedProvider.set(providerType);
     this.selectedServerType.set('');
+    this.selectedLocation.set('');
 
     if (providerType) {
       this.clientsFacade.loadServerTypes(providerType);
+      this.clientsFacade.loadLocations(providerType);
     }
 
     // Auto-fill name when provider is selected and provisioning is enabled
     if (this.useProvisioning()) {
       this.autoFillProvisioningName();
     }
+  }
+
+  defaultProvisioningLocationSlug(providerType: string): string {
+    if (providerType === 'digital-ocean') {
+      return 'fra1';
+    }
+
+    if (providerType === 'hetzner') {
+      return 'fsn1';
+    }
+
+    return '';
+  }
+
+  defaultProvisioningLocationLabel(
+    providerType: string,
+    locations: Array<{ id: string; name: string }> | null | undefined,
+  ): string {
+    const slug = this.defaultProvisioningLocationSlug(providerType);
+    const label = locations?.find((location) => location.id === slug)?.name ?? slug;
+
+    return label ? `Default (${label})` : 'Default';
   }
 
   onSubmitAddClient(): void {

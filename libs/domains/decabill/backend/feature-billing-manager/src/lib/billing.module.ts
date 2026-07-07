@@ -11,6 +11,7 @@ import {
   registerDynamicProviderMetadata,
   registerDynamicProviders,
 } from '@forepath/shared/backend/util-dynamic-provider-registry';
+import { RedisCacheModule } from '@forepath/shared/backend/util-redis-cache';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -56,6 +57,7 @@ import { InvoicesController } from './controllers/invoices.controller';
 import { PaymentsWebhookController } from './controllers/payments-webhook.controller';
 import { PricingController } from './controllers/pricing.controller';
 import { PublicServicePlanOfferingsController } from './controllers/public-service-plan-offerings.controller';
+import { PublicWithdrawalController } from './controllers/public-withdrawal.controller';
 import { ServicePlansController } from './controllers/service-plans.controller';
 import { CloudInitConfigsController } from './controllers/cloud-init-configs.controller';
 import { ServiceTypesController } from './controllers/service-types.controller';
@@ -78,6 +80,7 @@ import { PaymentAttemptEntity } from './entities/payment-attempt.entity';
 import { PaymentRefundEntity } from './entities/payment-refund.entity';
 import { PaymentWebhookEventEntity } from './entities/payment-webhook-event.entity';
 import { ProviderPriceSnapshotEntity } from './entities/provider-price-snapshot.entity';
+import { PublicWithdrawalRequestEntity } from './entities/public-withdrawal-request.entity';
 import { ReservedHostnameEntity } from './entities/reserved-hostname.entity';
 import { CloudInitConfigEntity } from './entities/cloud-init-config.entity';
 import { ServicePlanEntity } from './entities/service-plan.entity';
@@ -117,6 +120,7 @@ import { ServicePlansRepository } from './repositories/service-plans.repository'
 import { ServiceTypesRepository } from './repositories/service-types.repository';
 import { SubscriptionItemsRepository } from './repositories/subscription-items.repository';
 import { SubscriptionsRepository } from './repositories/subscriptions.repository';
+import { PublicWithdrawalRequestsRepository } from './repositories/public-withdrawal-requests.repository';
 import { UsageRecordsRepository } from './repositories/usage-records.repository';
 import { UsersBillingDayRepository } from './repositories/users-billing-day.repository';
 import { AdminBillNowService } from './services/admin-bill-now.service';
@@ -167,6 +171,7 @@ import { PaymentOrchestrationService } from './services/payment-orchestration.se
 import { PricingService } from './services/pricing.service';
 import { ProviderPricingService } from './services/provider-pricing.service';
 import { ProviderRegistryService } from './services/provider-registry.service';
+import { ProviderLocationsService } from './services/provider-locations.service';
 import { ProviderServerTypesService } from './services/provider-server-types.service';
 import { ProvisioningService } from './services/provisioning.service';
 import { SshExecutorService } from './services/ssh-executor.service';
@@ -178,10 +183,12 @@ import { SubscriptionItemServerService } from './services/subscription-item-serv
 import { SubscriptionItemUpdateJobHandler } from './services/subscription-item-update.job-handler';
 import { SubscriptionRenewalReminderJobHandler } from './services/subscription-renewal-reminder.job-handler';
 import { SubscriptionService } from './services/subscription.service';
+import { PublicWithdrawalService } from './services/public-withdrawal.service';
 import { TaxCalculationService } from './services/tax-calculation.service';
 import { TaxRateConfigService } from './services/tax-rate-config.service';
 import { UsageService } from './services/usage.service';
 import { applyProviderConfigFieldScopes } from './utils/provider-config-schema.utils';
+import { DIGITALOCEAN_ENV_DEFAULT_FIELDS, HETZNER_ENV_DEFAULT_FIELDS } from './utils/provider-env-defaults.utils';
 
 const authMethod = getAuthenticationMethod();
 /**
@@ -402,13 +409,16 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       ProjectTicketCommentEntity,
       ProjectTicketActivityEntity,
       ProjectTimeEntryEntity,
+      PublicWithdrawalRequestEntity,
     ]),
+    RedisCacheModule,
     ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],
   controllers: [
     ServiceTypesController,
     CloudInitConfigsController,
     PublicServicePlanOfferingsController,
+    PublicWithdrawalController,
     ServicePlansController,
     AvailabilityController,
     SubscriptionItemsController,
@@ -444,6 +454,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     HetznerProvisioningService,
     ProviderRegistryService,
     ProviderServerTypesService,
+    ProviderLocationsService,
     TaxRateConfigService,
     TaxCalculationService,
     BillingIssuerConfigService,
@@ -503,6 +514,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     PricingService,
     ProviderPricingService,
     SubscriptionService,
+    PublicWithdrawalService,
     UsageService,
     CustomerProfilesService,
     CustomerProfilesAdminService,
@@ -552,6 +564,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     ReservedHostnamesRepository,
     SubscriptionItemsRepository,
     SubscriptionsRepository,
+    PublicWithdrawalRequestsRepository,
     UsageRecordsRepository,
     CustomerProfilesRepository,
     DatevExportRepository,
@@ -599,6 +612,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     PricingService,
     ProviderPricingService,
     SubscriptionService,
+    PublicWithdrawalService,
     UsageService,
     CustomerProfilesService,
     SubscriptionBillingJobHandler,
@@ -620,6 +634,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     ReservedHostnamesRepository,
     SubscriptionItemsRepository,
     SubscriptionsRepository,
+    PublicWithdrawalRequestsRepository,
     UsageRecordsRepository,
     CustomerProfilesRepository,
     ProjectsService,
@@ -638,13 +653,15 @@ export class BillingModule implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     this.providerRegistry.register({
       id: 'hetzner',
-      displayName: 'Hetzner Cloud',
+      displayName: 'Hetzner Cloud-Init',
       configSchema: HETZNER_CONFIG_SCHEMA,
+      envDefaultFields: HETZNER_ENV_DEFAULT_FIELDS,
     });
     this.providerRegistry.register({
       id: 'digital-ocean',
-      displayName: 'DigitalOcean',
+      displayName: 'DigitalOcean Cloud-Init',
       configSchema: DIGITALOCEAN_CONFIG_SCHEMA,
+      envDefaultFields: DIGITALOCEAN_ENV_DEFAULT_FIELDS,
     });
 
     await registerDynamicProviderMetadata({

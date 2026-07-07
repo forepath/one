@@ -2774,6 +2774,29 @@ paths:
                   $ref: '#/components/schemas/ServerType'
         '400':
           description: Provider type not found or invalid
+  /clients/provisioning/providers/{providerType}/locations:
+    get:
+      summary: Get available geography options for a provisioning provider
+      operationId: getProviderLocations
+      parameters:
+        - in: path
+          name: providerType
+          required: true
+          schema:
+            type: string
+            enum: [hetzner, digital-ocean]
+          description: The provisioning provider type (e.g., 'hetzner', 'digital-ocean')
+      responses:
+        '200':
+          description: Array of locations/regions with human-readable labels
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProviderLocation'
+        '400':
+          description: Provider type not found or invalid
   /clients/provisioning/provision:
     post:
       summary: Provision a new server and create a client
@@ -4485,6 +4508,22 @@ components:
         displayName:
           type: string
           description: Human-readable display name (e.g., 'Hetzner Cloud', 'DigitalOcean')
+    ProviderLocation:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          description: Technical slug used for provisioning (e.g. fsn1, fra1)
+        name:
+          type: string
+          description: Human-readable display name from provider API or static fallback
+        city:
+          type: string
+          description: City when provided by the provider API (Hetzner)
+        country:
+          type: string
+          description: ISO country code when provided by the provider API
     ServerType:
       type: object
       required: [id, name, cores, memory, disk]

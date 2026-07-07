@@ -105,7 +105,9 @@ export class SubscriptionsController {
 
     const { subscription, withdrawalResult } = await this.subscriptionService.withdrawSubscription(id, userInfo.userId);
 
-    return this.subscriptionService.mapToResponse(subscription, [], undefined, withdrawalResult);
+    const [mapped] = await this.subscriptionService.mapManyToResponses([subscription]);
+
+    return { ...mapped, withdrawalResult };
   }
 
   @Post(':id/resume')

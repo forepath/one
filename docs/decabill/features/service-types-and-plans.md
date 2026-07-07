@@ -47,9 +47,33 @@ Service types may set **`disallowStatutoryWithdrawal`** (admin checkbox in the b
 - Unprovisioned orders remain withdrawable.
 - Public and admin plan responses include `withdrawalPolicy.allowedAfterProvisioning: false` for checkout copy.
 
+### Provider defaults (platform credentials)
+
+Each service type can override **platform** environment variables used by the billing manager when calling Hetzner or DigitalOcean APIs (create/delete/start/stop servers, availability checks, admin server-type listing). This is separate from **Product defaults** on service plans (`providerConfigDefaults`), which configure values baked into customer VM cloud-init templates (including nested `hetznerApiToken` / `digitaloceanApiToken` for agent nested provisioning).
+
+| Layer             | Where configured                        | Examples                                      | Purpose                                                |
+| ----------------- | --------------------------------------- | --------------------------------------------- | ------------------------------------------------------ |
+| Provider defaults | Service type (`POST /service-types`)    | `HETZNER_API_TOKEN`, `DIGITALOCEAN_API_TOKEN` | Decabill's own API calls to provision/manage servers   |
+| Product defaults  | Service plan (`providerConfigDefaults`) | `region`, `serverType`, nested VM tokens      | Config injected into customer instances via cloud-init |
+
+Admin UI: collapsed **Provider defaults** section on `/administration/service-types` (mirrors **Product defaults** on service plans). Leave fields blank to use global environment variables.
+
+API behavior:
+
+- `GET /service-types/providers` includes `envDefaultFields` per provider (field metadata for the admin UI).
+- Write-only `providerDefaults` on create/update; responses expose `providerDefaultsConfigured` flags only (never raw secrets).
+- Overrides are stored encrypted at rest (AES-256-GCM via `ENCRYPTION_KEY`, same as other billing secrets).
+- Resolution: non-empty stored value wins; otherwise `process.env` fallback (backwards compatible).
+
+`GET /service-types/providers/{providerId}/server-types?serviceTypeId={uuid}` uses that service type's credentials when validating server types against a custom token.
+
 ### Server Types
 
 `GET /service-types/providers/{providerId}/server-types` returns server types with id, name, specs (cores, memory, disk), `priceMonthly`, and `priceHourly`. Requires the provider API token in the billing manager environment.
+
+### Geography Labels
+
+`GET /service-types/providers/{providerId}/locations` returns geography options with technical `id` (slug) and human-readable `name`. The billing console uses this for `location`/`region` enum dropdowns. Labels come from the provider API with static fallbacks; schema enums and stored config values remain technical slugs.
 
 ## Service Plans
 
@@ -75,6 +99,7 @@ Service plans belong to a service type and define customer-facing pricing and bi
 - For provisioning plans, customers choose from `provisioningOptions` (integrated `controller`/`manager` and/or custom CloudInit configs). Admins configure these exclusively via **Customer-selectable options** checkboxes in the plan editor; **Product defaults** fields are scoped to the checked options only. New plans default to both Agenstra Controller and Agenstra Manager selected. Existing legacy plans are reconciled by migration `1772000000000_CloudInitAndPlanProvisioningConsolidated`.
 - `billing_day_of_month` for subscription period alignment
 - `allowCustomerLocationSelection` when geography override is supported
+- `allowCustomerServerTypeSelection` and `allowedServerTypes` when server-type override is supported (provider schema `basePriceFromField: 'serverType'`)
 - Provider `configSchema.properties` may set `scope: "server"` or `scope: "product"` with optional `productServices` (`controller`, `manager`) to control the plan editor. Server fields stay under **Provider default config**; product fields appear under **Product defaults** when required by selected customer options.
 
 ### Customer Geography Selection
@@ -82,6 +107,12 @@ Service plans belong to a service type and define customer-facing pricing and bi
 When `allowCustomerLocationSelection` is true **and** the merged provider schema defines `region` or `location` as a string with a non-empty enum, customers may pass geography in `POST /subscriptions` `requestedConfig`. Setting the flag without a supported schema returns 400.
 
 For Hetzner and DigitalOcean, `region` and `location` are treated as aliases during merge and provisioning.
+
+### Customer Server Type Selection
+
+When `allowCustomerServerTypeSelection` is true **and** the effective provider schema has `basePriceFromField: 'serverType'`, admins configure `allowedServerTypes` and customers may pass `serverType` in `POST /subscriptions` `requestedConfig`. The value must be in `allowedServerTypes`; otherwise the request is rejected. When the flag is false, `serverType` is stripped from `requestedConfig` before merge.
+
+The resolved server type’s `priceMonthly` is snapshotted as `billingBasePrice` on subscription items for recurring billing and withdrawal refunds.
 
 ### CloudInit Configs Admin Route
 
@@ -97,6 +128,8 @@ Unauthenticated endpoints for external pricing pages:
 | GET    | `/public/service-plan-offerings/cheapest` | Lowest-priced active plan                      |
 
 Tenant is selected via `X-Tenant` (defaults to `default`). No provider secrets or internal margins are exposed.
+
+When a plan has `allowCustomerServerTypeSelection` and multiple `allowedServerTypes`, each offering includes optional **`totalPriceFrom`** (lowest customer total across allowed types). **`totalPrice`** remains the total for the plan’s default server type. Cheapest-plan comparison uses `totalPriceFrom ?? totalPrice`.
 
 ## Availability and Pricing
 

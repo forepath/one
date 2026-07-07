@@ -4,6 +4,7 @@ import { SubscriptionItemsRepository } from '../repositories/subscription-items.
 import { normalizeCloudInitService } from '../utils/cloud-init/cloud-init-dispatch.utils';
 import { buildAgentControllerUpdateCommand } from '../utils/cloud-init/agent-controller.utils';
 import { buildAgentManagerUpdateCommand } from '../utils/cloud-init/agent-manager.utils';
+import { getProvisioningCredentials } from '../utils/provider-env-defaults.utils';
 
 import { ProvisioningService } from './provisioning.service';
 import { SshExecutorService } from './ssh-executor.service';
@@ -40,7 +41,8 @@ export class SubscriptionItemUpdateJobHandler {
       return;
     }
 
-    const serverInfo = await this.provisioningService.getServerInfo(provider, item.providerReference);
+    const credentials = getProvisioningCredentials(provider, item.serviceType?.providerDefaults);
+    const serverInfo = await this.provisioningService.getServerInfo(provider, item.providerReference, credentials);
 
     if (!serverInfo?.publicIp) {
       this.logger.warn(`No public IP for item ${item.id}, skipping update`);

@@ -11,6 +11,7 @@ export class BackorderResponseDto {
   providerErrors!: Record<string, unknown>;
   preferredAlternatives!: Record<string, unknown>;
   retryAfter?: Date;
+  periodTotalPrice?: number;
   createdAt!: Date;
   updatedAt!: Date;
 }

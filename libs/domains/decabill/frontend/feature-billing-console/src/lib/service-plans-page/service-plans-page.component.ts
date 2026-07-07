@@ -9,6 +9,9 @@ import {
   CloudInitConfigsFacade,
   buildProvisioningOptionsFromKeys,
   collectPlanProductEnvFields,
+  formatServerTypeOption,
+  formatServerTypeIdLabel,
+  normalizeAllowedServerTypeIds,
   getNestedSchemaProperty,
   getObjectSchemaPropertyKeys,
   getProductProviderConfigKeys,
@@ -24,12 +27,19 @@ import {
   type CloudInitConfigResponse,
   type CreateServicePlanDto,
   type ProviderDetail,
+  type ProviderLocation,
   type ServerType,
   type ServicePlanOrderingHighlight,
   type ServicePlanResponse,
   type ServiceTypeResponse,
+  type TaxCategory,
   type UpdateServicePlanDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  formatProvisioningLocationLabel,
+  providerLocationCatalogFromList,
+  type ProviderLocationCatalog,
+} from '@forepath/shared/frontend/util-provisioning-geography';
 import { combineLatest, map, take } from 'rxjs';
 
 import {
@@ -108,6 +118,10 @@ export class ServicePlansPageComponent implements OnInit {
   readonly deleting$ = this.plansFacade.getServicePlansDeleting$();
 
   readonly billingIntervalTypes: BillingIntervalType[] = ['hour', 'day', 'month'];
+  readonly taxCategoryOptions: { value: TaxCategory; label: string }[] = [
+    { value: 'standard', label: 'Standard (19%)' },
+    { value: 'reduced', label: 'Reduced (7%)' },
+  ];
 
   createForm: CreateServicePlanDto = this.getDefaultCreateForm();
   editForm: UpdateServicePlanDto & { id: string } = this.getDefaultEditForm();
@@ -119,7 +133,11 @@ export class ServicePlansPageComponent implements OnInit {
   editingPlan: ServicePlanResponse | null = null;
   /** Server types for the current provider when config has basePriceFromField (e.g. serverType). */
   currentServerTypes: ServerType[] = [];
+  createAllowedServerTypes: string[] = [];
+  editAllowedServerTypes: string[] = [];
   serverTypesLoading = false;
+  providerLocationCatalog: ProviderLocationCatalog = new Map();
+  providerLocationsLoading = false;
 
   serviceTypeNameById(types: ServiceTypeResponse[] | null, id: string): string {
     if (!types) return getUnavailableLabel();
@@ -274,6 +292,14 @@ export class ServicePlansPageComponent implements OnInit {
       : $localize`:@@featureBilling-planHighlightsPlural:${count} highlights`;
   }
 
+  planTaxRatePercent(plan: ServicePlanResponse): number {
+    return plan.taxCategory === 'reduced' ? 7 : 19;
+  }
+
+  planTaxRateLabel(plan: ServicePlanResponse): string {
+    return `${this.planTaxRatePercent(plan)}%`;
+  }
+
   /** Calculates total price from plan (base + margin). Same formula as backend PricingService. */
   getPlanTotalPrice(plan: ServicePlanResponse): number | null {
     return this.getEstimatedPrice(
@@ -333,6 +359,14 @@ export class ServicePlansPageComponent implements OnInit {
     };
 
     return ok('region') || ok('location');
+  }
+
+  supportsCustomerServerTypeSelection(
+    serviceTypes: ServiceTypeResponse[] | null,
+    providerDetails: ProviderDetail[] | null,
+    serviceTypeId: string,
+  ): boolean {
+    return this.getBasePriceFromField(serviceTypes, providerDetails, serviceTypeId) === 'serverType';
   }
 
   getProviderSchemaFull(
@@ -591,6 +625,22 @@ export class ServicePlansPageComponent implements OnInit {
     return arr.length > 0 ? arr : null;
   }
 
+  isGeographyConfigKey(key: string): boolean {
+    return key === 'location' || key === 'region';
+  }
+
+  formatProviderConfigEnumLabel(key: string, value: string | number): string {
+    if (key === 'serverType' && typeof value === 'string') {
+      return formatServerTypeIdLabel(this.currentServerTypes, value);
+    }
+
+    if (this.isGeographyConfigKey(key) && typeof value === 'string') {
+      return formatProvisioningLocationLabel(value, this.providerLocationCatalog);
+    }
+
+    return String(value);
+  }
+
   /** When create form service type changes, init providerConfigDefaults from schema and load server types if needed. */
   onCreateServiceTypeIdChange(serviceTypes: ServiceTypeResponse[], providerDetails: ProviderDetail[]): void {
     const schema = this.getProviderSchema(serviceTypes, providerDetails, this.createForm.serviceTypeId);
@@ -628,9 +678,17 @@ export class ServicePlansPageComponent implements OnInit {
       if (basePriceField) {
         const providerId = this.getProviderId(serviceTypes, this.createForm.serviceTypeId);
 
-        if (providerId) this.loadServerTypes(providerId);
+        if (providerId) this.loadServerTypes(providerId, this.createForm.serviceTypeId);
       } else {
         this.currentServerTypes = [];
+      }
+
+      const providerId = this.getProviderId(serviceTypes, this.createForm.serviceTypeId);
+
+      if (providerId && this.schemaHasGeographyEnum(schema)) {
+        this.loadProviderLocations(providerId);
+      } else {
+        this.providerLocationCatalog = new Map();
       }
     } else {
       this.currentServerTypes = [];
@@ -640,14 +698,40 @@ export class ServicePlansPageComponent implements OnInit {
       this.createForm.allowCustomerLocationSelection = false;
     }
 
+    if (!this.supportsCustomerServerTypeSelection(serviceTypes, providerDetails, this.createForm.serviceTypeId)) {
+      this.createForm.allowCustomerServerTypeSelection = false;
+      this.createAllowedServerTypes = [];
+    }
+
     this.applyDefaultProvisioningOptionKeys(serviceTypes, providerDetails, this.createForm.serviceTypeId, 'create');
     this.pruneInvalidProvisioningOptionKeys(serviceTypes, providerDetails, this.createForm.serviceTypeId, 'create');
   }
 
-  private loadServerTypes(providerId: string): void {
+  private schemaHasGeographyEnum(schema: ConfigSchemaProperties | null): boolean {
+    if (!schema) return false;
+
+    return Boolean(this.getProviderConfigEnum(schema, 'location') ?? this.getProviderConfigEnum(schema, 'region'));
+  }
+
+  private loadProviderLocations(providerId: string, serviceTypeId?: string): void {
+    this.providerLocationsLoading = true;
+    this.providerLocationCatalog = new Map();
+    this.serviceTypesService.getProviderLocations(providerId, serviceTypeId).subscribe({
+      next: (locations: ProviderLocation[]) => {
+        this.providerLocationCatalog = providerLocationCatalogFromList(locations);
+        this.providerLocationsLoading = false;
+      },
+      error: () => {
+        this.providerLocationsLoading = false;
+        this.providerLocationCatalog = new Map();
+      },
+    });
+  }
+
+  private loadServerTypes(providerId: string, serviceTypeId?: string): void {
     this.serverTypesLoading = true;
     this.currentServerTypes = [];
-    this.serviceTypesService.getProviderServerTypes(providerId).subscribe({
+    this.serviceTypesService.getProviderServerTypes(providerId, serviceTypeId).subscribe({
       next: (list) => {
         this.currentServerTypes = list;
         this.serverTypesLoading = false;
@@ -668,6 +752,25 @@ export class ServicePlansPageComponent implements OnInit {
     }
   }
 
+  onAllowedServerTypesChangeCreate(selectedIds: unknown): void {
+    const normalized = normalizeAllowedServerTypeIds(selectedIds);
+    this.createAllowedServerTypes = normalized;
+    this.createForm.allowedServerTypes = [...normalized];
+
+    if (normalized.length === 0) {
+      return;
+    }
+
+    const defaultId = normalized[0];
+
+    if (!this.createForm.providerConfigDefaults) {
+      this.createForm.providerConfigDefaults = {};
+    }
+
+    this.createForm.providerConfigDefaults['serverType'] = defaultId;
+    this.onServerTypeSelectCreate(defaultId);
+  }
+
   /** When user selects a server type in edit form, set base price from selection. */
   onServerTypeSelectEdit(serverTypeId: string): void {
     const st = this.currentServerTypes.find((s) => s.id === serverTypeId);
@@ -676,6 +779,92 @@ export class ServicePlansPageComponent implements OnInit {
       this.editForm.basePrice = String(st.priceMonthly);
     }
   }
+
+  onAllowedServerTypesChangeEdit(selectedIds: unknown): void {
+    const normalized = normalizeAllowedServerTypeIds(selectedIds);
+    this.editAllowedServerTypes = normalized;
+    this.editForm.allowedServerTypes = [...normalized];
+
+    if (normalized.length === 0) {
+      return;
+    }
+
+    const defaultId = normalized[0];
+
+    if (!this.editForm.providerConfigDefaults) {
+      this.editForm.providerConfigDefaults = {};
+    }
+
+    this.editForm.providerConfigDefaults['serverType'] = defaultId;
+    this.onServerTypeSelectEdit(defaultId);
+  }
+
+  getServerTypesForEstimates(form: 'create' | 'edit'): ServerType[] {
+    const allow =
+      form === 'create'
+        ? this.createForm.allowCustomerServerTypeSelection === true
+        : this.editForm.allowCustomerServerTypeSelection === true;
+    const allowed = form === 'create' ? this.createAllowedServerTypes : this.editAllowedServerTypes;
+
+    if (!allow || allowed.length === 0) {
+      return [];
+    }
+
+    const allowedSet = new Set(allowed);
+
+    return this.currentServerTypes.filter((st) => allowedSet.has(st.id));
+  }
+
+  showPerTypePriceEstimates(form: 'create' | 'edit'): boolean {
+    return this.getServerTypesForEstimates(form).length > 1;
+  }
+
+  getEstimatedPriceForServerType(form: 'create' | 'edit', serverType: ServerType): number | null {
+    const basePrice = form === 'create' ? this.createForm.basePrice : this.editForm.basePrice;
+    const marginPercent = form === 'create' ? this.createForm.marginPercent : this.editForm.marginPercent;
+    const marginFixed = form === 'create' ? this.createForm.marginFixed : this.editForm.marginFixed;
+    const base = serverType.priceMonthly != null ? String(serverType.priceMonthly) : basePrice;
+
+    return this.getEstimatedPrice(base, marginPercent, marginFixed);
+  }
+
+  onAllowCustomerServerTypeSelectionChange(form: 'create' | 'edit'): void {
+    if (form === 'create') {
+      if (this.createForm.allowCustomerServerTypeSelection !== true) {
+        this.createAllowedServerTypes = [];
+        this.createForm.allowedServerTypes = [];
+
+        return;
+      }
+
+      const current = this.createForm.providerConfigDefaults?.['serverType'];
+
+      if (typeof current === 'string' && current.trim()) {
+        this.onAllowedServerTypesChangeCreate([current.trim()]);
+      }
+
+      return;
+    }
+
+    if (this.editForm.allowCustomerServerTypeSelection !== true) {
+      this.editAllowedServerTypes = [];
+      this.editForm.allowedServerTypes = [];
+
+      return;
+    }
+
+    const current = this.editForm.providerConfigDefaults?.['serverType'];
+
+    if (typeof current === 'string' && current.trim()) {
+      this.onAllowedServerTypesChangeEdit([current.trim()]);
+    }
+  }
+
+  formatServerTypeOptionLabel(st: ServerType): string {
+    return formatServerTypeOption(st);
+  }
+
+  compareServerTypeId = (left: string | null | undefined, right: string | null | undefined): boolean => left === right;
 
   addOrderingHighlight(form: 'create' | 'edit'): void {
     const row: ServicePlanOrderingHighlight = { icon: '', text: '' };
@@ -726,22 +915,6 @@ export class ServicePlansPageComponent implements OnInit {
     return plan.orderingHighlights?.length ?? 0;
   }
 
-  formatServerTypeOption(st: ServerType): string {
-    const name = st.name ?? st.id ?? '';
-    const cores = st.cores ?? 0;
-    const memory = st.memory ?? 0;
-    const disk = st.disk ?? 0;
-    const parts = [name, `- ${cores} vCPU, ${memory}GB RAM, ${disk}GB Disk`];
-
-    if (st.priceMonthly != null) {
-      parts.push(`- €${this.formatPrice(st.priceMonthly)}/month`);
-    }
-
-    const label = parts.join(' ').trim();
-
-    return label || String(st.id ?? '');
-  }
-
   private formatPrice(value: number | string): string {
     const n = typeof value === 'number' ? value : Number(value);
 
@@ -785,6 +958,36 @@ export class ServicePlansPageComponent implements OnInit {
     return `€${this.formatPrice(total)}`;
   }
 
+  getEstimatedPriceBreakdown(
+    basePrice: string | number | undefined,
+    marginPercent: string | number | undefined,
+    marginFixed: string | number | undefined,
+    taxCategory: TaxCategory = 'standard',
+  ): { net: number; tax: number; gross: number; taxRate: number } | null {
+    const net = this.getEstimatedPrice(basePrice, marginPercent, marginFixed);
+
+    if (net === null) return null;
+
+    const taxRate = taxCategory === 'reduced' ? 7 : 19;
+    const tax = Math.round(net * (taxRate / 100) * 100) / 100;
+    const gross = Math.round((net + tax) * 100) / 100;
+
+    return { net, tax, gross, taxRate };
+  }
+
+  formatEstimatedPriceBreakdown(
+    basePrice: string | number | undefined,
+    marginPercent: string | number | undefined,
+    marginFixed: string | number | undefined,
+    taxCategory: TaxCategory = 'standard',
+  ): string {
+    const breakdown = this.getEstimatedPriceBreakdown(basePrice, marginPercent, marginFixed, taxCategory);
+
+    if (!breakdown) return '—';
+
+    return `€${this.formatPrice(breakdown.net)} + €${this.formatPrice(breakdown.tax)} VAT (${breakdown.taxRate}%) = €${this.formatPrice(breakdown.gross)}`;
+  }
+
   private getDefaultCreateForm(): CreateServicePlanDto {
     return {
       serviceTypeId: '',
@@ -802,6 +1005,9 @@ export class ServicePlansPageComponent implements OnInit {
       providerConfigDefaults: {},
       orderingHighlights: [],
       allowCustomerLocationSelection: false,
+      allowCustomerServerTypeSelection: false,
+      allowedServerTypes: [],
+      taxCategory: 'standard',
       isActive: true,
     };
   }
@@ -823,6 +1029,9 @@ export class ServicePlansPageComponent implements OnInit {
       providerConfigDefaults: {},
       orderingHighlights: [],
       allowCustomerLocationSelection: false,
+      allowCustomerServerTypeSelection: false,
+      allowedServerTypes: [],
+      taxCategory: 'standard',
       isActive: true,
     };
   }
@@ -838,7 +1047,10 @@ export class ServicePlansPageComponent implements OnInit {
   openCreateModal(): void {
     this.resetCreateForm();
     this.currentServerTypes = [];
+    this.createAllowedServerTypes = [];
     this.serverTypesLoading = false;
+    this.providerLocationCatalog = new Map();
+    this.providerLocationsLoading = false;
     this.resetProductDefaultsCollapse('create');
     showBillingModal(this.createModal);
   }
@@ -846,7 +1058,12 @@ export class ServicePlansPageComponent implements OnInit {
   openEditModal(plan: ServicePlanResponse): void {
     this.editingPlan = plan;
     this.currentServerTypes = [];
+    this.editAllowedServerTypes = plan.allowCustomerServerTypeSelection
+      ? normalizeAllowedServerTypeIds(plan.allowedServerTypes)
+      : [];
     this.serverTypesLoading = false;
+    this.providerLocationCatalog = new Map();
+    this.providerLocationsLoading = false;
     this.editProvisioningOptionKeys = new Set(planProvisioningOptionKeysFromDefaults(plan.providerConfigDefaults));
     this.editStaleCustomConfigIds = [];
     combineLatest([this.typesAndProviders$, this.cloudInitConfigs$])
@@ -876,13 +1093,24 @@ export class ServicePlansPageComponent implements OnInit {
         ? plan.orderingHighlights.map((h) => ({ icon: h.icon, text: h.text }))
         : [],
       allowCustomerLocationSelection: plan.allowCustomerLocationSelection === true,
+      allowCustomerServerTypeSelection: plan.allowCustomerServerTypeSelection === true,
+      allowedServerTypes: normalizeAllowedServerTypeIds(plan.allowedServerTypes),
+      taxCategory: plan.taxCategory ?? 'standard',
       isActive: plan.isActive,
     };
     this.typesAndProviders$.pipe(take(1)).subscribe((data) => {
       const basePriceField = this.getBasePriceFromField(data.serviceTypes, data.providerDetails, plan.serviceTypeId);
       const providerId = this.getProviderId(data.serviceTypes, plan.serviceTypeId);
 
-      if (basePriceField && providerId) this.loadServerTypes(providerId);
+      if (basePriceField && providerId) this.loadServerTypes(providerId, plan.serviceTypeId);
+
+      if (providerId) {
+        const schema = this.getProviderSchema(data.serviceTypes, data.providerDetails, plan.serviceTypeId);
+
+        if (this.schemaHasGeographyEnum(schema)) {
+          this.loadProviderLocations(providerId, plan.serviceTypeId);
+        }
+      }
     });
     this.resetProductDefaultsCollapse('edit');
     showBillingModal(this.editModal);
@@ -930,6 +1158,10 @@ export class ServicePlansPageComponent implements OnInit {
           providerConfigDefaults: Object.keys(providerConfigDefaults).length > 0 ? providerConfigDefaults : undefined,
           orderingHighlights: orderingHighlights.length > 0 ? orderingHighlights : undefined,
           allowCustomerLocationSelection: this.createForm.allowCustomerLocationSelection === true,
+          allowCustomerServerTypeSelection: this.createForm.allowCustomerServerTypeSelection === true,
+          allowedServerTypes:
+            this.createForm.allowCustomerServerTypeSelection === true ? [...this.createAllowedServerTypes] : undefined,
+          taxCategory: this.createForm.taxCategory ?? 'standard',
           isActive: this.createForm.isActive ?? true,
         });
       });
@@ -971,6 +1203,10 @@ export class ServicePlansPageComponent implements OnInit {
           providerConfigDefaults: Object.keys(providerConfigDefaults).length > 0 ? providerConfigDefaults : undefined,
           orderingHighlights,
           allowCustomerLocationSelection: this.editForm.allowCustomerLocationSelection,
+          allowCustomerServerTypeSelection: this.editForm.allowCustomerServerTypeSelection,
+          allowedServerTypes:
+            this.editForm.allowCustomerServerTypeSelection === true ? [...this.editAllowedServerTypes] : [],
+          taxCategory: this.editForm.taxCategory ?? 'standard',
           isActive: this.editForm.isActive,
         });
       });

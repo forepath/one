@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
-import { TaxCategory } from '../constants/tax-category.constants';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import { PaymentRefundStatus } from '../entities/payment-refund.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
@@ -13,7 +12,10 @@ import { InvoicesRepository } from '../repositories/invoices.repository';
 import { PaymentAttemptsRepository } from '../repositories/payment-attempts.repository';
 import { PaymentRefundsRepository } from '../repositories/payment-refunds.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
+import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { calculateProratedAmount } from '../utils/billing-proration.util';
+import { resolvePlanTaxCategory } from '../utils/plan-tax.utils';
+import { resolveSubscriptionBillingBaseOverride } from '../utils/server-type-billing.utils';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
@@ -22,6 +24,7 @@ import { InvoiceEmailService } from './invoice-email.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { PricingService } from './pricing.service';
+import { ProviderServerTypesService } from './provider-server-types.service';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
 import { TaxCalculationService } from './tax-calculation.service';
 
@@ -42,6 +45,8 @@ export class WithdrawalRefundService {
 
   constructor(
     private readonly servicePlansRepository: ServicePlansRepository,
+    private readonly subscriptionItemsRepository: SubscriptionItemsRepository,
+    private readonly providerServerTypesService: ProviderServerTypesService,
     private readonly pricingService: PricingService,
     private readonly billingScheduleService: BillingScheduleService,
     private readonly taxCalculationService: TaxCalculationService,
@@ -94,6 +99,7 @@ export class WithdrawalRefundService {
 
     const issuer = this.billingIssuerConfig.getConfig();
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
+    const taxCategory = resolvePlanTaxCategory(plan);
     const purchaseOrderReference = resolvePurchaseOrderReference(subscription.number, subscription.id);
     const invoicingPeriod = resolveInvoicingPeriod(invoice, subscription, plan);
     const { storageKey, documentNumber } = await this.invoicePdfService.generatePartialCreditDocumentAndStore(
@@ -107,6 +113,7 @@ export class WithdrawalRefundService {
       amounts.refundGross,
       lineDescription,
       suffix,
+      taxCategory,
     );
 
     await this.invoiceCreditDocumentsRepository.create({
@@ -117,6 +124,8 @@ export class WithdrawalRefundService {
       pdfStorageKey: storageKey,
       reason: 'withdrawal',
       withdrawnAt,
+      taxCategory,
+      description: lineDescription,
     });
 
     await this.invoiceEmailService.notifyPartialCreditDocument(
@@ -189,7 +198,9 @@ export class WithdrawalRefundService {
     }
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
-    const pricing = this.pricingService.calculate(plan);
+    const items = await this.subscriptionItemsRepository.findBySubscription(subscription.id);
+    const basePriceOverride = await resolveSubscriptionBillingBaseOverride(items, this.providerServerTypesService);
+    const pricing = this.pricingService.calculate(plan, basePriceOverride);
     const periodStart = subscription.currentPeriodStart ?? subscription.createdAt;
     const refundNet = calculateProratedAmount(
       plan,
@@ -204,12 +215,13 @@ export class WithdrawalRefundService {
     }
 
     const roundedNet = Math.round(refundNet * 100) / 100;
+    const taxCategory = resolvePlanTaxCategory(plan);
     const totals = this.taxCalculationService.computeLines([
       {
         description: 'Unused subscription period',
         quantity: 1,
         unitPriceNet: roundedNet,
-        taxCategory: TaxCategory.STANDARD,
+        taxCategory,
       },
     ]);
 

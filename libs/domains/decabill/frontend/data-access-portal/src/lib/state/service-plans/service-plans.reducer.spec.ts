@@ -21,7 +21,10 @@ describe('servicePlansReducer', () => {
     billingIntervalType: 'month',
     billingIntervalValue: 1,
     totalPrice: 99,
+    totalGross: 117.81,
+    taxRate: 19,
     orderingHighlights: [],
+    allowCustomerServerTypeSelection: false,
     withdrawalPolicy: {
       periodDays: 14,
       allowedAfterProvisioning: true,

@@ -28,5 +28,10 @@ Some products are provisioned in a specific geography (Hetzner `location`, Digit
 ## Related code
 
 - `src/lib/utils/provider-location.utils.ts` — schema support check, stripping, resolution, mirroring.
+- `src/lib/services/provider-locations.service.ts` — fetches geography catalogs from provider APIs with static fallbacks.
 - `src/lib/services/subscription.service.ts` — `createSubscription`.
 - `src/lib/services/backorder.service.ts` — `retry`.
+
+## Display labels
+
+Schema `enum` values for `location`/`region` remain technical slugs. UIs call `GET /service-types/providers/:providerId/locations` for human-readable option labels. Live server info may include `locationName` (Hetzner) or `regionName` (DigitalOcean) in `ServerInfoResponse.metadata`. Location catalog responses are cached in Redis (default TTL 24 hours via `PROVIDER_LOCATIONS_CACHE_TTL_SECONDS`).

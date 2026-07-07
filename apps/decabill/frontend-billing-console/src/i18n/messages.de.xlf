@@ -231,8 +231,16 @@
         <target>Stückpreis (netto)</target>
       </trans-unit>
       <trans-unit id="featureAdminInvoices-lineTaxCategory" datatype="html">
-        <source>Tax category</source>
-        <target>Steuerkategorie</target>
+        <source>VAT rate</source>
+        <target>USt-Satz</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-lineTotal" datatype="html">
+        <source>Line total</source>
+        <target>Zeilensumme</target>
+      </trans-unit>
+      <trans-unit id="featureAdminInvoices-draftTotal" datatype="html">
+        <source>Draft total</source>
+        <target>Entwurfssumme</target>
       </trans-unit>
       <trans-unit id="featureAdminInvoices-taxStandard" datatype="html">
         <source>Standard</source>
@@ -1119,16 +1127,16 @@
         <target>Konsole öffnen</target>
       </trans-unit>
       <trans-unit id="featureOverview-managerService" datatype="html">
-        <source><x id="productName" equiv-text="productName"/> Manager</source>
-        <target><x id="productName" equiv-text="productName"/> Manager</target>
+        <source>Agenstra Manager</source>
+        <target>Agenstra Manager</target>
       </trans-unit>
       <trans-unit id="featureOverview-customService" datatype="html">
         <source>Custom application</source>
         <target>Benutzerdefinierte Anwendung</target>
       </trans-unit>
       <trans-unit id="featureOverview-controllerService" datatype="html">
-        <source><x id="productName" equiv-text="productName"/> Controller</source>
-        <target><x id="productName" equiv-text="productName"/> Controller</target>
+        <source>Agenstra Controller</source>
+        <target>Agenstra Controller</target>
       </trans-unit>
       <trans-unit id="featureOverview-serverStatusOnline" datatype="html">
         <source>Online</source>
@@ -1426,6 +1434,26 @@
         <source>Active</source>
         <target>Aktiv</target>
       </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaults" datatype="html">
+        <source>Provider defaults</source>
+        <target>Anbieter-Standardwerte</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-showProviderDefaults" datatype="html">
+        <source>Show</source>
+        <target>Anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-hideProviderDefaults" datatype="html">
+        <source>Hide</source>
+        <target>Ausblenden</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaultsHelp" datatype="html">
+        <source>Overrides platform environment variables for this service type. Leave blank to use the environment default.</source>
+        <target>Überschreibt Plattform-Umgebungsvariablen für diesen Service-Typ. Leer lassen, um die Umgebungs-Standardwerte zu verwenden.</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaultEnvPlaceholder" datatype="html">
+        <source>Using environment default</source>
+        <target>Umgebungs-Standardwert verwenden</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-close" datatype="html">
         <source> Close </source>
         <target>Schließen</target>
@@ -1561,6 +1589,10 @@
       <trans-unit id="featureSubscriptions-price" datatype="html">
         <source>Price</source>
         <target>Preis</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadingPrice" datatype="html">
+        <source>Loading price…</source>
+        <target>Preis wird geladen…</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-billingInterval" datatype="html">
         <source>Runtime</source>
@@ -1903,6 +1935,154 @@
         <target>E-Mail bestätigen</target>
       </trans-unit>
       <trans-unit id="featureConfirmEmail-backToLogin" datatype="html">
+        <source>Back to login</source>
+        <target>Zurück zur Anmeldung</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-page" datatype="html">
+        <source>Withdrawal</source>
+        <target>Widerruf</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-title" datatype="html">
+        <source>Statutory Withdrawal</source>
+        <target>Gesetzlicher Widerruf</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-formTitle" datatype="html">
+        <source>Withdrawal Request</source>
+        <target>Widerrufsantrag</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-addresseeTitle" datatype="html">
+        <source>Your withdrawal is addressed to</source>
+        <target>Ihr Widerruf ist gerichtet an</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-addresseeLoading" datatype="html">
+        <source>Loading addressee...</source>
+        <target>Empfänger wird geladen...</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-addresseeError" datatype="html">
+        <source>We could not load the withdrawal addressee. You can still continue with your request.</source>
+        <target>Der Widerrufsempfänger konnte nicht geladen werden. Sie können Ihren Antrag dennoch fortsetzen.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-vatIdLabel" datatype="html">
+        <source>VAT ID:</source>
+        <target>USt-IdNr.:</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-emailLabel" datatype="html">
+        <source>Email:</source>
+        <target>E-Mail:</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-dismissSuccessA11y" datatype="html">
+        <source>Dismiss success message</source>
+        <target>Erfolgsmeldung schließen</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-dismissErrorA11y" datatype="html">
+        <source>Dismiss error message</source>
+        <target>Fehlermeldung schließen</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-subscriptionNumberLabel" datatype="html">
+        <source>Subscription number</source>
+        <target>Abonnementnummer</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-subscriptionNumberPlaceholder" datatype="html">
+        <source>SUB-000001</source>
+        <target>SUB-000001</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-subscriptionNumberRequired" datatype="html">
+        <source>Subscription number is required.</source>
+        <target>Abonnementnummer ist erforderlich.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-subscriptionNumberPattern" datatype="html">
+        <source>Enter a valid subscription number (e.g. SUB-000001).</source>
+        <target>Geben Sie eine gültige Abonnementnummer ein (z. B. SUB-000001).</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-customerNameLabel" datatype="html">
+        <source>Customer name</source>
+        <target>Kundenname</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-customerNameRequired" datatype="html">
+        <source>Customer name is required.</source>
+        <target>Kundenname ist erforderlich.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-emailFieldLabel" datatype="html">
+        <source>Email</source>
+        <target>E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        <target>E-Mail ist erforderlich.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-emailInvalid" datatype="html">
+        <source>Please enter a valid email address.</source>
+        <target>Bitte geben Sie eine gültige E-Mail-Adresse ein.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-companyLabel" datatype="html">
+        <source>Company (optional)</source>
+        <target>Unternehmen (optional)</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-orderedOnLabel" datatype="html">
+        <source>Ordered on</source>
+        <target>Bestellt am</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-orderedOnRequired" datatype="html">
+        <source>Ordered on date is required.</source>
+        <target>Bestelldatum ist erforderlich.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-receivedOnLabel" datatype="html">
+        <source>Received on (optional)</source>
+        <target>Erhalten am (optional)</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-receivedOnHelp" datatype="html">
+        <source>Required only if your service was already received or deployed.</source>
+        <target>Nur erforderlich, wenn Ihr Service bereits erhalten oder bereitgestellt wurde.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-submitDetails" datatype="html">
+        <source>Continue</source>
+        <target>Weiter</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-resumedCode" datatype="html">
+        <source>Continue where you left off. Enter your confirmation code.</source>
+        <target>Fahren Sie fort, wo Sie aufgehört haben. Geben Sie Ihren Bestätigungscode ein.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-codeLabel" datatype="html">
+        <source>Confirmation code</source>
+        <target>Bestätigungscode</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-codeRequired" datatype="html">
+        <source>Confirmation code is required.</source>
+        <target>Bestätigungscode ist erforderlich.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-codePattern" datatype="html">
+        <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
+        <target>Der Code muss genau 6 Zeichen lang sein (Großbuchstaben und Ziffern).</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-verifyCode" datatype="html">
+        <source>Verify code</source>
+        <target>Code bestätigen</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-resumedAcknowledge" datatype="html">
+        <source>Continue where you left off. Please confirm your withdrawal below.</source>
+        <target>Fahren Sie fort, wo Sie aufgehört haben. Bitte bestätigen Sie Ihren Widerruf unten.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-acknowledgeLabel" datatype="html">
+        <source>I hereby withdraw from the contract for the subscription I provided in accordance with applicable statutory withdrawal rights.</source>
+        <target>Hiermit widerrufe ich den Vertrag für das von mir angegebene Abonnement gemäß den geltenden gesetzlichen Widerrufsrechten.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-acknowledgeRequired" datatype="html">
+        <source>You must confirm your withdrawal to continue.</source>
+        <target>Sie müssen Ihren Widerruf bestätigen, um fortzufahren.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-submitWithdrawal" datatype="html">
+        <source>Submit withdrawal</source>
+        <target>Widerruf absenden</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-doneMessage" datatype="html">
+        <source>Your withdrawal request has been submitted successfully.</source>
+        <target>Ihr Widerrufsantrag wurde erfolgreich übermittelt.</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-backToLogin" datatype="html">
+        <source>Back to login</source>
+        <target>Zurück zur Anmeldung</target>
+      </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-backToLoginLink" datatype="html">
         <source>Back to login</source>
         <target>Zurück zur Anmeldung</target>
       </trans-unit>

@@ -1,5 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
+import { TaxCategory } from '../constants/tax-category.constants';
+
 import { InvoiceEntity } from './invoice.entity';
 
 @Entity('billing_invoice_credit_documents')
@@ -22,6 +24,18 @@ export class InvoiceCreditDocumentEntity {
 
   @Column({ type: 'decimal', precision: 12, scale: 4, name: 'credit_gross' })
   creditGross!: number;
+
+  @Column({
+    type: 'enum',
+    enum: TaxCategory,
+    enumName: 'tax_category_enum',
+    name: 'tax_category',
+    default: TaxCategory.STANDARD,
+  })
+  taxCategory!: TaxCategory;
+
+  @Column({ type: 'varchar', length: 255, name: 'description', default: '' })
+  description!: string;
 
   @Column({ type: 'varchar', length: 512, name: 'pdf_storage_key' })
   pdfStorageKey!: string;

@@ -842,6 +842,7 @@ describe('ClientsController', () => {
         getType: jest.fn().mockReturnValue('hetzner'),
         getDisplayName: jest.fn().mockReturnValue('Hetzner Cloud'),
         getServerTypes: jest.fn(),
+        getLocations: jest.fn(),
         provisionServer: jest.fn(),
         deleteServer: jest.fn(),
         getServerInfo: jest.fn(),
@@ -878,6 +879,7 @@ describe('ClientsController', () => {
         getType: jest.fn().mockReturnValue('hetzner'),
         getDisplayName: jest.fn().mockReturnValue('Hetzner Cloud'),
         getServerTypes: jest.fn().mockResolvedValue(mockServerTypes),
+        getLocations: jest.fn(),
         provisionServer: jest.fn(),
         deleteServer: jest.fn(),
         getServerInfo: jest.fn(),
@@ -900,6 +902,36 @@ describe('ClientsController', () => {
 
       await expect(controller.getServerTypes('invalid-provider')).rejects.toThrow(BadRequestException);
       expect(provisioningProviderFactory.hasProvider).toHaveBeenCalledWith('invalid-provider');
+    });
+  });
+
+  describe('getLocations', () => {
+    it('should return locations for a provider', async () => {
+      const mockLocations = [{ id: 'fsn1', name: 'Falkenstein' }];
+      const mockProvider: ProvisioningProvider = {
+        getType: jest.fn().mockReturnValue('hetzner'),
+        getDisplayName: jest.fn().mockReturnValue('Hetzner Cloud'),
+        getServerTypes: jest.fn(),
+        getLocations: jest.fn().mockResolvedValue(mockLocations),
+        provisionServer: jest.fn(),
+        deleteServer: jest.fn(),
+        getServerInfo: jest.fn(),
+      };
+
+      provisioningProviderFactory.hasProvider.mockReturnValue(true);
+      provisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+
+      const result = await controller.getLocations('hetzner');
+
+      expect(result).toEqual(mockLocations);
+      expect(mockProvider.getLocations).toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when provider is not available', async () => {
+      provisioningProviderFactory.hasProvider.mockReturnValue(false);
+      provisioningProviderFactory.getRegisteredTypes.mockReturnValue(['hetzner']);
+
+      await expect(controller.getLocations('invalid-provider')).rejects.toThrow(BadRequestException);
     });
   });
 

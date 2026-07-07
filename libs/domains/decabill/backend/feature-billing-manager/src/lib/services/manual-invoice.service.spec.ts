@@ -161,6 +161,22 @@ describe('ManualInvoiceService', () => {
     expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ process: 'invoice.manual_create' }));
   });
 
+  it('createDraft forwards reduced tax category on line items', async () => {
+    await service.createDraft(
+      {
+        userId: 'user-1',
+        lineItems: [{ description: 'Books', quantity: 1, unitPriceNet: 100, taxCategory: TaxCategory.REDUCED }],
+      },
+      'admin-1',
+    );
+
+    expect(invoiceService.createDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lineInputs: [expect.objectContaining({ taxCategory: TaxCategory.REDUCED })],
+      }),
+    );
+  });
+
   it('updateDraft updates line items and totals', async () => {
     invoicesRepository.findByIdOrThrow.mockResolvedValue(draftInvoice);
     invoicesRepository.update.mockResolvedValue({ ...draftInvoice, totalGross: 119 });

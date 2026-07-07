@@ -15,6 +15,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+import { TaxCategory } from '../constants/tax-category.constants';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 
 import { ServicePlanOrderingHighlightDto } from './service-plan-ordering-highlight.dto';
@@ -91,4 +92,17 @@ export class CreateServicePlanDto {
   @IsOptional()
   @IsBoolean({ message: 'allowCustomerLocationSelection must be a boolean' })
   allowCustomerLocationSelection?: boolean;
+
+  @IsOptional()
+  @IsBoolean({ message: 'allowCustomerServerTypeSelection must be a boolean' })
+  allowCustomerServerTypeSelection?: boolean;
+
+  @IsOptional()
+  @IsArray({ message: 'allowedServerTypes must be an array' })
+  @IsString({ each: true, message: 'Each allowed server type must be a string' })
+  allowedServerTypes?: string[];
+
+  @IsOptional()
+  @IsEnum(TaxCategory, { message: 'taxCategory must be standard or reduced' })
+  taxCategory?: TaxCategory;
 }

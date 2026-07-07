@@ -28,6 +28,9 @@ describe('AvailabilityEffects', () => {
     marginPercent: 10,
     marginFixed: 5,
     totalPrice: 115,
+    taxTotal: 21.85,
+    totalGross: 136.85,
+    taxRate: 19,
   };
   const mockCheck = { serviceTypeId: 'st-1', region: 'eu', serverType: 'small' };
 

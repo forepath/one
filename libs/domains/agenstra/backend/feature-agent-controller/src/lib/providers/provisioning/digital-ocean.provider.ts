@@ -1,9 +1,17 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+import {
+  buildProviderLocationCatalog,
+  fetchDigitalOceanRegions,
+  getOrSetProviderLocationsCatalog,
+} from '@forepath/shared/backend/util-provisioning-geography';
+import { readRedisConnectionConfig } from '@forepath/shared/backend/util-queue';
+import { RedisCacheService } from '@forepath/shared/backend/util-redis-cache';
 
 import {
   ProvisionedServer,
   ProvisioningProvider,
+  ProviderLocation,
   ProvisionServerOptions,
   ServerInfo,
   ServerType,
@@ -20,7 +28,7 @@ export class DigitalOceanProvider implements ProvisioningProvider {
   private static readonly API_BASE_URL = 'https://api.digitalocean.com/v2';
   private readonly apiToken: string;
 
-  constructor() {
+  constructor(private readonly redisCache: RedisCacheService) {
     this.apiToken = process.env.DIGITALOCEAN_API_TOKEN || '';
 
     if (!this.apiToken) {
@@ -78,6 +86,35 @@ export class DigitalOceanProvider implements ProvisioningProvider {
       this.logger.error(`Failed to fetch server types from DigitalOcean: ${(error as AxiosError).message}`);
       throw new BadRequestException(`Failed to fetch server types: ${(error as AxiosError).message}`);
     }
+  }
+
+  /**
+   * Get available regions from DigitalOcean with human-readable labels.
+   */
+  async getLocations(): Promise<ProviderLocation[]> {
+    if (!this.apiToken) {
+      throw new BadRequestException('DIGITALOCEAN_API_TOKEN environment variable is not set');
+    }
+
+    const keyPrefix = readRedisConnectionConfig().keyPrefix;
+
+    return getOrSetProviderLocationsCatalog(
+      this.redisCache,
+      { keyPrefix, providerId: 'digital-ocean', apiToken: this.apiToken },
+      async () => {
+        try {
+          const apiLocations = await fetchDigitalOceanRegions(this.apiToken);
+
+          return buildProviderLocationCatalog('digital-ocean', apiLocations);
+        } catch (error) {
+          this.logger.warn(
+            `Failed to fetch DigitalOcean regions from API, using static fallback catalog: ${(error as AxiosError).message}`,
+          );
+
+          return buildProviderLocationCatalog('digital-ocean', null);
+        }
+      },
+    );
   }
 
   /**

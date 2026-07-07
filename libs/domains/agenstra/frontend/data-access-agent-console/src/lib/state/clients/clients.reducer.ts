@@ -33,6 +33,9 @@ import {
   loadServerTypes,
   loadServerTypesFailure,
   loadServerTypesSuccess,
+  loadLocations,
+  loadLocationsFailure,
+  loadLocationsSuccess,
   provisionServer,
   provisionServerFailure,
   provisionServerSuccess,
@@ -50,6 +53,7 @@ import type {
   ClientResponseDto,
   ClientUserResponseDto,
   ProvisioningProviderInfo,
+  ProviderLocation,
   ServerInfo,
   ServerType,
 } from './clients.types';
@@ -69,6 +73,8 @@ export interface ClientsState {
   loadingProviders: boolean;
   serverTypes: Record<string, ServerType[]>; // keyed by providerType
   loadingServerTypes: Record<string, boolean>; // keyed by providerType
+  locations: Record<string, ProviderLocation[]>; // keyed by providerType
+  loadingLocations: Record<string, boolean>; // keyed by providerType
   provisioning: boolean;
   serverInfo: Record<string, ServerInfo>; // keyed by clientId
   loadingServerInfo: Record<string, boolean>; // keyed by clientId
@@ -94,6 +100,8 @@ export const initialClientsState: ClientsState = {
   loadingProviders: false,
   serverTypes: {},
   loadingServerTypes: {},
+  locations: {},
+  loadingLocations: {},
   provisioning: false,
   serverInfo: {},
   loadingServerInfo: {},
@@ -265,6 +273,26 @@ export const clientsReducer = createReducer(
   on(loadServerTypesFailure, (state, { error }) => ({
     ...state,
     loadingServerTypes: Object.keys(state.loadingServerTypes).reduce(
+      (acc, key) => ({ ...acc, [key]: false }),
+      {} as Record<string, boolean>,
+    ),
+    error,
+  })),
+  // Locations
+  on(loadLocations, (state, { providerType }) => ({
+    ...state,
+    loadingLocations: { ...state.loadingLocations, [providerType]: true },
+    error: null,
+  })),
+  on(loadLocationsSuccess, (state, { providerType, locations }) => ({
+    ...state,
+    locations: { ...state.locations, [providerType]: locations },
+    loadingLocations: { ...state.loadingLocations, [providerType]: false },
+    error: null,
+  })),
+  on(loadLocationsFailure, (state, { error }) => ({
+    ...state,
+    loadingLocations: Object.keys(state.loadingLocations).reduce(
       (acc, key) => ({ ...acc, [key]: false }),
       {} as Record<string, boolean>,
     ),

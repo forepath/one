@@ -71,7 +71,11 @@ describe('DatevExportService', () => {
     buildBookingBatchCsv: jest.fn().mockReturnValue(Buffer.from('csv')),
     buildDebtorBatchCsv: jest.fn().mockReturnValue(Buffer.from('debtors')),
   };
-  const bookingMapper = { mapIssuedLineItem: jest.fn(), mapVoidedLineItem: jest.fn() };
+  const bookingMapper = {
+    mapIssuedLineItem: jest.fn(),
+    mapVoidedLineItem: jest.fn(),
+    mapPartialCreditDocument: jest.fn(),
+  };
   const debtorMapper = { mapDebtorRow: jest.fn() };
   const debtorAccountService = { resolveDebtorNumber: jest.fn() };
   const documentArchiveService = {
@@ -83,12 +87,17 @@ describe('DatevExportService', () => {
   const customerProfilesRepository = { findByUserId: jest.fn() };
   const voidDocumentsRepository = { findByInvoiceId: jest.fn() };
 
+  const creditDocumentsRepository = { findWithdrawnInPeriod: jest.fn().mockResolvedValue([]) };
+  const invoicePdfService = { readPdf: jest.fn() };
+
   const service = new DatevExportService(
     configService as never,
     billingTenantService as never,
     invoicesRepository as never,
     customerProfilesRepository as never,
     voidDocumentsRepository as never,
+    creditDocumentsRepository as never,
+    invoicePdfService as never,
     exportRepository as never,
     storageService as never,
     bookingMapper as never,
@@ -103,6 +112,7 @@ describe('DatevExportService', () => {
     exportRepository.findByPeriod.mockResolvedValue(null);
     invoicesRepository.findIssuedInPeriod.mockResolvedValue([]);
     invoicesRepository.findVoidedInPeriod.mockResolvedValue([]);
+    creditDocumentsRepository.findWithdrawnInPeriod.mockResolvedValue([]);
     billingTenantService.getConfiguredTenants.mockReturnValue(['default']);
     configService.isEnabled.mockReturnValue(true);
     configService.resolveForTenant.mockReturnValue({

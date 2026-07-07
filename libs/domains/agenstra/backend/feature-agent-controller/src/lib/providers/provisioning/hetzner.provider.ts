@@ -1,9 +1,18 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+import {
+  buildProviderLocationCatalog,
+  fetchHetznerLocations,
+  getOrSetProviderLocationsCatalog,
+  resolveHetznerLocationNameFromMetadata,
+} from '@forepath/shared/backend/util-provisioning-geography';
+import { readRedisConnectionConfig } from '@forepath/shared/backend/util-queue';
+import { RedisCacheService } from '@forepath/shared/backend/util-redis-cache';
 
 import {
   ProvisionedServer,
   ProvisioningProvider,
+  ProviderLocation,
   ProvisionServerOptions,
   ServerInfo,
   ServerType,
@@ -20,7 +29,7 @@ export class HetznerProvider implements ProvisioningProvider {
   private static readonly API_BASE_URL = 'https://api.hetzner.cloud/v1';
   private readonly apiToken: string;
 
-  constructor() {
+  constructor(private readonly redisCache: RedisCacheService) {
     this.apiToken = process.env.HETZNER_API_TOKEN || '';
 
     if (!this.apiToken) {
@@ -82,6 +91,35 @@ export class HetznerProvider implements ProvisioningProvider {
   }
 
   /**
+   * Get available locations from Hetzner Cloud with human-readable labels.
+   */
+  async getLocations(): Promise<ProviderLocation[]> {
+    if (!this.apiToken) {
+      throw new BadRequestException('HETZNER_API_TOKEN environment variable is not set');
+    }
+
+    const keyPrefix = readRedisConnectionConfig().keyPrefix;
+
+    return getOrSetProviderLocationsCatalog(
+      this.redisCache,
+      { keyPrefix, providerId: 'hetzner', apiToken: this.apiToken },
+      async () => {
+        try {
+          const apiLocations = await fetchHetznerLocations(this.apiToken);
+
+          return buildProviderLocationCatalog('hetzner', apiLocations);
+        } catch (error) {
+          this.logger.warn(
+            `Failed to fetch Hetzner locations from API, using static fallback catalog: ${(error as AxiosError).message}`,
+          );
+
+          return buildProviderLocationCatalog('hetzner', null);
+        }
+      },
+    );
+  }
+
+  /**
    * Provision a new server instance on Hetzner Cloud.
    * @param options - Provisioning options including server type, name, etc.
    * @returns Provisioned server information including ID, IP address, and endpoint
@@ -138,6 +176,10 @@ export class HetznerProvider implements ProvisioningProvider {
         status: serverInfo.status,
         metadata: {
           location: server.datacenter.location.name,
+          locationName: resolveHetznerLocationNameFromMetadata(
+            server.datacenter.location.name,
+            server.datacenter.location.city,
+          ),
           datacenter: server.datacenter.name,
         },
       };
@@ -219,6 +261,10 @@ export class HetznerProvider implements ProvisioningProvider {
         status: server.status,
         metadata: {
           location: server.datacenter.location.name,
+          locationName: resolveHetznerLocationNameFromMetadata(
+            server.datacenter.location.name,
+            server.datacenter.location.city,
+          ),
           datacenter: server.datacenter.name,
         },
       };

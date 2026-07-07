@@ -23,7 +23,13 @@ export interface PublicServicePlanOffering {
   billingIntervalType: BillingIntervalType;
   billingIntervalValue: number;
   totalPrice: number;
+  totalGross: number;
+  taxRate: number;
+  totalPriceFrom?: number;
+  totalGrossFrom?: number;
   orderingHighlights: ServicePlanOrderingHighlight[];
+  allowCustomerLocationSelection?: boolean;
+  allowCustomerServerTypeSelection: boolean;
   withdrawalPolicy: WithdrawalPolicy;
 }
 

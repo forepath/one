@@ -97,6 +97,98 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /public/withdrawal/addressee:
+    get:
+      summary: Get statutory withdrawal addressee (unauthenticated)
+      description: |
+        Returns the legal seller entity (from BILLING_ISSUER_* configuration) to whom statutory withdrawals are addressed.
+      operationId: getPublicWithdrawalAddressee
+      security: []
+      responses:
+        '200':
+          description: Withdrawal addressee details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicWithdrawalAddressee'
+        '503':
+          description: Addressee configuration incomplete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /public/withdrawal/request:
+    post:
+      summary: Request public statutory withdrawal (unauthenticated)
+      operationId: requestPublicWithdrawal
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestPublicWithdrawal'
+      responses:
+        '200':
+          description: Withdrawal request created or resumed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicWithdrawalRequestResponse'
+        '400':
+          description: Invalid input or no matching subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /public/withdrawal/verify-code:
+    post:
+      summary: Verify public withdrawal confirmation code (unauthenticated)
+      operationId: verifyPublicWithdrawalCode
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyPublicWithdrawalCode'
+      responses:
+        '200':
+          description: Code verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicWithdrawalVerifyCodeResponse'
+        '400':
+          description: Invalid or expired code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /public/withdrawal/confirm:
+    post:
+      summary: Confirm public statutory withdrawal (unauthenticated)
+      operationId: confirmPublicWithdrawal
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmPublicWithdrawal'
+      responses:
+        '200':
+          description: Withdrawal submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicWithdrawalConfirmResponse'
+        '400':
+          description: Invalid request or withdrawal not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /service-types:
     get:
       summary: List service types
@@ -185,6 +277,13 @@ paths:
           schema:
             type: string
             examples: [hetzner]
+        - name: serviceTypeId
+          in: query
+          required: false
+          description: When set, resolves platform API credentials from this service type instead of global environment variables.
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: List of server types with id, name, specs, priceMonthly, priceHourly
@@ -194,6 +293,46 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ServerType'
+        '400':
+          description: Bad request (e.g. provider not supported or token missing)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /service-types/providers/{providerId}/locations:
+    get:
+      summary: Get geography options for a provider
+      operationId: getProviderLocations
+      description: Returns locations (Hetzner) or regions (DigitalOcean) with human-readable labels. Used by the billing console for geography enum dropdowns. Labels are resolved from the provider API with static fallbacks when the API is unavailable.
+      parameters:
+        - name: providerId
+          in: path
+          required: true
+          schema:
+            type: string
+            examples: [hetzner]
+        - name: serviceTypeId
+          in: query
+          required: false
+          description: When set, resolves platform API credentials from this service type instead of global environment variables.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of geography options with technical id and human-readable name
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProviderLocation'
         '400':
           description: Bad request (e.g. provider not supported or token missing)
           content:
@@ -3105,7 +3244,7 @@ components:
           description: Provider identifier (e.g. hetzner, digital-ocean). Used as the value for service type provider field.
         displayName:
           type: string
-          description: Human-readable display name (e.g. Hetzner Cloud).
+          description: Human-readable display name (e.g. Hetzner Cloud-Init).
         configSchema:
           type: object
           description: |
@@ -3114,6 +3253,27 @@ components:
               Server-scoped fields appear under provider defaults in the plan editor; product-scoped fields appear under product defaults when required by selected customer options.
             - `basePriceFromField`: optional string (e.g. "serverType") indicating which field's selected option drives the plan base price;
               the UI should fetch options from GET .../providers/{id}/server-types and use the selected option's price as base price.
+        envDefaultFields:
+          type: array
+          description: Platform environment variables that can be overridden per service type (e.g. HETZNER_API_TOKEN).
+          items:
+            $ref: '#/components/schemas/ProviderEnvDefaultField'
+    ProviderEnvDefaultField:
+      type: object
+      required: [envKey, label, sensitive, type]
+      properties:
+        envKey:
+          type: string
+          description: Environment variable name (e.g. HETZNER_API_TOKEN)
+        label:
+          type: string
+          description: Human-readable field label for the admin UI
+        sensitive:
+          type: boolean
+          description: When true, value is write-only in API responses
+        type:
+          type: string
+          enum: [string]
     ServerType:
       type: object
       description: Provider server type with specs and pricing (from GET .../providers/{providerId}/server-types).
@@ -3127,6 +3287,23 @@ components:
           { type: number, description: 'Price per month (e.g. EUR)' }
         priceHourly: { type: number, description: 'Price per hour (e.g. EUR)' }
         description: { type: string }
+    ProviderLocation:
+      type: object
+      description: Provider geography option (location or region) with human-readable label.
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          description: Technical slug used for provisioning (e.g. fsn1, fra1)
+        name:
+          type: string
+          description: Human-readable display name from provider API or static fallback
+        city:
+          type: string
+          description: City when provided by the provider API (Hetzner)
+        country:
+          type: string
+          description: ISO country code when provided by the provider API
     CreateServiceTypeDto:
       type: object
       required: [key, name, provider]
@@ -3152,6 +3329,11 @@ components:
         disallowStatutoryWithdrawal:
           type: boolean
           description: When true, statutory withdrawal is blocked after provisioning (unprovisioned orders remain withdrawable).
+        providerDefaults:
+          type: object
+          additionalProperties:
+            type: string
+          description: Write-only platform credential overrides (e.g. HETZNER_API_TOKEN). Omit or leave values blank to use environment defaults.
     UpdateServiceTypeDto:
       type: object
       properties:
@@ -3168,6 +3350,11 @@ components:
         disallowStatutoryWithdrawal:
           type: boolean
           description: When true, statutory withdrawal is blocked after provisioning.
+        providerDefaults:
+          type: object
+          additionalProperties:
+            type: string
+          description: Write-only platform credential overrides. Empty values clear overrides on update.
     ServiceTypeResponse:
       type: object
       properties:
@@ -3179,6 +3366,11 @@ components:
         configSchema: { type: object }
         isActive: { type: boolean }
         disallowStatutoryWithdrawal: { type: boolean }
+        providerDefaultsConfigured:
+          type: object
+          additionalProperties:
+            type: boolean
+          description: Indicates which platform env overrides are configured (never returns secret values).
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     ServicePlanOrderingHighlight:
@@ -3194,6 +3386,109 @@ components:
         text:
           type: string
           maxLength: 512
+    PublicWithdrawalAddressee:
+      type: object
+      required:
+        - name
+        - lines
+      properties:
+        name:
+          type: string
+        lines:
+          type: array
+          items:
+            type: string
+        vatId:
+          type: string
+        email:
+          type: string
+          format: email
+    RequestPublicWithdrawal:
+      type: object
+      required:
+        - subscriptionNumber
+        - customerName
+        - email
+        - orderedOn
+      properties:
+        subscriptionNumber:
+          type: string
+          pattern: '^SUB-\d{6}$'
+        customerName:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+        company:
+          type: string
+          maxLength: 255
+        orderedOn:
+          type: string
+          format: date
+        receivedOn:
+          type: string
+          format: date
+    PublicWithdrawalRequestResponse:
+      type: object
+      required:
+        - requestId
+        - resumed
+        - resumeStep
+        - message
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        resumed:
+          type: boolean
+        resumeStep:
+          type: string
+          enum: [code, acknowledge]
+        message:
+          type: string
+    VerifyPublicWithdrawalCode:
+      type: object
+      required:
+        - requestId
+        - code
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        code:
+          type: string
+          pattern: '^[A-Z0-9]{6}$'
+    PublicWithdrawalVerifyCodeResponse:
+      type: object
+      required:
+        - resumeStep
+        - message
+      properties:
+        resumeStep:
+          type: string
+          enum: [acknowledge]
+        message:
+          type: string
+    ConfirmPublicWithdrawal:
+      type: object
+      required:
+        - requestId
+        - acknowledgeWithdrawal
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        acknowledgeWithdrawal:
+          type: boolean
+          enum: [true]
+    PublicWithdrawalConfirmResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
     PublicServicePlanOffering:
       type: object
       required:
@@ -3204,8 +3499,11 @@ components:
         - billingIntervalType
         - billingIntervalValue
         - totalPrice
+        - totalGross
+        - taxRate
         - orderingHighlights
         - allowCustomerLocationSelection
+        - allowCustomerServerTypeSelection
       properties:
         id:
           type: string
@@ -3229,7 +3527,19 @@ components:
           minimum: 1
         totalPrice:
           type: number
-          description: Customer-facing total price (same formula as internal pricing preview; margin breakdown not exposed)
+          description: Customer-facing net total price (same formula as internal pricing preview; margin breakdown not exposed)
+        totalGross:
+          type: number
+          description: Customer-facing gross total price (incl. VAT)
+        taxRate:
+          type: number
+          description: Applied VAT rate in percent for this plan
+        totalPriceFrom:
+          type: number
+          description: Lowest customer-facing net total across allowed server types when allowCustomerServerTypeSelection is true; omitted when not applicable.
+        totalGrossFrom:
+          type: number
+          description: Lowest customer-facing gross total across allowed server types when allowCustomerServerTypeSelection is true; omitted when not applicable.
         orderingHighlights:
           type: array
           items:
@@ -3237,6 +3547,9 @@ components:
         allowCustomerLocationSelection:
           type: boolean
           description: When true, authenticated checkout may send region or location in subscription requestedConfig (schema must define a string enum for that field on the service type).
+        allowCustomerServerTypeSelection:
+          type: boolean
+          description: When true, authenticated checkout may send serverType in subscription requestedConfig; value must be in allowedServerTypes on the plan.
         withdrawalPolicy:
           $ref: '#/components/schemas/WithdrawalPolicy'
     CreateServicePlanDto:
@@ -3294,6 +3607,17 @@ components:
         allowCustomerLocationSelection:
           type: boolean
           description: Requires service type schema with region or location string enum. Ignored when false or omitted.
+        allowCustomerServerTypeSelection:
+          type: boolean
+          description: Requires provider schema with basePriceFromField serverType. When true, allowedServerTypes must list at least one server type id.
+        allowedServerTypes:
+          type: array
+          items: { type: string }
+          description: Server type ids customers may choose at checkout when allowCustomerServerTypeSelection is true.
+        taxCategory:
+          type: string
+          enum: [standard, reduced]
+          description: VAT category applied to automated subscription charges for this plan
     UpdateServicePlanDto:
       type: object
       properties:
@@ -3316,6 +3640,13 @@ components:
             $ref: '#/components/schemas/ServicePlanOrderingHighlight'
         isActive: { type: boolean }
         allowCustomerLocationSelection: { type: boolean }
+        allowCustomerServerTypeSelection: { type: boolean }
+        allowedServerTypes:
+          type: array
+          items: { type: string }
+        taxCategory:
+          type: string
+          enum: [standard, reduced]
     ServicePlanResponse:
       type: object
       properties:
@@ -3341,6 +3672,16 @@ components:
         allowCustomerLocationSelection:
           type: boolean
           description: When true, POST /subscriptions may include region or location in requestedConfig to override plan defaults (values must match service type schema enum).
+        allowCustomerServerTypeSelection:
+          type: boolean
+          description: When true, POST /subscriptions may include serverType in requestedConfig; value must be listed in allowedServerTypes.
+        allowedServerTypes:
+          type: array
+          items: { type: string }
+          description: Server type ids available for customer selection when allowCustomerServerTypeSelection is true.
+        taxCategory:
+          type: string
+          enum: [standard, reduced]
         isActive: { type: boolean }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
@@ -3371,6 +3712,7 @@ components:
         Optional cloud-init and provisioning config merged with plan defaults.
         May also include provider-specific fields (e.g. serverType, location, firewallId for Hetzner).
         Region or location overrides are accepted only when the plan has allowCustomerLocationSelection and the service type schema defines that field with an enum; otherwise they are ignored server-side.
+        serverType overrides are accepted only when the plan has allowCustomerServerTypeSelection and the value is listed in allowedServerTypes; otherwise serverType is stripped from requestedConfig before merge.
         The FQDN (hostname.DNS_BASE_DOMAIN) is used for SSL certificates and CORS; DNS_BASE_DOMAIN
         defaults to spirde.com when not set.
         For service manager, disableSignup and provisioning tokens are ignored; authenticationMethod must be api-key or keycloak (not users).
@@ -3493,6 +3835,9 @@ components:
           $ref: '#/components/schemas/WithdrawalEligibility'
         withdrawalResult:
           $ref: '#/components/schemas/WithdrawalResult'
+        periodTotalPrice:
+          type: number
+          description: Total gross price charged per billing period for this subscription
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     WithdrawSubscriptionDto:
@@ -3587,6 +3932,9 @@ components:
             type: object,
             nullable: true,
             description: Provider-specific metadata (e.g. location,
+            locationName,
+            region,
+            regionName,
             datacenter,
             provider),
           }
@@ -3624,6 +3972,9 @@ components:
         providerErrors: { type: object }
         preferredAlternatives: { type: object }
         retryAfter: { type: string, format: date-time, nullable: true }
+        periodTotalPrice:
+          type: number
+          description: Total gross price charged per billing period for this backorder
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     BackorderRetryDto:
@@ -3646,7 +3997,25 @@ components:
         basePrice: { type: number }
         marginPercent: { type: number }
         marginFixed: { type: number }
-        totalPrice: { type: number }
+        totalPrice:
+          {
+            type: number,
+            description: Net price per billing period (excl. VAT),
+          }
+        taxTotal:
+          { type: number, description: VAT amount for the billing period }
+        totalGross:
+          {
+            type: number,
+            description: Gross price per billing period (incl. VAT),
+          }
+        taxRate: { type: number, description: Applied VAT rate in percent }
+        taxCategory:
+          {
+            type: string,
+            enum: [standard, reduced],
+            description: Plan VAT category used for this preview,
+          }
     CustomerProfileDto:
       type: object
       properties:

@@ -1,3 +1,9 @@
+import {
+  formatProvisioningLocationLabel,
+  providerLocationCatalogFromList,
+  type ProviderLocationCatalog,
+} from '@forepath/shared/frontend/util-provisioning-geography';
+
 import type { ServerInfoResponse } from '../types/billing.types';
 
 export type BillingServerInfoProvider = 'hetzner' | 'digital-ocean';
@@ -70,44 +76,53 @@ export function isBillingServerStartable(serverInfo: Pick<ServerInfoResponse, 's
 
 /**
  * Location/datacenter label for the UI.
- * Hetzner: datacenter or location.
- * DigitalOcean: regionName and region slug.
+ * Prefers provider-supplied human-readable metadata (`locationName`, `regionName`).
  */
 export function getBillingServerLocationLabel(metadata?: Record<string, unknown>): string | undefined {
   const provider = resolveServerInfoProvider(metadata);
 
   if (provider === 'digital-ocean') {
     const regionName = metadata?.['regionName'];
-    const region = metadata?.['region'];
 
     if (typeof regionName === 'string' && regionName.trim()) {
-      if (typeof region === 'string' && region.trim()) {
-        return `${regionName} (${region})`;
-      }
-
-      return regionName;
+      return regionName.trim();
     }
 
+    const region = metadata?.['region'];
+
     if (typeof region === 'string' && region.trim()) {
-      return region;
+      return region.trim();
     }
 
     return undefined;
   }
 
-  const datacenter = metadata?.['datacenter'];
-  const location = metadata?.['location'];
+  const locationName = metadata?.['locationName'];
 
-  if (typeof datacenter === 'string' && datacenter.trim()) {
-    return datacenter;
+  if (typeof locationName === 'string' && locationName.trim()) {
+    return locationName.trim();
   }
 
+  const location = metadata?.['location'];
+
   if (typeof location === 'string' && location.trim()) {
-    return location;
+    return location.trim();
   }
 
   return undefined;
 }
+
+/**
+ * Formats a geography slug using a provider location catalog for dropdowns and summaries.
+ */
+export function formatBillingProviderLocationLabel(
+  slug: string | null | undefined,
+  locations?: ProviderLocationCatalog | Array<{ id: string; name: string }>,
+): string {
+  return formatProvisioningLocationLabel(slug, locations);
+}
+
+export { providerLocationCatalogFromList, type ProviderLocationCatalog };
 
 /**
  * Optimistic status after a successful start action (reducer).

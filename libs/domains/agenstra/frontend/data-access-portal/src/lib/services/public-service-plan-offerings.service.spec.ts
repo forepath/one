@@ -19,7 +19,10 @@ describe('PublicServicePlanOfferingsService', () => {
     billingIntervalType: 'month',
     billingIntervalValue: 1,
     totalPrice: 99,
+    totalGross: 117.81,
+    taxRate: 19,
     orderingHighlights: [],
+    allowCustomerServerTypeSelection: false,
   };
 
   beforeEach(() => {

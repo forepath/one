@@ -27,7 +27,10 @@ describe('Portal Service Plans Selectors', () => {
     billingIntervalType: 'month',
     billingIntervalValue: 1,
     totalPrice: 99,
+    totalGross: 117.81,
+    taxRate: 19,
     orderingHighlights: [],
+    allowCustomerServerTypeSelection: false,
   };
   const mockOffering2: PublicServicePlanOffering = {
     id: 'sp-2',
@@ -38,7 +41,10 @@ describe('Portal Service Plans Selectors', () => {
     billingIntervalType: 'month',
     billingIntervalValue: 1,
     totalPrice: 199,
+    totalGross: 236.81,
+    taxRate: 19,
     orderingHighlights: [],
+    allowCustomerServerTypeSelection: false,
   };
   const createState = (overrides?: Partial<ServicePlansState>): ServicePlansState => ({
     ...initialServicePlansState,
