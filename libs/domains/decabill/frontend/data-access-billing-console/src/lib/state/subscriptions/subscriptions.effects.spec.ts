@@ -23,6 +23,9 @@ import {
   resumeSubscription,
   resumeSubscriptionFailure,
   resumeSubscriptionSuccess,
+  withdrawSubscription,
+  withdrawSubscriptionFailure,
+  withdrawSubscriptionSuccess,
 } from './subscriptions.actions';
 import {
   cancelSubscription$,
@@ -31,6 +34,7 @@ import {
   loadSubscriptions$,
   loadSubscriptionsBatch$,
   resumeSubscription$,
+  withdrawSubscription$,
 } from './subscriptions.effects';
 
 describe('SubscriptionsEffects', () => {
@@ -51,6 +55,7 @@ describe('SubscriptionsEffects', () => {
       getSubscription: jest.fn(),
       createSubscription: jest.fn(),
       cancelSubscription: jest.fn(),
+      withdrawSubscription: jest.fn(),
       resumeSubscription: jest.fn(),
     } as never;
 
@@ -221,6 +226,34 @@ describe('SubscriptionsEffects', () => {
       subscriptionsService.cancelSubscription.mockReturnValue(throwError(() => new Error('Cancel failed')));
 
       cancelSubscription$(actions$, subscriptionsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+  });
+
+  describe('withdrawSubscription$', () => {
+    it('should return withdrawSubscriptionSuccess on success', (done) => {
+      const action = withdrawSubscription({ id: 'sub-1' });
+      const outcome = withdrawSubscriptionSuccess({ subscription: mockSubscription });
+
+      actions$ = of(action);
+      subscriptionsService.withdrawSubscription.mockReturnValue(of(mockSubscription));
+
+      withdrawSubscription$(actions$, subscriptionsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+
+    it('should return withdrawSubscriptionFailure on error', (done) => {
+      const action = withdrawSubscription({ id: 'sub-1' });
+      const outcome = withdrawSubscriptionFailure({ error: 'Withdraw failed' });
+
+      actions$ = of(action);
+      subscriptionsService.withdrawSubscription.mockReturnValue(throwError(() => new Error('Withdraw failed')));
+
+      withdrawSubscription$(actions$, subscriptionsService).subscribe((result) => {
         expect(result).toEqual(outcome);
         done();
       });

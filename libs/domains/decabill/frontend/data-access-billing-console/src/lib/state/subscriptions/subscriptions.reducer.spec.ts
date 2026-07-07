@@ -18,6 +18,9 @@ import {
   resumeSubscription,
   resumeSubscriptionFailure,
   resumeSubscriptionSuccess,
+  withdrawSubscription,
+  withdrawSubscriptionFailure,
+  withdrawSubscriptionSuccess,
 } from './subscriptions.actions';
 import { subscriptionsReducer, initialSubscriptionsState, type SubscriptionsState } from './subscriptions.reducer';
 
@@ -247,6 +250,49 @@ describe('subscriptionsReducer', () => {
 
       expect(newState.error).toBe('Cancel failed');
       expect(newState.canceling).toBe(false);
+    });
+  });
+
+  describe('withdrawSubscription', () => {
+    it('should set withdrawing to true and clear error', () => {
+      const state: SubscriptionsState = {
+        ...initialSubscriptionsState,
+        error: 'Previous error',
+      };
+      const newState = subscriptionsReducer(state, withdrawSubscription({ id: 'sub-1' }));
+
+      expect(newState.withdrawing).toBe(true);
+      expect(newState.error).toBeNull();
+    });
+  });
+
+  describe('withdrawSubscriptionSuccess', () => {
+    it('should update subscription in list and selectedSubscription', () => {
+      const state: SubscriptionsState = {
+        ...initialSubscriptionsState,
+        entities: [mockSubscription],
+        selectedSubscription: mockSubscription,
+        withdrawing: true,
+      };
+      const updatedSubscription = { ...mockSubscription, status: 'canceled' as const };
+      const newState = subscriptionsReducer(state, withdrawSubscriptionSuccess({ subscription: updatedSubscription }));
+
+      expect(newState.entities[0]).toEqual(updatedSubscription);
+      expect(newState.selectedSubscription).toEqual(updatedSubscription);
+      expect(newState.withdrawing).toBe(false);
+    });
+  });
+
+  describe('withdrawSubscriptionFailure', () => {
+    it('should set error and set withdrawing to false', () => {
+      const state: SubscriptionsState = {
+        ...initialSubscriptionsState,
+        withdrawing: true,
+      };
+      const newState = subscriptionsReducer(state, withdrawSubscriptionFailure({ error: 'Withdraw failed' }));
+
+      expect(newState.error).toBe('Withdraw failed');
+      expect(newState.withdrawing).toBe(false);
     });
   });
 

@@ -10,6 +10,7 @@ import type {
   ListParams,
   ResumeSubscriptionDto,
   SubscriptionResponse,
+  WithdrawSubscriptionDto,
 } from '../types/billing.types';
 
 @Injectable({
@@ -64,6 +65,13 @@ export class SubscriptionsService {
    */
   cancelSubscription(id: string, dto?: CancelSubscriptionDto): Observable<SubscriptionResponse> {
     return this.http.post<SubscriptionResponse>(`${this.apiUrl}/subscriptions/${id}/cancel`, dto ?? {});
+  }
+
+  /**
+   * Statutory withdrawal of a subscription.
+   */
+  withdrawSubscription(id: string, dto?: WithdrawSubscriptionDto): Observable<SubscriptionResponse> {
+    return this.http.post<SubscriptionResponse>(`${this.apiUrl}/subscriptions/${id}/withdraw`, dto ?? {});
   }
 
   /**

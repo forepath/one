@@ -6,6 +6,7 @@ import type {
   ListParams,
   ResumeSubscriptionDto,
   SubscriptionResponse,
+  WithdrawSubscriptionDto,
 } from '../../types/billing.types';
 
 // Load Subscriptions Actions
@@ -68,6 +69,22 @@ export const cancelSubscriptionSuccess = createAction(
 
 export const cancelSubscriptionFailure = createAction(
   '[Subscriptions] Cancel Subscription Failure',
+  props<{ error: string }>(),
+);
+
+// Withdraw Subscription Actions
+export const withdrawSubscription = createAction(
+  '[Subscriptions] Withdraw Subscription',
+  props<{ id: string; dto?: WithdrawSubscriptionDto }>(),
+);
+
+export const withdrawSubscriptionSuccess = createAction(
+  '[Subscriptions] Withdraw Subscription Success',
+  props<{ subscription: SubscriptionResponse }>(),
+);
+
+export const withdrawSubscriptionFailure = createAction(
+  '[Subscriptions] Withdraw Subscription Failure',
   props<{ error: string }>(),
 );
 

@@ -71,9 +71,11 @@ import { DatevExportEntity } from './entities/datev-export.entity';
 import { InvoiceLineItemEntity } from './entities/invoice-line-item.entity';
 import { InvoiceNumberSequenceEntity } from './entities/invoice-number-sequence.entity';
 import { InvoiceVoidDocumentEntity } from './entities/invoice-void-document.entity';
+import { InvoiceCreditDocumentEntity } from './entities/invoice-credit-document.entity';
 import { InvoiceEntity } from './entities/invoice.entity';
 import { OpenPositionEntity } from './entities/open-position.entity';
 import { PaymentAttemptEntity } from './entities/payment-attempt.entity';
+import { PaymentRefundEntity } from './entities/payment-refund.entity';
 import { PaymentWebhookEventEntity } from './entities/payment-webhook-event.entity';
 import { ProviderPriceSnapshotEntity } from './entities/provider-price-snapshot.entity';
 import { ReservedHostnameEntity } from './entities/reserved-hostname.entity';
@@ -102,9 +104,11 @@ import { DatevExportRepository } from './repositories/datev-export.repository';
 import { InvoiceLineItemsRepository } from './repositories/invoice-line-items.repository';
 import { InvoiceNumberSequencesRepository } from './repositories/invoice-number-sequences.repository';
 import { InvoiceVoidDocumentsRepository } from './repositories/invoice-void-documents.repository';
+import { InvoiceCreditDocumentsRepository } from './repositories/invoice-credit-documents.repository';
 import { InvoicesRepository } from './repositories/invoices.repository';
 import { OpenPositionsRepository } from './repositories/open-positions.repository';
 import { PaymentAttemptsRepository } from './repositories/payment-attempts.repository';
+import { PaymentRefundsRepository } from './repositories/payment-refunds.repository';
 import { PaymentWebhookEventsRepository } from './repositories/payment-webhook-events.repository';
 import { ProviderPriceSnapshotsRepository } from './repositories/provider-price-snapshots.repository';
 import { ReservedHostnamesRepository } from './repositories/reserved-hostnames.repository';
@@ -126,6 +130,9 @@ import { BillingIssuerConfigService } from './services/billing-issuer-config.ser
 import { BillingScheduleService } from './services/billing-schedule.service';
 import { BillingStatisticsQueryService } from './services/billing-statistics-query.service';
 import { CancellationPolicyService } from './services/cancellation-policy.service';
+import { WithdrawalPolicyService } from './services/withdrawal-policy.service';
+import { WithdrawalRefundService } from './services/withdrawal-refund.service';
+import { SubscriptionTeardownService } from './services/subscription-teardown.service';
 import { CloudInitConfigService } from './services/cloud-init-config.service';
 import { CloudflareDnsService } from './services/cloudflare-dns.service';
 import { CustomerProfilesService } from './services/customer-profiles.service';
@@ -372,9 +379,11 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       UsageRecordEntity,
       InvoiceEntity,
       InvoiceVoidDocumentEntity,
+      InvoiceCreditDocumentEntity,
       InvoiceLineItemEntity,
       InvoiceNumberSequenceEntity,
       PaymentAttemptEntity,
+      PaymentRefundEntity,
       PaymentWebhookEventEntity,
       BillingAuditLogEntity,
       OpenPositionEntity,
@@ -423,6 +432,9 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     BackorderRetryJobHandler,
     BillingScheduleService,
     CancellationPolicyService,
+    WithdrawalPolicyService,
+    WithdrawalRefundService,
+    SubscriptionTeardownService,
     CloudInitConfigService,
     CloudflareDnsService,
     DigitaloceanProvisioningService,
@@ -521,8 +533,10 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     InvoicesRepository,
     InvoiceLineItemsRepository,
     InvoiceVoidDocumentsRepository,
+    InvoiceCreditDocumentsRepository,
     InvoiceNumberSequencesRepository,
     PaymentAttemptsRepository,
+    PaymentRefundsRepository,
     PaymentWebhookEventsRepository,
     BillingAuditLogsRepository,
     OpenPositionsRepository,

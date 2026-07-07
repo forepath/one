@@ -49,6 +49,9 @@ export class SubscriptionItemEntity {
   @Column({ type: 'enum', enum: ProvisioningStatus, name: 'provisioning_status', default: ProvisioningStatus.PENDING })
   provisioningStatus!: ProvisioningStatus;
 
+  @Column({ type: 'timestamp', nullable: true, name: 'provisioned_at' })
+  provisionedAt?: Date;
+
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'provider_reference' })
   providerReference?: string;
 

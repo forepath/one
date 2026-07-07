@@ -23,6 +23,17 @@ export interface PaymentStatusUpdate {
   tenantId?: string;
 }
 
+export interface RefundPaymentParams {
+  externalCheckoutSessionId: string;
+  amount: number;
+  currency: string;
+  idempotencyKey: string;
+}
+
+export interface RefundPaymentResult {
+  externalRefundId: string;
+}
+
 export interface PaymentProcessor {
   getType(): string;
   getDisplayName(): string;
@@ -30,4 +41,5 @@ export interface PaymentProcessor {
   verifyWebhookSignature(rawBody: Buffer | string, signature: string | undefined): boolean;
   parseWebhookEvent(rawBody: Buffer | string): { eventId: string; type: string; data: unknown };
   mapWebhookToPaymentUpdate(event: { type: string; data: unknown }): PaymentStatusUpdate | null;
+  refundPayment(params: RefundPaymentParams): Promise<RefundPaymentResult>;
 }

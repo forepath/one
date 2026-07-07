@@ -275,6 +275,17 @@
       aria-label="Subscription actions"
       i18n-aria-label="@@featureSubscriptions-subscriptionActionsAria"
     >
+      @if (sub.withdrawalEligibility?.canWithdraw) {
+        <button
+          type="button"
+          class="btn btn-outline-danger"
+          (click)="openWithdrawConfirm(sub)"
+          title="Withdraw subscription"
+          i18n-title="@@featureSubscriptions-withdrawButtonTitle"
+        >
+          <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+        </button>
+      }
       @if (sub.status === 'active') {
         <button
           type="button"
@@ -336,10 +347,10 @@
         type="button"
         class="btn btn-outline-danger"
         (click)="openCancelBackorderConfirm(bo)"
-        title="Cancel backorder"
-        i18n-title="@@featureSubscriptions-cancelBackorderButtonTitle"
+        title="Withdraw order"
+        i18n-title="@@featureSubscriptions-withdrawOrderButtonTitle"
       >
-        <i class="bi bi-trash" aria-hidden="true"></i>
+        <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
       </button>
     </div>
   </div>
@@ -436,6 +447,34 @@
                         >
                       </div>
                     </div>
+                    @if (selectedPlan.withdrawalPolicy) {
+                      <div class="mt-3 p-3 bg-body border rounded">
+                        <h6 class="mb-2" i18n="@@featureSubscriptions-withdrawalPolicyTitle">Statutory withdrawal</h6>
+                        <div class="text-body-secondary small">
+                          <span i18n="@@featureSubscriptions-withdrawalPeriodDays">Withdrawal period</span>
+                          <strong class="ms-2"
+                            >{{ selectedPlan.withdrawalPolicy.periodDays }}
+                            <span i18n="@@featureSubscriptions-days">days</span></strong
+                          >
+                        </div>
+                        @if (selectedPlan.withdrawalPolicy.allowedAfterProvisioning) {
+                          <p
+                            class="text-body-secondary small mb-0 mt-2"
+                            i18n="@@featureSubscriptions-withdrawalAfterProvisioning"
+                          >
+                            You may withdraw within the statutory period after the service is provisioned. Refunds for
+                            unused time are calculated on a pro-rata basis.
+                          </p>
+                        } @else {
+                          <p
+                            class="text-body-secondary small mb-0 mt-2"
+                            i18n="@@featureSubscriptions-withdrawalBeforeProvisioningOnly"
+                          >
+                            Statutory withdrawal is only available before the service is provisioned.
+                          </p>
+                        }
+                      </div>
+                    }
                     @if (orderGeographyFieldKey && orderLocationOptions.length > 0) {
                       <div class="mt-3">
                         <label for="orderProvisioningLocation" class="form-label">Region / location</label>
@@ -1170,6 +1209,62 @@
   </div>
 </div>
 
+<!-- Withdraw subscription confirm -->
+<div
+  class="modal fade"
+  id="withdrawSubscriptionModal"
+  tabindex="-1"
+  aria-labelledby="withdrawSubscriptionModalLabel"
+  aria-hidden="true"
+  #withdrawSubscriptionModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5
+          class="modal-title"
+          id="withdrawSubscriptionModalLabel"
+          i18n="@@featureSubscriptions-withdrawSubscriptionTitle"
+        >
+          Withdraw subscription?
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p i18n="@@featureSubscriptions-withdrawSubscriptionConfirm">
+          Are you sure you want to exercise your statutory right of withdrawal? The subscription will end immediately
+          and provisioned services will be removed.
+        </p>
+        @if (subscriptionToWithdraw?.withdrawalEligibility?.deadline; as deadline) {
+          <p class="mb-2 text-body-secondary small">
+            <span i18n="@@featureSubscriptions-withdrawalDeadline">Withdrawal deadline</span>:
+            <strong class="ms-1">{{ formatDate(deadline) }}</strong>
+          </p>
+        }
+        @if (subscriptionToWithdraw?.withdrawalEligibility?.estimatedRefundGross; as refund) {
+          <p class="mb-0 text-body-secondary small">
+            <span i18n="@@featureSubscriptions-estimatedRefund">Estimated refund</span>:
+            <strong class="ms-1">{{ formatCurrencyAmount(refund) }}</strong>
+          </p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureSubscriptions-close">
+          Close
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmWithdrawSubscription()"
+          i18n="@@featureSubscriptions-confirmWithdraw"
+        >
+          Confirm withdrawal
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Resume subscription confirm -->
 <div
   class="modal fade"
@@ -1221,13 +1316,13 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="cancelBackorderModalLabel" i18n="@@featureSubscriptions-cancelBackorderTitle">
-          Cancel backorder?
+        <h5 class="modal-title" id="cancelBackorderModalLabel" i18n="@@featureSubscriptions-withdrawOrderTitle">
+          Withdraw order?
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p i18n="@@featureSubscriptions-cancelBackorderConfirm">Are you sure you want to cancel this backorder?</p>
+        <p i18n="@@featureSubscriptions-withdrawOrderConfirm">Are you sure you want to withdraw this order?</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureSubscriptions-close">
@@ -1237,9 +1332,9 @@
           type="button"
           class="btn btn-danger"
           (click)="confirmCancelBackorder()"
-          i18n="@@featureSubscriptions-confirmCancel"
+          i18n="@@featureSubscriptions-confirmWithdrawOrder"
         >
-          Confirm cancel
+          Confirm withdrawal
         </button>
       </div>
     </div>

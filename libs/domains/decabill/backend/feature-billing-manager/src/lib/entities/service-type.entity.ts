@@ -27,6 +27,9 @@ export class ServiceTypeEntity {
   @Column({ type: 'boolean', name: 'is_active', default: true })
   isActive!: boolean;
 
+  @Column({ type: 'boolean', name: 'disallow_statutory_withdrawal', default: false })
+  disallowStatutoryWithdrawal!: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

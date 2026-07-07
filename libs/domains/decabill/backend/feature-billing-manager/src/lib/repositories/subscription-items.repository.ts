@@ -32,7 +32,28 @@ export class SubscriptionItemsRepository {
 
     entity.provisioningStatus = status as SubscriptionItemEntity['provisioningStatus'];
 
+    if (status === 'active' && !entity.provisionedAt) {
+      entity.provisionedAt = new Date();
+    }
+
     return await this.repository.save(entity);
+  }
+
+  async findBySubscriptionIds(subscriptionIds: string[]): Promise<SubscriptionItemEntity[]> {
+    if (subscriptionIds.length === 0) {
+      return [];
+    }
+
+    const qb = this.repository
+      .createQueryBuilder('item')
+      .innerJoin('item.subscription', 'sub')
+      .innerJoin('users', 'user', 'user.id = sub.user_id')
+      .leftJoinAndSelect('item.serviceType', 'st')
+      .where('item.subscription_id IN (:...subscriptionIds)', { subscriptionIds });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
   }
 
   async findBySubscription(subscriptionId: string): Promise<SubscriptionItemEntity[]> {

@@ -11,6 +11,7 @@ describe('PaymentProcessorFactory', () => {
       verifyWebhookSignature: jest.fn(),
       parseWebhookEvent: jest.fn(),
       mapWebhookToPaymentUpdate: jest.fn(),
+      refundPayment: jest.fn(),
     };
 
     factory.registerProcessor(processor);

@@ -46,6 +46,7 @@ describe('ServiceTypesEffects', () => {
     name: 'Cursor',
     provider: 'provider-1',
     configSchema: {},
+    disallowStatutoryWithdrawal: false,
     isActive: true,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-01-01T00:00:00Z',

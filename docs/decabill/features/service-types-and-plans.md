@@ -39,6 +39,14 @@ The optional `configSchema` is a JSON-schema-like object:
 
 Enum fields render as select inputs in the billing console.
 
+### Statutory withdrawal opt-out
+
+Service types may set **`disallowStatutoryWithdrawal`** (admin checkbox in the billing console). When true:
+
+- Post-provisioning statutory withdrawal is blocked for subscriptions of that type.
+- Unprovisioned orders remain withdrawable.
+- Public and admin plan responses include `withdrawalPolicy.allowedAfterProvisioning: false` for checkout copy.
+
 ### Server Types
 
 `GET /service-types/providers/{providerId}/server-types` returns server types with id, name, specs (cores, memory, disk), `priceMonthly`, and `priceHourly`. Requires the provider API token in the billing manager environment.

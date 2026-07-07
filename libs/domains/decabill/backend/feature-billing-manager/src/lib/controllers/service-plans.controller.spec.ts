@@ -8,6 +8,7 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { ProviderRegistryService } from '../services/provider-registry.service';
 import { CloudInitConfigService } from '../services/cloud-init-config.service';
+import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
 
 import { ServicePlansController } from './service-plans.controller';
 
@@ -43,6 +44,7 @@ describe('ServicePlansController', () => {
       id: basePlanRow.serviceTypeId,
       provider: 'hetzner',
       configSchema: schemaWithRegionEnum,
+      disallowStatutoryWithdrawal: false,
     }),
   };
   const providerRegistryStub = {
@@ -60,6 +62,7 @@ describe('ServicePlansController', () => {
       id: basePlanRow.serviceTypeId,
       provider: 'hetzner',
       configSchema: schemaWithRegionEnum,
+      disallowStatutoryWithdrawal: false,
     });
     providerRegistryStub.getProviders.mockReset();
     providerRegistryStub.getProviders.mockReturnValue([]);
@@ -75,6 +78,7 @@ describe('ServicePlansController', () => {
         { provide: ServiceTypesRepository, useValue: serviceTypesRepoStub },
         { provide: ProviderRegistryService, useValue: providerRegistryStub },
         { provide: CloudInitConfigService, useValue: cloudInitConfigServiceStub },
+        { provide: WithdrawalPolicyService, useValue: new WithdrawalPolicyService() },
       ],
     }).compile();
   }

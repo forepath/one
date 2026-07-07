@@ -9,6 +9,7 @@ export interface InvoicePdfPresentationOptions {
   showBalanceDue: boolean;
   referencedInvoiceNumber?: string;
   includePaymentDetails: boolean;
+  creditGross?: number;
 }
 
 export function buildInvoicePdfPresentation(invoice: InvoiceEntity): InvoicePdfPresentationOptions {
@@ -37,5 +38,24 @@ export function buildCreditNotePdfPresentation(
     showBalanceDue: false,
     referencedInvoiceNumber: originalInvoiceNumber,
     includePaymentDetails: false,
+  };
+}
+
+export function buildPartialCreditNotePdfPresentation(
+  creditNoteNumber: string,
+  issuedAt: Date,
+  originalInvoiceNumber: string,
+  creditGross: number,
+): InvoicePdfPresentationOptions {
+  return {
+    documentTitle: 'Credit note',
+    documentNumber: creditNoteNumber,
+    documentNumberLabel: 'Credit note number',
+    issueDate: issuedAt,
+    showDueDate: false,
+    showBalanceDue: true,
+    referencedInvoiceNumber: originalInvoiceNumber,
+    includePaymentDetails: false,
+    creditGross,
   };
 }

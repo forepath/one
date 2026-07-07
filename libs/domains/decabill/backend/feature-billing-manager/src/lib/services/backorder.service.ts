@@ -69,6 +69,12 @@ export class BackorderService {
   }
 
   async cancel(backorderId: string): Promise<BackorderEntity> {
+    const backorder = await this.backordersRepository.findByIdOrThrow(backorderId);
+
+    if (backorder.status !== BackorderStatus.PENDING && backorder.status !== BackorderStatus.RETRYING) {
+      throw new BadRequestException('Only pending backorders can be cancelled');
+    }
+
     return await this.backordersRepository.update(backorderId, { status: BackorderStatus.CANCELLED });
   }
 

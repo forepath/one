@@ -20,6 +20,9 @@ import {
   resumeSubscription,
   resumeSubscriptionFailure,
   resumeSubscriptionSuccess,
+  withdrawSubscription,
+  withdrawSubscriptionFailure,
+  withdrawSubscriptionSuccess,
 } from './subscriptions.actions';
 
 export interface SubscriptionsState {
@@ -29,6 +32,7 @@ export interface SubscriptionsState {
   loadingSubscription: boolean;
   creating: boolean;
   canceling: boolean;
+  withdrawing: boolean;
   resuming: boolean;
   error: string | null;
 }
@@ -40,6 +44,7 @@ export const initialSubscriptionsState: SubscriptionsState = {
   loadingSubscription: false,
   creating: false,
   canceling: false,
+  withdrawing: false,
   resuming: false,
   error: null,
 };
@@ -131,6 +136,25 @@ export const subscriptionsReducer = createReducer(
   on(cancelSubscriptionFailure, (state, { error }) => ({
     ...state,
     canceling: false,
+    error,
+  })),
+  // Withdraw Subscription
+  on(withdrawSubscription, (state) => ({
+    ...state,
+    withdrawing: true,
+    error: null,
+  })),
+  on(withdrawSubscriptionSuccess, (state, { subscription }) => ({
+    ...state,
+    entities: state.entities.map((s) => (s.id === subscription.id ? subscription : s)),
+    selectedSubscription:
+      state.selectedSubscription?.id === subscription.id ? subscription : state.selectedSubscription,
+    withdrawing: false,
+    error: null,
+  })),
+  on(withdrawSubscriptionFailure, (state, { error }) => ({
+    ...state,
+    withdrawing: false,
     error,
   })),
   // Resume Subscription

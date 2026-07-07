@@ -20,6 +20,8 @@ export const selectSubscriptionsCreating = createSelector(selectSubscriptionsSta
 
 export const selectSubscriptionsCanceling = createSelector(selectSubscriptionsState, (state) => state.canceling);
 
+export const selectSubscriptionsWithdrawing = createSelector(selectSubscriptionsState, (state) => state.withdrawing);
+
 export const selectSubscriptionsResuming = createSelector(selectSubscriptionsState, (state) => state.resuming);
 
 export const selectSubscriptionsError = createSelector(selectSubscriptionsState, (state) => state.error);
@@ -30,9 +32,10 @@ export const selectSubscriptionsLoadingAny = createSelector(
   selectSubscriptionLoading,
   selectSubscriptionsCreating,
   selectSubscriptionsCanceling,
+  selectSubscriptionsWithdrawing,
   selectSubscriptionsResuming,
-  (loading, loadingSubscription, creating, canceling, resuming) =>
-    loading || loadingSubscription || creating || canceling || resuming,
+  (loading, loadingSubscription, creating, canceling, withdrawing, resuming) =>
+    loading || loadingSubscription || creating || canceling || withdrawing || resuming,
 );
 
 // Derived selectors

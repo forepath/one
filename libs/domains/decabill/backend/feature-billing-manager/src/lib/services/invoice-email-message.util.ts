@@ -70,3 +70,25 @@ export function buildVoidDocumentEmailContent(input: VoidDocumentEmailContentInp
     attachmentFilename: `${input.creditNoteNumber}.pdf`,
   };
 }
+
+export interface PartialCreditDocumentEmailContentInput {
+  recipient: InvoiceEmailRecipient;
+  invoiceNumber: string;
+  creditNoteNumber: string;
+  creditGross: number;
+  currency: string;
+}
+
+export function buildPartialCreditDocumentEmailContent(
+  input: PartialCreditDocumentEmailContentInput,
+): InvoiceEmailContent {
+  const name = greeting(input.recipient);
+  const amountLabel = formatAmount(input.creditGross, input.currency);
+
+  return {
+    subject: `Credit note ${input.creditNoteNumber} for invoice ${input.invoiceNumber}`,
+    text: `Dear ${name},\n\nFollowing your statutory withdrawal, we issued credit note ${input.creditNoteNumber} for ${amountLabel} regarding invoice ${input.invoiceNumber}.\n\nThe credit note is attached for your records.\n\nBest regards,\nThe Billing Team`,
+    html: `<p>Dear ${name},</p><p>Following your statutory withdrawal, we issued credit note <strong>${input.creditNoteNumber}</strong> for <strong>${amountLabel}</strong> regarding invoice <strong>${input.invoiceNumber}</strong>.</p><p>The credit note is attached for your records.</p><p>Best regards,<br>The Billing Team</p>`,
+    attachmentFilename: `${input.creditNoteNumber}.pdf`,
+  };
+}

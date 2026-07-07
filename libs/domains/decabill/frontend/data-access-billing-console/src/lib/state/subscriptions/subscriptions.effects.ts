@@ -21,6 +21,9 @@ import {
   resumeSubscription,
   resumeSubscriptionFailure,
   resumeSubscriptionSuccess,
+  withdrawSubscription,
+  withdrawSubscriptionFailure,
+  withdrawSubscriptionSuccess,
 } from './subscriptions.actions';
 
 function normalizeError(error: unknown): string {
@@ -140,6 +143,21 @@ export const cancelSubscription$ = createEffect(
         subscriptionsService.cancelSubscription(id, dto).pipe(
           map((subscription) => cancelSubscriptionSuccess({ subscription })),
           catchError((error) => of(cancelSubscriptionFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const withdrawSubscription$ = createEffect(
+  (actions$ = inject(Actions), subscriptionsService = inject(SubscriptionsService)) => {
+    return actions$.pipe(
+      ofType(withdrawSubscription),
+      switchMap(({ id, dto }) =>
+        subscriptionsService.withdrawSubscription(id, dto).pipe(
+          map((subscription) => withdrawSubscriptionSuccess({ subscription })),
+          catchError((error) => of(withdrawSubscriptionFailure({ error: normalizeError(error) }))),
         ),
       ),
     );

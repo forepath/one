@@ -9,10 +9,10 @@ Backend billing module providing subscription management, backorders, availabili
 - **Projects:** Customer-assigned work tracking with admin CRUD, milestones, tickets, time entries, KPI summaries, and `POST /admin/billing/projects/{projectId}/bill-time` (see [`docs/project-bill-time.mmd`](docs/project-bill-time.mmd)).
 - Service types and plans (admin endpoints), including optional per-plan customer geography selection when the provider schema supports it.
 - CloudInit config templates (admin CRUD) and order-fields for custom service plans.
-- Subscription ordering, cancel, resume for authenticated users.
+- Subscription ordering, cancel, resume, and statutory withdrawal for authenticated users.
 - Backorder management for provider capacity failures.
 - Availability snapshots and pricing previews.
-- Invoice issuance in Postgres with ZUGFeRD-style PDFs (EN 16931 XML embedded), preview, download, void, and Stripe checkout.
+- Invoice issuance in Postgres with ZUGFeRD-style PDFs (EN 16931 XML embedded), preview, download, void, partial credit notes on statutory withdrawal, and Stripe checkout.
 - **Open positions and user billing day:** Recurring and final subscription charges are recorded as open positions.
   On each user's billing day (default: day of month of registration, capped at 28), one accumulated invoice per user
   is created with all of that user's unbilled positions as line items. This reduces the number of invoices (one per
@@ -56,6 +56,7 @@ When **`AUTHENTICATION_METHOD=api-key`** (or api-key is inferred from **`STATIC_
 - `BILLING_FRONTEND_URL` (optional; default derived from `STRIPE_CHECKOUT_SUCCESS_URL` origin or `http://localhost:4500`) – billing console base URL for the `default` tenant; used for Stripe success/cancel redirects.
 - `TENANT_FRONTEND_URLS` (optional; `tenantId=https://billing.example.com` pairs, comma-separated) – per-tenant billing console base URLs for Stripe return redirects.
 - BILLING*ISSUER*\* (name, VAT ID, address, email, IBAN) and BILLING_TAX_RATE_STANDARD / BILLING_TAX_RATE_REDUCED
+- BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS (default 14) — statutory withdrawal window after provisioning
 - BILLING_INVOICE_PDF_STORAGE_PATH, BILLING_DEFAULT_PAYMENT_PROCESSOR
 - STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_CHECKOUT_SUCCESS_URL, STRIPE_CHECKOUT_CANCEL_URL (path portion used with tenant frontend base; legacy full URL still sets default-tenant origin)
 - DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE

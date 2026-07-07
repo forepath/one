@@ -5,6 +5,7 @@ import { PublicServicePlanOfferingDto } from '../dto/public-service-plan-offerin
 import { ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { PricingService } from '../services/pricing.service';
+import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
@@ -15,6 +16,7 @@ export class PublicServicePlanOfferingsController {
   constructor(
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly pricingService: PricingService,
+    private readonly withdrawalPolicyService: WithdrawalPolicyService,
   ) {}
 
   /**
@@ -73,6 +75,9 @@ export class PublicServicePlanOfferingsController {
       totalPrice,
       orderingHighlights: row.orderingHighlights ?? [],
       allowCustomerLocationSelection: row.allowCustomerLocationSelection === true,
+      withdrawalPolicy: this.withdrawalPolicyService.buildPolicyInfo({
+        disallowStatutoryWithdrawal: row.serviceType?.disallowStatutoryWithdrawal ?? false,
+      }),
     };
   }
 }

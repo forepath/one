@@ -1,5 +1,7 @@
 import { BillingIntervalType, ServicePlanOrderingHighlight } from '../entities/service-plan.entity';
 
+import { WithdrawalPolicyDto } from './withdrawal-policy.dto';
+
 export class ServicePlanResponseDto {
   id!: string;
   serviceTypeId!: string;
@@ -18,6 +20,7 @@ export class ServicePlanResponseDto {
   orderingHighlights!: ServicePlanOrderingHighlight[];
   /** When true, customers may override region/location in POST /subscriptions requestedConfig if the schema allows. */
   allowCustomerLocationSelection!: boolean;
+  withdrawalPolicy!: WithdrawalPolicyDto;
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;

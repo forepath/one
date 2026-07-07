@@ -1,5 +1,7 @@
 import { BillingIntervalType, ServicePlanOrderingHighlight } from '../entities/service-plan.entity';
 
+import { WithdrawalPolicyDto } from './withdrawal-policy.dto';
+
 /** Safe subset of a service plan for public marketing / external card UIs. */
 export class PublicServicePlanOfferingDto {
   id!: string;
@@ -14,4 +16,5 @@ export class PublicServicePlanOfferingDto {
   orderingHighlights!: ServicePlanOrderingHighlight[];
   /** When true, checkout UIs may offer region/location selection for this plan. */
   allowCustomerLocationSelection!: boolean;
+  withdrawalPolicy!: WithdrawalPolicyDto;
 }

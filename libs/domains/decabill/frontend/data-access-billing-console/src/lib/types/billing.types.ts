@@ -28,6 +28,29 @@ export interface ServerType {
   description?: string;
 }
 
+// Statutory withdrawal
+export interface WithdrawalPolicy {
+  periodDays: number;
+  allowedAfterProvisioning: boolean;
+  unprovisionedAlwaysWithdrawable: true;
+  provisionedRefundPolicy: 'unused_period_prorated';
+}
+
+export interface WithdrawalEligibility {
+  canWithdraw: boolean;
+  phase: string;
+  deadline?: string;
+  reason?: string;
+  estimatedRefundGross?: number;
+}
+
+export interface WithdrawalResult {
+  refundNet?: number;
+  refundGross?: number;
+  creditNoteNumber?: string;
+  paymentRefundStatus: 'not_applicable' | 'pending' | 'succeeded' | 'failed';
+}
+
 // Service Types
 export interface ServiceTypeResponse {
   id: string;
@@ -36,6 +59,7 @@ export interface ServiceTypeResponse {
   description?: string | null;
   provider: string;
   configSchema: Record<string, unknown>;
+  disallowStatutoryWithdrawal: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -47,6 +71,7 @@ export interface CreateServiceTypeDto {
   description?: string;
   provider: string;
   configSchema?: Record<string, unknown>;
+  disallowStatutoryWithdrawal?: boolean;
   isActive?: boolean;
 }
 
@@ -55,6 +80,7 @@ export interface UpdateServiceTypeDto {
   description?: string;
   provider?: string;
   configSchema?: Record<string, unknown>;
+  disallowStatutoryWithdrawal?: boolean;
   isActive?: boolean;
 }
 
@@ -182,6 +208,7 @@ export interface ServicePlanResponse {
   providerConfigDefaults: Record<string, unknown>;
   orderingHighlights: ServicePlanOrderingHighlight[];
   allowCustomerLocationSelection: boolean;
+  withdrawalPolicy: WithdrawalPolicy;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -237,6 +264,9 @@ export interface SubscriptionResponse {
   cancelRequestedAt?: string | null;
   cancelEffectiveAt?: string | null;
   resumedAt?: string | null;
+  withdrawnAt?: string | null;
+  withdrawalEligibility?: WithdrawalEligibility;
+  withdrawalResult?: WithdrawalResult;
   createdAt: string;
   updatedAt: string;
 }
@@ -303,6 +333,10 @@ export interface CancelSubscriptionDto {
   reason?: string;
 }
 
+export interface WithdrawSubscriptionDto {
+  reason?: string;
+}
+
 export interface ResumeSubscriptionDto {
   reason?: string;
 }
@@ -315,6 +349,7 @@ export interface SubscriptionItemResponse {
   subscriptionId: string;
   serviceTypeId: string;
   provisioningStatus: ProvisioningStatus;
+  provisionedAt?: string | null;
   hostname?: string | null;
   /** Product service: controller, manager, or custom CloudInit template. Defaults to controller. */
   service?: ProvisioningServiceKind;

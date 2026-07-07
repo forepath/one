@@ -31,6 +31,12 @@ describe('Portal ServicePlansEffects', () => {
     billingIntervalValue: 1,
     totalPrice: 99,
     orderingHighlights: [],
+    withdrawalPolicy: {
+      periodDays: 14,
+      allowedAfterProvisioning: true,
+      unprovisionedAlwaysWithdrawable: true,
+      provisionedRefundPolicy: 'unused_period_prorated',
+    },
   };
   const createOfferings = (count: number): PublicServicePlanOffering[] =>
     Array.from({ length: count }, (_, index) => ({

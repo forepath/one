@@ -77,6 +77,7 @@ export class ServiceTypesController {
       provider: dto.provider,
       configSchema: dto.configSchema ?? {},
       isActive: dto.isActive ?? true,
+      disallowStatutoryWithdrawal: dto.disallowStatutoryWithdrawal ?? false,
     });
 
     return this.mapToResponse(row);
@@ -95,6 +96,7 @@ export class ServiceTypesController {
       provider: dto.provider,
       configSchema: dto.configSchema,
       isActive: dto.isActive,
+      disallowStatutoryWithdrawal: dto.disallowStatutoryWithdrawal,
     });
 
     return this.mapToResponse(row);
@@ -117,6 +119,7 @@ export class ServiceTypesController {
       provider: row.provider,
       configSchema: row.configSchema ?? {},
       isActive: row.isActive,
+      disallowStatutoryWithdrawal: row.disallowStatutoryWithdrawal,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
