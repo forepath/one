@@ -8,6 +8,7 @@ import type { SubscriptionWithServerInfo } from './subscription-server-info.sele
 import {
   selectOverviewServerInfoError,
   selectOverviewServerInfoLoading,
+  selectProvisioningStatusBySubscriptionId,
   selectServerActionInProgress,
   selectServerActionInProgressForSubscriptionId,
   selectSubscriptionsWithServerInfo,
@@ -37,6 +38,10 @@ export class SubscriptionServerInfoFacade {
 
   getServerActionInProgressMap$(): Observable<Record<string, ServerActionType>> {
     return this.store.select(selectServerActionInProgress);
+  }
+
+  getProvisioningStatusBySubscriptionId$(): Observable<Record<string, string>> {
+    return this.store.select(selectProvisioningStatusBySubscriptionId);
   }
 
   loadOverviewServerInfo(): void {

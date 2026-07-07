@@ -7,6 +7,7 @@ import { of, throwError } from 'rxjs';
 
 import { SubscriptionItemsService } from '../../services/subscription-items.service';
 import type { ServerInfoResponse, SubscriptionItemResponse, SubscriptionResponse } from '../../types/billing.types';
+import { createSubscriptionSuccess } from '../subscriptions/subscriptions.actions';
 
 import {
   loadOverviewServerInfo,
@@ -24,6 +25,7 @@ import {
 import { loadOverviewServerInfoFailure, loadOverviewServerInfoSuccess } from './subscription-server-info.actions';
 import {
   loadOverviewServerInfoEffect,
+  reloadProvisioningAfterOrderEffect,
   restartServerEffect,
   startServerEffect,
   stopServerEffect,
@@ -91,6 +93,7 @@ describe('Subscription Server Info Effects', () => {
           serverInfoBySubscriptionId: {},
           activeItemIdBySubscriptionId: {},
           serviceBySubscriptionId: {},
+          provisioningStatusBySubscriptionId: {},
         }),
       );
       done();
@@ -110,6 +113,7 @@ describe('Subscription Server Info Effects', () => {
           serverInfoBySubscriptionId: { 'sub-1': mockServerInfo },
           activeItemIdBySubscriptionId: { 'sub-1': 'item-1' },
           serviceBySubscriptionId: { 'sub-1': 'controller' },
+          provisioningStatusBySubscriptionId: { 'sub-1': 'active' },
         }),
       );
       expect(subscriptionItemsService.listSubscriptionItems).toHaveBeenCalledWith('sub-1');
@@ -118,7 +122,7 @@ describe('Subscription Server Info Effects', () => {
     });
   });
 
-  it('should return loadOverviewServerInfoSuccess with empty map when subscription has no active item', (done) => {
+  it('should return loadOverviewServerInfoSuccess with tracked pending item without server info', (done) => {
     const store = createMockStore([mockSubscription]);
 
     subscriptionItemsService.listSubscriptionItems.mockReturnValue(
@@ -130,8 +134,31 @@ describe('Subscription Server Info Effects', () => {
       expect(result).toEqual(
         loadOverviewServerInfoSuccess({
           serverInfoBySubscriptionId: {},
-          activeItemIdBySubscriptionId: {},
-          serviceBySubscriptionId: {},
+          activeItemIdBySubscriptionId: { 'sub-1': 'item-1' },
+          serviceBySubscriptionId: { 'sub-1': 'controller' },
+          provisioningStatusBySubscriptionId: { 'sub-1': 'pending' },
+        }),
+      );
+      expect(subscriptionItemsService.getServerInfo).not.toHaveBeenCalled();
+      done();
+    });
+  });
+
+  it('should return loadOverviewServerInfoSuccess with tracked failed item without server info', (done) => {
+    const store = createMockStore([mockSubscription]);
+
+    subscriptionItemsService.listSubscriptionItems.mockReturnValue(
+      of([{ ...mockItem, provisioningStatus: 'failed' as const }]),
+    );
+    actions$ = of(loadOverviewServerInfo());
+
+    loadOverviewServerInfoEffect(actions$, store as never, subscriptionItemsService).subscribe((result) => {
+      expect(result).toEqual(
+        loadOverviewServerInfoSuccess({
+          serverInfoBySubscriptionId: {},
+          activeItemIdBySubscriptionId: { 'sub-1': 'item-1' },
+          serviceBySubscriptionId: { 'sub-1': 'controller' },
+          provisioningStatusBySubscriptionId: { 'sub-1': 'failed' },
         }),
       );
       expect(subscriptionItemsService.getServerInfo).not.toHaveBeenCalled();
@@ -170,12 +197,24 @@ describe('Subscription Server Info Effects', () => {
           serverInfoBySubscriptionId: { 'sub-1': mockServerInfo },
           activeItemIdBySubscriptionId: { 'sub-1': 'item-1' },
           serviceBySubscriptionId: { 'sub-1': 'controller' },
+          provisioningStatusBySubscriptionId: { 'sub-1': 'active' },
         }),
       );
       expect(subscriptionItemsService.listSubscriptionItems).toHaveBeenCalledTimes(1);
       expect(subscriptionItemsService.listSubscriptionItems).toHaveBeenCalledWith('sub-1');
       expect(subscriptionItemsService.listSubscriptionItems).not.toHaveBeenCalledWith('sub-canceled');
       done();
+    });
+  });
+
+  describe('reloadProvisioningAfterOrderEffect', () => {
+    it('should dispatch loadOverviewServerInfo after createSubscriptionSuccess', (done) => {
+      actions$ = of(createSubscriptionSuccess({ subscription: mockSubscription }));
+
+      reloadProvisioningAfterOrderEffect(actions$).subscribe((result) => {
+        expect(result).toEqual(loadOverviewServerInfo());
+        done();
+      });
     });
   });
 

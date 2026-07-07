@@ -25,7 +25,13 @@ describe('SubscriptionServerInfoFacade', () => {
     status: 'running',
   };
   const mockWithServerInfo = [
-    { subscription: mockSubscription, serverInfo: mockServerInfo, itemId: 'item-1', service: 'controller' as const },
+    {
+      subscription: mockSubscription,
+      serverInfo: mockServerInfo,
+      itemId: 'item-1',
+      service: 'controller' as const,
+      provisioningStatus: 'active' as const,
+    },
   ];
 
   beforeEach(() => {
@@ -76,6 +82,16 @@ describe('SubscriptionServerInfoFacade', () => {
 
       store.select.mockReturnValue(of(map));
       facade.getServerActionInProgressMap$().subscribe((result) => {
+        expect(result).toEqual(map);
+        done();
+      });
+    });
+
+    it('should return provisioning status map', (done) => {
+      const map = { 'sub-1': 'pending' };
+
+      store.select.mockReturnValue(of(map));
+      facade.getProvisioningStatusBySubscriptionId$().subscribe((result) => {
         expect(result).toEqual(map);
         done();
       });

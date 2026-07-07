@@ -35,17 +35,18 @@ Job registration (queue names, repeatable intervals, job names) lives in:
 
 Registered by the scheduler from `getBillingRepeatableJobs()`:
 
-| Coordinator job name                   | Env interval variable                      | Default interval |
-| -------------------------------------- | ------------------------------------------ | ---------------- |
-| `subscription-billing.coordinator`     | `BILLING_SCHEDULER_INTERVAL`               | 60s              |
-| `subscription-expiration.coordinator`  | `EXPIRATION_SCHEDULER_INTERVAL`            | 60s              |
-| `subscription-withdrawal.coordinator`  | `WITHDRAWAL_SCHEDULER_INTERVAL`            | 60s              |
-| `invoice-overdue.coordinator`          | `INVOICE_OVERDUE_SCHEDULER_INTERVAL`       | 24h              |
-| `open-position-invoice.coordinator`    | `OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL` | 24h              |
-| `renewal-reminder.coordinator`         | `REMINDER_SCHEDULER_INTERVAL`              | 1h               |
-| `subscription-item-update.coordinator` | `SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL`   | 24h              |
-| `backorder-retry.coordinator`          | `BACKORDER_RETRY_INTERVAL_MS`              | 60s              |
-| `datev-export.coordinator`             | `BILLING_DATEV_EXPORT_CRON` (cron)         | 1st of month     |
+| Coordinator job name                    | Env interval variable                      | Default interval |
+| --------------------------------------- | ------------------------------------------ | ---------------- |
+| `subscription-billing.coordinator`      | `BILLING_SCHEDULER_INTERVAL`               | 60s              |
+| `subscription-expiration.coordinator`   | `EXPIRATION_SCHEDULER_INTERVAL`            | 60s              |
+| `subscription-withdrawal.coordinator`   | `WITHDRAWAL_SCHEDULER_INTERVAL`            | 60s              |
+| `subscription-provisioning.coordinator` | `PROVISIONING_SCHEDULER_INTERVAL`          | 30s              |
+| `invoice-overdue.coordinator`           | `INVOICE_OVERDUE_SCHEDULER_INTERVAL`       | 24h              |
+| `open-position-invoice.coordinator`     | `OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL` | 24h              |
+| `renewal-reminder.coordinator`          | `REMINDER_SCHEDULER_INTERVAL`              | 1h               |
+| `subscription-item-update.coordinator`  | `SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL`   | 24h              |
+| `backorder-retry.coordinator`           | `BACKORDER_RETRY_INTERVAL_MS`              | 60s              |
+| `datev-export.coordinator`              | `BILLING_DATEV_EXPORT_CRON` (cron)         | 1st of month     |
 
 The DATEV coordinator is registered only when `BILLING_DATEV_EXPORT_ENABLED=true`. It enqueues per-tenant unit jobs and optionally one unified unit job when `BILLING_DATEV_UNIFIED_EXPORT_ENABLED=true`.
 
@@ -58,6 +59,7 @@ Coordinators fan out unit jobs such as:
 - `subscription-billing.unit`
 - `subscription-expiration.unit`
 - `subscription-withdrawal.unit`
+- `subscription-provisioning.unit`
 - `invoice-overdue.unit`
 - `open-position-invoice.unit`
 - `renewal-reminder.unit`

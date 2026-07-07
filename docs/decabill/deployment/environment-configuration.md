@@ -150,6 +150,8 @@ These variables control repeatable **coordinator** intervals in milliseconds:
 | `EXPIRATION_SCHEDULER_BATCH_SIZE`          | `100`      | Expiration batch size            |
 | `WITHDRAWAL_SCHEDULER_INTERVAL`            | `60000`    | Subscription withdrawal teardown |
 | `WITHDRAWAL_SCHEDULER_BATCH_SIZE`          | `100`      | Withdrawal batch size            |
+| `PROVISIONING_SCHEDULER_INTERVAL`          | `30000`    | Subscription server provisioning |
+| `PROVISIONING_SCHEDULER_BATCH_SIZE`        | `100`      | Provisioning batch size          |
 | `REMINDER_SCHEDULER_INTERVAL`              | `3600000`  | Renewal reminders                |
 | `REMINDER_SCHEDULER_BATCH_SIZE`            | `100`      | Reminder batch size              |
 | `REMINDER_DAYS`                            | `3`        | Days before renewal to remind    |

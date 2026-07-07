@@ -257,6 +257,18 @@
           >
             {{ subscriptionStatusLabel(sub.status) }}
           </span>
+          @if (showProvisioningStatusBadge(sub.id)) {
+            <span
+              class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded me-2"
+              [ngClass]="provisioningStatusBadgeClass(provisioningStatusForSubscription(sub.id))"
+              [attr.title]="provisioningStatusForSubscription(sub.id) ?? undefined"
+            >
+              @if (provisioningStatusForSubscription(sub.id) === 'failed') {
+                <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+              }
+              {{ provisioningStatusLabel(provisioningStatusForSubscription(sub.id)) }}
+            </span>
+          }
           @if (sub.number) {
             <span class="me-2"> <i class="bi bi-upc-scan me-1" aria-hidden="true"></i>{{ sub.number }} </span>
           }

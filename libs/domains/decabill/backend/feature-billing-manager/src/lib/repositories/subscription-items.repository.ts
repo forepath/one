@@ -146,6 +146,32 @@ export class SubscriptionItemsRepository {
     return await qb.getMany();
   }
 
+  /**
+   * Returns items still awaiting server provisioning: pending, without a provider reference,
+   * on an active subscription, and backed by a provider that provisions servers. Used by the
+   * provisioning coordinator to enqueue provisioning unit jobs.
+   */
+  async findPendingProvisioningIds(limit = 100): Promise<string[]> {
+    const qb = this.repository
+      .createQueryBuilder('item')
+      .select('item.id', 'id')
+      .innerJoin('item.subscription', 'sub')
+      .innerJoin('users', 'user', 'user.id = sub.user_id')
+      .innerJoin('item.serviceType', 'st')
+      .where('item.provisioning_status = :status', { status: 'pending' })
+      .andWhere('item.provider_reference IS NULL')
+      .andWhere('sub.status = :subStatus', { subStatus: SubscriptionStatus.ACTIVE })
+      .andWhere('st.provider IN (:...providers)', { providers: ['hetzner', 'digital-ocean'] })
+      .orderBy('item.created_at', 'ASC')
+      .take(limit);
+
+    applyUserTenantFilter(qb, 'user');
+
+    const rows = await qb.getRawMany<{ id: string }>();
+
+    return rows.map((row) => row.id);
+  }
+
   private async findByIdInTenant(id: string): Promise<SubscriptionItemEntity> {
     const entity = await this.repository
       .createQueryBuilder('item')

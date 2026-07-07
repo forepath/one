@@ -27,7 +27,11 @@ import type { Environment } from '@forepath/shared/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { combineLatest, filter, map, take } from 'rxjs';
 
-import { getProfileCompleteLabel } from '../billing-status-labels';
+import {
+  getProfileCompleteLabel,
+  getProvisioningStatusBadgeClass,
+  getProvisioningStatusLabel,
+} from '../billing-status-labels';
 import { filterItemsBySearch } from '../billing-list-search';
 
 @Component({
@@ -115,22 +119,43 @@ export class OverviewComponent implements OnInit {
     return getProfileCompleteLabel(isComplete);
   }
 
+  provisioningStatusLabel(status: SubscriptionWithServerInfo['provisioningStatus']): string {
+    return getProvisioningStatusLabel(status);
+  }
+
+  provisioningStatusBadgeClass(status: SubscriptionWithServerInfo['provisioningStatus']): string {
+    return getProvisioningStatusBadgeClass(status);
+  }
+
+  isProvisioningPending(item: SubscriptionWithServerInfo): boolean {
+    return item.provisioningStatus === 'pending';
+  }
+
+  isProvisioningFailed(item: SubscriptionWithServerInfo): boolean {
+    return item.provisioningStatus === 'failed';
+  }
+
+  isInstanceReady(item: SubscriptionWithServerInfo): boolean {
+    return item.provisioningStatus === 'active' && item.serverInfo != null;
+  }
+
   instanceDisplayTitle(item: SubscriptionWithServerInfo): string {
     return item.subscription.number?.trim() || '—';
   }
 
   instanceSearchHaystack(item: SubscriptionWithServerInfo): string {
-    const provider = item.serverInfo.metadata?.['provider'];
+    const provider = item.serverInfo?.metadata?.['provider'];
 
     return [
       item.subscription.number,
       this.serviceTypeLabel(item.service),
-      this.serverStatusLabel(item.serverInfo),
+      this.provisioningStatusLabel(item.provisioningStatus),
+      item.serverInfo ? this.serverStatusLabel(item.serverInfo) : undefined,
       this.getProviderName(provider),
-      this.serverLocationLabel(item.serverInfo.metadata),
-      item.serverInfo.hostnameFqdn,
-      item.serverInfo.publicIp,
-      item.serverInfo.privateIp,
+      item.serverInfo ? this.serverLocationLabel(item.serverInfo.metadata) : undefined,
+      item.serverInfo?.hostnameFqdn,
+      item.serverInfo?.publicIp,
+      item.serverInfo?.privateIp,
     ]
       .filter((value) => value !== null && value !== undefined && value !== '')
       .join(' ');
@@ -202,14 +227,14 @@ export class OverviewComponent implements OnInit {
     if (useBillingSocket) {
       this.billingDashboardSocketFacade.connect();
       this.destroyRef.onDestroy(() => this.billingDashboardSocketFacade.disconnect());
-    } else {
-      this.subscriptionsLoading$
-        .pipe(
-          filter((loading) => !loading),
-          take(1),
-        )
-        .subscribe(() => this.serverInfoFacade.loadOverviewServerInfo());
     }
+
+    this.subscriptionsLoading$
+      .pipe(
+        filter((loading) => !loading),
+        take(1),
+      )
+      .subscribe(() => this.serverInfoFacade.loadOverviewServerInfo());
   }
 
   getProviderName(provider: unknown): string | undefined {

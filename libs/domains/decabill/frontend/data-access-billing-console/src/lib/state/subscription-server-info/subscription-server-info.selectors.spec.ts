@@ -100,6 +100,7 @@ describe('Subscription Server Info Selectors', () => {
       const serverInfoState = createServerInfoState({
         serverInfoBySubscriptionId: { 'sub-1': mockServerInfo },
         activeItemIdBySubscriptionId: { 'sub-1': 'item-1' },
+        provisioningStatusBySubscriptionId: { 'sub-1': 'active' },
       });
       const rootState = {
         subscriptions: subscriptionsState,
@@ -112,9 +113,39 @@ describe('Subscription Server Info Selectors', () => {
       expect(result[0].serverInfo).toEqual(mockServerInfo);
       expect(result[0].itemId).toBe('item-1');
       expect(result[0].service).toBe('controller');
+      expect(result[0].provisioningStatus).toBe('active');
     });
 
-    it('should exclude subscriptions without server info', () => {
+    it('should include active subscriptions with pending provisioning items', () => {
+      const subscriptionsState = {
+        entities: [mockSubscription],
+        selectedSubscription: null,
+        loading: false,
+        loadingSubscription: false,
+        creating: false,
+        canceling: false,
+        resuming: false,
+        error: null,
+      };
+      const serverInfoState = createServerInfoState({
+        activeItemIdBySubscriptionId: { 'sub-1': 'item-1' },
+        serviceBySubscriptionId: { 'sub-1': 'manager' },
+        provisioningStatusBySubscriptionId: { 'sub-1': 'pending' },
+      });
+      const rootState = {
+        subscriptions: subscriptionsState,
+        subscriptionServerInfo: serverInfoState,
+      };
+      const result = selectSubscriptionsWithServerInfo(rootState as never);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].subscription.id).toBe('sub-1');
+      expect(result[0].provisioningStatus).toBe('pending');
+      expect(result[0].serverInfo).toBeUndefined();
+      expect(result[0].service).toBe('manager');
+    });
+
+    it('should exclude subscriptions without tracked items', () => {
       const subscriptionsState = {
         entities: [mockSubscription, { ...mockSubscription, id: 'sub-2', number: 'SUB-002' }],
         selectedSubscription: null,
@@ -128,6 +159,7 @@ describe('Subscription Server Info Selectors', () => {
       const serverInfoState = createServerInfoState({
         serverInfoBySubscriptionId: { 'sub-1': mockServerInfo },
         activeItemIdBySubscriptionId: { 'sub-1': 'item-1' },
+        provisioningStatusBySubscriptionId: { 'sub-1': 'active' },
       });
       const rootState = {
         subscriptions: subscriptionsState,

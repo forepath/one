@@ -200,104 +200,127 @@
                     </div>
                     <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
                       <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                        <span
-                          class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded me-2"
-                          [ngClass]="serverStatusBadgeClass(item.serverInfo)"
-                        >
-                          <i class="bi me-1" [ngClass]="serverStatusIconClass(item.serverInfo)" aria-hidden="true"></i>
-                          {{ serverStatusLabel(item.serverInfo) }}
-                        </span>
-                        <span class="me-2">
-                          <i class="bi bi-layers me-1" aria-hidden="true"></i>{{ serviceTypeLabel(item.service) }}
-                        </span>
-                        @if (item.serverInfo.metadata!['provider']) {
-                          <span class="me-2">
-                            <i class="bi bi-hdd-rack me-1" aria-hidden="true"></i
-                            >{{ getProviderName(item.serverInfo.metadata!['provider']) ?? '—' }}
-                            @if (serverLocationLabel(item.serverInfo.metadata); as loc) {
-                              <span class="text-body-secondary ms-1">({{ loc }})</span>
-                            }
+                        @if (isProvisioningPending(item) || isProvisioningFailed(item)) {
+                          <span
+                            class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded me-2"
+                            [ngClass]="provisioningStatusBadgeClass(item.provisioningStatus)"
+                          >
+                            {{ provisioningStatusLabel(item.provisioningStatus) }}
                           </span>
-                        }
-                        @if (item.serverInfo.hostnameFqdn) {
                           <span class="me-2">
-                            <i class="bi bi-globe me-1" aria-hidden="true"></i>{{ item.serverInfo.hostnameFqdn }}
+                            <i class="bi bi-layers me-1" aria-hidden="true"></i>{{ serviceTypeLabel(item.service) }}
                           </span>
-                        }
-                        <span class="me-2">
-                          <i class="bi bi-ethernet me-1" aria-hidden="true"></i>{{ item.serverInfo.publicIp }}
-                        </span>
-                        @if (item.serverInfo.privateIp) {
+                          @if (isProvisioningPending(item)) {
+                            <span class="me-2" i18n="@@featureOverview-provisioningPendingHint">
+                              Your server is being set up. This usually takes less than a minute.
+                            </span>
+                          } @else {
+                            <span class="me-2" i18n="@@featureOverview-provisioningFailedHint">
+                              Server setup did not complete. Check backorders or contact support if this persists.
+                            </span>
+                          }
+                        } @else if (item.serverInfo; as serverInfo) {
+                          <span
+                            class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded me-2"
+                            [ngClass]="serverStatusBadgeClass(serverInfo)"
+                          >
+                            <i class="bi me-1" [ngClass]="serverStatusIconClass(serverInfo)" aria-hidden="true"></i>
+                            {{ serverStatusLabel(serverInfo) }}
+                          </span>
                           <span class="me-2">
-                            <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>{{ item.serverInfo.privateIp }}
+                            <i class="bi bi-layers me-1" aria-hidden="true"></i>{{ serviceTypeLabel(item.service) }}
                           </span>
+                          @if (serverInfo.metadata!['provider']) {
+                            <span class="me-2">
+                              <i class="bi bi-hdd-rack me-1" aria-hidden="true"></i
+                              >{{ getProviderName(serverInfo.metadata!['provider']) ?? '—' }}
+                              @if (serverLocationLabel(serverInfo.metadata); as loc) {
+                                <span class="text-body-secondary ms-1">({{ loc }})</span>
+                              }
+                            </span>
+                          }
+                          @if (serverInfo.hostnameFqdn) {
+                            <span class="me-2">
+                              <i class="bi bi-globe me-1" aria-hidden="true"></i>{{ serverInfo.hostnameFqdn }}
+                            </span>
+                          }
+                          <span class="me-2">
+                            <i class="bi bi-ethernet me-1" aria-hidden="true"></i>{{ serverInfo.publicIp }}
+                          </span>
+                          @if (serverInfo.privateIp) {
+                            <span class="me-2">
+                              <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>{{ serverInfo.privateIp }}
+                            </span>
+                          }
                         }
                       </div>
                     </div>
                   </div>
                   <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                    @if (
-                      (serverActionInProgressMap$ | async)?.[item.subscription.id] === undefined &&
-                      !isServerStatusTransitional(item.serverInfo)
-                    ) {
-                      <div
-                        class="btn-group btn-group-sm"
-                        role="group"
-                        aria-label="Server actions"
-                        i18n-aria-label="@@featureOverview-serverActionsAria"
-                      >
-                        @if (isServerStartable(item.serverInfo)) {
-                          <button
-                            type="button"
-                            class="btn btn-outline-success"
-                            (click)="serverInfoFacade.startServer(item.subscription.id, item.itemId)"
-                            title="Start server"
-                            i18n-title="@@featureOverview-serverStartButtonTitle"
-                          >
-                            <i class="bi bi-play-fill" aria-hidden="true"></i>
-                          </button>
-                        }
-                        @if (isServerOnline(item.serverInfo)) {
-                          <button
-                            type="button"
-                            class="btn btn-outline-danger"
-                            (click)="serverInfoFacade.stopServer(item.subscription.id, item.itemId)"
-                            title="Stop server"
-                            i18n-title="@@featureOverview-serverStopButtonTitle"
-                          >
-                            <i class="bi bi-stop-fill" aria-hidden="true"></i>
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-outline-warning"
-                            (click)="serverInfoFacade.restartServer(item.subscription.id, item.itemId)"
-                            title="Restart server"
-                            i18n-title="@@featureOverview-serverRestartButtonTitle"
-                          >
-                            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
-                          </button>
-                        }
-                      </div>
-                    } @else {
-                      <div class="d-flex align-items-center gap-2 text-body-secondary" aria-live="polite">
-                        <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
-                        <span class="visually-hidden" i18n="@@featureOverview-serverStatusUpdating"
-                          >Server status updating…</span
+                    @if (isInstanceReady(item)) {
+                      @if (
+                        (serverActionInProgressMap$ | async)?.[item.subscription.id] === undefined &&
+                        !isServerStatusTransitional(item.serverInfo!)
+                      ) {
+                        <div
+                          class="btn-group btn-group-sm"
+                          role="group"
+                          aria-label="Server actions"
+                          i18n-aria-label="@@featureOverview-serverActionsAria"
                         >
-                      </div>
-                    }
-                    @if (item.service === 'controller') {
-                      <a
-                        href="https://{{ item.serverInfo.hostnameFqdn || item.serverInfo.publicIp }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="btn btn-sm btn-primary"
-                        [class.disabled]="!isServerOnline(item.serverInfo)"
-                        title="Open console"
-                        i18n-title="@@featureOverview-openConsoleButtonTitle"
-                      >
-                        <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-                      </a>
+                          @if (isServerStartable(item.serverInfo!)) {
+                            <button
+                              type="button"
+                              class="btn btn-outline-success"
+                              (click)="serverInfoFacade.startServer(item.subscription.id, item.itemId)"
+                              title="Start server"
+                              i18n-title="@@featureOverview-serverStartButtonTitle"
+                            >
+                              <i class="bi bi-play-fill" aria-hidden="true"></i>
+                            </button>
+                          }
+                          @if (isServerOnline(item.serverInfo!)) {
+                            <button
+                              type="button"
+                              class="btn btn-outline-danger"
+                              (click)="serverInfoFacade.stopServer(item.subscription.id, item.itemId)"
+                              title="Stop server"
+                              i18n-title="@@featureOverview-serverStopButtonTitle"
+                            >
+                              <i class="bi bi-stop-fill" aria-hidden="true"></i>
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-outline-warning"
+                              (click)="serverInfoFacade.restartServer(item.subscription.id, item.itemId)"
+                              title="Restart server"
+                              i18n-title="@@featureOverview-serverRestartButtonTitle"
+                            >
+                              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                            </button>
+                          }
+                        </div>
+                      } @else {
+                        <div class="d-flex align-items-center gap-2 text-body-secondary" aria-live="polite">
+                          <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+                          <span class="visually-hidden" i18n="@@featureOverview-serverStatusUpdating"
+                            >Server status updating…</span
+                          >
+                        </div>
+                      }
+                      @if (item.service === 'controller') {
+                        <a
+                          href="https://{{ item.serverInfo!.hostnameFqdn || item.serverInfo!.publicIp }}"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="btn btn-sm btn-primary"
+                          [class.disabled]="!isServerOnline(item.serverInfo!)"
+                          title="Open console"
+                          i18n-title="@@featureOverview-openConsoleButtonTitle"
+                        >
+                          <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                        </a>
+                      }
                     }
                   </div>
                 </div>

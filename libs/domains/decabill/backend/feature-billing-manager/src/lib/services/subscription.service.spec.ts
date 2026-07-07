@@ -61,6 +61,8 @@ describe('SubscriptionService', () => {
     updateSshPrivateKey: jest.fn().mockResolvedValue({}),
     findBySubscription: jest.fn(),
     findBySubscriptionIds: jest.fn(),
+    findByIdWithRelations: jest.fn(),
+    findPendingProvisioningIds: jest.fn(),
   } as unknown as SubscriptionItemsRepository;
   const scheduleService = new BillingScheduleService();
   const cancellationPolicyService = new CancellationPolicyService();
@@ -138,6 +140,14 @@ describe('SubscriptionService', () => {
     });
     (customerProfilesService.getByUserId as jest.Mock).mockResolvedValue(completeProfile);
     (customerProfilesService.isProfileComplete as jest.Mock).mockReturnValue(true);
+    // createSubscription reloads after insert to hydrate DB-generated columns (e.g. `number`).
+    (subscriptionsRepository.findByIdOrThrow as jest.Mock).mockResolvedValue({
+      id: 'sub-1',
+      number: 'SUB-000087',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+    });
     (validateConfigSchema as jest.Mock).mockReturnValue([]);
     (buildProvisioningUserData as jest.Mock).mockReturnValue('mock-user-data');
     hostnameReservationService.reserveHostname.mockResolvedValue('awesome-armadillo-abc12');
@@ -154,6 +164,32 @@ describe('SubscriptionService', () => {
       },
     );
   });
+
+  // Provisioning is deferred to a job: after createSubscription records a pending item, this
+  // helper feeds the stored config snapshot back through the provisioning routine, matching
+  // what the provisioning coordinator/unit jobs do at runtime.
+  async function provisionCreatedItem(opts: { provider: string; autoBackorder?: boolean } = { provider: 'hetzner' }) {
+    const createCalls = (itemsRepository.create as jest.Mock).mock.calls;
+    const configSnapshot = createCalls.at(-1)?.[0]?.configSnapshot ?? {};
+
+    (itemsRepository.findByIdWithRelations as jest.Mock).mockResolvedValue({
+      id: 'item-1',
+      serviceTypeId: 'stype-1',
+      provisioningStatus: 'pending',
+      providerReference: undefined,
+      configSnapshot,
+      subscription: {
+        id: 'sub-1',
+        userId: 'user-1',
+        planId: 'plan-1',
+        status: SubscriptionStatus.ACTIVE,
+        autoBackorder: opts.autoBackorder ?? false,
+      },
+      serviceType: { id: 'stype-1', provider: opts.provider },
+    });
+
+    await service.provisionSubscriptionItem('item-1');
+  }
 
   it('creates subscription with schedule', async () => {
     plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
@@ -186,8 +222,16 @@ describe('SubscriptionService', () => {
     const result = await service.createSubscription('user-1', 'plan-1', { region: 'fsn1' });
 
     expect(result.id).toBe('sub-1');
+    // Reloaded after insert so the sequence-backed `number` is present without a client refresh.
+    expect(result.number).toBe('SUB-000087');
+    expect(subscriptionsRepository.findByIdOrThrow).toHaveBeenCalledWith('sub-1');
     expect(subscriptionsRepository.create).toHaveBeenCalled();
     expect(itemsRepository.create).toHaveBeenCalled();
+    // Provisioning is deferred to the job, not run inline by createSubscription.
+    expect(provisioningService.provision).not.toHaveBeenCalled();
+
+    await provisionCreatedItem();
+
     expect(provisioningService.provision).toHaveBeenCalled();
     expect(itemsRepository.updateProviderReference).toHaveBeenCalledWith('item-1', 'srv-1');
   });
@@ -231,6 +275,9 @@ describe('SubscriptionService', () => {
 
     expect(result.id).toBe('sub-1');
     expect(availabilityService.checkAvailability).toHaveBeenCalledWith('hetzner', 'fsn1', 'cx23');
+
+    await provisionCreatedItem();
+
     expect(hostnameReservationService.reserveHostname).toHaveBeenCalledWith('item-1');
     expect(provisioningService.provision).toHaveBeenCalledWith('hetzner', {
       name: 'awesome-armadillo-abc12',
@@ -299,6 +346,7 @@ describe('SubscriptionService', () => {
     (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
 
     await service.createSubscription('user-1', 'plan-1', { region: 'fsn1', service: 'manager' });
+    await provisionCreatedItem();
 
     expect(itemsRepository.updateSshPrivateKey).toHaveBeenCalledWith('item-1', expect.any(String));
     expect(buildProvisioningUserData).toHaveBeenCalledWith(
@@ -351,6 +399,7 @@ describe('SubscriptionService', () => {
     (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
 
     await service.createSubscription('user-1', 'plan-1', { env: { API_KEY: 'customer' } });
+    await provisionCreatedItem();
 
     expect(cloudInitConfigService.findByIdForProvisioning).toHaveBeenCalledWith('cfg-1');
     expect(cloudInitConfigService.resolveEnvironmentVariables).toHaveBeenCalled();
@@ -432,6 +481,7 @@ describe('SubscriptionService', () => {
     (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
 
     await service.createSubscription('user-1', 'plan-1', { service: 'manager', region: 'fsn1' });
+    await provisionCreatedItem();
 
     expect(buildProvisioningUserData).toHaveBeenCalledWith(expect.objectContaining({ service: 'manager' }));
   });
@@ -524,6 +574,10 @@ describe('SubscriptionService', () => {
 
     await service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true);
 
+    expect(subscriptionsRepository.create).toHaveBeenCalledWith(expect.objectContaining({ autoBackorder: true }));
+
+    await provisionCreatedItem({ provider: 'hetzner', autoBackorder: true });
+
     expect(backorderService.create).not.toHaveBeenCalled();
   });
 
@@ -546,9 +600,8 @@ describe('SubscriptionService', () => {
     (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
     (provisioningService.provision as jest.Mock).mockRejectedValue(new Error('provider exploded'));
 
-    await expect(service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true)).rejects.toThrow(
-      'provider exploded',
-    );
+    await service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true);
+    await provisionCreatedItem({ provider: 'hetzner', autoBackorder: true });
 
     expect(itemsRepository.delete).toHaveBeenCalledWith('item-1');
     expect(subscriptionsRepository.delete).toHaveBeenCalledWith('sub-1');
@@ -584,9 +637,8 @@ describe('SubscriptionService', () => {
     (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
     (provisioningService.getServerInfo as jest.Mock).mockRejectedValueOnce(new Error('post-provision failure'));
 
-    await expect(service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true)).rejects.toThrow(
-      'post-provision failure',
-    );
+    await service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true);
+    await provisionCreatedItem({ provider: 'hetzner', autoBackorder: true });
 
     expect(itemsRepository.updateProvisioningStatus).toHaveBeenCalledWith('item-1', 'failed');
     expect(itemsRepository.delete).not.toHaveBeenCalled();
@@ -626,6 +678,9 @@ describe('SubscriptionService', () => {
     });
 
     expect(availabilityService.checkAvailability).toHaveBeenCalledWith('digital-ocean', 'fra1', 's-1vcpu-1gb');
+
+    await provisionCreatedItem({ provider: 'digital-ocean' });
+
     expect(provisioningService.provision).toHaveBeenCalledWith(
       'digital-ocean',
       expect.objectContaining({
@@ -671,6 +726,7 @@ describe('SubscriptionService', () => {
       region: 'fra1',
       serverType: 's-1vcpu-1gb',
     });
+    await provisionCreatedItem({ provider: 'digital-ocean' });
 
     expect(cloudflareDnsService.createARecord).toHaveBeenCalledWith('awesome-armadillo-abc12', '10.0.0.99');
   });
@@ -879,5 +935,73 @@ describe('SubscriptionService', () => {
     expect(withdrawalRefundService.applyProvisionedWithdrawalRefund).not.toHaveBeenCalled();
     expect(result.withdrawalResult?.refundGross).toBe(42);
     expect(result.withdrawalResult?.paymentRefundStatus).toBe('pending');
+  });
+
+  describe('provisionSubscriptionItem', () => {
+    it('skips when the item is not found', async () => {
+      (itemsRepository.findByIdWithRelations as jest.Mock).mockResolvedValue(null);
+
+      await service.provisionSubscriptionItem('missing');
+
+      expect(provisioningService.provision).not.toHaveBeenCalled();
+    });
+
+    it('skips when the item is no longer pending', async () => {
+      (itemsRepository.findByIdWithRelations as jest.Mock).mockResolvedValue({
+        id: 'item-1',
+        provisioningStatus: 'active',
+        providerReference: 'srv-1',
+        subscription: { status: SubscriptionStatus.ACTIVE },
+      });
+
+      await service.provisionSubscriptionItem('item-1');
+
+      expect(provisioningService.provision).not.toHaveBeenCalled();
+    });
+
+    it('skips when the subscription is not active', async () => {
+      (itemsRepository.findByIdWithRelations as jest.Mock).mockResolvedValue({
+        id: 'item-1',
+        provisioningStatus: 'pending',
+        configSnapshot: { region: 'fsn1', serverType: 'cx23' },
+        subscription: { status: SubscriptionStatus.PENDING_CANCEL },
+        serviceType: { provider: 'hetzner' },
+      });
+
+      await service.provisionSubscriptionItem('item-1');
+
+      expect(provisioningService.provision).not.toHaveBeenCalled();
+      expect(hostnameReservationService.reserveHostname).not.toHaveBeenCalled();
+    });
+
+    it('provisions a pending item when invoked by the job', async () => {
+      (itemsRepository.findByIdWithRelations as jest.Mock).mockResolvedValue({
+        id: 'item-1',
+        serviceTypeId: 'stype-1',
+        provisioningStatus: 'pending',
+        providerReference: undefined,
+        configSnapshot: {
+          ...controllerProvisioningDefaults,
+          region: 'fsn1',
+          serverType: 'cx23',
+        },
+        subscription: {
+          id: 'sub-1',
+          userId: 'user-1',
+          planId: 'plan-1',
+          status: SubscriptionStatus.ACTIVE,
+          autoBackorder: false,
+        },
+        serviceType: { id: 'stype-1', provider: 'hetzner' },
+      });
+      (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+
+      await service.provisionSubscriptionItem('item-1');
+
+      expect(hostnameReservationService.reserveHostname).toHaveBeenCalledWith('item-1');
+      expect(provisioningService.provision).toHaveBeenCalled();
+      expect(itemsRepository.updateProviderReference).toHaveBeenCalledWith('item-1', 'srv-1');
+      expect(itemsRepository.updateProvisioningStatus).toHaveBeenCalledWith('item-1', 'active');
+    });
   });
 });

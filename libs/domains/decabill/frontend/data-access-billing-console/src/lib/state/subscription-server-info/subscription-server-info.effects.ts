@@ -6,7 +6,14 @@ import { Action, Store } from '@ngrx/store';
 import { Observable, catchError, forkJoin, from, map, mergeMap, of, switchMap, take } from 'rxjs';
 
 import { SubscriptionItemsService } from '../../services/subscription-items.service';
-import type { ServerInfoResponse, SubscriptionResponse, ProvisioningServiceKind } from '../../types/billing.types';
+import type {
+  ProvisioningServiceKind,
+  ProvisioningStatus,
+  ServerInfoResponse,
+  SubscriptionItemResponse,
+  SubscriptionResponse,
+} from '../../types/billing.types';
+import { createSubscriptionSuccess } from '../subscriptions/subscriptions.actions';
 import { selectSubscriptionsEntities } from '../subscriptions/subscriptions.selectors';
 
 import {
@@ -37,6 +44,14 @@ function normalizeError(error: unknown): string {
   return 'An unexpected error occurred';
 }
 
+function pickTrackedSubscriptionItem(items: SubscriptionItemResponse[]): SubscriptionItemResponse | undefined {
+  return (
+    items.find((item) => item.provisioningStatus === 'active') ??
+    items.find((item) => item.provisioningStatus === 'pending') ??
+    items.find((item) => item.provisioningStatus === 'failed')
+  );
+}
+
 export function loadOverviewServerInfoEffect(
   actions$: Actions,
   store: Store,
@@ -54,6 +69,7 @@ export function loadOverviewServerInfoEffect(
             serverInfoBySubscriptionId: {},
             activeItemIdBySubscriptionId: {},
             serviceBySubscriptionId: {},
+            provisioningStatusBySubscriptionId: {},
           }),
         );
       }
@@ -66,13 +82,22 @@ export function loadOverviewServerInfoEffect(
         switchMap((results) => {
           const toFetch: { subscriptionId: string; itemId: string }[] = [];
           const serviceBySubscriptionId: Record<string, ProvisioningServiceKind> = {};
+          const activeItemIdBySubscriptionId: Record<string, string> = {};
+          const provisioningStatusBySubscriptionId: Record<string, ProvisioningStatus> = {};
 
           results.forEach(({ sub, items }) => {
-            const active = items.find((i) => i.provisioningStatus === 'active');
+            const tracked = pickTrackedSubscriptionItem(items);
 
-            if (active) {
-              toFetch.push({ subscriptionId: sub.id, itemId: active.id });
-              serviceBySubscriptionId[sub.id] = active.service ?? 'controller';
+            if (!tracked) {
+              return;
+            }
+
+            activeItemIdBySubscriptionId[sub.id] = tracked.id;
+            serviceBySubscriptionId[sub.id] = tracked.service ?? 'controller';
+            provisioningStatusBySubscriptionId[sub.id] = tracked.provisioningStatus;
+
+            if (tracked.provisioningStatus === 'active') {
+              toFetch.push({ subscriptionId: sub.id, itemId: tracked.id });
             }
           });
 
@@ -80,8 +105,9 @@ export function loadOverviewServerInfoEffect(
             return of(
               loadOverviewServerInfoSuccess({
                 serverInfoBySubscriptionId: {},
-                activeItemIdBySubscriptionId: {},
-                serviceBySubscriptionId: {},
+                activeItemIdBySubscriptionId,
+                serviceBySubscriptionId,
+                provisioningStatusBySubscriptionId,
               }),
             );
           }
@@ -95,17 +121,16 @@ export function loadOverviewServerInfoEffect(
           ).pipe(
             map((pairs) => {
               const serverInfoBySubscriptionId: Record<string, ServerInfoResponse> = {};
-              const activeItemIdBySubscriptionId: Record<string, string> = {};
 
-              pairs.forEach((p) => {
-                serverInfoBySubscriptionId[p.subscriptionId] = p.serverInfo;
-                activeItemIdBySubscriptionId[p.subscriptionId] = p.itemId;
+              pairs.forEach((pair) => {
+                serverInfoBySubscriptionId[pair.subscriptionId] = pair.serverInfo;
               });
 
               return loadOverviewServerInfoSuccess({
                 serverInfoBySubscriptionId,
                 activeItemIdBySubscriptionId,
                 serviceBySubscriptionId,
+                provisioningStatusBySubscriptionId,
               });
             }),
           );
@@ -119,6 +144,20 @@ export function loadOverviewServerInfoEffect(
 export const loadOverviewServerInfo$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store), subscriptionItemsService = inject(SubscriptionItemsService)) =>
     loadOverviewServerInfoEffect(actions$, store, subscriptionItemsService),
+  { functional: true },
+);
+
+export function reloadProvisioningAfterOrderEffect(
+  actions$: Actions,
+): Observable<ReturnType<typeof loadOverviewServerInfo>> {
+  return actions$.pipe(
+    ofType(createSubscriptionSuccess),
+    map(() => loadOverviewServerInfo()),
+  );
+}
+
+export const reloadProvisioningAfterOrder$ = createEffect(
+  (actions$ = inject(Actions)) => reloadProvisioningAfterOrderEffect(actions$),
   { functional: true },
 );
 

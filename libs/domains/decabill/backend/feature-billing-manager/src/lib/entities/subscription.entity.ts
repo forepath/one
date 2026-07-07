@@ -66,6 +66,10 @@ export class SubscriptionEntity {
   @Column({ type: 'varchar', length: 30, nullable: true, name: 'withdraw_phase' })
   withdrawPhase?: WithdrawalTeardownPhase;
 
+  /** Whether a provisioning failure should fall back to an automatic backorder retry. */
+  @Column({ type: 'boolean', name: 'auto_backorder', default: false })
+  autoBackorder!: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

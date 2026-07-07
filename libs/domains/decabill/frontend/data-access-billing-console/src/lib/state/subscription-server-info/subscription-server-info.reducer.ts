@@ -1,6 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 
-import type { ServerInfoResponse, ProvisioningServiceKind } from '../../types/billing.types';
+import type { ProvisioningServiceKind, ProvisioningStatus, ServerInfoResponse } from '../../types/billing.types';
 import { billingOptimisticOnlineStatus } from '../../utils/server-info-provider.utils';
 
 import {
@@ -35,6 +35,8 @@ export interface SubscriptionServerInfoState {
   activeItemIdBySubscriptionId: Record<string, string>;
   /** Service kind per subscription id from active item. */
   serviceBySubscriptionId: Record<string, ProvisioningServiceKind>;
+  /** Provisioning status per subscription id from the tracked item. */
+  provisioningStatusBySubscriptionId: Record<string, ProvisioningStatus>;
   loading: boolean;
   error: string | null;
   actionInProgress: Record<string, ServerActionType>;
@@ -46,6 +48,7 @@ export const initialSubscriptionServerInfoState: SubscriptionServerInfoState = {
   serverInfoBySubscriptionId: {},
   activeItemIdBySubscriptionId: {},
   serviceBySubscriptionId: {},
+  provisioningStatusBySubscriptionId: {},
   loading: false,
   error: null,
   actionInProgress: {},
@@ -77,11 +80,20 @@ export const subscriptionServerInfoReducer = createReducer(
   })),
   on(
     loadOverviewServerInfoSuccess,
-    (state, { serverInfoBySubscriptionId, activeItemIdBySubscriptionId, serviceBySubscriptionId }) => ({
+    (
+      state,
+      {
+        serverInfoBySubscriptionId,
+        activeItemIdBySubscriptionId,
+        serviceBySubscriptionId,
+        provisioningStatusBySubscriptionId,
+      },
+    ) => ({
       ...state,
       serverInfoBySubscriptionId: serverInfoBySubscriptionId ?? {},
       activeItemIdBySubscriptionId: activeItemIdBySubscriptionId ?? {},
       serviceBySubscriptionId: serviceBySubscriptionId ?? {},
+      provisioningStatusBySubscriptionId: provisioningStatusBySubscriptionId ?? {},
       loading: false,
       error: null,
     }),
@@ -95,6 +107,7 @@ export const subscriptionServerInfoReducer = createReducer(
     const serverInfoBySubscriptionId = { ...state.serverInfoBySubscriptionId };
     const activeItemIdBySubscriptionId = { ...state.activeItemIdBySubscriptionId };
     const serviceBySubscriptionId = { ...state.serviceBySubscriptionId };
+    const provisioningStatusBySubscriptionId = { ...state.provisioningStatusBySubscriptionId };
     const actionInProgress = { ...state.actionInProgress };
     const history = [...state.billingStatusHistory];
 
@@ -110,6 +123,7 @@ export const subscriptionServerInfoReducer = createReducer(
       };
       activeItemIdBySubscriptionId[item.subscriptionId] = item.itemId;
       serviceBySubscriptionId[item.subscriptionId] = item.service;
+      provisioningStatusBySubscriptionId[item.subscriptionId] = 'active';
       delete actionInProgress[item.subscriptionId];
       history.push({
         generatedAt,
@@ -126,6 +140,7 @@ export const subscriptionServerInfoReducer = createReducer(
       serverInfoBySubscriptionId,
       activeItemIdBySubscriptionId,
       serviceBySubscriptionId,
+      provisioningStatusBySubscriptionId,
       actionInProgress,
       billingStatusHistory,
       loading: false,
