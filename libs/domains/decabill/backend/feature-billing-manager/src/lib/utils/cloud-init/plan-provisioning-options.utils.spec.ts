@@ -102,6 +102,41 @@ describe('planProvisioningOptionsUtils', () => {
       expect(normalized?.['region']).toBe('fsn1');
     });
 
+    it('preserves both integrated options on save without collapsing to one', () => {
+      const normalized = normalizePlanProviderConfigDefaults({
+        region: 'fsn1',
+        provisioningOptions: [
+          { type: 'integrated', service: 'controller' },
+          { type: 'integrated', service: 'manager' },
+        ],
+      });
+
+      expect(normalized?.['provisioningOptions']).toEqual([
+        { type: 'integrated', service: 'controller' },
+        { type: 'integrated', service: 'manager' },
+      ]);
+      expect(normalized?.['service']).toBeUndefined();
+      expect(normalized?.['region']).toBe('fsn1');
+    });
+
+    it('preserves integrated and custom options together on save', () => {
+      const normalized = normalizePlanProviderConfigDefaults({
+        provisioningOptions: [
+          { type: 'integrated', service: 'controller' },
+          { type: 'integrated', service: 'manager' },
+          { type: 'custom', cloudInitConfigId: 'cfg-1' },
+        ],
+      });
+
+      expect(normalized?.['provisioningOptions']).toEqual([
+        { type: 'integrated', service: 'controller' },
+        { type: 'integrated', service: 'manager' },
+        { type: 'custom', cloudInitConfigId: 'cfg-1' },
+      ]);
+      expect(normalized?.['service']).toBeUndefined();
+      expect(normalized?.['cloudInitConfigId']).toBeUndefined();
+    });
+
     it('keeps derived single integrated service fields', () => {
       const normalized = normalizePlanProviderConfigDefaults({
         region: 'fsn1',
