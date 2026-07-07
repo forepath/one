@@ -87,6 +87,7 @@ export class ProjectsAdminService {
       description: dto.description?.trim() ?? null,
       status: dto.status,
       hourlyRateNet: dto.hourlyRateNet,
+      targetHours: dto.targetHours ?? null,
       currency: dto.currency ?? 'EUR',
     });
 
@@ -119,6 +120,7 @@ export class ProjectsAdminService {
       description: dto.description === undefined ? undefined : (dto.description?.trim() ?? null),
       status: dto.status,
       hourlyRateNet: dto.hourlyRateNet,
+      targetHours: dto.targetHours === undefined ? undefined : dto.targetHours,
       currency: dto.currency,
     });
 

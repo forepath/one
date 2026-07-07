@@ -9,7 +9,10 @@ describe('ProjectsService', () => {
     findAllByUser: jest.fn(),
   };
   const milestonesRepository = { findAllByProject: jest.fn().mockResolvedValue([]) };
-  const ticketsRepository = { findAllByProject: jest.fn().mockResolvedValue([]) };
+  const ticketsRepository = {
+    findAllByProject: jest.fn().mockResolvedValue([]),
+    countByMilestone: jest.fn().mockResolvedValue({ open: 0, done: 0 }),
+  };
   const timeEntriesRepository = {
     sumDurationMinutes: jest.fn().mockResolvedValue(0),
   };
@@ -57,5 +60,48 @@ describe('ProjectsService', () => {
     await expect(
       service.getByIdForUser({ userId: 'other', userRole: UserRole.USER, isApiKeyAuth: false }, 'p1'),
     ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('mapResponse maps targetHours number and null', () => {
+    const withTarget = {
+      id: 'p1',
+      userId: 'user-1',
+      name: 'Project',
+      description: null,
+      status: 'active',
+      hourlyRateNet: 100,
+      targetHours: '40.50',
+      currency: 'EUR',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    const withoutTarget = { ...withTarget, targetHours: null };
+
+    expect(service.mapResponse(withTarget as never).targetHours).toBe(40.5);
+    expect(service.mapResponse(withoutTarget as never).targetHours).toBeNull();
+  });
+
+  it('buildSummary counts open milestones that are not complete', async () => {
+    const project = { id: 'p1', hourlyRateNet: 100 };
+    const milestones = [{ id: 'm1' }, { id: 'm2' }, { id: 'm3' }];
+
+    milestonesRepository.findAllByProject.mockResolvedValue(milestones);
+    ticketsRepository.countByMilestone
+      .mockResolvedValueOnce({ open: 0, done: 0 })
+      .mockResolvedValueOnce({ open: 1, done: 2 })
+      .mockResolvedValueOnce({ open: 2, done: 0 });
+    ticketsRepository.findAllByProject.mockResolvedValue([
+      { status: 'todo' },
+      { status: 'done' },
+      { status: 'closed' },
+    ]);
+    timeEntriesRepository.sumDurationMinutes.mockResolvedValueOnce(120).mockResolvedValueOnce(60);
+
+    const summary = await service.buildSummary(project as never);
+
+    expect(summary.openMilestoneCount).toBe(2);
+    expect(summary.milestoneCount).toBe(3);
+    expect(summary.openTicketCount).toBe(1);
+    expect(summary.doneTicketCount).toBe(2);
   });
 });

@@ -31,22 +31,54 @@
   }
 
   <div class="customer-billing__summary-bar flex-shrink-0">
-    <div class="row g-0 customer-billing__summary-grid">
-      <div class="col-6 col-md-3">
+    <div class="row g-0 customer-billing__summary-grid customer-billing__summary-grid--five">
+      <div class="col-6 col-lg customer-billing__summary-col">
         <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--first">
           <div class="card-body">
             <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-trackedTime">Tracked time</h6>
             @if (loadingSummary$ | async) {
               <span class="spinner-border spinner-border-sm" role="status"></span>
             } @else if (summary$ | async; as summary) {
-              <p class="card-title mb-0 fs-4 fw-bold">{{ formatMinutes(summary.totalTrackedMinutes) }}</p>
+              @if (selectedProject$ | async; as project) {
+                <p class="card-title mb-0 fs-4 fw-bold">
+                  {{ formatMinutes(summary.totalTrackedMinutes) }}
+                  @if (hasTargetHours(project.targetHours)) {
+                    <span class="text-muted customer-billing__summary-out-of">
+                      / {{ formatTargetHoursDuration(project.targetHours) }}
+                    </span>
+                  }
+                </p>
+                @let progress = targetHoursProgress(summary.totalTrackedMinutes, project.targetHours);
+                <div
+                  class="progress w-100 rounded-pill mt-1"
+                  role="progressbar"
+                  [attr.aria-valuenow]="progress.isOver ? 100 : progress.primaryPct"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  [attr.aria-label]="
+                    hasTargetHours(project.targetHours)
+                      ? trackedTimeTargetAriaLabel(summary.totalTrackedMinutes, project.targetHours)
+                      : trackedTimeProgressAriaLabel
+                  "
+                >
+                  <div class="progress-bar" [style.width.%]="progress.primaryPct"></div>
+                  @if (progress.isOver) {
+                    <div
+                      class="progress-bar customer-billing__summary-progress-over"
+                      [style.width.%]="progress.dangerPct"
+                    ></div>
+                  }
+                </div>
+              } @else {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ formatMinutes(summary.totalTrackedMinutes) }}</p>
+              }
             } @else {
               <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
             }
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-lg customer-billing__summary-col">
         <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--second">
           <div class="card-body">
             <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-unbilledTime">
@@ -62,7 +94,7 @@
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-lg customer-billing__summary-col">
         <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--third">
           <div class="card-body">
             <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-openBillable">
@@ -78,14 +110,90 @@
           </div>
         </div>
       </div>
-      <div class="col-6 col-md-3">
+      <div class="col-6 col-lg customer-billing__summary-col">
         <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--fourth">
           <div class="card-body">
-            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-openTickets">Open tickets</h6>
+            @if (isAdminView()) {
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-openMilestones">
+                Open milestones
+              </h6>
+            } @else {
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-completedMilestones">
+                Completed milestones
+              </h6>
+            }
             @if (loadingSummary$ | async) {
               <span class="spinner-border spinner-border-sm" role="status"></span>
             } @else if (summary$ | async; as summary) {
-              <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openTicketCount }}</p>
+              <p class="card-title mb-0 fs-4 fw-bold">
+                {{ milestoneSummaryPrimaryCount(summary) }}
+                @if (summary.milestoneCount > 0) {
+                  <span class="text-muted customer-billing__summary-out-of"> / {{ summary.milestoneCount }}</span>
+                }
+              </p>
+              @let progress = milestonesCompleteProgress(summary);
+              <div
+                class="progress w-100 rounded-pill mt-1"
+                role="progressbar"
+                [attr.aria-valuenow]="hasOpenDoneSplit(progress) ? 100 : progress.primaryPct"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                i18n-aria-label="@@featureProjectDetail-milestonesProgressAria"
+                aria-label="Milestone completion"
+              >
+                @if (hasOpenDoneSplit(progress) && progress.openPct! > 0) {
+                  <div
+                    class="progress-bar customer-billing__summary-progress-open"
+                    [style.width.%]="progress.openPct"
+                  ></div>
+                }
+                <div class="progress-bar" [style.width.%]="progress.primaryPct"></div>
+              </div>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg customer-billing__summary-col">
+        <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--fifth">
+          <div class="card-body">
+            @if (isAdminView()) {
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-openTickets">
+                Open tickets
+              </h6>
+            } @else {
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-completedTickets">
+                Completed tickets
+              </h6>
+            }
+            @if (loadingSummary$ | async) {
+              <span class="spinner-border spinner-border-sm" role="status"></span>
+            } @else if (summary$ | async; as summary) {
+              <p class="card-title mb-0 fs-4 fw-bold">
+                {{ ticketSummaryPrimaryCount(summary) }}
+                @if (totalTicketCount(summary) > 0) {
+                  <span class="text-muted customer-billing__summary-out-of"> / {{ totalTicketCount(summary) }}</span>
+                }
+              </p>
+              @let progress = ticketsDoneProgress(summary);
+              <div
+                class="progress w-100 rounded-pill mt-1"
+                role="progressbar"
+                [attr.aria-valuenow]="hasOpenDoneSplit(progress) ? 100 : progress.primaryPct"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                i18n-aria-label="@@featureProjectDetail-ticketsProgressAria"
+                aria-label="Tickets done"
+              >
+                @if (hasOpenDoneSplit(progress) && progress.openPct! > 0) {
+                  <div
+                    class="progress-bar customer-billing__summary-progress-open"
+                    [style.width.%]="progress.openPct"
+                  ></div>
+                }
+                <div class="progress-bar" [style.width.%]="progress.primaryPct"></div>
+              </div>
             } @else {
               <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
             }
@@ -149,7 +257,12 @@
                 type="button"
                 class="btn btn-sm btn-outline-secondary"
                 (click)="openBillTimeModal()"
-                [disabled]="(billing$ | async) === true || billBoundsLoading()"
+                [disabled]="
+                  (billing$ | async) === true ||
+                  billBoundsLoading() ||
+                  (loadingSummary$ | async) === true ||
+                  !hasUnbilledTime(summary$ | async)
+                "
               >
                 <i class="bi bi-cash-coin me-1" aria-hidden="true"></i>
                 <span i18n="@@featureProjectDetail-billTime">Bill unbilled time</span>

@@ -89,6 +89,8 @@ $badge-padding-x: 0.5rem;
 $badge-border-radius: 0.375rem;
 $badge-line-height: 1.5;
 
+$progress-height: 0.5rem;
+
 @mixin agenstra-badge-text-bg-tint($color-name) {
   .badge {
     &.bg-#{$color-name},

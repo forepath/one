@@ -26,3 +26,36 @@
   min-height: 0;
   overflow: hidden;
 }
+
+.customer-billing__summary-grid--five {
+  @media (min-width: 992px) {
+    .customer-billing__summary-col {
+      flex: 0 0 20%;
+      max-width: 20%;
+    }
+  }
+}
+
+.customer-billing__summary-card--fourth {
+  @media (max-width: 991.98px) {
+    border-right: 0;
+  }
+}
+
+.customer-billing__summary-out-of {
+  font-size: 0.55em;
+  font-weight: 400;
+}
+
+.customer-billing__summary-progress-open {
+  background-color: var(--bs-secondary-bg);
+}
+
+.customer-billing__summary-progress-over {
+  background-color: color-mix(in srgb, var(--bs-primary) 72%, var(--bs-body-color));
+}
+
+.customer-billing__summary-card--fifth {
+  border-right: 0;
+  border-bottom: 0;
+}

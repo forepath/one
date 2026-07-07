@@ -41,6 +41,7 @@ describe('projects selectors', () => {
         openTicketCount: 1,
         doneTicketCount: 1,
         milestoneCount: 1,
+        openMilestoneCount: 0,
       },
       loading: true,
       loadingDetail: true,

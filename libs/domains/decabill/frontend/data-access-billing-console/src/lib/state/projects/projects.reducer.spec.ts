@@ -82,11 +82,20 @@ describe('projectsReducer', () => {
       openTicketCount: 2,
       doneTicketCount: 1,
       milestoneCount: 1,
+      openMilestoneCount: 0,
     };
     const state = projectsReducer(initialProjectsState, loadProjectSummarySuccess({ summary }));
 
     expect(state.summary).toEqual(summary);
     expect(state.loadingSummary).toBe(false);
+  });
+
+  it('updates selected project targetHours on admin update success', () => {
+    const withTarget = { ...project, targetHours: 40 };
+    const loaded = projectsReducer(initialProjectsState, loadProjectDetailSuccess({ project: withTarget }));
+    const updated = projectsReducer(loaded, updateAdminProjectSuccess({ project: { ...withTarget, targetHours: 20 } }));
+
+    expect(updated.selectedProject?.targetHours).toBe(20);
   });
 
   it('prepends admin project on create success', () => {
@@ -176,6 +185,7 @@ describe('projectsReducer', () => {
             openTicketCount: 0,
             doneTicketCount: 0,
             milestoneCount: 0,
+            openMilestoneCount: 0,
           },
         },
       }),
@@ -203,6 +213,7 @@ describe('projectsReducer', () => {
           openTicketCount: 1,
           doneTicketCount: 0,
           milestoneCount: 0,
+          openMilestoneCount: 0,
         },
       }),
     );

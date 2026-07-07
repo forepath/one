@@ -13,10 +13,12 @@ import {
   isBillingServerOnline,
   isBillingServerStartable,
   isBillingServerStatusTransitional,
+  ProjectsFacade,
   SubscriptionServerInfoFacade,
   SubscriptionsFacade,
   type BackorderResponse,
   type InvoicesSummaryResponse,
+  type ProjectListItem,
   type ServerInfoResponse,
   type SubscriptionResponse,
   type SubscriptionWithServerInfo,
@@ -42,6 +44,7 @@ export class OverviewComponent implements OnInit {
   private readonly environment = inject<Environment>(ENVIRONMENT);
   private readonly destroyRef = inject(DestroyRef);
   private readonly backordersFacade = inject(BackordersFacade);
+  private readonly projectsFacade = inject(ProjectsFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
   private readonly invoicesFacade = inject(InvoicesFacade);
 
@@ -87,6 +90,13 @@ export class OverviewComponent implements OnInit {
   });
   readonly backordersLoading$ = this.backordersFacade.getBackordersLoading$();
   readonly backordersError$ = this.backordersFacade.getBackordersError$();
+
+  readonly projects = toSignal(this.projectsFacade.projects$, {
+    initialValue: [] as ProjectListItem[],
+  });
+  readonly activeProjects = computed(() => this.projects().filter((project) => project.status === 'active'));
+  readonly projectsLoading$ = this.projectsFacade.loading$;
+  readonly projectsError$ = this.projectsFacade.error$;
 
   readonly customerProfile$ = this.customerProfileFacade.getCustomerProfile$();
   readonly customerProfileLoading$ = this.customerProfileFacade.getCustomerProfileLoading$();
@@ -183,6 +193,7 @@ export class OverviewComponent implements OnInit {
   ngOnInit(): void {
     this.subscriptionsFacade.loadSubscriptions();
     this.backordersFacade.loadBackorders();
+    this.projectsFacade.loadProjects();
     this.customerProfileFacade.loadCustomerProfile();
     this.invoicesFacade.loadInvoicesSummary();
 

@@ -764,6 +764,12 @@
       <trans-unit id="featureOverview-viewPlansButtonTitle" datatype="html">
         <source>View plans</source>
         </trans-unit>
+      <trans-unit id="featureOverview-projects" datatype="html">
+        <source>Active projects</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-viewProjectsButtonTitle" datatype="html">
+        <source>View projects</source>
+        </trans-unit>
       <trans-unit id="featureOverview-backorders" datatype="html">
         <source>Backorders</source>
         </trans-unit>
@@ -1173,7 +1179,7 @@
         <source>Withdrawal period</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-withdrawalAfterProvisioning" datatype="html">
-        <source>You may withdraw within the statutory period after the service is provisioned. Refunds for unused time are calculated on a pro-rata basis.</source>
+        <source>You may withdraw within the statutory period, even after the service is provisioned. Refunds for unused time are calculated on a pro-rata basis.</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-withdrawalBeforeProvisioningOnly" datatype="html">
         <source>Statutory withdrawal is only available before the service is provisioned.</source>
@@ -2004,6 +2010,12 @@
       <trans-unit id="featureAdminProjects-rateLabel" datatype="html">
         <source>Hourly rate (net)</source>
       </trans-unit>
+      <trans-unit id="featureAdminProjects-targetHoursLabel" datatype="html">
+        <source>Target hours</source>
+      </trans-unit>
+      <trans-unit id="featureAdminProjects-targetHoursHint" datatype="html">
+        <source>Optional. Leave empty for no target.</source>
+      </trans-unit>
       <trans-unit id="featureAdminProjects-cancel" datatype="html">
         <source>Cancel</source>
       </trans-unit>
@@ -2034,14 +2046,35 @@
       <trans-unit id="featureProjectDetail-trackedTime" datatype="html">
         <source>Tracked time</source>
       </trans-unit>
+      <trans-unit id="featureProjectDetail-targetTime" datatype="html">
+        <source>Target: <x id="PH" equiv-text="formatted duration"/></source>
+      </trans-unit>
       <trans-unit id="featureProjectDetail-unbilledTime" datatype="html">
         <source>Unbilled time</source>
       </trans-unit>
       <trans-unit id="featureProjectDetail-openBillable" datatype="html">
         <source>Open billable</source>
       </trans-unit>
+      <trans-unit id="featureProjectDetail-openMilestones" datatype="html">
+        <source>Open milestones</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-completedMilestones" datatype="html">
+        <source>Completed milestones</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-milestonesProgressAria" datatype="html">
+        <source>Milestone completion</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-ticketsProgressAria" datatype="html">
+        <source>Tickets done</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-trackedTimeProgressAria" datatype="html">
+        <source>Tracked time progress</source>
+      </trans-unit>
       <trans-unit id="featureProjectDetail-openTickets" datatype="html">
         <source>Open tickets</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-completedTickets" datatype="html">
+        <source>Completed tickets</source>
       </trans-unit>
       <trans-unit id="featureProjectDetail-tabBoard" datatype="html">
         <source>Board</source>

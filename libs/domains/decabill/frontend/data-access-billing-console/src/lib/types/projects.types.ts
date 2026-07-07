@@ -11,6 +11,7 @@ export interface ProjectResponse {
   description?: string | null;
   status: ProjectStatus;
   hourlyRateNet: number;
+  targetHours?: number | null;
   currency: string;
   createdAt: string;
   updatedAt: string;
@@ -48,6 +49,7 @@ export interface ProjectSummaryResponse {
   openTicketCount: number;
   doneTicketCount: number;
   milestoneCount: number;
+  openMilestoneCount: number;
 }
 
 export interface AdminProjectDetailResponse extends AdminProjectListItem {
@@ -60,6 +62,7 @@ export interface CreateAdminProjectDto {
   description?: string;
   status?: ProjectStatus;
   hourlyRateNet: number;
+  targetHours?: number | null;
   currency?: string;
 }
 
@@ -69,6 +72,7 @@ export interface UpdateAdminProjectDto {
   description?: string;
   status?: ProjectStatus;
   hourlyRateNet?: number;
+  targetHours?: number | null;
   currency?: string;
 }
 

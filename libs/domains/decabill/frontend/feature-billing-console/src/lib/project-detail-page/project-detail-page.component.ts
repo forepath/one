@@ -12,6 +12,7 @@ import {
   type AdminProjectDetailResponse,
   type BillProjectTimeDto,
   type ManualInvoiceLineItemDto,
+  type ProjectSummaryResponse,
   type ProjectTimeEntryResponse,
   type SubscriptionResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
@@ -28,6 +29,15 @@ import {
 } from '../billing-status-labels';
 import { ProjectBoardComponent } from '../project-board/project-board.component';
 import { ProjectMilestonesPanelComponent } from '../project-milestones-panel/project-milestones-panel.component';
+import {
+  computeProjectMilestonesCompleteProgress,
+  computeProjectOpenDoneProgress,
+  computeProjectTargetHoursProgress,
+  computeProjectTicketsDoneProgress,
+  formatProjectTargetHoursDuration,
+  hasProjectTargetHours,
+  type ProjectSummaryProgressBar,
+} from '../project-summary-progress.utils';
 import { parseProjectDetailTab, type ProjectDetailTab } from './project-detail-tabs';
 
 type ProjectViewMode = 'admin' | 'customer';
@@ -69,6 +79,7 @@ export class ProjectDetailPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly isAdminView = signal(false);
+  readonly trackedTimeProgressAriaLabel = $localize`:@@featureProjectDetail-trackedTimeProgressAria:Tracked time progress`;
 
   readonly selectedProject$ = this.projectsFacade.selectedProject$;
   readonly summary$ = this.projectsFacade.summary$;
@@ -206,6 +217,16 @@ export class ProjectDetailPageComponent implements OnInit {
 
   openBillTimeModal(): void {
     if (!this.projectId || !this.isAdminView()) return;
+
+    this.summary$.pipe(take(1)).subscribe((summary) => {
+      if (!this.hasUnbilledTime(summary)) return;
+
+      this.openBillTimeModalAfterSummaryCheck();
+    });
+  }
+
+  private openBillTimeModalAfterSummaryCheck(): void {
+    if (!this.projectId) return;
 
     this.projectsFacade.clearError();
     this.resetBillTimeCustomFields();
@@ -467,6 +488,62 @@ export class ProjectDetailPageComponent implements OnInit {
     const m = minutes % 60;
 
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  }
+
+  hasUnbilledTime(summary: ProjectSummaryResponse | null | undefined): boolean {
+    return !!summary && summary.unbilledMinutes > 0;
+  }
+
+  hasTargetHours(targetHours: number | null | undefined): boolean {
+    return hasProjectTargetHours(targetHours);
+  }
+
+  formatTargetHoursDuration(targetHours: number | null | undefined): string {
+    return hasProjectTargetHours(targetHours) ? formatProjectTargetHoursDuration(targetHours) : '';
+  }
+
+  trackedTimeTargetAriaLabel(trackedMinutes: number, targetHours: number | null | undefined): string {
+    return `${this.formatMinutes(trackedMinutes)} / ${this.formatTargetHoursDuration(targetHours)}`;
+  }
+
+  targetHoursProgress(trackedMinutes: number, targetHours: number | null | undefined): ProjectSummaryProgressBar {
+    return computeProjectTargetHoursProgress(trackedMinutes, targetHours);
+  }
+
+  ticketsDoneProgress(summary: ProjectSummaryResponse): ProjectSummaryProgressBar {
+    if (this.isAdminView()) {
+      return computeProjectOpenDoneProgress(summary.openTicketCount, summary.doneTicketCount);
+    }
+
+    return computeProjectTicketsDoneProgress(summary.openTicketCount, summary.doneTicketCount);
+  }
+
+  milestonesCompleteProgress(summary: ProjectSummaryResponse): ProjectSummaryProgressBar {
+    if (this.isAdminView()) {
+      return computeProjectOpenDoneProgress(summary.openMilestoneCount, this.completedMilestoneCount(summary));
+    }
+
+    return computeProjectMilestonesCompleteProgress(summary.openMilestoneCount, summary.milestoneCount);
+  }
+
+  hasOpenDoneSplit(progress: ProjectSummaryProgressBar): boolean {
+    return progress.openPct != null;
+  }
+
+  totalTicketCount(summary: ProjectSummaryResponse): number {
+    return summary.openTicketCount + summary.doneTicketCount;
+  }
+
+  completedMilestoneCount(summary: ProjectSummaryResponse): number {
+    return summary.milestoneCount - summary.openMilestoneCount;
+  }
+
+  milestoneSummaryPrimaryCount(summary: ProjectSummaryResponse): number {
+    return this.isAdminView() ? summary.openMilestoneCount : this.completedMilestoneCount(summary);
+  }
+
+  ticketSummaryPrimaryCount(summary: ProjectSummaryResponse): number {
+    return this.isAdminView() ? summary.openTicketCount : summary.doneTicketCount;
   }
 
   private resetTimeForm(): void {

@@ -70,6 +70,8 @@ export class AdminProjectsPageComponent implements OnInit {
 
   createForm: CreateAdminProjectDto = this.emptyCreateForm();
   editForm: UpdateAdminProjectDto & { id: string } = { id: '', name: '', hourlyRateNet: 0 };
+  editTargetHoursInput: number | null = null;
+  createTargetHoursInput: number | null = null;
   projectToDelete: AdminProjectListItem | null = null;
 
   ngOnInit(): void {
@@ -80,6 +82,7 @@ export class AdminProjectsPageComponent implements OnInit {
 
   openCreateModal(): void {
     this.createForm = this.emptyCreateForm();
+    this.createTargetHoursInput = null;
     showBillingModal(this.createModal);
     queueMicrotask(() => this.createUserSelect?.reset());
   }
@@ -95,6 +98,7 @@ export class AdminProjectsPageComponent implements OnInit {
           hourlyRateNet: full.hourlyRateNet,
           currency: full.currency,
         };
+        this.editTargetHoursInput = full.targetHours ?? null;
         showBillingModal(this.editModal);
       },
     });
@@ -108,13 +112,23 @@ export class AdminProjectsPageComponent implements OnInit {
   submitCreate(): void {
     if (!this.createForm.userId || !this.createForm.name.trim()) return;
 
-    this.facade.createAdminProject(this.createForm);
+    const payload: CreateAdminProjectDto = { ...this.createForm };
+    const targetHours = this.normalizeTargetHoursInput(this.createTargetHoursInput);
+
+    if (targetHours != null) {
+      payload.targetHours = targetHours;
+    }
+
+    this.facade.createAdminProject(payload);
   }
 
   submitEdit(): void {
     const { id, ...dto } = this.editForm;
 
-    this.facade.updateAdminProject(id, dto);
+    this.facade.updateAdminProject(id, {
+      ...dto,
+      targetHours: this.normalizeTargetHoursInput(this.editTargetHoursInput),
+    });
   }
 
   submitDelete(): void {
@@ -151,6 +165,14 @@ export class AdminProjectsPageComponent implements OnInit {
     return { userId: '', name: '', hourlyRateNet: 100, currency: 'EUR' };
   }
 
+  private normalizeTargetHoursInput(value: number | null | undefined): number | null | undefined {
+    if (value == null || !Number.isFinite(value) || value <= 0) {
+      return null;
+    }
+
+    return value;
+  }
+
   private registerModalCloseWatchers(): void {
     const reload = (): void => this.facade.loadAdminProjects();
 
@@ -161,6 +183,7 @@ export class AdminProjectsPageComponent implements OnInit {
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.createForm = this.emptyCreateForm();
+        this.createTargetHoursInput = null;
         reload();
       },
     });
