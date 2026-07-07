@@ -87,6 +87,20 @@ export class SubscriptionsRepository {
     return await qb.getMany();
   }
 
+  async findDueForWithdrawal(now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
+    const qb = this.repository
+      .createQueryBuilder('subscription')
+      .innerJoin('users', 'user', 'user.id = subscription.user_id')
+      .where('subscription.status = :status', { status: 'pending_withdrawal' })
+      .andWhere('subscription.withdrawnAt <= :now', { now })
+      .orderBy('subscription.withdrawnAt', 'ASC')
+      .take(limit);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
+  }
+
   async countByStatus(status: string): Promise<number> {
     const qb = this.repository
       .createQueryBuilder('subscription')

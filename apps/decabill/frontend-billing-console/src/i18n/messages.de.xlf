@@ -474,6 +474,10 @@
         <source>Pending cancellation</source>
         <target>Kündigung ausstehend</target>
       </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusPendingWithdrawal" datatype="html">
+        <source>Pending withdrawal</source>
+        <target>Widerruf ausstehend</target>
+      </trans-unit>
       <trans-unit id="featureBilling-subscriptionStatusCanceled" datatype="html">
         <source>Canceled</source>
         <target>Gekündigt</target>

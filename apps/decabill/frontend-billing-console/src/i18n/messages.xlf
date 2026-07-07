@@ -356,6 +356,9 @@
       <trans-unit id="featureBilling-subscriptionStatusPendingCancel" datatype="html">
         <source>Pending cancellation</source>
         </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusPendingWithdrawal" datatype="html">
+        <source>Pending withdrawal</source>
+        </trans-unit>
       <trans-unit id="featureBilling-subscriptionStatusCanceled" datatype="html">
         <source>Canceled</source>
         </trans-unit>

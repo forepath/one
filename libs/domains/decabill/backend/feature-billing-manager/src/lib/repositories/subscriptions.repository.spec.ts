@@ -140,6 +140,21 @@ describe('SubscriptionsRepository', () => {
     expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('subscription.cancelEffectiveAt <= :now', { now });
   });
 
+  it('finds subscriptions due for withdrawal', async () => {
+    const subscriptions = [{ id: 'sub-1', status: SubscriptionStatus.PENDING_WITHDRAWAL }];
+
+    mockQueryBuilder.getMany.mockResolvedValue(subscriptions);
+
+    const now = new Date();
+    const result = await repository.findDueForWithdrawal(now, 100);
+
+    expect(result).toEqual(subscriptions);
+    expect(mockQueryBuilder.where).toHaveBeenCalledWith('subscription.status = :status', {
+      status: 'pending_withdrawal',
+    });
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('subscription.withdrawnAt <= :now', { now });
+  });
+
   it('finds upcoming renewals within days', async () => {
     const subscriptions = [{ id: 'sub-1', status: SubscriptionStatus.ACTIVE }];
 

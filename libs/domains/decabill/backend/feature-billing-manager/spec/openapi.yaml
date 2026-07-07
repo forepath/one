@@ -3473,7 +3473,14 @@ components:
         status:
           {
             type: string,
-            enum: [active, pending_backorder, pending_cancel, canceled],
+            enum:
+              [
+                active,
+                pending_backorder,
+                pending_cancel,
+                pending_withdrawal,
+                canceled,
+              ],
           }
         currentPeriodStart: { type: string, format: date-time, nullable: true }
         currentPeriodEnd: { type: string, format: date-time, nullable: true }

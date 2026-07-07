@@ -14,8 +14,12 @@ export enum SubscriptionStatus {
   ACTIVE = 'active',
   PENDING_BACKORDER = 'pending_backorder',
   PENDING_CANCEL = 'pending_cancel',
+  PENDING_WITHDRAWAL = 'pending_withdrawal',
   CANCELED = 'canceled',
 }
+
+/** Teardown phase recorded on withdrawal so the queued job knows how to bill and refund. */
+export type WithdrawalTeardownPhase = 'unprovisioned' | 'withdrawal_period';
 
 @Entity('billing_subscriptions')
 export class SubscriptionEntity {
@@ -58,6 +62,9 @@ export class SubscriptionEntity {
 
   @Column({ type: 'timestamp', nullable: true, name: 'withdrawn_at' })
   withdrawnAt?: Date;
+
+  @Column({ type: 'varchar', length: 30, nullable: true, name: 'withdraw_phase' })
+  withdrawPhase?: WithdrawalTeardownPhase;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
