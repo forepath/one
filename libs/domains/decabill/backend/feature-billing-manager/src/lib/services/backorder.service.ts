@@ -84,6 +84,16 @@ export class BackorderService {
 
   async retry(backorderId: string): Promise<BackorderEntity> {
     const backorder = await this.backordersRepository.findByIdOrThrow(backorderId);
+
+    // A backorder may have been cancelled (e.g. via subscription withdrawal/cancellation) or already
+    // resolved between coordinator enqueue and this unit job. Never provision a non-actionable backorder,
+    // otherwise a customer who withdrew or cancelled could still get a server created.
+    if (backorder.status !== BackorderStatus.PENDING && backorder.status !== BackorderStatus.RETRYING) {
+      this.logger.log(`Skipping backorder ${backorderId}; status is ${backorder.status}`);
+
+      return backorder;
+    }
+
     const plan = await this.servicePlansRepository.findByIdOrThrow(backorder.planId);
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
     const allowCustomerLocationSelection = plan.allowCustomerLocationSelection === true;

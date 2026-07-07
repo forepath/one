@@ -12,6 +12,7 @@ import {
   SubscriptionExpirationJobHandler,
   SubscriptionItemUpdateJobHandler,
   SubscriptionRenewalReminderJobHandler,
+  SubscriptionWithdrawalJobHandler,
 } from '@forepath/decabill/backend';
 import { DEFAULT_TENANT, enqueueUnitJob, runWithTenantId } from '@forepath/shared/backend';
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
@@ -36,6 +37,7 @@ export class BillingJobsProcessor extends WorkerHost {
     private readonly billingTenantService: BillingTenantService,
     private readonly subscriptionBilling: SubscriptionBillingJobHandler,
     private readonly subscriptionExpiration: SubscriptionExpirationJobHandler,
+    private readonly subscriptionWithdrawal: SubscriptionWithdrawalJobHandler,
     private readonly invoiceOverdue: InvoiceOverdueJobHandler,
     private readonly openPositionInvoice: OpenPositionInvoiceJobHandler,
     private readonly renewalReminder: SubscriptionRenewalReminderJobHandler,
@@ -55,6 +57,9 @@ export class BillingJobsProcessor extends WorkerHost {
         break;
       case BillingJobName.SUBSCRIPTION_EXPIRATION_COORDINATOR:
         await this.runSubscriptionExpirationCoordinator();
+        break;
+      case BillingJobName.SUBSCRIPTION_WITHDRAWAL_COORDINATOR:
+        await this.runSubscriptionWithdrawalCoordinator();
         break;
       case BillingJobName.INVOICE_OVERDUE_COORDINATOR:
         await this.runInvoiceOverdueCoordinator();
@@ -101,6 +106,11 @@ export class BillingJobsProcessor extends WorkerHost {
               break;
             case BillingJobName.SUBSCRIPTION_EXPIRATION_UNIT:
               await this.subscriptionExpiration.processSubscriptionCancellation(
+                (job.data as { subscriptionId: string }).subscriptionId,
+              );
+              break;
+            case BillingJobName.SUBSCRIPTION_WITHDRAWAL_UNIT:
+              await this.subscriptionWithdrawal.processSubscriptionWithdrawal(
                 (job.data as { subscriptionId: string }).subscriptionId,
               );
               break;
@@ -191,6 +201,22 @@ export class BillingJobsProcessor extends WorkerHost {
           jobName: BillingJobName.SUBSCRIPTION_EXPIRATION_UNIT,
           payload: { subscriptionId, tenantId },
           jobIdNamespace: 'expiration:subscription',
+          jobIdParts: [tenantId, subscriptionId],
+        });
+      }
+    });
+  }
+
+  private async runSubscriptionWithdrawalCoordinator(): Promise<void> {
+    await this.forEachConfiguredTenant(async (tenantId) => {
+      const ids = await this.subscriptionWithdrawal.findPendingWithdrawalIds();
+
+      for (const subscriptionId of ids) {
+        await this.enqueueBillingUnitJob({
+          queue: this.billingQueue,
+          jobName: BillingJobName.SUBSCRIPTION_WITHDRAWAL_UNIT,
+          payload: { subscriptionId, tenantId },
+          jobIdNamespace: 'withdrawal:subscription',
           jobIdParts: [tenantId, subscriptionId],
         });
       }

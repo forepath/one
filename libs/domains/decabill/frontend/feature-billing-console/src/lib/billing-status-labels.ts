@@ -23,6 +23,8 @@ export function getSubscriptionStatusLabel(status: string | null | undefined): s
       return $localize`:@@featureBilling-subscriptionStatusPendingBackorder:Pending backorder`;
     case 'pending_cancel':
       return $localize`:@@featureBilling-subscriptionStatusPendingCancel:Pending cancellation`;
+    case 'pending_withdrawal':
+      return $localize`:@@featureBilling-subscriptionStatusPendingWithdrawal:Pending withdrawal`;
     case 'canceled':
       return $localize`:@@featureBilling-subscriptionStatusCanceled:Canceled`;
     default:
@@ -80,6 +82,8 @@ export function getSubscriptionStatusBadgeClass(status: string | null | undefine
     case 'active':
       return 'billing-admin__chip--status-paid';
     case 'pending_cancel':
+      return 'billing-admin__chip--status-partially-paid';
+    case 'pending_withdrawal':
       return 'billing-admin__chip--status-partially-paid';
     case 'pending_backorder':
       return 'billing-admin__chip--status-issued';

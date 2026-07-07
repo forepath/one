@@ -15,7 +15,6 @@ import { BillingScheduleService } from './billing-schedule.service';
 import { CancellationPolicyService } from './cancellation-policy.service';
 import { WithdrawalPolicyService } from './withdrawal-policy.service';
 import { WithdrawalRefundService } from './withdrawal-refund.service';
-import { SubscriptionTeardownService } from './subscription-teardown.service';
 import { CloudInitConfigService } from './cloud-init-config.service';
 import { CustomerProfilesService } from './customer-profiles.service';
 import { SubscriptionService } from './subscription.service';
@@ -50,10 +49,12 @@ describe('SubscriptionService', () => {
     create: jest.fn(),
     findByIdOrThrow: jest.fn(),
     update: jest.fn(),
+    delete: jest.fn(),
     findAllByUser: jest.fn(),
   } as unknown as SubscriptionsRepository;
   const itemsRepository = {
     create: jest.fn(),
+    delete: jest.fn(),
     updateProviderReference: jest.fn(),
     updateProvisioningStatus: jest.fn(),
     updateHostname: jest.fn().mockResolvedValue({}),
@@ -104,9 +105,6 @@ describe('SubscriptionService', () => {
     applyProvisionedWithdrawalRefund: jest.fn(),
     estimateRefundGross: jest.fn(),
   } as unknown as WithdrawalRefundService;
-  const subscriptionTeardownService = {
-    teardownImmediate: jest.fn(),
-  } as unknown as SubscriptionTeardownService;
   const backordersRepository = {
     cancelPendingForUserPlan: jest.fn(),
   } as unknown as BackordersRepository;
@@ -126,7 +124,6 @@ describe('SubscriptionService', () => {
     cloudInitConfigService,
     withdrawalPolicyService,
     withdrawalRefundService,
-    subscriptionTeardownService,
     backordersRepository,
   );
 
@@ -495,6 +492,108 @@ describe('SubscriptionService', () => {
     );
   });
 
+  it('does not create a backorder when the order is provisioned successfully with autoBackorder enabled', async () => {
+    (validateConfigSchema as jest.Mock).mockReturnValue([]);
+
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+      providerConfigDefaults: controllerProvisioningDefaults,
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    itemsRepository.updateProviderReference = jest.fn();
+    itemsRepository.updateProvisioningStatus = jest.fn();
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+
+    await service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true);
+
+    expect(backorderService.create).not.toHaveBeenCalled();
+  });
+
+  it('rolls back the subscription and item when provisioning fails and no server was created', async () => {
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+      providerConfigDefaults: controllerProvisioningDefaults,
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({ id: 'sub-1', userId: 'user-1', planId: 'plan-1' });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockRejectedValue(new Error('provider exploded'));
+
+    await expect(service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true)).rejects.toThrow(
+      'provider exploded',
+    );
+
+    expect(itemsRepository.delete).toHaveBeenCalledWith('item-1');
+    expect(subscriptionsRepository.delete).toHaveBeenCalledWith('sub-1');
+    expect(itemsRepository.updateProvisioningStatus).not.toHaveBeenCalledWith('item-1', 'failed');
+    expect(backorderService.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user-1',
+        planId: 'plan-1',
+        providerErrors: { reason: 'provider exploded' },
+      }),
+    );
+  });
+
+  it('keeps the records and does not backorder when a server was created before the failure', async () => {
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+      providerConfigDefaults: controllerProvisioningDefaults,
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({ id: 'sub-1', userId: 'user-1', planId: 'plan-1' });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    itemsRepository.updateProviderReference = jest.fn();
+    itemsRepository.updateProvisioningStatus = jest.fn();
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+    (provisioningService.getServerInfo as jest.Mock).mockRejectedValueOnce(new Error('post-provision failure'));
+
+    await expect(service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true)).rejects.toThrow(
+      'post-provision failure',
+    );
+
+    expect(itemsRepository.updateProvisioningStatus).toHaveBeenCalledWith('item-1', 'failed');
+    expect(itemsRepository.delete).not.toHaveBeenCalled();
+    expect(subscriptionsRepository.delete).not.toHaveBeenCalled();
+    expect(backorderService.create).not.toHaveBeenCalled();
+  });
+
   it('provisions when provider is digital-ocean', async () => {
     plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
       id: 'plan-1',
@@ -708,7 +807,7 @@ describe('SubscriptionService', () => {
     await expect(service.cancelSubscription('sub-1', 'user-1')).rejects.toThrow(BadRequestException);
   });
 
-  it('withdraws unprovisioned subscription', async () => {
+  it('queues withdrawal for unprovisioned subscription without tearing down inline', async () => {
     subscriptionsRepository.findByIdOrThrow = jest
       .fn()
       .mockResolvedValueOnce({
@@ -721,9 +820,11 @@ describe('SubscriptionService', () => {
         id: 'sub-1',
         userId: 'user-1',
         planId: 'plan-1',
-        status: SubscriptionStatus.CANCELED,
+        status: SubscriptionStatus.PENDING_WITHDRAWAL,
         withdrawnAt: new Date(),
+        withdrawPhase: 'unprovisioned',
       });
+    subscriptionsRepository.update = jest.fn().mockResolvedValue(undefined);
     plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({ id: 'plan-1', serviceTypeId: 'st-1' });
     typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({ id: 'st-1', disallowStatutoryWithdrawal: false });
     itemsRepository.findBySubscription = jest
@@ -733,11 +834,50 @@ describe('SubscriptionService', () => {
     const result = await service.withdrawSubscription('sub-1', 'user-1');
 
     expect(backordersRepository.cancelPendingForUserPlan).toHaveBeenCalledWith('user-1', 'plan-1');
-    expect(subscriptionTeardownService.teardownImmediate).toHaveBeenCalledWith('sub-1', {
-      withdrawn: true,
-      billUntil: expect.any(Date),
-      skipOpenPosition: true,
+    expect(subscriptionsRepository.update).toHaveBeenCalledWith('sub-1', {
+      status: SubscriptionStatus.PENDING_WITHDRAWAL,
+      withdrawnAt: expect.any(Date),
+      withdrawPhase: 'unprovisioned',
     });
-    expect(result.subscription.status).toBe(SubscriptionStatus.CANCELED);
+    expect(withdrawalRefundService.estimateRefundGross).not.toHaveBeenCalled();
+    expect(result.subscription.status).toBe(SubscriptionStatus.PENDING_WITHDRAWAL);
+    expect(result.withdrawalResult?.paymentRefundStatus).toBe('not_applicable');
+  });
+
+  it('queues withdrawal for provisioned subscription with an estimated refund', async () => {
+    subscriptionsRepository.findByIdOrThrow = jest
+      .fn()
+      .mockResolvedValueOnce({
+        id: 'sub-1',
+        userId: 'user-1',
+        planId: 'plan-1',
+        status: SubscriptionStatus.ACTIVE,
+      })
+      .mockResolvedValueOnce({
+        id: 'sub-1',
+        userId: 'user-1',
+        planId: 'plan-1',
+        status: SubscriptionStatus.PENDING_WITHDRAWAL,
+        withdrawnAt: new Date(),
+        withdrawPhase: 'withdrawal_period',
+      });
+    subscriptionsRepository.update = jest.fn().mockResolvedValue(undefined);
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({ id: 'plan-1', serviceTypeId: 'st-1' });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({ id: 'st-1', disallowStatutoryWithdrawal: false });
+    itemsRepository.findBySubscription = jest
+      .fn()
+      .mockResolvedValue([{ provisioningStatus: 'active', provisionedAt: new Date(), createdAt: new Date() }]);
+    (withdrawalRefundService.estimateRefundGross as jest.Mock).mockResolvedValue(42);
+
+    const result = await service.withdrawSubscription('sub-1', 'user-1');
+
+    expect(subscriptionsRepository.update).toHaveBeenCalledWith('sub-1', {
+      status: SubscriptionStatus.PENDING_WITHDRAWAL,
+      withdrawnAt: expect.any(Date),
+      withdrawPhase: 'withdrawal_period',
+    });
+    expect(withdrawalRefundService.applyProvisionedWithdrawalRefund).not.toHaveBeenCalled();
+    expect(result.withdrawalResult?.refundGross).toBe(42);
+    expect(result.withdrawalResult?.paymentRefundStatus).toBe('pending');
   });
 });

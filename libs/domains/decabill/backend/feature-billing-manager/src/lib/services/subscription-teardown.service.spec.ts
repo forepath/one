@@ -22,6 +22,10 @@ describe('SubscriptionTeardownService', () => {
   const cloudflareDnsService = {
     deleteRecord: jest.fn(),
   };
+  const withdrawalRefundService = {
+    applyProvisionedWithdrawalRefund: jest.fn(),
+    estimateRefundGross: jest.fn(),
+  };
 
   const service = new SubscriptionTeardownService(
     subscriptionsRepository as never,
@@ -30,6 +34,7 @@ describe('SubscriptionTeardownService', () => {
     openPositionsRepository as never,
     hostnameReservationService as never,
     cloudflareDnsService as never,
+    withdrawalRefundService as never,
   );
 
   beforeEach(() => {
@@ -95,5 +100,56 @@ describe('SubscriptionTeardownService', () => {
     await service.teardownImmediate('sub-1', { skipOpenPosition: true });
 
     expect(openPositionsRepository.create).not.toHaveBeenCalled();
+  });
+
+  describe('processWithdrawal', () => {
+    it('applies refund and tears down when phase is withdrawal_period', async () => {
+      const withdrawnAt = new Date('2024-06-01T12:00:00Z');
+
+      subscriptionsRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'sub-1',
+        number: 'SUB-001',
+        userId: 'user-1',
+        status: SubscriptionStatus.PENDING_WITHDRAWAL,
+        withdrawnAt,
+        withdrawPhase: 'withdrawal_period',
+      });
+
+      await service.processWithdrawal('sub-1');
+
+      expect(withdrawalRefundService.applyProvisionedWithdrawalRefund).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'sub-1' }),
+        withdrawnAt,
+      );
+      expect(openPositionsRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ description: 'Subscription SUB-001 (withdrawn)', billUntil: withdrawnAt }),
+      );
+      expect(subscriptionsRepository.update).toHaveBeenCalledWith('sub-1', {
+        status: SubscriptionStatus.CANCELED,
+        withdrawnAt,
+      });
+    });
+
+    it('skips refund and open position when phase is unprovisioned', async () => {
+      const withdrawnAt = new Date('2024-06-02T12:00:00Z');
+
+      subscriptionsRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'sub-1',
+        number: 'SUB-001',
+        userId: 'user-1',
+        status: SubscriptionStatus.PENDING_WITHDRAWAL,
+        withdrawnAt,
+        withdrawPhase: 'unprovisioned',
+      });
+
+      await service.processWithdrawal('sub-1');
+
+      expect(withdrawalRefundService.applyProvisionedWithdrawalRefund).not.toHaveBeenCalled();
+      expect(openPositionsRepository.create).not.toHaveBeenCalled();
+      expect(subscriptionsRepository.update).toHaveBeenCalledWith('sub-1', {
+        status: SubscriptionStatus.CANCELED,
+        withdrawnAt,
+      });
+    });
   });
 });

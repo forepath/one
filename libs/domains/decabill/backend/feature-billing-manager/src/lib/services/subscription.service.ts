@@ -26,7 +26,6 @@ import { AvailabilityService } from './availability.service';
 import { BackorderService } from './backorder.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { CancellationPolicyService } from './cancellation-policy.service';
-import { SubscriptionTeardownService } from './subscription-teardown.service';
 import { WithdrawalPolicyService } from './withdrawal-policy.service';
 import { WithdrawalRefundService } from './withdrawal-refund.service';
 import { CloudflareDnsService } from './cloudflare-dns.service';
@@ -55,7 +54,6 @@ export class SubscriptionService {
     private readonly cloudInitConfigService: CloudInitConfigService,
     private readonly withdrawalPolicyService: WithdrawalPolicyService,
     private readonly withdrawalRefundService: WithdrawalRefundService,
-    private readonly subscriptionTeardownService: SubscriptionTeardownService,
     private readonly backordersRepository: BackordersRepository,
   ) {}
 
@@ -173,6 +171,7 @@ export class SubscriptionService {
 
     if (serviceType.provider === 'hetzner' || serviceType.provider === 'digital-ocean') {
       let hostname: string | null = null;
+      let provisionedServerId: string | undefined;
 
       try {
         hostname = await this.hostnameReservationService.reserveHostname(subscriptionItem.id);
@@ -197,6 +196,8 @@ export class SubscriptionService {
           userData,
         };
         const provisioned = await this.provisioningService.provision(serviceType.provider, provisioningConfig);
+
+        provisionedServerId = provisioned?.serverId;
 
         if (provisioned?.serverId) {
           await this.subscriptionItemsRepository.updateProviderReference(subscriptionItem.id, provisioned.serverId);
@@ -229,7 +230,24 @@ export class SubscriptionService {
           }
         }
 
-        await this.subscriptionItemsRepository.updateProvisioningStatus(subscriptionItem.id, 'failed');
+        // A real server was created before the failure (e.g. a post-provision call threw). Keep the
+        // records so the server stays tracked for teardown, and do not backorder (it already exists).
+        if (provisionedServerId) {
+          await this.subscriptionItemsRepository.updateProvisioningStatus(subscriptionItem.id, 'failed');
+
+          throw error;
+        }
+
+        // No server was provisioned: roll back the half-created order so no dangling active
+        // subscription remains, matching the out-of-stock path (only a backorder is left behind).
+        try {
+          await this.subscriptionItemsRepository.delete(subscriptionItem.id);
+          await this.subscriptionsRepository.delete(subscription.id);
+        } catch (rollbackError) {
+          this.logger.warn(
+            `Failed to roll back subscription ${subscription.id} after provisioning failure: ${(rollbackError as Error).message}`,
+          );
+        }
 
         if (autoBackorder) {
           await this.backorderService.create({
@@ -243,15 +261,6 @@ export class SubscriptionService {
 
         throw error;
       }
-    }
-
-    if (autoBackorder) {
-      await this.backorderService.create({
-        userId,
-        serviceTypeId: plan.serviceTypeId,
-        planId,
-        requestedConfigSnapshot: effectiveConfig,
-      });
     }
 
     return subscription;
@@ -329,19 +338,27 @@ export class SubscriptionService {
     await this.backordersRepository.cancelPendingForUserPlan(userId, subscription.planId);
 
     const withdrawnAt = new Date();
-    let withdrawalResult: WithdrawalResultDto | undefined;
+    const phase = decision.phase === 'withdrawal_period' ? 'withdrawal_period' : 'unprovisioned';
+    let estimatedRefundGross: number | undefined;
 
-    if (decision.phase === 'withdrawal_period') {
-      withdrawalResult = await this.withdrawalRefundService.applyProvisionedWithdrawalRefund(subscription, withdrawnAt);
+    if (phase === 'withdrawal_period') {
+      estimatedRefundGross = await this.withdrawalRefundService.estimateRefundGross(subscription);
     }
 
-    await this.subscriptionTeardownService.teardownImmediate(subscriptionId, {
-      withdrawn: true,
-      billUntil: withdrawnAt,
-      ...(decision.phase === 'unprovisioned' ? { skipOpenPosition: true } : {}),
+    // Record the withdrawal and hand teardown (deprovision + refund) to the queue,
+    // mirroring the pending_cancel expiration flow. The refund is applied when the
+    // withdrawal unit job runs, so the response returns an estimate, not the final credit.
+    await this.subscriptionsRepository.update(subscriptionId, {
+      status: SubscriptionStatus.PENDING_WITHDRAWAL,
+      withdrawnAt,
+      withdrawPhase: phase,
     });
 
     const updated = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
+    const withdrawalResult: WithdrawalResultDto = {
+      refundGross: estimatedRefundGross,
+      paymentRefundStatus: estimatedRefundGross ? 'pending' : 'not_applicable',
+    };
 
     return { subscription: updated, withdrawalResult };
   }

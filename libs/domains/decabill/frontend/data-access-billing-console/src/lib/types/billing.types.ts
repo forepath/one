@@ -3,7 +3,7 @@
 // Enums
 export type BillingIntervalType = 'hour' | 'day' | 'month';
 
-export type SubscriptionStatus = 'active' | 'pending_backorder' | 'pending_cancel' | 'canceled';
+export type SubscriptionStatus = 'active' | 'pending_backorder' | 'pending_cancel' | 'pending_withdrawal' | 'canceled';
 
 export type BackorderStatus = 'pending' | 'retrying' | 'fulfilled' | 'cancelled' | 'failed';
 

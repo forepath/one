@@ -39,6 +39,7 @@ Registered by the scheduler from `getBillingRepeatableJobs()`:
 | -------------------------------------- | ------------------------------------------ | ---------------- |
 | `subscription-billing.coordinator`     | `BILLING_SCHEDULER_INTERVAL`               | 60s              |
 | `subscription-expiration.coordinator`  | `EXPIRATION_SCHEDULER_INTERVAL`            | 60s              |
+| `subscription-withdrawal.coordinator`  | `WITHDRAWAL_SCHEDULER_INTERVAL`            | 60s              |
 | `invoice-overdue.coordinator`          | `INVOICE_OVERDUE_SCHEDULER_INTERVAL`       | 24h              |
 | `open-position-invoice.coordinator`    | `OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL` | 24h              |
 | `renewal-reminder.coordinator`         | `REMINDER_SCHEDULER_INTERVAL`              | 1h               |
@@ -56,6 +57,7 @@ Coordinators fan out unit jobs such as:
 
 - `subscription-billing.unit`
 - `subscription-expiration.unit`
+- `subscription-withdrawal.unit`
 - `invoice-overdue.unit`
 - `open-position-invoice.unit`
 - `renewal-reminder.unit`

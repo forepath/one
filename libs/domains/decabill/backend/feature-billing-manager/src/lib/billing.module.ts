@@ -172,6 +172,7 @@ import { ProvisioningService } from './services/provisioning.service';
 import { SshExecutorService } from './services/ssh-executor.service';
 import { SubscriptionBillingJobHandler } from './services/subscription-billing.job-handler';
 import { SubscriptionExpirationJobHandler } from './services/subscription-expiration.job-handler';
+import { SubscriptionWithdrawalJobHandler } from './services/subscription-withdrawal.job-handler';
 import { SubscriptionItemServerService } from './services/subscription-item-server.service';
 import { SubscriptionItemUpdateJobHandler } from './services/subscription-item-update.job-handler';
 import { SubscriptionRenewalReminderJobHandler } from './services/subscription-renewal-reminder.job-handler';
@@ -524,6 +525,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     ProjectTimeEntriesRepository,
     SubscriptionBillingJobHandler,
     SubscriptionExpirationJobHandler,
+    SubscriptionWithdrawalJobHandler,
     SubscriptionRenewalReminderJobHandler,
     OpenPositionInvoiceJobHandler,
     SubscriptionItemUpdateJobHandler,
@@ -599,6 +601,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     CustomerProfilesService,
     SubscriptionBillingJobHandler,
     SubscriptionExpirationJobHandler,
+    SubscriptionWithdrawalJobHandler,
     SubscriptionRenewalReminderJobHandler,
     OpenPositionInvoiceJobHandler,
     SubscriptionItemUpdateJobHandler,

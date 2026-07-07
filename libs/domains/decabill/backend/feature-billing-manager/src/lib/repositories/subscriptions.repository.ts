@@ -59,6 +59,12 @@ export class SubscriptionsRepository {
     return await this.repository.save(entity);
   }
 
+  async delete(id: string): Promise<void> {
+    const entity = await this.findByIdOrThrow(id);
+
+    await this.repository.remove(entity);
+  }
+
   async findDueForBilling(now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
     const qb = this.repository
       .createQueryBuilder('subscription')
@@ -80,6 +86,20 @@ export class SubscriptionsRepository {
       .where('subscription.status = :status', { status: 'pending_cancel' })
       .andWhere('subscription.cancelEffectiveAt <= :now', { now })
       .orderBy('subscription.cancelEffectiveAt', 'ASC')
+      .take(limit);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
+  }
+
+  async findDueForWithdrawal(now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
+    const qb = this.repository
+      .createQueryBuilder('subscription')
+      .innerJoin('users', 'user', 'user.id = subscription.user_id')
+      .where('subscription.status = :status', { status: 'pending_withdrawal' })
+      .andWhere('subscription.withdrawnAt <= :now', { now })
+      .orderBy('subscription.withdrawnAt', 'ASC')
       .take(limit);
 
     applyUserTenantFilter(qb, 'user');

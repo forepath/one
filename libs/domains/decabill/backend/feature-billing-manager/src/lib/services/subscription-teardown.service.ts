@@ -8,6 +8,7 @@ import { SubscriptionsRepository } from '../repositories/subscriptions.repositor
 import { CloudflareDnsService } from './cloudflare-dns.service';
 import { HostnameReservationService } from './hostname-reservation.service';
 import { ProvisioningService } from './provisioning.service';
+import { WithdrawalRefundService } from './withdrawal-refund.service';
 
 export interface TeardownOptions {
   withdrawn?: boolean;
@@ -26,7 +27,29 @@ export class SubscriptionTeardownService {
     private readonly openPositionsRepository: OpenPositionsRepository,
     private readonly hostnameReservationService: HostnameReservationService,
     private readonly cloudflareDnsService: CloudflareDnsService,
+    private readonly withdrawalRefundService: WithdrawalRefundService,
   ) {}
+
+  /**
+   * Completes a queued statutory withdrawal: applies the prorated refund when the
+   * subscription was provisioned within the withdrawal period, then tears down the
+   * instance. The withdrawal timestamp and phase are read from the subscription so the
+   * refund proration matches the moment the customer withdrew, not when the job runs.
+   */
+  async processWithdrawal(subscriptionId: string): Promise<void> {
+    const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
+    const withdrawnAt = subscription.withdrawnAt ?? new Date();
+
+    if (subscription.withdrawPhase === 'withdrawal_period') {
+      await this.withdrawalRefundService.applyProvisionedWithdrawalRefund(subscription, withdrawnAt);
+    }
+
+    await this.teardownImmediate(subscriptionId, {
+      withdrawn: true,
+      billUntil: withdrawnAt,
+      skipOpenPosition: subscription.withdrawPhase === 'unprovisioned',
+    });
+  }
 
   async teardownImmediate(subscriptionId: string, options: TeardownOptions = {}): Promise<void> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);

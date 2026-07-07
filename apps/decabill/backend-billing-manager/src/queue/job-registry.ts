@@ -10,6 +10,8 @@ export const BillingJobName = {
   SUBSCRIPTION_BILLING_UNIT: 'subscription-billing.unit',
   SUBSCRIPTION_EXPIRATION_COORDINATOR: 'subscription-expiration.coordinator',
   SUBSCRIPTION_EXPIRATION_UNIT: 'subscription-expiration.unit',
+  SUBSCRIPTION_WITHDRAWAL_COORDINATOR: 'subscription-withdrawal.coordinator',
+  SUBSCRIPTION_WITHDRAWAL_UNIT: 'subscription-withdrawal.unit',
   INVOICE_OVERDUE_COORDINATOR: 'invoice-overdue.coordinator',
   INVOICE_OVERDUE_UNIT: 'invoice-overdue.unit',
   OPEN_POSITION_INVOICE_COORDINATOR: 'open-position-invoice.coordinator',
@@ -74,6 +76,11 @@ export function getBillingRepeatableJobs(): BillingRepeatableJobDefinition[] {
       name: BillingJobName.SUBSCRIPTION_EXPIRATION_COORDINATOR,
       coordinatorJobId: buildCoordinatorJobId('subscription-expiration'),
       everyMs: parseIntervalMs('EXPIRATION_SCHEDULER_INTERVAL', 60_000),
+    },
+    {
+      name: BillingJobName.SUBSCRIPTION_WITHDRAWAL_COORDINATOR,
+      coordinatorJobId: buildCoordinatorJobId('subscription-withdrawal'),
+      everyMs: parseIntervalMs('WITHDRAWAL_SCHEDULER_INTERVAL', 60_000),
     },
     {
       name: BillingJobName.INVOICE_OVERDUE_COORDINATOR,
