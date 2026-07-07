@@ -247,6 +247,9 @@ function applyProvisioningOptionsToDefaults(
 /**
  * Corrects rows touched by the initial dual-option backfill when legacy metadata still
  * implies a single integrated or custom-only plan.
+ *
+ * Migration-only helper: it must never run on normal admin saves, otherwise it would
+ * collapse legitimate multi-option selections (e.g. controller + manager) down to one.
  */
 export function correctOverBackfilledProvisioningOptions(
   providerConfigDefaults: Record<string, unknown> | undefined,
@@ -338,14 +341,10 @@ export function normalizePlanProviderConfigDefaults(
     if (options.length > 0) {
       working = { ...working, provisioningOptions: options };
     }
-  } else {
-    const corrected = correctOverBackfilledProvisioningOptions(working);
-
-    if (corrected) {
-      return corrected;
-    }
   }
 
+  // Trust the admin's explicit selection as-is. The over-backfill correction is a
+  // one-time migration concern and must not collapse multi-option selections here.
   return applyProvisioningOptionsToDefaults(working, options);
 }
 
