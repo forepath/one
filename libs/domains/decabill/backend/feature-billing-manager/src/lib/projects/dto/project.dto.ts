@@ -11,6 +11,7 @@ import {
   Length,
   MaxLength,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 
@@ -43,6 +44,13 @@ export class CreateAdminProjectDto {
   @IsString()
   @Length(3, 10)
   currency?: string;
+
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
+  targetHours?: number | null;
 }
 
 export class UpdateAdminProjectDto {
@@ -74,6 +82,13 @@ export class UpdateAdminProjectDto {
   @IsString()
   @Length(3, 10)
   currency?: string;
+
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
+  targetHours?: number | null;
 }
 
 export class ProjectResponseDto {
@@ -83,6 +98,7 @@ export class ProjectResponseDto {
   description?: string | null;
   status!: ProjectStatus;
   hourlyRateNet!: number;
+  targetHours?: number | null;
   currency!: string;
   createdAt!: Date;
   updatedAt!: Date;
@@ -120,6 +136,7 @@ export class ProjectSummaryResponseDto {
   openTicketCount!: number;
   doneTicketCount!: number;
   milestoneCount!: number;
+  openMilestoneCount!: number;
 }
 
 export class BillProjectTimeResponseDto {

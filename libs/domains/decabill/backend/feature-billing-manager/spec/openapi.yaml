@@ -4183,6 +4183,7 @@ components:
         description: { type: string, nullable: true }
         status: { $ref: '#/components/schemas/ProjectStatus' }
         hourlyRateNet: { type: number }
+        targetHours: { type: number, nullable: true }
         currency: { type: string }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
@@ -4232,6 +4233,7 @@ components:
           openTicketCount,
           doneTicketCount,
           milestoneCount,
+          openMilestoneCount,
         ]
       properties:
         projectId: { type: string, format: uuid }
@@ -4242,6 +4244,7 @@ components:
         openTicketCount: { type: integer }
         doneTicketCount: { type: integer }
         milestoneCount: { type: integer }
+        openMilestoneCount: { type: integer }
     AdminProjectDetailResponse:
       allOf:
         - $ref: '#/components/schemas/AdminProjectListItem'
@@ -4257,6 +4260,7 @@ components:
         description: { type: string }
         status: { $ref: '#/components/schemas/ProjectStatus' }
         hourlyRateNet: { type: number }
+        targetHours: { type: number, nullable: true }
         currency: { type: string }
     UpdateAdminProjectDto:
       type: object
@@ -4266,6 +4270,7 @@ components:
         description: { type: string }
         status: { $ref: '#/components/schemas/ProjectStatus' }
         hourlyRateNet: { type: number }
+        targetHours: { type: number, nullable: true }
         currency: { type: string }
     BillProjectTimeResponse:
       type: object

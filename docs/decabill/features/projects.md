@@ -61,13 +61,14 @@ All admin routes require admin role (`@KeycloakRoles(ADMIN)` + `@UsersRoles(ADMI
 
 ### Project Fields
 
-| Field           | Description                      |
-| --------------- | -------------------------------- |
-| `name`          | Display name                     |
-| `description`   | Optional long text               |
-| `status`        | `active` or `archived`           |
-| `hourlyRateNet` | Net hourly rate for time billing |
-| `currency`      | ISO currency (default `EUR`)     |
+| Field           | Description                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------ |
+| `name`          | Display name                                                                               |
+| `description`   | Optional long text                                                                         |
+| `status`        | `active` or `archived`                                                                     |
+| `hourlyRateNet` | Net hourly rate for time billing                                                           |
+| `targetHours`   | Optional project time budget in hours; shown on detail pages with progress vs tracked time |
+| `currency`      | ISO currency (default `EUR`)                                                               |
 
 ## Time Entries (Admin)
 
@@ -189,6 +190,7 @@ See also [Invoices](./invoices.md) and [Customer Profiles](./customer-profiles.m
 | `openTicketCount`       | Tickets not in `done` or `closed`      |
 | `doneTicketCount`       | Tickets in `done` or `closed`          |
 | `milestoneCount`        | Number of milestones                   |
+| `openMilestoneCount`    | Milestones not yet at 100% completion  |
 
 ## Data Storage
 

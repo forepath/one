@@ -14,6 +14,7 @@ import { ProjectTimeEntriesRepository } from '../repositories/project-time-entri
 import { ProjectsRepository } from '../repositories/projects.repository';
 import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
 import { ensureProjectReadable } from '../utils/project-access.utils';
+import { computeMilestoneProgressPercent, isMilestoneComplete } from '../utils/project-milestone-progress.utils';
 
 @Injectable()
 export class ProjectsService {
@@ -75,6 +76,19 @@ export class ProjectsService {
       }
     }
 
+    let openMilestoneCount = 0;
+
+    await Promise.all(
+      milestones.map(async (milestone) => {
+        const counts = await this.ticketsRepository.countByMilestone(milestone.id);
+        const progressPercent = computeMilestoneProgressPercent(counts.open, counts.done);
+
+        if (!isMilestoneComplete(progressPercent)) {
+          openMilestoneCount += 1;
+        }
+      }),
+    );
+
     return {
       projectId: project.id,
       totalTrackedMinutes,
@@ -84,6 +98,7 @@ export class ProjectsService {
       openTicketCount,
       doneTicketCount,
       milestoneCount: milestones.length,
+      openMilestoneCount,
     };
   }
 
@@ -95,6 +110,7 @@ export class ProjectsService {
       description: project.description,
       status: project.status,
       hourlyRateNet: Number(project.hourlyRateNet),
+      targetHours: project.targetHours != null ? Number(project.targetHours) : null,
       currency: project.currency,
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,

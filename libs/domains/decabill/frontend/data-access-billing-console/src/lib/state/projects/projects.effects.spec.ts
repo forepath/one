@@ -228,6 +228,7 @@ describe('ProjectsEffects', () => {
       openTicketCount: 0,
       doneTicketCount: 0,
       milestoneCount: 0,
+      openMilestoneCount: 0,
     };
     actions$ = of(loadProjectSummary({ projectId: 'p-1' }));
     projectsService.getSummary.mockReturnValue(of(summary));

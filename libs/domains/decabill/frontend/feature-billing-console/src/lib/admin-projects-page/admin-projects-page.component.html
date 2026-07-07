@@ -127,6 +127,23 @@
             step="0.01"
           />
         </div>
+        <div class="mb-3">
+          <label class="form-label" for="createProjectTargetHours" i18n="@@featureAdminProjects-targetHoursLabel"
+            >Target hours</label
+          >
+          <input
+            id="createProjectTargetHours"
+            type="number"
+            class="form-control"
+            [(ngModel)]="createTargetHoursInput"
+            name="createTargetHours"
+            min="0.01"
+            step="0.25"
+          />
+          <div class="form-text" i18n="@@featureAdminProjects-targetHoursHint">
+            Optional. Leave empty for no target.
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureAdminProjects-cancel">
@@ -171,6 +188,23 @@
             min="0"
             step="0.01"
           />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="editProjectTargetHours" i18n="@@featureAdminProjects-targetHoursLabel"
+            >Target hours</label
+          >
+          <input
+            id="editProjectTargetHours"
+            type="number"
+            class="form-control"
+            [(ngModel)]="editTargetHoursInput"
+            name="editTargetHours"
+            min="0.01"
+            step="0.25"
+          />
+          <div class="form-text" i18n="@@featureAdminProjects-targetHoursHint">
+            Optional. Leave empty for no target.
+          </div>
         </div>
         <div class="mb-3">
           <label class="form-label" for="editProjectStatus" i18n="@@featureAdminProjects-statusLabel">Status</label>

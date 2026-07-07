@@ -30,6 +30,9 @@ export class ProjectEntity {
   @Column({ type: 'decimal', precision: 12, scale: 4, name: 'hourly_rate_net' })
   hourlyRateNet!: number;
 
+  @Column({ type: 'decimal', precision: 8, scale: 2, name: 'target_hours', nullable: true })
+  targetHours?: number | null;
+
   @Column({ type: 'varchar', length: 10, default: 'EUR' })
   currency!: string;
 

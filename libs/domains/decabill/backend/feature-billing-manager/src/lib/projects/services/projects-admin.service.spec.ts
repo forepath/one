@@ -48,6 +48,50 @@ describe('ProjectsAdminService', () => {
     );
   });
 
+  it('create persists optional targetHours', async () => {
+    const created = { id: 'p1', targetHours: 40 };
+    usersRepository.findByIdForTenant.mockResolvedValue({ id: 'u1' });
+    projectsRepository.create.mockResolvedValue(created);
+    projectsService.mapResponse.mockReturnValue(created);
+
+    await service.create({ userId: 'u1', name: 'P', hourlyRateNet: 100, targetHours: 40 } as never);
+
+    expect(projectsRepository.create).toHaveBeenCalledWith(expect.objectContaining({ targetHours: 40 }));
+  });
+
+  it('create stores null targetHours when omitted', async () => {
+    const created = { id: 'p1', targetHours: null };
+    usersRepository.findByIdForTenant.mockResolvedValue({ id: 'u1' });
+    projectsRepository.create.mockResolvedValue(created);
+    projectsService.mapResponse.mockReturnValue(created);
+
+    await service.create({ userId: 'u1', name: 'P', hourlyRateNet: 100 } as never);
+
+    expect(projectsRepository.create).toHaveBeenCalledWith(expect.objectContaining({ targetHours: null }));
+  });
+
+  it('update clears targetHours when null is sent', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'u1', hourlyRateNet: 100 });
+    projectsRepository.countBilledTimeEntries.mockResolvedValue(0);
+    projectsRepository.update.mockResolvedValue({ id: 'p1', targetHours: null });
+    projectsService.mapResponse.mockReturnValue({ id: 'p1', targetHours: null });
+
+    await service.update('p1', { targetHours: null } as never);
+
+    expect(projectsRepository.update).toHaveBeenCalledWith('p1', expect.objectContaining({ targetHours: null }));
+  });
+
+  it('update omits targetHours when undefined', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1', userId: 'u1', hourlyRateNet: 100 });
+    projectsRepository.countBilledTimeEntries.mockResolvedValue(0);
+    projectsRepository.update.mockResolvedValue({ id: 'p1' });
+    projectsService.mapResponse.mockReturnValue({ id: 'p1' });
+
+    await service.update('p1', { name: 'Renamed' } as never);
+
+    expect(projectsRepository.update).toHaveBeenCalledWith('p1', expect.objectContaining({ targetHours: undefined }));
+  });
+
   it('delete blocked when unbilled time entries exist', async () => {
     projectsRepository.findByIdOrThrow.mockResolvedValue({ id: 'p1' });
     projectsRepository.countUnbilledTimeEntries.mockResolvedValue(2);

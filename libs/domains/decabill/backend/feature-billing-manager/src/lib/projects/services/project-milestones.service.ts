@@ -14,6 +14,7 @@ import { ensureProjectAdmin, ensureProjectReadable } from '../utils/project-acce
 import { ProjectBoardRealtimeService } from './project-board-realtime.service';
 import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
 import { ProjectBoardSummaryService } from './project-board-summary.service';
+import { computeMilestoneProgressPercent } from '../utils/project-milestone-progress.utils';
 
 @Injectable()
 export class ProjectMilestonesService {
@@ -149,8 +150,7 @@ export class ProjectMilestonesService {
 
   private async mapMilestone(milestone: ProjectMilestoneEntity): Promise<ProjectMilestoneResponseDto> {
     const counts = await this.ticketsRepository.countByMilestone(milestone.id);
-    const total = counts.open + counts.done;
-    const progressPercent = total === 0 ? 100 : Math.round((counts.done / total) * 100);
+    const progressPercent = computeMilestoneProgressPercent(counts.open, counts.done);
 
     return {
       id: milestone.id,

@@ -80,4 +80,58 @@ describe('AdminProjectsService', () => {
     expect(req.request.body).toEqual(dto);
     req.flush(blob);
   });
+
+  it('creates project with targetHours', (done) => {
+    const dto = {
+      userId: 'u-1',
+      name: 'Alpha',
+      hourlyRateNet: 100,
+      targetHours: 40,
+      currency: 'EUR',
+    };
+    const response = {
+      id: 'p-1',
+      ...dto,
+      status: 'active',
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
+    };
+
+    service.create(dto).subscribe((res) => {
+      expect(res).toEqual(response);
+      done();
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/projects`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(dto);
+    req.flush(response);
+  });
+
+  it('updates project with null targetHours to clear target', (done) => {
+    const dto = { targetHours: null };
+    const response = {
+      id: 'p-1',
+      userId: 'u-1',
+      name: 'Alpha',
+      status: 'active',
+      hourlyRateNet: 100,
+      targetHours: null,
+      currency: 'EUR',
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
+    };
+
+    service.update('p-1', dto).subscribe((res) => {
+      expect(res).toEqual(response);
+      done();
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/projects/p-1`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(dto);
+    req.flush(response);
+  });
 });
