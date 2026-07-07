@@ -3,7 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { SubscriptionEntity } from '../entities/subscription.entity';
+import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { applyUserTenantFilter, getRequiredTenantId } from '../utils/tenant-query.utils';
+
+export interface SubscriptionWithBillingProfile {
+  subscription: SubscriptionEntity;
+  profile: CustomerProfileEntity;
+}
 
 @Injectable()
 export class SubscriptionsRepository {
@@ -34,6 +40,33 @@ export class SubscriptionsRepository {
       .where('subscription.id = :id', { id })
       .andWhere('user.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
       .getOne();
+  }
+
+  async findByNumberWithBillingProfile(number: string): Promise<SubscriptionWithBillingProfile | null> {
+    const row = await this.repository
+      .createQueryBuilder('subscription')
+      .innerJoin('users', 'user', 'user.id = subscription.user_id')
+      .innerJoinAndMapOne(
+        'subscription.profile',
+        'billing_customer_profiles',
+        'profile',
+        'profile.user_id = subscription.user_id',
+      )
+      .where('subscription.number = :number', { number })
+      .andWhere('user.tenant_id = :tenantId', { tenantId: getRequiredTenantId() })
+      .getOne();
+
+    if (!row) {
+      return null;
+    }
+
+    const profile = (row as SubscriptionEntity & { profile?: CustomerProfileEntity }).profile;
+
+    if (!profile) {
+      return null;
+    }
+
+    return { subscription: row, profile };
   }
 
   async findAllByUser(userId: string, limit = 10, offset = 0): Promise<SubscriptionEntity[]> {

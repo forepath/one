@@ -65,7 +65,8 @@ Billing data and users are partitioned by **`tenant_id`**. HTTP clients send **`
 | Variable                                   | Description                                                                         |
 | ------------------------------------------ | ----------------------------------------------------------------------------------- |
 | `ENCRYPTION_KEY`                           | Encrypts sensitive stored data (API tokens, snapshots)                              |
-| `BILLING_ISSUER_*`                         | Legal entity on invoices (name, VAT, address, bank)                                 |
+| `BILLING_ISSUER_*`                         | Legal entity on invoices and public withdrawal addressee (name, VAT, address, bank) |
+| `PUBLIC_WITHDRAWAL_CONFIRMATION_TTL_HOURS` | Hours until a public withdrawal confirmation code expires (default `48`)            |
 | `BILLING_TAX_RATE_STANDARD`                | Default standard tax rate (default `19`)                                            |
 | `BILLING_TAX_RATE_REDUCED`                 | Reduced tax rate (default `7`)                                                      |
 | `BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS` | Days after provisioning during which statutory withdrawal is allowed (default `14`) |

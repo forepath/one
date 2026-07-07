@@ -96,4 +96,19 @@ export class EmailService {
       html: `<p>Please confirm your email using the following code:</p><p><strong>${code}</strong></p><p>Enter this code on the confirmation page. The code will expire when you confirm.</p>`,
     });
   }
+
+  /**
+   * Sends the statutory withdrawal confirmation code email.
+   */
+  async sendWithdrawalConfirmationEmail(to: string, code: string, expiresAt: Date): Promise<boolean> {
+    const hoursRemaining = Math.max(1, Math.round((expiresAt.getTime() - Date.now()) / (60 * 60 * 1000)));
+    const expiryText = hoursRemaining === 1 ? '1 hour' : `${hoursRemaining} hours`;
+
+    return this.send({
+      to,
+      subject: 'Confirm your statutory withdrawal',
+      text: `Please confirm your statutory withdrawal using the following code:\n\n${code}\n\nEnter this code on the withdrawal page. The code expires in ${expiryText}.`,
+      html: `<p>Please confirm your statutory withdrawal using the following code:</p><p><strong>${code}</strong></p><p>Enter this code on the withdrawal page. The code expires in ${expiryText}.</p>`,
+    });
+  }
 }

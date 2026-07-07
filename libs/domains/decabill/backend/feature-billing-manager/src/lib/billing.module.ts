@@ -56,6 +56,7 @@ import { InvoicesController } from './controllers/invoices.controller';
 import { PaymentsWebhookController } from './controllers/payments-webhook.controller';
 import { PricingController } from './controllers/pricing.controller';
 import { PublicServicePlanOfferingsController } from './controllers/public-service-plan-offerings.controller';
+import { PublicWithdrawalController } from './controllers/public-withdrawal.controller';
 import { ServicePlansController } from './controllers/service-plans.controller';
 import { CloudInitConfigsController } from './controllers/cloud-init-configs.controller';
 import { ServiceTypesController } from './controllers/service-types.controller';
@@ -78,6 +79,7 @@ import { PaymentAttemptEntity } from './entities/payment-attempt.entity';
 import { PaymentRefundEntity } from './entities/payment-refund.entity';
 import { PaymentWebhookEventEntity } from './entities/payment-webhook-event.entity';
 import { ProviderPriceSnapshotEntity } from './entities/provider-price-snapshot.entity';
+import { PublicWithdrawalRequestEntity } from './entities/public-withdrawal-request.entity';
 import { ReservedHostnameEntity } from './entities/reserved-hostname.entity';
 import { CloudInitConfigEntity } from './entities/cloud-init-config.entity';
 import { ServicePlanEntity } from './entities/service-plan.entity';
@@ -117,6 +119,7 @@ import { ServicePlansRepository } from './repositories/service-plans.repository'
 import { ServiceTypesRepository } from './repositories/service-types.repository';
 import { SubscriptionItemsRepository } from './repositories/subscription-items.repository';
 import { SubscriptionsRepository } from './repositories/subscriptions.repository';
+import { PublicWithdrawalRequestsRepository } from './repositories/public-withdrawal-requests.repository';
 import { UsageRecordsRepository } from './repositories/usage-records.repository';
 import { UsersBillingDayRepository } from './repositories/users-billing-day.repository';
 import { AdminBillNowService } from './services/admin-bill-now.service';
@@ -178,6 +181,7 @@ import { SubscriptionItemServerService } from './services/subscription-item-serv
 import { SubscriptionItemUpdateJobHandler } from './services/subscription-item-update.job-handler';
 import { SubscriptionRenewalReminderJobHandler } from './services/subscription-renewal-reminder.job-handler';
 import { SubscriptionService } from './services/subscription.service';
+import { PublicWithdrawalService } from './services/public-withdrawal.service';
 import { TaxCalculationService } from './services/tax-calculation.service';
 import { TaxRateConfigService } from './services/tax-rate-config.service';
 import { UsageService } from './services/usage.service';
@@ -402,6 +406,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       ProjectTicketCommentEntity,
       ProjectTicketActivityEntity,
       ProjectTimeEntryEntity,
+      PublicWithdrawalRequestEntity,
     ]),
     ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],
@@ -409,6 +414,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     ServiceTypesController,
     CloudInitConfigsController,
     PublicServicePlanOfferingsController,
+    PublicWithdrawalController,
     ServicePlansController,
     AvailabilityController,
     SubscriptionItemsController,
@@ -503,6 +509,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     PricingService,
     ProviderPricingService,
     SubscriptionService,
+    PublicWithdrawalService,
     UsageService,
     CustomerProfilesService,
     CustomerProfilesAdminService,
@@ -552,6 +559,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     ReservedHostnamesRepository,
     SubscriptionItemsRepository,
     SubscriptionsRepository,
+    PublicWithdrawalRequestsRepository,
     UsageRecordsRepository,
     CustomerProfilesRepository,
     DatevExportRepository,
@@ -599,6 +607,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     PricingService,
     ProviderPricingService,
     SubscriptionService,
+    PublicWithdrawalService,
     UsageService,
     CustomerProfilesService,
     SubscriptionBillingJobHandler,
@@ -620,6 +629,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     ReservedHostnamesRepository,
     SubscriptionItemsRepository,
     SubscriptionsRepository,
+    PublicWithdrawalRequestsRepository,
     UsageRecordsRepository,
     CustomerProfilesRepository,
     ProjectsService,

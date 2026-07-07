@@ -97,6 +97,98 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /public/withdrawal/addressee:
+    get:
+      summary: Get statutory withdrawal addressee (unauthenticated)
+      description: |
+        Returns the legal seller entity (from BILLING_ISSUER_* configuration) to whom statutory withdrawals are addressed.
+      operationId: getPublicWithdrawalAddressee
+      security: []
+      responses:
+        '200':
+          description: Withdrawal addressee details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicWithdrawalAddressee'
+        '503':
+          description: Addressee configuration incomplete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /public/withdrawal/request:
+    post:
+      summary: Request public statutory withdrawal (unauthenticated)
+      operationId: requestPublicWithdrawal
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestPublicWithdrawal'
+      responses:
+        '200':
+          description: Withdrawal request created or resumed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicWithdrawalRequestResponse'
+        '400':
+          description: Invalid input or no matching subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /public/withdrawal/verify-code:
+    post:
+      summary: Verify public withdrawal confirmation code (unauthenticated)
+      operationId: verifyPublicWithdrawalCode
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyPublicWithdrawalCode'
+      responses:
+        '200':
+          description: Code verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicWithdrawalVerifyCodeResponse'
+        '400':
+          description: Invalid or expired code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /public/withdrawal/confirm:
+    post:
+      summary: Confirm public statutory withdrawal (unauthenticated)
+      operationId: confirmPublicWithdrawal
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmPublicWithdrawal'
+      responses:
+        '200':
+          description: Withdrawal submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicWithdrawalConfirmResponse'
+        '400':
+          description: Invalid request or withdrawal not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /service-types:
     get:
       summary: List service types
@@ -3194,6 +3286,109 @@ components:
         text:
           type: string
           maxLength: 512
+    PublicWithdrawalAddressee:
+      type: object
+      required:
+        - name
+        - lines
+      properties:
+        name:
+          type: string
+        lines:
+          type: array
+          items:
+            type: string
+        vatId:
+          type: string
+        email:
+          type: string
+          format: email
+    RequestPublicWithdrawal:
+      type: object
+      required:
+        - subscriptionNumber
+        - customerName
+        - email
+        - orderedOn
+      properties:
+        subscriptionNumber:
+          type: string
+          pattern: '^SUB-\d{6}$'
+        customerName:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+        company:
+          type: string
+          maxLength: 255
+        orderedOn:
+          type: string
+          format: date
+        receivedOn:
+          type: string
+          format: date
+    PublicWithdrawalRequestResponse:
+      type: object
+      required:
+        - requestId
+        - resumed
+        - resumeStep
+        - message
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        resumed:
+          type: boolean
+        resumeStep:
+          type: string
+          enum: [code, acknowledge]
+        message:
+          type: string
+    VerifyPublicWithdrawalCode:
+      type: object
+      required:
+        - requestId
+        - code
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        code:
+          type: string
+          pattern: '^[A-Z0-9]{6}$'
+    PublicWithdrawalVerifyCodeResponse:
+      type: object
+      required:
+        - resumeStep
+        - message
+      properties:
+        resumeStep:
+          type: string
+          enum: [acknowledge]
+        message:
+          type: string
+    ConfirmPublicWithdrawal:
+      type: object
+      required:
+        - requestId
+        - acknowledgeWithdrawal
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        acknowledgeWithdrawal:
+          type: boolean
+          enum: [true]
+    PublicWithdrawalConfirmResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
     PublicServicePlanOffering:
       type: object
       required:

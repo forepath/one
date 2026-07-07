@@ -390,7 +390,15 @@ export class SubscriptionService {
     subscriptionId: string,
     userId: string,
   ): Promise<{ subscription: SubscriptionEntity; withdrawalResult?: WithdrawalResultDto }> {
-    const subscription = await this.getSubscription(subscriptionId, userId);
+    await this.getSubscription(subscriptionId, userId);
+
+    return this.executeWithdrawal(subscriptionId);
+  }
+
+  async executeWithdrawal(
+    subscriptionId: string,
+  ): Promise<{ subscription: SubscriptionEntity; withdrawalResult?: WithdrawalResultDto }> {
+    const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
     const items = await this.subscriptionItemsRepository.findBySubscription(subscriptionId);
@@ -404,7 +412,7 @@ export class SubscriptionService {
       throw new BadRequestException(decision.reason || 'Withdrawal not permitted');
     }
 
-    await this.backordersRepository.cancelPendingForUserPlan(userId, subscription.planId);
+    await this.backordersRepository.cancelPendingForUserPlan(subscription.userId, subscription.planId);
 
     const withdrawnAt = new Date();
     const phase = decision.phase === 'withdrawal_period' ? 'withdrawal_period' : 'unprovisioned';

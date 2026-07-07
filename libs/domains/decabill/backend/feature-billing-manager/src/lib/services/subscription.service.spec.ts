@@ -876,6 +876,12 @@ describe('SubscriptionService', () => {
         id: 'sub-1',
         userId: 'user-1',
         planId: 'plan-1',
+        status: SubscriptionStatus.ACTIVE,
+      })
+      .mockResolvedValueOnce({
+        id: 'sub-1',
+        userId: 'user-1',
+        planId: 'plan-1',
         status: SubscriptionStatus.PENDING_WITHDRAWAL,
         withdrawnAt: new Date(),
         withdrawPhase: 'unprovisioned',
@@ -903,6 +909,12 @@ describe('SubscriptionService', () => {
   it('queues withdrawal for provisioned subscription with an estimated refund', async () => {
     subscriptionsRepository.findByIdOrThrow = jest
       .fn()
+      .mockResolvedValueOnce({
+        id: 'sub-1',
+        userId: 'user-1',
+        planId: 'plan-1',
+        status: SubscriptionStatus.ACTIVE,
+      })
       .mockResolvedValueOnce({
         id: 'sub-1',
         userId: 'user-1',

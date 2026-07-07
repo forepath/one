@@ -6,6 +6,7 @@ import { SubscriptionsRepository } from './subscriptions.repository';
 
 const createMockQueryBuilder = () => ({
   innerJoin: jest.fn().mockReturnThis(),
+  innerJoinAndMapOne: jest.fn().mockReturnThis(),
   where: jest.fn().mockReturnThis(),
   andWhere: jest.fn().mockReturnThis(),
   orderBy: jest.fn().mockReturnThis(),
@@ -153,6 +154,32 @@ describe('SubscriptionsRepository', () => {
       status: 'pending_withdrawal',
     });
     expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('subscription.withdrawnAt <= :now', { now });
+  });
+
+  it('finds subscription with billing profile by number', async () => {
+    const subscription = {
+      id: 'sub-1',
+      number: 'SUB-000001',
+      profile: { email: 'billing@example.com' },
+    };
+
+    mockQueryBuilder.getOne.mockResolvedValue(subscription);
+
+    const result = await repository.findByNumberWithBillingProfile('SUB-000001');
+
+    expect(mockQueryBuilder.innerJoinAndMapOne).toHaveBeenCalled();
+    expect(result).toEqual({
+      subscription,
+      profile: subscription.profile,
+    });
+  });
+
+  it('returns null when subscription number not found', async () => {
+    mockQueryBuilder.getOne.mockResolvedValue(null);
+
+    const result = await repository.findByNumberWithBillingProfile('SUB-000099');
+
+    expect(result).toBeNull();
   });
 
   it('finds upcoming renewals within days', async () => {

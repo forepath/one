@@ -1,0 +1,342 @@
+<section class="section__row">
+  <div class="section__column d-flex align-items-center justify-content-center bg-body-tertiary h-100">
+    <div class="p-4" style="width: 700px; max-width: 100%">
+      <h1 class="display-5 fw-bold mb-3" i18n="@@featurePublicWithdrawal-title">Statutory Withdrawal</h1>
+      <p class="lead mb-4">
+        {{
+          authMarketing.publicWithdrawalDescription ?? 'Exercise your statutory right of withdrawal without logging in.'
+        }}
+      </p>
+    </div>
+  </div>
+  <div class="section__column section__column--scroll d-flex align-items-center">
+    <div class="p-4 my-auto" style="width: 500px; max-width: 100%">
+      <h2 class="section__column-title mb-4 text-center" i18n="@@featurePublicWithdrawal-formTitle">
+        Withdrawal Request
+      </h2>
+
+      @if (addresseeLoading$ | async) {
+        <div class="card mb-4 bg-body-secondary">
+          <div class="card-body text-center text-muted">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span i18n="@@featurePublicWithdrawal-addresseeLoading">Loading addressee...</span>
+          </div>
+        </div>
+      } @else if (addressee$ | async; as addressee) {
+        <div class="card mb-4 bg-body-secondary">
+          <div class="card-header fw-semibold" i18n="@@featurePublicWithdrawal-addresseeTitle">
+            Your withdrawal is addressed to
+          </div>
+          <div class="card-body">
+            <p class="mb-1 fw-semibold">{{ addressee.name }}</p>
+            @for (line of addressee.lines; track line) {
+              <p class="mb-0 text-muted">{{ line }}</p>
+            }
+            @if (addressee.vatId) {
+              <p class="mb-0 mt-2 text-muted">
+                <span i18n="@@featurePublicWithdrawal-vatIdLabel">VAT ID:</span> {{ addressee.vatId }}
+              </p>
+            }
+            @if (addressee.email) {
+              <p class="mb-0 text-muted">
+                <span i18n="@@featurePublicWithdrawal-emailLabel">Email:</span> {{ addressee.email }}
+              </p>
+            }
+          </div>
+        </div>
+      } @else if (addresseeError$ | async) {
+        <div class="alert alert-warning mb-4" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span i18n="@@featurePublicWithdrawal-addresseeError"
+            >We could not load the withdrawal addressee. You can still continue with your request.</span
+          >
+        </div>
+      }
+
+      @if (successMessage$ | async; as successMessage) {
+        <div class="alert alert-success alert-dismissible" role="alert">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <span>{{ successMessage }}</span>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="onDismissSuccess()"
+            i18n-aria-label="@@featurePublicWithdrawal-dismissSuccessA11y"
+            aria-label="Dismiss success message"
+          ></button>
+        </div>
+      }
+
+      @if (error$ | async; as error) {
+        <div class="alert alert-danger alert-dismissible" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span>{{ error }}</span>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="onDismissError()"
+            i18n-aria-label="@@featurePublicWithdrawal-dismissErrorA11y"
+            aria-label="Dismiss error message"
+          ></button>
+        </div>
+      }
+
+      @if ((step$ | async) === 'details') {
+        <form [formGroup]="detailsForm" (ngSubmit)="onSubmitDetails()" class="needs-validation" novalidate>
+          <div class="mb-3">
+            <label for="subscriptionNumber" class="form-label" i18n="@@featurePublicWithdrawal-subscriptionNumberLabel"
+              >Subscription number</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="subscriptionNumber"
+              formControlName="subscriptionNumber"
+              placeholder="SUB-000001"
+              i18n-placeholder="@@featurePublicWithdrawal-subscriptionNumberPlaceholder"
+              [class.is-invalid]="
+                detailsForm.get('subscriptionNumber')?.invalid && detailsForm.get('subscriptionNumber')?.touched
+              "
+              autocomplete="off"
+            />
+            @if (detailsForm.get('subscriptionNumber')?.invalid && detailsForm.get('subscriptionNumber')?.touched) {
+              <div class="invalid-feedback d-block">
+                @if (detailsForm.get('subscriptionNumber')?.errors?.['required']) {
+                  <ng-container i18n="@@featurePublicWithdrawal-subscriptionNumberRequired"
+                    >Subscription number is required.</ng-container
+                  >
+                } @else if (detailsForm.get('subscriptionNumber')?.errors?.['pattern']) {
+                  <ng-container i18n="@@featurePublicWithdrawal-subscriptionNumberPattern"
+                    >Enter a valid subscription number (e.g. SUB-000001).</ng-container
+                  >
+                }
+              </div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label for="customerName" class="form-label" i18n="@@featurePublicWithdrawal-customerNameLabel"
+              >Customer name</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="customerName"
+              formControlName="customerName"
+              [class.is-invalid]="detailsForm.get('customerName')?.invalid && detailsForm.get('customerName')?.touched"
+              autocomplete="name"
+            />
+            @if (detailsForm.get('customerName')?.invalid && detailsForm.get('customerName')?.touched) {
+              <div class="invalid-feedback d-block" i18n="@@featurePublicWithdrawal-customerNameRequired">
+                Customer name is required.
+              </div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label" i18n="@@featurePublicWithdrawal-emailFieldLabel">Email</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              formControlName="email"
+              [class.is-invalid]="detailsForm.get('email')?.invalid && detailsForm.get('email')?.touched"
+              autocomplete="email"
+            />
+            @if (detailsForm.get('email')?.invalid && detailsForm.get('email')?.touched) {
+              <div class="invalid-feedback d-block">
+                @if (detailsForm.get('email')?.errors?.['required']) {
+                  <ng-container i18n="@@featurePublicWithdrawal-emailRequired">Email is required.</ng-container>
+                } @else if (detailsForm.get('email')?.errors?.['email']) {
+                  <ng-container i18n="@@featurePublicWithdrawal-emailInvalid"
+                    >Please enter a valid email address.</ng-container
+                  >
+                }
+              </div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label for="company" class="form-label" i18n="@@featurePublicWithdrawal-companyLabel"
+              >Company (optional)</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="company"
+              formControlName="company"
+              autocomplete="organization"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="orderedOn" class="form-label" i18n="@@featurePublicWithdrawal-orderedOnLabel">Ordered on</label>
+            <input
+              type="date"
+              class="form-control"
+              id="orderedOn"
+              formControlName="orderedOn"
+              [class.is-invalid]="detailsForm.get('orderedOn')?.invalid && detailsForm.get('orderedOn')?.touched"
+            />
+            @if (detailsForm.get('orderedOn')?.invalid && detailsForm.get('orderedOn')?.touched) {
+              <div class="invalid-feedback d-block" i18n="@@featurePublicWithdrawal-orderedOnRequired">
+                Ordered on date is required.
+              </div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label for="receivedOn" class="form-label" i18n="@@featurePublicWithdrawal-receivedOnLabel"
+              >Received on (optional)</label
+            >
+            <input type="date" class="form-control" id="receivedOn" formControlName="receivedOn" />
+            <div class="form-text" i18n="@@featurePublicWithdrawal-receivedOnHelp">
+              Required only if your service was already received or deployed.
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-lg" [disabled]="(loading$ | async) ?? false">
+              @if ((loading$ | async) ?? false) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              }
+              <span i18n="@@featurePublicWithdrawal-submitDetails">Continue</span>
+            </button>
+          </div>
+        </form>
+      }
+
+      @if ((step$ | async) === 'code') {
+        @if (resumed$ | async) {
+          <div class="alert alert-info mb-3" role="status">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <span i18n="@@featurePublicWithdrawal-resumedCode"
+              >Continue where you left off. Enter your confirmation code.</span
+            >
+          </div>
+        }
+
+        <form [formGroup]="codeForm" (ngSubmit)="onSubmitCode()" class="needs-validation" novalidate>
+          <div class="mb-3">
+            <label class="form-label" i18n="@@featurePublicWithdrawal-codeLabel">Confirmation code</label>
+            <identity-auth-otp-input
+              formControlName="code"
+              [invalid]="
+                (codeForm.get('code')?.invalid &&
+                  codeForm.get('code')?.touched &&
+                  ((codeForm.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)) ??
+                false
+              "
+              [disabled]="(verifying$ | async) ?? false"
+            />
+            @if (
+              codeForm.get('code')?.invalid &&
+              codeForm.get('code')?.touched &&
+              ((codeForm.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)
+            ) {
+              <div class="invalid-feedback d-block">
+                @if (codeForm.get('code')?.errors?.['required']) {
+                  <ng-container i18n="@@featurePublicWithdrawal-codeRequired"
+                    >Confirmation code is required.</ng-container
+                  >
+                } @else if (codeForm.get('code')?.errors?.['pattern']) {
+                  <ng-container i18n="@@featurePublicWithdrawal-codePattern"
+                    >Code must be exactly 6 characters (uppercase letters and numbers).</ng-container
+                  >
+                }
+              </div>
+            }
+          </div>
+
+          <div class="d-grid gap-2">
+            <button
+              type="submit"
+              class="btn btn-primary btn-lg"
+              [disabled]="codeForm.invalid || ((verifying$ | async) ?? false)"
+            >
+              @if ((verifying$ | async) ?? false) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              }
+              <span i18n="@@featurePublicWithdrawal-verifyCode">Verify code</span>
+            </button>
+          </div>
+        </form>
+      }
+
+      @if ((step$ | async) === 'acknowledge') {
+        @if (resumed$ | async) {
+          <div class="alert alert-info mb-3" role="status">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <span i18n="@@featurePublicWithdrawal-resumedAcknowledge"
+              >Continue where you left off. Please confirm your withdrawal below.</span
+            >
+          </div>
+        }
+
+        <form [formGroup]="acknowledgeForm" (ngSubmit)="onSubmitAcknowledge()" class="needs-validation" novalidate>
+          <div class="mb-3 form-check">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              id="acknowledgeWithdrawal"
+              formControlName="acknowledgeWithdrawal"
+              [class.is-invalid]="
+                acknowledgeForm.get('acknowledgeWithdrawal')?.invalid &&
+                acknowledgeForm.get('acknowledgeWithdrawal')?.touched
+              "
+            />
+            <label
+              class="form-check-label"
+              for="acknowledgeWithdrawal"
+              i18n="@@featurePublicWithdrawal-acknowledgeLabel"
+            >
+              I hereby withdraw from the contract for the subscription I provided in accordance with applicable
+              statutory withdrawal rights.
+            </label>
+            @if (
+              acknowledgeForm.get('acknowledgeWithdrawal')?.invalid &&
+              acknowledgeForm.get('acknowledgeWithdrawal')?.touched
+            ) {
+              <div class="invalid-feedback d-block" i18n="@@featurePublicWithdrawal-acknowledgeRequired">
+                You must confirm your withdrawal to continue.
+              </div>
+            }
+          </div>
+
+          <div class="d-grid gap-2">
+            <button
+              type="submit"
+              class="btn btn-danger btn-lg"
+              [disabled]="acknowledgeForm.invalid || ((confirming$ | async) ?? false)"
+            >
+              @if ((confirming$ | async) ?? false) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              }
+              <span i18n="@@featurePublicWithdrawal-submitWithdrawal">Submit withdrawal</span>
+            </button>
+          </div>
+        </form>
+      }
+
+      @if ((step$ | async) === 'done') {
+        <div class="text-center">
+          <div class="mb-4">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem" aria-hidden="true"></i>
+          </div>
+          <p class="lead mb-4" i18n="@@featurePublicWithdrawal-doneMessage">
+            Your withdrawal request has been submitted successfully.
+          </p>
+          <a routerLink="/login" class="btn btn-primary" i18n="@@featurePublicWithdrawal-backToLogin">Back to login</a>
+        </div>
+      }
+
+      @if ((step$ | async) !== 'done') {
+        <div class="mt-4 text-center">
+          <a routerLink="/login" class="text-decoration-none small" i18n="@@featurePublicWithdrawal-backToLoginLink"
+            >Back to login</a
+          >
+        </div>
+      }
+    </div>
+  </div>
+</section>

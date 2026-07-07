@@ -98,6 +98,8 @@ See **[CloudInit Configs](./cloud-init-configs.md)**.
 
 Statutory withdrawal is separate from commercial cancellation. Customers exercise a **Withdraw** action when eligible; **Cancel** remains for period-end or commitment-based termination.
 
+Customers who are not logged in can use the public **[Public Statutory Withdrawal](./public-withdrawal.md)** flow at `/withdrawal`. It reuses the same `executeWithdrawal` logic as `POST /subscriptions/{subscriptionId}/withdraw` after email verification.
+
 ### Eligibility
 
 | Phase             | Condition                                                                                               | Withdraw allowed                 |
