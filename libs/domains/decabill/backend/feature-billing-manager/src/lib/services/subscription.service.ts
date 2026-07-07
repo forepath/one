@@ -171,6 +171,7 @@ export class SubscriptionService {
 
     if (serviceType.provider === 'hetzner' || serviceType.provider === 'digital-ocean') {
       let hostname: string | null = null;
+      let provisionedServerId: string | undefined;
 
       try {
         hostname = await this.hostnameReservationService.reserveHostname(subscriptionItem.id);
@@ -195,6 +196,8 @@ export class SubscriptionService {
           userData,
         };
         const provisioned = await this.provisioningService.provision(serviceType.provider, provisioningConfig);
+
+        provisionedServerId = provisioned?.serverId;
 
         if (provisioned?.serverId) {
           await this.subscriptionItemsRepository.updateProviderReference(subscriptionItem.id, provisioned.serverId);
@@ -227,7 +230,24 @@ export class SubscriptionService {
           }
         }
 
-        await this.subscriptionItemsRepository.updateProvisioningStatus(subscriptionItem.id, 'failed');
+        // A real server was created before the failure (e.g. a post-provision call threw). Keep the
+        // records so the server stays tracked for teardown, and do not backorder (it already exists).
+        if (provisionedServerId) {
+          await this.subscriptionItemsRepository.updateProvisioningStatus(subscriptionItem.id, 'failed');
+
+          throw error;
+        }
+
+        // No server was provisioned: roll back the half-created order so no dangling active
+        // subscription remains, matching the out-of-stock path (only a backorder is left behind).
+        try {
+          await this.subscriptionItemsRepository.delete(subscriptionItem.id);
+          await this.subscriptionsRepository.delete(subscription.id);
+        } catch (rollbackError) {
+          this.logger.warn(
+            `Failed to roll back subscription ${subscription.id} after provisioning failure: ${(rollbackError as Error).message}`,
+          );
+        }
 
         if (autoBackorder) {
           await this.backorderService.create({
@@ -241,15 +261,6 @@ export class SubscriptionService {
 
         throw error;
       }
-    }
-
-    if (autoBackorder) {
-      await this.backorderService.create({
-        userId,
-        serviceTypeId: plan.serviceTypeId,
-        planId,
-        requestedConfigSnapshot: effectiveConfig,
-      });
     }
 
     return subscription;

@@ -49,10 +49,12 @@ describe('SubscriptionService', () => {
     create: jest.fn(),
     findByIdOrThrow: jest.fn(),
     update: jest.fn(),
+    delete: jest.fn(),
     findAllByUser: jest.fn(),
   } as unknown as SubscriptionsRepository;
   const itemsRepository = {
     create: jest.fn(),
+    delete: jest.fn(),
     updateProviderReference: jest.fn(),
     updateProvisioningStatus: jest.fn(),
     updateHostname: jest.fn().mockResolvedValue({}),
@@ -488,6 +490,108 @@ describe('SubscriptionService', () => {
         providerErrors: { reason: 'Out of stock' },
       }),
     );
+  });
+
+  it('does not create a backorder when the order is provisioned successfully with autoBackorder enabled', async () => {
+    (validateConfigSchema as jest.Mock).mockReturnValue([]);
+
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+      providerConfigDefaults: controllerProvisioningDefaults,
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({
+      id: 'sub-1',
+      userId: 'user-1',
+      planId: 'plan-1',
+      status: SubscriptionStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    itemsRepository.updateProviderReference = jest.fn();
+    itemsRepository.updateProvisioningStatus = jest.fn();
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+
+    await service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true);
+
+    expect(backorderService.create).not.toHaveBeenCalled();
+  });
+
+  it('rolls back the subscription and item when provisioning fails and no server was created', async () => {
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+      providerConfigDefaults: controllerProvisioningDefaults,
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({ id: 'sub-1', userId: 'user-1', planId: 'plan-1' });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockRejectedValue(new Error('provider exploded'));
+
+    await expect(service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true)).rejects.toThrow(
+      'provider exploded',
+    );
+
+    expect(itemsRepository.delete).toHaveBeenCalledWith('item-1');
+    expect(subscriptionsRepository.delete).toHaveBeenCalledWith('sub-1');
+    expect(itemsRepository.updateProvisioningStatus).not.toHaveBeenCalledWith('item-1', 'failed');
+    expect(backorderService.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user-1',
+        planId: 'plan-1',
+        providerErrors: { reason: 'provider exploded' },
+      }),
+    );
+  });
+
+  it('keeps the records and does not backorder when a server was created before the failure', async () => {
+    plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'stype-1',
+      billingIntervalType: BillingIntervalType.DAY,
+      billingIntervalValue: 1,
+      billingDayOfMonth: undefined,
+      providerConfigDefaults: controllerProvisioningDefaults,
+    });
+    typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'stype-1',
+      provider: 'hetzner',
+      configSchema: { required: ['region'] },
+    });
+    subscriptionsRepository.create = jest.fn().mockResolvedValue({ id: 'sub-1', userId: 'user-1', planId: 'plan-1' });
+    itemsRepository.create = jest.fn().mockResolvedValue({ id: 'item-1' });
+    itemsRepository.updateProviderReference = jest.fn();
+    itemsRepository.updateProvisioningStatus = jest.fn();
+    (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({ isAvailable: true });
+    (provisioningService.provision as jest.Mock).mockResolvedValue({ serverId: 'srv-1' });
+    (provisioningService.getServerInfo as jest.Mock).mockRejectedValueOnce(new Error('post-provision failure'));
+
+    await expect(service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true)).rejects.toThrow(
+      'post-provision failure',
+    );
+
+    expect(itemsRepository.updateProvisioningStatus).toHaveBeenCalledWith('item-1', 'failed');
+    expect(itemsRepository.delete).not.toHaveBeenCalled();
+    expect(subscriptionsRepository.delete).not.toHaveBeenCalled();
+    expect(backorderService.create).not.toHaveBeenCalled();
   });
 
   it('provisions when provider is digital-ocean', async () => {

@@ -19,6 +19,12 @@ export class SubscriptionItemsRepository {
     return await this.repository.save(entity);
   }
 
+  async delete(id: string): Promise<void> {
+    const entity = await this.findByIdInTenant(id);
+
+    await this.repository.remove(entity);
+  }
+
   async updateProviderReference(id: string, providerReference: string): Promise<SubscriptionItemEntity> {
     const entity = await this.findByIdInTenant(id);
 

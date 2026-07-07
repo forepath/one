@@ -59,6 +59,12 @@ export class SubscriptionsRepository {
     return await this.repository.save(entity);
   }
 
+  async delete(id: string): Promise<void> {
+    const entity = await this.findByIdOrThrow(id);
+
+    await this.repository.remove(entity);
+  }
+
   async findDueForBilling(now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
     const qb = this.repository
       .createQueryBuilder('subscription')
