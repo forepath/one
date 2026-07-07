@@ -359,6 +359,21 @@
       <trans-unit id="featureBilling-subscriptionStatusPendingWithdrawal" datatype="html">
         <source>Pending withdrawal</source>
         </trans-unit>
+      <trans-unit id="featureBilling-provisioningStatusPending" datatype="html">
+        <source>Provisioning</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-provisioningStatusActive" datatype="html">
+        <source>Provisioned</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-provisioningStatusFailed" datatype="html">
+        <source>Provisioning failed</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-provisioningStatusEmpty" datatype="html">
+        <source>Unknown</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-provisioningStatusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        </trans-unit>
       <trans-unit id="featureBilling-subscriptionStatusCanceled" datatype="html">
         <source>Canceled</source>
         </trans-unit>
@@ -847,6 +862,12 @@
         </trans-unit>
       <trans-unit id="featureOverview-serverStatusUpdatingLabel" datatype="html">
         <source>Updating</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-provisioningPendingHint" datatype="html">
+        <source>Your server is being set up. This usually takes less than a minute.</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-provisioningFailedHint" datatype="html">
+        <source>Server setup did not complete. Check backorders or contact support if this persists.</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-title" datatype="html">
         <source>Service Plans</source>

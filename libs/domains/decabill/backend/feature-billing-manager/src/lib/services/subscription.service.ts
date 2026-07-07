@@ -3,6 +3,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import type { SubscriptionResponseDto } from '../dto/subscription-response.dto';
 import type { WithdrawalEligibilityDto, WithdrawalResultDto } from '../dto/withdrawal-policy.dto';
 import { BillingIntervalType } from '../entities/service-plan.entity';
+import { ProvisioningStatus } from '../entities/subscription-item.entity';
 import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
 import { BackordersRepository } from '../repositories/backorders.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
@@ -159,111 +160,179 @@ export class SubscriptionService {
       userId,
       planId,
       status: SubscriptionStatus.ACTIVE,
+      autoBackorder,
       currentPeriodStart: schedule.currentPeriodStart,
       currentPeriodEnd: schedule.currentPeriodEnd,
       nextBillingAt: schedule.nextBillingAt,
     });
-    const subscriptionItem = await this.subscriptionItemsRepository.create({
+
+    // The order is recorded synchronously with the item left pending; the actual server
+    // provisioning is handed to the provisioning queue (see provisionSubscriptionItem),
+    // mirroring the deferred teardown/withdrawal flows.
+    await this.subscriptionItemsRepository.create({
       subscriptionId: subscription.id,
       serviceTypeId: plan.serviceTypeId,
       configSnapshot: effectiveConfig,
     });
 
-    if (serviceType.provider === 'hetzner' || serviceType.provider === 'digital-ocean') {
-      let hostname: string | null = null;
-      let provisionedServerId: string | undefined;
+    // Reload so DB-generated columns (e.g. the sequence-backed `number`) are populated on the
+    // returned entity; save() does not reliably hydrate database defaults.
+    return await this.subscriptionsRepository.findByIdOrThrow(subscription.id);
+  }
 
-      try {
-        hostname = await this.hostnameReservationService.reserveHostname(subscriptionItem.id);
-        const { publicKey, privateKey } = generateSshKeyPair();
+  /**
+   * Provisions the server for a pending subscription item. Invoked asynchronously by the
+   * provisioning coordinator/unit jobs. Idempotent and self-guarding: it skips items that are
+   * no longer pending, already have a provider reference, or whose subscription is not active.
+   * On failure it rolls back the half-created order (and optionally backorders) when no server
+   * was created, or marks the item failed when a server already exists.
+   */
+  async provisionSubscriptionItem(itemId: string): Promise<void> {
+    const item = await this.subscriptionItemsRepository.findByIdWithRelations(itemId);
 
-        await this.subscriptionItemsRepository.updateSshPrivateKey(subscriptionItem.id, privateKey);
-        effectiveConfig.sshPublicKey = publicKey;
-        const baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
-        const userData = buildProvisioningUserData({
-          service,
-          effectiveConfig,
-          hostname,
-          baseDomain,
-          customTemplate,
-          resolvedCustomEnv,
-        });
-        const provisioningConfig = {
-          name: hostname,
-          serverType,
-          location: region,
-          firewallId: effectiveConfig.firewallId as number | undefined,
-          userData,
-        };
-        const provisioned = await this.provisioningService.provision(serviceType.provider, provisioningConfig);
+    if (!item) {
+      this.logger.warn(`Provisioning skipped; subscription item ${itemId} not found`);
 
-        provisionedServerId = provisioned?.serverId;
+      return;
+    }
 
-        if (provisioned?.serverId) {
-          await this.subscriptionItemsRepository.updateProviderReference(subscriptionItem.id, provisioned.serverId);
-          await this.subscriptionItemsRepository.updateProvisioningStatus(subscriptionItem.id, 'active');
-          const serverInfo = await this.provisioningService.getServerInfo(serviceType.provider, provisioned.serverId);
-          const publicIp = await this.provisioningService.ensurePublicIpForDns(
-            serviceType.provider,
-            provisioned.serverId,
-            serverInfo,
-          );
+    if (item.provisioningStatus !== ProvisioningStatus.PENDING || item.providerReference) {
+      this.logger.log(`Skipping provisioning for item ${itemId}; status is ${item.provisioningStatus}`);
 
-          if (publicIp) {
-            try {
-              await this.cloudflareDnsService.createARecord(hostname, publicIp);
-            } catch (dnsError) {
-              this.logger.warn(
-                `DNS record creation failed for ${hostname}, server provisioned with IP ${publicIp}: ${(dnsError as Error).message}`,
-              );
-            }
-          }
-        }
-      } catch (error) {
-        if (hostname) {
-          try {
-            await this.hostnameReservationService.releaseHostname(subscriptionItem.id);
-          } catch (releaseError) {
-            this.logger.warn(
-              `Failed to release hostname after provisioning failure: ${(releaseError as Error).message}`,
-            );
-          }
-        }
+      return;
+    }
 
-        // A real server was created before the failure (e.g. a post-provision call threw). Keep the
-        // records so the server stays tracked for teardown, and do not backorder (it already exists).
-        if (provisionedServerId) {
-          await this.subscriptionItemsRepository.updateProvisioningStatus(subscriptionItem.id, 'failed');
+    const subscription = item.subscription;
+    const provider = item.serviceType?.provider;
 
-          throw error;
-        }
+    if (!subscription || subscription.status !== SubscriptionStatus.ACTIVE) {
+      this.logger.log(`Skipping provisioning for item ${itemId}; subscription is not active`);
 
-        // No server was provisioned: roll back the half-created order so no dangling active
-        // subscription remains, matching the out-of-stock path (only a backorder is left behind).
-        try {
-          await this.subscriptionItemsRepository.delete(subscriptionItem.id);
-          await this.subscriptionsRepository.delete(subscription.id);
-        } catch (rollbackError) {
-          this.logger.warn(
-            `Failed to roll back subscription ${subscription.id} after provisioning failure: ${(rollbackError as Error).message}`,
-          );
-        }
+      return;
+    }
 
-        if (autoBackorder) {
-          await this.backorderService.create({
-            userId,
-            serviceTypeId: plan.serviceTypeId,
-            planId,
-            requestedConfigSnapshot: effectiveConfig,
-            providerErrors: { reason: (error as Error).message },
-          });
-        }
+    if (provider !== 'hetzner' && provider !== 'digital-ocean') {
+      // Nothing to provision for non-server providers; treat the item as fulfilled.
+      await this.subscriptionItemsRepository.updateProvisioningStatus(itemId, 'active');
 
-        throw error;
+      return;
+    }
+
+    const effectiveConfig: Record<string, unknown> = { ...(item.configSnapshot ?? {}) };
+    const region = resolveProvisioningRegion(effectiveConfig, provider);
+
+    mirrorGeographyInConfig(effectiveConfig, region);
+
+    if (!effectiveConfig.serverType) {
+      effectiveConfig.serverType = provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11';
+    }
+
+    const serverType = effectiveConfig.serverType as string;
+    const service = normalizeCloudInitService(effectiveConfig.service as string | undefined);
+
+    let customTemplate;
+    let resolvedCustomEnv: Record<string, string> | undefined;
+
+    if (service === 'custom') {
+      const cloudInitConfigId = (effectiveConfig.cloudInitConfigId as string | undefined)?.trim();
+
+      if (cloudInitConfigId) {
+        customTemplate = await this.cloudInitConfigService.findByIdForProvisioning(cloudInitConfigId);
+        resolvedCustomEnv = effectiveConfig.env as Record<string, string> | undefined;
       }
     }
 
-    return subscription;
+    let hostname: string | null = null;
+    let provisionedServerId: string | undefined;
+
+    try {
+      hostname = await this.hostnameReservationService.reserveHostname(itemId);
+      const { publicKey, privateKey } = generateSshKeyPair();
+
+      await this.subscriptionItemsRepository.updateSshPrivateKey(itemId, privateKey);
+      effectiveConfig.sshPublicKey = publicKey;
+      const baseDomain = process.env.DNS_BASE_DOMAIN ?? 'spirde.com';
+      const userData = buildProvisioningUserData({
+        service,
+        effectiveConfig,
+        hostname,
+        baseDomain,
+        customTemplate,
+        resolvedCustomEnv,
+      });
+      const provisioned = await this.provisioningService.provision(provider, {
+        name: hostname,
+        serverType,
+        location: region,
+        firewallId: effectiveConfig.firewallId as number | undefined,
+        userData,
+      });
+
+      provisionedServerId = provisioned?.serverId;
+
+      if (provisioned?.serverId) {
+        await this.subscriptionItemsRepository.updateProviderReference(itemId, provisioned.serverId);
+        await this.subscriptionItemsRepository.updateProvisioningStatus(itemId, 'active');
+        const serverInfo = await this.provisioningService.getServerInfo(provider, provisioned.serverId);
+        const publicIp = await this.provisioningService.ensurePublicIpForDns(
+          provider,
+          provisioned.serverId,
+          serverInfo,
+        );
+
+        if (publicIp) {
+          try {
+            await this.cloudflareDnsService.createARecord(hostname, publicIp);
+          } catch (dnsError) {
+            this.logger.warn(
+              `DNS record creation failed for ${hostname}, server provisioned with IP ${publicIp}: ${(dnsError as Error).message}`,
+            );
+          }
+        }
+      }
+
+      this.logger.log(`Provisioned subscription item ${itemId}`);
+    } catch (error) {
+      if (hostname) {
+        try {
+          await this.hostnameReservationService.releaseHostname(itemId);
+        } catch (releaseError) {
+          this.logger.warn(`Failed to release hostname after provisioning failure: ${(releaseError as Error).message}`);
+        }
+      }
+
+      // A real server was created before the failure (e.g. a post-provision call threw). Keep the
+      // records so the server stays tracked for teardown, and do not backorder (it already exists).
+      if (provisionedServerId) {
+        await this.subscriptionItemsRepository.updateProvisioningStatus(itemId, 'failed');
+        this.logger.error(`Provisioning item ${itemId} failed after server creation: ${(error as Error).message}`);
+
+        return;
+      }
+
+      // No server was provisioned: roll back the half-created order so no dangling active
+      // subscription remains, matching the out-of-stock path (only a backorder is left behind).
+      try {
+        await this.subscriptionItemsRepository.delete(itemId);
+        await this.subscriptionsRepository.delete(subscription.id);
+      } catch (rollbackError) {
+        this.logger.warn(
+          `Failed to roll back subscription ${subscription.id} after provisioning failure: ${(rollbackError as Error).message}`,
+        );
+      }
+
+      if (subscription.autoBackorder) {
+        await this.backorderService.create({
+          userId: subscription.userId,
+          serviceTypeId: item.serviceTypeId,
+          planId: subscription.planId,
+          requestedConfigSnapshot: effectiveConfig,
+          providerErrors: { reason: (error as Error).message },
+        });
+      }
+
+      this.logger.error(`Provisioning item ${itemId} failed: ${(error as Error).message}`);
+    }
   }
 
   async listSubscriptions(userId: string, limit: number, offset: number) {

@@ -11,6 +11,7 @@ import {
   SubscriptionBillingJobHandler,
   SubscriptionExpirationJobHandler,
   SubscriptionItemUpdateJobHandler,
+  SubscriptionProvisioningJobHandler,
   SubscriptionRenewalReminderJobHandler,
   SubscriptionWithdrawalJobHandler,
 } from '@forepath/decabill/backend';
@@ -38,6 +39,7 @@ export class BillingJobsProcessor extends WorkerHost {
     private readonly subscriptionBilling: SubscriptionBillingJobHandler,
     private readonly subscriptionExpiration: SubscriptionExpirationJobHandler,
     private readonly subscriptionWithdrawal: SubscriptionWithdrawalJobHandler,
+    private readonly subscriptionProvisioning: SubscriptionProvisioningJobHandler,
     private readonly invoiceOverdue: InvoiceOverdueJobHandler,
     private readonly openPositionInvoice: OpenPositionInvoiceJobHandler,
     private readonly renewalReminder: SubscriptionRenewalReminderJobHandler,
@@ -60,6 +62,9 @@ export class BillingJobsProcessor extends WorkerHost {
         break;
       case BillingJobName.SUBSCRIPTION_WITHDRAWAL_COORDINATOR:
         await this.runSubscriptionWithdrawalCoordinator();
+        break;
+      case BillingJobName.SUBSCRIPTION_PROVISIONING_COORDINATOR:
+        await this.runSubscriptionProvisioningCoordinator();
         break;
       case BillingJobName.INVOICE_OVERDUE_COORDINATOR:
         await this.runInvoiceOverdueCoordinator();
@@ -112,6 +117,11 @@ export class BillingJobsProcessor extends WorkerHost {
             case BillingJobName.SUBSCRIPTION_WITHDRAWAL_UNIT:
               await this.subscriptionWithdrawal.processSubscriptionWithdrawal(
                 (job.data as { subscriptionId: string }).subscriptionId,
+              );
+              break;
+            case BillingJobName.SUBSCRIPTION_PROVISIONING_UNIT:
+              await this.subscriptionProvisioning.processItemProvisioning(
+                (job.data as { subscriptionItemId: string }).subscriptionItemId,
               );
               break;
             case BillingJobName.INVOICE_OVERDUE_UNIT:
@@ -218,6 +228,22 @@ export class BillingJobsProcessor extends WorkerHost {
           payload: { subscriptionId, tenantId },
           jobIdNamespace: 'withdrawal:subscription',
           jobIdParts: [tenantId, subscriptionId],
+        });
+      }
+    });
+  }
+
+  private async runSubscriptionProvisioningCoordinator(): Promise<void> {
+    await this.forEachConfiguredTenant(async (tenantId) => {
+      const ids = await this.subscriptionProvisioning.findPendingProvisioningItemIds();
+
+      for (const subscriptionItemId of ids) {
+        await this.enqueueBillingUnitJob({
+          queue: this.billingQueue,
+          jobName: BillingJobName.SUBSCRIPTION_PROVISIONING_UNIT,
+          payload: { subscriptionItemId, tenantId },
+          jobIdNamespace: 'provisioning:subscription-item',
+          jobIdParts: [tenantId, subscriptionItemId],
         });
       }
     });

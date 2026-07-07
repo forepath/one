@@ -21,6 +21,7 @@ import {
   ServicePlansService,
   ServiceTypesFacade,
   SubscriptionsFacade,
+  SubscriptionServerInfoFacade,
   type BackorderResponse,
   type CloudInitConfigOrderField,
   type CreateSubscriptionDto,
@@ -38,6 +39,8 @@ import {
   getBackorderStatusBadgeClass,
   getBackorderStatusLabel,
   getProfileCompleteLabel,
+  getProvisioningStatusBadgeClass,
+  getProvisioningStatusLabel,
   getSubscriptionStatusBadgeClass,
   getSubscriptionStatusLabel,
 } from '../billing-status-labels';
@@ -73,6 +76,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   @ViewChild('editProfileModal', { static: false }) private editProfileModal!: ElementRef<HTMLDivElement>;
 
   private readonly subscriptionsFacade = inject(SubscriptionsFacade);
+  private readonly serverInfoFacade = inject(SubscriptionServerInfoFacade);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly servicePlansService = inject(ServicePlansService);
   private readonly serviceTypesFacade = inject(ServiceTypesFacade);
@@ -96,6 +100,12 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   readonly subscriptionsWithdrawing$ = this.subscriptionsFacade.getSubscriptionsWithdrawing$();
   readonly subscriptionsResuming$ = this.subscriptionsFacade.getSubscriptionsResuming$();
   readonly backordersCanceling$ = this.backordersFacade.getBackordersCanceling$();
+  readonly provisioningStatusBySubscriptionId = toSignal(
+    this.serverInfoFacade.getProvisioningStatusBySubscriptionId$(),
+    {
+      initialValue: {} as Record<string, string>,
+    },
+  );
 
   readonly filteredSubscriptions = computed(() =>
     filterItemsBySearch(this.subscriptions(), this.subscriptionsSearch(), (sub) =>
@@ -272,6 +282,24 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     return getSubscriptionStatusBadgeClass(status);
   }
 
+  provisioningStatusForSubscription(subscriptionId: string): string | undefined {
+    return this.provisioningStatusBySubscriptionId()[subscriptionId];
+  }
+
+  showProvisioningStatusBadge(subscriptionId: string): boolean {
+    const status = this.provisioningStatusForSubscription(subscriptionId);
+
+    return status === 'pending' || status === 'failed';
+  }
+
+  provisioningStatusLabel(status: string | null | undefined): string {
+    return getProvisioningStatusLabel(status);
+  }
+
+  provisioningStatusBadgeClass(status: string | null | undefined): string {
+    return getProvisioningStatusBadgeClass(status);
+  }
+
   backorderStatusLabel(status: string | null | undefined): string {
     return getBackorderStatusLabel(status);
   }
@@ -394,6 +422,13 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     this.serviceTypesFacade.loadProviderDetails();
     this.backordersFacade.loadBackorders();
     this.customerProfileFacade.loadCustomerProfile();
+
+    this.subscriptionsLoading$
+      .pipe(
+        filter((loading) => !loading),
+        take(1),
+      )
+      .subscribe(() => this.serverInfoFacade.loadOverviewServerInfo());
   }
 
   ngAfterViewInit(): void {

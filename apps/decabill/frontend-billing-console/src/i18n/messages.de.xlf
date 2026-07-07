@@ -478,6 +478,26 @@
         <source>Pending withdrawal</source>
         <target>Widerruf ausstehend</target>
       </trans-unit>
+      <trans-unit id="featureBilling-provisioningStatusPending" datatype="html">
+        <source>Provisioning</source>
+        <target>Bereitstellung läuft</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-provisioningStatusActive" datatype="html">
+        <source>Provisioned</source>
+        <target>Bereitgestellt</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-provisioningStatusFailed" datatype="html">
+        <source>Provisioning failed</source>
+        <target>Bereitstellung fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-provisioningStatusEmpty" datatype="html">
+        <source>Unknown</source>
+        <target>Unbekannt</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-provisioningStatusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        <target>Unbekannt (<x id="PH" equiv-text="status"/>)</target>
+      </trans-unit>
       <trans-unit id="featureBilling-subscriptionStatusCanceled" datatype="html">
         <source>Canceled</source>
         <target>Gekündigt</target>
@@ -1121,6 +1141,14 @@
       <trans-unit id="featureOverview-serverStatusUpdatingLabel" datatype="html">
         <source>Updating</source>
         <target>Wird aktualisiert</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-provisioningPendingHint" datatype="html">
+        <source>Your server is being set up. This usually takes less than a minute.</source>
+        <target>Ihr Server wird eingerichtet. Das dauert in der Regel weniger als eine Minute.</target>
+      </trans-unit>
+      <trans-unit id="featureOverview-provisioningFailedHint" datatype="html">
+        <source>Server setup did not complete. Check backorders or contact support if this persists.</source>
+        <target>Die Servereinrichtung wurde nicht abgeschlossen. Prüfen Sie Rückstände oder kontaktieren Sie den Support, wenn das Problem bestehen bleibt.</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-title" datatype="html">
         <source>Service Plans</source>

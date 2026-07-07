@@ -140,6 +140,7 @@ export * from './lib/services/subscription-item-server.service';
 export * from './lib/services/usage.service';
 export * from './lib/services/subscription-billing.job-handler';
 export * from './lib/services/subscription-expiration.job-handler';
+export * from './lib/services/subscription-provisioning.job-handler';
 export * from './lib/services/subscription-withdrawal.job-handler';
 export * from './lib/services/subscription-renewal-reminder.job-handler';
 export * from './lib/queue/admin-bill-now-enqueue.token';

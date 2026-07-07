@@ -57,13 +57,19 @@ describe('subscriptionServerInfoReducer', () => {
       };
       const serverInfoBySubscriptionId = { 'sub-1': mockServerInfo };
       const activeItemIdBySubscriptionId = { 'sub-1': 'item-1' };
+      const provisioningStatusBySubscriptionId = { 'sub-1': 'active' as const };
       const newState = subscriptionServerInfoReducer(
         state,
-        loadOverviewServerInfoSuccess({ serverInfoBySubscriptionId, activeItemIdBySubscriptionId }),
+        loadOverviewServerInfoSuccess({
+          serverInfoBySubscriptionId,
+          activeItemIdBySubscriptionId,
+          provisioningStatusBySubscriptionId,
+        }),
       );
 
       expect(newState.serverInfoBySubscriptionId).toEqual(serverInfoBySubscriptionId);
       expect(newState.activeItemIdBySubscriptionId).toEqual(activeItemIdBySubscriptionId);
+      expect(newState.provisioningStatusBySubscriptionId).toEqual(provisioningStatusBySubscriptionId);
       expect(newState.loading).toBe(false);
       expect(newState.error).toBeNull();
     });
@@ -161,6 +167,7 @@ describe('subscriptionServerInfoReducer', () => {
 
       expect(newState.actionInProgress['sub-1']).toBeUndefined();
       expect(newState.actionInProgress['sub-2']).toBe('stop');
+      expect(newState.provisioningStatusBySubscriptionId['sub-1']).toBe('active');
     });
   });
 

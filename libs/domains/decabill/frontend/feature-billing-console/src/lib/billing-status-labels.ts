@@ -32,6 +32,37 @@ export function getSubscriptionStatusLabel(status: string | null | undefined): s
   }
 }
 
+export function getProvisioningStatusLabel(status: string | null | undefined): string {
+  if (status == null || status === '') {
+    return $localize`:@@featureBilling-provisioningStatusEmpty:Unknown`;
+  }
+
+  switch (status) {
+    case 'pending':
+      return $localize`:@@featureBilling-provisioningStatusPending:Provisioning`;
+    case 'active':
+      return $localize`:@@featureBilling-provisioningStatusActive:Provisioned`;
+    case 'failed':
+      return $localize`:@@featureBilling-provisioningStatusFailed:Provisioning failed`;
+    default:
+      return $localize`:@@featureBilling-provisioningStatusUnknown:Unknown (${status})`;
+  }
+}
+
+/** Status chip modifier paired with global `.info-badge` base classes. */
+export function getProvisioningStatusBadgeClass(status: string | null | undefined): string {
+  switch (status) {
+    case 'pending':
+      return 'billing-admin__chip--status-partially-paid';
+    case 'active':
+      return 'billing-admin__chip--status-paid';
+    case 'failed':
+      return 'billing-admin__chip--status-overdue';
+    default:
+      return 'billing-admin__chip--status-unknown';
+  }
+}
+
 export function getBackorderStatusLabel(status: string | null | undefined): string {
   if (status == null || status === '') {
     return $localize`:@@featureBilling-backorderStatusEmpty:Unknown`;

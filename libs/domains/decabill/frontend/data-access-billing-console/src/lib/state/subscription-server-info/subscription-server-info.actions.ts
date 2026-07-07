@@ -3,6 +3,7 @@ import { createAction, props } from '@ngrx/store';
 import type {
   BillingDashboardStatusUpdatePayload,
   ProvisioningServiceKind,
+  ProvisioningStatus,
   ServerInfoResponse,
 } from '../../types/billing.types';
 
@@ -15,6 +16,8 @@ export const loadOverviewServerInfoSuccess = createAction(
     activeItemIdBySubscriptionId: Record<string, string>;
     /** Service kind per subscription id from active item config. */
     serviceBySubscriptionId?: Record<string, ProvisioningServiceKind>;
+    /** Latest provisioning status per subscription id from the tracked item. */
+    provisioningStatusBySubscriptionId?: Record<string, ProvisioningStatus>;
   }>(),
 );
 

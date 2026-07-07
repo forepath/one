@@ -7,19 +7,27 @@ import { SubscriptionItemsRepository } from './subscription-items.repository';
 describe('SubscriptionItemsRepository', () => {
   const mockGetMany = jest.fn();
   const mockGetOne = jest.fn();
+  const mockGetRawMany = jest.fn();
   const mockInnerJoin = jest.fn().mockReturnThis();
   const mockAndWhere = jest.fn().mockReturnThis();
   const mockWhere = jest.fn().mockReturnThis();
   const mockInnerJoinAndSelect = jest.fn().mockReturnThis();
   const mockLeftJoinAndSelect = jest.fn().mockReturnThis();
+  const mockSelect = jest.fn().mockReturnThis();
+  const mockOrderBy = jest.fn().mockReturnThis();
+  const mockTake = jest.fn().mockReturnThis();
   const createQueryBuilderReturn = {
     innerJoin: mockInnerJoin,
     innerJoinAndSelect: mockInnerJoinAndSelect,
     leftJoinAndSelect: mockLeftJoinAndSelect,
+    select: mockSelect,
+    orderBy: mockOrderBy,
+    take: mockTake,
     where: mockWhere,
     andWhere: mockAndWhere,
     getMany: mockGetMany,
     getOne: mockGetOne,
+    getRawMany: mockGetRawMany,
   };
   const mockCreateQueryBuilder = jest.fn(() => createQueryBuilderReturn);
   const mockRepository = {
@@ -39,6 +47,9 @@ describe('SubscriptionItemsRepository', () => {
     mockInnerJoin.mockReturnThis();
     mockInnerJoinAndSelect.mockReturnThis();
     mockLeftJoinAndSelect.mockReturnThis();
+    mockSelect.mockReturnThis();
+    mockOrderBy.mockReturnThis();
+    mockTake.mockReturnThis();
   });
 
   it('creates subscription item', async () => {
@@ -113,5 +124,20 @@ describe('SubscriptionItemsRepository', () => {
 
     expect(mockAndWhere).toHaveBeenCalledWith('user.tenant_id = :tenantId', { tenantId: 'default' });
     expect(result).toEqual(items);
+  });
+
+  it('findPendingProvisioningIds returns ids of pending server items', async () => {
+    mockGetRawMany.mockResolvedValue([{ id: 'item-1' }, { id: 'item-2' }]);
+
+    const result = await runWithTenantId('default', () => repository.findPendingProvisioningIds(50));
+
+    expect(result).toEqual(['item-1', 'item-2']);
+    expect(mockWhere).toHaveBeenCalledWith('item.provisioning_status = :status', { status: 'pending' });
+    expect(mockAndWhere).toHaveBeenCalledWith('item.provider_reference IS NULL');
+    expect(mockAndWhere).toHaveBeenCalledWith('sub.status = :subStatus', { subStatus: 'active' });
+    expect(mockAndWhere).toHaveBeenCalledWith('st.provider IN (:...providers)', {
+      providers: ['hetzner', 'digital-ocean'],
+    });
+    expect(mockTake).toHaveBeenCalledWith(50);
   });
 });
