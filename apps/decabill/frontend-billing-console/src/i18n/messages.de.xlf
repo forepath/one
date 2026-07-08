@@ -1058,6 +1058,10 @@
         <source>View plans</source>
         <target>Pläne anzeigen</target>
       </trans-unit>
+      <trans-unit id="featureOverview-orderPlanButtonTitle" datatype="html">
+        <source>Place order</source>
+        <target>Bestellung aufgeben</target>
+      </trans-unit>
       <trans-unit id="featureOverview-backorders" datatype="html">
         <source>Backorders</source>
         <target>Rückstände</target>

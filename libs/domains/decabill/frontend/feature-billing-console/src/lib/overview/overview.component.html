@@ -26,14 +26,37 @@
                 } @else {
                   <p class="card-title mb-0 fs-4 fw-bold">{{ activeSubscriptions().length }}</p>
                 }
-                <a
-                  routerLink="/subscriptions"
-                  class="btn btn-sm btn-outline-secondary flex-shrink-0"
-                  title="View plans"
-                  i18n-title="@@featureOverview-viewPlansButtonTitle"
-                >
-                  <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-                </a>
+                <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                  <a
+                    routerLink="/subscriptions"
+                    class="btn btn-sm btn-outline-secondary"
+                    title="View plans"
+                    i18n-title="@@featureOverview-viewPlansButtonTitle"
+                  >
+                    <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                  </a>
+                  @if ((isCustomerProfileComplete$ | async) === true) {
+                    <a
+                      routerLink="/subscriptions"
+                      [queryParams]="{ order: 'true' }"
+                      class="btn btn-sm btn-outline-secondary"
+                      title="Place order"
+                      i18n-title="@@featureOverview-orderPlanButtonTitle"
+                    >
+                      <i class="bi bi-cart" aria-hidden="true"></i>
+                    </a>
+                  } @else {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      disabled
+                      title="Complete your billing profile to place an order"
+                      i18n-title="@@featureSubscriptions-completeProfileToOrder"
+                    >
+                      <i class="bi bi-cart" aria-hidden="true"></i>
+                    </button>
+                  }
+                </div>
               </div>
             </div>
           </div>

@@ -794,6 +794,9 @@
       <trans-unit id="featureOverview-viewPlansButtonTitle" datatype="html">
         <source>View plans</source>
         </trans-unit>
+      <trans-unit id="featureOverview-orderPlanButtonTitle" datatype="html">
+        <source>Place order</source>
+        </trans-unit>
       <trans-unit id="featureOverview-projects" datatype="html">
         <source>Active projects</source>
         </trans-unit>
