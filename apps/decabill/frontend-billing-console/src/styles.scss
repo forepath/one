@@ -107,6 +107,7 @@ $agenstra-badge-text-bg-colors: primary, secondary, success, info, warning, dang
 }
 
 @import 'bootstrap/scss/bootstrap';
+@import '../../../../libs/domains/shared/frontend/modal-header';
 
 .btn-primary {
   --bs-btn-color: #fff;
