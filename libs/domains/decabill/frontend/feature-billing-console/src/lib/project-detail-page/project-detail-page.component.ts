@@ -121,6 +121,10 @@ export class ProjectDetailPageComponent implements OnInit {
   readonly billBoundsEntryCount = signal(0);
   readonly billTimeSubscriptions = signal<SubscriptionResponse[]>([]);
   readonly billTimeSubscriptionsLoading = signal(false);
+  readonly taxCategoryOptions: { value: BillTimeFormLineItem['taxCategory']; label: string }[] = [
+    { value: 'standard', label: 'Standard (19%)' },
+    { value: 'reduced', label: 'Reduced (7%)' },
+  ];
   private billTimeSubscriptionsRequest?: Subscription;
 
   ngOnInit(): void {
@@ -354,6 +358,22 @@ export class ProjectDetailPageComponent implements OnInit {
     }
 
     this.projectsFacade.billProjectTime(this.projectId, dto);
+  }
+
+  formatBillTimeLineTotal(line: BillTimeFormLineItem): string {
+    const quantity = Number(line.quantity);
+    const unitPriceNet = Number(line.unitPriceNet);
+
+    if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(unitPriceNet) || unitPriceNet < 0) {
+      return '—';
+    }
+
+    const net = Math.round(quantity * unitPriceNet * 100) / 100;
+    const taxRate = line.taxCategory === 'reduced' ? 7 : 19;
+    const tax = Math.round(net * (taxRate / 100) * 100) / 100;
+    const gross = Math.round((net + tax) * 100) / 100;
+
+    return `€${gross.toFixed(2)} gross (${taxRate}% VAT)`;
   }
 
   addBillTimeLineItem(): void {

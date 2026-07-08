@@ -2145,7 +2145,7 @@
                 </select>
               </div>
 
-              @if (selectedProvider() === 'hetzner') {
+              @if (selectedProvider()) {
                 <div class="mb-3">
                   <label for="clientLocation" class="form-label">Location</label>
                   <select
@@ -2156,37 +2156,12 @@
                     (ngModelChange)="selectedLocation.set($event)"
                     [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
                   >
-                    <option value="">Default (fsn1)</option>
-                    <option value="fsn1">Falkenstein (fsn1)</option>
-                    <option value="nbg1">Nuremberg (nbg1)</option>
-                    <option value="hel1">Helsinki (hel1)</option>
-                    <option value="ash">Ashburn (ash)</option>
-                    <option value="hil">Hillsboro (hil)</option>
-                  </select>
-                </div>
-              }
-              @if (selectedProvider() === 'digital-ocean') {
-                <div class="mb-3">
-                  <label for="clientLocation" class="form-label">Location</label>
-                  <select
-                    class="form-select"
-                    id="clientLocation"
-                    name="location"
-                    [ngModel]="selectedLocation()"
-                    (ngModelChange)="selectedLocation.set($event)"
-                    [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
-                  >
-                    <option value="">Default (fra1)</option>
-                    <option value="nyc1">New York 1 (nyc1)</option>
-                    <option value="nyc3">New York 3 (nyc3)</option>
-                    <option value="sfo3">San Francisco 3 (sfo3)</option>
-                    <option value="ams3">Amsterdam 3 (ams3)</option>
-                    <option value="sgp1">Singapore 1 (sgp1)</option>
-                    <option value="lon1">London 1 (lon1)</option>
-                    <option value="fra1">Frankfurt 1 (fra1)</option>
-                    <option value="tor1">Toronto 1 (tor1)</option>
-                    <option value="blr1">Bangalore 1 (blr1)</option>
-                    <option value="syd1">Sydney 1 (syd1)</option>
+                    <option value="">
+                      {{ defaultProvisioningLocationLabel(selectedProvider(), locations$ | async) }}
+                    </option>
+                    @for (location of locations$ | async; track location.id) {
+                      <option [value]="location.id">{{ location.name }}</option>
+                    }
                   </select>
                 </div>
               }

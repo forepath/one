@@ -38,6 +38,9 @@ import {
   loadServerTypes,
   loadServerTypesFailure,
   loadServerTypesSuccess,
+  loadLocations,
+  loadLocationsFailure,
+  loadLocationsSuccess,
   provisionServer,
   provisionServerFailure,
   provisionServerSuccess,
@@ -236,6 +239,21 @@ export const loadServerTypes$ = createEffect(
         clientsService.getServerTypes(providerType).pipe(
           map((serverTypes) => loadServerTypesSuccess({ providerType, serverTypes })),
           catchError((error) => of(loadServerTypesFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const loadLocations$ = createEffect(
+  (actions$ = inject(Actions), clientsService = inject(ClientsService)) => {
+    return actions$.pipe(
+      ofType(loadLocations),
+      exhaustMap(({ providerType }) =>
+        clientsService.getLocations(providerType).pipe(
+          map((locations) => loadLocationsSuccess({ providerType, locations })),
+          catchError((error) => of(loadLocationsFailure({ error: normalizeError(error) }))),
         ),
       ),
     );

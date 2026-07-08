@@ -10,5 +10,7 @@ export interface AuthMarketing {
   resetPasswordConfirmationDescription: string;
   resetPasswordDescription: string;
   confirmEmailDescription: string;
+  /** Statutory withdrawal page copy (Decabill). */
+  publicWithdrawalDescription?: string;
   features: AuthMarketingFeature[];
 }

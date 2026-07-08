@@ -21,6 +21,10 @@ export class DigitaloceanProvisioningService {
     }
   }
 
+  private resolveApiToken(apiToken?: string): string {
+    return apiToken?.trim() || this.apiToken;
+  }
+
   /**
    * DigitalOcean's API expects plain-text cloud-init user_data.
    * Billing passes the same string as Hetzner; cloud-init builders base64-encode the script for Hetzner's API.
@@ -45,8 +49,13 @@ export class DigitaloceanProvisioningService {
     return userData;
   }
 
-  async provisionServer(config: { name: string; serverType: string; location: string; userData: string }) {
-    if (!this.apiToken) {
+  async provisionServer(
+    config: { name: string; serverType: string; location: string; userData: string },
+    apiToken?: string,
+  ) {
+    const token = this.resolveApiToken(apiToken);
+
+    if (!token) {
       throw new BadRequestException('DIGITALOCEAN_API_TOKEN environment variable is not set');
     }
 
@@ -71,7 +80,7 @@ export class DigitaloceanProvisioningService {
         },
         {
           headers: {
-            Authorization: `Bearer ${this.apiToken}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         },
@@ -91,8 +100,10 @@ export class DigitaloceanProvisioningService {
     }
   }
 
-  async deprovisionServer(serverId: string): Promise<void> {
-    if (!this.apiToken) {
+  async deprovisionServer(serverId: string, apiToken?: string): Promise<void> {
+    const token = this.resolveApiToken(apiToken);
+
+    if (!token) {
       this.logger.warn('DIGITALOCEAN_API_TOKEN not set, skipping deprovisioning');
 
       return;
@@ -100,7 +111,7 @@ export class DigitaloceanProvisioningService {
 
     try {
       await axios.delete(`https://api.digitalocean.com/v2/droplets/${serverId}`, {
-        headers: { Authorization: `Bearer ${this.apiToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       this.logger.log(`Successfully deprovisioned DigitalOcean droplet ${serverId}`);
     } catch (error) {
@@ -111,15 +122,17 @@ export class DigitaloceanProvisioningService {
     }
   }
 
-  async getServerInfo(serverId: string): Promise<ServerInfo> {
-    if (!this.apiToken) {
+  async getServerInfo(serverId: string, apiToken?: string): Promise<ServerInfo> {
+    const token = this.resolveApiToken(apiToken);
+
+    if (!token) {
       throw new BadRequestException('DIGITALOCEAN_API_TOKEN environment variable is not set');
     }
 
     try {
       const response = await axios.get<{ droplet: DigitalOceanDroplet }>(
         `https://api.digitalocean.com/v2/droplets/${serverId}`,
-        { headers: { Authorization: `Bearer ${this.apiToken}` } },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       const droplet = response.data?.droplet;
 
@@ -154,24 +167,27 @@ export class DigitaloceanProvisioningService {
     }
   }
 
-  async startServer(serverId: string): Promise<void> {
-    await this.executePowerAction(serverId, 'power_on', 'started');
+  async startServer(serverId: string, apiToken?: string): Promise<void> {
+    await this.executePowerAction(serverId, 'power_on', 'started', apiToken);
   }
 
-  async stopServer(serverId: string): Promise<void> {
-    await this.executePowerAction(serverId, 'power_off', 'stopped');
+  async stopServer(serverId: string, apiToken?: string): Promise<void> {
+    await this.executePowerAction(serverId, 'power_off', 'stopped', apiToken);
   }
 
-  async restartServer(serverId: string): Promise<void> {
-    await this.executePowerAction(serverId, 'reboot', 'restarted');
+  async restartServer(serverId: string, apiToken?: string): Promise<void> {
+    await this.executePowerAction(serverId, 'reboot', 'restarted', apiToken);
   }
 
   private async executePowerAction(
     serverId: string,
     actionType: 'power_on' | 'power_off' | 'reboot',
     actionLabel: 'started' | 'stopped' | 'restarted',
+    apiToken?: string,
   ): Promise<void> {
-    if (!this.apiToken) {
+    const token = this.resolveApiToken(apiToken);
+
+    if (!token) {
       throw new BadRequestException('DIGITALOCEAN_API_TOKEN environment variable is not set');
     }
 
@@ -181,7 +197,7 @@ export class DigitaloceanProvisioningService {
         { type: actionType },
         {
           headers: {
-            Authorization: `Bearer ${this.apiToken}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         },

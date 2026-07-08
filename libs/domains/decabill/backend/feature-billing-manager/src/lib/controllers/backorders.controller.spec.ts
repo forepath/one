@@ -9,7 +9,9 @@ import { BackordersController } from './backorders.controller';
 
 describe('BackordersController', () => {
   let controller: BackordersController;
-  let backorderService: jest.Mocked<Pick<BackorderService, 'listForUser' | 'retry' | 'cancel'>>;
+  let backorderService: jest.Mocked<
+    Pick<BackorderService, 'listForUser' | 'retry' | 'cancel' | 'mapManyToResponses' | 'mapToResponse'>
+  >;
   let backordersRepository: jest.Mocked<Pick<BackordersRepository, 'findByIdOrThrow'>>;
   const backorderId = '22222222-2222-4222-8222-222222222222';
   const userId = 'user-1';
@@ -36,6 +38,23 @@ describe('BackordersController', () => {
   beforeEach(async () => {
     backorderService = {
       listForUser: jest.fn().mockResolvedValue([]),
+      mapManyToResponses: jest.fn().mockResolvedValue([]),
+      mapToResponse: jest.fn((row) =>
+        Promise.resolve({
+          id: row.id,
+          userId: row.userId,
+          serviceTypeId: row.serviceTypeId,
+          planId: row.planId,
+          status: row.status,
+          failureReason: row.failureReason,
+          requestedConfigSnapshot: row.requestedConfigSnapshot ?? {},
+          providerErrors: row.providerErrors ?? {},
+          preferredAlternatives: row.preferredAlternatives ?? {},
+          retryAfter: row.retryAfter,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+        }),
+      ),
       retry: jest.fn().mockResolvedValue(backorderOwnedByUser),
       cancel: jest.fn().mockResolvedValue({ ...backorderOwnedByUser, status: BackorderStatus.CANCELLED }),
     };
@@ -57,10 +76,15 @@ describe('BackordersController', () => {
   describe('list', () => {
     it('returns backorders for authenticated user', async () => {
       backorderService.listForUser.mockResolvedValue([backorderOwnedByUser] as never);
+      backorderService.mapManyToResponses.mockResolvedValue([
+        { ...backorderOwnedByUser, periodTotalPrice: 12.5 },
+      ] as never);
       const result = await controller.list(10, 0, reqWithUser as never);
 
       expect(backorderService.listForUser).toHaveBeenCalledWith(userId, 10, 0);
+      expect(backorderService.mapManyToResponses).toHaveBeenCalledWith([backorderOwnedByUser]);
       expect(result).toHaveLength(1);
+      expect(result[0].periodTotalPrice).toBe(12.5);
     });
 
     it('throws BadRequestException when user not authenticated', async () => {
@@ -75,6 +99,7 @@ describe('BackordersController', () => {
 
       expect(backordersRepository.findByIdOrThrow).toHaveBeenCalledWith(backorderId);
       expect(backorderService.retry).toHaveBeenCalledWith(backorderId);
+      expect(backorderService.mapToResponse).toHaveBeenCalledWith(backorderOwnedByUser);
       expect(result.userId).toBe(userId);
     });
 
@@ -115,6 +140,7 @@ describe('BackordersController', () => {
 
       expect(backordersRepository.findByIdOrThrow).toHaveBeenCalledWith(backorderId);
       expect(backorderService.cancel).toHaveBeenCalledWith(backorderId);
+      expect(backorderService.mapToResponse).toHaveBeenCalled();
       expect(result.status).toBe(BackorderStatus.CANCELLED);
     });
 

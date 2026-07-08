@@ -141,7 +141,7 @@ describe('HetznerProvisioningService', () => {
             private_net: [{ ip: '10.0.0.1', network: 1 }],
             datacenter: {
               name: 'fsn1-dc14',
-              location: { name: 'fsn1' },
+              location: { name: 'fsn1', city: 'Falkenstein' },
             },
           },
         },
@@ -156,7 +156,7 @@ describe('HetznerProvisioningService', () => {
         publicIp: '1.2.3.4',
         privateIp: '10.0.0.1',
         status: 'running',
-        metadata: { location: 'fsn1', datacenter: 'fsn1-dc14' },
+        metadata: { location: 'fsn1', locationName: 'Falkenstein', datacenter: 'fsn1-dc14' },
       });
       expect(mockedAxios.get).toHaveBeenCalledWith('https://api.hetzner.cloud/v1/servers/12345', {
         headers: { Authorization: 'Bearer test-token' },
@@ -183,7 +183,11 @@ describe('HetznerProvisioningService', () => {
       expect(result.publicIp).toBe('');
       expect(result.privateIp).toBeUndefined();
       expect(result.status).toBe('starting');
-      expect(result.metadata).toEqual({ location: 'nbg1', datacenter: 'nbg1-dc3' });
+      expect(result.metadata).toEqual({
+        location: 'nbg1',
+        locationName: 'Nuremberg',
+        datacenter: 'nbg1-dc3',
+      });
     });
 
     it('throws when API token not set', async () => {
@@ -193,6 +197,29 @@ describe('HetznerProvisioningService', () => {
 
       await expect(service.getServerInfo('12345')).rejects.toThrow('HETZNER_API_TOKEN environment variable is not set');
       expect(mockedAxios.get).not.toHaveBeenCalled();
+    });
+
+    it('uses per-call apiToken override when global env is unset', async () => {
+      delete process.env.HETZNER_API_TOKEN;
+      mockedAxios.get.mockResolvedValue({
+        data: {
+          server: {
+            id: 12345,
+            name: 'test-server',
+            status: 'running',
+            public_net: { ipv4: { ip: '1.2.3.4' } },
+          },
+        },
+      });
+
+      const service = new HetznerProvisioningService();
+
+      await service.getServerInfo('12345', 'override-token');
+
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        'https://api.hetzner.cloud/v1/servers/12345',
+        expect.objectContaining({ headers: { Authorization: 'Bearer override-token' } }),
+      );
     });
 
     it('throws when server not found (404)', async () => {

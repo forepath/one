@@ -65,7 +65,7 @@ describe('SubscriptionTeardownService', () => {
 
     expect(cloudflareDnsService.deleteRecord).toHaveBeenCalledWith('awesome-armadillo-abc12');
     expect(hostnameReservationService.releaseHostname).toHaveBeenCalledWith('item-1');
-    expect(provisioningService.deprovision).toHaveBeenCalledWith('hetzner', 'srv-1');
+    expect(provisioningService.deprovision).toHaveBeenCalledWith('hetzner', 'srv-1', {});
     expect(openPositionsRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         subscriptionId: 'sub-1',

@@ -84,6 +84,42 @@ describe('DatevBookingMapperService', () => {
     expect(row[10]).toBe('INV-2026-00001-CN');
   });
 
+  it('maps voided reduced line item to 8300 revenue account', () => {
+    const row = service.mapVoidedLineItem({
+      line: line({ taxCategory: TaxCategory.REDUCED }),
+      invoice: invoice(),
+      debtorAccount: 10_001,
+      config,
+      scope: DatevExportScope.TENANT,
+      voidedAt: new Date('2026-02-01T12:00:00Z'),
+    });
+
+    expect(row[1]).toBe('H');
+    expect(row[7]).toBe('8300');
+  });
+
+  it('maps partial credit document with H and reduced revenue account', () => {
+    const row = service.mapPartialCreditDocument({
+      credit: {
+        documentNumber: 'PCN-2026-00001',
+        creditGross: 50,
+        taxCategory: TaxCategory.REDUCED,
+        description: 'Unused subscription period (SUB-1)',
+        withdrawnAt: new Date('2026-02-01T12:00:00Z'),
+      } as never,
+      invoice: invoice(),
+      debtorAccount: 10_001,
+      config,
+      scope: DatevExportScope.TENANT,
+    });
+
+    expect(row[0]).toBe('50,00');
+    expect(row[1]).toBe('H');
+    expect(row[7]).toBe('8300');
+    expect(row[10]).toBe('PCN-2026-00001');
+    expect(row[13]).toContain('Unused subscription period');
+  });
+
   it('prefixes booking text with tenant slug for unified exports', () => {
     const row = service.mapIssuedLineItem({
       line: line(),

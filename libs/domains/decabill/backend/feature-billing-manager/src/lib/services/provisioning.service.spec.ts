@@ -37,7 +37,7 @@ describe('ProvisioningService', () => {
     const result = await service.provision('digital-ocean', { name: 'test' });
 
     expect(result).toEqual({ serverId: '2' });
-    expect(digitalocean.provisionServer).toHaveBeenCalledWith({ name: 'test' });
+    expect(digitalocean.provisionServer).toHaveBeenCalledWith({ name: 'test' }, undefined);
   });
 
   it('routes deprovision to Hetzner', async () => {
@@ -48,7 +48,7 @@ describe('ProvisioningService', () => {
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
 
     await service.deprovision('hetzner', 'server-123');
-    expect(hetzner.deprovisionServer).toHaveBeenCalledWith('server-123');
+    expect(hetzner.deprovisionServer).toHaveBeenCalledWith('server-123', undefined);
   });
 
   it('routes deprovision to DigitalOcean', async () => {
@@ -59,7 +59,7 @@ describe('ProvisioningService', () => {
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
 
     await service.deprovision('digital-ocean', 'server-456');
-    expect(digitalocean.deprovisionServer).toHaveBeenCalledWith('server-456');
+    expect(digitalocean.deprovisionServer).toHaveBeenCalledWith('server-456', undefined);
   });
 
   it('ignores deprovision for unknown provider', async () => {
@@ -96,7 +96,7 @@ describe('ProvisioningService', () => {
     const result = await service.getServerInfo('hetzner', '123');
 
     expect(result).toEqual(serverInfo);
-    expect(hetzner.getServerInfo).toHaveBeenCalledWith('123');
+    expect(hetzner.getServerInfo).toHaveBeenCalledWith('123', undefined);
   });
 
   it('routes getServerInfo to DigitalOcean', async () => {
@@ -110,7 +110,7 @@ describe('ProvisioningService', () => {
       publicIp: '5.6.7.8',
       status: 'active',
     });
-    expect(digitalocean.getServerInfo).toHaveBeenCalledWith('456');
+    expect(digitalocean.getServerInfo).toHaveBeenCalledWith('456', undefined);
   });
 
   it('returns null for getServerInfo with unknown provider', async () => {
@@ -130,7 +130,7 @@ describe('ProvisioningService', () => {
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
 
     await service.startServer('hetzner', '123');
-    expect(hetzner.startServer).toHaveBeenCalledWith('123');
+    expect(hetzner.startServer).toHaveBeenCalledWith('123', undefined);
   });
 
   it('routes startServer to DigitalOcean', async () => {
@@ -138,7 +138,7 @@ describe('ProvisioningService', () => {
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
 
     await service.startServer('digital-ocean', '123');
-    expect(digitalocean.startServer).toHaveBeenCalledWith('123');
+    expect(digitalocean.startServer).toHaveBeenCalledWith('123', undefined);
   });
 
   it('does nothing for startServer with unknown provider', async () => {
@@ -157,7 +157,7 @@ describe('ProvisioningService', () => {
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
 
     await service.stopServer('hetzner', '123');
-    expect(hetzner.stopServer).toHaveBeenCalledWith('123');
+    expect(hetzner.stopServer).toHaveBeenCalledWith('123', undefined);
   });
 
   it('routes stopServer to DigitalOcean', async () => {
@@ -165,7 +165,7 @@ describe('ProvisioningService', () => {
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
 
     await service.stopServer('digital-ocean', '123');
-    expect(digitalocean.stopServer).toHaveBeenCalledWith('123');
+    expect(digitalocean.stopServer).toHaveBeenCalledWith('123', undefined);
   });
 
   it('does nothing for stopServer with unknown provider', async () => {
@@ -184,7 +184,7 @@ describe('ProvisioningService', () => {
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
 
     await service.restartServer('hetzner', '123');
-    expect(hetzner.restartServer).toHaveBeenCalledWith('123');
+    expect(hetzner.restartServer).toHaveBeenCalledWith('123', undefined);
   });
 
   it('routes restartServer to DigitalOcean', async () => {
@@ -192,7 +192,7 @@ describe('ProvisioningService', () => {
     const service = new ProvisioningService(hetzner as never, digitalocean as never);
 
     await service.restartServer('digital-ocean', '123');
-    expect(digitalocean.restartServer).toHaveBeenCalledWith('123');
+    expect(digitalocean.restartServer).toHaveBeenCalledWith('123', undefined);
   });
 
   it('does nothing for restartServer with unknown provider', async () => {

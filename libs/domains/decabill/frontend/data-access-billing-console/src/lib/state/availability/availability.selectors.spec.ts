@@ -51,7 +51,15 @@ describe('Availability Selectors', () => {
 
   describe('selectPricingPreview', () => {
     it('should select pricing', () => {
-      const pricing = { basePrice: 100, marginPercent: 10, marginFixed: 5, totalPrice: 115 };
+      const pricing = {
+        basePrice: 100,
+        marginPercent: 10,
+        marginFixed: 5,
+        totalPrice: 115,
+        taxTotal: 21.85,
+        totalGross: 136.85,
+        taxRate: 19,
+      };
       const state = createState({ pricing });
       const rootState = { availability: state };
 

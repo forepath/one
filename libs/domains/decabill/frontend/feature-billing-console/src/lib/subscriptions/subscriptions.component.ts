@@ -15,11 +15,13 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
+  AvailabilityService,
   BackordersFacade,
   CustomerProfileFacade,
   ServicePlansFacade,
   ServicePlansService,
   ServiceTypesFacade,
+  ServiceTypesService,
   SubscriptionsFacade,
   SubscriptionServerInfoFacade,
   type BackorderResponse,
@@ -27,10 +29,17 @@ import {
   type CreateSubscriptionDto,
   type CustomerProfileDto,
   type OrderProvisioningOption,
+  type PricingPreviewResponse,
   type ProviderDetail,
   type ServicePlanResponse,
   type ServiceTypeResponse,
+  type ServerType,
   type SubscriptionResponse,
+  formatBillingProviderLocationLabel,
+  formatServerTypeOption,
+  normalizeAllowedServerTypeIds,
+  providerLocationCatalogFromList,
+  type ProviderLocationCatalog,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { combineLatest, filter, take } from 'rxjs';
@@ -38,6 +47,7 @@ import { combineLatest, filter, take } from 'rxjs';
 import {
   getBackorderStatusBadgeClass,
   getBackorderStatusLabel,
+  getBillingIntervalLabel,
   getProfileCompleteLabel,
   getProvisioningStatusBadgeClass,
   getProvisioningStatusLabel,
@@ -80,6 +90,8 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly servicePlansService = inject(ServicePlansService);
   private readonly serviceTypesFacade = inject(ServiceTypesFacade);
+  private readonly serviceTypesService = inject(ServiceTypesService);
+  private readonly availabilityService = inject(AvailabilityService);
   private readonly backordersFacade = inject(BackordersFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
   private readonly environment = inject<Environment>(ENVIRONMENT);
@@ -160,6 +172,10 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   orderGeographyFieldKey: 'region' | 'location' | null = null;
   orderLocationOptions: string[] = [];
   orderProvisioningLocation = '';
+  orderLocationCatalog: ProviderLocationCatalog = new Map();
+  orderProvisioningServerType = '';
+  orderServerTypeOptions: ServerType[] = [];
+  orderServerTypesLoading = false;
   orderCustomOrderFields: CloudInitConfigOrderField[] = [];
   orderCustomEnv: Record<string, string> = {};
   readonly orderFieldDefaultPlaceholder = 'Uses a pre-configured default if left empty';
@@ -171,6 +187,9 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   orderCustomOrderFieldsError = false;
   private orderProvisioningRequestId = 0;
   private orderCustomFieldsRequestId = 0;
+  private orderPricingRequestId = 0;
+  orderPricingPreview: PricingPreviewResponse | null = null;
+  orderPricingLoading = false;
   /** Signal for reactive conditional form fields; kept in sync with orderRequestedConfig.authenticationMethod. */
   authMethod = signal<'users' | 'api-key' | 'keycloak'>('users');
 
@@ -343,6 +362,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       sub.currentPeriodStart,
       sub.currentPeriodEnd,
       sub.nextBillingAt,
+      sub.periodTotalPrice,
     ]
       .filter((value) => value !== null && value !== undefined && value !== '')
       .join(' ');
@@ -354,6 +374,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       this.planNameByPlanId(this.servicePlans(), backorder.planId),
       backorder.status,
       this.backorderStatusLabel(backorder.status),
+      backorder.periodTotalPrice,
     ]
       .filter((value) => value !== null && value !== undefined && value !== '')
       .join(' ');
@@ -368,8 +389,10 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   /** Calculates total price from plan (base + margin). Same formula as backend PricingService. */
-  getPlanTotalPrice(plan: ServicePlanResponse): number | null {
-    const base = this.parsePlanNumber(plan.basePrice);
+  getPlanTotalPrice(plan: ServicePlanResponse, serverType?: ServerType | null): number | null {
+    const baseFromType = serverType?.priceMonthly;
+    const base =
+      baseFromType != null && Number.isFinite(baseFromType) ? baseFromType : this.parsePlanNumber(plan.basePrice);
 
     if (base <= 0) return null;
 
@@ -377,6 +400,28 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     const marginFix = this.parsePlanNumber(plan.marginFixed);
 
     return base + base * (marginPct / 100) + marginFix;
+  }
+
+  formatOrderPlanPrice(plan: ServicePlanResponse, serverTypeId?: string): string {
+    const serverType =
+      serverTypeId?.trim() && this.orderServerTypeOptions.length > 0
+        ? (this.orderServerTypeOptions.find((st) => st.id === serverTypeId) ?? null)
+        : null;
+
+    const total = this.getPlanTotalPrice(plan, serverType);
+
+    if (total === null) return '—';
+
+    return this.formatCurrencyAmount(total);
+  }
+
+  formatServerTypeOptionLabel(st: ServerType): string {
+    return formatServerTypeOption(st, { includePrice: false });
+  }
+
+  /** Formats plan price for display (e.g. "€4.51" or "—"). */
+  formatPlanPrice(plan: ServicePlanResponse): string {
+    return this.formatOrderPlanPrice(plan, this.orderProvisioningServerType);
   }
 
   private parsePlanNumber(value: string | number | null | undefined): number {
@@ -387,17 +432,30 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     return Number.isFinite(n) ? n : 0;
   }
 
-  /** Formats plan price for display (e.g. "€4.51" or "—"). */
-  formatPlanPrice(plan: ServicePlanResponse): string {
-    const total = this.getPlanTotalPrice(plan);
-
-    if (total === null) return '—';
-
-    return this.formatCurrencyAmount(total);
-  }
-
   formatCurrencyAmount(amount: number): string {
     return `€${Number.isInteger(amount) ? String(amount) : amount.toFixed(2)}`;
+  }
+
+  formatEntryPeriodPrice(totalPrice: number | null | undefined, plan: ServicePlanResponse | null): string {
+    if (totalPrice == null || !Number.isFinite(totalPrice)) {
+      return '—';
+    }
+
+    const price = this.formatCurrencyAmount(totalPrice);
+
+    if (!plan) {
+      return price;
+    }
+
+    return `${price} / ${getBillingIntervalLabel(plan.billingIntervalValue, plan.billingIntervalType)}`;
+  }
+
+  formatSubscriptionPeriodPrice(sub: SubscriptionResponse, plans: ServicePlanResponse[] | null): string {
+    return this.formatEntryPeriodPrice(sub.periodTotalPrice, this.getSelectedPlan(plans, sub.planId));
+  }
+
+  formatBackorderPeriodPrice(bo: BackorderResponse, plans: ServicePlanResponse[] | null): string {
+    return this.formatEntryPeriodPrice(bo.periodTotalPrice, this.getSelectedPlan(plans, bo.planId));
   }
 
   /** Option label for plan select: name + price + billing interval. */
@@ -456,6 +514,8 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     this.orderPlanId = '';
     this.orderAutoBackorder = true;
     this.orderAcceptLegal = false;
+    this.orderPricingPreview = null;
+    this.orderPricingLoading = false;
     this.resetOrderRequestedConfig();
 
     const effectivePreferredPlanId = (preferredPlanId ?? this.initialPlanIdFromQuery)?.trim();
@@ -472,7 +532,9 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
           if (matchingPlan) {
             this.orderPlanId = matchingPlan.id;
             this.syncOrderProvisioningLocationState();
+            this.syncOrderServerTypeState();
             this.syncOrderProvisioningOptions();
+            this.syncOrderPricingPreview();
 
             return;
           }
@@ -480,14 +542,65 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
         this.orderPlanId = plans[0].id;
         this.syncOrderProvisioningLocationState();
+        this.syncOrderServerTypeState();
         this.syncOrderProvisioningOptions();
+        this.syncOrderPricingPreview();
       });
     showBillingModal(this.orderPlanModal);
   }
 
   onOrderPlanIdChange(): void {
     this.syncOrderProvisioningLocationState();
+    this.syncOrderServerTypeState();
     this.syncOrderProvisioningOptions();
+    this.syncOrderPricingPreview();
+  }
+
+  onOrderServerTypeChange(): void {
+    this.syncOrderPricingPreview();
+  }
+
+  private syncOrderPricingPreview(): void {
+    const planId = this.orderPlanId?.trim();
+    const requestId = ++this.orderPricingRequestId;
+
+    if (!planId || this.orderServerTypesLoading) {
+      if (!planId) {
+        this.orderPricingPreview = null;
+        this.orderPricingLoading = false;
+      }
+
+      return;
+    }
+
+    const requestedConfig: Record<string, unknown> = {};
+
+    if (this.orderProvisioningServerType?.trim()) {
+      requestedConfig['serverType'] = this.orderProvisioningServerType.trim();
+    }
+
+    this.orderPricingLoading = true;
+
+    this.availabilityService.previewPricing({ planId, requestedConfig }).subscribe({
+      next: (response) => {
+        if (requestId !== this.orderPricingRequestId) {
+          return;
+        }
+
+        this.orderPricingPreview = response;
+        this.orderPricingLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        if (requestId !== this.orderPricingRequestId) {
+          return;
+        }
+
+        this.orderPricingPreview = null;
+        this.orderPricingLoading = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   showOrderProvisioningPicker(): boolean {
@@ -710,10 +823,15 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     return pick('region') ?? pick('location');
   }
 
+  formatOrderLocationLabel(slug: string): string {
+    return formatBillingProviderLocationLabel(slug, this.orderLocationCatalog);
+  }
+
   private syncOrderProvisioningLocationState(): void {
     this.orderGeographyFieldKey = null;
     this.orderLocationOptions = [];
     this.orderProvisioningLocation = '';
+    this.orderLocationCatalog = new Map();
 
     if (!this.orderPlanId?.trim()) return;
 
@@ -741,6 +859,70 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
         this.orderProvisioningLocation = resolved.options.includes(fromPlanStr)
           ? fromPlanStr
           : (resolved.options[0] ?? '');
+
+        const serviceType = serviceTypes?.find((st) => st.id === plan.serviceTypeId);
+
+        if (serviceType?.provider) {
+          this.serviceTypesService.getProviderLocations(serviceType.provider, plan.serviceTypeId).subscribe({
+            next: (locations) => {
+              this.orderLocationCatalog = providerLocationCatalogFromList(locations);
+            },
+            error: () => {
+              this.orderLocationCatalog = new Map();
+            },
+          });
+        }
+      });
+  }
+
+  private syncOrderServerTypeState(): void {
+    this.orderProvisioningServerType = '';
+    this.orderServerTypeOptions = [];
+    this.orderServerTypesLoading = false;
+
+    if (!this.orderPlanId?.trim()) return;
+
+    combineLatest([
+      this.servicePlans$,
+      this.serviceTypesFacade.getServiceTypes$(),
+      this.serviceTypesFacade.getProviderDetails$(),
+    ])
+      .pipe(take(1))
+      .subscribe(([plans, serviceTypes, providerDetails]) => {
+        const plan = plans.find((p) => p.id === this.orderPlanId);
+
+        if (
+          !plan?.allowCustomerServerTypeSelection ||
+          normalizeAllowedServerTypeIds(plan.allowedServerTypes).length === 0
+        ) {
+          return;
+        }
+
+        const serviceType = serviceTypes?.find((st) => st.id === plan.serviceTypeId);
+
+        if (!serviceType?.provider) return;
+
+        this.orderServerTypesLoading = true;
+        const allowed = new Set(normalizeAllowedServerTypeIds(plan.allowedServerTypes));
+        this.serviceTypesService.getProviderServerTypes(serviceType.provider, plan.serviceTypeId).subscribe({
+          next: (types) => {
+            this.orderServerTypeOptions = types.filter((st) => allowed.has(st.id));
+            const defaults = plan.providerConfigDefaults ?? {};
+            const fromPlan = defaults['serverType'];
+            const fromPlanStr = typeof fromPlan === 'string' ? fromPlan : '';
+            const options = this.orderServerTypeOptions.map((st) => st.id);
+
+            this.orderProvisioningServerType = options.includes(fromPlanStr) ? fromPlanStr : (options[0] ?? '');
+            this.orderServerTypesLoading = false;
+            this.syncOrderPricingPreview();
+          },
+          error: () => {
+            this.orderServerTypeOptions = [];
+            this.orderProvisioningServerType = '';
+            this.orderServerTypesLoading = false;
+            this.syncOrderPricingPreview();
+          },
+        });
       });
   }
 
@@ -767,6 +949,10 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
       if (this.orderGeographyFieldKey && this.orderProvisioningLocation?.trim()) {
         requestedConfig[this.orderGeographyFieldKey] = this.orderProvisioningLocation.trim();
+      }
+
+      if (this.orderProvisioningServerType?.trim()) {
+        requestedConfig['serverType'] = this.orderProvisioningServerType.trim();
       }
 
       this.attachProvisioningOptionKey(requestedConfig);
@@ -812,6 +998,10 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
     if (this.orderGeographyFieldKey && this.orderProvisioningLocation?.trim()) {
       requestedConfig[this.orderGeographyFieldKey] = this.orderProvisioningLocation.trim();
+    }
+
+    if (this.orderProvisioningServerType?.trim()) {
+      requestedConfig['serverType'] = this.orderProvisioningServerType.trim();
     }
 
     if (cfg.service === 'manager') {

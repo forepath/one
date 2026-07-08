@@ -5,7 +5,14 @@ import { PublicServicePlanOfferingDto } from '../dto/public-service-plan-offerin
 import { ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { PricingService } from '../services/pricing.service';
+import { ProviderServerTypesService } from '../services/provider-server-types.service';
+import { TaxCalculationService } from '../services/tax-calculation.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
+import { normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
+import { enrichPricingWithTax } from '../utils/pricing-tax.utils';
+import { resolvePlanTaxCategory } from '../utils/plan-tax.utils';
+import { normalizeAllowedServerTypes } from '../utils/provider-server-type.utils';
+import { resolveLowestServerTypePriceMonthly } from '../utils/server-type-billing.utils';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
@@ -16,7 +23,9 @@ export class PublicServicePlanOfferingsController {
   constructor(
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly pricingService: PricingService,
+    private readonly taxCalculationService: TaxCalculationService,
     private readonly withdrawalPolicyService: WithdrawalPolicyService,
+    private readonly providerServerTypesService: ProviderServerTypesService,
   ) {}
 
   /**
@@ -30,20 +39,21 @@ export class PublicServicePlanOfferingsController {
       throw new NotFoundException('No active service plan offerings');
     }
 
-    let bestRow = rows[0];
-    let bestPrice = this.pricingService.calculate(bestRow).totalPrice;
+    const offerings = await Promise.all(rows.map((row) => this.mapToOffering(row)));
+    let bestOffering = offerings[0];
+    let bestPrice = bestOffering.totalGrossFrom ?? bestOffering.totalGross;
 
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      const price = this.pricingService.calculate(row).totalPrice;
+    for (let i = 1; i < offerings.length; i++) {
+      const offering = offerings[i];
+      const price = offering.totalGrossFrom ?? offering.totalGross;
 
-      if (price < bestPrice || (price === bestPrice && row.id < bestRow.id)) {
+      if (price < bestPrice || (price === bestPrice && offering.id < bestOffering.id)) {
         bestPrice = price;
-        bestRow = row;
+        bestOffering = offering;
       }
     }
 
-    return this.mapToOffering(bestRow);
+    return bestOffering;
   }
 
   @Get()
@@ -58,11 +68,47 @@ export class PublicServicePlanOfferingsController {
     const skip = Math.max(Number.isFinite(rawOffset) ? rawOffset : 0, 0);
     const rows = await this.servicePlansRepository.findActiveWithServiceType(take, skip, serviceTypeId);
 
-    return rows.map((row) => this.mapToOffering(row));
+    return Promise.all(rows.map((row) => this.mapToOffering(row)));
   }
 
-  private mapToOffering(row: ServicePlanEntity): PublicServicePlanOfferingDto {
-    const totalPrice = this.pricingService.calculate(row).totalPrice;
+  private async mapToOffering(row: ServicePlanEntity): Promise<PublicServicePlanOfferingDto> {
+    const taxCategory = resolvePlanTaxCategory(row);
+    const pricingWithTax = enrichPricingWithTax(
+      this.pricingService.calculate(row),
+      taxCategory,
+      this.taxCalculationService,
+    );
+    const allowCustomerServerTypeSelection = row.allowCustomerServerTypeSelection === true;
+    const allowedServerTypes = normalizeAllowedServerTypes(row.allowedServerTypes);
+    let totalPriceFrom: number | undefined;
+    let totalGrossFrom: number | undefined;
+
+    if (allowCustomerServerTypeSelection && allowedServerTypes.length > 0) {
+      const provider = row.serviceType?.provider;
+      const providerDefaults = normalizeStoredProviderDefaults(row.serviceType?.providerDefaults);
+      const lowestBase = await resolveLowestServerTypePriceMonthly(
+        this.providerServerTypesService,
+        provider,
+        allowedServerTypes,
+        providerDefaults,
+      );
+
+      if (lowestBase != null) {
+        const fromPricing = enrichPricingWithTax(
+          this.pricingService.calculate(row, lowestBase),
+          taxCategory,
+          this.taxCalculationService,
+        );
+
+        totalPriceFrom = fromPricing.totalPrice;
+        totalGrossFrom = fromPricing.totalGross;
+
+        if (totalPriceFrom >= pricingWithTax.totalPrice) {
+          totalPriceFrom = undefined;
+          totalGrossFrom = undefined;
+        }
+      }
+    }
 
     return {
       id: row.id,
@@ -72,9 +118,14 @@ export class PublicServicePlanOfferingsController {
       serviceTypeName: row.serviceType?.name ?? '',
       billingIntervalType: row.billingIntervalType,
       billingIntervalValue: row.billingIntervalValue,
-      totalPrice,
+      totalPrice: pricingWithTax.totalPrice,
+      totalGross: pricingWithTax.totalGross,
+      taxRate: pricingWithTax.taxRate,
+      ...(totalPriceFrom != null ? { totalPriceFrom } : {}),
+      ...(totalGrossFrom != null ? { totalGrossFrom } : {}),
       orderingHighlights: row.orderingHighlights ?? [],
       allowCustomerLocationSelection: row.allowCustomerLocationSelection === true,
+      allowCustomerServerTypeSelection,
       withdrawalPolicy: this.withdrawalPolicyService.buildPolicyInfo({
         disallowStatutoryWithdrawal: row.serviceType?.disallowStatutoryWithdrawal ?? false,
       }),

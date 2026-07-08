@@ -19,6 +19,7 @@ describe('ProvisioningService', () => {
     getType: jest.fn().mockReturnValue('hetzner'),
     getDisplayName: jest.fn().mockReturnValue('Hetzner Cloud'),
     getServerTypes: jest.fn(),
+    getLocations: jest.fn(),
     provisionServer: jest.fn(),
     deleteServer: jest.fn(),
     getServerInfo: jest.fn(),

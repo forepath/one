@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import { CreateServicePlanDto } from '../dto/create-service-plan.dto';
 import { UpdateServicePlanDto } from '../dto/update-service-plan.dto';
 import { BillingIntervalType, ServicePlanEntity } from '../entities/service-plan.entity';
+import { TaxCategory } from '../constants/tax-category.constants';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { ProviderRegistryService } from '../services/provider-registry.service';
@@ -30,6 +31,9 @@ describe('ServicePlansController', () => {
     providerConfigDefaults: {},
     orderingHighlights: [{ icon: 'star', text: 'Feature A' }],
     allowCustomerLocationSelection: false,
+    allowCustomerServerTypeSelection: false,
+    allowedServerTypes: [],
+    taxCategory: TaxCategory.STANDARD,
     isActive: true,
     createdAt: new Date('2024-01-01T00:00:00.000Z'),
     updatedAt: new Date('2024-01-02T00:00:00.000Z'),

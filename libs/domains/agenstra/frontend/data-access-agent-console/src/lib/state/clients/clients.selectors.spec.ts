@@ -16,6 +16,8 @@ import {
   selectClientUsers,
   selectHasClients,
   selectLoadingClientUsers,
+  selectLocations,
+  selectLoadingLocations,
   selectSelectedClient,
 } from './clients.selectors';
 import type { ClientResponseDto } from './clients.types';
@@ -338,6 +340,27 @@ describe('Clients Selectors', () => {
       const rootState = { clients: state };
       const selector = selectLoadingClientUsers('client-1');
       const result = selector(rootState as any);
+
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('selectLocations', () => {
+    it('should return locations for providerType', () => {
+      const locations = [{ id: 'fsn1', name: 'Falkenstein', country: 'DE' }];
+      const state = createState({ locations: { hetzner: locations } });
+      const rootState = { clients: state };
+      const result = selectLocations('hetzner')(rootState as any);
+
+      expect(result).toEqual(locations);
+    });
+  });
+
+  describe('selectLoadingLocations', () => {
+    it('should return loading state for providerType', () => {
+      const state = createState({ loadingLocations: { hetzner: true } });
+      const rootState = { clients: state };
+      const result = selectLoadingLocations('hetzner')(rootState as any);
 
       expect(result).toBe(true);
     });

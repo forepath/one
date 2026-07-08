@@ -120,17 +120,18 @@ See **[Authentication](../features/authentication.md)**.
 
 Full paths and schemas are in **[API Reference](../api-reference/README.md)** and `/spec/billing-manager/openapi.yaml`.
 
-| Area             | Example paths                          | Notes                                           |
-| ---------------- | -------------------------------------- | ----------------------------------------------- |
-| Public offerings | `GET /public/service-plan-offerings`   | Unauthenticated marketing data                  |
-| Catalog          | `/service-types`, `/service-plans`     | Admin CRUD                                      |
-| Subscriptions    | `/subscriptions`, `/backorders`        | Order, cancel, resume                           |
-| Invoices         | `/invoices`, open positions            | PDF download, void, pay                         |
-| Customer         | `/customer-profile`                    | Required before ordering                        |
-| Admin billing    | `/admin/billing/*`                     | Manual invoices, profiles, statistics, bill-now |
-| Projects         | `/projects`, `/admin/billing/projects` | Customer read; admin CRUD and bill-time         |
-| Payments         | `/invoices/{id}/pay`, Stripe webhook   | Checkout redirect                               |
-| Availability     | `/availability/check`                  | Provider capacity                               |
+| Area              | Example paths                          | Notes                                           |
+| ----------------- | -------------------------------------- | ----------------------------------------------- |
+| Public offerings  | `GET /public/service-plan-offerings`   | Unauthenticated marketing data                  |
+| Public withdrawal | `GET/POST /public/withdrawal/*`        | Statutory withdrawal without login              |
+| Catalog           | `/service-types`, `/service-plans`     | Admin CRUD                                      |
+| Subscriptions     | `/subscriptions`, `/backorders`        | Order, cancel, resume                           |
+| Invoices          | `/invoices`, open positions            | PDF download, void, pay                         |
+| Customer          | `/customer-profile`                    | Required before ordering                        |
+| Admin billing     | `/admin/billing/*`                     | Manual invoices, profiles, statistics, bill-now |
+| Projects          | `/projects`, `/admin/billing/projects` | Customer read; admin CRUD and bill-time         |
+| Payments          | `/invoices/{id}/pay`, Stripe webhook   | Checkout redirect                               |
+| Availability      | `/availability/check`                  | Provider capacity                               |
 
 Send `X-Tenant` on every request when using multi-tenancy.
 

@@ -135,6 +135,7 @@ export class InvoicePdfService {
     creditGross: number,
     lineDescription: string,
     suffix: string,
+    taxCategory: TaxCategory = TaxCategory.STANDARD,
   ): Promise<{ storageKey: string; documentNumber: string }> {
     const originalInvoiceNumber = invoice.invoiceNumber;
 
@@ -150,7 +151,7 @@ export class InvoicePdfService {
       description: lineDescription,
       quantity: 1,
       unitPriceNet: creditNet,
-      taxCategory: TaxCategory.STANDARD,
+      taxCategory,
       taxRate: creditNet > 0 ? Math.round(((creditGross - creditNet) / creditNet) * 10000) / 100 : 0,
       lineNet: creditNet,
       lineTax: Math.round((creditGross - creditNet) * 100) / 100,

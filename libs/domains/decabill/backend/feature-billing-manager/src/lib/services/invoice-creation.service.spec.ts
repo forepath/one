@@ -3,6 +3,7 @@ import { InvoiceCreationService } from './invoice-creation.service';
 
 describe('InvoiceCreationService', () => {
   const subscriptionItemsRepository = { findBySubscription: jest.fn().mockResolvedValue([]) } as any;
+  const providerServerTypesService = { getServerTypes: jest.fn().mockResolvedValue([]) } as any;
 
   it('creates invoice for subscription', async () => {
     const subscriptionsRepository = {
@@ -47,6 +48,7 @@ describe('InvoiceCreationService', () => {
       openPositionsRepository,
       invoicesRepository,
       subscriptionItemsRepository,
+      providerServerTypesService,
     );
     const result = await service.createInvoice('sub-1', 'user-1', 'Test');
 
@@ -97,6 +99,7 @@ describe('InvoiceCreationService', () => {
       openPositionsRepository,
       invoicesRepository,
       subscriptionItemsRepository,
+      providerServerTypesService,
     );
 
     await service.createInvoice('sub-1', 'user-1', 'Manual', { billUntil });
@@ -149,6 +152,7 @@ describe('InvoiceCreationService', () => {
       openPositionsRepository,
       invoicesRepository,
       subscriptionItemsRepository,
+      providerServerTypesService,
     );
 
     await service.createInvoice('sub-1', 'user-1', 'Final', { billUntil });
@@ -199,6 +203,7 @@ describe('InvoiceCreationService', () => {
       openPositionsRepository,
       invoicesRepository,
       subscriptionItemsRepository,
+      providerServerTypesService,
     );
 
     (service as any).calculateBaseAmountSinceLastBilling = jest.fn().mockResolvedValue(0.005);
@@ -250,6 +255,7 @@ describe('InvoiceCreationService', () => {
       openPositionsRepository,
       invoicesRepository,
       subscriptionItemsRepository,
+      providerServerTypesService,
     );
 
     (service as any).calculateBaseAmountSinceLastBilling = jest.fn().mockResolvedValue(0.005);
@@ -278,6 +284,7 @@ describe('InvoiceCreationService', () => {
       billingIntervalType: 'day',
       billingIntervalValue: 1,
       billingDayOfMonth: undefined,
+      taxCategory: 'standard',
     };
 
     it('creates one invoice with multiple line items and marks all positions billed', async () => {
@@ -302,8 +309,7 @@ describe('InvoiceCreationService', () => {
       const subscriptionsRepository = {
         findByIdOrThrow: jest
           .fn()
-          .mockResolvedValueOnce({ ...subscriptionBase, id: 'sub-1' })
-          .mockResolvedValueOnce({ ...subscriptionBase, id: 'sub-2', planId: 'plan-1' }),
+          .mockImplementation((id: string) => Promise.resolve({ ...subscriptionBase, id, planId: 'plan-1' })),
       } as any;
       const plansRepository = { findByIdOrThrow: jest.fn().mockResolvedValue(planBase) } as any;
       const pricingService = { calculate: jest.fn().mockReturnValue({ totalPrice: 10 }) } as any;
@@ -324,6 +330,7 @@ describe('InvoiceCreationService', () => {
         openPositionsRepository,
         invoicesRepository,
         subscriptionItemsRepository,
+        providerServerTypesService,
       );
       const result = await service.createAccumulatedInvoice('user-1', positions);
 
@@ -381,6 +388,7 @@ describe('InvoiceCreationService', () => {
         openPositionsRepository,
         invoicesRepository,
         subscriptionItemsRepository,
+        providerServerTypesService,
       );
 
       (service as any).getBillableAmountForPosition = jest.fn().mockResolvedValue(10);
@@ -408,6 +416,7 @@ describe('InvoiceCreationService', () => {
         openPositionsRepository,
         {} as any,
         subscriptionItemsRepository,
+        providerServerTypesService,
       );
       const result = await service.createAccumulatedInvoice('user-1', []);
 
@@ -444,6 +453,7 @@ describe('InvoiceCreationService', () => {
         openPositionsRepository,
         invoicesRepository,
         subscriptionItemsRepository,
+        providerServerTypesService,
       );
 
       (service as any).calculateBaseAmountSinceLastBilling = jest.fn().mockResolvedValue(0.005);
@@ -471,6 +481,7 @@ describe('InvoiceCreationService', () => {
         openPositionsRepository,
         {} as any,
         subscriptionItemsRepository,
+        providerServerTypesService,
       );
       const result = await service.getUnbilledTotalForUser('user-1');
 
@@ -514,6 +525,7 @@ describe('InvoiceCreationService', () => {
         {} as any,
         invoicesRepository,
         itemsRepository,
+        providerServerTypesService,
       );
 
       const amount = await (service as any).calculateBaseAmountSinceLastBilling(
@@ -563,6 +575,7 @@ describe('InvoiceCreationService', () => {
         {} as any,
         invoicesRepository,
         itemsRepository,
+        providerServerTypesService,
       );
 
       const amount = await (service as any).calculateBaseAmountSinceLastBilling(
@@ -573,6 +586,78 @@ describe('InvoiceCreationService', () => {
       );
 
       expect(amount).toBe(90);
+    });
+  });
+
+  describe('resolveSubscriptionPricing', () => {
+    it('passes billingBasePrice override from subscription items to pricing service', async () => {
+      subscriptionItemsRepository.findBySubscription.mockResolvedValue([
+        {
+          configSnapshot: { billingBasePrice: 6.49, serverType: 'cpx11' },
+          serviceType: { provider: 'hetzner', providerDefaults: {} },
+        },
+      ]);
+      const plan = {
+        id: 'plan-1',
+        basePrice: '4.15',
+        marginPercent: '0',
+        marginFixed: '0',
+      };
+      const pricingService = { calculate: jest.fn().mockReturnValue({ totalPrice: 6.49 }) } as any;
+      const service = new InvoiceCreationService(
+        {} as any,
+        { findByIdOrThrow: jest.fn().mockResolvedValue(plan) } as any,
+        pricingService,
+        {} as any,
+        {} as any,
+        new BillingScheduleService(),
+        {} as any,
+        {} as any,
+        subscriptionItemsRepository,
+        providerServerTypesService,
+      );
+
+      await (service as any).resolveSubscriptionPricing('sub-1', plan);
+
+      expect(pricingService.calculate).toHaveBeenCalledWith(plan, 6.49);
+      expect(providerServerTypesService.getServerTypes).not.toHaveBeenCalled();
+    });
+
+    it('falls back to provider catalog price from serverType when snapshot is missing', async () => {
+      subscriptionItemsRepository.findBySubscription.mockResolvedValue([
+        {
+          configSnapshot: { serverType: 'cpx11' },
+          serviceType: { provider: 'hetzner', providerDefaults: {} },
+        },
+      ]);
+      providerServerTypesService.getServerTypes.mockResolvedValue([
+        { id: 'cx11', priceMonthly: 4.15 },
+        { id: 'cpx11', priceMonthly: 6.49 },
+      ]);
+      const plan = {
+        id: 'plan-1',
+        basePrice: '4.15',
+        marginPercent: '0',
+        marginFixed: '0',
+      };
+      const pricingService = { calculate: jest.fn().mockReturnValue({ totalPrice: 6.49 }) } as any;
+      const service = new InvoiceCreationService(
+        {} as any,
+        { findByIdOrThrow: jest.fn().mockResolvedValue(plan) } as any,
+        pricingService,
+        {} as any,
+        {} as any,
+        new BillingScheduleService(),
+        {} as any,
+        {} as any,
+        subscriptionItemsRepository,
+        providerServerTypesService,
+      );
+
+      await (service as any).resolveSubscriptionPricing('sub-1', plan);
+
+      expect(pricingService.calculate).toHaveBeenCalledWith(plan, 6.49);
+      expect(providerServerTypesService.getServerTypes).toHaveBeenCalledWith('hetzner', {});
     });
   });
 });

@@ -22,6 +22,7 @@ import {
   type ServerInfoResponse,
   type SubscriptionResponse,
   type SubscriptionWithServerInfo,
+  integratedProvisioningServiceLabel,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import type { Environment } from '@forepath/shared/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
@@ -166,17 +167,15 @@ export class OverviewComponent implements OnInit {
   }
 
   serviceTypeLabel(service: SubscriptionWithServerInfo['service']): string {
-    const productName = this.environment.productName;
-
-    if (service === 'manager') {
-      return $localize`:@@featureOverview-managerService:${productName}:productName: Manager`;
+    if (service === 'manager' || service === 'controller') {
+      return integratedProvisioningServiceLabel(service);
     }
 
     if (service === 'custom') {
       return $localize`:@@featureOverview-customService:Custom application`;
     }
 
-    return $localize`:@@featureOverview-controllerService:${productName}:productName: Controller`;
+    return integratedProvisioningServiceLabel('controller');
   }
 
   serverStatusLabel(serverInfo: ServerInfoResponse): string {
@@ -240,10 +239,10 @@ export class OverviewComponent implements OnInit {
   getProviderName(provider: unknown): string | undefined {
     switch (provider) {
       case 'hetzner':
-        return 'Hetzner Cloud';
+        return 'Hetzner Cloud-Init';
       case 'digital-ocean':
       case 'digitalocean':
-        return 'DigitalOcean';
+        return 'DigitalOcean Cloud-Init';
       default:
         return undefined;
     }

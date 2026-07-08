@@ -25,6 +25,11 @@ export interface ProvisioningProvider {
   getServerTypes(): Promise<ServerType[]>;
 
   /**
+   * Get available geography options (locations/regions) with human-readable labels.
+   */
+  getLocations(): Promise<ProviderLocation[]>;
+
+  /**
    * Provision a new server instance.
    * @param options - Provisioning options including server type, name, etc.
    * @returns Provisioned server information including ID, IP address, and endpoint
@@ -89,6 +94,16 @@ export interface ServerType {
    * Additional description or notes
    */
   description?: string;
+}
+
+/**
+ * Geography option (location or region) with human-readable label.
+ */
+export interface ProviderLocation {
+  id: string;
+  name: string;
+  city?: string;
+  country?: string;
 }
 
 /**

@@ -156,6 +156,12 @@ import {
   connectProjectBoardSocket$,
   disconnectProjectBoardSocket$,
   restoreProjectBoardSocketProject$,
+  PublicWithdrawalFacade,
+  publicWithdrawalReducer,
+  loadPublicWithdrawalAddressee$,
+  requestPublicWithdrawal$,
+  verifyPublicWithdrawalCode$,
+  confirmPublicWithdrawal$,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { authGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/identity/frontend';
 import { buildPageTitle } from '@forepath/shared/frontend/util-configuration';
@@ -169,6 +175,7 @@ import { AdminDatevExportsPageComponent } from './admin-datev-exports-page/admin
 import { BillingConsoleContainerComponent } from './container/container.component';
 import { billingAdminGuard } from './guards/billing-admin.guard';
 import { datevExportEnabledGuard } from './guards/datev-export-enabled.guard';
+import { publicWithdrawalAccessGuard } from './guards/public-withdrawal-access.guard';
 import { InvoicesComponent } from './invoices/invoices.component';
 import { OverviewComponent } from './overview/overview.component';
 import { CloudInitConfigsPageComponent } from './cloud-init-configs-page/cloud-init-configs-page.component';
@@ -178,6 +185,7 @@ import { SubscriptionsComponent } from './subscriptions/subscriptions.component'
 import { AdminProjectsPageComponent } from './admin-projects-page/admin-projects-page.component';
 import { ProjectsPageComponent } from './projects-page/projects-page.component';
 import { ProjectDetailPageComponent } from './project-detail-page/project-detail-page.component';
+import { PublicWithdrawalComponent } from './public-withdrawal/public-withdrawal.component';
 
 export const billingConsoleRoutes: Route[] = [
   {
@@ -191,6 +199,22 @@ export const billingConsoleRoutes: Route[] = [
       },
       // Identity auth routes (login, register, password reset, email confirmation, user management)
       ...identityAuthRoutes,
+      {
+        path: 'withdrawal',
+        component: PublicWithdrawalComponent,
+        canActivate: [publicWithdrawalAccessGuard],
+        title: () => buildPageTitle($localize`:@@featurePublicWithdrawal-page:Withdrawal`),
+        providers: [
+          PublicWithdrawalFacade,
+          provideState('publicWithdrawal', publicWithdrawalReducer),
+          provideEffects({
+            loadPublicWithdrawalAddressee$,
+            requestPublicWithdrawal$,
+            verifyPublicWithdrawalCode$,
+            confirmPublicWithdrawal$,
+          }),
+        ],
+      },
       {
         path: 'dashboard',
         pathMatch: 'full',

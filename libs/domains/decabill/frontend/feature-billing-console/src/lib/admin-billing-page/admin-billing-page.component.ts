@@ -112,6 +112,10 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
 
   readonly mobilePanels: AdminBillingMobilePanel[] = ['overview', 'invoices'];
   readonly mobilePanel = signal<AdminBillingMobilePanel>('overview');
+  readonly taxCategoryOptions: { value: InvoiceFormLineItem['taxCategory']; label: string }[] = [
+    { value: 'standard', label: 'Standard (19%)' },
+    { value: 'reduced', label: 'Reduced (7%)' },
+  ];
 
   readonly billNowScope = signal<'all' | 'user'>('all');
   billNowUserId = '';
@@ -298,14 +302,16 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     this.invoiceManagerFacade.createManualInvoice({
       userId: this.createUserId,
       subscriptionId: this.createSubscriptionId.trim() || undefined,
-      lineItems: this.createLineItems,
+      lineItems: this.mapLineItemsForSubmit(this.createLineItems),
     });
   }
 
   submitEdit(): void {
     if (!this.editInvoiceId || !this.hasValidLineItems(this.editLineItems)) return;
 
-    this.invoiceManagerFacade.updateManualInvoice(this.editInvoiceId, { lineItems: this.editLineItems });
+    this.invoiceManagerFacade.updateManualInvoice(this.editInvoiceId, {
+      lineItems: this.mapLineItemsForSubmit(this.editLineItems),
+    });
   }
 
   submitIssue(): void {
@@ -511,12 +517,81 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(payload));
   }
 
+  formatLineItemTotal(line: InvoiceFormLineItem): string {
+    const totals = this.computeLineItemTotals(line);
+
+    if (!totals) return '—';
+
+    return `€${this.formatPrice(totals.net)} + €${this.formatPrice(totals.tax)} VAT (${totals.taxRate}%) = €${this.formatPrice(totals.gross)}`;
+  }
+
+  formatDraftTotals(items: InvoiceFormLineItem[]): string {
+    const totals = this.computeDraftTotals(items);
+
+    if (!totals) return '—';
+
+    return `€${this.formatPrice(totals.net)} net + €${this.formatPrice(totals.tax)} VAT = €${this.formatPrice(totals.gross)} gross`;
+  }
+
   private emptyLineItem(): InvoiceFormLineItem {
     return { description: '', quantity: 1, unitPriceNet: 0, taxCategory: 'standard' };
   }
 
   private hasValidLineItems(items: InvoiceFormLineItem[]): boolean {
     return items.every((item) => item.description.trim().length > 0 && item.quantity > 0 && item.unitPriceNet >= 0);
+  }
+
+  private mapLineItemsForSubmit(items: InvoiceFormLineItem[]): ManualInvoiceLineItemDto[] {
+    return items.map((item) => ({
+      description: item.description.trim(),
+      quantity: Number(item.quantity),
+      unitPriceNet: Number(item.unitPriceNet),
+      taxCategory: item.taxCategory ?? 'standard',
+    }));
+  }
+
+  private computeLineItemTotals(
+    line: InvoiceFormLineItem,
+  ): { net: number; tax: number; gross: number; taxRate: number } | null {
+    const quantity = Number(line.quantity);
+    const unitPriceNet = Number(line.unitPriceNet);
+
+    if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(unitPriceNet) || unitPriceNet < 0) {
+      return null;
+    }
+
+    const net = Math.round(quantity * unitPriceNet * 100) / 100;
+    const taxRate = line.taxCategory === 'reduced' ? 7 : 19;
+    const tax = Math.round(net * (taxRate / 100) * 100) / 100;
+    const gross = Math.round((net + tax) * 100) / 100;
+
+    return { net, tax, gross, taxRate };
+  }
+
+  private computeDraftTotals(items: InvoiceFormLineItem[]): { net: number; tax: number; gross: number } | null {
+    let net = 0;
+    let tax = 0;
+
+    for (const item of items) {
+      const lineTotals = this.computeLineItemTotals(item);
+
+      if (!lineTotals) {
+        return null;
+      }
+
+      net += lineTotals.net;
+      tax += lineTotals.tax;
+    }
+
+    return {
+      net: Math.round(net * 100) / 100,
+      tax: Math.round(tax * 100) / 100,
+      gross: Math.round((net + tax) * 100) / 100,
+    };
+  }
+
+  private formatPrice(value: number): string {
+    return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   private resetCreateForm(): void {

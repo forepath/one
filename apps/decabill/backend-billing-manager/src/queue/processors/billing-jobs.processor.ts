@@ -446,16 +446,17 @@ export class BillingJobsProcessor extends WorkerHost {
     for (const userId of userIds) {
       await this.enqueueBillingUnitJob({
         queue: this.billingQueue,
-        jobName: BillingJobName.OPEN_POSITION_INVOICE_UNIT,
+        jobName: BillingJobName.ADMIN_BILL_NOW_UNIT,
         payload: {
           userId,
           tenantId,
+          adminUserId: data.adminUserId,
           triggeredBy: data.adminUserId,
           scope: data.scope,
           requestId: data.requestId,
         },
-        jobIdNamespace: 'open-position-invoice:user',
-        jobIdParts: [tenantId, userId],
+        jobIdNamespace: 'admin-bill-now:user',
+        jobIdParts: [tenantId, userId, data.requestId],
       });
     }
   }

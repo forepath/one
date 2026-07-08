@@ -665,6 +665,10 @@
         <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addLineItem('create')">
           Add line item
         </button>
+        <p class="small text-body-secondary mb-0 mt-3">
+          <span i18n="@@featureAdminInvoices-draftTotal">Draft total</span>:
+          <strong class="ms-1">{{ formatDraftTotals(createLineItems) }}</strong>
+        </p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -700,6 +704,10 @@
         <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addLineItem('edit')">
           Add line item
         </button>
+        <p class="small text-body-secondary mb-0 mt-3">
+          <span i18n="@@featureAdminInvoices-draftTotal">Draft total</span>:
+          <strong class="ms-1">{{ formatDraftTotals(editLineItems) }}</strong>
+        </p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -786,7 +794,7 @@
       [name]="prefix + 'Desc' + i"
     />
     <div class="row g-2">
-      <div class="col-4">
+      <div class="col-sm-6">
         <label class="form-label" [for]="prefix + 'LineQty' + i" i18n="@@featureAdminInvoices-lineQuantity"
           >Quantity</label
         >
@@ -800,7 +808,7 @@
           step="any"
         />
       </div>
-      <div class="col-4">
+      <div class="col-sm-6">
         <label class="form-label" [for]="prefix + 'LinePrice' + i" i18n="@@featureAdminInvoices-lineUnitPriceNet"
           >Unit price (net)</label
         >
@@ -814,21 +822,30 @@
           step="any"
         />
       </div>
-      <div class="col-4">
-        <label class="form-label" [for]="prefix + 'LineTax' + i" i18n="@@featureAdminInvoices-lineTaxCategory"
-          >Tax category</label
-        >
-        <select
-          class="form-select"
-          [id]="prefix + 'LineTax' + i"
-          [(ngModel)]="line.taxCategory"
-          [name]="prefix + 'Tax' + i"
-        >
-          <option value="standard" i18n="@@featureAdminInvoices-taxStandard">Standard</option>
-          <option value="reduced" i18n="@@featureAdminInvoices-taxReduced">Reduced</option>
-        </select>
-      </div>
     </div>
+    <div class="mt-2">
+      <span class="form-label d-block" i18n="@@featureAdminInvoices-lineTaxCategory">VAT rate</span>
+      @for (option of taxCategoryOptions; track option.value) {
+        <div class="form-check form-check-inline">
+          <input
+            type="radio"
+            class="form-check-input"
+            [name]="prefix + 'Tax' + i"
+            [id]="prefix + 'Tax' + i + '_' + option.value"
+            [value]="option.value"
+            [checked]="line.taxCategory === option.value"
+            (change)="line.taxCategory = option.value"
+          />
+          <label class="form-check-label" [attr.for]="prefix + 'Tax' + i + '_' + option.value">{{
+            option.label
+          }}</label>
+        </div>
+      }
+    </div>
+    <p class="small text-body-secondary mb-0 mt-2">
+      <span i18n="@@featureAdminInvoices-lineTotal">Line total</span>:
+      <strong class="ms-1">{{ formatLineItemTotal(line) }}</strong>
+    </p>
     @if (itemCount > 1) {
       <button type="button" class="btn btn-link btn-sm text-danger p-0 mt-2" (click)="removeLineItem(target, i)">
         <span i18n="@@featureAdminInvoices-removeLine">Remove line</span>

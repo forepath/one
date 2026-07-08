@@ -70,6 +70,8 @@ Coordinators fan out unit jobs such as:
 
 BullMQ `jobId` values prevent duplicate active work for the same entity. Custom job IDs use `.` separators and only allowed characters (alphanumeric, `.`, `-`, `_`, `~`).
 
+Admin bill-now unit job IDs are scoped per request (`admin-bill-now:user.{tenantId}.{userId}.{requestId}`) so manual billing is not blocked by an existing scheduled `open-position-invoice:user.{tenantId}.{userId}` job record.
+
 DATEV unit job IDs:
 
 - Per-tenant: `datev-export.tenant.{tenantId}.{year}-{month}`

@@ -2,6 +2,7 @@ import {
   buildProvisioningOptionsFromKeys,
   DEFAULT_INTEGRATED_PROVISIONING_OPTION_KEYS,
   encodeProvisioningOptionKey,
+  integratedProvisioningServiceLabel,
   parsePlanProvisioningOptions,
   parseProvisioningOptionKey,
   planProvisioningOptionKeysFromDefaults,
@@ -10,6 +11,11 @@ import {
 describe('planProvisioningOptionsUtils', () => {
   it('exposes default integrated option keys', () => {
     expect(DEFAULT_INTEGRATED_PROVISIONING_OPTION_KEYS).toEqual(['integrated:controller', 'integrated:manager']);
+  });
+
+  it('integratedProvisioningServiceLabel returns Agenstra stack names', () => {
+    expect(integratedProvisioningServiceLabel('controller')).toBe('Agenstra Controller');
+    expect(integratedProvisioningServiceLabel('manager')).toBe('Agenstra Manager');
   });
 
   it('encodes integrated and custom option keys', () => {

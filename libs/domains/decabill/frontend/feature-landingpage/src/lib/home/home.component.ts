@@ -13,7 +13,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import type { PublicServicePlanOffering } from '@forepath/decabill/frontend/data-access-portal';
-import { ServicePlansFacade } from '@forepath/decabill/frontend/data-access-portal';
+import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/decabill/frontend/data-access-portal';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
 
@@ -170,4 +170,6 @@ export class PortalHomeComponent implements OnInit {
 
     return ` / ${plan.billingIntervalValue} ${plan.billingIntervalType}`;
   }
+
+  formatPublicOfferingPrice = formatPublicOfferingPrice;
 }

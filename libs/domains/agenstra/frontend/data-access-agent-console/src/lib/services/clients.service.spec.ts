@@ -291,4 +291,20 @@ describe('ClientsService', () => {
       req.flush(mockAutonomy);
     });
   });
+
+  describe('getLocations', () => {
+    it('should fetch provider locations', (done) => {
+      const mockLocations = [{ id: 'fsn1', name: 'Falkenstein', country: 'DE' }];
+
+      service.getLocations('hetzner').subscribe((locations) => {
+        expect(locations).toEqual(mockLocations);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/clients/provisioning/providers/hetzner/locations`);
+
+      expect(req.request.method).toBe('GET');
+      req.flush(mockLocations);
+    });
+  });
 });

@@ -174,7 +174,13 @@
         <source>Unit price (net)</source>
         </trans-unit>
       <trans-unit id="featureAdminInvoices-lineTaxCategory" datatype="html">
-        <source>Tax category</source>
+        <source>VAT rate</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-lineTotal" datatype="html">
+        <source>Line total</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-draftTotal" datatype="html">
+        <source>Draft total</source>
         </trans-unit>
       <trans-unit id="featureAdminInvoices-taxStandard" datatype="html">
         <source>Standard</source>
@@ -846,13 +852,13 @@
         <source>Open console</source>
         </trans-unit>
       <trans-unit id="featureOverview-managerService" datatype="html">
-        <source><x id="productName" equiv-text="productName"/> Manager</source>
+        <source>Agenstra Manager</source>
         </trans-unit>
       <trans-unit id="featureOverview-customService" datatype="html">
         <source>Custom application</source>
         </trans-unit>
       <trans-unit id="featureOverview-controllerService" datatype="html">
-        <source><x id="productName" equiv-text="productName"/> Controller</source>
+        <source>Agenstra Controller</source>
         </trans-unit>
       <trans-unit id="featureOverview-serverStatusOnline" datatype="html">
         <source>Online</source>
@@ -1079,6 +1085,21 @@
       <trans-unit id="featureServiceTypes-disallowStatutoryWithdrawal" datatype="html">
         <source>Disallow statutory withdrawal after provisioning</source>
         </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaults" datatype="html">
+        <source>Provider defaults</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-showProviderDefaults" datatype="html">
+        <source>Show</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-hideProviderDefaults" datatype="html">
+        <source>Hide</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaultsHelp" datatype="html">
+        <source>Overrides platform environment variables for this service type. Leave blank to use the environment default.</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaultEnvPlaceholder" datatype="html">
+        <source>Using environment default</source>
+        </trans-unit>
       <trans-unit id="featureServiceTypes-close" datatype="html">
         <source> Close </source>
         </trans-unit>
@@ -1183,6 +1204,9 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-price" datatype="html">
         <source>Price</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-loadingPrice" datatype="html">
+        <source>Loading price…</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-billingInterval" datatype="html">
         <source>Runtime</source>
@@ -1470,6 +1494,117 @@
         <source>Confirm Email</source>
         </trans-unit>
       <trans-unit id="featureConfirmEmail-backToLogin" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-page" datatype="html">
+        <source>Withdrawal</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-title" datatype="html">
+        <source>Statutory Withdrawal</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-formTitle" datatype="html">
+        <source>Withdrawal Request</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-addresseeTitle" datatype="html">
+        <source>Your withdrawal is addressed to</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-addresseeLoading" datatype="html">
+        <source>Loading addressee...</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-addresseeError" datatype="html">
+        <source>We could not load the withdrawal addressee. You can still continue with your request.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-vatIdLabel" datatype="html">
+        <source>VAT ID:</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-emailLabel" datatype="html">
+        <source>Email:</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-dismissSuccessA11y" datatype="html">
+        <source>Dismiss success message</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-dismissErrorA11y" datatype="html">
+        <source>Dismiss error message</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-subscriptionNumberLabel" datatype="html">
+        <source>Subscription number</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-subscriptionNumberPlaceholder" datatype="html">
+        <source>SUB-000001</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-subscriptionNumberRequired" datatype="html">
+        <source>Subscription number is required.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-subscriptionNumberPattern" datatype="html">
+        <source>Enter a valid subscription number (e.g. SUB-000001).</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-customerNameLabel" datatype="html">
+        <source>Customer name</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-customerNameRequired" datatype="html">
+        <source>Customer name is required.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-emailFieldLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-emailInvalid" datatype="html">
+        <source>Please enter a valid email address.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-companyLabel" datatype="html">
+        <source>Company (optional)</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-orderedOnLabel" datatype="html">
+        <source>Ordered on</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-orderedOnRequired" datatype="html">
+        <source>Ordered on date is required.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-receivedOnLabel" datatype="html">
+        <source>Received on (optional)</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-receivedOnHelp" datatype="html">
+        <source>Required only if your service was already received or deployed.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-submitDetails" datatype="html">
+        <source>Continue</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-resumedCode" datatype="html">
+        <source>Continue where you left off. Enter your confirmation code.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-codeLabel" datatype="html">
+        <source>Confirmation code</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-codeRequired" datatype="html">
+        <source>Confirmation code is required.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-codePattern" datatype="html">
+        <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-verifyCode" datatype="html">
+        <source>Verify code</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-resumedAcknowledge" datatype="html">
+        <source>Continue where you left off. Please confirm your withdrawal below.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-acknowledgeLabel" datatype="html">
+        <source>I hereby withdraw from the contract for the subscription I provided in accordance with applicable statutory withdrawal rights.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-acknowledgeRequired" datatype="html">
+        <source>You must confirm your withdrawal to continue.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-submitWithdrawal" datatype="html">
+        <source>Submit withdrawal</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-doneMessage" datatype="html">
+        <source>Your withdrawal request has been submitted successfully.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-backToLogin" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-backToLoginLink" datatype="html">
         <source>Back to login</source>
         </trans-unit>
       <trans-unit id="featureAuth-loginPage" datatype="html">

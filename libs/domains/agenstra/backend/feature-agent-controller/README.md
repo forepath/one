@@ -270,6 +270,7 @@ REST endpoints for querying chat I/O, filter drops, filter flags, and entity lif
 
 - `GET /api/clients/provisioning/providers` - List available provisioning providers (e.g., Hetzner Cloud, DigitalOcean)
 - `GET /api/clients/provisioning/providers/:providerType/server-types` - Get available server types for a provider
+- `GET /api/clients/provisioning/providers/:providerType/locations` - Get geography options with human-readable labels (API-backed with static fallbacks; cached in Redis, default TTL 24h)
 - `POST /api/clients/provisioning/provision` - Provision a new server and create a client
 - `GET /api/clients/:id/provisioning/info` - Get server information for a provisioned client
 - `DELETE /api/clients/:id/provisioning` - Delete a provisioned server and its associated client

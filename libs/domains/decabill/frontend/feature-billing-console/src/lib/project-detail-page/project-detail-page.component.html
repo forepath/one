@@ -686,7 +686,7 @@
       [name]="'billTimeDesc' + i"
     />
     <div class="row g-2">
-      <div class="col-4">
+      <div class="col-sm-6">
         <label class="form-label" [for]="'billTimeLineQty' + i" i18n="@@featureAdminInvoices-lineQuantity"
           >Quantity</label
         >
@@ -700,7 +700,7 @@
           step="any"
         />
       </div>
-      <div class="col-4">
+      <div class="col-sm-6">
         <label class="form-label" [for]="'billTimeLinePrice' + i" i18n="@@featureAdminInvoices-lineUnitPriceNet"
           >Unit price (net)</label
         >
@@ -714,21 +714,28 @@
           step="any"
         />
       </div>
-      <div class="col-4">
-        <label class="form-label" [for]="'billTimeLineTax' + i" i18n="@@featureAdminInvoices-lineTaxCategory"
-          >Tax category</label
-        >
-        <select
-          class="form-select"
-          [id]="'billTimeLineTax' + i"
-          [(ngModel)]="line.taxCategory"
-          [name]="'billTimeTax' + i"
-        >
-          <option value="standard" i18n="@@featureAdminInvoices-taxStandard">Standard</option>
-          <option value="reduced" i18n="@@featureAdminInvoices-taxReduced">Reduced</option>
-        </select>
-      </div>
     </div>
+    <div class="mt-2">
+      <span class="form-label d-block" i18n="@@featureAdminInvoices-lineTaxCategory">VAT rate</span>
+      @for (option of taxCategoryOptions; track option.value) {
+        <div class="form-check form-check-inline">
+          <input
+            type="radio"
+            class="form-check-input"
+            [name]="'billTimeTax' + i"
+            [id]="'billTimeTax' + i + '_' + option.value"
+            [value]="option.value"
+            [checked]="line.taxCategory === option.value"
+            (change)="line.taxCategory = option.value"
+          />
+          <label class="form-check-label" [attr.for]="'billTimeTax' + i + '_' + option.value">{{ option.label }}</label>
+        </div>
+      }
+    </div>
+    <p class="small text-body-secondary mb-0 mt-2">
+      <span i18n="@@featureAdminInvoices-lineTotal">Line total</span>:
+      <strong class="ms-1">{{ formatBillTimeLineTotal(line) }}</strong>
+    </p>
     <button type="button" class="btn btn-link btn-sm text-danger p-0 mt-2" (click)="removeBillTimeLineItem(i)">
       <span i18n="@@featureAdminInvoices-removeLine">Remove line</span>
     </button>

@@ -6,18 +6,16 @@ import {
   ServiceTypesFacade,
   type CreateServiceTypeDto,
   type ProviderDetail,
+  type ProviderEnvDefaultField,
   type ServiceTypeResponse,
   type UpdateServiceTypeDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { map, combineLatest } from 'rxjs';
 
-import {
-  getActiveStatusLabel,
-  getActiveStatusTextClass,
-  getProviderDisplayName,
-  getUnavailableLabel,
-} from '../billing-status-labels';
+import { getActiveStatusLabel, getActiveStatusTextClass, getProviderDisplayName } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+
+type ServiceTypeFormMode = 'create' | 'edit';
 
 @Component({
   selector: 'framework-billing-service-types-page',
@@ -36,6 +34,9 @@ export class ServiceTypesPageComponent implements OnInit {
 
   readonly searchQuery = signal('');
   readonly searchQuery$ = toObservable(this.searchQuery);
+  readonly createProviderDefaultsExpanded = signal(false);
+  readonly editProviderDefaultsExpanded = signal(false);
+  readonly editProviderDefaultsTouched = signal(false);
   readonly serviceTypes$ = combineLatest([
     this.facade.getServiceTypes$(),
     this.facade.getProviderDetails$(),
@@ -58,21 +59,28 @@ export class ServiceTypesPageComponent implements OnInit {
   readonly updating$ = this.facade.getServiceTypesUpdating$();
   readonly deleting$ = this.facade.getServiceTypesDeleting$();
 
-  createForm: CreateServiceTypeDto = {
+  createForm: CreateServiceTypeDto & { providerDefaults: Record<string, string> } = {
     key: '',
     name: '',
     description: '',
     provider: '',
     disallowStatutoryWithdrawal: false,
     isActive: true,
+    providerDefaults: {},
   };
-  editForm: UpdateServiceTypeDto & { id: string } = {
+  editForm: UpdateServiceTypeDto & {
+    id: string;
+    providerDefaults: Record<string, string>;
+    providerDefaultsConfigured: Record<string, boolean>;
+  } = {
     id: '',
     name: '',
     description: '',
     provider: '',
     disallowStatutoryWithdrawal: false,
     isActive: true,
+    providerDefaults: {},
+    providerDefaultsConfigured: {},
   };
   serviceTypeToDelete: ServiceTypeResponse | null = null;
 
@@ -95,7 +103,11 @@ export class ServiceTypesPageComponent implements OnInit {
       provider: st.provider,
       disallowStatutoryWithdrawal: st.disallowStatutoryWithdrawal,
       isActive: st.isActive,
+      providerDefaults: {},
+      providerDefaultsConfigured: { ...(st.providerDefaultsConfigured ?? {}) },
     };
+    this.editProviderDefaultsExpanded.set(false);
+    this.editProviderDefaultsTouched.set(false);
     showBillingModal(this.editModal);
   }
 
@@ -116,14 +128,73 @@ export class ServiceTypesPageComponent implements OnInit {
     return getActiveStatusTextClass(isActive);
   }
 
-  serviceTypeKeyLabel(key: string | null | undefined): string {
-    const trimmed = key?.trim();
+  hasProviderDefaultsSection(
+    providerId: string | undefined,
+    providerDetails: ProviderDetail[] | null | undefined,
+  ): boolean {
+    if (!providerId?.trim()) {
+      return false;
+    }
 
-    return trimmed || getUnavailableLabel();
+    return this.getProviderEnvDefaultFields(providerId, providerDetails).length > 0;
+  }
+
+  getProviderEnvDefaultFields(
+    providerId: string | undefined,
+    providerDetails: ProviderDetail[] | null | undefined,
+  ): ProviderEnvDefaultField[] {
+    if (!providerId?.trim()) {
+      return [];
+    }
+
+    const provider = providerDetails?.find((item) => item.id === providerId);
+
+    return provider?.envDefaultFields ?? [];
+  }
+
+  getProviderDefaultValue(mode: ServiceTypeFormMode, envKey: string): string {
+    const form = mode === 'create' ? this.createForm : this.editForm;
+
+    return form.providerDefaults[envKey] ?? '';
+  }
+
+  setProviderDefaultValue(mode: ServiceTypeFormMode, envKey: string, value: string): void {
+    const form = mode === 'create' ? this.createForm : this.editForm;
+
+    if (mode === 'edit') {
+      this.editProviderDefaultsTouched.set(true);
+    }
+
+    form.providerDefaults = {
+      ...form.providerDefaults,
+      [envKey]: value,
+    };
+  }
+
+  isProviderDefaultConfigured(mode: ServiceTypeFormMode, envKey: string): boolean {
+    if (mode === 'create') {
+      return false;
+    }
+
+    return this.editForm.providerDefaultsConfigured[envKey] === true;
+  }
+
+  onCreateProviderChange(): void {
+    this.createForm.providerDefaults = {};
+    this.createProviderDefaultsExpanded.set(false);
+  }
+
+  onEditProviderChange(): void {
+    this.editForm.providerDefaults = {};
+    this.editForm.providerDefaultsConfigured = {};
+    this.editProviderDefaultsExpanded.set(false);
+    this.editProviderDefaultsTouched.set(true);
   }
 
   onSubmitCreate(): void {
     if (!this.createForm.key?.trim() || !this.createForm.name?.trim() || !this.createForm.provider?.trim()) return;
+
+    const providerDefaults = this.buildProviderDefaultsForSubmit('create');
 
     this.facade.createServiceType({
       key: this.createForm.key.trim(),
@@ -132,11 +203,14 @@ export class ServiceTypesPageComponent implements OnInit {
       provider: this.createForm.provider.trim(),
       disallowStatutoryWithdrawal: this.createForm.disallowStatutoryWithdrawal ?? false,
       isActive: this.createForm.isActive ?? true,
+      ...(Object.keys(providerDefaults).length > 0 ? { providerDefaults } : {}),
     });
   }
 
   onSubmitEdit(): void {
     if (!this.editForm.id) return;
+
+    const providerDefaults = this.buildProviderDefaultsForSubmit('edit');
 
     this.facade.updateServiceType(this.editForm.id, {
       name: this.editForm.name,
@@ -144,6 +218,7 @@ export class ServiceTypesPageComponent implements OnInit {
       provider: this.editForm.provider,
       disallowStatutoryWithdrawal: this.editForm.disallowStatutoryWithdrawal,
       isActive: this.editForm.isActive,
+      ...(this.editProviderDefaultsTouched() ? { providerDefaults } : {}),
     });
   }
 
@@ -151,6 +226,21 @@ export class ServiceTypesPageComponent implements OnInit {
     if (!this.serviceTypeToDelete) return;
 
     this.facade.deleteServiceType(this.serviceTypeToDelete.id);
+  }
+
+  private buildProviderDefaultsForSubmit(mode: ServiceTypeFormMode): Record<string, string> {
+    const form = mode === 'create' ? this.createForm : this.editForm;
+    const result: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(form.providerDefaults)) {
+      const trimmed = value?.trim() ?? '';
+
+      if (trimmed) {
+        result[key] = trimmed;
+      }
+    }
+
+    return result;
   }
 
   private resetCreateForm(): void {
@@ -161,7 +251,9 @@ export class ServiceTypesPageComponent implements OnInit {
       provider: '',
       disallowStatutoryWithdrawal: false,
       isActive: true,
+      providerDefaults: {},
     };
+    this.createProviderDefaultsExpanded.set(false);
   }
 
   private resetEditForm(): void {
@@ -172,7 +264,11 @@ export class ServiceTypesPageComponent implements OnInit {
       provider: '',
       disallowStatutoryWithdrawal: false,
       isActive: true,
+      providerDefaults: {},
+      providerDefaultsConfigured: {},
     };
+    this.editProviderDefaultsExpanded.set(false);
+    this.editProviderDefaultsTouched.set(false);
   }
 
   private registerModalCloseWatchers(): void {

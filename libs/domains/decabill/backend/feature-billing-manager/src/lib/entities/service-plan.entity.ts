@@ -8,6 +8,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 
+import { TaxCategory } from '../constants/tax-category.constants';
+
 import { ServiceTypeEntity } from './service-type.entity';
 
 /** Ordered icon + text line for catalog / ordering UIs (icon is an opaque client-defined key). */
@@ -78,6 +80,21 @@ export class ServicePlanEntity {
 
   @Column({ type: 'boolean', name: 'allow_customer_location_selection', default: false })
   allowCustomerLocationSelection!: boolean;
+
+  @Column({ type: 'boolean', name: 'allow_customer_server_type_selection', default: false })
+  allowCustomerServerTypeSelection!: boolean;
+
+  @Column({ type: 'jsonb', name: 'allowed_server_types', default: () => "'[]'::jsonb" })
+  allowedServerTypes!: string[];
+
+  @Column({
+    type: 'enum',
+    enum: TaxCategory,
+    enumName: 'tax_category_enum',
+    name: 'tax_category',
+    default: TaxCategory.STANDARD,
+  })
+  taxCategory!: TaxCategory;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import { ProvisioningCredentials } from '../utils/provider-env-defaults.utils';
 import { ServerInfo } from '../utils/provisioning.utils';
 
 import { DigitaloceanProvisioningService } from './digitalocean-provisioning.service';
@@ -29,8 +30,9 @@ export class ProvisioningService {
     provider: string,
     serverId: string,
     initial: ServerInfo | null | undefined,
+    credentials?: ProvisioningCredentials,
   ): Promise<string | undefined> {
-    let info = initial ?? (await this.getServerInfo(provider, serverId));
+    let info = initial ?? (await this.getServerInfo(provider, serverId, credentials));
 
     if (info?.publicIp) {
       return info.publicIp;
@@ -42,7 +44,7 @@ export class ProvisioningService {
 
     for (let attempt = 1; attempt < DIGITALOCEAN_PUBLIC_IP_MAX_ATTEMPTS; attempt++) {
       await this.delay(DIGITALOCEAN_PUBLIC_IP_POLL_INTERVAL_MS);
-      info = await this.getServerInfo(provider, serverId);
+      info = await this.getServerInfo(provider, serverId, credentials);
 
       if (info?.publicIp) {
         return info.publicIp;
@@ -58,67 +60,71 @@ export class ProvisioningService {
     return undefined;
   }
 
-  async provision(provider: string, config: { [key: string]: unknown }) {
+  async provision(provider: string, config: { [key: string]: unknown }, credentials?: ProvisioningCredentials) {
     if (provider === 'hetzner') {
-      return await this.hetznerProvisioningService.provisionServer(config as never);
+      return await this.hetznerProvisioningService.provisionServer(config as never, credentials?.apiToken);
     }
 
     if (provider === 'digital-ocean') {
-      return await this.digitaloceanProvisioningService.provisionServer(config as never);
+      return await this.digitaloceanProvisioningService.provisionServer(config as never, credentials?.apiToken);
     }
 
     return null;
   }
 
-  async deprovision(provider: string, serverId: string): Promise<void> {
+  async deprovision(provider: string, serverId: string, credentials?: ProvisioningCredentials): Promise<void> {
     if (provider === 'hetzner') {
-      await this.hetznerProvisioningService.deprovisionServer(serverId);
+      await this.hetznerProvisioningService.deprovisionServer(serverId, credentials?.apiToken);
     }
 
     if (provider === 'digital-ocean') {
-      await this.digitaloceanProvisioningService.deprovisionServer(serverId);
+      await this.digitaloceanProvisioningService.deprovisionServer(serverId, credentials?.apiToken);
     }
   }
 
-  async getServerInfo(provider: string, serverId: string): Promise<ServerInfo | null> {
+  async getServerInfo(
+    provider: string,
+    serverId: string,
+    credentials?: ProvisioningCredentials,
+  ): Promise<ServerInfo | null> {
     if (provider === 'hetzner') {
-      return await this.hetznerProvisioningService.getServerInfo(serverId);
+      return await this.hetznerProvisioningService.getServerInfo(serverId, credentials?.apiToken);
     }
 
     if (provider === 'digital-ocean') {
-      return await this.digitaloceanProvisioningService.getServerInfo(serverId);
+      return await this.digitaloceanProvisioningService.getServerInfo(serverId, credentials?.apiToken);
     }
 
     return null;
   }
 
-  async startServer(provider: string, serverId: string): Promise<void> {
+  async startServer(provider: string, serverId: string, credentials?: ProvisioningCredentials): Promise<void> {
     if (provider === 'hetzner') {
-      await this.hetznerProvisioningService.startServer(serverId);
+      await this.hetznerProvisioningService.startServer(serverId, credentials?.apiToken);
     }
 
     if (provider === 'digital-ocean') {
-      await this.digitaloceanProvisioningService.startServer(serverId);
+      await this.digitaloceanProvisioningService.startServer(serverId, credentials?.apiToken);
     }
   }
 
-  async stopServer(provider: string, serverId: string): Promise<void> {
+  async stopServer(provider: string, serverId: string, credentials?: ProvisioningCredentials): Promise<void> {
     if (provider === 'hetzner') {
-      await this.hetznerProvisioningService.stopServer(serverId);
+      await this.hetznerProvisioningService.stopServer(serverId, credentials?.apiToken);
     }
 
     if (provider === 'digital-ocean') {
-      await this.digitaloceanProvisioningService.stopServer(serverId);
+      await this.digitaloceanProvisioningService.stopServer(serverId, credentials?.apiToken);
     }
   }
 
-  async restartServer(provider: string, serverId: string): Promise<void> {
+  async restartServer(provider: string, serverId: string, credentials?: ProvisioningCredentials): Promise<void> {
     if (provider === 'hetzner') {
-      await this.hetznerProvisioningService.restartServer(serverId);
+      await this.hetznerProvisioningService.restartServer(serverId, credentials?.apiToken);
     }
 
     if (provider === 'digital-ocean') {
-      await this.digitaloceanProvisioningService.restartServer(serverId);
+      await this.digitaloceanProvisioningService.restartServer(serverId, credentials?.apiToken);
     }
   }
 }

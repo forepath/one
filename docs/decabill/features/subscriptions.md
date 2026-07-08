@@ -81,6 +81,10 @@ Provider config keys include `serverType`, `location` or `region`, and optional 
 
 When `allowCustomerLocationSelection` is true on the plan and the provider schema defines `region` or `location` with an enum, customers may override geography in `requestedConfig`. Otherwise geography keys are stripped before merge.
 
+### Customer Server Type
+
+When `allowCustomerServerTypeSelection` is true on the plan, customers may pass `serverType` in `requestedConfig` if the value is listed in `allowedServerTypes`. Otherwise `serverType` is stripped before merge. The chosen type’s infrastructure price is stored in `configSnapshot.billingBasePrice` for billing.
+
 ### Custom Service Plans
 
 When the plan sets `providerConfigDefaults.service` to `custom`, customers supply environment variables in `requestedConfig.env` as a string map. The billing console loads order fields from `GET /service-plans/{planId}/cloud-init-configs/{configId}/order-fields` (only for configs offered on the selected plan) and renders only variables with `showInOrderForm`.
@@ -97,6 +101,8 @@ See **[CloudInit Configs](./cloud-init-configs.md)**.
 ## Statutory Withdrawal (Widerruf)
 
 Statutory withdrawal is separate from commercial cancellation. Customers exercise a **Withdraw** action when eligible; **Cancel** remains for period-end or commitment-based termination.
+
+Customers who are not logged in can use the public **[Public Statutory Withdrawal](./public-withdrawal.md)** flow at `/withdrawal`. It reuses the same `executeWithdrawal` logic as `POST /subscriptions/{subscriptionId}/withdraw` after email verification.
 
 ### Eligibility
 
