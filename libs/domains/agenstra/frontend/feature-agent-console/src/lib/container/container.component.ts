@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
@@ -13,6 +13,28 @@ import { combineLatest, filter, map, startWith } from 'rxjs';
 
 import { ThemeService } from '../theme.service';
 
+interface BootstrapPopoverInstance {
+  dispose(): void;
+  hide(): void;
+  setContent(content: Record<string, string | Element | null | (() => string)>): void;
+}
+
+interface BootstrapPopoverConstructor {
+  getOrCreateInstance(element: Element, options?: Record<string, unknown>): BootstrapPopoverInstance;
+}
+
+interface AdminNavItem {
+  activePaths: string[];
+  icon: string;
+  label: string;
+  routerLink: string[];
+  title: string;
+}
+
+function getBootstrapPopover(): BootstrapPopoverConstructor | undefined {
+  return (window as Window & { bootstrap?: { Popover?: BootstrapPopoverConstructor } }).bootstrap?.Popover;
+}
+
 @Component({
   selector: 'framework-agent-console-container',
   imports: [CommonModule, RouterModule],
@@ -20,7 +42,7 @@ import { ThemeService } from '../theme.service';
   templateUrl: './container.component.html',
   standalone: true,
 })
-export class AgentConsoleContainerComponent implements OnInit {
+export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
   private readonly authenticationFacade = inject(AuthenticationFacade);
   private readonly clientsFacade = inject(ClientsFacade);
   protected readonly notificationsFacade = inject(NotificationsFacade);
@@ -95,6 +117,27 @@ export class AgentConsoleContainerComponent implements OnInit {
    * True when the user can access the user manager (admin with users/keycloak auth).
    */
   readonly canAccessUserManager$ = this.authenticationFacade.canAccessUserManager$;
+
+  readonly isAdminRouteActive = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map(() => this.router.url),
+      startWith(this.router.url),
+      map((url) => url.includes('/users') || url.includes('/filters') || url.includes('/imports')),
+    ),
+    {
+      initialValue:
+        this.router.url.includes('/users') ||
+        this.router.url.includes('/filters') ||
+        this.router.url.includes('/imports'),
+    },
+  );
+
+  private adminPopover: BootstrapPopoverInstance | null = null;
+
+  @ViewChild('adminNavTrigger') set adminNavTrigger(ref: ElementRef<HTMLElement> | undefined) {
+    this.onAdminNavTriggerReady(ref);
+  }
 
   /**
    * Display label for the current user's role. Admin for api-key auth, otherwise user.role capitalized.
@@ -173,5 +216,129 @@ export class AgentConsoleContainerComponent implements OnInit {
   onLogout(): void {
     this.notificationsFacade.disconnectSocket();
     this.authenticationFacade.logout();
+  }
+
+  ngOnDestroy(): void {
+    this.disposeAdminPopover();
+  }
+
+  onAdminNavTriggerReady(trigger: ElementRef<HTMLElement> | undefined): void {
+    if (!trigger) {
+      this.disposeAdminPopover();
+
+      return;
+    }
+
+    this.setupAdminPopover(trigger.nativeElement);
+  }
+
+  private setupAdminPopover(trigger: HTMLElement): void {
+    if (this.adminPopover) {
+      return;
+    }
+
+    const Popover = getBootstrapPopover();
+
+    if (!Popover) {
+      return;
+    }
+
+    const buildBody = (): HTMLElement => this.buildAdminNavGrid();
+
+    this.adminPopover = Popover.getOrCreateInstance(trigger, {
+      trigger: 'click',
+      placement: 'right',
+      container: 'body',
+      html: true,
+      sanitize: false,
+      customClass: 'sidebar-admin-popover',
+      title: ' ',
+      template: '<div class="popover sidebar-admin-popover" role="tooltip"><div class="popover-body"></div></div>',
+      content: buildBody,
+      popperConfig: (defaultConfig: any) => ({
+        ...defaultConfig,
+        placement: 'right-start',
+      }),
+    });
+
+    trigger.addEventListener('show.bs.popover', () => {
+      this.adminPopover?.setContent({ '.popover-body': buildBody() });
+    });
+  }
+
+  private disposeAdminPopover(): void {
+    this.adminPopover?.dispose();
+    this.adminPopover = null;
+  }
+
+  private buildAdminNavGrid(): HTMLElement {
+    const grid = document.createElement('div');
+
+    grid.className = 'sidebar-admin-popover__grid';
+    grid.setAttribute('role', 'menu');
+
+    for (const item of this.getAdminNavItems()) {
+      const link = document.createElement('a');
+
+      link.className = 'sidebar__item';
+      link.href = '#';
+      link.title = item.title;
+      link.setAttribute('role', 'menuitem');
+
+      if (this.isAdminNavItemActive(item)) {
+        link.classList.add('active');
+      }
+
+      const icon = document.createElement('i');
+
+      icon.className = `bi ${item.icon} me-1`;
+
+      const label = document.createElement('span');
+
+      label.className = 'small';
+      label.textContent = item.label;
+
+      link.append(icon, label);
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        void this.router.navigate(item.routerLink);
+        this.adminPopover?.hide();
+      });
+      grid.appendChild(link);
+    }
+
+    return grid;
+  }
+
+  private getAdminNavItems(): AdminNavItem[] {
+    return [
+      {
+        routerLink: ['/users'],
+        activePaths: ['/users'],
+        icon: 'bi-people',
+        title: $localize`:@@featureContainer-userManagementTitle:User Management`,
+        label: $localize`:@@featureContainer-users:Users`,
+      },
+      {
+        routerLink: ['/filters'],
+        activePaths: ['/filters'],
+        icon: 'bi-funnel',
+        title: $localize`:@@featureContainer-filtersTitle:Filters`,
+        label: $localize`:@@featureContainer-filters:Filters`,
+      },
+      {
+        routerLink: ['/imports/atlassian'],
+        activePaths: ['/imports'],
+        icon: 'bi-cloud-download',
+        title: $localize`:@@featureContainer-importTitle:Import`,
+        label: $localize`:@@featureContainer-importTitle:Import`,
+      },
+    ];
+  }
+
+  private isAdminNavItemActive(item: AdminNavItem): boolean {
+    const url = this.router.url;
+
+    return item.activePaths.some((path) => url.includes(path));
   }
 }

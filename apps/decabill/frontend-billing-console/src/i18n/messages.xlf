@@ -632,6 +632,12 @@
       <trans-unit id="featureContainer-adminDatevExports" datatype="html">
         <source>DATEV</source>
         </trans-unit>
+      <trans-unit id="featureContainer-admin" datatype="html">
+        <source>Admin</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminTitle" datatype="html">
+        <source>Admin</source>
+        </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
         </trans-unit>
