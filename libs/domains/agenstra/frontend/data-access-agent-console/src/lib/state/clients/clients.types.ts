@@ -90,6 +90,13 @@ export interface ServerType {
   description?: string;
 }
 
+export interface ProviderLocation {
+  id: string;
+  name: string;
+  city?: string;
+  country?: string;
+}
+
 export interface ProvisionServerDto {
   providerType: string;
   serverType: string;

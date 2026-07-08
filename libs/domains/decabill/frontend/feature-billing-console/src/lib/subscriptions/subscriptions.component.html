@@ -499,7 +499,7 @@
                           [attr.aria-label]="'Provisioning ' + orderGeographyFieldKey"
                         >
                           @for (opt of orderLocationOptions; track opt) {
-                            <option [ngValue]="opt">{{ opt }}</option>
+                            <option [ngValue]="opt">{{ formatOrderLocationLabel(opt) }}</option>
                           }
                         </select>
                         <div class="form-text text-body-secondary small">

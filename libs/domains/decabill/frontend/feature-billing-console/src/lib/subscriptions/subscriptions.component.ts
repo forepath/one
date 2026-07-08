@@ -20,6 +20,7 @@ import {
   ServicePlansFacade,
   ServicePlansService,
   ServiceTypesFacade,
+  ServiceTypesService,
   SubscriptionsFacade,
   SubscriptionServerInfoFacade,
   type BackorderResponse,
@@ -31,6 +32,9 @@ import {
   type ServicePlanResponse,
   type ServiceTypeResponse,
   type SubscriptionResponse,
+  formatBillingProviderLocationLabel,
+  providerLocationCatalogFromList,
+  type ProviderLocationCatalog,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { combineLatest, filter, take } from 'rxjs';
@@ -80,6 +84,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly servicePlansService = inject(ServicePlansService);
   private readonly serviceTypesFacade = inject(ServiceTypesFacade);
+  private readonly serviceTypesService = inject(ServiceTypesService);
   private readonly backordersFacade = inject(BackordersFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
   private readonly environment = inject<Environment>(ENVIRONMENT);
@@ -160,6 +165,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   orderGeographyFieldKey: 'region' | 'location' | null = null;
   orderLocationOptions: string[] = [];
   orderProvisioningLocation = '';
+  orderLocationCatalog: ProviderLocationCatalog = new Map();
   orderCustomOrderFields: CloudInitConfigOrderField[] = [];
   orderCustomEnv: Record<string, string> = {};
   readonly orderFieldDefaultPlaceholder = 'Uses a pre-configured default if left empty';
@@ -710,10 +716,15 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     return pick('region') ?? pick('location');
   }
 
+  formatOrderLocationLabel(slug: string): string {
+    return formatBillingProviderLocationLabel(slug, this.orderLocationCatalog);
+  }
+
   private syncOrderProvisioningLocationState(): void {
     this.orderGeographyFieldKey = null;
     this.orderLocationOptions = [];
     this.orderProvisioningLocation = '';
+    this.orderLocationCatalog = new Map();
 
     if (!this.orderPlanId?.trim()) return;
 
@@ -741,6 +752,19 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
         this.orderProvisioningLocation = resolved.options.includes(fromPlanStr)
           ? fromPlanStr
           : (resolved.options[0] ?? '');
+
+        const serviceType = serviceTypes?.find((st) => st.id === plan.serviceTypeId);
+
+        if (serviceType?.provider) {
+          this.serviceTypesService.getProviderLocations(serviceType.provider, plan.serviceTypeId).subscribe({
+            next: (locations) => {
+              this.orderLocationCatalog = providerLocationCatalogFromList(locations);
+            },
+            error: () => {
+              this.orderLocationCatalog = new Map();
+            },
+          });
+        }
       });
   }
 

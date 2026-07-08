@@ -14,6 +14,7 @@ import {
   loadProvisioningProviders,
   loadServerInfo,
   loadServerTypes,
+  loadLocations,
   provisionServer,
   removeClientUser,
   setActiveClient,
@@ -40,6 +41,8 @@ import {
   selectLoadingProviders,
   selectLoadingServerInfo,
   selectLoadingServerTypes,
+  selectLoadingLocations,
+  selectLocations,
   selectProvisioning,
   selectProvisioningProviders,
   selectRemovingClientUser,
@@ -54,6 +57,7 @@ import type {
   CreateClientDto,
   ListClientsParams,
   ProvisionServerDto,
+  ProviderLocation,
   ServerInfo,
   ServerType,
   UpdateClientDto,
@@ -174,6 +178,20 @@ export class ClientsFacade {
   }
 
   /**
+   * Get locations for a provider as an observable.
+   */
+  getLocations$(providerType: string): Observable<ProviderLocation[]> {
+    return this.store.select(selectLocations(providerType));
+  }
+
+  /**
+   * Get loading state for locations as an observable.
+   */
+  getLoadingLocations$(providerType: string): Observable<boolean> {
+    return this.store.select(selectLoadingLocations(providerType));
+  }
+
+  /**
    * Get server info for a client as an observable.
    * @param clientId - The client ID
    * @returns Observable of server info or undefined
@@ -213,6 +231,13 @@ export class ClientsFacade {
    */
   loadServerTypes(providerType: string): void {
     this.store.dispatch(loadServerTypes({ providerType }));
+  }
+
+  /**
+   * Load geography options for a specific provider.
+   */
+  loadLocations(providerType: string): void {
+    this.store.dispatch(loadLocations({ providerType }));
   }
 
   /**

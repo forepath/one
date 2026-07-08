@@ -10,6 +10,7 @@ import type {
   ProvisionServerDto,
   ProvisionedServerResponseDto,
   ProvisioningProviderInfo,
+  ProviderLocation,
   ServerInfo,
   ServerType,
   UpdateClientDto,
@@ -95,6 +96,15 @@ export const loadServerTypesSuccess = createAction(
 );
 
 export const loadServerTypesFailure = createAction('[Clients] Load Server Types Failure', props<{ error: string }>());
+
+export const loadLocations = createAction('[Clients] Load Locations', props<{ providerType: string }>());
+
+export const loadLocationsSuccess = createAction(
+  '[Clients] Load Locations Success',
+  props<{ providerType: string; locations: ProviderLocation[] }>(),
+);
+
+export const loadLocationsFailure = createAction('[Clients] Load Locations Failure', props<{ error: string }>());
 
 export const provisionServer = createAction('[Clients] Provision Server', props<{ dto: ProvisionServerDto }>());
 

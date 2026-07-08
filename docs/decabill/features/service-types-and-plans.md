@@ -71,6 +71,10 @@ API behavior:
 
 `GET /service-types/providers/{providerId}/server-types` returns server types with id, name, specs (cores, memory, disk), `priceMonthly`, and `priceHourly`. Requires the provider API token in the billing manager environment.
 
+### Geography Labels
+
+`GET /service-types/providers/{providerId}/locations` returns geography options with technical `id` (slug) and human-readable `name`. The billing console uses this for `location`/`region` enum dropdowns. Labels come from the provider API with static fallbacks; schema enums and stored config values remain technical slugs.
+
 ## Service Plans
 
 Service plans belong to a service type and define customer-facing pricing and billing rules.

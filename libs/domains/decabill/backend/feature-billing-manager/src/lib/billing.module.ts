@@ -11,6 +11,7 @@ import {
   registerDynamicProviderMetadata,
   registerDynamicProviders,
 } from '@forepath/shared/backend/util-dynamic-provider-registry';
+import { RedisCacheModule } from '@forepath/shared/backend/util-redis-cache';
 import { Module, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -170,6 +171,7 @@ import { PaymentOrchestrationService } from './services/payment-orchestration.se
 import { PricingService } from './services/pricing.service';
 import { ProviderPricingService } from './services/provider-pricing.service';
 import { ProviderRegistryService } from './services/provider-registry.service';
+import { ProviderLocationsService } from './services/provider-locations.service';
 import { ProviderServerTypesService } from './services/provider-server-types.service';
 import { ProvisioningService } from './services/provisioning.service';
 import { SshExecutorService } from './services/ssh-executor.service';
@@ -409,6 +411,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       ProjectTimeEntryEntity,
       PublicWithdrawalRequestEntity,
     ]),
+    RedisCacheModule,
     ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],
   controllers: [
@@ -451,6 +454,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     HetznerProvisioningService,
     ProviderRegistryService,
     ProviderServerTypesService,
+    ProviderLocationsService,
     TaxRateConfigService,
     TaxCalculationService,
     BillingIssuerConfigService,

@@ -36,6 +36,14 @@ export interface ServerType {
   description?: string;
 }
 
+// Provider geography option (GET .../providers/:id/locations)
+export interface ProviderLocation {
+  id: string;
+  name: string;
+  city?: string;
+  country?: string;
+}
+
 // Statutory withdrawal
 export interface WithdrawalPolicy {
   periodDays: number;

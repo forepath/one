@@ -24,12 +24,18 @@ import {
   type CloudInitConfigResponse,
   type CreateServicePlanDto,
   type ProviderDetail,
+  type ProviderLocation,
   type ServerType,
   type ServicePlanOrderingHighlight,
   type ServicePlanResponse,
   type ServiceTypeResponse,
   type UpdateServicePlanDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  formatProvisioningLocationLabel,
+  providerLocationCatalogFromList,
+  type ProviderLocationCatalog,
+} from '@forepath/shared/frontend/util-provisioning-geography';
 import { combineLatest, map, take } from 'rxjs';
 
 import {
@@ -120,6 +126,8 @@ export class ServicePlansPageComponent implements OnInit {
   /** Server types for the current provider when config has basePriceFromField (e.g. serverType). */
   currentServerTypes: ServerType[] = [];
   serverTypesLoading = false;
+  providerLocationCatalog: ProviderLocationCatalog = new Map();
+  providerLocationsLoading = false;
 
   serviceTypeNameById(types: ServiceTypeResponse[] | null, id: string): string {
     if (!types) return getUnavailableLabel();
@@ -591,6 +599,18 @@ export class ServicePlansPageComponent implements OnInit {
     return arr.length > 0 ? arr : null;
   }
 
+  isGeographyConfigKey(key: string): boolean {
+    return key === 'location' || key === 'region';
+  }
+
+  formatProviderConfigEnumLabel(key: string, value: string | number): string {
+    if (this.isGeographyConfigKey(key) && typeof value === 'string') {
+      return formatProvisioningLocationLabel(value, this.providerLocationCatalog);
+    }
+
+    return String(value);
+  }
+
   /** When create form service type changes, init providerConfigDefaults from schema and load server types if needed. */
   onCreateServiceTypeIdChange(serviceTypes: ServiceTypeResponse[], providerDetails: ProviderDetail[]): void {
     const schema = this.getProviderSchema(serviceTypes, providerDetails, this.createForm.serviceTypeId);
@@ -632,6 +652,14 @@ export class ServicePlansPageComponent implements OnInit {
       } else {
         this.currentServerTypes = [];
       }
+
+      const providerId = this.getProviderId(serviceTypes, this.createForm.serviceTypeId);
+
+      if (providerId && this.schemaHasGeographyEnum(schema)) {
+        this.loadProviderLocations(providerId);
+      } else {
+        this.providerLocationCatalog = new Map();
+      }
     } else {
       this.currentServerTypes = [];
     }
@@ -642,6 +670,27 @@ export class ServicePlansPageComponent implements OnInit {
 
     this.applyDefaultProvisioningOptionKeys(serviceTypes, providerDetails, this.createForm.serviceTypeId, 'create');
     this.pruneInvalidProvisioningOptionKeys(serviceTypes, providerDetails, this.createForm.serviceTypeId, 'create');
+  }
+
+  private schemaHasGeographyEnum(schema: ConfigSchemaProperties | null): boolean {
+    if (!schema) return false;
+
+    return Boolean(this.getProviderConfigEnum(schema, 'location') ?? this.getProviderConfigEnum(schema, 'region'));
+  }
+
+  private loadProviderLocations(providerId: string, serviceTypeId?: string): void {
+    this.providerLocationsLoading = true;
+    this.providerLocationCatalog = new Map();
+    this.serviceTypesService.getProviderLocations(providerId, serviceTypeId).subscribe({
+      next: (locations: ProviderLocation[]) => {
+        this.providerLocationCatalog = providerLocationCatalogFromList(locations);
+        this.providerLocationsLoading = false;
+      },
+      error: () => {
+        this.providerLocationsLoading = false;
+        this.providerLocationCatalog = new Map();
+      },
+    });
   }
 
   private loadServerTypes(providerId: string): void {
@@ -839,6 +888,8 @@ export class ServicePlansPageComponent implements OnInit {
     this.resetCreateForm();
     this.currentServerTypes = [];
     this.serverTypesLoading = false;
+    this.providerLocationCatalog = new Map();
+    this.providerLocationsLoading = false;
     this.resetProductDefaultsCollapse('create');
     showBillingModal(this.createModal);
   }
@@ -847,6 +898,8 @@ export class ServicePlansPageComponent implements OnInit {
     this.editingPlan = plan;
     this.currentServerTypes = [];
     this.serverTypesLoading = false;
+    this.providerLocationCatalog = new Map();
+    this.providerLocationsLoading = false;
     this.editProvisioningOptionKeys = new Set(planProvisioningOptionKeysFromDefaults(plan.providerConfigDefaults));
     this.editStaleCustomConfigIds = [];
     combineLatest([this.typesAndProviders$, this.cloudInitConfigs$])
@@ -883,6 +936,14 @@ export class ServicePlansPageComponent implements OnInit {
       const providerId = this.getProviderId(data.serviceTypes, plan.serviceTypeId);
 
       if (basePriceField && providerId) this.loadServerTypes(providerId);
+
+      if (providerId) {
+        const schema = this.getProviderSchema(data.serviceTypes, data.providerDetails, plan.serviceTypeId);
+
+        if (this.schemaHasGeographyEnum(schema)) {
+          this.loadProviderLocations(providerId, plan.serviceTypeId);
+        }
+      }
     });
     this.resetProductDefaultsCollapse('edit');
     showBillingModal(this.editModal);

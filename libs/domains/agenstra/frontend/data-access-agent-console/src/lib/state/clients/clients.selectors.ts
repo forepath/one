@@ -59,6 +59,12 @@ export const selectServerTypes = (providerType: string) =>
 export const selectLoadingServerTypes = (providerType: string) =>
   createSelector(selectClientsState, (state) => state.loadingServerTypes[providerType] ?? false);
 
+export const selectLocations = (providerType: string) =>
+  createSelector(selectClientsState, (state) => state.locations[providerType] ?? []);
+
+export const selectLoadingLocations = (providerType: string) =>
+  createSelector(selectClientsState, (state) => state.loadingLocations[providerType] ?? false);
+
 export const selectProvisioning = createSelector(selectClientsState, (state) => state.provisioning);
 
 export const selectServerInfo = (clientId: string) =>

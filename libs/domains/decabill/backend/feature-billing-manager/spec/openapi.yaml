@@ -305,6 +305,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /service-types/providers/{providerId}/locations:
+    get:
+      summary: Get geography options for a provider
+      operationId: getProviderLocations
+      description: Returns locations (Hetzner) or regions (DigitalOcean) with human-readable labels. Used by the billing console for geography enum dropdowns. Labels are resolved from the provider API with static fallbacks when the API is unavailable.
+      parameters:
+        - name: providerId
+          in: path
+          required: true
+          schema:
+            type: string
+            examples: [hetzner]
+        - name: serviceTypeId
+          in: query
+          required: false
+          description: When set, resolves platform API credentials from this service type instead of global environment variables.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of geography options with technical id and human-readable name
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProviderLocation'
+        '400':
+          description: Bad request (e.g. provider not supported or token missing)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /service-types/{id}:
     get:
       summary: Get service type
@@ -3247,6 +3287,23 @@ components:
           { type: number, description: 'Price per month (e.g. EUR)' }
         priceHourly: { type: number, description: 'Price per hour (e.g. EUR)' }
         description: { type: string }
+    ProviderLocation:
+      type: object
+      description: Provider geography option (location or region) with human-readable label.
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          description: Technical slug used for provisioning (e.g. fsn1, fra1)
+        name:
+          type: string
+          description: Human-readable display name from provider API or static fallback
+        city:
+          type: string
+          description: City when provided by the provider API (Hetzner)
+        country:
+          type: string
+          description: ISO country code when provided by the provider API
     CreateServiceTypeDto:
       type: object
       required: [key, name, provider]
@@ -3825,6 +3882,9 @@ components:
             type: object,
             nullable: true,
             description: Provider-specific metadata (e.g. location,
+            locationName,
+            region,
+            regionName,
             datacenter,
             provider),
           }

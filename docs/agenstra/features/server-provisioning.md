@@ -68,7 +68,7 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
 ### Optional Fields
 
 - **`description`** - Server description
-- **`location`** - Datacenter location (e.g., `"fsn1"`, `"nbg1"` for Hetzner; `"fra1"`, `"nyc3"` for DigitalOcean)
+- **`location`** - Datacenter location slug (e.g., `"fsn1"`, `"nbg1"` for Hetzner; `"fra1"`, `"nyc3"` for DigitalOcean). UIs load human-readable labels from `GET /api/clients/provisioning/providers/:providerType/locations`.
 - **`apiKey`** - API key for API_KEY authentication (auto-generated if not provided)
 - **`keycloakClientId`** - Keycloak client ID (required for KEYCLOAK authentication)
 - **`keycloakClientSecret`** - Keycloak client secret (required for KEYCLOAK authentication)
@@ -139,6 +139,7 @@ The system will:
 
 - `GET /api/clients/provisioning/providers` - List available provisioning providers
 - `GET /api/clients/provisioning/providers/:providerType/server-types` - Get available server types for a provider
+- `GET /api/clients/provisioning/providers/:providerType/locations` - Get geography options with human-readable labels
 - `POST /api/clients/provisioning/provision` - Provision a new server and create a client
 - `GET /api/clients/:id/provisioning/info` - Get server information for a provisioned client
 - `DELETE /api/clients/:id/provisioning` - Delete a provisioned server and its associated client

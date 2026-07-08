@@ -15,12 +15,14 @@ import {
 
 import { CreateServiceTypeDto } from '../dto/create-service-type.dto';
 import { ProviderDetailDto } from '../dto/provider-detail.dto';
+import { ProviderLocationDto } from '../dto/provider-location.dto';
 import { ServerTypeDto } from '../dto/server-type.dto';
 import { ServiceTypeResponseDto } from '../dto/service-type-response.dto';
 import { UpdateServiceTypeDto } from '../dto/update-service-type.dto';
 import { ServiceTypeEntity } from '../entities/service-type.entity';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
 import { ProviderRegistryService } from '../services/provider-registry.service';
+import { ProviderLocationsService } from '../services/provider-locations.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
 import {
   getProviderEnvDefaultFieldKeys,
@@ -36,6 +38,7 @@ export class ServiceTypesController {
     private readonly serviceTypesRepository: ServiceTypesRepository,
     private readonly providerRegistry: ProviderRegistryService,
     private readonly providerServerTypesService: ProviderServerTypesService,
+    private readonly providerLocationsService: ProviderLocationsService,
   ) {}
 
   /**
@@ -60,6 +63,30 @@ export class ServiceTypesController {
     }
 
     return this.providerServerTypesService.getServerTypes(providerId, providerDefaults);
+  }
+
+  /**
+   * Get geography options (locations/regions) with human-readable labels for a provider.
+   * Used by the billing console for location/region enum dropdowns.
+   */
+  @Get('providers/:providerId/locations')
+  async getProviderLocations(
+    @Param('providerId') providerId: string,
+    @Query('serviceTypeId', new ParseUUIDPipe({ version: '4', optional: true })) serviceTypeId?: string,
+  ): Promise<ProviderLocationDto[]> {
+    let providerDefaults: Record<string, string> | undefined;
+
+    if (serviceTypeId) {
+      const serviceType = await this.serviceTypesRepository.findByIdOrThrow(serviceTypeId);
+
+      if (serviceType.provider !== providerId) {
+        providerDefaults = {};
+      } else {
+        providerDefaults = normalizeStoredProviderDefaults(serviceType.providerDefaults);
+      }
+    }
+
+    return this.providerLocationsService.getLocations(providerId, providerDefaults);
   }
 
   /**

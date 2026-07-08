@@ -448,7 +448,7 @@
                         >
                           <option [ngValue]="null" i18n="@@featureServicePlans-chooseOption">Choose...</option>
                           @for (opt of enumValues; track opt) {
-                            <option [ngValue]="opt">{{ opt }}</option>
+                            <option [ngValue]="opt">{{ formatProviderConfigEnumLabel(key, opt) }}</option>
                           }
                         </select>
                       } @else if (getProviderConfigPropertyType(schema, key) === 'number') {
@@ -602,7 +602,7 @@
                                         Choose...
                                       </option>
                                       @for (opt of nestedEnum; track opt) {
-                                        <option [ngValue]="opt">{{ opt }}</option>
+                                        <option [ngValue]="opt">{{ formatProviderConfigEnumLabel(key, opt) }}</option>
                                       }
                                     </select>
                                   } @else if (getProductNestedPropertyType(schema, key, nestedKey) === 'number') {
@@ -673,7 +673,7 @@
                                 >
                                   <option [ngValue]="null" i18n="@@featureServicePlans-chooseOption">Choose...</option>
                                   @for (opt of enumValues; track opt) {
-                                    <option [ngValue]="opt">{{ opt }}</option>
+                                    <option [ngValue]="opt">{{ formatProviderConfigEnumLabel(key, opt) }}</option>
                                   }
                                 </select>
                               } @else if (getProviderConfigPropertyType(schema, key) === 'number') {
@@ -1107,7 +1107,7 @@
                         >
                           <option [ngValue]="null" i18n="@@featureServicePlans-chooseOption">Choose...</option>
                           @for (opt of enumValues; track opt) {
-                            <option [ngValue]="opt">{{ opt }}</option>
+                            <option [ngValue]="opt">{{ formatProviderConfigEnumLabel(key, opt) }}</option>
                           }
                         </select>
                       } @else if (getProviderConfigPropertyType(schema, key) === 'number') {
@@ -1269,7 +1269,7 @@
                                         Choose...
                                       </option>
                                       @for (opt of nestedEnum; track opt) {
-                                        <option [ngValue]="opt">{{ opt }}</option>
+                                        <option [ngValue]="opt">{{ formatProviderConfigEnumLabel(key, opt) }}</option>
                                       }
                                     </select>
                                   } @else if (getProductNestedPropertyType(schema, key, nestedKey) === 'number') {
@@ -1340,7 +1340,7 @@
                                 >
                                   <option [ngValue]="null" i18n="@@featureServicePlans-chooseOption">Choose...</option>
                                   @for (opt of enumValues; track opt) {
-                                    <option [ngValue]="opt">{{ opt }}</option>
+                                    <option [ngValue]="opt">{{ formatProviderConfigEnumLabel(key, opt) }}</option>
                                   }
                                 </select>
                               } @else if (getProviderConfigPropertyType(schema, key) === 'number') {

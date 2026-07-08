@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
+import { resolveHetznerLocationNameFromMetadata } from '@forepath/shared/backend/util-provisioning-geography';
 
 import { ServerInfo } from '../utils/provisioning.utils';
 
@@ -120,6 +121,8 @@ export class HetznerProvisioningService {
 
       const publicIp = server.public_net?.ipv4?.ip ?? '';
       const privateIp = server.private_net?.[0]?.ip;
+      const locationSlug = server.datacenter?.location?.name;
+      const locationName = resolveHetznerLocationNameFromMetadata(locationSlug, server.datacenter?.location?.city);
 
       return {
         serverId: server.id.toString(),
@@ -128,7 +131,8 @@ export class HetznerProvisioningService {
         privateIp,
         status: server.status,
         metadata: {
-          location: server.datacenter?.location?.name,
+          location: locationSlug,
+          locationName,
           datacenter: server.datacenter?.name,
         },
       };
@@ -224,6 +228,6 @@ interface HetznerServerResponse {
   private_net?: Array<{ ip: string; network: number }>;
   datacenter?: {
     name: string;
-    location?: { name: string };
+    location?: { name: string; city?: string };
   };
 }

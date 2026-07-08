@@ -1,0 +1,20 @@
+{
+  "name": "shared-frontend-util-provisioning-geography",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/shared/frontend/util-provisioning-geography/src",
+  "projectType": "library",
+  "tags": ["domain:shared", "scope:frontend", "type:util"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/shared/frontend/util-provisioning-geography/jest.config.ts",
+        "tsConfig": "libs/domains/shared/frontend/util-provisioning-geography/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

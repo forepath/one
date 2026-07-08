@@ -79,6 +79,9 @@
       "@forepath/shared/backend/util-http-context": [
         "libs/domains/shared/backend/util-http-context/src/index.ts"
       ],
+      "@forepath/shared/backend/util-queue": [
+        "libs/domains/shared/backend/util-queue/src/index.ts"
+      ],
       "@forepath/shared/backend/feature-monitoring": [
         "libs/domains/shared/backend/feature-monitoring/src/index.ts"
       ],
@@ -122,6 +125,15 @@
       ],
       "@forepath/shared/backend/util-dynamic-provider-registry": [
         "libs/domains/shared/backend/util-dynamic-provider-registry/src/index.ts"
+      ],
+      "@forepath/shared/backend/util-provisioning-geography": [
+        "libs/domains/shared/backend/util-provisioning-geography/src/index.ts"
+      ],
+      "@forepath/shared/backend/util-redis-cache": [
+        "libs/domains/shared/backend/util-redis-cache/src/index.ts"
+      ],
+      "@forepath/shared/frontend/util-provisioning-geography": [
+        "libs/domains/shared/frontend/util-provisioning-geography/src/index.ts"
       ],
       "@forepath/shared/frontend/util-docs-parser": [
         "libs/domains/shared/frontend/util-docs-parser/src/index.ts"

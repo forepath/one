@@ -689,6 +689,24 @@ export class ClientsController {
   }
 
   /**
+   * Get available geography options for a provisioning provider.
+   * @param providerType - The provider type (e.g., 'hetzner')
+   * @returns Array of locations/regions with human-readable labels
+   */
+  @Get('provisioning/providers/:providerType/locations')
+  async getLocations(@Param('providerType') providerType: string) {
+    if (!this.provisioningProviderFactory.hasProvider(providerType)) {
+      throw new BadRequestException(
+        `Provider type '${providerType}' is not available. Available types: ${this.provisioningProviderFactory.getRegisteredTypes().join(', ')}`,
+      );
+    }
+
+    const provider = this.provisioningProviderFactory.getProvider(providerType);
+
+    return await provider.getLocations();
+  }
+
+  /**
    * Provision a new server and create a client.
    * The user_id will be set to the logged-in user (or null for api-key mode).
    * @param provisionServerDto - Provisioning options

@@ -8,6 +8,7 @@ import type {
   CreateServiceTypeDto,
   ListParams,
   ProviderDetail,
+  ProviderLocation,
   ServerType,
   ServiceTypeResponse,
   UpdateServiceTypeDto,
@@ -41,6 +42,22 @@ export class ServiceTypesService {
   getProviderServerTypes(providerId: string): Observable<ServerType[]> {
     return this.http.get<ServerType[]>(
       `${this.apiUrl}/service-types/providers/${encodeURIComponent(providerId)}/server-types`,
+    );
+  }
+
+  /**
+   * Get geography options with human-readable labels for a provider (e.g. hetzner).
+   */
+  getProviderLocations(providerId: string, serviceTypeId?: string): Observable<ProviderLocation[]> {
+    let params = new HttpParams();
+
+    if (serviceTypeId?.trim()) {
+      params = params.set('serviceTypeId', serviceTypeId);
+    }
+
+    return this.http.get<ProviderLocation[]>(
+      `${this.apiUrl}/service-types/providers/${encodeURIComponent(providerId)}/locations`,
+      { params },
     );
   }
 
