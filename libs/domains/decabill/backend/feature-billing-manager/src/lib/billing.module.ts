@@ -186,6 +186,7 @@ import { TaxCalculationService } from './services/tax-calculation.service';
 import { TaxRateConfigService } from './services/tax-rate-config.service';
 import { UsageService } from './services/usage.service';
 import { applyProviderConfigFieldScopes } from './utils/provider-config-schema.utils';
+import { DIGITALOCEAN_ENV_DEFAULT_FIELDS, HETZNER_ENV_DEFAULT_FIELDS } from './utils/provider-env-defaults.utils';
 
 const authMethod = getAuthenticationMethod();
 /**
@@ -648,13 +649,15 @@ export class BillingModule implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     this.providerRegistry.register({
       id: 'hetzner',
-      displayName: 'Hetzner Cloud',
+      displayName: 'Hetzner Cloud-Init',
       configSchema: HETZNER_CONFIG_SCHEMA,
+      envDefaultFields: HETZNER_ENV_DEFAULT_FIELDS,
     });
     this.providerRegistry.register({
       id: 'digital-ocean',
-      displayName: 'DigitalOcean',
+      displayName: 'DigitalOcean Cloud-Init',
       configSchema: DIGITALOCEAN_CONFIG_SCHEMA,
+      envDefaultFields: DIGITALOCEAN_ENV_DEFAULT_FIELDS,
     });
 
     await registerDynamicProviderMetadata({

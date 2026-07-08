@@ -18,6 +18,7 @@ import {
   resolveProvisioningRegion,
   stripGeographyFromRequestedConfig,
 } from '../utils/provider-location.utils';
+import { getProvisioningCredentials, normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
 import { generateSshKeyPair } from '../utils/ssh-key.utils';
 
 import { AvailabilityService } from './availability.service';
@@ -158,7 +159,13 @@ export class BackorderService {
 
     const region = resolveProvisioningRegion(effectiveConfig, provider);
     const serverType = effectiveConfig.serverType as string;
-    const availability = await this.availabilityService.checkAvailability(provider, region, serverType);
+    const providerDefaults = normalizeStoredProviderDefaults(serviceType.providerDefaults);
+    const availability = await this.availabilityService.checkAvailability(
+      provider,
+      region,
+      serverType,
+      providerDefaults,
+    );
 
     if (!availability.isAvailable) {
       return await this.backordersRepository.update(backorderId, {
@@ -189,6 +196,7 @@ export class BackorderService {
 
     if (serviceType.provider === 'hetzner' || serviceType.provider === 'digital-ocean') {
       let hostname: string | null = null;
+      const credentials = getProvisioningCredentials(serviceType.provider, serviceType.providerDefaults);
 
       try {
         hostname = await this.hostnameReservationService.reserveHostname(baseItem.id);
@@ -212,16 +220,25 @@ export class BackorderService {
           firewallId: effectiveConfig.firewallId as number | undefined,
           userData,
         };
-        const provisioned = await this.provisioningService.provision(serviceType.provider, provisioningConfig);
+        const provisioned = await this.provisioningService.provision(
+          serviceType.provider,
+          provisioningConfig,
+          credentials,
+        );
 
         if (provisioned?.serverId) {
           await this.subscriptionItemsRepository.updateProviderReference(baseItem.id, provisioned.serverId);
           await this.subscriptionItemsRepository.updateProvisioningStatus(baseItem.id, 'active');
-          const serverInfo = await this.provisioningService.getServerInfo(serviceType.provider, provisioned.serverId);
+          const serverInfo = await this.provisioningService.getServerInfo(
+            serviceType.provider,
+            provisioned.serverId,
+            credentials,
+          );
           const publicIp = await this.provisioningService.ensurePublicIpForDns(
             serviceType.provider,
             provisioned.serverId,
             serverInfo,
+            credentials,
           );
 
           if (publicIp) {

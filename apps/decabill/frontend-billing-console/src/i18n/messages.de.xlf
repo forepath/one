@@ -1426,6 +1426,26 @@
         <source>Active</source>
         <target>Aktiv</target>
       </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaults" datatype="html">
+        <source>Provider defaults</source>
+        <target>Anbieter-Standardwerte</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-showProviderDefaults" datatype="html">
+        <source>Show</source>
+        <target>Anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-hideProviderDefaults" datatype="html">
+        <source>Hide</source>
+        <target>Ausblenden</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaultsHelp" datatype="html">
+        <source>Overrides platform environment variables for this service type. Leave blank to use the environment default.</source>
+        <target>Überschreibt Plattform-Umgebungsvariablen für diesen Service-Typ. Leer lassen, um die Umgebungs-Standardwerte zu verwenden.</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaultEnvPlaceholder" datatype="html">
+        <source>Using environment default</source>
+        <target>Umgebungs-Standardwert verwenden</target>
+      </trans-unit>
       <trans-unit id="featureServiceTypes-close" datatype="html">
         <source> Close </source>
         <target>Schließen</target>

@@ -28,4 +28,8 @@ export class CreateServiceTypeDto {
   @IsOptional()
   @IsBoolean({ message: 'disallowStatutoryWithdrawal must be a boolean' })
   disallowStatutoryWithdrawal?: boolean;
+
+  @IsOptional()
+  @IsObject({ message: 'providerDefaults must be an object' })
+  providerDefaults?: Record<string, string>;
 }

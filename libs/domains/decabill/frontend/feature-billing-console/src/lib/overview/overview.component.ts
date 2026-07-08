@@ -240,10 +240,10 @@ export class OverviewComponent implements OnInit {
   getProviderName(provider: unknown): string | undefined {
     switch (provider) {
       case 'hetzner':
-        return 'Hetzner Cloud';
+        return 'Hetzner Cloud-Init';
       case 'digital-ocean':
       case 'digitalocean':
-        return 'DigitalOcean';
+        return 'DigitalOcean Cloud-Init';
       default:
         return undefined;
     }

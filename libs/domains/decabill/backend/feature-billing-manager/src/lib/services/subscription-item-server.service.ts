@@ -4,6 +4,7 @@ import { SubscriptionItemResponseDto } from '../dto/subscription-item-response.d
 import { ProvisioningStatus } from '../entities/subscription-item.entity';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { normalizeCloudInitService } from '../utils/cloud-init/cloud-init-dispatch.utils';
+import { getProvisioningCredentials } from '../utils/provider-env-defaults.utils';
 import { ServerInfo } from '../utils/provisioning.utils';
 
 import { CloudflareDnsService } from './cloudflare-dns.service';
@@ -62,7 +63,8 @@ export class SubscriptionItemServerService {
       throw new BadRequestException('Service type has no provider');
     }
 
-    const info = await this.provisioningService.getServerInfo(provider, item.providerReference!);
+    const credentials = getProvisioningCredentials(provider, item.serviceType?.providerDefaults);
+    const info = await this.provisioningService.getServerInfo(provider, item.providerReference!, credentials);
 
     if (!info) {
       throw new BadRequestException('Provider does not support server info');
@@ -86,20 +88,23 @@ export class SubscriptionItemServerService {
 
   async startServer(subscriptionId: string, itemId: string, userId: string): Promise<void> {
     const item = await this.resolveItemForAction(subscriptionId, itemId, userId);
+    const credentials = getProvisioningCredentials(item.serviceType!.provider!, item.serviceType!.providerDefaults);
 
-    await this.provisioningService.startServer(item.serviceType!.provider!, item.providerReference!);
+    await this.provisioningService.startServer(item.serviceType!.provider!, item.providerReference!, credentials);
   }
 
   async stopServer(subscriptionId: string, itemId: string, userId: string): Promise<void> {
     const item = await this.resolveItemForAction(subscriptionId, itemId, userId);
+    const credentials = getProvisioningCredentials(item.serviceType!.provider!, item.serviceType!.providerDefaults);
 
-    await this.provisioningService.stopServer(item.serviceType!.provider!, item.providerReference!);
+    await this.provisioningService.stopServer(item.serviceType!.provider!, item.providerReference!, credentials);
   }
 
   async restartServer(subscriptionId: string, itemId: string, userId: string): Promise<void> {
     const item = await this.resolveItemForAction(subscriptionId, itemId, userId);
+    const credentials = getProvisioningCredentials(item.serviceType!.provider!, item.serviceType!.providerDefaults);
 
-    await this.provisioningService.restartServer(item.serviceType!.provider!, item.providerReference!);
+    await this.provisioningService.restartServer(item.serviceType!.provider!, item.providerReference!, credentials);
   }
 
   private async resolveItemForAction(subscriptionId: string, itemId: string, userId: string) {

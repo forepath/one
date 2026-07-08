@@ -277,6 +277,13 @@ paths:
           schema:
             type: string
             examples: [hetzner]
+        - name: serviceTypeId
+          in: query
+          required: false
+          description: When set, resolves platform API credentials from this service type instead of global environment variables.
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: List of server types with id, name, specs, priceMonthly, priceHourly
@@ -3197,7 +3204,7 @@ components:
           description: Provider identifier (e.g. hetzner, digital-ocean). Used as the value for service type provider field.
         displayName:
           type: string
-          description: Human-readable display name (e.g. Hetzner Cloud).
+          description: Human-readable display name (e.g. Hetzner Cloud-Init).
         configSchema:
           type: object
           description: |
@@ -3206,6 +3213,27 @@ components:
               Server-scoped fields appear under provider defaults in the plan editor; product-scoped fields appear under product defaults when required by selected customer options.
             - `basePriceFromField`: optional string (e.g. "serverType") indicating which field's selected option drives the plan base price;
               the UI should fetch options from GET .../providers/{id}/server-types and use the selected option's price as base price.
+        envDefaultFields:
+          type: array
+          description: Platform environment variables that can be overridden per service type (e.g. HETZNER_API_TOKEN).
+          items:
+            $ref: '#/components/schemas/ProviderEnvDefaultField'
+    ProviderEnvDefaultField:
+      type: object
+      required: [envKey, label, sensitive, type]
+      properties:
+        envKey:
+          type: string
+          description: Environment variable name (e.g. HETZNER_API_TOKEN)
+        label:
+          type: string
+          description: Human-readable field label for the admin UI
+        sensitive:
+          type: boolean
+          description: When true, value is write-only in API responses
+        type:
+          type: string
+          enum: [string]
     ServerType:
       type: object
       description: Provider server type with specs and pricing (from GET .../providers/{providerId}/server-types).
@@ -3244,6 +3272,11 @@ components:
         disallowStatutoryWithdrawal:
           type: boolean
           description: When true, statutory withdrawal is blocked after provisioning (unprovisioned orders remain withdrawable).
+        providerDefaults:
+          type: object
+          additionalProperties:
+            type: string
+          description: Write-only platform credential overrides (e.g. HETZNER_API_TOKEN). Omit or leave values blank to use environment defaults.
     UpdateServiceTypeDto:
       type: object
       properties:
@@ -3260,6 +3293,11 @@ components:
         disallowStatutoryWithdrawal:
           type: boolean
           description: When true, statutory withdrawal is blocked after provisioning.
+        providerDefaults:
+          type: object
+          additionalProperties:
+            type: string
+          description: Write-only platform credential overrides. Empty values clear overrides on update.
     ServiceTypeResponse:
       type: object
       properties:
@@ -3271,6 +3309,11 @@ components:
         configSchema: { type: object }
         isActive: { type: boolean }
         disallowStatutoryWithdrawal: { type: boolean }
+        providerDefaultsConfigured:
+          type: object
+          additionalProperties:
+            type: boolean
+          description: Indicates which platform env overrides are configured (never returns secret values).
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     ServicePlanOrderingHighlight:

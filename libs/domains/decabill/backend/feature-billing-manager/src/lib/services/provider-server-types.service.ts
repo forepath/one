@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
 
 import { ServerTypeDto } from '../dto/server-type.dto';
+import { resolveProviderApiToken } from '../utils/provider-env-defaults.utils';
 
 const HETZNER_API_BASE = 'https://api.hetzner.cloud/v1';
 const DIGITALOCEAN_API_BASE = 'https://api.digitalocean.com/v2';
@@ -39,20 +40,20 @@ interface DigitalOceanSize {
  */
 @Injectable()
 export class ProviderServerTypesService {
-  async getServerTypes(providerId: string): Promise<ServerTypeDto[]> {
+  async getServerTypes(providerId: string, providerDefaults?: Record<string, string>): Promise<ServerTypeDto[]> {
     if (providerId === 'hetzner') {
-      return this.getHetznerServerTypes();
+      return this.getHetznerServerTypes(providerDefaults);
     }
 
     if (providerId === 'digital-ocean') {
-      return this.getDigitaloceanServerTypes();
+      return this.getDigitaloceanServerTypes(providerDefaults);
     }
 
     return [];
   }
 
-  private async getHetznerServerTypes(): Promise<ServerTypeDto[]> {
-    const apiToken = process.env.HETZNER_API_TOKEN;
+  private async getHetznerServerTypes(providerDefaults?: Record<string, string>): Promise<ServerTypeDto[]> {
+    const apiToken = resolveProviderApiToken('hetzner', providerDefaults);
 
     if (!apiToken) {
       throw new BadRequestException('HETZNER_API_TOKEN environment variable is not set');
@@ -87,8 +88,8 @@ export class ProviderServerTypesService {
     }
   }
 
-  private async getDigitaloceanServerTypes(): Promise<ServerTypeDto[]> {
-    const apiToken = process.env.DIGITALOCEAN_API_TOKEN;
+  private async getDigitaloceanServerTypes(providerDefaults?: Record<string, string>): Promise<ServerTypeDto[]> {
+    const apiToken = resolveProviderApiToken('digital-ocean', providerDefaults);
 
     if (!apiToken) {
       throw new BadRequestException('DIGITALOCEAN_API_TOKEN environment variable is not set');

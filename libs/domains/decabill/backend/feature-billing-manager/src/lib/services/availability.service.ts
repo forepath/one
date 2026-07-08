@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
 
 import { AvailabilitySnapshotsRepository } from '../repositories/availability-snapshots.repository';
+import { resolveProviderApiToken } from '../utils/provider-env-defaults.utils';
 
 export interface AvailabilityResult {
   isAvailable: boolean;
@@ -15,7 +16,12 @@ export class AvailabilityService {
 
   constructor(private readonly snapshotsRepository: AvailabilitySnapshotsRepository) {}
 
-  async checkAvailability(provider: string, region: string, serverType: string): Promise<AvailabilityResult> {
+  async checkAvailability(
+    provider: string,
+    region: string,
+    serverType: string,
+    providerDefaults?: Record<string, string>,
+  ): Promise<AvailabilityResult> {
     if (provider !== 'hetzner') {
       await this.snapshotsRepository.create({
         provider,
@@ -28,7 +34,11 @@ export class AvailabilityService {
       return { isAvailable: true };
     }
 
-    const { isAvailable, reason, alternatives, rawResponse } = await this.checkHetznerAvailability(region, serverType);
+    const { isAvailable, reason, alternatives, rawResponse } = await this.checkHetznerAvailability(
+      region,
+      serverType,
+      providerDefaults,
+    );
 
     await this.snapshotsRepository.create({
       provider,
@@ -41,8 +51,12 @@ export class AvailabilityService {
     return { isAvailable, reason, alternatives };
   }
 
-  private async checkHetznerAvailability(region: string, serverType: string) {
-    const apiToken = process.env.HETZNER_API_TOKEN;
+  private async checkHetznerAvailability(
+    region: string,
+    serverType: string,
+    providerDefaults?: Record<string, string>,
+  ) {
+    const apiToken = resolveProviderApiToken('hetzner', providerDefaults);
 
     if (!apiToken) {
       throw new BadRequestException('HETZNER_API_TOKEN environment variable is not set');

@@ -21,6 +21,7 @@ import {
   resolveProvisioningRegion,
   stripGeographyFromRequestedConfig,
 } from '../utils/provider-location.utils';
+import { getProvisioningCredentials, normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
 import { generateSshKeyPair } from '../utils/ssh-key.utils';
 
 import { AvailabilityService } from './availability.service';
@@ -134,7 +135,13 @@ export class SubscriptionService {
     const region = resolveProvisioningRegion(effectiveConfig, provider);
     const serverType =
       (effectiveConfig.serverType as string | undefined) ?? (provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11');
-    const availability = await this.availabilityService.checkAvailability(provider, region, serverType);
+    const providerDefaults = normalizeStoredProviderDefaults(serviceType.providerDefaults);
+    const availability = await this.availabilityService.checkAvailability(
+      provider,
+      region,
+      serverType,
+      providerDefaults,
+    );
 
     if (!availability.isAvailable) {
       if (autoBackorder) {
@@ -244,6 +251,7 @@ export class SubscriptionService {
 
     let hostname: string | null = null;
     let provisionedServerId: string | undefined;
+    const credentials = getProvisioningCredentials(provider, item.serviceType?.providerDefaults);
 
     try {
       hostname = await this.hostnameReservationService.reserveHostname(itemId);
@@ -260,24 +268,29 @@ export class SubscriptionService {
         customTemplate,
         resolvedCustomEnv,
       });
-      const provisioned = await this.provisioningService.provision(provider, {
-        name: hostname,
-        serverType,
-        location: region,
-        firewallId: effectiveConfig.firewallId as number | undefined,
-        userData,
-      });
+      const provisioned = await this.provisioningService.provision(
+        provider,
+        {
+          name: hostname,
+          serverType,
+          location: region,
+          firewallId: effectiveConfig.firewallId as number | undefined,
+          userData,
+        },
+        credentials,
+      );
 
       provisionedServerId = provisioned?.serverId;
 
       if (provisioned?.serverId) {
         await this.subscriptionItemsRepository.updateProviderReference(itemId, provisioned.serverId);
         await this.subscriptionItemsRepository.updateProvisioningStatus(itemId, 'active');
-        const serverInfo = await this.provisioningService.getServerInfo(provider, provisioned.serverId);
+        const serverInfo = await this.provisioningService.getServerInfo(provider, provisioned.serverId, credentials);
         const publicIp = await this.provisioningService.ensurePublicIpForDns(
           provider,
           provisioned.serverId,
           serverInfo,
+          credentials,
         );
 
         if (publicIp) {

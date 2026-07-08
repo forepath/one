@@ -195,6 +195,29 @@ describe('HetznerProvisioningService', () => {
       expect(mockedAxios.get).not.toHaveBeenCalled();
     });
 
+    it('uses per-call apiToken override when global env is unset', async () => {
+      delete process.env.HETZNER_API_TOKEN;
+      mockedAxios.get.mockResolvedValue({
+        data: {
+          server: {
+            id: 12345,
+            name: 'test-server',
+            status: 'running',
+            public_net: { ipv4: { ip: '1.2.3.4' } },
+          },
+        },
+      });
+
+      const service = new HetznerProvisioningService();
+
+      await service.getServerInfo('12345', 'override-token');
+
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        'https://api.hetzner.cloud/v1/servers/12345',
+        expect.objectContaining({ headers: { Authorization: 'Bearer override-token' } }),
+      );
+    });
+
     it('throws when server not found (404)', async () => {
       const notFoundError = Object.assign(new Error('Request failed with status code 404'), {
         response: { status: 404 },

@@ -10,10 +10,18 @@ export type BackorderStatus = 'pending' | 'retrying' | 'fulfilled' | 'cancelled'
 export type UserRole = 'user' | 'admin';
 
 // Provider details (GET /service-types/providers)
+export interface ProviderEnvDefaultField {
+  envKey: string;
+  label: string;
+  sensitive: boolean;
+  type: 'string';
+}
+
 export interface ProviderDetail {
   id: string;
   displayName: string;
   configSchema?: Record<string, unknown>;
+  envDefaultFields?: ProviderEnvDefaultField[];
 }
 
 // Provider server type with specs and pricing (GET .../providers/:id/server-types)
@@ -61,6 +69,7 @@ export interface ServiceTypeResponse {
   configSchema: Record<string, unknown>;
   disallowStatutoryWithdrawal: boolean;
   isActive: boolean;
+  providerDefaultsConfigured?: Record<string, boolean>;
   createdAt: string;
   updatedAt: string;
 }
@@ -73,6 +82,7 @@ export interface CreateServiceTypeDto {
   configSchema?: Record<string, unknown>;
   disallowStatutoryWithdrawal?: boolean;
   isActive?: boolean;
+  providerDefaults?: Record<string, string>;
 }
 
 export interface UpdateServiceTypeDto {
@@ -82,6 +92,7 @@ export interface UpdateServiceTypeDto {
   configSchema?: Record<string, unknown>;
   disallowStatutoryWithdrawal?: boolean;
   isActive?: boolean;
+  providerDefaults?: Record<string, string>;
 }
 
 // CloudInit Configs

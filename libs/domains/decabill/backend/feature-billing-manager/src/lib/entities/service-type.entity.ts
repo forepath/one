@@ -1,3 +1,4 @@
+import { createJsonAes256GcmTransformer } from '@forepath/shared/backend';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 
 @Entity('billing_service_types')
@@ -29,6 +30,15 @@ export class ServiceTypeEntity {
 
   @Column({ type: 'boolean', name: 'disallow_statutory_withdrawal', default: false })
   disallowStatutoryWithdrawal!: boolean;
+
+  /** Platform provider env overrides (e.g. API tokens); encrypted at rest via AES-256-GCM. */
+  @Column({
+    type: 'text',
+    name: 'provider_defaults',
+    nullable: true,
+    transformer: createJsonAes256GcmTransformer(),
+  })
+  providerDefaults!: Record<string, string>;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

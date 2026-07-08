@@ -129,13 +129,15 @@ Per-tenant exports are scoped to the request **`X-Tenant`**. Unified exports agg
 
 ### Provisioning and DNS
 
-| Variable                 | Description                           |
-| ------------------------ | ------------------------------------- |
-| `HETZNER_API_TOKEN`      | Hetzner Cloud API token               |
-| `DIGITALOCEAN_API_TOKEN` | DigitalOcean API token                |
-| `CLOUDFLARE_API_TOKEN`   | Cloudflare API token                  |
-| `CLOUDFLARE_ZONE_ID`     | Cloudflare zone for DNS records       |
-| `DNS_BASE_DOMAIN`        | Base domain for provisioned hostnames |
+| Variable                 | Description                                             |
+| ------------------------ | ------------------------------------------------------- |
+| `HETZNER_API_TOKEN`      | Hetzner Cloud API token (default for all service types) |
+| `DIGITALOCEAN_API_TOKEN` | DigitalOcean API token (default for all service types)  |
+| `CLOUDFLARE_API_TOKEN`   | Cloudflare API token                                    |
+| `CLOUDFLARE_ZONE_ID`     | Cloudflare zone for DNS records                         |
+| `DNS_BASE_DOMAIN`        | Base domain for provisioned hostnames                   |
+
+Per-service-type overrides for `HETZNER_API_TOKEN` and `DIGITALOCEAN_API_TOKEN` can be configured in the billing console under **Administration → Service Providers → Provider defaults**. Overrides are stored encrypted in the database using `ENCRYPTION_KEY` (AES-256-GCM). When unset for a service type, the global environment variables above apply.
 
 Provisioning SSH posture is documented under accepted risk **[DR-001](../security/accepted-risks.md#dr-001--provisioning-ssh-cloud-init-templates)**.
 

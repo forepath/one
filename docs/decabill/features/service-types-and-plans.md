@@ -47,6 +47,26 @@ Service types may set **`disallowStatutoryWithdrawal`** (admin checkbox in the b
 - Unprovisioned orders remain withdrawable.
 - Public and admin plan responses include `withdrawalPolicy.allowedAfterProvisioning: false` for checkout copy.
 
+### Provider defaults (platform credentials)
+
+Each service type can override **platform** environment variables used by the billing manager when calling Hetzner or DigitalOcean APIs (create/delete/start/stop servers, availability checks, admin server-type listing). This is separate from **Product defaults** on service plans (`providerConfigDefaults`), which configure values baked into customer VM cloud-init templates (including nested `hetznerApiToken` / `digitaloceanApiToken` for agent nested provisioning).
+
+| Layer             | Where configured                        | Examples                                      | Purpose                                                |
+| ----------------- | --------------------------------------- | --------------------------------------------- | ------------------------------------------------------ |
+| Provider defaults | Service type (`POST /service-types`)    | `HETZNER_API_TOKEN`, `DIGITALOCEAN_API_TOKEN` | Decabill's own API calls to provision/manage servers   |
+| Product defaults  | Service plan (`providerConfigDefaults`) | `region`, `serverType`, nested VM tokens      | Config injected into customer instances via cloud-init |
+
+Admin UI: collapsed **Provider defaults** section on `/administration/service-types` (mirrors **Product defaults** on service plans). Leave fields blank to use global environment variables.
+
+API behavior:
+
+- `GET /service-types/providers` includes `envDefaultFields` per provider (field metadata for the admin UI).
+- Write-only `providerDefaults` on create/update; responses expose `providerDefaultsConfigured` flags only (never raw secrets).
+- Overrides are stored encrypted at rest (AES-256-GCM via `ENCRYPTION_KEY`, same as other billing secrets).
+- Resolution: non-empty stored value wins; otherwise `process.env` fallback (backwards compatible).
+
+`GET /service-types/providers/{providerId}/server-types?serviceTypeId={uuid}` uses that service type's credentials when validating server types against a custom token.
+
 ### Server Types
 
 `GET /service-types/providers/{providerId}/server-types` returns server types with id, name, specs (cores, memory, disk), `priceMonthly`, and `priceHourly`. Requires the provider API token in the billing manager environment.

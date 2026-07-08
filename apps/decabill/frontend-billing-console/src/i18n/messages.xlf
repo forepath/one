@@ -1079,6 +1079,21 @@
       <trans-unit id="featureServiceTypes-disallowStatutoryWithdrawal" datatype="html">
         <source>Disallow statutory withdrawal after provisioning</source>
         </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaults" datatype="html">
+        <source>Provider defaults</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-showProviderDefaults" datatype="html">
+        <source>Show</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-hideProviderDefaults" datatype="html">
+        <source>Hide</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaultsHelp" datatype="html">
+        <source>Overrides platform environment variables for this service type. Leave blank to use the environment default.</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaultEnvPlaceholder" datatype="html">
+        <source>Using environment default</source>
+        </trans-unit>
       <trans-unit id="featureServiceTypes-close" datatype="html">
         <source> Close </source>
         </trans-unit>

@@ -16,14 +16,23 @@ export class HetznerProvisioningService {
     }
   }
 
-  async provisionServer(config: {
-    name: string;
-    serverType: string;
-    location: string;
-    firewallId?: number;
-    userData: string;
-  }) {
-    if (!this.apiToken) {
+  private resolveApiToken(apiToken?: string): string {
+    return apiToken?.trim() || this.apiToken;
+  }
+
+  async provisionServer(
+    config: {
+      name: string;
+      serverType: string;
+      location: string;
+      firewallId?: number;
+      userData: string;
+    },
+    apiToken?: string,
+  ) {
+    const token = this.resolveApiToken(apiToken);
+
+    if (!token) {
       throw new BadRequestException('HETZNER_API_TOKEN environment variable is not set');
     }
 
@@ -38,7 +47,7 @@ export class HetznerProvisioningService {
           user_data: config.userData,
         },
         {
-          headers: { Authorization: `Bearer ${this.apiToken}` },
+          headers: { Authorization: `Bearer ${token}` },
         },
       );
       const serverId = response.data?.server?.id as number | undefined;
@@ -51,7 +60,7 @@ export class HetznerProvisioningService {
         await axios.post(
           `https://api.hetzner.cloud/v1/firewalls/${config.firewallId}/actions/attach_to_server`,
           { server: serverId },
-          { headers: { Authorization: `Bearer ${this.apiToken}` } },
+          { headers: { Authorization: `Bearer ${token}` } },
         );
       }
 
@@ -64,8 +73,10 @@ export class HetznerProvisioningService {
     }
   }
 
-  async deprovisionServer(serverId: string): Promise<void> {
-    if (!this.apiToken) {
+  async deprovisionServer(serverId: string, apiToken?: string): Promise<void> {
+    const token = this.resolveApiToken(apiToken);
+
+    if (!token) {
       this.logger.warn('HETZNER_API_TOKEN not set, skipping deprovisioning');
 
       return;
@@ -73,7 +84,7 @@ export class HetznerProvisioningService {
 
     try {
       await axios.delete(`https://api.hetzner.cloud/v1/servers/${serverId}`, {
-        headers: { Authorization: `Bearer ${this.apiToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
       this.logger.log(`Successfully deprovisioned Hetzner server ${serverId}`);
     } catch (error) {
@@ -89,15 +100,17 @@ export class HetznerProvisioningService {
    * @param serverId - The Hetzner server ID (from provider_reference)
    * @returns Provider-agnostic ServerInfo (reusable shape for other providers)
    */
-  async getServerInfo(serverId: string): Promise<ServerInfo> {
-    if (!this.apiToken) {
+  async getServerInfo(serverId: string, apiToken?: string): Promise<ServerInfo> {
+    const token = this.resolveApiToken(apiToken);
+
+    if (!token) {
       throw new BadRequestException('HETZNER_API_TOKEN environment variable is not set');
     }
 
     try {
       const response = await axios.get<{ server: HetznerServerResponse }>(
         `https://api.hetzner.cloud/v1/servers/${serverId}`,
-        { headers: { Authorization: `Bearer ${this.apiToken}` } },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       const server = response.data?.server;
 
@@ -132,8 +145,10 @@ export class HetznerProvisioningService {
     }
   }
 
-  async startServer(serverId: string): Promise<void> {
-    if (!this.apiToken) {
+  async startServer(serverId: string, apiToken?: string): Promise<void> {
+    const token = this.resolveApiToken(apiToken);
+
+    if (!token) {
       throw new BadRequestException('HETZNER_API_TOKEN environment variable is not set');
     }
 
@@ -141,7 +156,7 @@ export class HetznerProvisioningService {
       await axios.post(
         `https://api.hetzner.cloud/v1/servers/${serverId}/actions/poweron`,
         {},
-        { headers: { Authorization: `Bearer ${this.apiToken}` } },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       this.logger.log(`Started Hetzner server ${serverId}`);
     } catch (error) {
@@ -152,8 +167,10 @@ export class HetznerProvisioningService {
     }
   }
 
-  async stopServer(serverId: string): Promise<void> {
-    if (!this.apiToken) {
+  async stopServer(serverId: string, apiToken?: string): Promise<void> {
+    const token = this.resolveApiToken(apiToken);
+
+    if (!token) {
       throw new BadRequestException('HETZNER_API_TOKEN environment variable is not set');
     }
 
@@ -161,7 +178,7 @@ export class HetznerProvisioningService {
       await axios.post(
         `https://api.hetzner.cloud/v1/servers/${serverId}/actions/poweroff`,
         {},
-        { headers: { Authorization: `Bearer ${this.apiToken}` } },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       this.logger.log(`Stopped Hetzner server ${serverId}`);
     } catch (error) {
@@ -172,8 +189,10 @@ export class HetznerProvisioningService {
     }
   }
 
-  async restartServer(serverId: string): Promise<void> {
-    if (!this.apiToken) {
+  async restartServer(serverId: string, apiToken?: string): Promise<void> {
+    const token = this.resolveApiToken(apiToken);
+
+    if (!token) {
       throw new BadRequestException('HETZNER_API_TOKEN environment variable is not set');
     }
 
@@ -181,7 +200,7 @@ export class HetznerProvisioningService {
       await axios.post(
         `https://api.hetzner.cloud/v1/servers/${serverId}/actions/reboot`,
         {},
-        { headers: { Authorization: `Bearer ${this.apiToken}` } },
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       this.logger.log(`Restarted Hetzner server ${serverId}`);
     } catch (error) {

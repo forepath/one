@@ -274,18 +274,22 @@ describe('SubscriptionService', () => {
     const result = await service.createSubscription('user-1', 'plan-1');
 
     expect(result.id).toBe('sub-1');
-    expect(availabilityService.checkAvailability).toHaveBeenCalledWith('hetzner', 'fsn1', 'cx23');
+    expect(availabilityService.checkAvailability).toHaveBeenCalledWith('hetzner', 'fsn1', 'cx23', {});
 
     await provisionCreatedItem();
 
     expect(hostnameReservationService.reserveHostname).toHaveBeenCalledWith('item-1');
-    expect(provisioningService.provision).toHaveBeenCalledWith('hetzner', {
-      name: 'awesome-armadillo-abc12',
-      serverType: 'cx23',
-      location: 'fsn1',
-      firewallId: undefined,
-      userData: 'mock-user-data',
-    });
+    expect(provisioningService.provision).toHaveBeenCalledWith(
+      'hetzner',
+      {
+        name: 'awesome-armadillo-abc12',
+        serverType: 'cx23',
+        location: 'fsn1',
+        firewallId: undefined,
+        userData: 'mock-user-data',
+      },
+      {},
+    );
     expect(cloudflareDnsService.createARecord).toHaveBeenCalledWith('awesome-armadillo-abc12', '1.2.3.4');
     expect(itemsRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -363,6 +367,7 @@ describe('SubscriptionService', () => {
     expect(provisioningService.provision).toHaveBeenCalledWith(
       'hetzner',
       expect.objectContaining({ userData: 'mock-user-data' }),
+      {},
     );
   });
 
@@ -677,7 +682,7 @@ describe('SubscriptionService', () => {
       serverType: 's-1vcpu-1gb',
     });
 
-    expect(availabilityService.checkAvailability).toHaveBeenCalledWith('digital-ocean', 'fra1', 's-1vcpu-1gb');
+    expect(availabilityService.checkAvailability).toHaveBeenCalledWith('digital-ocean', 'fra1', 's-1vcpu-1gb', {});
 
     await provisionCreatedItem({ provider: 'digital-ocean' });
 
@@ -688,6 +693,7 @@ describe('SubscriptionService', () => {
         serverType: 's-1vcpu-1gb',
         location: 'fra1',
       }),
+      {},
     );
     expect(itemsRepository.updateProviderReference).toHaveBeenCalledWith('item-1', 'do-srv-1');
     expect(provisioningService.ensurePublicIpForDns).toHaveBeenCalled();
@@ -772,7 +778,7 @@ describe('SubscriptionService', () => {
       authenticationMethod: 'api-key',
     });
 
-    expect(availabilityService.checkAvailability).toHaveBeenCalledWith('hetzner', 'fsn1', 'cx23');
+    expect(availabilityService.checkAvailability).toHaveBeenCalledWith('hetzner', 'fsn1', 'cx23', {});
   });
 
   it('applies customer region override when allowCustomerLocationSelection is true', async () => {
@@ -816,7 +822,7 @@ describe('SubscriptionService', () => {
       authenticationMethod: 'api-key',
     });
 
-    expect(availabilityService.checkAvailability).toHaveBeenCalledWith('hetzner', 'nbg1', 'cx23');
+    expect(availabilityService.checkAvailability).toHaveBeenCalledWith('hetzner', 'nbg1', 'cx23', {});
   });
 
   it('throws BadRequestException when customer profile is null', async () => {
