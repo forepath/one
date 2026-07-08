@@ -84,6 +84,56 @@ describe('PublicServicePlanOfferingsController', () => {
     });
   });
 
+  it('includes totalGrossFrom when customer server type selection lowers the price', async () => {
+    const selectablePlan = {
+      ...planRow,
+      allowCustomerServerTypeSelection: true,
+      allowedServerTypes: ['cx11', 'cpx11'],
+      providerConfigDefaults: { serverType: 'cpx11' },
+      serviceType: { name: 'Agent Hosting', provider: 'hetzner', providerDefaults: {} },
+    } as unknown as ServicePlanEntity;
+    const getServerTypes = jest.fn().mockResolvedValue([
+      { id: 'cx11', priceMonthly: 4.15 },
+      { id: 'cpx11', priceMonthly: 6.49 },
+    ]);
+
+    findActiveWithServiceType.mockResolvedValue([selectablePlan]);
+    calculate.mockImplementation((row: ServicePlanEntity, baseOverride?: number) => {
+      const base = baseOverride ?? 12;
+
+      return {
+        basePrice: base,
+        marginPercent: 0,
+        marginFixed: 0,
+        totalPrice: base,
+      };
+    });
+
+    const moduleRef = await Test.createTestingModule({
+      controllers: [PublicServicePlanOfferingsController],
+      providers: [
+        {
+          provide: ServicePlansRepository,
+          useValue: { findActiveWithServiceType, findAllActiveWithServiceType },
+        },
+        { provide: PricingService, useValue: { calculate } },
+        TaxRateConfigService,
+        TaxCalculationService,
+        { provide: ProviderServerTypesService, useValue: { getServerTypes } },
+        { provide: WithdrawalPolicyService, useValue: new WithdrawalPolicyService() },
+      ],
+    }).compile();
+    const localController = moduleRef.get(PublicServicePlanOfferingsController);
+
+    const result = await localController.list(undefined, undefined, undefined);
+
+    expect(getServerTypes).toHaveBeenCalledWith('hetzner', {});
+    expect(result[0].totalPrice).toBe(12);
+    expect(result[0].totalGross).toBeCloseTo(14.28, 2);
+    expect(result[0].totalPriceFrom).toBeCloseTo(4.15, 2);
+    expect(result[0].totalGrossFrom).toBeCloseTo(4.94, 2);
+  });
+
   it('does not expose internal pricing fields on response objects', async () => {
     const result = await controller.list(10, 0, undefined);
     const json = JSON.parse(JSON.stringify(result[0]));
@@ -121,12 +171,12 @@ describe('PublicServicePlanOfferingsController', () => {
       ...planRow,
       id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
       name: 'Basic',
-    } as ServicePlanEntity;
+    } as unknown as ServicePlanEntity;
     const planExpensive = {
       ...planRow,
       id: 'bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb',
       name: 'Enterprise',
-    } as ServicePlanEntity;
+    } as unknown as ServicePlanEntity;
 
     it('returns the plan with the lowest totalGross', async () => {
       findAllActiveWithServiceType.mockResolvedValue([planExpensive, planCheap]);
@@ -142,6 +192,53 @@ describe('PublicServicePlanOfferingsController', () => {
       expect(findAllActiveWithServiceType).toHaveBeenCalledWith(undefined);
       expect(result.id).toBe(planCheap.id);
       expect(result.totalPrice).toBe(9.99);
+    });
+
+    it('prefers totalGrossFrom over totalGross when comparing cheapest offering', async () => {
+      const expensiveDefault = {
+        ...planRow,
+        id: 'bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb',
+        name: 'Expensive default',
+        allowCustomerServerTypeSelection: false,
+      } as unknown as ServicePlanEntity;
+      const cheaperFrom = {
+        ...planRow,
+        id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa',
+        name: 'Selectable cheaper',
+        allowCustomerServerTypeSelection: true,
+        allowedServerTypes: ['cx11'],
+        providerConfigDefaults: { serverType: 'cpx11' },
+        serviceType: { name: 'Agent Hosting', provider: 'hetzner', providerDefaults: {} },
+      } as unknown as ServicePlanEntity;
+      const getServerTypes = jest.fn().mockResolvedValue([{ id: 'cx11', priceMonthly: 3 }]);
+
+      findAllActiveWithServiceType.mockResolvedValue([expensiveDefault, cheaperFrom]);
+      calculate.mockImplementation((row: ServicePlanEntity, baseOverride?: number) => {
+        const totalPrice = baseOverride ?? (row.name === 'Expensive default' ? 20 : 15);
+
+        return { basePrice: totalPrice, marginPercent: 0, marginFixed: 0, totalPrice };
+      });
+
+      const moduleRef = await Test.createTestingModule({
+        controllers: [PublicServicePlanOfferingsController],
+        providers: [
+          {
+            provide: ServicePlansRepository,
+            useValue: { findActiveWithServiceType, findAllActiveWithServiceType },
+          },
+          { provide: PricingService, useValue: { calculate } },
+          TaxRateConfigService,
+          TaxCalculationService,
+          { provide: ProviderServerTypesService, useValue: { getServerTypes } },
+          { provide: WithdrawalPolicyService, useValue: new WithdrawalPolicyService() },
+        ],
+      }).compile();
+      const localController = moduleRef.get(PublicServicePlanOfferingsController);
+
+      const result = await localController.getCheapest(undefined);
+
+      expect(result.id).toBe(cheaperFrom.id);
+      expect(result.totalGrossFrom).toBeCloseTo(3.57, 2);
     });
 
     it('breaks ties with lexicographically smaller plan id', async () => {

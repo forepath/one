@@ -271,4 +271,29 @@ describe('WithdrawalRefundService', () => {
       expect(providerServerTypesService.getServerTypes).toHaveBeenCalled();
     });
   });
+
+  it('uses reduced plan tax category when computing refund gross', async () => {
+    const periodStart = new Date();
+    periodStart.setUTCDate(periodStart.getUTCDate() - 10);
+    const periodEnd = new Date();
+    periodEnd.setUTCDate(periodEnd.getUTCDate() + 20);
+
+    servicePlansRepository.findByIdOrThrow.mockResolvedValue({
+      ...plan,
+      taxCategory: 'reduced',
+    });
+    subscriptionItemsRepository.findBySubscription.mockResolvedValue([]);
+    taxCalculationService.computeLines.mockReturnValue({ totalGross: 5.35 });
+
+    const result = await service.estimateRefundGross({
+      ...subscription,
+      currentPeriodStart: periodStart,
+      currentPeriodEnd: periodEnd,
+    } as never);
+
+    expect(taxCalculationService.computeLines).toHaveBeenCalledWith([
+      expect.objectContaining({ taxCategory: 'reduced' }),
+    ]);
+    expect(result).toBe(5.35);
+  });
 });

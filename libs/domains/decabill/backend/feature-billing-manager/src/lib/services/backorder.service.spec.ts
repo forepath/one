@@ -95,3 +95,61 @@ describe('BackorderService retry guard', () => {
     expect((provisioningService as { provision: jest.Mock }).provision).not.toHaveBeenCalled();
   });
 });
+
+describe('BackorderService server type validation', () => {
+  const backordersRepository = {
+    findByIdOrThrow: jest.fn(),
+    update: jest.fn(),
+  } as unknown as BackordersRepository;
+  const servicePlansRepository = {
+    findByIdOrThrow: jest.fn(),
+  } as unknown as never;
+  const serviceTypesRepository = {
+    findByIdOrThrow: jest.fn(),
+  } as unknown as never;
+
+  const service = new BackorderService(
+    backordersRepository,
+    {} as never,
+    servicePlansRepository,
+    serviceTypesRepository,
+    {} as never,
+    {} as never,
+    {} as never,
+    {} as never,
+    {} as never,
+    {} as never,
+    {} as never,
+    {} as never,
+    {} as never,
+    {} as never,
+  );
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('rejects retry when customer server type is not in allowedServerTypes', async () => {
+    backordersRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
+      id: 'bo-1',
+      status: BackorderStatus.PENDING,
+      userId: 'user-1',
+      planId: 'plan-1',
+      requestedConfigSnapshot: { serverType: 'cx99' },
+    });
+    (servicePlansRepository as { findByIdOrThrow: jest.Mock }).findByIdOrThrow.mockResolvedValue({
+      id: 'plan-1',
+      serviceTypeId: 'st-1',
+      allowCustomerServerTypeSelection: true,
+      allowedServerTypes: ['cx11'],
+      providerConfigDefaults: {},
+    });
+    (serviceTypesRepository as { findByIdOrThrow: jest.Mock }).findByIdOrThrow.mockResolvedValue({
+      id: 'st-1',
+      provider: 'other',
+      configSchema: {},
+    });
+
+    await expect(service.retry('bo-1')).rejects.toBeInstanceOf(BadRequestException);
+  });
+});

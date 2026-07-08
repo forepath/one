@@ -30,6 +30,9 @@ import {
   loadServerInfo,
   loadServerInfoFailure,
   loadServerInfoSuccess,
+  loadLocations,
+  loadLocationsFailure,
+  loadLocationsSuccess,
   removeClientUser,
   removeClientUserFailure,
   removeClientUserSuccess,
@@ -48,6 +51,7 @@ import {
   loadClients$,
   loadClientsBatch$,
   loadServerInfo$,
+  loadLocations$,
   removeClientUser$,
   setActiveClient$,
   updateClient$,
@@ -97,6 +101,7 @@ describe('ClientsEffects', () => {
       updateClient: jest.fn(),
       deleteClient: jest.fn(),
       getServerInfo: jest.fn(),
+      getLocations: jest.fn(),
       getClientUsers: jest.fn(),
       addClientUser: jest.fn(),
       removeClientUser: jest.fn(),
@@ -656,6 +661,38 @@ describe('ClientsEffects', () => {
       clientsService.getClientUsers.mockReturnValue(throwError(() => error));
 
       loadClientUsers$(actions$, clientsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        done();
+      });
+    });
+  });
+
+  describe('loadLocations$', () => {
+    it('should return loadLocationsSuccess on success', (done) => {
+      const providerType = 'hetzner';
+      const locations = [{ id: 'fsn1', name: 'Falkenstein', country: 'DE' }];
+      const action = loadLocations({ providerType });
+      const outcome = loadLocationsSuccess({ providerType, locations });
+
+      actions$ = of(action);
+      clientsService.getLocations.mockReturnValue(of(locations));
+
+      loadLocations$(actions$, clientsService).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(clientsService.getLocations).toHaveBeenCalledWith(providerType);
+        done();
+      });
+    });
+
+    it('should return loadLocationsFailure on error', (done) => {
+      const action = loadLocations({ providerType: 'hetzner' });
+      const error = new Error('Load failed');
+      const outcome = loadLocationsFailure({ error: 'Load failed' });
+
+      actions$ = of(action);
+      clientsService.getLocations.mockReturnValue(throwError(() => error));
+
+      loadLocations$(actions$, clientsService).subscribe((result) => {
         expect(result).toEqual(outcome);
         done();
       });

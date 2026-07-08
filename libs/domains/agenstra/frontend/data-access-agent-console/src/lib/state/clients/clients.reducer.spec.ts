@@ -19,6 +19,9 @@ import {
   loadServerInfo,
   loadServerInfoFailure,
   loadServerInfoSuccess,
+  loadLocations,
+  loadLocationsFailure,
+  loadLocationsSuccess,
   removeClientUserSuccess,
   setActiveClient,
   setActiveClientFailure,
@@ -543,6 +546,44 @@ describe('clientsReducer', () => {
       const newState = clientsReducer(state, loadClientUsers({ clientId: 'client-1' }));
 
       expect(newState.loadingClientUsers['client-1']).toBe(true);
+    });
+  });
+
+  describe('loadLocations', () => {
+    it('should set loadingLocations to true for providerType', () => {
+      const state: ClientsState = { ...initialClientsState };
+      const newState = clientsReducer(state, loadLocations({ providerType: 'hetzner' }));
+
+      expect(newState.loadingLocations['hetzner']).toBe(true);
+      expect(newState.error).toBeNull();
+    });
+  });
+
+  describe('loadLocationsSuccess', () => {
+    it('should store locations and clear loading flag', () => {
+      const locations = [{ id: 'fsn1', name: 'Falkenstein', country: 'DE' }];
+      const state: ClientsState = {
+        ...initialClientsState,
+        loadingLocations: { hetzner: true },
+      };
+      const newState = clientsReducer(state, loadLocationsSuccess({ providerType: 'hetzner', locations }));
+
+      expect(newState.locations['hetzner']).toEqual(locations);
+      expect(newState.loadingLocations['hetzner']).toBe(false);
+    });
+  });
+
+  describe('loadLocationsFailure', () => {
+    it('should clear loading flags and set error', () => {
+      const state: ClientsState = {
+        ...initialClientsState,
+        loadingLocations: { hetzner: true, 'digital-ocean': true },
+      };
+      const newState = clientsReducer(state, loadLocationsFailure({ error: 'Load failed' }));
+
+      expect(newState.loadingLocations['hetzner']).toBe(false);
+      expect(newState.loadingLocations['digital-ocean']).toBe(false);
+      expect(newState.error).toBe('Load failed');
     });
   });
 

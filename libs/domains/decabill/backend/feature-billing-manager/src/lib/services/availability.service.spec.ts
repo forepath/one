@@ -151,4 +151,41 @@ describe('AvailabilityService', () => {
       }),
     );
   });
+
+  it('uses tenant providerDefaults token when env token is unset', async () => {
+    delete process.env.HETZNER_API_TOKEN;
+    const repository = { create: jest.fn().mockResolvedValue({}) } as any;
+    const service = new AvailabilityService(repository);
+
+    mockedAxios.get
+      .mockResolvedValueOnce({
+        data: {
+          server_types: [
+            {
+              id: 1,
+              name: 'cx23',
+              deprecated: false,
+              prices: [{ location: 'fsn1' }],
+            },
+          ],
+        },
+      } as any)
+      .mockResolvedValueOnce({
+        data: {
+          limits: {
+            max_servers: 10,
+            server_count: 1,
+          },
+        },
+      } as any);
+
+    await service.checkAvailability('hetzner', 'fsn1', 'cx23', { HETZNER_API_TOKEN: 'tenant-token' });
+
+    expect(mockedAxios.get).toHaveBeenCalledWith(
+      'https://api.hetzner.cloud/v1/server_types',
+      expect.objectContaining({
+        headers: { Authorization: 'Bearer tenant-token' },
+      }),
+    );
+  });
 });
