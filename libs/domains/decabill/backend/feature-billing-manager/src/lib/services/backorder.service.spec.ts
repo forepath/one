@@ -23,6 +23,9 @@ describe('BackorderService cancel', () => {
     {} as never,
     {} as never,
     {} as never,
+    {} as never,
+    {} as never,
+    {} as never,
   );
 
   beforeEach(() => {
@@ -68,6 +71,9 @@ describe('BackorderService retry guard', () => {
     {} as never,
     {} as never,
     provisioningService,
+    {} as never,
+    {} as never,
+    {} as never,
     {} as never,
     {} as never,
     {} as never,

@@ -934,8 +934,10 @@
                   <span class="text-muted" aria-hidden="true">…</span>
                 } @else {
                   @if (cheapestOffering(); as plan) {
-                    €{{ plan.totalPrice | number: '1.2-2'
-                    }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(plan) }}</span>
+                    @if (formatPublicOfferingPrice(plan); as price) {
+                      {{ price.prefix }}€{{ price.amount | number: '1.2-2'
+                      }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(plan) }}</span>
+                    }
                   } @else {
                     <span class="text-muted fs-6" i18n="@@featureDecabillHome-ecosystemCloudUnavailable"
                       >Contact us</span

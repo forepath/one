@@ -4,6 +4,16 @@ const INTEGRATED_SERVICES = new Set(['controller', 'manager']);
 
 export const DEFAULT_INTEGRATED_PROVISIONING_OPTION_KEYS = ['integrated:controller', 'integrated:manager'] as const;
 
+/** Display labels for integrated Agenstra stacks (match plan editor and provisioning API). */
+export const INTEGRATED_CONTROLLER_SERVICE_LABEL = 'Agenstra Controller';
+export const INTEGRATED_MANAGER_SERVICE_LABEL = 'Agenstra Manager';
+
+export type IntegratedProvisioningService = 'controller' | 'manager';
+
+export function integratedProvisioningServiceLabel(service: IntegratedProvisioningService): string {
+  return service === 'manager' ? INTEGRATED_MANAGER_SERVICE_LABEL : INTEGRATED_CONTROLLER_SERVICE_LABEL;
+}
+
 export function encodeProvisioningOptionKey(option: PlanProvisioningOption): string {
   if (option.type === 'integrated') {
     return `integrated:${option.service}`;

@@ -846,13 +846,13 @@
         <source>Open console</source>
         </trans-unit>
       <trans-unit id="featureOverview-managerService" datatype="html">
-        <source><x id="productName" equiv-text="productName"/> Manager</source>
+        <source>Agenstra Manager</source>
         </trans-unit>
       <trans-unit id="featureOverview-customService" datatype="html">
         <source>Custom application</source>
         </trans-unit>
       <trans-unit id="featureOverview-controllerService" datatype="html">
-        <source><x id="productName" equiv-text="productName"/> Controller</source>
+        <source>Agenstra Controller</source>
         </trans-unit>
       <trans-unit id="featureOverview-serverStatusOnline" datatype="html">
         <source>Online</source>
@@ -1198,6 +1198,9 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-price" datatype="html">
         <source>Price</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-loadingPrice" datatype="html">
+        <source>Loading price…</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-billingInterval" datatype="html">
         <source>Runtime</source>

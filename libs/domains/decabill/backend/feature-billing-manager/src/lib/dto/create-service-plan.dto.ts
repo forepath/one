@@ -91,4 +91,13 @@ export class CreateServicePlanDto {
   @IsOptional()
   @IsBoolean({ message: 'allowCustomerLocationSelection must be a boolean' })
   allowCustomerLocationSelection?: boolean;
+
+  @IsOptional()
+  @IsBoolean({ message: 'allowCustomerServerTypeSelection must be a boolean' })
+  allowCustomerServerTypeSelection?: boolean;
+
+  @IsOptional()
+  @IsArray({ message: 'allowedServerTypes must be an array' })
+  @IsString({ each: true, message: 'Each allowed server type must be a string' })
+  allowedServerTypes?: string[];
 }

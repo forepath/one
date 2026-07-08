@@ -13,8 +13,12 @@ export class PublicServicePlanOfferingDto {
   billingIntervalValue!: number;
   /** Customer-facing total (base + margin); margin breakdown is not exposed. */
   totalPrice!: number;
+  /** Lowest customer total across allowed server types when allowCustomerServerTypeSelection is true. */
+  totalPriceFrom?: number;
   orderingHighlights!: ServicePlanOrderingHighlight[];
   /** When true, checkout UIs may offer region/location selection for this plan. */
   allowCustomerLocationSelection!: boolean;
+  /** When true, checkout UIs may offer server type selection from allowed types. */
+  allowCustomerServerTypeSelection!: boolean;
   withdrawalPolicy!: WithdrawalPolicyDto;
 }

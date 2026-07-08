@@ -1119,16 +1119,16 @@
         <target>Konsole öffnen</target>
       </trans-unit>
       <trans-unit id="featureOverview-managerService" datatype="html">
-        <source><x id="productName" equiv-text="productName"/> Manager</source>
-        <target><x id="productName" equiv-text="productName"/> Manager</target>
+        <source>Agenstra Manager</source>
+        <target>Agenstra Manager</target>
       </trans-unit>
       <trans-unit id="featureOverview-customService" datatype="html">
         <source>Custom application</source>
         <target>Benutzerdefinierte Anwendung</target>
       </trans-unit>
       <trans-unit id="featureOverview-controllerService" datatype="html">
-        <source><x id="productName" equiv-text="productName"/> Controller</source>
-        <target><x id="productName" equiv-text="productName"/> Controller</target>
+        <source>Agenstra Controller</source>
+        <target>Agenstra Controller</target>
       </trans-unit>
       <trans-unit id="featureOverview-serverStatusOnline" datatype="html">
         <source>Online</source>
@@ -1581,6 +1581,10 @@
       <trans-unit id="featureSubscriptions-price" datatype="html">
         <source>Price</source>
         <target>Preis</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-loadingPrice" datatype="html">
+        <source>Loading price…</source>
+        <target>Preis wird geladen…</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-billingInterval" datatype="html">
         <source>Runtime</source>

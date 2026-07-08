@@ -19,8 +19,10 @@
               <span class="hero-lead" aria-hidden="true">…</span>
             } @else {
               @if (cheapestOffering(); as cloudPlan) {
-                €{{ cloudPlan.totalPrice | number: '1.2-2'
-                }}<span class="fs-6 hero-lead fw-normal" i18n="@@featurePortalCloud-heroPriceUnit">/month</span>
+                @if (formatPublicOfferingPrice(cloudPlan); as price) {
+                  {{ price.prefix }}€{{ price.amount | number: '1.2-2'
+                  }}<span class="fs-6 hero-lead fw-normal" i18n="@@featurePortalCloud-heroPriceUnit">/month</span>
+                }
               } @else {
                 <span class="hero-lead fs-6 fw-normal" i18n="@@featurePortalCloud-heroPriceUnavailable"
                   >Not available</span
@@ -220,8 +222,10 @@
                     }}</span>
                     <div class="card border-0 rounded-2 card-capability card-capability-primary p-3 my-3">
                       <div class="display-6 fw-bold text-primary mb-0">
-                        €{{ plan.totalPrice | number: '1.2-2'
-                        }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(plan) }}</span>
+                        @if (formatPublicOfferingPrice(plan); as price) {
+                          {{ price.prefix }}€{{ price.amount | number: '1.2-2'
+                          }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(plan) }}</span>
+                        }
                       </div>
                     </div>
                   </div>

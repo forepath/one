@@ -5,7 +5,11 @@ import { PublicServicePlanOfferingDto } from '../dto/public-service-plan-offerin
 import { ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { PricingService } from '../services/pricing.service';
+import { ProviderServerTypesService } from '../services/provider-server-types.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
+import { normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
+import { normalizeAllowedServerTypes } from '../utils/provider-server-type.utils';
+import { resolveLowestServerTypePriceMonthly } from '../utils/server-type-billing.utils';
 
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
@@ -17,6 +21,7 @@ export class PublicServicePlanOfferingsController {
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly pricingService: PricingService,
     private readonly withdrawalPolicyService: WithdrawalPolicyService,
+    private readonly providerServerTypesService: ProviderServerTypesService,
   ) {}
 
   /**
@@ -30,20 +35,21 @@ export class PublicServicePlanOfferingsController {
       throw new NotFoundException('No active service plan offerings');
     }
 
-    let bestRow = rows[0];
-    let bestPrice = this.pricingService.calculate(bestRow).totalPrice;
+    const offerings = await Promise.all(rows.map((row) => this.mapToOffering(row)));
+    let bestOffering = offerings[0];
+    let bestPrice = bestOffering.totalPriceFrom ?? bestOffering.totalPrice;
 
-    for (let i = 1; i < rows.length; i++) {
-      const row = rows[i];
-      const price = this.pricingService.calculate(row).totalPrice;
+    for (let i = 1; i < offerings.length; i++) {
+      const offering = offerings[i];
+      const price = offering.totalPriceFrom ?? offering.totalPrice;
 
-      if (price < bestPrice || (price === bestPrice && row.id < bestRow.id)) {
+      if (price < bestPrice || (price === bestPrice && offering.id < bestOffering.id)) {
         bestPrice = price;
-        bestRow = row;
+        bestOffering = offering;
       }
     }
 
-    return this.mapToOffering(bestRow);
+    return bestOffering;
   }
 
   @Get()
@@ -58,11 +64,35 @@ export class PublicServicePlanOfferingsController {
     const skip = Math.max(Number.isFinite(rawOffset) ? rawOffset : 0, 0);
     const rows = await this.servicePlansRepository.findActiveWithServiceType(take, skip, serviceTypeId);
 
-    return rows.map((row) => this.mapToOffering(row));
+    return Promise.all(rows.map((row) => this.mapToOffering(row)));
   }
 
-  private mapToOffering(row: ServicePlanEntity): PublicServicePlanOfferingDto {
+  private async mapToOffering(row: ServicePlanEntity): Promise<PublicServicePlanOfferingDto> {
     const totalPrice = this.pricingService.calculate(row).totalPrice;
+    const allowCustomerServerTypeSelection = row.allowCustomerServerTypeSelection === true;
+    const allowedServerTypes = normalizeAllowedServerTypes(row.allowedServerTypes);
+    let totalPriceFrom: number | undefined;
+
+    if (allowCustomerServerTypeSelection && allowedServerTypes.length > 0) {
+      const provider = row.serviceType?.provider;
+      const providerDefaults = normalizeStoredProviderDefaults(row.serviceType?.providerDefaults);
+      const lowestBase = await resolveLowestServerTypePriceMonthly(
+        this.providerServerTypesService,
+        provider,
+        allowedServerTypes,
+        providerDefaults,
+      );
+
+      if (lowestBase != null) {
+        const fromPricing = this.pricingService.calculate(row, lowestBase);
+
+        totalPriceFrom = fromPricing.totalPrice;
+
+        if (totalPriceFrom >= totalPrice) {
+          totalPriceFrom = undefined;
+        }
+      }
+    }
 
     return {
       id: row.id,
@@ -73,8 +103,10 @@ export class PublicServicePlanOfferingsController {
       billingIntervalType: row.billingIntervalType,
       billingIntervalValue: row.billingIntervalValue,
       totalPrice,
+      ...(totalPriceFrom != null ? { totalPriceFrom } : {}),
       orderingHighlights: row.orderingHighlights ?? [],
       allowCustomerLocationSelection: row.allowCustomerLocationSelection === true,
+      allowCustomerServerTypeSelection,
       withdrawalPolicy: this.withdrawalPolicyService.buildPolicyInfo({
         disallowStatutoryWithdrawal: row.serviceType?.disallowStatutoryWithdrawal ?? false,
       }),

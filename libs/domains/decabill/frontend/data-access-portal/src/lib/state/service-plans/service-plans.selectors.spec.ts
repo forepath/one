@@ -28,6 +28,7 @@ describe('Portal Service Plans Selectors', () => {
     billingIntervalValue: 1,
     totalPrice: 99,
     orderingHighlights: [],
+    allowCustomerServerTypeSelection: false,
     withdrawalPolicy: {
       periodDays: 14,
       allowedAfterProvisioning: true,
@@ -45,6 +46,7 @@ describe('Portal Service Plans Selectors', () => {
     billingIntervalValue: 1,
     totalPrice: 199,
     orderingHighlights: [],
+    allowCustomerServerTypeSelection: false,
     withdrawalPolicy: {
       periodDays: 14,
       allowedAfterProvisioning: true,

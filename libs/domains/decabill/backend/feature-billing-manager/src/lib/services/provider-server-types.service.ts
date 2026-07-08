@@ -7,6 +7,16 @@ import { resolveProviderApiToken } from '../utils/provider-env-defaults.utils';
 const HETZNER_API_BASE = 'https://api.hetzner.cloud/v1';
 const DIGITALOCEAN_API_BASE = 'https://api.digitalocean.com/v2';
 
+function parseProviderPrice(value: number | string | null | undefined): number | undefined {
+  if (value == null) {
+    return undefined;
+  }
+
+  const parsed = typeof value === 'number' ? value : Number(value);
+
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 interface HetznerServerType {
   id: number;
   name: string;
@@ -76,8 +86,8 @@ export class ProviderServerTypesService {
             cores: st.cores,
             memory: st.memory,
             disk: st.disk,
-            priceMonthly: priceFsn1?.price_monthly?.gross,
-            priceHourly: priceFsn1?.price_hourly?.gross,
+            priceMonthly: parseProviderPrice(priceFsn1?.price_monthly?.gross),
+            priceHourly: parseProviderPrice(priceFsn1?.price_hourly?.gross),
             description: st.description,
           };
         });
@@ -109,8 +119,8 @@ export class ProviderServerTypesService {
           cores: size.vcpus,
           memory: size.memory / 1024,
           disk: size.disk,
-          priceMonthly: size.price_monthly,
-          priceHourly: size.price_hourly,
+          priceMonthly: parseProviderPrice(size.price_monthly),
+          priceHourly: parseProviderPrice(size.price_hourly),
           description: size.description || size.slug,
         }));
     } catch (error) {

@@ -14,10 +14,12 @@ import { UsageRecordsRepository } from '../repositories/usage-records.repository
 import { groupOpenPositionsBySubscription } from '../utils/open-position-grouping.util';
 import { calculateProratedAmount } from '../utils/billing-proration.util';
 import { getEarliestProvisionedAt } from '../utils/provisioned-billing.util';
+import { resolveSubscriptionBillingBaseOverride } from '../utils/server-type-billing.utils';
 
 import { BillingScheduleService } from './billing-schedule.service';
 import { InvoiceService } from './invoice.service';
 import { PricingService } from './pricing.service';
+import { ProviderServerTypesService } from './provider-server-types.service';
 
 interface InvoiceCreationOptions {
   billUntil?: Date;
@@ -38,6 +40,7 @@ export class InvoiceCreationService {
     private readonly openPositionsRepository: OpenPositionsRepository,
     private readonly invoicesRepository: InvoicesRepository,
     private readonly subscriptionItemsRepository: SubscriptionItemsRepository,
+    private readonly providerServerTypesService: ProviderServerTypesService,
   ) {}
 
   async createInvoice(subscriptionId: string, userId: string, description?: string, options?: InvoiceCreationOptions) {
@@ -48,7 +51,7 @@ export class InvoiceCreationService {
     }
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
-    const pricing = this.pricingService.calculate(plan);
+    const pricing = await this.resolveSubscriptionPricing(subscriptionId, plan);
     const usage = await this.usageRecordsRepository.findLatestForSubscription(subscriptionId);
     const usageCost = usage ? this.extractUsageCost(usage.usagePayload) : 0;
     const billUntil = options?.billUntil ?? new Date();
@@ -159,7 +162,7 @@ export class InvoiceCreationService {
     }
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
-    const pricing = this.pricingService.calculate(plan);
+    const pricing = await this.resolveSubscriptionPricing(position.subscriptionId, plan);
     const usage = await this.usageRecordsRepository.findLatestForSubscription(position.subscriptionId);
     const usageCost = usage ? this.extractUsageCost(usage.usagePayload) : 0;
     const baseAmount = await this.calculateBaseAmountSinceLastBilling(
@@ -265,5 +268,12 @@ export class InvoiceCreationService {
     }
 
     return calculateProratedAmount(plan, fullPeriodPrice, lastBillingAt, effectiveUntil, this.billingScheduleService);
+  }
+
+  private async resolveSubscriptionPricing(subscriptionId: string, plan: ServicePlanEntity) {
+    const items = await this.subscriptionItemsRepository.findBySubscription(subscriptionId);
+    const basePriceOverride = await resolveSubscriptionBillingBaseOverride(items, this.providerServerTypesService);
+
+    return this.pricingService.calculate(plan, basePriceOverride);
   }
 }

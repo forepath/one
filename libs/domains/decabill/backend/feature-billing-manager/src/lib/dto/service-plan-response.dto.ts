@@ -20,6 +20,10 @@ export class ServicePlanResponseDto {
   orderingHighlights!: ServicePlanOrderingHighlight[];
   /** When true, customers may override region/location in POST /subscriptions requestedConfig if the schema allows. */
   allowCustomerLocationSelection!: boolean;
+  /** When true, customers may choose serverType from allowedServerTypes at checkout. */
+  allowCustomerServerTypeSelection!: boolean;
+  /** Server type ids customers may select when allowCustomerServerTypeSelection is true. */
+  allowedServerTypes!: string[];
   withdrawalPolicy!: WithdrawalPolicyDto;
   isActive!: boolean;
   createdAt!: Date;

@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import type { Environment } from '@forepath/shared/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import type {
   CreateServiceTypeDto,
@@ -13,6 +14,7 @@ import type {
   ServiceTypeResponse,
   UpdateServiceTypeDto,
 } from '../types/billing.types';
+import { normalizeProviderServerTypes } from '../utils/server-type-list.utils';
 
 @Injectable({
   providedIn: 'root',
@@ -39,10 +41,18 @@ export class ServiceTypesService {
    * Get server types with specs and pricing for a provider (e.g. hetzner).
    * Used for server type dropdown and to auto-set plan base price when configSchema.basePriceFromField is set.
    */
-  getProviderServerTypes(providerId: string): Observable<ServerType[]> {
-    return this.http.get<ServerType[]>(
-      `${this.apiUrl}/service-types/providers/${encodeURIComponent(providerId)}/server-types`,
-    );
+  getProviderServerTypes(providerId: string, serviceTypeId?: string): Observable<ServerType[]> {
+    let params = new HttpParams();
+
+    if (serviceTypeId?.trim()) {
+      params = params.set('serviceTypeId', serviceTypeId);
+    }
+
+    return this.http
+      .get<unknown>(`${this.apiUrl}/service-types/providers/${encodeURIComponent(providerId)}/server-types`, {
+        params,
+      })
+      .pipe(map((body) => normalizeProviderServerTypes(body)));
   }
 
   /**

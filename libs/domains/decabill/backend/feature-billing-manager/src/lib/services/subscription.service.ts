@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
 import type { SubscriptionResponseDto } from '../dto/subscription-response.dto';
 import type { WithdrawalEligibilityDto, WithdrawalResultDto } from '../dto/withdrawal-policy.dto';
-import { BillingIntervalType } from '../entities/service-plan.entity';
+import { BillingIntervalType, type ServicePlanEntity } from '../entities/service-plan.entity';
 import { ProvisioningStatus } from '../entities/subscription-item.entity';
 import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
 import { BackordersRepository } from '../repositories/backorders.repository';
@@ -21,6 +21,17 @@ import {
   resolveProvisioningRegion,
   stripGeographyFromRequestedConfig,
 } from '../utils/provider-location.utils';
+import {
+  assertServerTypeAllowed,
+  normalizeAllowedServerTypes,
+  stripServerTypeFromRequestedConfig,
+} from '../utils/provider-server-type.utils';
+import {
+  BILLING_BASE_PRICE_CONFIG_KEY,
+  buildBackorderRequestedConfigSnapshot,
+  resolvePeriodTotalPrice,
+  resolveServerTypePriceMonthly,
+} from '../utils/server-type-billing.utils';
 import { getProvisioningCredentials, normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
 import { generateSshKeyPair } from '../utils/ssh-key.utils';
 
@@ -34,7 +45,10 @@ import { CloudflareDnsService } from './cloudflare-dns.service';
 import { CloudInitConfigService } from './cloud-init-config.service';
 import { CustomerProfilesService } from './customer-profiles.service';
 import { HostnameReservationService } from './hostname-reservation.service';
+import { ProviderServerTypesService } from './provider-server-types.service';
+import { PricingService } from './pricing.service';
 import { ProvisioningService } from './provisioning.service';
+import { TaxCalculationService } from './tax-calculation.service';
 
 @Injectable()
 export class SubscriptionService {
@@ -54,6 +68,9 @@ export class SubscriptionService {
     private readonly cloudflareDnsService: CloudflareDnsService,
     private readonly customerProfilesService: CustomerProfilesService,
     private readonly cloudInitConfigService: CloudInitConfigService,
+    private readonly providerServerTypesService: ProviderServerTypesService,
+    private readonly pricingService: PricingService,
+    private readonly taxCalculationService: TaxCalculationService,
     private readonly withdrawalPolicyService: WithdrawalPolicyService,
     private readonly withdrawalRefundService: WithdrawalRefundService,
     private readonly backordersRepository: BackordersRepository,
@@ -76,9 +93,13 @@ export class SubscriptionService {
     const plan = await this.servicePlansRepository.findByIdOrThrow(planId);
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
     const allowCustomerLocationSelection = plan.allowCustomerLocationSelection === true;
-    const sanitizedRequested = allowCustomerLocationSelection
+    const allowCustomerServerTypeSelection = plan.allowCustomerServerTypeSelection === true;
+    let sanitizedRequested = allowCustomerLocationSelection
       ? { ...(requestedConfig ?? {}) }
       : stripGeographyFromRequestedConfig(requestedConfig);
+    sanitizedRequested = allowCustomerServerTypeSelection
+      ? sanitizedRequested
+      : stripServerTypeFromRequestedConfig(sanitizedRequested);
     const baseConfig = plan.providerConfigDefaults ?? {};
     const effectiveConfig: Record<string, unknown> = {
       ...(baseConfig || {}),
@@ -105,6 +126,26 @@ export class SubscriptionService {
 
     if (validationErrors.length > 0) {
       throw new BadRequestException(validationErrors.join('; '));
+    }
+
+    if (provider === 'hetzner' || provider === 'digital-ocean') {
+      if (allowCustomerServerTypeSelection) {
+        const allowed = normalizeAllowedServerTypes(plan.allowedServerTypes);
+        const resolvedServerType = String(
+          effectiveConfig.serverType ??
+            baseConfig['serverType'] ??
+            (provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11'),
+        );
+        const serverTypeError = assertServerTypeAllowed(resolvedServerType, allowed);
+
+        if (serverTypeError) {
+          throw new BadRequestException(serverTypeError);
+        }
+
+        effectiveConfig.serverType = resolvedServerType.trim();
+      } else if (!effectiveConfig.serverType) {
+        effectiveConfig.serverType = provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11';
+      }
     }
 
     const service = normalizeCloudInitService(effectiveConfig.service as string | undefined);
@@ -136,6 +177,20 @@ export class SubscriptionService {
     const serverType =
       (effectiveConfig.serverType as string | undefined) ?? (provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11');
     const providerDefaults = normalizeStoredProviderDefaults(serviceType.providerDefaults);
+
+    if (provider === 'hetzner' || provider === 'digital-ocean') {
+      const billingBasePrice = await resolveServerTypePriceMonthly(
+        this.providerServerTypesService,
+        provider,
+        serverType,
+        providerDefaults,
+      );
+
+      if (billingBasePrice != null) {
+        effectiveConfig[BILLING_BASE_PRICE_CONFIG_KEY] = billingBasePrice;
+      }
+    }
+
     const availability = await this.availabilityService.checkAvailability(
       provider,
       region,
@@ -149,7 +204,7 @@ export class SubscriptionService {
           userId,
           serviceTypeId: plan.serviceTypeId,
           planId,
-          requestedConfigSnapshot: sanitizedRequested,
+          requestedConfigSnapshot: buildBackorderRequestedConfigSnapshot(sanitizedRequested, effectiveConfig),
           providerErrors: { reason: availability.reason },
           preferredAlternatives: availability.alternatives ?? {},
         });
@@ -458,8 +513,20 @@ export class SubscriptionService {
     items = [] as Awaited<ReturnType<SubscriptionItemsRepository['findBySubscription']>>,
     serviceType?: Awaited<ReturnType<ServiceTypesRepository['findByIdOrThrow']>>,
     withdrawalResult?: WithdrawalResultDto,
+    plan?: ServicePlanEntity,
   ): Promise<SubscriptionResponseDto> {
     let eligibility: WithdrawalEligibilityDto | undefined;
+    let periodTotalPrice: number | undefined;
+
+    if (plan) {
+      periodTotalPrice = await resolvePeriodTotalPrice(
+        plan,
+        this.pricingService,
+        this.taxCalculationService,
+        this.providerServerTypesService,
+        { items },
+      );
+    }
 
     if (serviceType) {
       const decision = this.withdrawalPolicyService.evaluate({
@@ -497,6 +564,7 @@ export class SubscriptionService {
       withdrawnAt: subscription.withdrawnAt,
       withdrawalEligibility: eligibility,
       withdrawalResult,
+      periodTotalPrice,
       createdAt: subscription.createdAt,
       updatedAt: subscription.updatedAt,
     };
@@ -519,12 +587,14 @@ export class SubscriptionService {
     }
 
     const planIds = [...new Set(subscriptions.map((s) => s.planId))];
+    const plansByPlanId = new Map<string, ServicePlanEntity>();
     const serviceTypesByPlan = new Map<string, Awaited<ReturnType<ServiceTypesRepository['findByIdOrThrow']>>>();
 
     for (const planId of planIds) {
       const plan = await this.servicePlansRepository.findByIdOrThrow(planId);
       const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
 
+      plansByPlanId.set(planId, plan);
       serviceTypesByPlan.set(planId, serviceType);
     }
 
@@ -534,6 +604,8 @@ export class SubscriptionService {
           subscription,
           itemsBySubscription.get(subscription.id) ?? [],
           serviceTypesByPlan.get(subscription.planId),
+          undefined,
+          plansByPlanId.get(subscription.planId),
         ),
       ),
     );

@@ -22,6 +22,7 @@ describe('servicePlansReducer', () => {
     billingIntervalValue: 1,
     totalPrice: 99,
     orderingHighlights: [],
+    allowCustomerServerTypeSelection: false,
   };
 
   it('should return initial state', () => {

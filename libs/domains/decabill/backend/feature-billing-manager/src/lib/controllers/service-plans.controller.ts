@@ -27,6 +27,10 @@ import { ProviderRegistryService } from '../services/provider-registry.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
 import { normalizePlanProviderConfigDefaults } from '../utils/cloud-init/plan-provisioning-options.utils';
 import { effectiveSchemaSupportsLocationSelection } from '../utils/provider-location.utils';
+import {
+  effectiveSchemaSupportsServerTypeSelection,
+  normalizeAllowedServerTypes,
+} from '../utils/provider-server-type.utils';
 
 @Controller('service-plans')
 export class ServicePlansController {
@@ -82,7 +86,16 @@ export class ServicePlansController {
   @UsersRoles(UserRole.ADMIN)
   async create(@Body() dto: CreateServicePlanDto): Promise<ServicePlanResponseDto> {
     await this.assertAllowLocationAllowed(dto.serviceTypeId, dto.allowCustomerLocationSelection === true);
+    await this.assertAllowServerTypeAllowed(
+      dto.serviceTypeId,
+      dto.allowCustomerServerTypeSelection === true,
+      dto.allowedServerTypes,
+    );
     const normalizedDefaults = normalizePlanProviderConfigDefaults(dto.providerConfigDefaults);
+    const allowCustomerServerTypeSelection = dto.allowCustomerServerTypeSelection === true;
+    const allowedServerTypes = allowCustomerServerTypeSelection
+      ? normalizeAllowedServerTypes(dto.allowedServerTypes)
+      : [];
 
     await this.cloudInitConfigService.assertActiveConfigForPlanDefaults(dto.serviceTypeId, normalizedDefaults);
     const row = await this.servicePlansRepository.create({
@@ -101,6 +114,8 @@ export class ServicePlansController {
       providerConfigDefaults: normalizedDefaults ?? {},
       orderingHighlights: dto.orderingHighlights ?? [],
       allowCustomerLocationSelection: dto.allowCustomerLocationSelection ?? false,
+      allowCustomerServerTypeSelection,
+      allowedServerTypes,
       isActive: dto.isActive ?? true,
     });
 
@@ -119,6 +134,27 @@ export class ServicePlansController {
     if (dto.allowCustomerLocationSelection === true) {
       await this.assertAllowLocationAllowed(existing.serviceTypeId, true);
     }
+
+    if (dto.allowCustomerServerTypeSelection === true) {
+      await this.assertAllowServerTypeAllowed(
+        existing.serviceTypeId,
+        true,
+        dto.allowedServerTypes ?? existing.allowedServerTypes,
+      );
+    }
+
+    const allowCustomerServerTypeSelection =
+      dto.allowCustomerServerTypeSelection !== undefined
+        ? dto.allowCustomerServerTypeSelection === true
+        : existing.allowCustomerServerTypeSelection === true;
+    const allowedServerTypes =
+      dto.allowedServerTypes !== undefined
+        ? allowCustomerServerTypeSelection
+          ? normalizeAllowedServerTypes(dto.allowedServerTypes)
+          : []
+        : allowCustomerServerTypeSelection
+          ? normalizeAllowedServerTypes(existing.allowedServerTypes)
+          : [];
 
     if (dto.providerConfigDefaults !== undefined) {
       const normalizedDefaults = normalizePlanProviderConfigDefaults(dto.providerConfigDefaults);
@@ -145,6 +181,12 @@ export class ServicePlansController {
       ...(dto.orderingHighlights !== undefined ? { orderingHighlights: dto.orderingHighlights } : {}),
       ...(dto.allowCustomerLocationSelection !== undefined
         ? { allowCustomerLocationSelection: dto.allowCustomerLocationSelection }
+        : {}),
+      ...(dto.allowCustomerServerTypeSelection !== undefined
+        ? { allowCustomerServerTypeSelection: dto.allowCustomerServerTypeSelection }
+        : {}),
+      ...(dto.allowedServerTypes !== undefined || dto.allowCustomerServerTypeSelection !== undefined
+        ? { allowedServerTypes }
         : {}),
       isActive: dto.isActive,
     });
@@ -180,6 +222,8 @@ export class ServicePlansController {
       providerConfigDefaults: row.providerConfigDefaults ?? {},
       orderingHighlights: row.orderingHighlights ?? [],
       allowCustomerLocationSelection: row.allowCustomerLocationSelection === true,
+      allowCustomerServerTypeSelection: row.allowCustomerServerTypeSelection === true,
+      allowedServerTypes: normalizeAllowedServerTypes(row.allowedServerTypes),
       withdrawalPolicy: this.withdrawalPolicyService.buildPolicyInfo(serviceType),
       isActive: row.isActive,
       createdAt: row.createdAt,
@@ -196,6 +240,31 @@ export class ServicePlansController {
     if (!effectiveSchemaSupportsLocationSelection(serviceType.configSchema, providerDetail?.configSchema)) {
       throw new BadRequestException(
         'allowCustomerLocationSelection requires region or location with a string enum on the service type config schema or on the provider registered for this service type',
+      );
+    }
+  }
+
+  private async assertAllowServerTypeAllowed(
+    serviceTypeId: string,
+    allow: boolean,
+    allowedServerTypes: string[] | undefined,
+  ): Promise<void> {
+    if (!allow) return;
+
+    const serviceType = await this.serviceTypesRepository.findByIdOrThrow(serviceTypeId);
+    const providerDetail = this.providerRegistry.getProviders().find((p) => p.id === serviceType.provider);
+
+    if (!effectiveSchemaSupportsServerTypeSelection(serviceType.configSchema, providerDetail?.configSchema)) {
+      throw new BadRequestException(
+        'allowCustomerServerTypeSelection requires basePriceFromField serverType on the service type config schema or on the provider registered for this service type',
+      );
+    }
+
+    const normalized = normalizeAllowedServerTypes(allowedServerTypes);
+
+    if (normalized.length === 0) {
+      throw new BadRequestException(
+        'allowedServerTypes must contain at least one server type when customer selection is enabled',
       );
     }
   }

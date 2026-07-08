@@ -20,6 +20,7 @@ describe('PublicServicePlanOfferingsService', () => {
     billingIntervalValue: 1,
     totalPrice: 99,
     orderingHighlights: [],
+    allowCustomerServerTypeSelection: false,
     withdrawalPolicy: {
       periodDays: 14,
       allowedAfterProvisioning: true,

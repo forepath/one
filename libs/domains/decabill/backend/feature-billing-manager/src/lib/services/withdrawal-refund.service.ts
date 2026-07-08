@@ -13,7 +13,9 @@ import { InvoicesRepository } from '../repositories/invoices.repository';
 import { PaymentAttemptsRepository } from '../repositories/payment-attempts.repository';
 import { PaymentRefundsRepository } from '../repositories/payment-refunds.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
+import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { calculateProratedAmount } from '../utils/billing-proration.util';
+import { resolveSubscriptionBillingBaseOverride } from '../utils/server-type-billing.utils';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
@@ -22,6 +24,7 @@ import { InvoiceEmailService } from './invoice-email.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { PricingService } from './pricing.service';
+import { ProviderServerTypesService } from './provider-server-types.service';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
 import { TaxCalculationService } from './tax-calculation.service';
 
@@ -42,6 +45,8 @@ export class WithdrawalRefundService {
 
   constructor(
     private readonly servicePlansRepository: ServicePlansRepository,
+    private readonly subscriptionItemsRepository: SubscriptionItemsRepository,
+    private readonly providerServerTypesService: ProviderServerTypesService,
     private readonly pricingService: PricingService,
     private readonly billingScheduleService: BillingScheduleService,
     private readonly taxCalculationService: TaxCalculationService,
@@ -189,7 +194,9 @@ export class WithdrawalRefundService {
     }
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
-    const pricing = this.pricingService.calculate(plan);
+    const items = await this.subscriptionItemsRepository.findBySubscription(subscription.id);
+    const basePriceOverride = await resolveSubscriptionBillingBaseOverride(items, this.providerServerTypesService);
+    const pricing = this.pricingService.calculate(plan, basePriceOverride);
     const periodStart = subscription.currentPeriodStart ?? subscription.createdAt;
     const refundNet = calculateProratedAmount(
       plan,

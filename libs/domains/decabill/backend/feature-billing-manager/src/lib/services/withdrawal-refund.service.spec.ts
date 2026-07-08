@@ -2,8 +2,10 @@ import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import { PaymentRefundStatus } from '../entities/payment-refund.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
+import { BILLING_BASE_PRICE_CONFIG_KEY } from '../utils/server-type-billing.utils';
 
 import { BillingScheduleService } from './billing-schedule.service';
+import { PricingService } from './pricing.service';
 import { WithdrawalRefundService } from './withdrawal-refund.service';
 
 describe('WithdrawalRefundService', () => {
@@ -28,8 +30,20 @@ describe('WithdrawalRefundService', () => {
   const invoiceEmailService = { notifyPartialCreditDocument: jest.fn() };
   const auditLog = { log: jest.fn() };
 
+  const subscriptionItemsRepository = {
+    findBySubscription: jest.fn().mockResolvedValue([]),
+  };
+  const providerServerTypesService = {
+    getServerTypes: jest.fn().mockResolvedValue([
+      { id: 'cx11', priceMonthly: 4.15 },
+      { id: 'cpx11', priceMonthly: 6.49 },
+    ]),
+  };
+
   const service = new WithdrawalRefundService(
     servicePlansRepository as never,
+    subscriptionItemsRepository as never,
+    providerServerTypesService as never,
     pricingService as never,
     billingScheduleService as never,
     taxCalculationService as never,
@@ -161,5 +175,100 @@ describe('WithdrawalRefundService', () => {
 
     expect(result.paymentRefundStatus).toBe('failed');
     expect(paymentRefundsRepository.create).not.toHaveBeenCalled();
+  });
+
+  describe('estimateRefundGross with server-type pricing', () => {
+    const periodStart = new Date();
+    periodStart.setUTCDate(periodStart.getUTCDate() - 10);
+    const periodEnd = new Date();
+    periodEnd.setUTCDate(periodEnd.getUTCDate() + 20);
+
+    const pricedSubscription = {
+      ...subscription,
+      currentPeriodStart: periodStart,
+      currentPeriodEnd: periodEnd,
+    };
+
+    const pricedPlan = {
+      id: 'plan-1',
+      billingIntervalType: BillingIntervalType.MONTH,
+      billingIntervalValue: 1,
+      basePrice: '4.15',
+      marginPercent: '0',
+      marginFixed: '0',
+    };
+    const realPricingService = new PricingService();
+
+    const pricingAwareService = new WithdrawalRefundService(
+      servicePlansRepository as never,
+      subscriptionItemsRepository as never,
+      providerServerTypesService as never,
+      realPricingService as never,
+      billingScheduleService as never,
+      {
+        computeLines: jest.fn((inputs) => ({
+          totalGross: Math.round(inputs[0].unitPriceNet * 119) / 100,
+        })),
+      } as never,
+      invoicesRepository as never,
+      invoiceLineItemsRepository as never,
+      invoiceCreditDocumentsRepository as never,
+      paymentAttemptsRepository as never,
+      paymentRefundsRepository as never,
+      paymentProcessorFactory as never,
+      customerProfilesRepository as never,
+      billingIssuerConfig as never,
+      invoicePdfService as never,
+      invoiceEmailService as never,
+      auditLog as never,
+    );
+
+    beforeEach(() => {
+      servicePlansRepository.findByIdOrThrow.mockResolvedValue(pricedPlan);
+    });
+
+    it('returns different refund estimates for subscriptions with different billingBasePrice snapshots', async () => {
+      subscriptionItemsRepository.findBySubscription
+        .mockResolvedValueOnce([{ configSnapshot: { [BILLING_BASE_PRICE_CONFIG_KEY]: 4.15, serverType: 'cx11' } }])
+        .mockResolvedValueOnce([{ configSnapshot: { [BILLING_BASE_PRICE_CONFIG_KEY]: 6.49, serverType: 'cpx11' } }]);
+
+      const cheaperEstimate = await pricingAwareService.estimateRefundGross(pricedSubscription as never);
+      const expensiveEstimate = await pricingAwareService.estimateRefundGross({
+        ...pricedSubscription,
+        id: 'sub-2',
+      } as never);
+
+      expect(cheaperEstimate).toBeDefined();
+      expect(expensiveEstimate).toBeDefined();
+      expect(expensiveEstimate).toBeGreaterThan(cheaperEstimate!);
+      expect(providerServerTypesService.getServerTypes).not.toHaveBeenCalled();
+    });
+
+    it('falls back to provider catalog price from serverType when billingBasePrice snapshot is missing', async () => {
+      subscriptionItemsRepository.findBySubscription
+        .mockResolvedValueOnce([
+          {
+            configSnapshot: { serverType: 'cx11' },
+            serviceType: { provider: 'hetzner', providerDefaults: {} },
+          },
+        ])
+        .mockResolvedValueOnce([
+          {
+            configSnapshot: { serverType: 'cpx11' },
+            serviceType: { provider: 'hetzner', providerDefaults: {} },
+          },
+        ]);
+
+      const cheaperEstimate = await pricingAwareService.estimateRefundGross(pricedSubscription as never);
+      const expensiveEstimate = await pricingAwareService.estimateRefundGross({
+        ...pricedSubscription,
+        id: 'sub-2',
+      } as never);
+
+      expect(cheaperEstimate).toBeDefined();
+      expect(expensiveEstimate).toBeDefined();
+      expect(expensiveEstimate).toBeGreaterThan(cheaperEstimate!);
+      expect(providerServerTypesService.getServerTypes).toHaveBeenCalled();
+    });
   });
 });

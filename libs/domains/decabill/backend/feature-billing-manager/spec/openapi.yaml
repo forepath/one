@@ -3501,6 +3501,7 @@ components:
         - totalPrice
         - orderingHighlights
         - allowCustomerLocationSelection
+        - allowCustomerServerTypeSelection
       properties:
         id:
           type: string
@@ -3525,6 +3526,9 @@ components:
         totalPrice:
           type: number
           description: Customer-facing total price (same formula as internal pricing preview; margin breakdown not exposed)
+        totalPriceFrom:
+          type: number
+          description: Lowest customer-facing total across allowed server types when allowCustomerServerTypeSelection is true; omitted when not applicable.
         orderingHighlights:
           type: array
           items:
@@ -3532,6 +3536,9 @@ components:
         allowCustomerLocationSelection:
           type: boolean
           description: When true, authenticated checkout may send region or location in subscription requestedConfig (schema must define a string enum for that field on the service type).
+        allowCustomerServerTypeSelection:
+          type: boolean
+          description: When true, authenticated checkout may send serverType in subscription requestedConfig; value must be in allowedServerTypes on the plan.
         withdrawalPolicy:
           $ref: '#/components/schemas/WithdrawalPolicy'
     CreateServicePlanDto:
@@ -3589,6 +3596,13 @@ components:
         allowCustomerLocationSelection:
           type: boolean
           description: Requires service type schema with region or location string enum. Ignored when false or omitted.
+        allowCustomerServerTypeSelection:
+          type: boolean
+          description: Requires provider schema with basePriceFromField serverType. When true, allowedServerTypes must list at least one server type id.
+        allowedServerTypes:
+          type: array
+          items: { type: string }
+          description: Server type ids customers may choose at checkout when allowCustomerServerTypeSelection is true.
     UpdateServicePlanDto:
       type: object
       properties:
@@ -3611,6 +3625,10 @@ components:
             $ref: '#/components/schemas/ServicePlanOrderingHighlight'
         isActive: { type: boolean }
         allowCustomerLocationSelection: { type: boolean }
+        allowCustomerServerTypeSelection: { type: boolean }
+        allowedServerTypes:
+          type: array
+          items: { type: string }
     ServicePlanResponse:
       type: object
       properties:
@@ -3636,6 +3654,13 @@ components:
         allowCustomerLocationSelection:
           type: boolean
           description: When true, POST /subscriptions may include region or location in requestedConfig to override plan defaults (values must match service type schema enum).
+        allowCustomerServerTypeSelection:
+          type: boolean
+          description: When true, POST /subscriptions may include serverType in requestedConfig; value must be listed in allowedServerTypes.
+        allowedServerTypes:
+          type: array
+          items: { type: string }
+          description: Server type ids available for customer selection when allowCustomerServerTypeSelection is true.
         isActive: { type: boolean }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
@@ -3666,6 +3691,7 @@ components:
         Optional cloud-init and provisioning config merged with plan defaults.
         May also include provider-specific fields (e.g. serverType, location, firewallId for Hetzner).
         Region or location overrides are accepted only when the plan has allowCustomerLocationSelection and the service type schema defines that field with an enum; otherwise they are ignored server-side.
+        serverType overrides are accepted only when the plan has allowCustomerServerTypeSelection and the value is listed in allowedServerTypes; otherwise serverType is stripped from requestedConfig before merge.
         The FQDN (hostname.DNS_BASE_DOMAIN) is used for SSL certificates and CORS; DNS_BASE_DOMAIN
         defaults to spirde.com when not set.
         For service manager, disableSignup and provisioning tokens are ignored; authenticationMethod must be api-key or keycloak (not users).
@@ -3788,6 +3814,9 @@ components:
           $ref: '#/components/schemas/WithdrawalEligibility'
         withdrawalResult:
           $ref: '#/components/schemas/WithdrawalResult'
+        periodTotalPrice:
+          type: number
+          description: Total gross price charged per billing period for this subscription
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     WithdrawSubscriptionDto:
@@ -3922,6 +3951,9 @@ components:
         providerErrors: { type: object }
         preferredAlternatives: { type: object }
         retryAfter: { type: string, format: date-time, nullable: true }
+        periodTotalPrice:
+          type: number
+          description: Total gross price charged per billing period for this backorder
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     BackorderRetryDto:
@@ -3944,7 +3976,10 @@ components:
         basePrice: { type: number }
         marginPercent: { type: number }
         marginFixed: { type: number }
-        totalPrice: { type: number }
+        totalPrice: { type: number, description: Net price per billing period (excl. VAT) }
+        taxTotal: { type: number, description: VAT amount for the billing period }
+        totalGross: { type: number, description: Gross price per billing period (incl. VAT) }
+        taxRate: { type: number, description: Applied standard VAT rate in percent }
     CustomerProfileDto:
       type: object
       properties:

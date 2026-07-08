@@ -6,6 +6,7 @@ export * from './lib/constants/service-plans.constants';
 
 // Services
 export * from './lib/services/public-service-plan-offerings.service';
+export * from './lib/utils/public-offering-price.utils';
 
 // Service Plans State
 export * from './lib/state/service-plans/service-plans.actions';

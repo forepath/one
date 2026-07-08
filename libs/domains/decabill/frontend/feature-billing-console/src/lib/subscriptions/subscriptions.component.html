@@ -278,6 +278,9 @@
           <span class="me-2">
             <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(sub.nextBillingAt) }}
           </span>
+          <span class="me-2">
+            <i class="bi bi-currency-euro me-1" aria-hidden="true"></i>{{ formatSubscriptionPeriodPrice(sub, plans) }}
+          </span>
         </div>
       </div>
     </div>
@@ -337,6 +340,9 @@
           >
             {{ backorderStatusLabel(bo.status) }}
           </span>
+          <span class="me-2">
+            <i class="bi bi-currency-euro me-1" aria-hidden="true"></i>{{ formatBackorderPeriodPrice(bo, plans) }}
+          </span>
         </div>
       </div>
     </div>
@@ -378,7 +384,7 @@
   #orderPlanModal
   (hidden.bs.modal)="resetOrderRequestedConfig()"
 >
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="orderPlanModalLabel" i18n="@@featureSubscriptions-orderPlanTitle">Order plan</h5>
@@ -412,6 +418,48 @@
                 </select>
                 @if (orderPlanId && (servicePlans$ | async); as plans) {
                   @if (getSelectedPlan(plans, orderPlanId); as selectedPlan) {
+                    @if (orderServerTypesLoading) {
+                      <div class="mt-3 text-body-secondary small">Loading server types…</div>
+                    } @else if (orderServerTypeOptions.length > 0) {
+                      <div class="mt-3">
+                        <label for="orderProvisioningServerType" class="form-label">Server type</label>
+                        <select
+                          id="orderProvisioningServerType"
+                          name="orderProvisioningServerType"
+                          class="form-select"
+                          [(ngModel)]="orderProvisioningServerType"
+                          (ngModelChange)="onOrderServerTypeChange()"
+                          [disabled]="(subscriptionsCreating$ | async) === true"
+                        >
+                          @for (st of orderServerTypeOptions; track st.id) {
+                            <option [ngValue]="st.id">{{ formatServerTypeOptionLabel(st) }}</option>
+                          }
+                        </select>
+                        <div class="form-text text-body-secondary small">
+                          Choose the server size for this subscription. Price updates based on your selection.
+                        </div>
+                      </div>
+                    }
+                    @if (orderGeographyFieldKey && orderLocationOptions.length > 0) {
+                      <div class="mt-3">
+                        <label for="orderProvisioningLocation" class="form-label">Region / location</label>
+                        <select
+                          id="orderProvisioningLocation"
+                          name="orderProvisioningLocation"
+                          class="form-select"
+                          [(ngModel)]="orderProvisioningLocation"
+                          [disabled]="(subscriptionsCreating$ | async) === true"
+                          [attr.aria-label]="'Provisioning ' + orderGeographyFieldKey"
+                        >
+                          @for (opt of orderLocationOptions; track opt) {
+                            <option [ngValue]="opt">{{ formatOrderLocationLabel(opt) }}</option>
+                          }
+                        </select>
+                        <div class="form-text text-body-secondary small">
+                          Choose where the server is provisioned. Options come from the product configuration.
+                        </div>
+                      </div>
+                    }
                     @if (selectedPlan.description?.trim()) {
                       <div
                         class="mt-3 text-body-secondary small p-3 bg-body border rounded"
@@ -435,11 +483,39 @@
                       </div>
                     }
                     <div class="mt-3 p-3 bg-body border rounded">
-                      <div class="text-body-secondary small">
-                        <span i18n="@@featureSubscriptions-price">Price</span>
-                        <strong class="ms-2">{{ formatPlanPrice(selectedPlan) }}</strong>
-                      </div>
-                      <div class="text-body-secondary small">
+                      @if (orderPricingLoading) {
+                        <div class="text-body-secondary small d-flex align-items-center gap-2">
+                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                          <span i18n="@@featureSubscriptions-loadingPrice">Loading price…</span>
+                        </div>
+                      } @else if (orderPricingPreview) {
+                        <dl class="mb-0 small">
+                          <div class="d-flex justify-content-between gap-3">
+                            <dt class="text-body-secondary" i18n="@@featureInvoices-subtotalNet">Subtotal (net)</dt>
+                            <dd class="mb-2 text-nowrap fw-medium">
+                              {{ formatCurrencyAmount(orderPricingPreview.totalPrice) }}
+                            </dd>
+                          </div>
+                          <div class="d-flex justify-content-between gap-3">
+                            <dt class="text-body-secondary">
+                              <span i18n="@@featureInvoices-taxTotal">Tax total</span>
+                              <span> ({{ orderPricingPreview.taxRate | number: '1.0-1' }}%)</span>
+                            </dt>
+                            <dd class="mb-2 text-nowrap fw-medium">
+                              {{ formatCurrencyAmount(orderPricingPreview.taxTotal) }}
+                            </dd>
+                          </div>
+                          <div class="d-flex justify-content-between gap-3 border-top pt-2">
+                            <dt class="text-body-secondary fw-semibold" i18n="@@featureInvoices-totalGross">Total</dt>
+                            <dd class="mb-0 text-nowrap fw-semibold">
+                              {{ formatCurrencyAmount(orderPricingPreview.totalGross) }}
+                            </dd>
+                          </div>
+                        </dl>
+                      } @else {
+                        <div class="text-body-secondary small">—</div>
+                      }
+                      <div class="text-body-secondary small mt-3">
                         <span i18n="@@featureSubscriptions-billingInterval">Runtime</span>
                         <strong class="ms-2"
                           >{{ selectedPlan.billingIntervalValue }} {{ selectedPlan.billingIntervalType }}(s)</strong
@@ -485,26 +561,6 @@
                             Statutory withdrawal is only available before the service is provisioned.
                           </p>
                         }
-                      </div>
-                    }
-                    @if (orderGeographyFieldKey && orderLocationOptions.length > 0) {
-                      <div class="mt-3">
-                        <label for="orderProvisioningLocation" class="form-label">Region / location</label>
-                        <select
-                          id="orderProvisioningLocation"
-                          name="orderProvisioningLocation"
-                          class="form-select"
-                          [(ngModel)]="orderProvisioningLocation"
-                          [disabled]="(subscriptionsCreating$ | async) === true"
-                          [attr.aria-label]="'Provisioning ' + orderGeographyFieldKey"
-                        >
-                          @for (opt of orderLocationOptions; track opt) {
-                            <option [ngValue]="opt">{{ formatOrderLocationLabel(opt) }}</option>
-                          }
-                        </select>
-                        <div class="form-text text-body-secondary small">
-                          Choose where the server is provisioned. Options come from the product configuration.
-                        </div>
                       </div>
                     }
                     <div class="mt-3 p-3 bg-body border rounded">

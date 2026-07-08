@@ -79,6 +79,12 @@ export class ServicePlanEntity {
   @Column({ type: 'boolean', name: 'allow_customer_location_selection', default: false })
   allowCustomerLocationSelection!: boolean;
 
+  @Column({ type: 'boolean', name: 'allow_customer_server_type_selection', default: false })
+  allowCustomerServerTypeSelection!: boolean;
+
+  @Column({ type: 'jsonb', name: 'allowed_server_types', default: () => "'[]'::jsonb" })
+  allowedServerTypes!: string[];
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

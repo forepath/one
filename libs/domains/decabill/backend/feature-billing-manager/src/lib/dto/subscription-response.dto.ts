@@ -17,6 +17,7 @@ export class SubscriptionResponseDto {
   withdrawnAt?: Date;
   withdrawalEligibility?: WithdrawalEligibilityDto;
   withdrawalResult?: WithdrawalResultDto;
+  periodTotalPrice?: number;
   createdAt!: Date;
   updatedAt!: Date;
 }

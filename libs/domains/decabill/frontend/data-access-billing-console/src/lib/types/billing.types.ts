@@ -227,6 +227,8 @@ export interface ServicePlanResponse {
   providerConfigDefaults: Record<string, unknown>;
   orderingHighlights: ServicePlanOrderingHighlight[];
   allowCustomerLocationSelection: boolean;
+  allowCustomerServerTypeSelection: boolean;
+  allowedServerTypes: string[];
   withdrawalPolicy: WithdrawalPolicy;
   isActive: boolean;
   createdAt: string;
@@ -249,6 +251,8 @@ export interface CreateServicePlanDto {
   providerConfigDefaults?: Record<string, unknown>;
   orderingHighlights?: ServicePlanOrderingHighlight[];
   allowCustomerLocationSelection?: boolean;
+  allowCustomerServerTypeSelection?: boolean;
+  allowedServerTypes?: string[];
   isActive?: boolean;
 }
 
@@ -267,6 +271,8 @@ export interface UpdateServicePlanDto {
   providerConfigDefaults?: Record<string, unknown>;
   orderingHighlights?: ServicePlanOrderingHighlight[];
   allowCustomerLocationSelection?: boolean;
+  allowCustomerServerTypeSelection?: boolean;
+  allowedServerTypes?: string[];
   isActive?: boolean;
 }
 
@@ -286,6 +292,7 @@ export interface SubscriptionResponse {
   withdrawnAt?: string | null;
   withdrawalEligibility?: WithdrawalEligibility;
   withdrawalResult?: WithdrawalResult;
+  periodTotalPrice?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -415,6 +422,7 @@ export interface BackorderResponse {
   providerErrors: Record<string, unknown>;
   preferredAlternatives: Record<string, unknown>;
   retryAfter?: string | null;
+  periodTotalPrice?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -452,7 +460,11 @@ export interface PricingPreviewResponse {
   basePrice: number;
   marginPercent: number;
   marginFixed: number;
+  /** Net price per billing period (excl. VAT). */
   totalPrice: number;
+  taxTotal: number;
+  totalGross: number;
+  taxRate: number;
 }
 
 // Customer Profile

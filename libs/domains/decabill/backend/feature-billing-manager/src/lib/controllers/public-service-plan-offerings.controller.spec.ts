@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import { BillingIntervalType, ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { PricingService } from '../services/pricing.service';
+import { ProviderServerTypesService } from '../services/provider-server-types.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
 
 import { PublicServicePlanOfferingsController } from './public-service-plan-offerings.controller';
@@ -42,6 +43,7 @@ describe('PublicServicePlanOfferingsController', () => {
           useValue: { findActiveWithServiceType, findAllActiveWithServiceType },
         },
         { provide: PricingService, useValue: { calculate } },
+        { provide: ProviderServerTypesService, useValue: { getServerTypes: jest.fn().mockResolvedValue([]) } },
         { provide: WithdrawalPolicyService, useValue: new WithdrawalPolicyService() },
       ],
     }).compile();
@@ -66,6 +68,7 @@ describe('PublicServicePlanOfferingsController', () => {
       totalPrice: 12,
       orderingHighlights: [{ icon: 'check', text: 'Included' }],
       allowCustomerLocationSelection: false,
+      allowCustomerServerTypeSelection: false,
       withdrawalPolicy: {
         periodDays: 14,
         allowedAfterProvisioning: true,

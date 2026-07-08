@@ -30,6 +30,8 @@ describe('ServicePlansController', () => {
     providerConfigDefaults: {},
     orderingHighlights: [{ icon: 'star', text: 'Feature A' }],
     allowCustomerLocationSelection: false,
+    allowCustomerServerTypeSelection: false,
+    allowedServerTypes: [],
     isActive: true,
     createdAt: new Date('2024-01-01T00:00:00.000Z'),
     updatedAt: new Date('2024-01-02T00:00:00.000Z'),

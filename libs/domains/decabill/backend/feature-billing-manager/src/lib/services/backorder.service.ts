@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
+import type { BackorderResponseDto } from '../dto/backorder-response.dto';
 import { BackorderEntity, BackorderStatus } from '../entities/backorder.entity';
 import { SubscriptionStatus } from '../entities/subscription.entity';
 import { BackordersRepository } from '../repositories/backorders.repository';
@@ -18,6 +19,16 @@ import {
   resolveProvisioningRegion,
   stripGeographyFromRequestedConfig,
 } from '../utils/provider-location.utils';
+import {
+  assertServerTypeAllowed,
+  normalizeAllowedServerTypes,
+  stripServerTypeFromRequestedConfig,
+} from '../utils/provider-server-type.utils';
+import {
+  BILLING_BASE_PRICE_CONFIG_KEY,
+  resolvePeriodTotalPrice,
+  resolveServerTypePriceMonthly,
+} from '../utils/server-type-billing.utils';
 import { getProvisioningCredentials, normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
 import { generateSshKeyPair } from '../utils/ssh-key.utils';
 
@@ -26,7 +37,10 @@ import { BillingScheduleService } from './billing-schedule.service';
 import { CloudInitConfigService } from './cloud-init-config.service';
 import { CloudflareDnsService } from './cloudflare-dns.service';
 import { HostnameReservationService } from './hostname-reservation.service';
+import { ProviderServerTypesService } from './provider-server-types.service';
+import { PricingService } from './pricing.service';
 import { ProvisioningService } from './provisioning.service';
+import { TaxCalculationService } from './tax-calculation.service';
 
 @Injectable()
 export class BackorderService {
@@ -44,6 +58,9 @@ export class BackorderService {
     private readonly hostnameReservationService: HostnameReservationService,
     private readonly cloudflareDnsService: CloudflareDnsService,
     private readonly cloudInitConfigService: CloudInitConfigService,
+    private readonly providerServerTypesService: ProviderServerTypesService,
+    private readonly pricingService: PricingService,
+    private readonly taxCalculationService: TaxCalculationService,
   ) {}
 
   async create(data: {
@@ -98,11 +115,16 @@ export class BackorderService {
     const plan = await this.servicePlansRepository.findByIdOrThrow(backorder.planId);
     const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
     const allowCustomerLocationSelection = plan.allowCustomerLocationSelection === true;
-    const sanitizedSnapshot = allowCustomerLocationSelection
+    const allowCustomerServerTypeSelection = plan.allowCustomerServerTypeSelection === true;
+    let sanitizedSnapshot = allowCustomerLocationSelection
       ? { ...(backorder.requestedConfigSnapshot ?? {}) }
       : stripGeographyFromRequestedConfig(backorder.requestedConfigSnapshot);
+    sanitizedSnapshot = allowCustomerServerTypeSelection
+      ? sanitizedSnapshot
+      : stripServerTypeFromRequestedConfig(sanitizedSnapshot);
+    const baseConfig = plan.providerConfigDefaults ?? {};
     const effectiveConfig: Record<string, unknown> = {
-      ...(plan.providerConfigDefaults ?? {}),
+      ...(baseConfig || {}),
       ...sanitizedSnapshot,
     };
 
@@ -124,6 +146,18 @@ export class BackorderService {
 
     if (!effectiveConfig.serverType) {
       effectiveConfig.serverType = provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11';
+    }
+
+    if (allowCustomerServerTypeSelection) {
+      const allowed = normalizeAllowedServerTypes(plan.allowedServerTypes);
+      const resolvedServerType = String(effectiveConfig.serverType);
+      const serverTypeError = assertServerTypeAllowed(resolvedServerType, allowed);
+
+      if (serverTypeError) {
+        throw new BadRequestException(serverTypeError);
+      }
+
+      effectiveConfig.serverType = resolvedServerType.trim();
     }
 
     const validationErrors = validateConfigSchema(serviceType.configSchema, effectiveConfig);
@@ -160,6 +194,20 @@ export class BackorderService {
     const region = resolveProvisioningRegion(effectiveConfig, provider);
     const serverType = effectiveConfig.serverType as string;
     const providerDefaults = normalizeStoredProviderDefaults(serviceType.providerDefaults);
+
+    if (provider === 'hetzner' || provider === 'digital-ocean') {
+      const billingBasePrice = await resolveServerTypePriceMonthly(
+        this.providerServerTypesService,
+        provider,
+        serverType,
+        providerDefaults,
+      );
+
+      if (billingBasePrice != null) {
+        effectiveConfig[BILLING_BASE_PRICE_CONFIG_KEY] = billingBasePrice;
+      }
+    }
+
     const availability = await this.availabilityService.checkAvailability(
       provider,
       region,
@@ -268,5 +316,63 @@ export class BackorderService {
     }
 
     return await this.backordersRepository.update(backorderId, { status: BackorderStatus.FULFILLED });
+  }
+
+  async mapToResponse(
+    row: BackorderEntity,
+    plan?: Awaited<ReturnType<ServicePlansRepository['findByIdOrThrow']>>,
+    serviceType?: Awaited<ReturnType<ServiceTypesRepository['findByIdOrThrow']>>,
+  ): Promise<BackorderResponseDto> {
+    const resolvedPlan = plan ?? (await this.servicePlansRepository.findByIdOrThrow(row.planId));
+    const resolvedServiceType =
+      serviceType ?? (await this.serviceTypesRepository.findByIdOrThrow(resolvedPlan.serviceTypeId));
+    const periodTotalPrice = await resolvePeriodTotalPrice(
+      resolvedPlan,
+      this.pricingService,
+      this.taxCalculationService,
+      this.providerServerTypesService,
+      {
+        configSnapshot: row.requestedConfigSnapshot,
+        serviceType: resolvedServiceType,
+      },
+    );
+
+    return {
+      id: row.id,
+      userId: row.userId,
+      serviceTypeId: row.serviceTypeId,
+      planId: row.planId,
+      status: row.status,
+      failureReason: row.failureReason,
+      requestedConfigSnapshot: row.requestedConfigSnapshot ?? {},
+      providerErrors: row.providerErrors ?? {},
+      preferredAlternatives: row.preferredAlternatives ?? {},
+      retryAfter: row.retryAfter,
+      periodTotalPrice,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
+  }
+
+  async mapManyToResponses(rows: BackorderEntity[]): Promise<BackorderResponseDto[]> {
+    if (rows.length === 0) {
+      return [];
+    }
+
+    const planIds = [...new Set(rows.map((row) => row.planId))];
+    const plansByPlanId = new Map<string, Awaited<ReturnType<ServicePlansRepository['findByIdOrThrow']>>>();
+    const serviceTypesByPlanId = new Map<string, Awaited<ReturnType<ServiceTypesRepository['findByIdOrThrow']>>>();
+
+    for (const planId of planIds) {
+      const plan = await this.servicePlansRepository.findByIdOrThrow(planId);
+      const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
+
+      plansByPlanId.set(planId, plan);
+      serviceTypesByPlanId.set(planId, serviceType);
+    }
+
+    return await Promise.all(
+      rows.map((row) => this.mapToResponse(row, plansByPlanId.get(row.planId), serviceTypesByPlanId.get(row.planId))),
+    );
   }
 }

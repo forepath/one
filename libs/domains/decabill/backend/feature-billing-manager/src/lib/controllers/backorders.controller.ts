@@ -16,7 +16,6 @@ import {
 import { BackorderCancelDto } from '../dto/backorder-cancel.dto';
 import { BackorderResponseDto } from '../dto/backorder-response.dto';
 import { BackorderRetryDto } from '../dto/backorder-retry.dto';
-import { BackorderEntity } from '../entities/backorder.entity';
 import { BackordersRepository } from '../repositories/backorders.repository';
 import { BackorderService } from '../services/backorder.service';
 import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
@@ -42,7 +41,7 @@ export class BackordersController {
 
     const rows = await this.backorderService.listForUser(userInfo.userId, limit ?? 10, offset ?? 0);
 
-    return rows.map((row) => this.mapToResponse(row));
+    return await this.backorderService.mapManyToResponses(rows);
   }
 
   @Post(':id/retry')
@@ -65,7 +64,7 @@ export class BackordersController {
 
     const row = await this.backorderService.retry(id);
 
-    return this.mapToResponse(row);
+    return await this.backorderService.mapToResponse(row);
   }
 
   @Post(':id/cancel')
@@ -89,23 +88,6 @@ export class BackordersController {
 
     const row = await this.backorderService.cancel(id);
 
-    return this.mapToResponse(row);
-  }
-
-  private mapToResponse(row: BackorderEntity): BackorderResponseDto {
-    return {
-      id: row.id,
-      userId: row.userId,
-      serviceTypeId: row.serviceTypeId,
-      planId: row.planId,
-      status: row.status,
-      failureReason: row.failureReason,
-      requestedConfigSnapshot: row.requestedConfigSnapshot ?? {},
-      providerErrors: row.providerErrors ?? {},
-      preferredAlternatives: row.preferredAlternatives ?? {},
-      retryAfter: row.retryAfter,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
+    return await this.backorderService.mapToResponse(row);
   }
 }

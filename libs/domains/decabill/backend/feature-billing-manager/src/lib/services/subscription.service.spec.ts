@@ -15,6 +15,7 @@ import { BillingScheduleService } from './billing-schedule.service';
 import { CancellationPolicyService } from './cancellation-policy.service';
 import { WithdrawalPolicyService } from './withdrawal-policy.service';
 import { WithdrawalRefundService } from './withdrawal-refund.service';
+import { PricingService } from './pricing.service';
 import { CloudInitConfigService } from './cloud-init-config.service';
 import { CustomerProfilesService } from './customer-profiles.service';
 import { SubscriptionService } from './subscription.service';
@@ -102,6 +103,15 @@ describe('SubscriptionService', () => {
     findByIdForProvisioning: jest.fn(),
     resolveEnvironmentVariables: jest.fn(),
   } as unknown as CloudInitConfigService;
+  const providerServerTypesService = {
+    getServerTypes: jest.fn().mockResolvedValue([{ id: 'cx23', name: 'CX23', priceMonthly: 4.51 }]),
+  } as any;
+  const pricingService = {
+    calculate: jest.fn().mockReturnValue({ totalPrice: 10 }),
+  } as unknown as PricingService;
+  const taxCalculationService = {
+    computeLines: jest.fn().mockReturnValue({ totalGross: 11.9 }),
+  } as unknown as import('./tax-calculation.service').TaxCalculationService;
   const withdrawalPolicyService = new WithdrawalPolicyService();
   const withdrawalRefundService = {
     applyProvisionedWithdrawalRefund: jest.fn(),
@@ -124,6 +134,9 @@ describe('SubscriptionService', () => {
     cloudflareDnsService,
     customerProfilesService,
     cloudInitConfigService,
+    providerServerTypesService,
+    pricingService,
+    taxCalculationService,
     withdrawalPolicyService,
     withdrawalRefundService,
     backordersRepository,
@@ -522,27 +535,40 @@ describe('SubscriptionService', () => {
       serviceTypeId: 'stype-1',
       billingIntervalType: BillingIntervalType.DAY,
       billingIntervalValue: 1,
-      providerConfigDefaults: controllerProvisioningDefaults,
+      allowCustomerServerTypeSelection: true,
+      allowedServerTypes: ['cx11', 'cpx11'],
+      allowCustomerLocationSelection: true,
+      providerConfigDefaults: { ...controllerProvisioningDefaults, serverType: 'cx11' },
     });
     typesRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
       id: 'stype-1',
       provider: 'hetzner',
       configSchema: {},
+      providerDefaults: {},
     });
+    (providerServerTypesService.getServerTypes as jest.Mock).mockResolvedValue([
+      { id: 'cx11', priceMonthly: 4.15 },
+      { id: 'cpx11', priceMonthly: 6.49 },
+    ]);
     (availabilityService.checkAvailability as jest.Mock).mockResolvedValue({
       isAvailable: false,
       reason: 'Out of stock',
       alternatives: { region: 'nbg1' },
     });
 
-    await expect(service.createSubscription('user-1', 'plan-1', { region: 'fsn1' }, true)).rejects.toThrow(
-      BadRequestException,
-    );
+    await expect(
+      service.createSubscription('user-1', 'plan-1', { region: 'fsn1', serverType: 'cpx11' }, true),
+    ).rejects.toThrow(BadRequestException);
     expect(backorderService.create).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: 'user-1',
         planId: 'plan-1',
         providerErrors: { reason: 'Out of stock' },
+        requestedConfigSnapshot: expect.objectContaining({
+          region: 'fsn1',
+          serverType: 'cpx11',
+          billingBasePrice: 6.49,
+        }),
       }),
     );
   });

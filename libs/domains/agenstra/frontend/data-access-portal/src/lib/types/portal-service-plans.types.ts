@@ -16,7 +16,10 @@ export interface PublicServicePlanOffering {
   billingIntervalType: BillingIntervalType;
   billingIntervalValue: number;
   totalPrice: number;
+  totalPriceFrom?: number;
   orderingHighlights: ServicePlanOrderingHighlight[];
+  allowCustomerLocationSelection?: boolean;
+  allowCustomerServerTypeSelection: boolean;
 }
 
 export interface PublicServicePlanOfferingsListParams {

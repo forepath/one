@@ -99,6 +99,7 @@ Service plans belong to a service type and define customer-facing pricing and bi
 - For provisioning plans, customers choose from `provisioningOptions` (integrated `controller`/`manager` and/or custom CloudInit configs). Admins configure these exclusively via **Customer-selectable options** checkboxes in the plan editor; **Product defaults** fields are scoped to the checked options only. New plans default to both Agenstra Controller and Agenstra Manager selected. Existing legacy plans are reconciled by migration `1772000000000_CloudInitAndPlanProvisioningConsolidated`.
 - `billing_day_of_month` for subscription period alignment
 - `allowCustomerLocationSelection` when geography override is supported
+- `allowCustomerServerTypeSelection` and `allowedServerTypes` when server-type override is supported (provider schema `basePriceFromField: 'serverType'`)
 - Provider `configSchema.properties` may set `scope: "server"` or `scope: "product"` with optional `productServices` (`controller`, `manager`) to control the plan editor. Server fields stay under **Provider default config**; product fields appear under **Product defaults** when required by selected customer options.
 
 ### Customer Geography Selection
@@ -106,6 +107,12 @@ Service plans belong to a service type and define customer-facing pricing and bi
 When `allowCustomerLocationSelection` is true **and** the merged provider schema defines `region` or `location` as a string with a non-empty enum, customers may pass geography in `POST /subscriptions` `requestedConfig`. Setting the flag without a supported schema returns 400.
 
 For Hetzner and DigitalOcean, `region` and `location` are treated as aliases during merge and provisioning.
+
+### Customer Server Type Selection
+
+When `allowCustomerServerTypeSelection` is true **and** the effective provider schema has `basePriceFromField: 'serverType'`, admins configure `allowedServerTypes` and customers may pass `serverType` in `POST /subscriptions` `requestedConfig`. The value must be in `allowedServerTypes`; otherwise the request is rejected. When the flag is false, `serverType` is stripped from `requestedConfig` before merge.
+
+The resolved server type’s `priceMonthly` is snapshotted as `billingBasePrice` on subscription items for recurring billing and withdrawal refunds.
 
 ### CloudInit Configs Admin Route
 
@@ -121,6 +128,8 @@ Unauthenticated endpoints for external pricing pages:
 | GET    | `/public/service-plan-offerings/cheapest` | Lowest-priced active plan                      |
 
 Tenant is selected via `X-Tenant` (defaults to `default`). No provider secrets or internal margins are exposed.
+
+When a plan has `allowCustomerServerTypeSelection` and multiple `allowedServerTypes`, each offering includes optional **`totalPriceFrom`** (lowest customer total across allowed types). **`totalPrice`** remains the total for the plan’s default server type. Cheapest-plan comparison uses `totalPriceFrom ?? totalPrice`.
 
 ## Availability and Pricing
 
