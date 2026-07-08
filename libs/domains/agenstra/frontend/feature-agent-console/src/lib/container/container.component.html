@@ -186,36 +186,20 @@
         <span class="small" i18n="@@featureContainer-audit">Audit</span>
       </a>
       @if (canAccessUserManager$ | async) {
-        <a
-          routerLink="/users"
-          routerLinkActive="active"
+        <span
+          #adminNavTrigger
           class="sidebar__item border-top"
-          i18n-title="@@featureContainer-userManagementTitle"
-          title="User Management"
+          [class.active]="isAdminRouteActive()"
+          tabindex="0"
+          role="button"
+          i18n-title="@@featureContainer-adminTitle"
+          title="Admin"
+          i18n-aria-label="@@featureContainer-adminTitle"
+          aria-label="Admin"
         >
-          <i class="bi bi-people me-1"></i>
-          <span class="small" i18n="@@featureContainer-users">Users</span>
-        </a>
-        <a
-          routerLink="/filters"
-          routerLinkActive="active"
-          class="sidebar__item"
-          i18n-title="@@featureContainer-filtersTitle"
-          title="Filters"
-        >
-          <i class="bi bi-funnel me-1"></i>
-          <span class="small" i18n="@@featureContainer-filters">Filters</span>
-        </a>
-        <a
-          routerLink="/imports/atlassian"
-          routerLinkActive="active"
-          class="sidebar__item"
-          i18n-title="@@featureContainer-importTitle"
-          title="Import"
-        >
-          <i class="bi bi-cloud-download me-1"></i>
-          <span class="small" i18n="@@featureContainer-importTitle">Import</span>
-        </a>
+          <i class="bi bi-gear me-1"></i>
+          <span class="small" i18n="@@featureContainer-admin">Admin</span>
+        </span>
       }
     </aside>
   }

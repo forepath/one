@@ -842,6 +842,14 @@
         <source>DATEV</source>
         <target>DATEV</target>
       </trans-unit>
+      <trans-unit id="featureContainer-admin" datatype="html">
+        <source>Admin</source>
+        <target>Admin</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminTitle" datatype="html">
+        <source>Admin</source>
+        <target>Admin</target>
+      </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
         <target>Role <x id="role" equiv-text="role"/></target>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { BillingCapabilitiesFacade } from '@forepath/decabill/frontend/data-access-billing-console';
@@ -10,6 +10,28 @@ import { combineLatest, filter, map, startWith } from 'rxjs';
 
 import { ThemeService } from '../theme.service';
 
+interface BootstrapPopoverInstance {
+  dispose(): void;
+  hide(): void;
+  setContent(content: Record<string, string | Element | null | (() => string)>): void;
+}
+
+interface BootstrapPopoverConstructor {
+  getOrCreateInstance(element: Element, options?: Record<string, unknown>): BootstrapPopoverInstance;
+}
+
+interface AdminNavItem {
+  activePaths: string[];
+  icon: string;
+  label: string;
+  routerLink: string[];
+  title: string;
+}
+
+function getBootstrapPopover(): BootstrapPopoverConstructor | undefined {
+  return (window as Window & { bootstrap?: { Popover?: BootstrapPopoverConstructor } }).bootstrap?.Popover;
+}
+
 @Component({
   selector: 'framework-billing-console-container',
   imports: [CommonModule, RouterModule],
@@ -17,7 +39,7 @@ import { ThemeService } from '../theme.service';
   templateUrl: './container.component.html',
   standalone: true,
 })
-export class BillingConsoleContainerComponent implements OnInit {
+export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
   private readonly authenticationFacade = inject(AuthenticationFacade);
   private readonly billingCapabilitiesFacade = inject(BillingCapabilitiesFacade);
   private readonly destroyRef = inject(DestroyRef);
@@ -71,7 +93,27 @@ export class BillingConsoleContainerComponent implements OnInit {
    */
   readonly canAccessAdministration$ = this.authenticationFacade.canAccessBillingAdministration$;
 
-  readonly datevExportEnabled$ = this.billingCapabilitiesFacade.datevExportEnabled$;
+  readonly datevExportEnabled = toSignal(this.billingCapabilitiesFacade.datevExportEnabled$, {
+    initialValue: false,
+  });
+
+  readonly isAdminRouteActive = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map(() => this.router.url),
+      startWith(this.router.url),
+      map((url) => url.includes('/administration') || url.includes('/users')),
+    ),
+    {
+      initialValue: this.router.url.includes('/administration') || this.router.url.includes('/users'),
+    },
+  );
+
+  private adminPopover: BootstrapPopoverInstance | null = null;
+
+  @ViewChild('adminNavTrigger') set adminNavTrigger(ref: ElementRef<HTMLElement> | undefined) {
+    this.onAdminNavTriggerReady(ref);
+  }
 
   /**
    * Display label for the current user's role. Admin for api-key auth, otherwise user.role capitalized.
@@ -147,5 +189,169 @@ export class BillingConsoleContainerComponent implements OnInit {
    */
   onLogout(): void {
     this.authenticationFacade.logout();
+  }
+
+  ngOnDestroy(): void {
+    this.disposeAdminPopover();
+  }
+
+  onAdminNavTriggerReady(trigger: ElementRef<HTMLElement> | undefined): void {
+    if (!trigger) {
+      this.disposeAdminPopover();
+
+      return;
+    }
+
+    this.setupAdminPopover(trigger.nativeElement);
+  }
+
+  private setupAdminPopover(trigger: HTMLElement): void {
+    if (this.adminPopover) {
+      return;
+    }
+
+    const Popover = getBootstrapPopover();
+
+    if (!Popover) {
+      return;
+    }
+
+    const buildBody = (): HTMLElement => this.buildAdminNavGrid();
+
+    this.adminPopover = Popover.getOrCreateInstance(trigger, {
+      trigger: 'click',
+      placement: 'right',
+      container: 'body',
+      html: true,
+      sanitize: false,
+      customClass: 'sidebar-admin-popover',
+      title: ' ',
+      template: '<div class="popover sidebar-admin-popover" role="tooltip"><div class="popover-body"></div></div>',
+      content: buildBody,
+      popperConfig: (defaultConfig: any) => ({
+        ...defaultConfig,
+        placement: 'right-start',
+      }),
+    });
+
+    trigger.addEventListener('show.bs.popover', () => {
+      this.adminPopover?.setContent({ '.popover-body': buildBody() });
+    });
+  }
+
+  private disposeAdminPopover(): void {
+    this.adminPopover?.dispose();
+    this.adminPopover = null;
+  }
+
+  private buildAdminNavGrid(): HTMLElement {
+    const grid = document.createElement('div');
+
+    grid.className = 'sidebar-admin-popover__grid';
+    grid.setAttribute('role', 'menu');
+
+    for (const item of this.getAdminNavItems()) {
+      const link = document.createElement('a');
+
+      link.className = 'sidebar__item';
+      link.href = '#';
+      link.title = item.title;
+      link.setAttribute('role', 'menuitem');
+
+      if (this.isAdminNavItemActive(item)) {
+        link.classList.add('active');
+      }
+
+      const icon = document.createElement('i');
+
+      icon.className = `bi ${item.icon} me-1`;
+
+      const label = document.createElement('span');
+
+      label.className = 'small';
+      label.textContent = item.label;
+
+      link.append(icon, label);
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        void this.router.navigate(item.routerLink);
+        this.adminPopover?.hide();
+      });
+      grid.appendChild(link);
+    }
+
+    return grid;
+  }
+
+  private getAdminNavItems(): AdminNavItem[] {
+    const items: AdminNavItem[] = [
+      {
+        routerLink: ['/administration/service-types'],
+        activePaths: ['/administration/service-types'],
+        icon: 'bi-box',
+        title: $localize`:@@featureContainer-serviceTypesTitle:Providers`,
+        label: $localize`:@@featureContainer-serviceTypes:Providers`,
+      },
+      {
+        routerLink: ['/administration/cloud-init-configs'],
+        activePaths: ['/administration/cloud-init-configs'],
+        icon: 'bi-sliders',
+        title: $localize`:@@featureContainer-cloudInitConfigsTitle:Configs`,
+        label: $localize`:@@featureContainer-cloudInitConfigs:Configs`,
+      },
+      {
+        routerLink: ['/administration/service-plans'],
+        activePaths: ['/administration/service-plans'],
+        icon: 'bi-cart',
+        title: $localize`:@@featureContainer-servicePlansTitle:Plans`,
+        label: $localize`:@@featureContainer-servicePlans:Plans`,
+      },
+      {
+        routerLink: ['/users'],
+        activePaths: ['/users'],
+        icon: 'bi-people',
+        title: $localize`:@@featureContainer-userManagementTitle:User Management`,
+        label: $localize`:@@featureContainer-users:Users`,
+      },
+      {
+        routerLink: ['/administration/customer-profiles'],
+        activePaths: ['/administration/customer-profiles'],
+        icon: 'bi-person-vcard',
+        title: $localize`:@@featureContainer-adminProfilesTitle:Billing Profiles`,
+        label: $localize`:@@featureContainer-adminProfiles:Profiles`,
+      },
+      {
+        routerLink: ['/administration/projects'],
+        activePaths: ['/administration/projects'],
+        icon: 'bi-kanban-fill',
+        title: $localize`:@@featureContainer-adminProjectsTitle:Projects`,
+        label: $localize`:@@featureContainer-adminProjects:Projects`,
+      },
+      {
+        routerLink: ['/administration/billing'],
+        activePaths: ['/administration/billing'],
+        icon: 'bi-receipt-cutoff',
+        title: $localize`:@@featureContainer-adminBillingTitle:Billing`,
+        label: $localize`:@@featureContainer-adminBilling:Billing`,
+      },
+    ];
+
+    if (this.datevExportEnabled()) {
+      items.push({
+        routerLink: ['/administration/datev-exports'],
+        activePaths: ['/administration/datev-exports'],
+        icon: 'bi-file-earmark-spreadsheet',
+        title: $localize`:@@featureContainer-adminDatevExportsTitle:DATEV Exports`,
+        label: $localize`:@@featureContainer-adminDatevExports:DATEV`,
+      });
+    }
+
+    return items;
+  }
+
+  private isAdminNavItemActive(item: AdminNavItem): boolean {
+    const url = this.router.url;
+
+    return item.activePaths.some((path) => url.includes(path));
   }
 }
