@@ -93,6 +93,8 @@ export class ProjectBoardComponent implements OnInit {
   @ViewChild('detailModal', { static: false }) private detailModal!: ElementRef<HTMLDivElement>;
   @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
   @ViewChild('createTimeModal', { static: false }) private createTimeModal!: ElementRef<HTMLDivElement>;
+  @ViewChild('deleteTicketConfirmModal', { static: false })
+  private deleteTicketConfirmModal!: ElementRef<HTMLDivElement>;
   @ViewChild('globalSearchModal', { static: false }) private globalSearchModal?: ElementRef<HTMLDivElement>;
   @ViewChild('globalSearchInput', { static: false }) private globalSearchInput?: ElementRef<HTMLInputElement>;
 
@@ -127,6 +129,7 @@ export class ProjectBoardComponent implements OnInit {
   readonly draggedTicket = signal<ProjectTicketResponse | null>(null);
   readonly dragOverLane = signal<BoardLaneStatus | null>(null);
   readonly globalSearchQuery = signal('');
+  readonly ticketPendingDelete = signal<{ id: string; title: string } | null>(null);
 
   readonly ticketsList = toSignal(this.ticketsFacade.tickets$, { initialValue: [] as ProjectTicketResponse[] });
   readonly globalSearchHits = computed(() =>
@@ -242,6 +245,18 @@ export class ProjectBoardComponent implements OnInit {
       modal: () => this.createTimeModal,
       destroyRef: this.destroyRef,
       onSuccess: () => this.resetTicketTimeForm(),
+    });
+
+    watchBillingMutationModalClose({
+      loading$: this.saving$,
+      error$: this.error$,
+      modal: () => this.deleteTicketConfirmModal,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        this.ticketPendingDelete.set(null);
+        this.detailModalSwap.suspended = false;
+        this.closeDetail();
+      },
     });
   }
 
@@ -507,6 +522,30 @@ export class ProjectBoardComponent implements OnInit {
     if (!d || d.locked) return;
 
     this.ticketsFacade.update(this.projectId, ticketId, { locked: true });
+  }
+
+  onRequestDeleteTicket(ticket: ProjectTicketResponse): void {
+    if (!this.isAdmin || ticket.locked) return;
+
+    this.ticketPendingDelete.set({ id: ticket.id, title: ticket.title });
+    swapToOverlayBillingModal({
+      underlyingModal: this.detailModal,
+      overlayModal: this.deleteTicketConfirmModal,
+      swapState: this.detailModalSwap,
+    });
+  }
+
+  onCancelDeleteTicketConfirm(): void {
+    hideBillingModal(this.deleteTicketConfirmModal);
+    this.ticketPendingDelete.set(null);
+  }
+
+  onConfirmDeleteTicket(): void {
+    const pending = this.ticketPendingDelete();
+
+    if (!pending || !this.isAdmin) return;
+
+    this.ticketsFacade.remove(this.projectId, pending.id);
   }
 
   lockedTicketLabel(): string {
