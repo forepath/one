@@ -628,6 +628,68 @@
           </div>
         }
       </div>
+      @if (isAdmin && detail(); as del) {
+        <div class="modal-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div>
+            @if (!del.locked) {
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="onRequestDeleteTicket(del)"
+                [disabled]="saving()"
+                i18n="@@featureProjectBoard-delete"
+                i18n-title="@@featureProjectBoard-deleteTitle"
+                title="Permanently delete this ticket"
+              >
+                Delete
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<div #deleteTicketConfirmModal class="modal fade" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" i18n="@@featureProjectBoard-deleteConfirmModalTitle">Delete ticket</h2>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          i18n-aria-label="@@featureProjectBoard-modalCloseAria"
+          [disabled]="saving()"
+          (click)="onCancelDeleteTicketConfirm()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        @if (ticketPendingDelete(); as pend) {
+          <p>
+            <span i18n="@@featureProjectBoard-deleteConfirmModalLead"
+              >Are you sure you want to delete this ticket?</span
+            >
+            <strong class="d-block mt-1">{{ pend.title }}</strong>
+          </p>
+        }
+        <p class="text-danger mb-0">
+          <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+          <span i18n="@@featureProjectBoard-deleteConfirmCannotUndo">This action cannot be undone.</span>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="onConfirmDeleteTicket()"
+          [disabled]="saving()"
+          i18n="@@featureProjectBoard-delete"
+        >
+          Delete
+        </button>
+      </div>
     </div>
   </div>
 </div>

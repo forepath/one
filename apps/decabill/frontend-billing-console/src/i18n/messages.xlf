@@ -2394,6 +2394,21 @@
       <trans-unit id="featureProjectBoard-create" datatype="html">
         <source>Create</source>
       </trans-unit>
+      <trans-unit id="featureProjectBoard-delete" datatype="html">
+        <source>Delete</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-deleteTitle" datatype="html">
+        <source>Permanently delete this ticket</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-deleteConfirmModalTitle" datatype="html">
+        <source>Delete ticket</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-deleteConfirmModalLead" datatype="html">
+        <source>Are you sure you want to delete this ticket?</source>
+      </trans-unit>
+      <trans-unit id="featureProjectBoard-deleteConfirmCannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+      </trans-unit>
       <trans-unit id="featureProjectBoard-laneDraft" datatype="html">
         <source>Draft</source>
       </trans-unit>
