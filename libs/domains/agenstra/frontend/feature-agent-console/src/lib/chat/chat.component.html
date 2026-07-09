@@ -42,8 +42,12 @@
               (click)="onToggleFileTree()"
               [title]="getFileTreeToggleTitle()"
             >
-              <i class="bi" [class.bi-folder]="fileTreeVisible()" [class.bi-folder-x]="!fileTreeVisible()"></i>
-              <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-fileTree">File Tree</span>
+              <i
+                class="bi"
+                [class.bi-folder]="fileTreeVisible()"
+                [class.bi-folder-x]="!fileTreeVisible()"
+                aria-hidden="true"
+              ></i>
             </button>
             @if ((selectedAgent$ | async)?.agentType !== 'openclaw') {
               <button
@@ -54,8 +58,12 @@
                 (click)="onToggleChat()"
                 [title]="getChatToggleTitle()"
               >
-                <i class="bi" [class.bi-chat-dots]="chatVisible()" [class.bi-chat-dots-fill]="!chatVisible()"></i>
-                <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-chat">Chat</span>
+                <i
+                  class="bi"
+                  [class.bi-chat-dots]="chatVisible()"
+                  [class.bi-chat-dots-fill]="!chatVisible()"
+                  aria-hidden="true"
+                ></i>
               </button>
             }
             <button
@@ -66,8 +74,12 @@
               (click)="onToggleTerminal()"
               [title]="getTerminalToggleTitle()"
             >
-              <i class="bi" [class.bi-terminal]="!terminalVisible()" [class.bi-terminal-fill]="terminalVisible()"></i>
-              <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-terminal">Terminal</span>
+              <i
+                class="bi"
+                [class.bi-terminal]="!terminalVisible()"
+                [class.bi-terminal-fill]="terminalVisible()"
+                aria-hidden="true"
+              ></i>
             </button>
             @if (fileManagerContext() === 'app') {
               <button
@@ -78,8 +90,7 @@
                 (click)="onToggleGitManager()"
                 [title]="getGitManagerToggleTitle()"
               >
-                <i class="bi bi-git"></i>
-                <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-versionControl">Version Control</span>
+                <i class="bi bi-git" aria-hidden="true"></i>
               </button>
             }
           </div>
@@ -105,8 +116,7 @@
                 i18n-title="@@featureChat-closeEditor"
                 title="Close Editor"
               >
-                <i class="bi bi-x-lg"></i>
-                <span class="ms-1 d-none d-md-inline" i18n="@@featureChat-closeEditor">Close Editor</span>
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
               </button>
             </div>
           }
@@ -127,9 +137,10 @@
             [disabled]="(clientsCreating$ | async) === true"
             i18n-title="@@featureChat-addWorkspaceTitle"
             title="Add Workspace"
+            i18n-aria-label="@@featureChat-addWorkspaceTitle"
+            aria-label="Add Workspace"
           >
-            <i class="bi bi-plus-circle me-1"></i>
-            <span i18n="@@featureChat-add">Add</span>
+            <i class="bi bi-plus-circle" aria-hidden="true"></i>
           </button>
         </div>
         <form #searchClientForm="ngForm">
@@ -302,9 +313,10 @@
                 [disabled]="!(activeClientId$ | async) || (agentsCreating$ | async) === true"
                 i18n-title="@@featureChat-addEnvironmentTitle"
                 title="Add Environment"
+                i18n-aria-label="@@featureChat-addEnvironmentTitle"
+                aria-label="Add Environment"
               >
-                <i class="bi bi-plus-circle me-1"></i>
-                <span i18n="@@featureChat-add">Add</span>
+                <i class="bi bi-plus-circle" aria-hidden="true"></i>
               </button>
             }
           </div>
@@ -689,8 +701,7 @@
                     (click)="onToggleEditor(true, getOpenInNewWindow())"
                     [title]="getOpenEditorTitle()"
                   >
-                    <i class="bi bi-code-square"></i>
-                    <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openEditor">Open Editor</span>
+                    <i class="bi bi-code-square" aria-hidden="true"></i>
                   </button>
                   @if ((activeClient$ | async)?.canManageWorkspaceConfiguration) {
                     <button
@@ -699,10 +710,7 @@
                       (click)="onOpenAgentConfigFiles(getOpenInNewWindow())"
                       [title]="getOpenAgentConfigFilesTitle()"
                     >
-                      <i class="bi bi-file-earmark-text"></i>
-                      <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openAgentConfigFiles"
-                        >Open agent config</span
-                      >
+                      <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
                     </button>
                   }
                 </div>
@@ -715,10 +723,7 @@
                       class="btn btn-sm btn-outline-primary"
                       (click)="onToggleVNC(activeClient, selectedAgent)"
                     >
-                      <i class="bi bi-window-desktop"></i>
-                      <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openVirtualDesktop"
-                        >Open Virtual Desktop</span
-                      >
+                      <i class="bi bi-window-desktop" aria-hidden="true"></i>
                     </button>
                   }
                   @if (selectedAgent.ssh?.port) {
@@ -729,8 +734,7 @@
                       [class.btn-outline-primary]="!showSSHCommand()"
                       (click)="onToggleSSHCommand()"
                     >
-                      <i class="bi bi-terminal"></i>
-                      <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-sshAccess">SSH Access</span>
+                      <i class="bi bi-terminal" aria-hidden="true"></i>
                     </button>
                   }
                   <button
@@ -741,8 +745,7 @@
                     (click)="onToggleDeploymentManager(true, getDeploymentOpenInNewWindow())"
                     [title]="getDeploymentManagerToggleTitle()"
                   >
-                    <i class="bi bi-rocket-takeoff"></i>
-                    <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openDeployments">Open Deployments</span>
+                    <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
                   </button>
                 }
               }
@@ -1390,8 +1393,7 @@
                     (click)="onToggleEditor(true, getOpenInNewWindow())"
                     [title]="getOpenEditorTitle()"
                   >
-                    <i class="bi bi-code-square"></i>
-                    <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openEditor">Open Editor</span>
+                    <i class="bi bi-code-square" aria-hidden="true"></i>
                   </button>
                   @if ((activeClient$ | async)?.canManageWorkspaceConfiguration) {
                     <button
@@ -1400,10 +1402,7 @@
                       (click)="onOpenAgentConfigFiles(getOpenInNewWindow())"
                       [title]="getOpenAgentConfigFilesTitle()"
                     >
-                      <i class="bi bi-sliders"></i>
-                      <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openAgentConfigFiles"
-                        >Open agent config</span
-                      >
+                      <i class="bi bi-sliders" aria-hidden="true"></i>
                     </button>
                   }
                 </div>
@@ -1416,10 +1415,7 @@
                       class="btn btn-sm btn-outline-primary"
                       (click)="onToggleVNC(activeClient, selectedAgent)"
                     >
-                      <i class="bi bi-window-desktop"></i>
-                      <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openVirtualDesktop"
-                        >Open Virtual Desktop</span
-                      >
+                      <i class="bi bi-window-desktop" aria-hidden="true"></i>
                     </button>
                   }
                   @if (selectedAgent.ssh?.port) {
@@ -1430,8 +1426,7 @@
                       [class.btn-outline-primary]="!showSSHCommand()"
                       (click)="onToggleSSHCommand()"
                     >
-                      <i class="bi bi-terminal"></i>
-                      <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-sshAccess">SSH Access</span>
+                      <i class="bi bi-terminal" aria-hidden="true"></i>
                     </button>
                   }
                   <button
@@ -1442,8 +1437,7 @@
                     (click)="onToggleDeploymentManager(true, getDeploymentOpenInNewWindow())"
                     [title]="getDeploymentManagerToggleTitle()"
                   >
-                    <i class="bi bi-rocket-takeoff"></i>
-                    <span class="ms-1 d-none d-lg-inline" i18n="@@featureChat-openDeployments">Open Deployments</span>
+                    <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
                   </button>
                 }
               }
@@ -1921,16 +1915,7 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          [disabled]="(clientsDeleting$ | async) === true"
-          i18n="@@featureChat-cancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger"
+          class="btn btn-primary"
           (click)="confirmDeleteClient()"
           [disabled]="(clientsDeleting$ | async) === true"
         >
@@ -1981,16 +1966,7 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          [disabled]="(agentsDeleting$ | async) === true"
-          i18n="@@featureChat-cancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger"
+          class="btn btn-primary"
           (click)="confirmDeleteAgent()"
           [disabled]="(agentsDeleting$ | async) === true"
         >
@@ -2493,14 +2469,6 @@
         </div>
         <div class="modal-footer">
           <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
-          >
-            Cancel
-          </button>
-          <button
             type="submit"
             class="btn btn-primary"
             [disabled]="!addClientForm.valid || (clientsCreating$ | async) === true || (provisioning$ | async) === true"
@@ -2509,9 +2477,9 @@
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
             @if (useProvisioning()) {
-              <span i18n="@@featureChat-provisionServer">Provision Server</span>
+              <span i18n="@@featureChat-provisionServer">Provision</span>
             } @else {
-              <span i18n="@@featureChat-createWorkspace">Create Workspace</span>
+              <span i18n="@@featureChat-createWorkspace">Create</span>
             }
           </button>
         </div>
@@ -2698,14 +2666,6 @@
         </div>
         <div class="modal-footer">
           <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            [disabled]="(agentsCreating$ | async) === true"
-          >
-            Cancel
-          </button>
-          <button
             type="submit"
             class="btn btn-primary"
             [disabled]="!addAgentForm.valid || (agentsCreating$ | async) === true"
@@ -2713,7 +2673,7 @@
             @if (agentsCreating$ | async) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
-            <span i18n="@@featureChat-createEnvironment">Create Environment</span>
+            <span i18n="@@featureChat-createEnvironment">Create</span>
           </button>
         </div>
       </form>
@@ -2888,14 +2848,6 @@
         </div>
         <div class="modal-footer">
           <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            [disabled]="(clientsUpdating$ | async) === true"
-          >
-            Cancel
-          </button>
-          <button
             type="submit"
             class="btn btn-primary"
             [disabled]="!updateClientForm.valid || (clientsUpdating$ | async) === true"
@@ -2903,7 +2855,7 @@
             @if (clientsUpdating$ | async) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
-            <span i18n="@@featureChat-updateWorkspace">Update Workspace</span>
+            <span i18n="@@featureChat-updateWorkspace">Save</span>
           </button>
         </div>
       </form>
@@ -2983,14 +2935,6 @@
         </div>
         <div class="modal-footer">
           <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            [disabled]="(agentsUpdating$ | async) === true"
-          >
-            Cancel
-          </button>
-          <button
             type="submit"
             class="btn btn-primary"
             [disabled]="!updateAgentForm.valid || (agentsUpdating$ | async) === true"
@@ -2998,7 +2942,7 @@
             @if (agentsUpdating$ | async) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
-            <span i18n="@@featureChat-updateEnvironment">Update Environment</span>
+            <span i18n="@@featureChat-updateEnvironment">Save</span>
           </button>
         </div>
       </form>
@@ -3201,17 +3145,6 @@
           >
         </div>
       </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          (click)="onCloseWorkspaceConfigurationModal()"
-          [disabled]="mutationInProgress"
-        >
-          <span i18n="@@featureChat-close">Close</span>
-        </button>
-      </div>
     </div>
   </div>
 </div>
@@ -3410,17 +3343,6 @@
           >
         </div>
       </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          (click)="onCloseEnvironmentVariablesModal()"
-          [disabled]="(environmentVariablesCreating$ | async) === true"
-        >
-          <span i18n="@@featureChat-close">Close</span>
-        </button>
-      </div>
     </div>
   </div>
 </div>
@@ -3549,15 +3471,6 @@
         }
       </div>
       <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          data-bs-dismiss="modal"
-          (click)="onCloseTicketAutonomyModal()"
-          [disabled]="autonomySaving()"
-        >
-          <span i18n="@@featureChat-close">Close</span>
-        </button>
         <button
           type="button"
           class="btn btn-outline-secondary"
@@ -3740,17 +3653,6 @@
             }
           </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          (click)="onCloseClientUsersModal()"
-          [disabled]="(clientUsersAdding$ | async) === true"
-        >
-          <span i18n="@@featureChat-close">Close</span>
-        </button>
       </div>
     </div>
   </div>

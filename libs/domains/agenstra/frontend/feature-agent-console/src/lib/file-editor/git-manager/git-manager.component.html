@@ -147,8 +147,10 @@
                     [disabled]="isAnyOperationInProgress$ | async"
                     i18n-title="@@featureGitManager-unstageAllTitle"
                     title="Unstage all"
+                    i18n-aria-label="@@featureGitManager-unstageAllTitle"
+                    aria-label="Unstage all"
                   >
-                    <span i18n="@@featureGitManager-unstageAllButton">Unstage All</span>
+                    <i class="bi bi-dash-circle" aria-hidden="true"></i>
                   </button>
                 </div>
               </div>
@@ -199,8 +201,10 @@
                     [disabled]="isAnyOperationInProgress$ | async"
                     i18n-title="@@featureGitManager-stageAllTitle"
                     title="Stage all"
+                    i18n-aria-label="@@featureGitManager-stageAllTitle"
+                    aria-label="Stage all"
                   >
-                    <span i18n="@@featureGitManager-stageAllButton">Stage All</span>
+                    <i class="bi bi-plus-circle" aria-hidden="true"></i>
                   </button>
                 </div>
               </div>

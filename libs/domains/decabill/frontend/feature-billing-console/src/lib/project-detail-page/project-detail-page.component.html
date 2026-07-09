@@ -249,9 +249,16 @@
           <h5 class="mb-0 fw-semibold h6" i18n="@@featureProjectDetail-timeEntries">Time entries</h5>
           @if (isAdminView()) {
             <div class="d-flex gap-2">
-              <button type="button" class="btn btn-sm btn-primary" (click)="openCreateTimeModal()">
-                <i class="bi bi-plus-circle me-1"></i>
-                <span i18n="@@featureProjectDetail-addTime">Add</span>
+              <button
+                type="button"
+                class="btn btn-sm btn-primary"
+                (click)="openCreateTimeModal()"
+                i18n-title="@@featureProjectDetail-addTime"
+                title="Add"
+                i18n-aria-label="@@featureProjectDetail-addTime"
+                aria-label="Add"
+              >
+                <i class="bi bi-plus-circle" aria-hidden="true"></i>
               </button>
               <button
                 type="button"
@@ -263,18 +270,24 @@
                   (loadingSummary$ | async) === true ||
                   !hasUnbilledTime(summary$ | async)
                 "
+                i18n-title="@@featureProjectDetail-billTime"
+                title="Bill unbilled time"
+                i18n-aria-label="@@featureProjectDetail-billTime"
+                aria-label="Bill unbilled time"
               >
-                <i class="bi bi-cash-coin me-1" aria-hidden="true"></i>
-                <span i18n="@@featureProjectDetail-billTime">Bill unbilled time</span>
+                <i class="bi bi-cash-coin" aria-hidden="true"></i>
               </button>
               <button
                 type="button"
                 class="btn btn-sm btn-outline-secondary"
                 (click)="openTimeReportModal()"
                 [disabled]="timeReportSaving() || timeReportBoundsLoading()"
+                i18n-title="@@featureProjectDetail-timeReport"
+                title="Time report"
+                i18n-aria-label="@@featureProjectDetail-timeReport"
+                aria-label="Time report"
               >
-                <i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>
-                <span i18n="@@featureProjectDetail-timeReport">Time report</span>
+                <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
               </button>
             </div>
           }
@@ -293,7 +306,7 @@
             } @else {
               <div class="list-group list-group-flush">
                 @for (entry of entries; track entry.id) {
-                  <div class="list-group-item d-flex justify-content-between align-items-start gap-3 border-bottom">
+                  <div class="list-group-item d-flex justify-content-between align-items-center gap-3 border-bottom">
                     <div class="min-w-0 flex-grow-1">
                       <div class="fw-semibold mb-1">{{ timeEntryTitle(entry) }}</div>
                       <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
@@ -386,15 +399,12 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureProjectDetail-cancel">
-          Cancel
-        </button>
         <button
           type="button"
           class="btn btn-primary"
           (click)="submitTimeEntry()"
           [disabled]="(timeSaving$ | async) === true || !isTimeFormValid()"
-          i18n="@@featureProjectDetail-createTime"
+          i18n="@@featureProjectDetail-create"
         >
           Create
         </button>
@@ -441,15 +451,12 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureProjectDetail-cancel">
-          Cancel
-        </button>
         <button
           type="button"
           class="btn btn-primary"
           (click)="submitEditTimeEntry()"
           [disabled]="(timeSaving$ | async) === true || !isEditTimeFormValid()"
-          i18n="@@featureProjectDetail-saveTime"
+          i18n="@@featureProjectDetail-save"
         >
           Save
         </button>
@@ -473,15 +480,12 @@
         }
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureProjectDetail-cancel">
-          Cancel
-        </button>
         <button
           type="button"
-          class="btn btn-danger"
+          class="btn btn-primary"
           (click)="submitDeleteTimeEntry()"
           [disabled]="(timeSaving$ | async) === true || !timeEntryToDelete"
-          i18n="@@featureProjectDetail-deleteTime"
+          i18n="@@featureProjectDetail-delete"
         >
           Delete
         </button>
@@ -560,8 +564,16 @@
               "
             ></ng-container>
           }
-          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addBillTimeLineItem()">
-            <span i18n="@@featureProjectDetail-billTimeAddLine">Add line item</span>
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            (click)="addBillTimeLineItem()"
+            title="Add line item"
+            i18n-title="@@featureProjectDetail-billTimeAddLine"
+            aria-label="Add line item"
+            i18n-aria-label="@@featureProjectDetail-billTimeAddLine"
+          >
+            <i class="bi bi-plus-circle" aria-hidden="true"></i>
           </button>
           @if (error$ | async; as err) {
             <div class="alert alert-danger mt-3 mb-0" role="alert">{{ err }}</div>
@@ -569,9 +581,6 @@
         }
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureProjectDetail-cancel">
-          Cancel
-        </button>
         <button
           type="button"
           class="btn btn-primary"
@@ -583,9 +592,9 @@
             !isBillTimeFormValid() ||
             !hasValidBillTimeCustomLineItems()
           "
-          i18n="@@featureProjectDetail-confirmBillTime"
+          i18n="@@featureProjectDetail-bill"
         >
-          Bill time
+          Bill
         </button>
       </div>
     </div>
@@ -657,17 +666,14 @@
         }
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureProjectDetail-cancel">
-          Cancel
-        </button>
         <button
           type="button"
           class="btn btn-primary"
           (click)="submitTimeReport()"
           [disabled]="timeReportSaving() || timeReportBoundsLoading() || !isTimeReportFormValid()"
-          i18n="@@featureProjectDetail-saveTimeReport"
+          i18n="@@featureProjectDetail-save"
         >
-          Save report
+          Save
         </button>
       </div>
     </div>
@@ -736,8 +742,16 @@
       <span i18n="@@featureAdminInvoices-lineTotal">Line total</span>:
       <strong class="ms-1">{{ formatBillTimeLineTotal(line) }}</strong>
     </p>
-    <button type="button" class="btn btn-link btn-sm text-danger p-0 mt-2" (click)="removeBillTimeLineItem(i)">
-      <span i18n="@@featureAdminInvoices-removeLine">Remove line</span>
+    <button
+      type="button"
+      class="btn btn-sm btn-outline-danger mt-2"
+      (click)="removeBillTimeLineItem(i)"
+      title="Remove line"
+      i18n-title="@@featureAdminInvoices-removeLine"
+      aria-label="Remove line"
+      i18n-aria-label="@@featureAdminInvoices-removeLine"
+    >
+      <i class="bi bi-trash" aria-hidden="true"></i>
     </button>
   </div>
 </ng-template>

@@ -212,7 +212,7 @@
               </div>
             } @else {
               @for (item of filteredSubscriptionsWithServerInfo(); track item.subscription.id) {
-                <div class="list-group-item d-flex justify-content-between align-items-start border-bottom gap-2">
+                <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-2">
                   <div class="min-w-0">
                     <div class="fw-semibold mb-1">
                       {{ instanceDisplayTitle(item) }}

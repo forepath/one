@@ -16,9 +16,16 @@
         <i class="bi bi-search" aria-hidden="true"></i>
       </button>
       @if (isAdmin) {
-        <button type="button" class="btn btn-sm btn-primary" (click)="showCreateTicketModal()">
-          <i class="bi bi-plus-circle me-1"></i>
-          <span i18n="@@featureProjectBoard-add">Add</span>
+        <button
+          type="button"
+          class="btn btn-sm btn-primary"
+          (click)="showCreateTicketModal()"
+          i18n-title="@@featureProjectBoard-add"
+          title="Add"
+          i18n-aria-label="@@featureProjectBoard-add"
+          aria-label="Add"
+        >
+          <i class="bi bi-plus-circle" aria-hidden="true"></i>
         </button>
       }
     </div>
@@ -424,9 +431,12 @@
                     class="btn btn-outline-secondary btn-sm"
                     (click)="showCreateSubtaskModal()"
                     [disabled]="saving()"
-                    i18n="@@featureProjectBoard-addSubtask"
+                    i18n-title="@@featureProjectBoard-addSubtask"
+                    title="Add subtask"
+                    i18n-aria-label="@@featureProjectBoard-addSubtask"
+                    aria-label="Add subtask"
                   >
-                    Add subtask
+                    <i class="bi bi-plus-circle" aria-hidden="true"></i>
                   </button>
                 }
               </div>
@@ -483,9 +493,12 @@
                     class="btn btn-outline-secondary btn-sm"
                     (click)="showCreateTimeEntryModal()"
                     [disabled]="ticketTimeSaving()"
-                    i18n="@@featureProjectBoard-addTimeEntry"
+                    i18n-title="@@featureProjectBoard-addTimeEntry"
+                    title="Add time"
+                    i18n-aria-label="@@featureProjectBoard-addTimeEntry"
+                    aria-label="Add time"
                   >
-                    Add time
+                    <i class="bi bi-plus-circle" aria-hidden="true"></i>
                   </button>
                 }
               </div>
@@ -615,16 +628,6 @@
           </div>
         }
       </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="closeDetail()"
-          i18n="@@featureProjectBoard-close"
-        >
-          Close
-        </button>
-      </div>
     </div>
   </div>
 </div>
@@ -725,15 +728,7 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="closeCreateModal()"
-          i18n="@@featureProjectBoard-cancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
+          class="btn btn-primary"
           (click)="submitCreate()"
           [disabled]="saving()"
           i18n="@@featureProjectBoard-create"
@@ -819,16 +814,6 @@
           </div>
         }
       </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="onCloseGlobalSearchModal()"
-          i18n="@@featureProjectBoard-globalSearchClose"
-        >
-          Close
-        </button>
-      </div>
     </div>
   </div>
 </div>
@@ -876,15 +861,12 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureProjectBoard-cancel">
-          Cancel
-        </button>
         <button
           type="button"
           class="btn btn-primary"
           (click)="submitTicketTimeEntry()"
           [disabled]="ticketTimeSaving() || !isTicketTimeFormValid()"
-          i18n="@@featureProjectBoard-createTimeEntry"
+          i18n="@@featureProjectBoard-create"
         >
           Create
         </button>

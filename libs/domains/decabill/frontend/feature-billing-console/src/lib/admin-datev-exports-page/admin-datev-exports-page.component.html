@@ -6,9 +6,12 @@
       class="btn btn-sm btn-primary"
       (click)="openExportModal()"
       [disabled]="triggerLoading$ | async"
+      i18n-title="@@featureAdminDatevExports-trigger"
+      title="Export month"
+      i18n-aria-label="@@featureAdminDatevExports-trigger"
+      aria-label="Export month"
     >
-      <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>
-      <span i18n="@@featureAdminDatevExports-trigger">Export month</span>
+      <i class="bi bi-calendar-plus" aria-hidden="true"></i>
     </button>
   </div>
 
@@ -69,7 +72,7 @@
         <div class="list-group list-group-flush">
           @for (item of items(); track item.id) {
             <div
-              class="list-group-item d-flex justify-content-between align-items-start border-bottom gap-3"
+              class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3"
               [class.list-group-item-primary]="isQueuedExport(item)"
             >
               <div class="min-w-0">
@@ -196,14 +199,6 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          i18n="@@featureAdminDatevExports-cancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
           class="btn btn-primary"
           (click)="submitTriggerExport()"
           [disabled]="triggerLoading$ | async"
@@ -211,7 +206,7 @@
           @if (triggerLoading$ | async) {
             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
           } @else {
-            <span i18n="@@featureAdminDatevExports-confirmExport">Start export</span>
+            <span i18n="@@featureAdminDatevExports-export">Export</span>
           }
         </button>
       </div>

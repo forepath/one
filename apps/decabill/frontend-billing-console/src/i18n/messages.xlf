@@ -164,6 +164,21 @@
       <trans-unit id="featureAdminInvoices-deleteConfirm" datatype="html">
         <source>Delete this draft invoice permanently?</source>
         </trans-unit>
+      <trans-unit id="featureAdminInvoices-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-issue" datatype="html">
+        <source>Issue</source>
+        </trans-unit>
       <trans-unit id="featureAdminInvoices-lineDescription" datatype="html">
         <source>Description</source>
         </trans-unit>
@@ -190,6 +205,9 @@
         </trans-unit>
       <trans-unit id="featureAdminInvoices-removeLine" datatype="html">
         <source>Remove line</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-addLineItem" datatype="html">
+        <source>Add line item</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-mobilePanelOverview" datatype="html">
         <source>Dashboard</source>
@@ -235,6 +253,18 @@
         </trans-unit>
       <trans-unit id="featureAdminProfiles-deleteConfirm" datatype="html">
         <source>Delete this billing profile?</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-delete" datatype="html">
+        <source>Delete</source>
         </trans-unit>
       <trans-unit id="featureAdminDatevExports-title" datatype="html">
         <source>DATEV exports</source>
@@ -292,6 +322,9 @@
         </trans-unit>
       <trans-unit id="featureAdminDatevExports-confirmExport" datatype="html">
         <source>Start export</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-export" datatype="html">
+        <source>Export</source>
         </trans-unit>
       <trans-unit id="featureAdminDatevExports-queuedMessage" datatype="html">
         <source>Queued — waiting for export to start…</source>
@@ -540,13 +573,19 @@
         <source>Environment variables</source>
         </trans-unit>
       <trans-unit id="featureCloudInitConfigs-addEnvVar" datatype="html">
-        <source> Add line </source>
+        <source>Add line</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-loadExample" datatype="html">
+        <source>Load example</source>
         </trans-unit>
       <trans-unit id="featureCloudInitConfigs-cancel" datatype="html">
         <source> Cancel </source>
         </trans-unit>
       <trans-unit id="featureCloudInitConfigs-save" datatype="html">
         <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-create" datatype="html">
+        <source>Create</source>
         </trans-unit>
       <trans-unit id="featureCloudInitConfigs-editTitle" datatype="html">
         <source>Edit CloudInit config</source>
@@ -556,6 +595,9 @@
         </trans-unit>
       <trans-unit id="featureCloudInitConfigs-deleteConfirm" datatype="html">
         <source>Delete CloudInit config &quot;<x id="INTERPOLATION" equiv-text="{{ configToDelete.name }}"/>&quot;?</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureCloudInitConfigs-delete" datatype="html">
         <source> Delete </source>
@@ -773,8 +815,8 @@
       <trans-unit id="featureInvoices-cancel" datatype="html">
         <source> Cancel </source>
         </trans-unit>
-      <trans-unit id="featureInvoices-createSubmit" datatype="html">
-        <source> Create </source>
+      <trans-unit id="featureInvoices-create" datatype="html">
+        <source>Create</source>
         </trans-unit>
       <trans-unit id="featureInvoices-createInvoiceDisabledFinalized" datatype="html">
         <source>Subscription is finalized; no further invoices can be created.</source>
@@ -1028,8 +1070,11 @@
       <trans-unit id="featureServicePlans-deleteConfirm" datatype="html">
         <source> Are you sure you want to delete the service plan &quot;<x id="INTERPOLATION" equiv-text="{{ plan.name }}"/>&quot;? </source>
         </trans-unit>
-      <trans-unit id="featureServicePlans-confirmDelete" datatype="html">
-        <source> Delete </source>
+      <trans-unit id="featureServicePlans-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-delete" datatype="html">
+        <source>Delete</source>
         </trans-unit>
       <trans-unit id="featureBilling-planHighlightsSingular" datatype="html">
         <source>1 highlight</source>
@@ -1127,8 +1172,11 @@
       <trans-unit id="featureServiceTypes-deleteConfirm" datatype="html">
         <source> Are you sure you want to delete the service type &quot;<x id="INTERPOLATION" equiv-text="{{ st.name }}"/>&quot; (<x id="INTERPOLATION_1" equiv-text="{{ st.key }}"/>)? </source>
         </trans-unit>
-      <trans-unit id="featureServiceTypes-confirmDelete" datatype="html">
-        <source> Delete </source>
+      <trans-unit id="featureServiceTypes-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-delete" datatype="html">
+        <source>Delete</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-title" datatype="html">
         <source>Plans &amp; Subscriptions</source>
@@ -1367,6 +1415,9 @@
       <trans-unit id="featureSubscriptions-confirmCancel" datatype="html">
         <source> Confirm cancel </source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-cancel" datatype="html">
+        <source>Cancel</source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-withdrawSubscriptionTitle" datatype="html">
         <source> Withdraw subscription? </source>
         </trans-unit>
@@ -1382,14 +1433,17 @@
       <trans-unit id="featureSubscriptions-confirmWithdraw" datatype="html">
         <source> Confirm withdrawal </source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-withdraw" datatype="html">
+        <source>Withdraw</source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-resumeSubscriptionTitle" datatype="html">
         <source> Resume subscription? </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-resumeSubscriptionConfirm" datatype="html">
         <source> Resume this subscription so it continues after the current period. </source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-confirmResume" datatype="html">
-        <source> Resume </source>
+      <trans-unit id="featureSubscriptions-resume" datatype="html">
+        <source>Resume</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-withdrawOrderTitle" datatype="html">
         <source> Withdraw order? </source>
@@ -1439,8 +1493,8 @@
       <trans-unit id="featureSubscriptions-phone" datatype="html">
         <source>Phone</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-saveProfile" datatype="html">
-        <source> Save </source>
+      <trans-unit id="featureSubscriptions-save" datatype="html">
+        <source>Save</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-mobilePanelSubscriptions" datatype="html">
         <source>Subscriptions</source>
@@ -2211,6 +2265,9 @@
       <trans-unit id="featureAdminProjects-deleteConfirm" datatype="html">
         <source>Delete this project? Unbilled time must be cleared first.</source>
       </trans-unit>
+      <trans-unit id="featureAdminProjects-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+      </trans-unit>
       <trans-unit id="featureProjectDetail-trackedTime" datatype="html">
         <source>Tracked time</source>
       </trans-unit>
@@ -2259,6 +2316,18 @@
       <trans-unit id="featureProjectDetail-billTime" datatype="html">
         <source>Bill unbilled time</source>
       </trans-unit>
+      <trans-unit id="featureProjectDetail-bill" datatype="html">
+        <source>Bill</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
       <trans-unit id="featureProjectDetail-durationLabel" datatype="html">
         <source>Minutes</source>
       </trans-unit>
@@ -2270,6 +2339,9 @@
       </trans-unit>
       <trans-unit id="featureProjectDetail-addTime" datatype="html">
         <source>Add</source>
+      </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeAddLine" datatype="html">
+        <source>Add line item</source>
       </trans-unit>
       <trans-unit id="featureProjectDetail-backToAdminProjects" datatype="html">
         <source>Back to projects</source>

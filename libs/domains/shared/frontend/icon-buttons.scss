@@ -1,0 +1,34 @@
+$icon-button-size: 2.375rem;
+$icon-button-size-sm: 2rem;
+
+@mixin icon-button-size($size) {
+  width: $size;
+  height: $size;
+  min-width: $size;
+  min-height: $size;
+}
+
+// Bootstrap buttons with only a Bootstrap icon, or an icon plus screen-reader-only text.
+$icon-button-selector: '.btn:not(.btn-close):not(.btn-options):not(.btn-link):is(:has(> i.bi:only-child), :has(> i.bi:first-child:nth-last-child(2) + .visually-hidden))';
+
+#{$icon-button-selector} {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  line-height: 1;
+
+  > i {
+    line-height: 1;
+  }
+
+  @include icon-button-size($icon-button-size);
+}
+
+#{$icon-button-selector}.btn-sm,
+.btn-group-sm > #{$icon-button-selector},
+.btn-group > #{$icon-button-selector}.btn-sm {
+  @include icon-button-size($icon-button-size-sm);
+}

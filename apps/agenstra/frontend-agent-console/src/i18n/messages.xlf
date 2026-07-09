@@ -140,6 +140,15 @@
       <trans-unit id="featureAtlassianImportAdmin-save" datatype="html">
         <source> Save </source>
         </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-clear" datatype="html">
+        <source>Clear</source>
+        </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-newConfigTitle" datatype="html">
         <source> New import config </source>
         </trans-unit>
@@ -271,6 +280,9 @@
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-deleteConfigConfirm" datatype="html">
         <source> Delete config </source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-clearMarkersHeading" datatype="html">
         <source> Clear sync markers </source>
@@ -872,7 +884,7 @@
         <source> Existing Workspace </source>
         </trans-unit>
       <trans-unit id="featureChat-provisionServer" datatype="html">
-        <source>Provision Server</source>
+        <source>Provision</source>
         </trans-unit>
       <trans-unit id="featureChat-nameLabel" datatype="html">
         <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
@@ -940,7 +952,7 @@
 -----END OPENSSH PRIVATE KEY-----</source>
         </trans-unit>
       <trans-unit id="featureChat-createWorkspace" datatype="html">
-        <source>Create Workspace</source>
+        <source>Create</source>
         </trans-unit>
       <trans-unit id="featureChat-dangerZoneDescription" datatype="html">
         <source> These features partially ignore the internal permissions and may allow users to modify the agent container files without any restrictions. </source>
@@ -952,7 +964,7 @@
         <source>Enable SSH access to the environment container. Defaults to disabled.</source>
         </trans-unit>
       <trans-unit id="featureChat-createEnvironment" datatype="html">
-        <source>Create Environment</source>
+        <source>Create</source>
         </trans-unit>
       <trans-unit id="featureChat-updateWorkspaceTitle" datatype="html">
         <source> Update Workspace </source>
@@ -967,13 +979,13 @@
         <source>8080</source>
         </trans-unit>
       <trans-unit id="featureChat-updateWorkspace" datatype="html">
-        <source>Update Workspace</source>
+        <source>Save</source>
         </trans-unit>
       <trans-unit id="featureChat-updateEnvironmentTitle" datatype="html">
         <source> Update Environment </source>
         </trans-unit>
       <trans-unit id="featureChat-updateEnvironment" datatype="html">
-        <source>Update Environment</source>
+        <source>Save</source>
         </trans-unit>
       <trans-unit id="featureChat-manageWorkspaceConfiguration" datatype="html">
         <source> Manage Workspace Configuration </source>
@@ -1426,9 +1438,15 @@
         <source>Enter token</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-updateButton" datatype="html">
-        <source>Update</source>
+        <source>Save</source>
         </trans-unit>
-      <trans-unit id="featureDeploymentConfig-createButton" datatype="html">
+      <trans-unit id="featureDeploymentConfig-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConfig-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConfig-create" datatype="html">
         <source>Create</source>
         </trans-unit>
       <trans-unit id="featureDeploymentManager-configurationHeader" datatype="html">
@@ -1518,7 +1536,10 @@
       <trans-unit id="featureDeploymentRunDetails-cancelConfirmDismiss" datatype="html">
         <source> Keep running </source>
         </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-cancelConfirmSubmit" datatype="html">
+      <trans-unit id="featureDeploymentRunDetails-cancel" datatype="html">
+        <source>Cancel</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentRunDetails-cancelRun" datatype="html">
         <source>Cancel run</source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-untitledRun" datatype="html">
@@ -1639,8 +1660,8 @@
       <trans-unit id="featureFileEditor-cancelButton" datatype="html">
         <source> Cancel </source>
         </trans-unit>
-      <trans-unit id="featureFileEditor-overrideAndSaveButton" datatype="html">
-        <source> Override and Save </source>
+      <trans-unit id="featureFileEditor-save" datatype="html">
+        <source>Save</source>
         </trans-unit>
       <trans-unit id="featureFileTree-filesHeader" datatype="html">
         <source>Files</source>
@@ -1702,14 +1723,14 @@
       <trans-unit id="featureFileTree-cancelButton" datatype="html">
         <source> Cancel </source>
         </trans-unit>
-      <trans-unit id="featureFileTree-deleteButton" datatype="html">
-        <source> Delete </source>
+      <trans-unit id="featureFileTree-delete" datatype="html">
+        <source>Delete</source>
         </trans-unit>
       <trans-unit id="featureFileTree-newNameLabel" datatype="html">
         <source>New Name</source>
         </trans-unit>
-      <trans-unit id="featureFileTree-renameButton" datatype="html">
-        <source> Rename </source>
+      <trans-unit id="featureFileTree-rename" datatype="html">
+        <source>Rename</source>
         </trans-unit>
       <trans-unit id="featureFileTree-destinationPathLabel" datatype="html">
         <source>Destination Path</source>
@@ -1720,8 +1741,8 @@
       <trans-unit id="featureFileTree-moveDestinationHint" datatype="html">
         <source> Use &apos;.&apos; for root directory, or enter a relative path like &apos;folder&apos; or &apos;folder/subfolder&apos; </source>
         </trans-unit>
-      <trans-unit id="featureFileTree-moveButton" datatype="html">
-        <source> Move </source>
+      <trans-unit id="featureFileTree-move" datatype="html">
+        <source>Move</source>
         </trans-unit>
       <trans-unit id="featureFileTree-enterFileName" datatype="html">
         <source>Enter file name...</source>
@@ -1993,6 +2014,9 @@
       <trans-unit id="featureKnowledgeBoard-addRelations" datatype="html">
         <source> Add relations </source>
         </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-add" datatype="html">
+        <source>Add</source>
+        </trans-unit>
       <trans-unit id="featureKnowledgeBoard-loadingRelations" datatype="html">
         <source>Loading relations...</source>
         </trans-unit>
@@ -2046,9 +2070,6 @@
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-cancel" datatype="html">
         <source> Cancel </source>
-        </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-addSelectedRelations" datatype="html">
-        <source>Add selected</source>
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-switchWorkspaceModalTitle" datatype="html">
         <source> Switch workspace </source>
@@ -2127,6 +2148,9 @@
         </trans-unit>
       <trans-unit id="featureKnowledgeTree-deleteConfirmText" datatype="html">
         <source>Are you sure you want to delete this item?</source>
+        </trans-unit>
+      <trans-unit id="featureKnowledgeTree-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureKnowledgeTree-delete" datatype="html">
         <source> Delete </source>
@@ -2212,6 +2236,9 @@
       <trans-unit id="featureRuleManager-createTitle" datatype="html">
         <source>Add filter rule</source>
         </trans-unit>
+      <trans-unit id="featureRuleManager-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
       <trans-unit id="featureRuleManager-pattern" datatype="html">
         <source>Pattern</source>
         </trans-unit>
@@ -2256,6 +2283,9 @@
         </trans-unit>
       <trans-unit id="featureRuleManager-deleteConfirm" datatype="html">
         <source> Delete this rule? Remote copies will be removed where possible. </source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureRuleManager-testerTitle" datatype="html">
         <source>Test rule</source>
@@ -2696,8 +2726,11 @@
       <trans-unit id="featureTicketsBoard-relationsCancel" datatype="html">
         <source> Cancel </source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-relationsAddSelected" datatype="html">
-        <source>Add selected</source>
+      <trans-unit id="featureTicketsBoard-relationsAdd" datatype="html">
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-move" datatype="html">
+        <source>Move</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-migrateModalTitle" datatype="html">
         <source> Move ticket to workspace </source>
@@ -2710,9 +2743,6 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-migrateCancel" datatype="html">
         <source> Cancel </source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-migrateConfirm" datatype="html">
-        <source> Move ticket </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationRunModalTitle" datatype="html">
         <source> Automation run </source>
@@ -2771,12 +2801,6 @@
       <trans-unit id="featureTicketsBoard-deleteConfirmCannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-deleteConfirmCancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-deleteConfirmSubmit" datatype="html">
-        <source> Delete ticket </source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-createSubtaskModalTitle" datatype="html">
         <source>New subtask</source>
         </trans-unit>
@@ -2813,8 +2837,8 @@
       <trans-unit id="featureTicketsBoard-createCancel" datatype="html">
         <source> Cancel </source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-createSubmit" datatype="html">
-        <source> Create </source>
+      <trans-unit id="featureTicketsBoard-create" datatype="html">
+        <source>Create</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-globalSearchTitle" datatype="html">
         <source> Search tickets </source>

@@ -420,21 +420,7 @@
         </p>
       </div>
       <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          (click)="itemToDelete.set(null)"
-          i18n="@@featureFileTree-cancelButton"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger"
-          (click)="confirmDeleteItem()"
-          i18n="@@featureFileTree-deleteButton"
-        >
+        <button type="button" class="btn btn-primary" (click)="confirmDeleteItem()" i18n="@@featureFileTree-delete">
           Delete
         </button>
       </div>
@@ -482,19 +468,10 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          (click)="cancelRenameItem()"
-          i18n="@@featureFileTree-cancelButton"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
           class="btn btn-primary"
           (click)="confirmRenameItem()"
           [disabled]="!renameNewName().trim() || renameNewName().trim() === itemToRename()?.name"
-          i18n="@@featureFileTree-renameButton"
+          i18n="@@featureFileTree-rename"
         >
           Rename
         </button>
@@ -554,19 +531,10 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          (click)="cancelMoveItem()"
-          i18n="@@featureFileTree-cancelButton"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
           class="btn btn-primary"
           (click)="confirmMoveItem()"
           [disabled]="!moveDestinationPath().trim()"
-          i18n="@@featureFileTree-moveButton"
+          i18n="@@featureFileTree-move"
         >
           Move
         </button>

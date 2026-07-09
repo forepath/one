@@ -36,6 +36,8 @@ export class ServiceTypesPageComponent implements OnInit {
   readonly searchQuery$ = toObservable(this.searchQuery);
   readonly createProviderDefaultsExpanded = signal(false);
   readonly editProviderDefaultsExpanded = signal(false);
+  readonly showProviderDefaultsLabel = $localize`:@@featureServiceTypes-showProviderDefaults:Show`;
+  readonly hideProviderDefaultsLabel = $localize`:@@featureServiceTypes-hideProviderDefaults:Hide`;
   readonly editProviderDefaultsTouched = signal(false);
   readonly serviceTypes$ = combineLatest([
     this.facade.getServiceTypes$(),

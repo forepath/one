@@ -8,9 +8,10 @@
       [disabled]="(saving$ | async) === true"
       i18n-title="@@featureRuleManager-addButtonTitle"
       title="Add filter rule"
+      i18n-aria-label="@@featureRuleManager-addButtonTitle"
+      aria-label="Add filter rule"
     >
-      <i class="bi bi-plus-circle me-1"></i>
-      <span i18n="@@featureRuleManager-add">Add</span>
+      <i class="bi bi-plus-circle" aria-hidden="true"></i>
     </button>
   </div>
   <div class="input-group search-input-container border-bottom">
@@ -228,21 +229,12 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          (click)="cancelCreate()"
-          i18n="@@featureRuleManager-cancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
           class="btn btn-primary"
           (click)="submitCreate()"
           [disabled]="(saving$ | async) === true"
-          i18n="@@featureRuleManager-save"
+          i18n="@@featureRuleManager-create"
         >
-          Save
+          Create
         </button>
       </div>
     </div>
@@ -344,15 +336,6 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          (click)="cancelEdit()"
-          i18n="@@featureRuleManager-cancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
           class="btn btn-primary"
           (click)="submitEdit()"
           [disabled]="(saving$ | async) === true"
@@ -379,21 +362,16 @@
             Delete this rule? Remote copies will be removed where possible.
           </p>
           <p class="font-monospace small">{{ rd.pattern }}</p>
+          <p class="text-danger mb-0">
+            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+            <span i18n="@@featureRuleManager-cannotUndo">This action cannot be undone.</span>
+          </p>
         </div>
       }
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          (click)="cancelDelete()"
-          i18n="@@featureRuleManager-cancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger"
+          class="btn btn-primary"
           (click)="confirmDelete()"
           [disabled]="(deleting$ | async) === true"
         >
@@ -428,17 +406,6 @@
           }
         </div>
       }
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          (click)="cancelTest()"
-          i18n="@@featureRuleManager-close"
-        >
-          Close
-        </button>
-      </div>
     </div>
   </div>
 </div>

@@ -362,6 +362,10 @@
         <source> Delete config </source>
         <target> Konfiguration löschen </target>
       </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-clearMarkersHeading" datatype="html">
         <source> Clear sync markers </source>
         <target> Synchronisations-Markierungen löschen </target>
@@ -1906,7 +1910,7 @@
         <source>Update</source>
         <target>Aktualisieren</target>
       </trans-unit>
-      <trans-unit id="featureDeploymentConfig-createButton" datatype="html">
+      <trans-unit id="featureDeploymentConfig-create" datatype="html">
         <source>Create</source>
         <target>Erstellen</target>
       </trans-unit>
@@ -2272,17 +2276,17 @@
         <source> Cancel </source>
         <target> Abbrechen </target>
       </trans-unit>
-      <trans-unit id="featureFileTree-deleteButton" datatype="html">
-        <source> Delete </source>
-        <target> Löschen </target>
+      <trans-unit id="featureFileTree-delete" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
       </trans-unit>
       <trans-unit id="featureFileTree-newNameLabel" datatype="html">
         <source>New Name</source>
         <target>Neuer Name</target>
       </trans-unit>
-      <trans-unit id="featureFileTree-renameButton" datatype="html">
-        <source> Rename </source>
-        <target> Umbenennen </target>
+      <trans-unit id="featureFileTree-rename" datatype="html">
+        <source>Rename</source>
+        <target>Umbenennen</target>
       </trans-unit>
       <trans-unit id="featureFileTree-destinationPathLabel" datatype="html">
         <source>Destination Path</source>
@@ -2296,9 +2300,9 @@
         <source> Use &apos;.&apos; for root directory, or enter a relative path like &apos;folder&apos; or &apos;folder/subfolder&apos; </source>
         <target> Use &apos;.&apos; for root directory, or enter a relative path like &apos;folder&apos; or &apos;folder/subfolder&apos; </target>
       </trans-unit>
-      <trans-unit id="featureFileTree-moveButton" datatype="html">
-        <source> Move </source>
-        <target> Verschieben </target>
+      <trans-unit id="featureFileTree-move" datatype="html">
+        <source>Move</source>
+        <target>Verschieben</target>
       </trans-unit>
       <trans-unit id="featureFileTree-enterFileName" datatype="html">
         <source>Enter file name...</source>
@@ -2732,9 +2736,9 @@
         <source> Cancel </source>
         <target>Abbrechen</target>
       </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-addSelectedRelations" datatype="html">
-        <source>Add selected</source>
-        <target>Ausgewählte hinzufügen</target>
+      <trans-unit id="featureKnowledgeBoard-add" datatype="html">
+        <source>Add</source>
+        <target>Hinzufügen</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-switchWorkspaceModalTitle" datatype="html">
         <source> Switch workspace </source>
@@ -2839,6 +2843,10 @@
       <trans-unit id="featureKnowledgeTree-deleteConfirmText" datatype="html">
         <source>Are you sure you want to delete this item?</source>
         <target>Möchtest du dieses Element wirklich löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeTree-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeTree-delete" datatype="html">
         <source> Delete </source>
@@ -3011,6 +3019,10 @@
       <trans-unit id="featureRuleManager-deleteConfirm" datatype="html">
         <source> Delete this rule? Remote copies will be removed where possible. </source>
         <target>Diese Regel löschen? Remote-Kopien werden nach Möglichkeit entfernt.</target>
+      </trans-unit>
+      <trans-unit id="featureRuleManager-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
       </trans-unit>
       <trans-unit id="featureRuleManager-testerTitle" datatype="html">
         <source>Test rule</source>
@@ -3620,10 +3632,6 @@
         <source> Cancel </source>
         <target>Abbrechen</target>
       </trans-unit>
-      <trans-unit id="featureTicketsBoard-migrateConfirm" datatype="html">
-        <source> Move ticket </source>
-        <target>Ticket verschieben</target>
-      </trans-unit>
       <trans-unit id="featureTicketsBoard-automationRunModalTitle" datatype="html">
         <source> Automation run </source>
         <target> Automatisierungslauf </target>
@@ -3700,14 +3708,6 @@
         <source>This action cannot be undone.</source>
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
       </trans-unit>
-      <trans-unit id="featureTicketsBoard-deleteConfirmCancel" datatype="html">
-        <source> Cancel </source>
-        <target>Abbrechen</target>
-      </trans-unit>
-      <trans-unit id="featureTicketsBoard-deleteConfirmSubmit" datatype="html">
-        <source> Delete ticket </source>
-        <target>Ticket löschen</target>
-      </trans-unit>
       <trans-unit id="featureTicketsBoard-createSubtaskModalTitle" datatype="html">
         <source>New subtask</source>
         <target>Neue Unteraufgabe</target>
@@ -3756,8 +3756,8 @@
         <source> Cancel </source>
         <target>Abbrechen</target>
       </trans-unit>
-      <trans-unit id="featureTicketsBoard-createSubmit" datatype="html">
-        <source> Create </source>
+      <trans-unit id="featureTicketsBoard-create" datatype="html">
+        <source>Create</source>
         <target>Anlegen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-globalSearchTitle" datatype="html">
