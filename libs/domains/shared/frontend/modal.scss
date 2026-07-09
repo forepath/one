@@ -59,6 +59,7 @@ $modal-accent-close-size: 40px;
 
 // Default Bootstrap header; accent close button flush to the top-right modal corner.
 .modal-content > .modal-header {
+  --bs-modal-header-border-width: 0;
   position: relative;
 
   > *:first-child {
@@ -72,4 +73,9 @@ $modal-accent-close-size: 40px;
     right: 0;
     z-index: 1;
   }
+}
+
+.modal-content > .modal-footer,
+.modal-content > form > .modal-footer {
+  --bs-modal-footer-border-width: 0;
 }

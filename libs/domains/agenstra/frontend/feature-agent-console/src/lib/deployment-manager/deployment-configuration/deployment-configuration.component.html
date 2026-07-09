@@ -339,15 +339,6 @@
         <div class="modal-footer">
           <button
             type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            (click)="onCancelConfigurationForm()"
-            [disabled]="(creatingConfiguration$ | async) || (updatingConfiguration$ | async)"
-          >
-            <span i18n="@@featureDeploymentConfig-cancelButton">Cancel</span>
-          </button>
-          <button
-            type="button"
             class="btn btn-primary"
             (click)="onSaveConfiguration()"
             [disabled]="(creatingConfiguration$ | async) || (updatingConfiguration$ | async) || !repositoryId()"
@@ -355,7 +346,11 @@
             @if ((creatingConfiguration$ | async) || (updatingConfiguration$ | async)) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
-            {{ getSaveButtonText() }}
+            @if (hasConfiguration()) {
+              <span i18n="@@featureDeploymentConfig-save">Save</span>
+            } @else {
+              <span i18n="@@featureDeploymentConfig-create">Create</span>
+            }
           </button>
         </div>
       </div>
@@ -411,23 +406,14 @@
         <div class="modal-footer">
           <button
             type="button"
-            class="btn btn-secondary btn-sm"
-            [disabled]="deletingConfiguration$ | async"
-            (click)="onCancelDeleteConfigurationConfirm()"
-            i18n="@@featureDeploymentConfig-deleteConfirmCancel"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="btn btn-danger btn-sm"
+            class="btn btn-primary"
             (click)="confirmDeleteConfiguration()"
             [disabled]="deletingConfiguration$ | async"
           >
             @if (deletingConfiguration$ | async) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
-            <span i18n="@@featureDeploymentConfig-deleteConfirmSubmit">Delete configuration</span>
+            <span i18n="@@featureDeploymentConfig-delete">Delete</span>
           </button>
         </div>
       </div>

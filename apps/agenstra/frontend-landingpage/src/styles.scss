@@ -129,7 +129,8 @@ $agenstra-badge-text-bg-colors: primary, secondary, success, info, warning, dang
 }
 
 @import 'bootstrap/scss/bootstrap-grid';
-@import '../../../../libs/domains/shared/frontend/modal-header';
+@import '../../../../libs/domains/shared/frontend/modal';
+@import '../../../../libs/domains/shared/frontend/icon-buttons';
 @import 'bootstrap-icons/font/bootstrap-icons';
 @import '@fontsource-variable/plus-jakarta-sans/wght.css';
 @import 'libs/domains/shared/frontend/util-cookie-consent/src/lib/cookie-consent.scss';

@@ -558,10 +558,4 @@ export class DeploymentConfigurationComponent {
       ? $localize`:@@featureDeploymentConfig-tokenPlaceholderKeepCurrent:Leave empty to keep current token`
       : $localize`:@@featureDeploymentConfig-tokenPlaceholderEnter:Enter token`;
   }
-
-  getSaveButtonText(): string {
-    return this.hasConfiguration()
-      ? $localize`:@@featureDeploymentConfig-updateButton:Update`
-      : $localize`:@@featureDeploymentConfig-createButton:Create`;
-  }
 }

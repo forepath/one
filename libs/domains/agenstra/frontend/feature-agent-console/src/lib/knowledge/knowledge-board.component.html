@@ -282,16 +282,6 @@
           </div>
         }
       </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="onCloseGlobalSearchModal()"
-          i18n="@@featureKnowledgeBoard-close"
-        >
-          Close
-        </button>
-      </div>
     </div>
   </div>
 </div>
@@ -404,19 +394,11 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="onCloseRelationsModal()"
-          i18n="@@featureKnowledgeBoard-cancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
+          class="btn btn-primary"
           [disabled]="selectedRelationTargets().length === 0"
           (click)="onAddSelectedRelations()"
         >
-          <span i18n="@@featureKnowledgeBoard-addSelectedRelations">Add selected</span>
+          <span i18n="@@featureKnowledgeBoard-add">Add</span>
         </button>
       </div>
     </div>
@@ -502,16 +484,6 @@
             </div>
           }
         }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="onCloseWorkspaceSwitchModal()"
-          i18n="@@featureKnowledgeBoard-close"
-        >
-          Close
-        </button>
       </div>
     </div>
   </div>

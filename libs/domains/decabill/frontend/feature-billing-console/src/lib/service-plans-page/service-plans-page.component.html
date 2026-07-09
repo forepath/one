@@ -6,9 +6,12 @@
       class="btn btn-sm btn-primary"
       (click)="openCreateModal()"
       [disabled]="(loadingAny$ | async) === true"
+      i18n-title="@@featureServicePlans-add"
+      title="Add service plan"
+      i18n-aria-label="@@featureServicePlans-add"
+      aria-label="Add service plan"
     >
-      <i class="bi bi-plus-circle me-1"></i>
-      <span i18n="@@featureServicePlans-add">Add service plan</span>
+      <i class="bi bi-plus-circle" aria-hidden="true"></i>
     </button>
   </div>
 
@@ -44,7 +47,7 @@
         } @else {
           <div class="list-group list-group-flush">
             @for (plan of listData.plans; track plan.id) {
-              <div class="list-group-item d-flex justify-content-between align-items-start border-bottom gap-3">
+              <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3">
                 <div class="min-w-0">
                   <div class="fw-semibold mb-1">{{ plan.name }}</div>
                   <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
@@ -192,9 +195,12 @@
                   class="btn btn-sm btn-outline-secondary"
                   (click)="addOrderingHighlight('create')"
                   [disabled]="(creating$ | async) === true"
-                  i18n="@@featureServicePlans-addHighlight"
+                  title="Add line"
+                  i18n-title="@@featureServicePlans-addHighlight"
+                  aria-label="Add line"
+                  i18n-aria-label="@@featureServicePlans-addHighlight"
                 >
-                  Add line
+                  <i class="bi bi-plus-circle" aria-hidden="true"></i>
                 </button>
               </div>
               <p class="text-body-secondary small mb-3" i18n="@@featureServicePlans-orderingHighlightsHint">
@@ -266,9 +272,12 @@
                       class="btn btn-sm btn-outline-danger"
                       (click)="removeOrderingHighlight('create', i)"
                       [disabled]="(creating$ | async) === true"
-                      i18n="@@featureServicePlans-removeHighlight"
+                      title="Remove"
+                      i18n-title="@@featureServicePlans-removeHighlight"
+                      aria-label="Remove"
+                      i18n-aria-label="@@featureServicePlans-removeHighlight"
                     >
-                      Remove
+                      <i class="bi bi-trash" aria-hidden="true"></i>
                     </button>
                   </div>
                 </div>
@@ -616,11 +625,17 @@
                         data-bs-target="#createProductDefaults"
                         [attr.aria-expanded]="createProductDefaultsExpanded()"
                         aria-controls="createProductDefaults"
+                        [attr.title]="
+                          createProductDefaultsExpanded() ? hideProductDefaultsLabel : showProductDefaultsLabel
+                        "
+                        [attr.aria-label]="
+                          createProductDefaultsExpanded() ? hideProductDefaultsLabel : showProductDefaultsLabel
+                        "
                       >
                         @if (createProductDefaultsExpanded()) {
-                          <span i18n="@@featureServicePlans-hideProductDefaults">Hide</span>
+                          <i class="bi bi-eye-slash" aria-hidden="true"></i>
                         } @else {
-                          <span i18n="@@featureServicePlans-showProductDefaults">Show</span>
+                          <i class="bi bi-eye" aria-hidden="true"></i>
                         }
                       </button>
                     </div>
@@ -863,9 +878,6 @@
           }
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureServicePlans-close">
-            Close
-          </button>
           <button
             type="submit"
             class="btn btn-primary"
@@ -940,9 +952,12 @@
                   class="btn btn-sm btn-outline-secondary"
                   (click)="addOrderingHighlight('edit')"
                   [disabled]="(updating$ | async) === true"
-                  i18n="@@featureServicePlans-addHighlight"
+                  title="Add line"
+                  i18n-title="@@featureServicePlans-addHighlight"
+                  aria-label="Add line"
+                  i18n-aria-label="@@featureServicePlans-addHighlight"
                 >
-                  Add line
+                  <i class="bi bi-plus-circle" aria-hidden="true"></i>
                 </button>
               </div>
               <p class="text-body-secondary small mb-3" i18n="@@featureServicePlans-orderingHighlightsHint">
@@ -1014,9 +1029,12 @@
                       class="btn btn-sm btn-outline-danger"
                       (click)="removeOrderingHighlight('edit', i)"
                       [disabled]="(updating$ | async) === true"
-                      i18n="@@featureServicePlans-removeHighlight"
+                      title="Remove"
+                      i18n-title="@@featureServicePlans-removeHighlight"
+                      aria-label="Remove"
+                      i18n-aria-label="@@featureServicePlans-removeHighlight"
                     >
-                      Remove
+                      <i class="bi bi-trash" aria-hidden="true"></i>
                     </button>
                   </div>
                 </div>
@@ -1369,11 +1387,17 @@
                         data-bs-target="#editProductDefaults"
                         [attr.aria-expanded]="editProductDefaultsExpanded()"
                         aria-controls="editProductDefaults"
+                        [attr.title]="
+                          editProductDefaultsExpanded() ? hideProductDefaultsLabel : showProductDefaultsLabel
+                        "
+                        [attr.aria-label]="
+                          editProductDefaultsExpanded() ? hideProductDefaultsLabel : showProductDefaultsLabel
+                        "
                       >
                         @if (editProductDefaultsExpanded()) {
-                          <span i18n="@@featureServicePlans-hideProductDefaults">Hide</span>
+                          <i class="bi bi-eye-slash" aria-hidden="true"></i>
                         } @else {
-                          <span i18n="@@featureServicePlans-showProductDefaults">Show</span>
+                          <i class="bi bi-eye" aria-hidden="true"></i>
                         }
                       </button>
                     </div>
@@ -1611,9 +1635,6 @@
           }
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureServicePlans-close">
-            Close
-          </button>
           <button
             type="submit"
             class="btn btn-primary"
@@ -1656,18 +1677,19 @@
           <p i18n="@@featureServicePlans-deleteConfirm">
             Are you sure you want to delete the service plan &quot;{{ plan.name }}&quot;?
           </p>
+          <p class="text-danger mb-0">
+            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+            <span i18n="@@featureServicePlans-cannotUndo">This action cannot be undone.</span>
+          </p>
         }
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureServicePlans-close">
-          Close
-        </button>
         <button
           type="button"
-          class="btn btn-danger"
+          class="btn btn-primary"
           (click)="confirmDelete()"
           [disabled]="(deleting$ | async) === true || !planToDelete"
-          i18n="@@featureServicePlans-confirmDelete"
+          i18n="@@featureServicePlans-delete"
         >
           Delete
         </button>

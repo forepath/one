@@ -7,13 +7,23 @@
         class="btn btn-primary btn-sm"
         (click)="openCreateModal()"
         [disabled]="(invoicesCreating$ | async) === true"
+        i18n-title="@@featureAdminInvoices-add"
+        title="Add"
+        i18n-aria-label="@@featureAdminInvoices-add"
+        aria-label="Add"
       >
-        <i class="bi bi-plus-circle me-1"></i>
-        <span i18n="@@featureAdminInvoices-add">Add</span>
+        <i class="bi bi-plus-circle" aria-hidden="true"></i>
       </button>
-      <button type="button" class="btn btn-primary btn-sm" (click)="openBillNowModal()">
-        <i class="bi bi-cash-coin me-1"></i>
-        <span i18n="@@featureAdminBilling-billNow">Bill now</span>
+      <button
+        type="button"
+        class="btn btn-primary btn-sm"
+        (click)="openBillNowModal()"
+        i18n-title="@@featureAdminBilling-billNow"
+        title="Bill now"
+        i18n-aria-label="@@featureAdminBilling-billNow"
+        aria-label="Bill now"
+      >
+        <i class="bi bi-cash-coin" aria-hidden="true"></i>
       </button>
     </div>
   </div>
@@ -118,8 +128,12 @@
               (click)="onToggleFilters()"
               [attr.aria-expanded]="!filtersCollapsed()"
               aria-controls="adminBillingFilters"
+              i18n-title="@@featureAdminBilling-filters"
+              title="Filters"
+              i18n-aria-label="@@featureAdminBilling-filters"
+              aria-label="Filters"
             >
-              <span i18n="@@featureAdminBilling-filters">Filters</span>
+              <i class="bi bi-funnel" aria-hidden="true"></i>
               <i
                 class="bi ms-1"
                 [class.bi-chevron-down]="filtersCollapsed()"
@@ -312,7 +326,7 @@
                 </div>
               } @else {
                 @for (invoice of invoices(); track invoice.id) {
-                  <div class="list-group-item d-flex justify-content-between align-items-start border-bottom gap-2">
+                  <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-2">
                     <div class="min-w-0">
                       <div class="fw-semibold mb-1">{{ invoiceDisplayTitle(invoice) }}</div>
                       <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
@@ -522,9 +536,6 @@
         }
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureAdminBilling-cancel">
-          Cancel
-        </button>
         <button
           type="button"
           class="btn btn-primary"
@@ -565,9 +576,6 @@
         }
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureAdminBilling-cancel">
-          Cancel
-        </button>
         <button
           type="button"
           class="btn btn-primary"
@@ -662,8 +670,16 @@
             "
           ></ng-container>
         }
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addLineItem('create')">
-          Add line item
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          (click)="addLineItem('create')"
+          title="Add line item"
+          i18n-title="@@featureAdminInvoices-addLineItem"
+          aria-label="Add line item"
+          i18n-aria-label="@@featureAdminInvoices-addLineItem"
+        >
+          <i class="bi bi-plus-circle" aria-hidden="true"></i>
         </button>
         <p class="small text-body-secondary mb-0 mt-3">
           <span i18n="@@featureAdminInvoices-draftTotal">Draft total</span>:
@@ -671,14 +687,14 @@
         </p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button
           type="button"
           class="btn btn-primary"
           (click)="submitCreate()"
           [disabled]="(invoicesCreating$ | async) === true"
+          i18n="@@featureAdminInvoices-create"
         >
-          Save draft
+          Create
         </button>
       </div>
     </div>
@@ -701,8 +717,16 @@
             "
           ></ng-container>
         }
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addLineItem('edit')">
-          Add line item
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-secondary"
+          (click)="addLineItem('edit')"
+          title="Add line item"
+          i18n-title="@@featureAdminInvoices-addLineItem"
+          aria-label="Add line item"
+          i18n-aria-label="@@featureAdminInvoices-addLineItem"
+        >
+          <i class="bi bi-plus-circle" aria-hidden="true"></i>
         </button>
         <p class="small text-body-secondary mb-0 mt-3">
           <span i18n="@@featureAdminInvoices-draftTotal">Draft total</span>:
@@ -710,14 +734,14 @@
         </p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button
           type="button"
           class="btn btn-primary"
           (click)="submitEdit()"
           [disabled]="(invoicesUpdating$ | async) === true"
+          i18n="@@featureAdminInvoices-save"
         >
-          Update draft
+          Save
         </button>
       </div>
     </div>
@@ -736,12 +760,12 @@
         <input type="number" class="form-control" [(ngModel)]="issueDueInDays" name="issueDueInDays" min="1" />
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button
           type="button"
           class="btn btn-success"
           (click)="submitIssue()"
           [disabled]="(invoicesIssuing$ | async) === true"
+          i18n="@@featureAdminInvoices-issue"
         >
           Issue
         </button>
@@ -759,14 +783,18 @@
       </div>
       <div class="modal-body">
         <p i18n="@@featureAdminInvoices-deleteConfirm">Delete this draft invoice permanently?</p>
+        <p class="text-danger mb-0">
+          <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+          <span i18n="@@featureAdminInvoices-cannotUndo">This action cannot be undone.</span>
+        </p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button
           type="button"
-          class="btn btn-danger"
+          class="btn btn-primary"
           (click)="confirmDelete()"
           [disabled]="(invoicesDeleting$ | async) === true"
+          i18n="@@featureAdminInvoices-delete"
         >
           Delete
         </button>
@@ -847,8 +875,16 @@
       <strong class="ms-1">{{ formatLineItemTotal(line) }}</strong>
     </p>
     @if (itemCount > 1) {
-      <button type="button" class="btn btn-link btn-sm text-danger p-0 mt-2" (click)="removeLineItem(target, i)">
-        <span i18n="@@featureAdminInvoices-removeLine">Remove line</span>
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-danger mt-2"
+        (click)="removeLineItem(target, i)"
+        title="Remove line"
+        i18n-title="@@featureAdminInvoices-removeLine"
+        aria-label="Remove line"
+        i18n-aria-label="@@featureAdminInvoices-removeLine"
+      >
+        <i class="bi bi-trash" aria-hidden="true"></i>
       </button>
     }
   </div>

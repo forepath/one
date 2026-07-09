@@ -84,6 +84,8 @@ export class ServicePlansPageComponent implements OnInit {
   readonly searchQuery = signal('');
   readonly createProductDefaultsExpanded = signal(false);
   readonly editProductDefaultsExpanded = signal(false);
+  readonly showProductDefaultsLabel = $localize`:@@featureServicePlans-showProductDefaults:Show`;
+  readonly hideProductDefaultsLabel = $localize`:@@featureServicePlans-hideProductDefaults:Hide`;
   readonly searchQuery$ = toObservable(this.searchQuery);
   readonly servicePlans$ = combineLatest([
     this.plansFacade.getServicePlans$(),

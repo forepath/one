@@ -8,9 +8,10 @@
       [disabled]="(creatingUser$ | async) === true"
       i18n-title="@@featureUserManager-addUserTitle"
       title="Add user"
+      i18n-aria-label="@@featureUserManager-addUserTitle"
+      aria-label="Add user"
     >
-      <i class="bi bi-plus-circle me-1"></i>
-      <span i18n="@@featureUserManager-addUser">Add</span>
+      <i class="bi bi-plus" aria-hidden="true"></i>
     </button>
   </div>
 
@@ -212,16 +213,6 @@
         </div>
         <div class="modal-footer">
           <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            (click)="cancelCreateUser()"
-            [disabled]="(creatingUser$ | async) === true"
-            i18n="@@featureUserManager-cancel"
-          >
-            Cancel
-          </button>
-          <button
             type="submit"
             class="btn btn-primary"
             [disabled]="
@@ -318,16 +309,6 @@
         </div>
         <div class="modal-footer">
           <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            (click)="cancelEditUser()"
-            [disabled]="(updatingUser$ | async) === true"
-            i18n="@@featureUserManager-cancel"
-          >
-            Cancel
-          </button>
-          <button
             type="submit"
             class="btn btn-primary"
             [disabled]="!editForm.email.trim() || (updatingUser$ | async) === true"
@@ -383,17 +364,7 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          (click)="cancelDeleteUser()"
-          [disabled]="(deletingUser$ | async) === true"
-          i18n="@@featureUserManager-cancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger"
+          class="btn btn-primary"
           (click)="confirmDeleteUser()"
           [disabled]="(deletingUser$ | async) === true"
         >

@@ -41,7 +41,7 @@ $border-color-dark: rgba(255, 255, 255, 0.08);
 $border-color-translucent: rgba(15, 15, 17, 0.06);
 $border-color-translucent-dark: rgba(255, 255, 255, 0.06);
 
-$body-bg: mix($primary, #f5f4f9, 5.5%);
+$body-bg: mix($primary, #f5f4f9, 2.5%);
 $body-color: #3c3f45;
 $body-emphasis-color: #24262c;
 
@@ -107,7 +107,8 @@ $agenstra-badge-text-bg-colors: primary, secondary, success, info, warning, dang
 }
 
 @import 'bootstrap/scss/bootstrap';
-@import '../../../../libs/domains/shared/frontend/modal-header';
+@import '../../../../libs/domains/shared/frontend/modal';
+@import '../../../../libs/domains/shared/frontend/icon-buttons';
 
 .btn-primary {
   --bs-btn-color: #fff;

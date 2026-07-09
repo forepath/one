@@ -30,9 +30,16 @@
         >
           <i class="bi bi-search" aria-hidden="true"></i>
         </button>
-        <button type="button" class="btn btn-sm btn-primary" (click)="showCreateTicketModal()">
-          <i class="bi bi-plus-circle me-1"></i>
-          <span i18n="@@featureTicketsBoard-newTicket">Add</span>
+        <button
+          type="button"
+          class="btn btn-sm btn-primary"
+          (click)="showCreateTicketModal()"
+          i18n-title="@@featureTicketsBoard-newTicket"
+          title="Add"
+          i18n-aria-label="@@featureTicketsBoard-newTicket"
+          aria-label="Add"
+        >
+          <i class="bi bi-plus-circle" aria-hidden="true"></i>
         </button>
       </div>
     }
@@ -499,9 +506,12 @@
                     class="btn btn-outline-secondary btn-sm"
                     (click)="showCreateSubtaskModal()"
                     [disabled]="saving$ | async"
-                    i18n="@@featureTicketsBoard-addSubtask"
+                    i18n-title="@@featureTicketsBoard-addSubtask"
+                    title="Add subtask"
+                    i18n-aria-label="@@featureTicketsBoard-addSubtask"
+                    aria-label="Add subtask"
                   >
-                    Add subtask
+                    <i class="bi bi-plus-circle" aria-hidden="true"></i>
                   </button>
                 </div>
 
@@ -1271,7 +1281,7 @@
           @if (detail(); as del) {
             <button
               type="button"
-              class="btn btn-outline-danger btn-sm"
+              class="btn btn-primary"
               (click)="onRequestDeleteTicket(del)"
               [disabled]="saving$ | async"
               i18n="@@featureTicketsBoard-delete"
@@ -1282,14 +1292,6 @@
             </button>
           }
         </div>
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="onCloseModal()"
-          i18n="@@featureTicketsBoard-close"
-        >
-          Close
-        </button>
       </div>
     </div>
   </div>
@@ -1407,19 +1409,11 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="onCloseTicketRelationsModal()"
-          i18n="@@featureTicketsBoard-relationsCancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
+          class="btn btn-primary"
           [disabled]="selectedTicketRelationTargets().length === 0"
           (click)="onAddSelectedTicketRelations()"
         >
-          <span i18n="@@featureTicketsBoard-relationsAddSelected">Add selected</span>
+          <span i18n="@@featureTicketsBoard-relationsAdd">Add</span>
         </button>
       </div>
     </div>
@@ -1475,21 +1469,12 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary"
-          (click)="onCancelTicketMigrationModal()"
-          [disabled]="ticketsSaving()"
-          i18n="@@featureTicketsBoard-migrateCancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
           class="btn btn-primary"
           (click)="onConfirmTicketMigration()"
           [disabled]="ticketsSaving() || !migrationTargetClientId()"
-          i18n="@@featureTicketsBoard-migrateConfirm"
+          i18n="@@featureTicketsBoard-move"
         >
-          Move ticket
+          Move
         </button>
       </div>
     </div>
@@ -1637,7 +1622,7 @@
           @if (ticketAutomationRunCanCancel(ar2)) {
             <button
               type="button"
-              class="btn btn-outline-danger btn-sm me-auto"
+              class="btn btn-primary me-auto"
               (click)="onCancelTicketAutomationRun(ar2)"
               [disabled]="ticketAutomationSaving()"
               i18n="@@featureTicketsBoard-automationCancelRun"
@@ -1646,14 +1631,6 @@
             </button>
           }
         }
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="onCloseTicketAutomationRunModal()"
-          i18n="@@featureTicketsBoard-close"
-        >
-          Close
-        </button>
       </div>
     </div>
   </div>
@@ -1690,7 +1667,7 @@
       </div>
       <div class="modal-body">
         @if (ticketPendingDelete(); as pend) {
-          <p class="mb-1">
+          <p>
             <span i18n="@@featureTicketsBoard-deleteConfirmModalLead"
               >Are you sure you want to delete this ticket?</span
             >
@@ -1717,21 +1694,12 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary btn-sm"
-          [disabled]="saving$ | async"
-          (click)="onCancelDeleteTicketConfirm()"
-          i18n="@@featureTicketsBoard-deleteConfirmCancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger btn-sm"
+          class="btn btn-primary"
           (click)="onConfirmDeleteTicket()"
           [disabled]="saving$ | async"
-          i18n="@@featureTicketsBoard-deleteConfirmSubmit"
+          i18n="@@featureTicketsBoard-delete"
         >
-          Delete ticket
+          Delete
         </button>
       </div>
     </div>
@@ -1864,17 +1832,9 @@
       <div class="modal-footer">
         <button
           type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="onCloseCreateTicketModal()"
-          i18n="@@featureTicketsBoard-createCancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary btn-sm"
+          class="btn btn-primary"
           (click)="onSubmitCreateTicket()"
-          i18n="@@featureTicketsBoard-createSubmit"
+          i18n="@@featureTicketsBoard-create"
         >
           Create
         </button>
@@ -1964,16 +1924,6 @@
             }
           </div>
         }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="onCloseGlobalSearchModal()"
-          i18n="@@featureTicketsBoard-globalSearchClose"
-        >
-          Close
-        </button>
       </div>
     </div>
   </div>
@@ -2075,16 +2025,6 @@
             }
           }
         }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary btn-sm"
-          (click)="onCloseWorkspaceSwitchModal()"
-          i18n="@@featureTicketsBoard-workspaceSwitcherClose"
-        >
-          Close
-        </button>
       </div>
     </div>
   </div>

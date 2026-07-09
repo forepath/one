@@ -8,9 +8,12 @@
       class="btn btn-primary btn-sm"
       (click)="openOrderPlanModal()"
       [disabled]="(isCustomerProfileComplete$ | async) !== true"
+      i18n-title="@@featureSubscriptions-orderPlanButton"
+      title="Order"
+      i18n-aria-label="@@featureSubscriptions-orderPlanButton"
+      aria-label="Order"
     >
-      <i class="bi bi-cart me-1"></i>
-      <span i18n="@@featureSubscriptions-orderPlanButton">Order</span>
+      <i class="bi bi-cart" aria-hidden="true"></i>
     </button>
   </div>
 
@@ -245,7 +248,7 @@
 </div>
 
 <ng-template #subscriptionListItem let-sub let-plans="plans">
-  <div class="list-group-item d-flex justify-content-between align-items-start border-bottom gap-2">
+  <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-2">
     <div class="min-w-0">
       <div class="fw-semibold mb-1">{{ subscriptionDisplayTitle(sub, plans) }}</div>
       <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
@@ -279,7 +282,7 @@
             <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(sub.nextBillingAt) }}
           </span>
           <span class="me-2">
-            <i class="bi bi-currency-euro me-1" aria-hidden="true"></i>{{ formatSubscriptionPeriodPrice(sub, plans) }}
+            <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatSubscriptionPeriodPrice(sub, plans) }}
           </span>
         </div>
       </div>
@@ -328,7 +331,7 @@
 </ng-template>
 
 <ng-template #backorderListItem let-bo let-plans="plans">
-  <div class="list-group-item d-flex justify-content-between align-items-start border-bottom gap-2">
+  <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-2">
     <div class="min-w-0">
       <div class="fw-semibold mb-1">{{ planNameByPlanId(plans, bo.planId) }}</div>
       <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
@@ -341,7 +344,7 @@
             {{ backorderStatusLabel(bo.status) }}
           </span>
           <span class="me-2">
-            <i class="bi bi-currency-euro me-1" aria-hidden="true"></i>{{ formatBackorderPeriodPrice(bo, plans) }}
+            <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatBackorderPeriodPrice(bo, plans) }}
           </span>
         </div>
       </div>
@@ -1204,15 +1207,6 @@
         </div>
         <div class="modal-footer">
           <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            [disabled]="subscriptionsCreating()"
-            i18n="@@featureSubscriptions-close"
-          >
-            Close
-          </button>
-          <button
             type="submit"
             class="btn btn-primary d-inline-flex align-items-center gap-2"
             [disabled]="
@@ -1261,16 +1255,13 @@
         </p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureSubscriptions-close">
-          Close
-        </button>
         <button
           type="button"
-          class="btn btn-danger"
+          class="btn btn-primary"
           (click)="confirmCancelSubscription()"
-          i18n="@@featureSubscriptions-confirmCancel"
+          i18n="@@featureSubscriptions-cancel"
         >
-          Confirm cancel
+          Cancel
         </button>
       </div>
     </div>
@@ -1317,16 +1308,13 @@
         }
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureSubscriptions-close">
-          Close
-        </button>
         <button
           type="button"
-          class="btn btn-danger"
+          class="btn btn-primary"
           (click)="confirmWithdrawSubscription()"
-          i18n="@@featureSubscriptions-confirmWithdraw"
+          i18n="@@featureSubscriptions-withdraw"
         >
-          Confirm withdrawal
+          Withdraw
         </button>
       </div>
     </div>
@@ -1356,15 +1344,7 @@
         </p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureSubscriptions-close">
-          Close
-        </button>
-        <button
-          type="button"
-          class="btn btn-success"
-          (click)="confirmResume()"
-          i18n="@@featureSubscriptions-confirmResume"
-        >
+        <button type="button" class="btn btn-success" (click)="confirmResume()" i18n="@@featureSubscriptions-resume">
           Resume
         </button>
       </div>
@@ -1393,16 +1373,13 @@
         <p i18n="@@featureSubscriptions-withdrawOrderConfirm">Are you sure you want to withdraw this order?</p>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureSubscriptions-close">
-          Close
-        </button>
         <button
           type="button"
-          class="btn btn-danger"
+          class="btn btn-primary"
           (click)="confirmCancelBackorder()"
-          i18n="@@featureSubscriptions-confirmWithdrawOrder"
+          i18n="@@featureSubscriptions-withdraw"
         >
-          Confirm withdrawal
+          Withdraw
         </button>
       </div>
     </div>
@@ -1582,14 +1559,11 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureSubscriptions-close">
-            Close
-          </button>
           <button
             type="submit"
             class="btn btn-primary"
             [disabled]="(customerProfileUpdating$ | async) === true"
-            i18n="@@featureSubscriptions-saveProfile"
+            i18n="@@featureSubscriptions-save"
           >
             Save
           </button>

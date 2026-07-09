@@ -6,9 +6,12 @@
       class="btn btn-sm btn-primary"
       (click)="openCreateModal()"
       [disabled]="(loadingAny$ | async) === true"
+      i18n-title="@@featureCloudInitConfigs-add"
+      title="Add config"
+      i18n-aria-label="@@featureCloudInitConfigs-add"
+      aria-label="Add config"
     >
-      <i class="bi bi-plus-circle me-1"></i>
-      <span i18n="@@featureCloudInitConfigs-add">Add config</span>
+      <i class="bi bi-plus-circle" aria-hidden="true"></i>
     </button>
   </div>
 
@@ -44,7 +47,7 @@
         } @else {
           <div class="list-group list-group-flush">
             @for (config of configs; track config.id) {
-              <div class="list-group-item d-flex justify-content-between align-items-start border-bottom gap-3">
+              <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3">
                 <div class="min-w-0">
                   <div class="fw-semibold mb-1">{{ config.name }}</div>
                   <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
@@ -188,8 +191,12 @@
                     type="button"
                     class="btn btn-sm btn-outline-secondary"
                     (click)="resetUserDataTemplate('create')"
+                    title="Load example"
+                    i18n-title="@@featureCloudInitConfigs-loadExample"
+                    aria-label="Load example"
+                    i18n-aria-label="@@featureCloudInitConfigs-loadExample"
                   >
-                    Load example
+                    <i class="bi bi-journal-code" aria-hidden="true"></i>
                   </button>
                 </div>
                 <framework-monaco-editor-wrapper
@@ -253,9 +260,12 @@
                 class="btn btn-sm btn-outline-primary"
                 (click)="addEnvVariable('create')"
                 [disabled]="(creating$ | async) === true"
-                i18n="@@featureCloudInitConfigs-addEnvVar"
+                title="Add line"
+                i18n-title="@@featureCloudInitConfigs-addEnvVar"
+                aria-label="Add line"
+                i18n-aria-label="@@featureCloudInitConfigs-addEnvVar"
               >
-                Add line
+                <i class="bi bi-plus-circle" aria-hidden="true"></i>
               </button>
             </div>
             @for (row of createForm.environmentVariableRows; track $index; let i = $index) {
@@ -360,8 +370,16 @@
                   >
                     ↓
                   </button>
-                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeEnvVariable('create', i)">
-                    Remove
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="removeEnvVariable('create', i)"
+                    title="Remove"
+                    i18n-title="@@featureServicePlans-removeHighlight"
+                    aria-label="Remove"
+                    i18n-aria-label="@@featureServicePlans-removeHighlight"
+                  >
+                    <i class="bi bi-trash" aria-hidden="true"></i>
                   </button>
                 </div>
               </div>
@@ -370,20 +388,12 @@
         </div>
         <div class="modal-footer">
           <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            i18n="@@featureCloudInitConfigs-cancel"
-          >
-            Cancel
-          </button>
-          <button
             type="submit"
             class="btn btn-primary"
             [disabled]="(creating$ | async) === true"
-            i18n="@@featureCloudInitConfigs-save"
+            i18n="@@featureCloudInitConfigs-create"
           >
-            Save
+            Create
           </button>
         </div>
       </form>
@@ -483,8 +493,12 @@
                     type="button"
                     class="btn btn-sm btn-outline-secondary"
                     (click)="resetUserDataTemplate('edit')"
+                    title="Load example"
+                    i18n-title="@@featureCloudInitConfigs-loadExample"
+                    aria-label="Load example"
+                    i18n-aria-label="@@featureCloudInitConfigs-loadExample"
                   >
-                    Load example
+                    <i class="bi bi-journal-code" aria-hidden="true"></i>
                   </button>
                 </div>
                 <framework-monaco-editor-wrapper
@@ -546,9 +560,12 @@
                 class="btn btn-sm btn-outline-primary"
                 (click)="addEnvVariable('edit')"
                 [disabled]="(updating$ | async) === true"
-                i18n="@@featureCloudInitConfigs-addEnvVar"
+                title="Add line"
+                i18n-title="@@featureCloudInitConfigs-addEnvVar"
+                aria-label="Add line"
+                i18n-aria-label="@@featureCloudInitConfigs-addEnvVar"
               >
-                Add line
+                <i class="bi bi-plus-circle" aria-hidden="true"></i>
               </button>
             </div>
             @for (row of editForm.environmentVariableRows; track $index; let i = $index) {
@@ -653,8 +670,16 @@
                   >
                     ↓
                   </button>
-                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeEnvVariable('edit', i)">
-                    Remove
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="removeEnvVariable('edit', i)"
+                    title="Remove"
+                    i18n-title="@@featureServicePlans-removeHighlight"
+                    aria-label="Remove"
+                    i18n-aria-label="@@featureServicePlans-removeHighlight"
+                  >
+                    <i class="bi bi-trash" aria-hidden="true"></i>
                   </button>
                 </div>
               </div>
@@ -662,14 +687,6 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-            i18n="@@featureCloudInitConfigs-cancel"
-          >
-            Cancel
-          </button>
           <button
             type="submit"
             class="btn btn-primary"
@@ -694,15 +711,16 @@
       <div class="modal-body">
         @if (configToDelete) {
           <p i18n="@@featureCloudInitConfigs-deleteConfirm">Delete CloudInit config "{{ configToDelete.name }}"?</p>
+          <p class="text-danger mb-0">
+            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+            <span i18n="@@featureCloudInitConfigs-cannotUndo">This action cannot be undone.</span>
+          </p>
         }
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" i18n="@@featureCloudInitConfigs-cancel">
-          Cancel
-        </button>
         <button
           type="button"
-          class="btn btn-danger"
+          class="btn btn-primary"
           (click)="confirmDelete()"
           [disabled]="(deleting$ | async) === true"
           i18n="@@featureCloudInitConfigs-delete"

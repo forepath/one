@@ -66,12 +66,15 @@
             class="btn btn-sm btn-outline-primary"
             (click)="onLoadRunLogs()"
             [disabled]="loadingRunLogs$ | async"
+            i18n-title="@@featureDeploymentRunDetails-viewRunLogsButton"
+            title="View Run Logs"
+            i18n-aria-label="@@featureDeploymentRunDetails-viewRunLogsButton"
+            aria-label="View Run Logs"
           >
             @if (loadingRunLogs$ | async) {
               <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             } @else {
-              <i class="bi bi-file-text me-1"></i>
-              <span i18n="@@featureDeploymentRunDetails-viewRunLogsButton">View Run Logs</span>
+              <i class="bi bi-file-text" aria-hidden="true"></i>
             }
           </button>
         </div>
@@ -216,23 +219,23 @@
         <div class="modal-footer">
           <button
             type="button"
-            class="btn btn-secondary btn-sm"
+            class="btn btn-secondary"
             [disabled]="cancellingRun$ | async"
             (click)="onCancelCancelRunConfirm()"
-            i18n="@@featureDeploymentRunDetails-cancelConfirmDismiss"
+            i18n="@@featureDeploymentRunDetails-cancel"
           >
-            Keep running
+            Cancel
           </button>
           <button
             type="button"
-            class="btn btn-danger btn-sm"
+            class="btn btn-primary"
             (click)="confirmCancelRun()"
             [disabled]="cancellingRun$ | async"
           >
             @if (cancellingRun$ | async) {
               <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
             }
-            <span i18n="@@featureDeploymentRunDetails-cancelConfirmSubmit">Cancel run</span>
+            <span i18n="@@featureDeploymentRunDetails-cancelRun">Cancel run</span>
           </button>
         </div>
       </div>
