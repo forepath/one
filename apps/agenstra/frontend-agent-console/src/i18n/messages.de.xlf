@@ -2629,8 +2629,8 @@
         <target>Click &quot;New&quot; to create a terminal session</target>
       </trans-unit>
       <trans-unit id="featureTerminal-newTerminalButton" datatype="html">
-        <source>New Terminal</source>
-        <target>Neues Terminal</target>
+        <source>Create Terminal</source>
+        <target>Terminal erstellen</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-title" datatype="html">
         <source>Knowledge</source>
