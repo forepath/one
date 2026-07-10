@@ -8,8 +8,9 @@ $icon-button-size-sm: 2rem;
   min-height: $size;
 }
 
-// Bootstrap buttons with only a Bootstrap icon, or an icon plus screen-reader-only text.
-$icon-button-selector: '.btn:not(.btn-close):not(.btn-options):not(.btn-link):is(:has(> i.bi:only-child), :has(> i.bi:first-child:nth-last-child(2) + .visually-hidden))';
+// Bootstrap icon-only buttons (square): one Bootstrap icon, or icon + screen-reader-only text.
+// :only-child ignores text nodes, so exclude labeled CTAs and buttons with visible element labels.
+$icon-button-selector: '.btn:not(.btn-close):not(.btn-options):not(.btn-link):not(.cta-btn):not(:has(> i.bi + :not(.visually-hidden))):is(:has(> i.bi:only-child), :has(> i.bi:first-child + .visually-hidden:last-child))';
 
 #{$icon-button-selector} {
   display: inline-flex;
