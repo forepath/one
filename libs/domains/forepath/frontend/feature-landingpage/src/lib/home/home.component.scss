@@ -202,6 +202,16 @@
   width: 100%;
   height: auto;
   display: block;
+  filter: grayscale(1);
+  opacity: 0.2;
+  transition:
+    filter 0.5s ease,
+    opacity 0.5s ease;
+
+  &:hover {
+    filter: grayscale(0);
+    opacity: 1;
+  }
 }
 
 .home-roots-city {
