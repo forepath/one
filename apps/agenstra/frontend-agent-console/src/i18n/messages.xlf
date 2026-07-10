@@ -1988,7 +1988,7 @@
         <source>Click &quot;New&quot; to create a terminal session</source>
         </trans-unit>
       <trans-unit id="featureTerminal-newTerminalButton" datatype="html">
-        <source>New Terminal</source>
+        <source>Create Terminal</source>
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-title" datatype="html">
         <source>Knowledge</source>

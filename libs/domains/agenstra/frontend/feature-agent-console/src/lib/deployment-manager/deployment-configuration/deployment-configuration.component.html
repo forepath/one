@@ -198,9 +198,13 @@
           >No deployment configuration found. Create one to get started.</span
         >
       </div>
-      <button type="button" class="btn btn-primary w-100" (click)="onShowConfigurationForm()">
-        <i class="bi bi-plus-circle me-1"></i>
-        <span i18n="@@featureDeploymentConfig-createConfigButton">Create Configuration</span>
+      <button
+        type="button"
+        class="btn btn-primary w-100"
+        (click)="onShowConfigurationForm()"
+        i18n="@@featureDeploymentConfig-createConfigButton"
+      >
+        Create Configuration
       </button>
     </div>
   }
