@@ -362,6 +362,34 @@
         <source>This action cannot be undone.</source>
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
       </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-title" datatype="html">
+        <source>Contracts</source>
+        <target>Verträge</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-summaryTotal" datatype="html">
+        <source>Contracts</source>
+        <target>Verträge</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-summaryActive" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-search" datatype="html">
+        <source>Search contracts</source>
+        <target>Verträge durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-searchPlaceholder" datatype="html">
+        <source>Search by number, email, plan, or status</source>
+        <target>Nach Nummer, E-Mail, Plan oder Status suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-loading" datatype="html">
+        <source>Loading contracts...</source>
+        <target>Verträge werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-empty" datatype="html">
+        <source>No contracts found.</source>
+        <target>Keine Verträge gefunden.</target>
+      </trans-unit>
       <trans-unit id="featureAdminProjects-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
@@ -505,6 +533,10 @@
       <trans-unit id="featureContainer-adminProfilesPage" datatype="html">
         <source>Billing Profiles</source>
         <target>Abrechnungsprofile</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminSubscriptionsPage" datatype="html">
+        <source>Contracts</source>
+        <target>Verträge</target>
       </trans-unit>
       <trans-unit id="featureContainer-adminDatevExportsPage" datatype="html">
         <source>DATEV Exports</source>
@@ -885,6 +917,14 @@
       <trans-unit id="featureContainer-adminProfiles" datatype="html">
         <source>Profiles</source>
         <target>Profile</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminSubscriptionsTitle" datatype="html">
+        <source>Contracts</source>
+        <target>Verträge</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminSubscriptions" datatype="html">
+        <source>Contracts</source>
+        <target>Verträge</target>
       </trans-unit>
       <trans-unit id="featureContainer-adminBillingTitle" datatype="html">
         <source>Billing</source>

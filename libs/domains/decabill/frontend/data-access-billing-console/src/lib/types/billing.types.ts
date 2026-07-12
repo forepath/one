@@ -727,6 +727,25 @@ export interface PaginatedAdminInvoicesResponse {
   offset: number;
 }
 
+export interface AdminSubscriptionListItem extends SubscriptionResponse {
+  userEmail?: string;
+  planName?: string;
+}
+
+export interface AdminSubscriptionsListParams {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  userId?: string;
+}
+
+export interface PaginatedAdminSubscriptionsResponse {
+  items: AdminSubscriptionListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface MarkInvoicePaymentStatusDto {
   reason?: string;
 }

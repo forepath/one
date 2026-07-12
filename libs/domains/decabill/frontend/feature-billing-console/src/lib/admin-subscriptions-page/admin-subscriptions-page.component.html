@@ -1,0 +1,244 @@
+<div class="admin-subscriptions-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminSubscriptions-title">Contracts</h5>
+  </div>
+
+  <div class="admin-subscriptions__summary-bar flex-shrink-0">
+    <div class="row g-0 admin-subscriptions__summary-grid">
+      <div class="col-6">
+        <div class="card h-100 rounded-0 admin-subscriptions__summary-card admin-subscriptions__summary-card--first">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminSubscriptions-summaryTotal">
+              Contracts
+            </h6>
+            @if (loading$ | async) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ subscriptions().length }}</p>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card h-100 rounded-0 admin-subscriptions__summary-card admin-subscriptions__summary-card--second">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminSubscriptions-summaryActive">Active</h6>
+            @if (loading$ | async) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            } @else {
+              <p class="card-title mb-0 fs-4 fw-bold">{{ activeCount() }}</p>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <form class="lane-search" (ngSubmit)="$event.preventDefault()">
+    <label for="adminSubscriptionsSearchInput" class="visually-hidden" i18n="@@featureAdminSubscriptions-search">
+      Search contracts
+    </label>
+    <div class="input-group search-input-container border-bottom">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <input
+        id="adminSubscriptionsSearchInput"
+        type="search"
+        class="form-control border-0 search-input"
+        placeholder="Search by number, email, plan, or status"
+        i18n-placeholder="@@featureAdminSubscriptions-searchPlaceholder"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearchChange($event)"
+        name="adminSubscriptionsSearch"
+      />
+    </div>
+  </form>
+
+  <div class="flex-grow-1 overflow-auto min-h-0">
+    @if (loading$ | async) {
+      <div class="d-flex justify-content-center align-items-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden" i18n="@@featureAdminSubscriptions-loading">Loading contracts...</span>
+        </div>
+      </div>
+    } @else {
+      @if (error$ | async; as error) {
+        <div class="alert alert-danger m-3" role="alert">{{ error }}</div>
+      }
+      @if (subscriptions().length === 0) {
+        <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+          <p class="mb-0" i18n="@@featureAdminSubscriptions-empty">No contracts found.</p>
+        </div>
+      } @else {
+        <div class="list-group list-group-flush">
+          @for (sub of subscriptions(); track sub.id) {
+            <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-2">
+              <div class="min-w-0">
+                <div class="fw-semibold mb-1">{{ subscriptionTitle(sub) }}</div>
+                <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                    <span
+                      class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded me-2"
+                      [ngClass]="subscriptionStatusBadgeClass(sub.status)"
+                      [attr.title]="sub.status ?? undefined"
+                    >
+                      {{ subscriptionStatusLabel(sub.status) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ subscriptionUserLabel(sub) }}
+                    </span>
+                    @if (sub.number) {
+                      <span class="me-2"> <i class="bi bi-upc-scan me-1" aria-hidden="true"></i>{{ sub.number }} </span>
+                    }
+                    <span class="me-2">
+                      <i class="bi bi-calendar-range me-1" aria-hidden="true"></i>{{ formatSubscriptionPeriod(sub) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(sub.nextBillingAt) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatPeriodPrice(sub) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="btn-group btn-group-sm flex-shrink-0"
+                role="group"
+                aria-label="Subscription actions"
+                i18n-aria-label="@@featureSubscriptions-subscriptionActionsAria"
+              >
+                @if (sub.withdrawalEligibility?.canWithdraw) {
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    (click)="openWithdrawConfirm(sub)"
+                    title="Withdraw subscription"
+                    i18n-title="@@featureSubscriptions-withdrawButtonTitle"
+                  >
+                    <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+                  </button>
+                }
+                @if (sub.status === 'active') {
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    (click)="openCancelConfirm(sub)"
+                    title="Cancel subscription"
+                    i18n-title="@@featureSubscriptions-cancelButtonTitle"
+                  >
+                    <i class="bi bi-x-circle" aria-hidden="true"></i>
+                  </button>
+                }
+                @if (sub.status === 'pending_cancel') {
+                  <button
+                    type="button"
+                    class="btn btn-outline-success"
+                    (click)="openResumeConfirm(sub)"
+                    title="Resume subscription"
+                    i18n-title="@@featureSubscriptions-resumeButtonTitle"
+                  >
+                    <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<div class="modal fade" tabindex="-1" aria-hidden="true" #cancelSubscriptionModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureSubscriptions-cancelSubscriptionTitle">Cancel subscription?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p i18n="@@featureSubscriptions-cancelSubscriptionConfirm">
+          Are you sure you want to cancel this subscription? It will remain active until the end of the current period.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="confirmCancelSubscription()"
+          [disabled]="(canceling$ | async) === true"
+          i18n="@@featureSubscriptions-cancel"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" tabindex="-1" aria-hidden="true" #withdrawSubscriptionModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureSubscriptions-withdrawSubscriptionTitle">Withdraw subscription?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p i18n="@@featureSubscriptions-withdrawSubscriptionConfirm">
+          Are you sure you want to exercise your statutory right of withdrawal? The subscription will end immediately
+          and provisioned services will be removed.
+        </p>
+        @if (subscriptionToWithdraw?.withdrawalEligibility?.deadline; as deadline) {
+          <p class="mb-2 text-body-secondary small">
+            <span i18n="@@featureSubscriptions-withdrawalDeadline">Withdrawal deadline</span>:
+            <strong class="ms-1">{{ formatDate(deadline) }}</strong>
+          </p>
+        }
+        @if (subscriptionToWithdraw?.withdrawalEligibility?.estimatedRefundGross; as refund) {
+          <p class="mb-0 text-body-secondary small">
+            <span i18n="@@featureSubscriptions-estimatedRefund">Estimated refund</span>:
+            <strong class="ms-1">{{ formatCurrencyAmount(refund) }}</strong>
+          </p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="confirmWithdrawSubscription()"
+          [disabled]="(withdrawing$ | async) === true"
+          i18n="@@featureSubscriptions-withdraw"
+        >
+          Withdraw
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" tabindex="-1" aria-hidden="true" #resumeConfirmModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureSubscriptions-resumeSubscriptionTitle">Resume subscription?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p i18n="@@featureSubscriptions-resumeSubscriptionConfirm">
+          Resume this subscription so it continues after the current period.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-success"
+          (click)="confirmResume()"
+          [disabled]="(resuming$ | async) === true"
+          i18n="@@featureSubscriptions-resume"
+        >
+          Resume
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

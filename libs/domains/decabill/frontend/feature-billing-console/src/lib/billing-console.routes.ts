@@ -4,9 +4,11 @@ import {
   AdminCustomerProfilesFacade,
   AdminDatevExportsFacade,
   AdminInvoiceManagerFacade,
+  AdminSubscriptionsFacade,
   BillingCapabilitiesFacade,
   adminCustomerProfilesReducer,
   adminInvoiceManagerReducer,
+  adminSubscriptionsReducer,
   adminMarkPaid$,
   adminMarkUnpaid$,
   adminVoidInvoice$,
@@ -20,6 +22,11 @@ import {
   issueManualInvoice$,
   loadAdminCustomerProfiles$,
   loadAdminCustomerProfilesBatch$,
+  loadAdminSubscriptions$,
+  loadAdminSubscriptionsBatch$,
+  adminCancelSubscription$,
+  adminWithdrawSubscription$,
+  adminResumeSubscription$,
   loadAdminInvoiceManager$,
   loadAdminInvoiceManagerBatch$,
   updateAdminCustomerProfile$,
@@ -190,6 +197,7 @@ import { AdminPromotionsPageComponent } from './admin-promotions-page/admin-prom
 import { PromotionsPageComponent } from './promotions-page/promotions-page.component';
 import { AdminBillingPageComponent } from './admin-billing-page/admin-billing-page.component';
 import { AdminCustomerProfilesPageComponent } from './admin-customer-profiles-page/admin-customer-profiles-page.component';
+import { AdminSubscriptionsPageComponent } from './admin-subscriptions-page/admin-subscriptions-page.component';
 import { AdminDatevExportsPageComponent } from './admin-datev-exports-page/admin-datev-exports-page.component';
 import { BillingConsoleContainerComponent } from './container/container.component';
 import { billingAdminGuard } from './guards/billing-admin.guard';
@@ -322,6 +330,12 @@ export const billingConsoleRoutes: Route[] = [
             title: () => buildPageTitle($localize`:@@featureContainer-adminProfilesPage:Billing Profiles`),
           },
           {
+            path: 'subscriptions',
+            canActivate: [authGuard, billingAdminGuard],
+            component: AdminSubscriptionsPageComponent,
+            title: () => buildPageTitle($localize`:@@featureContainer-adminSubscriptionsPage:Contracts`),
+          },
+          {
             path: 'projects',
             canActivate: [authGuard, billingAdminGuard],
             children: [
@@ -371,6 +385,7 @@ export const billingConsoleRoutes: Route[] = [
       BillingCapabilitiesFacade,
       AdminInvoiceManagerFacade,
       AdminCustomerProfilesFacade,
+      AdminSubscriptionsFacade,
       AdminPromotionsFacade,
       PromotionsFacade,
       ProjectsFacade,
@@ -391,6 +406,7 @@ export const billingConsoleRoutes: Route[] = [
       provideState('adminDatevExports', adminDatevExportsReducer),
       provideState('adminInvoiceManager', adminInvoiceManagerReducer),
       provideState('adminCustomerProfiles', adminCustomerProfilesReducer),
+      provideState('adminSubscriptions', adminSubscriptionsReducer),
       provideState('adminPromotions', adminPromotionsReducer),
       provideState('promotions', promotionsReducer),
       provideState('projects', projectsReducer),
@@ -475,6 +491,11 @@ export const billingConsoleRoutes: Route[] = [
         adminInvoiceManagerMarkUnpaid$,
         loadAdminCustomerProfiles$,
         loadAdminCustomerProfilesBatch$,
+        loadAdminSubscriptions$,
+        loadAdminSubscriptionsBatch$,
+        adminCancelSubscription$,
+        adminWithdrawSubscription$,
+        adminResumeSubscription$,
         loadBillingCapabilities$,
         loadAdminDatevExports$,
         loadAdminDatevExportsBatch$,

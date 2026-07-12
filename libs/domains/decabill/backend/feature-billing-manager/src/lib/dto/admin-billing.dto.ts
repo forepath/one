@@ -1,6 +1,7 @@
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 
 import { InvoiceResponseDto } from './invoice-response.dto';
+import { SubscriptionResponseDto } from './subscription-response.dto';
 
 export class AdminBillingSummaryResponseDto {
   activeSubscriptionsCount!: number;
@@ -26,6 +27,18 @@ export class AdminInvoiceListItemDto extends InvoiceResponseDto {
 
 export class PaginatedAdminInvoicesResponseDto {
   items!: AdminInvoiceListItemDto[];
+  total!: number;
+  limit!: number;
+  offset!: number;
+}
+
+export class AdminSubscriptionListItemDto extends SubscriptionResponseDto {
+  userEmail?: string;
+  planName?: string;
+}
+
+export class PaginatedAdminSubscriptionsResponseDto {
+  items!: AdminSubscriptionListItemDto[];
   total!: number;
   limit!: number;
   offset!: number;

@@ -266,6 +266,27 @@
       <trans-unit id="featureAdminProfiles-delete" datatype="html">
         <source>Delete</source>
         </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-title" datatype="html">
+        <source>Contracts</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-summaryTotal" datatype="html">
+        <source>Contracts</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-summaryActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-search" datatype="html">
+        <source>Search contracts</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-searchPlaceholder" datatype="html">
+        <source>Search by number, email, plan, or status</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-loading" datatype="html">
+        <source>Loading contracts...</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-empty" datatype="html">
+        <source>No contracts found.</source>
+        </trans-unit>
       <trans-unit id="featureAdminDatevExports-title" datatype="html">
         <source>DATEV exports</source>
         </trans-unit>
@@ -373,6 +394,9 @@
         </trans-unit>
       <trans-unit id="featureContainer-adminProfilesPage" datatype="html">
         <source>Billing Profiles</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminSubscriptionsPage" datatype="html">
+        <source>Contracts</source>
         </trans-unit>
       <trans-unit id="featureContainer-adminDatevExportsPage" datatype="html">
         <source>DATEV Exports</source>
@@ -844,6 +868,12 @@
         </trans-unit>
       <trans-unit id="featureContainer-adminProfiles" datatype="html">
         <source>Profiles</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminSubscriptionsTitle" datatype="html">
+        <source>Contracts</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminSubscriptions" datatype="html">
+        <source>Contracts</source>
         </trans-unit>
       <trans-unit id="featureContainer-adminBillingTitle" datatype="html">
         <source>Billing</source>

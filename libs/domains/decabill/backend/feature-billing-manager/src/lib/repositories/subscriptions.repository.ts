@@ -6,6 +6,13 @@ import { SubscriptionEntity } from '../entities/subscription.entity';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { applyUserTenantFilter, getRequiredTenantId } from '../utils/tenant-query.utils';
 
+export interface AdminSubscriptionListParams {
+  limit: number;
+  offset: number;
+  search?: string;
+  userId?: string;
+}
+
 export interface SubscriptionWithBillingProfile {
   subscription: SubscriptionEntity;
   profile: CustomerProfileEntity;
@@ -76,6 +83,38 @@ export class SubscriptionsRepository {
       skip: offset,
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async findAllForAdmin(params: AdminSubscriptionListParams): Promise<{ items: SubscriptionEntity[]; total: number }> {
+    const qb = this.repository
+      .createQueryBuilder('subscription')
+      .innerJoin('users', 'user', 'user.id = subscription.user_id');
+
+    applyUserTenantFilter(qb, 'user');
+
+    if (params.userId) {
+      qb.andWhere('subscription.user_id = :userId', { userId: params.userId });
+    }
+
+    if (params.search?.trim()) {
+      const term = `%${params.search.trim().toLowerCase()}%`;
+
+      qb.leftJoin('billing_service_plans', 'plan', 'plan.id = subscription.plan_id').andWhere(
+        `(LOWER(subscription.number) LIKE :term
+          OR LOWER(user.email) LIKE :term
+          OR LOWER(plan.name) LIKE :term
+          OR LOWER(subscription.status::text) LIKE :term
+          OR CAST(subscription.id AS text) LIKE :term
+          OR CAST(subscription.user_id AS text) LIKE :term
+          OR CAST(user.id AS text) LIKE :term)`,
+        { term },
+      );
+    }
+
+    const total = await qb.getCount();
+    const items = await qb.orderBy('subscription.createdAt', 'DESC').take(params.limit).skip(params.offset).getMany();
+
+    return { items, total };
   }
 
   async create(dto: Partial<SubscriptionEntity>): Promise<SubscriptionEntity> {

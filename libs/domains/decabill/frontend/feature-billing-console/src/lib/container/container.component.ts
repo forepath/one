@@ -309,6 +309,13 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
         label: $localize`:@@featureContainer-servicePlans:Plans`,
       },
       {
+        routerLink: ['/administration/subscriptions'],
+        activePaths: ['/administration/subscriptions'],
+        icon: 'bi-collection',
+        title: $localize`:@@featureContainer-adminSubscriptionsTitle:Contracts`,
+        label: $localize`:@@featureContainer-adminSubscriptions:Contracts`,
+      },
+      {
         routerLink: ['/administration/promotions'],
         activePaths: ['/administration/promotions'],
         icon: 'bi-tag',

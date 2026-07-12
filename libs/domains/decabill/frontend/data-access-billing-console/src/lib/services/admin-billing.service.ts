@@ -10,6 +10,7 @@ import type {
   AdminBillingStatisticsParams,
   AdminBillingSummaryResponse,
   AdminOpenOverdueListParams,
+  AdminSubscriptionsListParams,
   BillingStatisticsByProduct,
   BillingStatisticsSummary,
   CreateManualInvoiceDto,
@@ -17,8 +18,10 @@ import type {
   ManualInvoiceDetailResponse,
   MarkInvoicePaymentStatusDto,
   PaginatedAdminInvoicesResponse,
+  PaginatedAdminSubscriptionsResponse,
   PaginatedBillingAuditLogsResponse,
   AdminInvoiceListItem,
+  AdminSubscriptionListItem,
   SubscriptionResponse,
   UpdateManualInvoiceDto,
 } from '../types/billing.types';
@@ -139,6 +142,34 @@ export class AdminBillingService {
     return this.http.get<SubscriptionResponse[]>(`${this.apiUrl}/admin/billing/users/${userId}/subscriptions`, {
       params: httpParams,
     });
+  }
+
+  listSubscriptions(params: AdminSubscriptionsListParams): Observable<PaginatedAdminSubscriptionsResponse> {
+    let httpParams = new HttpParams();
+
+    if (params.limit != null) httpParams = httpParams.set('limit', String(params.limit));
+
+    if (params.offset != null) httpParams = httpParams.set('offset', String(params.offset));
+
+    if (params.search) httpParams = httpParams.set('search', params.search);
+
+    if (params.userId) httpParams = httpParams.set('userId', params.userId);
+
+    return this.http.get<PaginatedAdminSubscriptionsResponse>(`${this.apiUrl}/admin/billing/subscriptions`, {
+      params: httpParams,
+    });
+  }
+
+  cancelSubscription(id: string): Observable<AdminSubscriptionListItem> {
+    return this.http.post<AdminSubscriptionListItem>(`${this.apiUrl}/admin/billing/subscriptions/${id}/cancel`, {});
+  }
+
+  withdrawSubscription(id: string): Observable<AdminSubscriptionListItem> {
+    return this.http.post<AdminSubscriptionListItem>(`${this.apiUrl}/admin/billing/subscriptions/${id}/withdraw`, {});
+  }
+
+  resumeSubscription(id: string): Observable<AdminSubscriptionListItem> {
+    return this.http.post<AdminSubscriptionListItem>(`${this.apiUrl}/admin/billing/subscriptions/${id}/resume`, {});
   }
 
   createManualInvoice(dto: CreateManualInvoiceDto): Observable<ManualInvoiceDetailResponse> {
