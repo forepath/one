@@ -65,6 +65,7 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
           (url) =>
             url.includes('/dashboard') ||
             url.includes('/subscriptions') ||
+            url.includes('/promotions') ||
             url.includes('/invoices') ||
             url.includes('/projects') ||
             url.includes('/administration') ||
@@ -75,6 +76,7 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
       initialValue:
         this.router.url.includes('/dashboard') ||
         this.router.url.includes('/subscriptions') ||
+        this.router.url.includes('/promotions') ||
         this.router.url.includes('/invoices') ||
         this.router.url.includes('/projects') ||
         this.router.url.includes('/administration') ||
@@ -305,6 +307,13 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
         icon: 'bi-cart',
         title: $localize`:@@featureContainer-servicePlansTitle:Plans`,
         label: $localize`:@@featureContainer-servicePlans:Plans`,
+      },
+      {
+        routerLink: ['/administration/promotions'],
+        activePaths: ['/administration/promotions'],
+        icon: 'bi-tag',
+        title: $localize`:@@featureContainer-adminPromotionsTitle:Promotions`,
+        label: $localize`:@@featureContainer-adminPromotions:Promotions`,
       },
       {
         routerLink: ['/users'],

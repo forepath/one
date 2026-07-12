@@ -5,6 +5,7 @@ import type { WithdrawalEligibilityDto, WithdrawalResultDto } from '../dto/withd
 import { BillingIntervalType, type ServicePlanEntity } from '../entities/service-plan.entity';
 import { ProvisioningStatus } from '../entities/subscription-item.entity';
 import { SubscriptionEntity, SubscriptionStatus } from '../entities/subscription.entity';
+import { PromotionRedemptionContext } from '../constants/promotion.constants';
 import { BackordersRepository } from '../repositories/backorders.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
@@ -48,6 +49,7 @@ import { HostnameReservationService } from './hostname-reservation.service';
 import { ProviderServerTypesService } from './provider-server-types.service';
 import { PricingService } from './pricing.service';
 import { ProvisioningService } from './provisioning.service';
+import { PromotionRedemptionService } from './promotion-redemption.service';
 import { TaxCalculationService } from './tax-calculation.service';
 
 @Injectable()
@@ -74,6 +76,7 @@ export class SubscriptionService {
     private readonly withdrawalPolicyService: WithdrawalPolicyService,
     private readonly withdrawalRefundService: WithdrawalRefundService,
     private readonly backordersRepository: BackordersRepository,
+    private readonly promotionRedemptionService: PromotionRedemptionService,
   ) {}
 
   async createSubscription(
@@ -81,6 +84,8 @@ export class SubscriptionService {
     planId: string,
     requestedConfig?: Record<string, unknown>,
     autoBackorder = false,
+    promotionCode?: string,
+    promotionBenefitStartsAt?: string,
   ) {
     const profile = await this.customerProfilesService.getByUserId(userId);
 
@@ -236,6 +241,21 @@ export class SubscriptionService {
       serviceTypeId: plan.serviceTypeId,
       configSnapshot: effectiveConfig,
     });
+
+    if (promotionCode?.trim()) {
+      try {
+        await this.promotionRedemptionService.redeem(
+          userId,
+          promotionCode.trim(),
+          subscription.id,
+          PromotionRedemptionContext.NEW,
+          { benefitStartsAt: promotionBenefitStartsAt },
+        );
+      } catch (error) {
+        await this.subscriptionsRepository.delete(subscription.id);
+        throw error;
+      }
+    }
 
     // Reload so DB-generated columns (e.g. the sequence-backed `number`) are populated on the
     // returned entity; save() does not reliably hydrate database defaults.

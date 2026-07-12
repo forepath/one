@@ -162,6 +162,23 @@ import {
   requestPublicWithdrawal$,
   verifyPublicWithdrawalCode$,
   confirmPublicWithdrawal$,
+  AdminPromotionsFacade,
+  adminPromotionsReducer,
+  loadAdminPromotions$,
+  loadAdminPromotionsBatch$,
+  createAdminPromotion$,
+  updateAdminPromotion$,
+  deactivateAdminPromotion$,
+  loadAdminPromotionRedemptions$,
+  loadAdminPromotionRedemptionsBatch$,
+  PromotionsFacade,
+  promotionsReducer,
+  loadActivePromotions$,
+  loadActivePromotionsBatch$,
+  loadPromotionRedemptions$,
+  loadPromotionRedemptionsBatch$,
+  validatePromotion$,
+  redeemPromotion$,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { authGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/identity/frontend';
 import { buildPageTitle } from '@forepath/shared/frontend/util-configuration';
@@ -169,6 +186,8 @@ import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
 
+import { AdminPromotionsPageComponent } from './admin-promotions-page/admin-promotions-page.component';
+import { PromotionsPageComponent } from './promotions-page/promotions-page.component';
 import { AdminBillingPageComponent } from './admin-billing-page/admin-billing-page.component';
 import { AdminCustomerProfilesPageComponent } from './admin-customer-profiles-page/admin-customer-profiles-page.component';
 import { AdminDatevExportsPageComponent } from './admin-datev-exports-page/admin-datev-exports-page.component';
@@ -229,6 +248,12 @@ export const billingConsoleRoutes: Route[] = [
         title: () => buildPageTitle($localize`:@@featureContainer-subscriptionsPage:Plans`),
       },
       {
+        path: 'promotions',
+        canActivate: [authGuard],
+        component: PromotionsPageComponent,
+        title: () => buildPageTitle($localize`:@@featureContainer-promotionsPage:Promotions`),
+      },
+      {
         path: 'invoices',
         canActivate: [authGuard],
         component: InvoicesComponent,
@@ -277,6 +302,12 @@ export const billingConsoleRoutes: Route[] = [
             canActivate: [authGuard, billingAdminGuard],
             component: ServicePlansPageComponent,
             title: () => buildPageTitle($localize`:@@featureContainer-servicePlansPage:Service Plans`),
+          },
+          {
+            path: 'promotions',
+            canActivate: [authGuard, billingAdminGuard],
+            component: AdminPromotionsPageComponent,
+            title: () => buildPageTitle($localize`:@@featureContainer-adminPromotionsPage:Promotions`),
           },
           {
             path: 'billing',
@@ -340,6 +371,8 @@ export const billingConsoleRoutes: Route[] = [
       BillingCapabilitiesFacade,
       AdminInvoiceManagerFacade,
       AdminCustomerProfilesFacade,
+      AdminPromotionsFacade,
+      PromotionsFacade,
       ProjectsFacade,
       ProjectTicketsFacade,
       ProjectMilestonesFacade,
@@ -358,6 +391,8 @@ export const billingConsoleRoutes: Route[] = [
       provideState('adminDatevExports', adminDatevExportsReducer),
       provideState('adminInvoiceManager', adminInvoiceManagerReducer),
       provideState('adminCustomerProfiles', adminCustomerProfilesReducer),
+      provideState('adminPromotions', adminPromotionsReducer),
+      provideState('promotions', promotionsReducer),
       provideState('projects', projectsReducer),
       provideState('projectTickets', projectTicketsReducer),
       provideState('projectMilestones', projectMilestonesReducer),
@@ -451,6 +486,19 @@ export const billingConsoleRoutes: Route[] = [
         createAdminCustomerProfile$,
         updateAdminCustomerProfile$,
         deleteAdminCustomerProfile$,
+        loadAdminPromotions$,
+        loadAdminPromotionsBatch$,
+        createAdminPromotion$,
+        updateAdminPromotion$,
+        deactivateAdminPromotion$,
+        loadAdminPromotionRedemptions$,
+        loadAdminPromotionRedemptionsBatch$,
+        loadActivePromotions$,
+        loadActivePromotionsBatch$,
+        loadPromotionRedemptions$,
+        loadPromotionRedemptionsBatch$,
+        validatePromotion$,
+        redeemPromotion$,
         loadProjects$,
         loadProjectsBatch$,
         loadProjectDetail$,

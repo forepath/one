@@ -5,6 +5,8 @@ import { TaxCategory } from '../constants/tax-category.constants';
 import type { InvoiceDetailResponseDto } from '../dto/invoice-detail-response.dto';
 import type { InvoiceResponseDto } from '../dto/invoice-response.dto';
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import type { InvoicePromotionApplicationDraft } from '../dto/promotion.dto';
+import { InvoicePromotionApplicationsRepository } from '../repositories/invoice-promotion-applications.repository';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoiceLineItemsRepository } from '../repositories/invoice-line-items.repository';
 import { InvoiceVoidDocumentsRepository } from '../repositories/invoice-void-documents.repository';
@@ -19,6 +21,7 @@ import { buildCreditNoteNumber } from './e-invoice-document-options';
 import { InvoiceEmailService } from './invoice-email.service';
 import { InvoiceIssuanceService } from './invoice-issuance.service';
 import { InvoicePdfService } from './invoice-pdf.service';
+import { PromotionApplicationService } from './promotion-application.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
 import type { LineItemInput } from './tax-calculation.service';
@@ -30,6 +33,7 @@ export interface CreateInvoiceDraftParams {
   userId: string;
   lineInputs: LineItemInput[];
   currency?: string;
+  promotionApplications?: InvoicePromotionApplicationDraft[];
 }
 
 @Injectable()
@@ -48,6 +52,8 @@ export class InvoiceService {
     private readonly billingIssuerConfig: BillingIssuerConfigService,
     private readonly auditLog: BillingAuditLogService,
     private readonly projectTimeReportService: ProjectTimeReportService,
+    private readonly invoicePromotionApplicationsRepository: InvoicePromotionApplicationsRepository,
+    private readonly promotionApplicationService: PromotionApplicationService,
   ) {}
 
   async createAndIssue(params: CreateInvoiceDraftParams): Promise<{ invoiceRefId: string; invoiceNumber?: string }> {
@@ -59,6 +65,7 @@ export class InvoiceService {
 
   async createDraft(params: CreateInvoiceDraftParams): Promise<InvoiceEntity> {
     const totals = this.taxCalculationService.computeLines(params.lineInputs);
+    const balanceDue = Math.max(0, totals.totalGross);
     const invoice = await this.invoicesRepository.create({
       subscriptionId: params.subscriptionId,
       projectId: params.projectId,
@@ -68,7 +75,7 @@ export class InvoiceService {
       subtotalNet: totals.subtotalNet,
       taxTotal: totals.taxTotal,
       totalGross: totals.totalGross,
-      balanceDue: totals.totalGross,
+      balanceDue,
     });
 
     await this.invoiceLineItemsRepository.createMany(
@@ -85,6 +92,19 @@ export class InvoiceService {
         lineGross: line.lineGross,
       })),
     );
+
+    if (params.promotionApplications && params.promotionApplications.length > 0) {
+      await this.invoicePromotionApplicationsRepository.createMany(
+        params.promotionApplications
+          .filter((application) => application.amountAppliedNet > 0 || application.periodsConsumed > 0)
+          .map((application) => ({
+            invoiceId: invoice.id,
+            redemptionId: application.redemptionId,
+            amountAppliedNet: application.amountAppliedNet,
+            periodsConsumed: application.periodsConsumed,
+          })),
+      );
+    }
 
     await this.auditLog.log({
       process: 'invoice.create',
@@ -144,6 +164,8 @@ export class InvoiceService {
       voidedAt,
       balanceDue: 0,
     });
+
+    await this.promotionApplicationService.revertPromotionApplicationsForInvoice(invoiceId);
 
     await this.auditLog.log({
       process: 'invoice.void',

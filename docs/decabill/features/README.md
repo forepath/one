@@ -52,14 +52,19 @@ Isolate billing data per tenant while sharing one billing manager deployment. Sa
 
 ### [Subscriptions](./subscriptions.md)
 
-Order service plans, manage lifecycle (cancel, resume), and provision cloud instances when the plan includes infrastructure.
+Order service plans, manage lifecycle (cancel, resume), and provision cloud instances when the plan includes infrastructure. Optional promotion codes can be validated at checkout and redeemed on the new subscription.
 
 **Key Capabilities**:
 
 - Subscription creation with availability checks and provider config validation
+- Optional `promotionCode` at order time (validated before submit)
 - Cancel and resume with effective dates
 - Subscription items with provisioning status and hostname reservation
 - Usage records for usage-based pricing
+
+### [Marketing promotions](./promotions.md)
+
+Tenant-scoped promotion codes with fixed discounts, free days, or free billing periods. Customers validate and redeem on `/promotions` or at subscription checkout; benefits apply automatically on invoice creation.
 
 ### [Invoices](./invoices.md)
 

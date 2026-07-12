@@ -63,6 +63,12 @@ describe('InvoiceService', () => {
   const projectTimeReportService = {
     getPdfBufferForInvoice: jest.fn(),
   };
+  const invoicePromotionApplicationsRepository = {
+    createMany: jest.fn(),
+  };
+  const promotionApplicationService = {
+    revertPromotionApplicationsForInvoice: jest.fn().mockResolvedValue(undefined),
+  };
   const service = new InvoiceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -77,6 +83,8 @@ describe('InvoiceService', () => {
     billingIssuerConfig as never,
     auditLog as never,
     projectTimeReportService as never,
+    invoicePromotionApplicationsRepository as never,
+    promotionApplicationService as never,
   );
   const subscriptionId = 'sub-1';
   const userId = 'user-1';

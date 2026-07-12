@@ -485,53 +485,137 @@
                         </ul>
                       </div>
                     }
-                    <div class="mt-3 p-3 bg-body border rounded">
-                      @if (orderPricingLoading) {
+                    @if (orderPricingLoading) {
+                      <div class="mt-3 p-3 bg-body border rounded">
                         <div class="text-body-secondary small d-flex align-items-center gap-2">
                           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                           <span i18n="@@featureSubscriptions-loadingPrice">Loading price…</span>
                         </div>
-                      } @else if (orderPricingPreview) {
-                        <dl class="mb-0 small">
-                          <div class="d-flex justify-content-between gap-3">
-                            <dt class="text-body-secondary" i18n="@@featureInvoices-subtotalNet">Subtotal (net)</dt>
-                            <dd class="mb-2 text-nowrap fw-medium">
-                              {{ formatCurrencyAmount(orderPricingPreview.totalPrice) }}
-                            </dd>
+                      </div>
+                    } @else if (orderPricingPreview(); as pricing) {
+                      @if (orderPromotionPricingAdjustment(); as promo) {
+                        <div class="mt-3 p-3 bg-body border rounded">
+                          <div class="text-body-secondary mb-2 fw-medium small">{{ promo.duringBenefit.label }}</div>
+                          <dl class="mb-0 small">
+                            <div class="d-flex justify-content-between gap-3 border-bottom pb-2 mb-2">
+                              <dt class="text-body-secondary fw-semibold" i18n="@@featurePromotions-orderPlanTotal">
+                                Plan total (net)
+                              </dt>
+                              <dd class="mb-0 text-nowrap fw-semibold">
+                                {{ formatCurrencyAmount(pricing.totalPrice) }}
+                              </dd>
+                            </div>
+                            @if (promo.duringBenefit.discountNet > 0) {
+                              <div class="d-flex justify-content-between gap-3 text-success">
+                                <dt class="text-body-secondary">
+                                  <span i18n="@@featurePromotions-orderDiscountLabel">Promotion</span>
+                                  ({{ promo.promotionLabel }})
+                                </dt>
+                                <dd class="mb-2 text-nowrap fw-medium">
+                                  -{{ formatCurrencyAmount(promo.duringBenefit.discountNet) }}
+                                </dd>
+                              </div>
+                            }
+                            <div class="d-flex justify-content-between gap-3">
+                              <dt class="text-body-secondary" i18n="@@featureInvoices-subtotalNet">Subtotal (net)</dt>
+                              <dd class="mb-2 text-nowrap fw-medium">
+                                {{ formatCurrencyAmount(promo.duringBenefit.subtotalNet) }}
+                              </dd>
+                            </div>
+                            <div class="d-flex justify-content-between gap-3">
+                              <dt class="text-body-secondary">
+                                <span i18n="@@featureInvoices-taxTotal">Tax total</span>
+                                <span> ({{ promo.taxRate | number: '1.0-1' }}%)</span>
+                              </dt>
+                              <dd class="mb-2 text-nowrap fw-medium">
+                                {{ formatCurrencyAmount(promo.duringBenefit.taxTotal) }}
+                              </dd>
+                            </div>
+                            <div class="d-flex justify-content-between gap-3 border-top pt-2">
+                              <dt class="text-body-secondary fw-semibold" i18n="@@featureInvoices-totalGross">Total</dt>
+                              <dd class="mb-0 text-nowrap fw-semibold">
+                                {{ formatCurrencyAmount(promo.duringBenefit.totalGross) }}
+                              </dd>
+                            </div>
+                          </dl>
+                        </div>
+                        @if (promo.showAfterBenefit) {
+                          <div class="mt-3 p-3 bg-body border rounded">
+                            <div class="text-body-secondary mb-2 fw-medium small">{{ promo.afterBenefit.label }}</div>
+                            <dl class="mb-0 small">
+                              <div class="d-flex justify-content-between gap-3">
+                                <dt class="text-body-secondary" i18n="@@featureInvoices-subtotalNet">Subtotal (net)</dt>
+                                <dd class="mb-2 text-nowrap fw-medium">
+                                  {{ formatCurrencyAmount(promo.afterBenefit.subtotalNet) }}
+                                </dd>
+                              </div>
+                              <div class="d-flex justify-content-between gap-3">
+                                <dt class="text-body-secondary">
+                                  <span i18n="@@featureInvoices-taxTotal">Tax total</span>
+                                  <span> ({{ promo.taxRate | number: '1.0-1' }}%)</span>
+                                </dt>
+                                <dd class="mb-2 text-nowrap fw-medium">
+                                  {{ formatCurrencyAmount(promo.afterBenefit.taxTotal) }}
+                                </dd>
+                              </div>
+                              <div class="d-flex justify-content-between gap-3 border-top pt-2">
+                                <dt class="text-body-secondary fw-semibold" i18n="@@featureInvoices-totalGross">
+                                  Total
+                                </dt>
+                                <dd class="mb-0 text-nowrap fw-semibold">
+                                  {{ formatCurrencyAmount(promo.afterBenefit.totalGross) }}
+                                </dd>
+                              </div>
+                            </dl>
                           </div>
-                          <div class="d-flex justify-content-between gap-3">
-                            <dt class="text-body-secondary">
-                              <span i18n="@@featureInvoices-taxTotal">Tax total</span>
-                              <span> ({{ orderPricingPreview.taxRate | number: '1.0-1' }}%)</span>
-                            </dt>
-                            <dd class="mb-2 text-nowrap fw-medium">
-                              {{ formatCurrencyAmount(orderPricingPreview.taxTotal) }}
-                            </dd>
-                          </div>
-                          <div class="d-flex justify-content-between gap-3 border-top pt-2">
-                            <dt class="text-body-secondary fw-semibold" i18n="@@featureInvoices-totalGross">Total</dt>
-                            <dd class="mb-0 text-nowrap fw-semibold">
-                              {{ formatCurrencyAmount(orderPricingPreview.totalGross) }}
-                            </dd>
-                          </div>
-                        </dl>
+                        }
                       } @else {
-                        <div class="text-body-secondary small">—</div>
+                        <div class="mt-3 p-3 bg-body border rounded">
+                          <dl class="mb-0 small">
+                            <div class="d-flex justify-content-between gap-3">
+                              <dt class="text-body-secondary" i18n="@@featureInvoices-subtotalNet">Subtotal (net)</dt>
+                              <dd class="mb-2 text-nowrap fw-medium">
+                                {{ formatCurrencyAmount(pricing.totalPrice) }}
+                              </dd>
+                            </div>
+                            <div class="d-flex justify-content-between gap-3">
+                              <dt class="text-body-secondary">
+                                <span i18n="@@featureInvoices-taxTotal">Tax total</span>
+                                <span> ({{ pricing.taxRate | number: '1.0-1' }}%)</span>
+                              </dt>
+                              <dd class="mb-2 text-nowrap fw-medium">
+                                {{ formatCurrencyAmount(pricing.taxTotal) }}
+                              </dd>
+                            </div>
+                            <div class="d-flex justify-content-between gap-3 border-top pt-2">
+                              <dt class="text-body-secondary fw-semibold" i18n="@@featureInvoices-totalGross">Total</dt>
+                              <dd class="mb-0 text-nowrap fw-semibold">
+                                {{ formatCurrencyAmount(pricing.totalGross) }}
+                              </dd>
+                            </div>
+                          </dl>
+                        </div>
                       }
-                      <div class="text-body-secondary small mt-3">
+                    } @else {
+                      <div class="mt-3 p-3 bg-body border rounded">
+                        <div class="text-body-secondary small">—</div>
+                      </div>
+                    }
+                    <div class="mt-3 p-3 bg-body border rounded">
+                      <div class="text-body-secondary small">
                         <span i18n="@@featureSubscriptions-billingInterval">Runtime</span>
                         <strong class="ms-2"
                           >{{ selectedPlan.billingIntervalValue }} {{ selectedPlan.billingIntervalType }}(s)</strong
                         >
                       </div>
-                      <div class="text-body-secondary small">
+                      <div class="text-body-secondary small mt-2">
                         <span i18n="@@featureSubscriptions-minCommitment">Min. commitment</span>
                         <strong class="ms-2"
                           >{{ selectedPlan.minCommitmentDays }}
                           <span i18n="@@featureSubscriptions-days">days</span></strong
                         >
                       </div>
-                      <div class="text-body-secondary small">
+                      <div class="text-body-secondary small mt-2">
                         <span i18n="@@featureSubscriptions-noticeDays">Notice period</span>
                         <strong class="ms-2"
                           >{{ selectedPlan.noticeDays }} <span i18n="@@featureSubscriptions-days">days</span></strong
@@ -1147,6 +1231,73 @@
               </div>
             </div>
           </div>
+          <div class="mb-3">
+            <label class="form-label" for="orderPromotionCode" i18n="@@featurePromotions-orderCodeLabel"
+              >Promotion code (optional)</label
+            >
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control"
+                id="orderPromotionCode"
+                name="orderPromotionCode"
+                [ngModel]="orderPromotionCode()"
+                (ngModelChange)="orderPromotionCode.set($event); onOrderPromotionChange()"
+                [disabled]="orderPromotionSimulationLocked()"
+                i18n-placeholder="@@featurePromotions-codePlaceholder"
+                placeholder="Promotion code"
+              />
+              @if (!orderPromotionSimulationLocked()) {
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  [disabled]="
+                    !orderPlanId.trim() || !orderPromotionCode().trim() || (orderPromotionValidationLoading$ | async)
+                  "
+                  (click)="checkOrderPromotionCode()"
+                  i18n="@@featurePromotions-checkCode"
+                >
+                  Check code
+                </button>
+              }
+              @if (hasOrderPromotionCheckResult()) {
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="clearOrderPromotionCheck()"
+                  i18n-title="@@featurePromotions-clearCheck"
+                  title="Clear check"
+                  i18n-aria-label="@@featurePromotions-clearCheck"
+                  aria-label="Clear check"
+                >
+                  <i class="bi bi-trash" aria-hidden="true"></i>
+                </button>
+              }
+            </div>
+            @if (orderPromotionValidationPreview(); as preview) {
+              <div
+                class="alert mt-2 mb-0"
+                [class.alert-success]="preview.valid"
+                [class.alert-danger]="!preview.valid"
+                role="status"
+                aria-live="polite"
+              >
+                @if (preview.valid) {
+                  <span i18n="@@featurePromotions-validMessage">This code can be applied.</span>
+                  <div class="small">{{ preview.advantageSummary }}</div>
+                  @if (!orderPromotionPricingAdjustment()) {
+                    <div class="small text-muted mt-1" i18n="@@featurePromotions-orderPricingPending">
+                      Check the price summary above after loading completes.
+                    </div>
+                  }
+                } @else {
+                  {{ preview.message ?? 'This code cannot be applied.' }}
+                }
+              </div>
+            } @else if (orderPromotionValidationError(); as validationError) {
+              <div class="alert alert-danger mt-2 mb-0" role="status" aria-live="polite">{{ validationError }}</div>
+            }
+          </div>
           <div class="form-check">
             <input
               type="checkbox"
@@ -1215,7 +1366,8 @@
               !isOrderProvisioningReady() ||
               orderForm.invalid ||
               subscriptionsCreating() ||
-              (isCustomerProfileComplete$ | async) !== true
+              (isCustomerProfileComplete$ | async) !== true ||
+              (orderPromotionCode().trim() && !orderPromotionCanProceed())
             "
           >
             @if (subscriptionsCreating()) {

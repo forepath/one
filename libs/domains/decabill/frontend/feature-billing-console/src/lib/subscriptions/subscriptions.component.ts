@@ -11,13 +11,14 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   AvailabilityService,
   BackordersFacade,
   CustomerProfileFacade,
+  PromotionsFacade,
   ServicePlansFacade,
   ServicePlansService,
   ServiceTypesFacade,
@@ -40,9 +41,10 @@ import {
   normalizeAllowedServerTypeIds,
   providerLocationCatalogFromList,
   type ProviderLocationCatalog,
+  type ValidatePromotionRequest,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
-import { combineLatest, filter, take } from 'rxjs';
+import { combineLatest, filter, of, switchMap, take } from 'rxjs';
 
 import {
   getBackorderStatusBadgeClass,
@@ -61,6 +63,7 @@ import {
   type BillingCountryOption,
 } from '../billing-country-options';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { buildPromotionAdjustedOrderPricing } from '../promotion-pricing-preview.util';
 
 type CustomerPlansMobilePanel = 'subscriptions' | 'backorders';
 
@@ -94,6 +97,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   private readonly availabilityService = inject(AvailabilityService);
   private readonly backordersFacade = inject(BackordersFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
+  private readonly promotionsFacade = inject(PromotionsFacade);
   private readonly environment = inject<Environment>(ENVIRONMENT);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly datePipe = inject(DatePipe);
@@ -166,6 +170,66 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   private initialPlanIdFromQuery: string | null = null;
 
   orderPlanId = '';
+  orderPromotionCode = signal('');
+  readonly orderPromotionValidationPreview = toSignal(this.promotionsFacade.getValidationPreview$('new'), {
+    initialValue: null,
+  });
+  readonly orderPromotionValidationError = toSignal(this.promotionsFacade.getValidationError$('new'), {
+    initialValue: null,
+  });
+  readonly orderPromotionValidationLoading$ = this.promotionsFacade.getValidationLoading$('new');
+  readonly orderPricingPreview = signal<PricingPreviewResponse | null>(null);
+  readonly orderPromotionPricingAdjustment = computed(() => {
+    const preview = this.orderPromotionValidationPreview();
+    const pricing = this.orderPricingPreview();
+
+    if (!preview?.valid || !pricing) {
+      return null;
+    }
+
+    const benefitEndsLabel = preview.benefitEndsAt
+      ? (this.datePipe.transform(preview.benefitEndsAt, 'mediumDate') ?? undefined)
+      : undefined;
+    const plan = this.servicePlans().find((entry) => entry.id === this.orderPlanId.trim()) ?? null;
+
+    return buildPromotionAdjustedOrderPricing(preview, pricing, {
+      benefitEndsLabel,
+      billing: plan
+        ? {
+            billingIntervalType: plan.billingIntervalType,
+            billingIntervalValue: plan.billingIntervalValue,
+            billingDayOfMonth: plan.billingDayOfMonth,
+          }
+        : undefined,
+      periodStart: preview.benefitStartsAt ? new Date(preview.benefitStartsAt) : undefined,
+    });
+  });
+  readonly hasOrderPromotionCheckResult = computed(
+    () => this.orderPromotionValidationPreview() != null || this.orderPromotionValidationError() != null,
+  );
+  readonly orderPromotionSimulationLocked = computed(() => {
+    const preview = this.orderPromotionValidationPreview();
+
+    return Boolean(preview?.valid && this.orderPromotionCode().trim());
+  });
+  private readonly orderPromotionValidateRequest = computed<ValidatePromotionRequest | null>(() => {
+    const code = this.orderPromotionCode().trim();
+    const planId = this.orderPlanId.trim();
+
+    if (!code || !planId) return null;
+
+    return {
+      code,
+      redemptionContext: 'new',
+      planId,
+    };
+  });
+  readonly orderPromotionCanProceed = toSignal(
+    toObservable(this.orderPromotionValidateRequest).pipe(
+      switchMap((request) => (request ? this.promotionsFacade.canRedeem$(request) : of(true))),
+    ),
+    { initialValue: true },
+  );
   orderAutoBackorder = false;
   orderAcceptLegal = false;
   /** Canonical schema key for geography when customer may choose (region or location). */
@@ -188,7 +252,6 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   private orderProvisioningRequestId = 0;
   private orderCustomFieldsRequestId = 0;
   private orderPricingRequestId = 0;
-  orderPricingPreview: PricingPreviewResponse | null = null;
   orderPricingLoading = false;
   /** Signal for reactive conditional form fields; kept in sync with orderRequestedConfig.authenticationMethod. */
   authMethod = signal<'users' | 'api-key' | 'keycloak'>('users');
@@ -512,9 +575,11 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   openOrderPlanModal(preferredPlanId?: string | null): void {
     this.orderPlanId = '';
+    this.orderPromotionCode.set('');
+    this.promotionsFacade.clearValidation();
     this.orderAutoBackorder = true;
     this.orderAcceptLegal = false;
-    this.orderPricingPreview = null;
+    this.orderPricingPreview.set(null);
     this.orderPricingLoading = false;
     this.resetOrderRequestedConfig();
 
@@ -550,6 +615,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   onOrderPlanIdChange(): void {
+    this.promotionsFacade.clearValidation();
     this.syncOrderProvisioningLocationState();
     this.syncOrderServerTypeState();
     this.syncOrderProvisioningOptions();
@@ -566,7 +632,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
     if (!planId || this.orderServerTypesLoading) {
       if (!planId) {
-        this.orderPricingPreview = null;
+        this.orderPricingPreview.set(null);
         this.orderPricingLoading = false;
       }
 
@@ -587,7 +653,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
           return;
         }
 
-        this.orderPricingPreview = response;
+        this.orderPricingPreview.set(response);
         this.orderPricingLoading = false;
         this.cdr.detectChanges();
       },
@@ -596,7 +662,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
           return;
         }
 
-        this.orderPricingPreview = null;
+        this.orderPricingPreview.set(null);
         this.orderPricingLoading = false;
         this.cdr.detectChanges();
       },
@@ -927,7 +993,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   onSubmitOrderPlan(): void {
-    if (!this.orderPlanId?.trim() || !this.isOrderProvisioningReady()) return;
+    if (!this.orderPlanId?.trim() || !this.isOrderProvisioningReady() || !this.canSubmitOrderWithPromotion()) return;
 
     const cfg = this.orderRequestedConfig;
 
@@ -957,11 +1023,11 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
       this.attachProvisioningOptionKey(requestedConfig);
 
-      const dto: CreateSubscriptionDto = {
+      const dto: CreateSubscriptionDto = this.withPromotionCode({
         planId: this.orderPlanId.trim(),
         requestedConfig,
         autoBackorder: this.orderAutoBackorder,
-      };
+      });
 
       this.subscriptionsFacade.createSubscription(dto);
 
@@ -1039,13 +1105,50 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
     this.attachProvisioningOptionKey(requestedConfig);
 
-    const dto: CreateSubscriptionDto = {
+    const dto: CreateSubscriptionDto = this.withPromotionCode({
       planId: this.orderPlanId.trim(),
       requestedConfig,
       autoBackorder: this.orderAutoBackorder,
-    };
+    });
 
     this.subscriptionsFacade.createSubscription(dto);
+  }
+
+  onOrderPromotionChange(): void {
+    this.promotionsFacade.clearValidation();
+  }
+
+  clearOrderPromotionCheck(): void {
+    this.promotionsFacade.clearValidation();
+    this.orderPromotionCode.set('');
+  }
+
+  checkOrderPromotionCode(): void {
+    const request = this.orderPromotionValidateRequest();
+
+    if (!request) return;
+
+    this.promotionsFacade.validatePromotion(request);
+  }
+
+  private canSubmitOrderWithPromotion(): boolean {
+    if (!this.orderPromotionCode().trim()) return true;
+
+    return this.orderPromotionCanProceed() === true;
+  }
+
+  private withPromotionCode(dto: CreateSubscriptionDto): CreateSubscriptionDto {
+    const code = this.orderPromotionCode().trim();
+
+    if (!code || !this.orderPromotionCanProceed()) return dto;
+
+    const preview = this.orderPromotionValidationPreview();
+
+    return {
+      ...dto,
+      promotionCode: code,
+      promotionBenefitStartsAt: preview?.benefitStartsAt,
+    };
   }
 
   openCancelConfirm(sub: SubscriptionResponse): void {
@@ -1131,6 +1234,8 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.orderPlanId = '';
+        this.orderPromotionCode.set('');
+        this.promotionsFacade.clearValidation();
         this.orderAutoBackorder = true;
         this.orderAcceptLegal = false;
         this.resetOrderRequestedConfig();

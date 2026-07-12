@@ -120,6 +120,9 @@ describe('SubscriptionService', () => {
   const backordersRepository = {
     cancelPendingForUserPlan: jest.fn(),
   } as unknown as BackordersRepository;
+  const promotionRedemptionService = {
+    redeem: jest.fn(),
+  };
   const service = new SubscriptionService(
     plansRepository,
     typesRepository,
@@ -140,6 +143,7 @@ describe('SubscriptionService', () => {
     withdrawalPolicyService,
     withdrawalRefundService,
     backordersRepository,
+    promotionRedemptionService as never,
   );
 
   beforeEach(() => {

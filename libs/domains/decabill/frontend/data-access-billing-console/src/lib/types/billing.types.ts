@@ -356,6 +356,8 @@ export interface CreateSubscriptionDto {
   requestedConfig?: Record<string, unknown>;
   preferredAlternatives?: Record<string, unknown>;
   autoBackorder?: boolean;
+  promotionCode?: string;
+  promotionBenefitStartsAt?: string;
 }
 
 export interface CancelSubscriptionDto {

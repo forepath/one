@@ -1,0 +1,398 @@
+<div class="admin-promotions-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminPromotions-pageTitle">Promotions</h5>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      (click)="openCreateModal()"
+      [disabled]="(loadingAny$ | async) === true"
+      i18n-title="@@featureAdminPromotions-create"
+      title="Create promotion"
+      i18n-aria-label="@@featureAdminPromotions-create"
+      aria-label="Create promotion"
+    >
+      <i class="bi bi-plus" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="input-group search-input-container border-bottom">
+    <i class="bi bi-search" aria-hidden="true"></i>
+    <input
+      type="search"
+      class="form-control border-0 search-input"
+      placeholder="Search promotions"
+      i18n-placeholder="@@featureAdminPromotions-searchPlaceholder"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+      name="search"
+    />
+  </div>
+
+  <div class="flex-grow-1 overflow-auto">
+    @if (loading$ | async) {
+      <div class="d-flex justify-content-center align-items-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden" i18n="@@featureAdminPromotions-loading">Loading…</span>
+        </div>
+      </div>
+    } @else {
+      @if (error$ | async; as error) {
+        <div class="alert alert-danger m-3" role="alert">{{ error }}</div>
+      }
+      @if (allPromotions$ | async; as allPromotions) {
+        @if (allPromotions.length === 0) {
+          <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+            <p class="mb-0" i18n="@@featureAdminPromotions-empty">No promotions yet.</p>
+          </div>
+        } @else if (promotions$ | async; as promotions) {
+          @if (promotions.length === 0) {
+            <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+              <p class="mb-0" i18n="@@featureAdminPromotions-noSearchResults">No promotions match your search.</p>
+            </div>
+          } @else {
+            <div class="list-group list-group-flush">
+              @for (promotion of promotions; track promotion.id) {
+                <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3">
+                  <div class="min-w-0">
+                    <div class="fw-semibold mb-1">{{ promotion.name }} ({{ promotion.code }})</div>
+                    <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
+                      <span [ngClass]="activeStatusTextClass(promotion.isActive)">{{
+                        activeStatusLabel(promotion.isActive)
+                      }}</span>
+                      <span
+                        ><i class="bi bi-calendar-range me-1" aria-hidden="true"></i
+                        >{{ formatDate(promotion.redeemableFrom) }} — {{ formatDate(promotion.redeemableTo) }}</span
+                      >
+                      <span
+                        ><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ advantageSummaryLabel(promotion) }}</span
+                      >
+                      <span
+                        ><i class="bi bi-people me-1" aria-hidden="true"></i
+                        >{{ eligibilityLabel(promotion.subscriptionEligibility) }}</span
+                      >
+                      <span
+                        ><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i
+                        ><span i18n="@@featureAdminPromotions-redemptionCount"
+                          >{{ promotion.redemptionCount }} redemptions</span
+                        ></span
+                      >
+                    </div>
+                  </div>
+                  <div class="btn-group btn-group-sm flex-shrink-0" role="group">
+                    <button
+                      type="button"
+                      class="btn btn-outline-primary"
+                      (click)="openEditModal(promotion)"
+                      [disabled]="(loadingAny$ | async) === true"
+                      i18n-title="@@featureAdminPromotions-edit"
+                      title="Edit"
+                    >
+                      <i class="bi bi-pencil" aria-hidden="true"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      (click)="openRedemptionsModal(promotion)"
+                      [disabled]="(loadingAny$ | async) === true"
+                      i18n-title="@@featureAdminPromotions-redemptions"
+                      title="Redemptions"
+                    >
+                      <i class="bi bi-list-ul" aria-hidden="true"></i>
+                    </button>
+                    @if (promotion.isActive) {
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger"
+                        (click)="deactivate(promotion)"
+                        [disabled]="(loadingAny$ | async) === true"
+                        i18n-title="@@featureAdminPromotions-deactivate"
+                        title="Deactivate"
+                      >
+                        <i class="bi bi-slash-circle" aria-hidden="true"></i>
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+      }
+    }
+  </div>
+</div>
+
+<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminPromotions-createTitle">Create promotion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form (ngSubmit)="submitCreate()">
+        <div class="modal-body">
+          <ng-container
+            *ngTemplateOutlet="promotionForm; context: { form: createForm, prefix: 'create' }"
+          ></ng-container>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="creating$ | async"
+            i18n="@@featureAdminPromotions-save"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminPromotions-editTitle">Edit promotion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form (ngSubmit)="submitEdit()">
+        <div class="modal-body">
+          <ng-container *ngTemplateOutlet="promotionForm; context: { form: editForm, prefix: 'edit' }"></ng-container>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="updating$ | async"
+            i18n="@@featureAdminPromotions-save"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<ng-template #promotionForm let-form="form" let-prefix="prefix">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label" [for]="prefix + '-code'" i18n="@@featureAdminPromotions-colCode">Code</label>
+      <input [id]="prefix + '-code'" class="form-control" [(ngModel)]="form.code" [name]="prefix + '-code'" required />
+    </div>
+    <div class="col-md-8">
+      <label class="form-label" [for]="prefix + '-name'" i18n="@@featureAdminPromotions-colName">Name</label>
+      <input [id]="prefix + '-name'" class="form-control" [(ngModel)]="form.name" [name]="prefix + '-name'" required />
+    </div>
+    <div class="col-12">
+      <label class="form-label" [for]="prefix + '-description'" i18n="@@featureAdminPromotions-description"
+        >Description</label
+      >
+      <textarea
+        [id]="prefix + '-description'"
+        class="form-control"
+        rows="2"
+        [(ngModel)]="form.description"
+        [name]="prefix + '-description'"
+      ></textarea>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" [for]="prefix + '-from'" i18n="@@featureAdminPromotions-redeemableFrom"
+        >Redeemable from</label
+      >
+      <input
+        [id]="prefix + '-from'"
+        type="datetime-local"
+        class="form-control"
+        [(ngModel)]="form.redeemableFrom"
+        [name]="prefix + '-from'"
+      />
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" [for]="prefix + '-to'" i18n="@@featureAdminPromotions-redeemableTo"
+        >Redeemable to</label
+      >
+      <input
+        [id]="prefix + '-to'"
+        type="datetime-local"
+        class="form-control"
+        [(ngModel)]="form.redeemableTo"
+        [name]="prefix + '-to'"
+      />
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" [for]="prefix + '-maxTotal'" i18n="@@featureAdminPromotions-maxTotal"
+        >Max total redemptions</label
+      >
+      <input
+        [id]="prefix + '-maxTotal'"
+        type="number"
+        class="form-control"
+        [(ngModel)]="form.maxTotalRedemptions"
+        [name]="prefix + '-maxTotal'"
+      />
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" [for]="prefix + '-maxUser'" i18n="@@featureAdminPromotions-maxPerUser"
+        >Max per user</label
+      >
+      <input
+        [id]="prefix + '-maxUser'"
+        type="number"
+        class="form-control"
+        [(ngModel)]="form.maxPerUserRedemptions"
+        [name]="prefix + '-maxUser'"
+        required
+      />
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" [for]="prefix + '-eligibility'" i18n="@@featureAdminPromotions-colEligibility"
+        >Subscription eligibility</label
+      >
+      <select
+        [id]="prefix + '-eligibility'"
+        class="form-select"
+        [(ngModel)]="form.subscriptionEligibility"
+        [name]="prefix + '-eligibility'"
+      >
+        @for (option of eligibilityOptions; track option) {
+          <option [value]="option">{{ eligibilityLabel(option) }}</option>
+        }
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" [for]="prefix + '-advantage'" i18n="@@featureAdminPromotions-advantageType"
+        >Advantage type</label
+      >
+      <select
+        [id]="prefix + '-advantage'"
+        class="form-select"
+        [(ngModel)]="form.advantageType"
+        (ngModelChange)="onAdvantageTypeChange(form)"
+        [name]="prefix + '-advantage'"
+      >
+        @for (type of advantageTypes; track type) {
+          <option [value]="type">{{ advantageTypeLabel(type) }}</option>
+        }
+      </select>
+    </div>
+    <div class="col-md-6">
+      @if (form.advantageType === 'fixed_amount_net') {
+        <label class="form-label" [for]="prefix + '-amount'" i18n="@@featureAdminPromotions-amountNet"
+          >Amount (net)</label
+        >
+        <input
+          [id]="prefix + '-amount'"
+          type="number"
+          class="form-control"
+          [(ngModel)]="form.advantageConfig.amountNet"
+          [name]="prefix + '-amount'"
+        />
+      } @else if (form.advantageType === 'free_days') {
+        <label class="form-label" [for]="prefix + '-days'" i18n="@@featureAdminPromotions-freeDays">Free days</label>
+        <input
+          [id]="prefix + '-days'"
+          type="number"
+          class="form-control"
+          [(ngModel)]="form.advantageConfig.days"
+          [name]="prefix + '-days'"
+        />
+      } @else {
+        <label class="form-label" [for]="prefix + '-periods'" i18n="@@featureAdminPromotions-freePeriods"
+          >Free billing periods</label
+        >
+        <input
+          [id]="prefix + '-periods'"
+          type="number"
+          class="form-control"
+          [(ngModel)]="form.advantageConfig.periods"
+          [name]="prefix + '-periods'"
+        />
+      }
+    </div>
+    <div class="col-12">
+      <label class="form-label" [for]="prefix + '-plans'" i18n="@@featureAdminPromotions-applicablePlans"
+        >Applicable plans</label
+      >
+      <select
+        [id]="prefix + '-plans'"
+        multiple
+        class="form-select"
+        [value]="form.applicablePlanIds ?? []"
+        (change)="onApplicablePlansChange($event, form)"
+      >
+        @if (servicePlans$ | async; as catalog) {
+          @for (plan of catalog.plans; track plan.id) {
+            <option [value]="plan.id">{{ planLabel(plan.id, catalog.plans, catalog.types) }}</option>
+          }
+        }
+      </select>
+      <div class="form-text" i18n="@@featureAdminPromotions-applicablePlansHint">
+        Leave empty to allow all products.
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          [(ngModel)]="form.isActive"
+          [name]="prefix + '-active'"
+          [id]="prefix + '-active'"
+        />
+        <label class="form-check-label" [for]="prefix + '-active'" i18n="@@featureAdminPromotions-colActive"
+          >Active</label
+        >
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<div #redemptionsModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span i18n="@@featureAdminPromotions-redemptionsTitle">Redemptions</span>
+          @if (selectedPromotion) {
+            — {{ selectedPromotion.code }}
+          }
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (redemptionsLoading$ | async) {
+          <div class="d-flex justify-content-center align-items-center p-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden" i18n="@@featureAdminPromotions-loading">Loading…</span>
+            </div>
+          </div>
+        } @else if (redemptions$ | async; as redemptions) {
+          @if (redemptions.length === 0) {
+            <p class="text-muted mb-0" i18n="@@featureAdminPromotions-noRedemptions">No redemptions yet.</p>
+          } @else {
+            <div class="list-group list-group-flush">
+              @for (item of redemptions; track item.id) {
+                <div class="list-group-item border-bottom">
+                  <div class="fw-semibold mb-1">{{ item.code }}</div>
+                  <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
+                    <span><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ formatDate(item.redeemedAt) }}</span>
+                    <span
+                      ><i class="bi bi-box me-1" aria-hidden="true"></i
+                      >{{ item.subscriptionNumber ?? item.subscriptionId }}</span
+                    >
+                    @if (item.planName) {
+                      <span><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ item.planName }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</div>

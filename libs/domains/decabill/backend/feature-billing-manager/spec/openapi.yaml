@@ -2399,6 +2399,194 @@ paths:
           description: Forbidden
         '404':
           description: Invoice not found
+  /promotions/validate:
+    post:
+      tags: [Promotions]
+      summary: Validate a promotion code (simulated redemption)
+      operationId: validatePromotionCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidatePromotionDto'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromotionValidationResponseDto'
+  /promotions/redeem:
+    post:
+      tags: [Promotions]
+      summary: Redeem a promotion code
+      operationId: redeemPromotionCode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RedeemPromotionDto'
+      responses:
+        '200':
+          description: Redemption created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromotionRedemptionResponseDto'
+  /promotions/redemptions:
+    get:
+      tags: [Promotions]
+      summary: List promotion redemptions for current user
+      operationId: listPromotionRedemptions
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Paginated redemptions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPromotionRedemptionsResponseDto'
+  /promotions/active:
+    get:
+      tags: [Promotions]
+      summary: List active promotion benefits for current user
+      operationId: listActivePromotions
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Paginated active benefits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPromotionRedemptionsResponseDto'
+  /admin/billing/promotions:
+    get:
+      tags: [Admin Billing]
+      summary: List promotions (admin)
+      operationId: listAdminPromotions
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Paginated promotions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminPromotionsResponseDto'
+    post:
+      tags: [Admin Billing]
+      summary: Create promotion (admin)
+      operationId: createAdminPromotion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAdminPromotionDto'
+      responses:
+        '201':
+          description: Created promotion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminPromotionResponseDto'
+  /admin/billing/promotions/{id}:
+    get:
+      tags: [Admin Billing]
+      summary: Get promotion (admin)
+      operationId: getAdminPromotion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Promotion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminPromotionResponseDto'
+    put:
+      tags: [Admin Billing]
+      summary: Update promotion (admin)
+      operationId: updateAdminPromotion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAdminPromotionDto'
+      responses:
+        '200':
+          description: Updated promotion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminPromotionResponseDto'
+    delete:
+      tags: [Admin Billing]
+      summary: Deactivate promotion (admin)
+      operationId: deactivateAdminPromotion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Deactivated promotion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminPromotionResponseDto'
+  /admin/billing/promotions/{id}/redemptions:
+    get:
+      tags: [Admin Billing]
+      summary: List redemptions for a promotion (admin)
+      operationId: listAdminPromotionRedemptions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Paginated redemptions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPromotionRedemptionsResponseDto'
   /admin/billing/customer-profiles:
     get:
       tags: [Admin Billing]
@@ -3805,6 +3993,8 @@ components:
           $ref: '#/components/schemas/RequestedConfig'
         preferredAlternatives: { type: object }
         autoBackorder: { type: boolean }
+        promotionCode: { type: string }
+        promotionBenefitStartsAt: { type: string, format: date-time }
     SubscriptionResponse:
       type: object
       properties:
@@ -4802,3 +4992,130 @@ components:
           type: object
           additionalProperties: { type: string }
         isActive: { type: boolean }
+    ValidatePromotionDto:
+      type: object
+      required: [code, redemptionContext]
+      properties:
+        code: { type: string }
+        redemptionContext: { type: string, enum: [new, existing] }
+        subscriptionId: { type: string, format: uuid }
+        planId: { type: string, format: uuid }
+    RedeemPromotionDto:
+      type: object
+      required: [code, redemptionContext, subscriptionId]
+      properties:
+        code: { type: string }
+        redemptionContext: { type: string, enum: [new, existing] }
+        subscriptionId: { type: string, format: uuid }
+        benefitStartsAt: { type: string, format: date-time }
+    PromotionValidationResponseDto:
+      type: object
+      properties:
+        valid: { type: boolean }
+        message: { type: string }
+        code: { type: string }
+        promotionName: { type: string }
+        advantageSummary: { type: string }
+        amountNet: { type: number }
+        currency: { type: string }
+        days: { type: integer }
+        periods: { type: integer }
+        benefitStartsAt: { type: string, format: date-time }
+        benefitEndsAt: { type: string, format: date-time, nullable: true }
+        chargePeriodStart: { type: string, format: date-time }
+        chargePeriodEnd: { type: string, format: date-time }
+    PromotionRedemptionResponseDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        promotionName: { type: string }
+        subscriptionId: { type: string, format: uuid }
+        subscriptionNumber: { type: string }
+        planName: { type: string }
+        redemptionContext: { type: string, enum: [new, existing] }
+        status: { type: string, enum: [active, exhausted, expired] }
+        redeemedAt: { type: string, format: date-time }
+        advantageType: { type: string }
+        advantageSummary: { type: string }
+        validFrom: { type: string, format: date-time }
+        validTo: { type: string, format: date-time, nullable: true }
+        remainingMonetaryNet: { type: number }
+        remainingPeriods: { type: integer }
+    PaginatedPromotionRedemptionsResponseDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PromotionRedemptionResponseDto'
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+    AdminPromotionResponseDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+        description: { type: string }
+        redeemableFrom: { type: string, format: date-time }
+        redeemableTo: { type: string, format: date-time }
+        maxTotalRedemptions: { type: integer }
+        maxPerUserRedemptions: { type: integer }
+        isActive: { type: boolean }
+        advantageType: { type: string }
+        advantageConfig: { type: object, additionalProperties: true }
+        applicablePlanIds:
+          type: array
+          items: { type: string, format: uuid }
+        subscriptionEligibility: { type: string, enum: [new, existing, both] }
+        redemptionCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PaginatedAdminPromotionsResponseDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminPromotionResponseDto'
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+    CreateAdminPromotionDto:
+      type: object
+      required:
+        [
+          code,
+          name,
+          redeemableFrom,
+          redeemableTo,
+          maxPerUserRedemptions,
+          isActive,
+          advantageType,
+          advantageConfig,
+          subscriptionEligibility,
+        ]
+      properties:
+        code: { type: string }
+        name: { type: string }
+        description: { type: string }
+        redeemableFrom: { type: string, format: date-time }
+        redeemableTo: { type: string, format: date-time }
+        maxTotalRedemptions: { type: integer }
+        maxPerUserRedemptions: { type: integer }
+        isActive: { type: boolean }
+        advantageType:
+          {
+            type: string,
+            enum: [fixed_amount_net, free_days, free_billing_periods],
+          }
+        advantageConfig: { type: object, additionalProperties: true }
+        applicablePlanIds:
+          type: array
+          items: { type: string, format: uuid }
+        subscriptionEligibility: { type: string, enum: [new, existing, both] }
+    UpdateAdminPromotionDto:
+      allOf:
+        - $ref: '#/components/schemas/CreateAdminPromotionDto'

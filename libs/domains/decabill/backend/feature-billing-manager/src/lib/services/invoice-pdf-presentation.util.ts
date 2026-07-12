@@ -12,7 +12,22 @@ export interface InvoicePdfPresentationOptions {
   creditGross?: number;
 }
 
-export function buildInvoicePdfPresentation(invoice: InvoiceEntity): InvoicePdfPresentationOptions {
+export function buildInvoicePdfPresentation(
+  invoice: InvoiceEntity,
+  options?: { zeroBalancePromotional?: boolean },
+): InvoicePdfPresentationOptions {
+  if (options?.zeroBalancePromotional) {
+    return {
+      documentTitle: 'Invoice',
+      documentNumber: invoice.invoiceNumber ?? invoice.id,
+      documentNumberLabel: 'Invoice number',
+      issueDate: invoice.issuedAt ?? invoice.createdAt,
+      showDueDate: false,
+      showBalanceDue: false,
+      includePaymentDetails: false,
+    };
+  }
+
   return {
     documentTitle: 'Invoice',
     documentNumber: invoice.invoiceNumber ?? invoice.id,
