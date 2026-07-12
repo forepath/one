@@ -6,6 +6,8 @@ export { IdentityRegisterComponent } from './lib/register/register.component';
 export { IdentityRequestPasswordResetConfirmationComponent } from './lib/request-password-reset-confirmation/request-password-reset-confirmation.component';
 export { IdentityRequestPasswordResetComponent } from './lib/request-password-reset/request-password-reset.component';
 export { IdentityResetPasswordComponent } from './lib/reset-password/reset-password.component';
+export { IdentityLogoutConfirmModalComponent } from './lib/logout-confirm/logout-confirm-modal.component';
+export type { LogoutConfirmResult } from './lib/logout-confirm/logout-confirm-modal.component';
 export { IdentityUserManagerComponent } from './lib/user-manager/user-manager.component';
 
 // Guards

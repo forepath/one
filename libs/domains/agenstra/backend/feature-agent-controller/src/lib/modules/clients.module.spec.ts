@@ -6,6 +6,7 @@ import {
   ClientUserEntity,
   getAuthenticationMethod,
   KeycloakTokenService,
+  RevokedUserTokenEntity,
   SocketAuthService,
   UserEntity,
   UsersRepository,
@@ -131,6 +132,8 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(ClientUserEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(UserEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(RevokedUserTokenEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(StatisticsUserEntity))
       .useValue(mockRepository)

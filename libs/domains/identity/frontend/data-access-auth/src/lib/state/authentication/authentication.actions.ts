@@ -25,7 +25,7 @@ export const clearError = createAction('[Authentication] Clear Error');
 /**
  * Unified logout action - works for all authentication types
  */
-export const logout = createAction('[Authentication] Logout');
+export const logout = createAction('[Authentication] Logout', props<{ invalidateAllSessions?: boolean }>());
 
 export const logoutSuccess = createAction('[Authentication] Logout Success');
 

@@ -116,10 +116,29 @@ paths:
       responses:
         '200':
           description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePasswordResponse'
         '400':
           description: Passwords do not match or invalid
         '401':
           description: Current password incorrect
+  /auth/logout:
+    post:
+      summary: Log out (users auth only; revokes current session by default)
+      operationId: logout
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutDto'
+      responses:
+        '204':
+          description: Session invalidated
+        '401':
+          description: Unauthorized
   /users:
     get:
       summary: List users (admin only)
@@ -3959,6 +3978,19 @@ components:
         newPasswordConfirmation:
           type: string
           minLength: 8
+    ChangePasswordResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        access_token:
+          type: string
+    LogoutDto:
+      type: object
+      properties:
+        invalidateAllSessions:
+          type: boolean
+          description: When true, invalidates every active JWT session for the user. Default is false (current session only).
     LoginResponse:
       type: object
       required: [access_token, user]

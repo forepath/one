@@ -207,8 +207,13 @@ Admins can manage users via the user management interface or API:
 
 - JWT tokens expire after 7 days
 - Tokens are stored securely in localStorage
-- Tokens include user ID, email, and role
-- Each authenticated request in **users** mode verifies the user still exists and is not locked (`locked_at` null); in **keycloak** mode, the Keycloak sync guard applies the same lock check against the local user row
+- Tokens include user ID, email, role, and a token version (`tv`) claim
+- Each authenticated request in **users** mode verifies the user still exists, is not locked (`locked_at` null), and that the JWT token version matches the user's `token_version` in the database
+- **Logout** (`POST /api/auth/logout`) revokes the current JWT session by default; optional `invalidateAllSessions: true` bumps `token_version` and ends every session
+- **Password change** increments `token_version` and returns a new JWT for the current browser; all other sessions are invalidated on their next request
+- **Password reset** and **admin password updates** increment `token_version`; affected users must log in again
+- In **keycloak** mode, session lifecycle is managed by Keycloak (the app backend does not issue JWTs)
+- Each authenticated request in **keycloak** mode applies the same lock check against the local user row
 - The SPA registers an HTTP interceptor (`getUsersSessionInvalidationInterceptor`) that, in **users** or **keycloak** mode, dispatches logout on 401 with session-ending messages (locked account, invalid/expired token, etc.). In users mode it also clears the stored JWT; in keycloak mode existing logout effects end the Keycloak session and return the UI to the login flow
 
 ### Email Confirmation
@@ -232,7 +237,8 @@ Admins can manage users via the user management interface or API:
 - `POST /api/auth/confirm-email` - Confirm email with 6-character code
 - `POST /api/auth/request-password-reset` - Request password reset
 - `POST /api/auth/reset-password` - Reset password with code
-- `POST /api/auth/change-password` - Change password (authenticated)
+- `POST /api/auth/change-password` - Change password (authenticated; returns new JWT)
+- `POST /api/auth/logout` - Log out and invalidate all JWT sessions (users auth only)
 
 ### User Management Endpoints (Admin Only)
 

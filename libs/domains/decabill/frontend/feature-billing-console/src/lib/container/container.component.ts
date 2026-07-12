@@ -3,7 +3,7 @@ import { Component, DestroyRef, ElementRef, inject, OnDestroy, OnInit, ViewChild
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { BillingCapabilitiesFacade } from '@forepath/decabill/frontend/data-access-billing-console';
-import { AuthenticationFacade } from '@forepath/identity/frontend';
+import { AuthenticationFacade, IdentityLogoutConfirmModalComponent } from '@forepath/identity/frontend';
 import { ENVIRONMENT, LocaleService } from '@forepath/shared/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { combineLatest, filter, map, startWith } from 'rxjs';
@@ -34,7 +34,7 @@ function getBootstrapPopover(): BootstrapPopoverConstructor | undefined {
 
 @Component({
   selector: 'framework-billing-console-container',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, IdentityLogoutConfirmModalComponent],
   styleUrls: ['./container.component.scss'],
   templateUrl: './container.component.html',
   standalone: true,
@@ -117,6 +117,9 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
     this.onAdminNavTriggerReady(ref);
   }
 
+  @ViewChild(IdentityLogoutConfirmModalComponent)
+  private logoutConfirmModal?: IdentityLogoutConfirmModalComponent;
+
   /**
    * Display label for the current user's role. Admin for api-key auth, otherwise user.role capitalized.
    */
@@ -187,10 +190,17 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Handles logout action
+   * Opens logout confirmation before ending all active sessions.
    */
-  onLogout(): void {
-    this.authenticationFacade.logout();
+  onLogoutClick(): void {
+    this.logoutConfirmModal?.open();
+  }
+
+  /**
+   * Handles confirmed logout action
+   */
+  onLogoutConfirmed(result: { invalidateAllSessions: boolean }): void {
+    this.authenticationFacade.logout(result.invalidateAllSessions);
   }
 
   ngOnDestroy(): void {

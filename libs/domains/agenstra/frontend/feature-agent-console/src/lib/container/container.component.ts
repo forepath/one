@@ -7,6 +7,7 @@ import {
   ClientsFacade,
   NotificationsFacade,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import { IdentityLogoutConfirmModalComponent } from '@forepath/identity/frontend';
 import { LocaleService } from '@forepath/shared/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { combineLatest, filter, map, startWith } from 'rxjs';
@@ -37,7 +38,7 @@ function getBootstrapPopover(): BootstrapPopoverConstructor | undefined {
 
 @Component({
   selector: 'framework-agent-console-container',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, IdentityLogoutConfirmModalComponent],
   styleUrls: ['./container.component.scss'],
   templateUrl: './container.component.html',
   standalone: true,
@@ -139,6 +140,9 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
     this.onAdminNavTriggerReady(ref);
   }
 
+  @ViewChild(IdentityLogoutConfirmModalComponent)
+  private logoutConfirmModal?: IdentityLogoutConfirmModalComponent;
+
   /**
    * Display label for the current user's role. Admin for api-key auth, otherwise user.role capitalized.
    */
@@ -211,11 +215,18 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Handles logout action
+   * Opens logout confirmation before ending all active sessions.
    */
-  onLogout(): void {
+  onLogoutClick(): void {
+    this.logoutConfirmModal?.open();
+  }
+
+  /**
+   * Handles confirmed logout action
+   */
+  onLogoutConfirmed(result: { invalidateAllSessions: boolean }): void {
     this.notificationsFacade.disconnectSocket();
-    this.authenticationFacade.logout();
+    this.authenticationFacade.logout(result.invalidateAllSessions);
   }
 
   ngOnDestroy(): void {

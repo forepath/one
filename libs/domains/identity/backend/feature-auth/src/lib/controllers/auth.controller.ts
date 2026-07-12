@@ -5,14 +5,15 @@ import { Request } from 'express';
 import { ChangePasswordDto } from '../dto/auth/change-password.dto';
 import { ConfirmEmailDto } from '../dto/auth/confirm-email.dto';
 import { LoginDto } from '../dto/auth/login.dto';
+import { LogoutDto } from '../dto/auth/logout.dto';
 import { RegisterDto } from '../dto/auth/register.dto';
 import { RequestPasswordResetDto } from '../dto/auth/request-password-reset.dto';
 import { ResetPasswordDto } from '../dto/auth/reset-password.dto';
-import { UsersAuthGuard } from '../guards/users-auth.guard';
+import { UsersAuthGuard, type AuthenticatedUsersRequestUser } from '../guards/users-auth.guard';
 import { AuthService } from '../services/auth.service';
 
 interface RequestWithUser extends Request {
-  user?: { id: string };
+  user?: AuthenticatedUsersRequestUser;
 }
 
 @Controller('auth')
@@ -68,5 +69,22 @@ export class AuthController {
     }
 
     return this.authService.changePassword(userId, dto.currentPassword, dto.newPassword, dto.newPasswordConfirmation);
+  }
+
+  @UseGuards(UsersAuthGuard)
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async logout(@Body() dto: LogoutDto, @Req() req: RequestWithUser) {
+    const user = req.user;
+
+    if (!user?.id) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    await this.authService.logout(user.id, {
+      invalidateAllSessions: dto.invalidateAllSessions === true,
+      jti: user.jti,
+      tokenExpiresAt: user.exp ? new Date(user.exp * 1000) : undefined,
+    });
   }
 }

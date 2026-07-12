@@ -34,7 +34,7 @@ import {
   UsageRecordEntity,
 } from '@forepath/decabill/backend';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
-import { UserEntity } from '@forepath/identity/backend';
+import { RevokedUserTokenEntity, UserEntity } from '@forepath/identity/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 function parseTypeOrmLogLevelsFromEnv(
@@ -100,6 +100,7 @@ export const typeormConfig: DataSourceOptions = {
     ProjectTimeEntryEntity,
     PublicWithdrawalRequestEntity,
     UserEntity,
+    RevokedUserTokenEntity,
   ],
   migrations: [
     'src/migrations/*.js',

@@ -92,6 +92,23 @@ export class UsersRepository {
   async remove(id: string): Promise<void> {
     await this.repository.delete(id);
   }
+
+  async incrementTokenVersion(id: string): Promise<number> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .update(UserEntity)
+      .set({ tokenVersion: () => 'token_version + 1' })
+      .where('id = :id', { id })
+      .returning(['tokenVersion'])
+      .execute();
+    const tokenVersion = result.raw?.[0]?.token_version;
+
+    if (tokenVersion === undefined || tokenVersion === null) {
+      throw new Error(`User not found: ${id}`);
+    }
+
+    return Number(tokenVersion);
+  }
 }
 
 export { DEFAULT_TENANT };

@@ -147,7 +147,12 @@ Frontend runtime config should set `authentication.disableSignup` to match the b
 ### Token Security
 
 - JWT tokens expire after 7 days
-- Each request verifies the user still exists and is not locked
+- Tokens include user ID, email, role, and a token version (`tv`) claim
+- Each request verifies the user still exists, is not locked, and that the JWT token version matches `token_version` in the database
+- **Logout** (`POST /auth/logout`) revokes the current JWT session by default; optional `invalidateAllSessions: true` ends every session
+- **Password change** increments `token_version` and returns a new JWT for the current browser; other sessions fail on their next request
+- **Password reset** and **admin password updates** increment `token_version`; affected users must log in again
+- Keycloak mode: session lifecycle is managed by Keycloak (optional "logout other sessions" in Keycloak password UI)
 - Keycloak mode applies the same lock check against the synced local user row
 - SPA HTTP interceptor dispatches logout on 401 with session-ending messages
 
@@ -165,7 +170,8 @@ Frontend runtime config should set `authentication.disableSignup` to match the b
 - `POST /auth/confirm-email` - Confirm email with code
 - `POST /auth/request-password-reset` - Request password reset
 - `POST /auth/reset-password` - Reset password with code
-- `POST /auth/change-password` - Change password (authenticated)
+- `POST /auth/change-password` - Change password (authenticated; returns new JWT)
+- `POST /auth/logout` - Log out and invalidate all JWT sessions (users auth only)
 
 ### User Management Endpoints (Admin Only)
 

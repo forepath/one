@@ -1004,13 +1004,32 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MessageResponse'
+                $ref: '#/components/schemas/ChangePasswordResponse'
         '400':
           description: Validation error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/logout:
+    post:
+      summary: Log out (users auth only; revokes current session by default)
+      operationId: logout
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutDto'
+      responses:
+        '204':
+          description: Session invalidated
         '401':
           description: Unauthorized
           content:
@@ -3438,6 +3457,19 @@ components:
       properties:
         message:
           type: string
+    ChangePasswordResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        access_token:
+          type: string
+    LogoutDto:
+      type: object
+      properties:
+        invalidateAllSessions:
+          type: boolean
+          description: When true, invalidates every active JWT session for the user. Default is false (current session only).
     LoginDto:
       type: object
       required: [email, password]

@@ -10,12 +10,18 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 
+import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
+import { assertUsersJwtSessionValid, UsersJwtSessionPayload } from '../utils/users-jwt-session.util';
 
-export interface UsersJwtPayload {
-  sub: string;
+export type UsersJwtPayload = UsersJwtSessionPayload;
+
+export interface AuthenticatedUsersRequestUser {
+  id: string;
   email: string;
   roles: string[];
+  jti?: string;
+  exp?: number;
 }
 
 @Injectable()
@@ -24,6 +30,7 @@ export class UsersAuthGuard implements CanActivate {
     private readonly jwtService: JwtService,
     private readonly reflector: Reflector,
     private readonly usersRepository: UsersRepository,
+    private readonly revokedUserTokensRepository: RevokedUserTokensRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -59,7 +66,7 @@ export class UsersAuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync<UsersJwtPayload>(token);
+      const payload = await this.jwtService.verifyAsync<UsersJwtSessionPayload>(token);
       const user = await this.usersRepository.findById(payload.sub);
 
       if (!user) {
@@ -77,11 +84,15 @@ export class UsersAuthGuard implements CanActivate {
         throw new UnauthorizedException('Session is no longer valid.');
       }
 
+      await assertUsersJwtSessionValid(payload, user, this.revokedUserTokensRepository);
+
       request['user'] = {
         id: payload.sub,
         email: payload.email,
         roles: payload.roles ?? ['user'],
-      };
+        jti: payload.jti,
+        exp: typeof payload.exp === 'number' ? payload.exp : undefined,
+      } satisfies AuthenticatedUsersRequestUser;
 
       return true;
     } catch (error) {

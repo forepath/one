@@ -1,5 +1,6 @@
 // DTOs - Auth
 export * from './lib/dto/auth/login.dto';
+export * from './lib/dto/auth/logout.dto';
 export * from './lib/dto/auth/register.dto';
 export * from './lib/dto/auth/change-password.dto';
 export * from './lib/dto/auth/confirm-email.dto';
@@ -18,6 +19,7 @@ export * from './lib/entities/client.entity';
 export * from './lib/entities/client-agent-credential.entity';
 
 // Repositories
+export * from './lib/repositories/revoked-user-tokens.repository';
 export * from './lib/repositories/users.repository';
 export * from './lib/repositories/client-users.repository';
 export * from './lib/repositories/client-agent-credentials.repository';

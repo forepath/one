@@ -146,7 +146,7 @@ describe('AuthenticationFacade', () => {
     it('should dispatch logout action', () => {
       facade.logout();
 
-      expect(store.dispatch).toHaveBeenCalledWith(logout());
+      expect(store.dispatch).toHaveBeenCalledWith(logout({ invalidateAllSessions: false }));
     });
   });
 
