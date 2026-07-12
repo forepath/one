@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.15.1](https://github.com/forepath/one/compare/v2.15.0...v2.15.1) (2026-07-12)
+
+
+### Bug Fixes
+
+* decabill status labels ([#479](https://github.com/forepath/one/issues/479)) ([f2df3ac](https://github.com/forepath/one/commit/f2df3ac67415acdee34c2274bf4df3bf4c77547d))
+
 ## [2.15.0](https://github.com/forepath/one/compare/v2.14.1...v2.15.0) (2026-07-12)
 
 
