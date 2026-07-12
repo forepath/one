@@ -3,7 +3,12 @@
  * Values align with SubscriptionStatus and BackorderStatus in feature-billing-manager.
  */
 
-import type { BillingIntervalType, ProviderDetail } from '@forepath/decabill/frontend/data-access-billing-console';
+import type {
+  BillingIntervalType,
+  PromotionRedemptionContext,
+  PromotionRedemptionStatus,
+  ProviderDetail,
+} from '@forepath/decabill/frontend/data-access-billing-console';
 
 import { getCountryDisplayName } from './billing-country-options';
 
@@ -333,6 +338,78 @@ export function getProfileCompleteLabel(isComplete: boolean): string {
 
 export function getProfileCompleteTextClass(isComplete: boolean): string {
   return isComplete ? 'text-success' : 'text-warning';
+}
+
+export function getPromotionRedemptionContextLabel(
+  context: PromotionRedemptionContext | string | null | undefined,
+): string {
+  if (context == null || context === '') {
+    return getUnavailableLabel();
+  }
+
+  switch (context) {
+    case 'new':
+      return $localize`:@@featureBilling-promotionRedemptionContextNew:New subscription`;
+    case 'existing':
+      return $localize`:@@featureBilling-promotionRedemptionContextExisting:Existing subscription`;
+    default:
+      return $localize`:@@featureBilling-promotionRedemptionContextUnknown:Unknown (${context})`;
+  }
+}
+
+export function getPromotionRedemptionStatusLabel(
+  status: PromotionRedemptionStatus | string | null | undefined,
+): string {
+  if (status == null || status === '') {
+    return getUnavailableLabel();
+  }
+
+  switch (status) {
+    case 'active':
+      return $localize`:@@featureBilling-promotionRedemptionStatusActive:Active`;
+    case 'exhausted':
+      return $localize`:@@featureBilling-promotionRedemptionStatusExhausted:Fully used`;
+    case 'expired':
+      return $localize`:@@featureBilling-promotionRedemptionStatusExpired:Expired`;
+    case 'cancelled':
+      return $localize`:@@featureBilling-promotionRedemptionStatusCancelled:Cancelled`;
+    default:
+      return $localize`:@@featureBilling-promotionRedemptionStatusUnknown:Unknown (${status})`;
+  }
+}
+
+export function getPromotionRedemptionStatusTextClass(
+  status: PromotionRedemptionStatus | string | null | undefined,
+): string {
+  switch (status) {
+    case 'active':
+      return 'text-success';
+    case 'exhausted':
+      return 'text-secondary';
+    case 'expired':
+      return 'text-warning';
+    case 'cancelled':
+      return 'text-secondary';
+    default:
+      return 'text-secondary';
+  }
+}
+
+export function getPromotionRedemptionStatusIconClass(
+  status: PromotionRedemptionStatus | string | null | undefined,
+): string {
+  switch (status) {
+    case 'active':
+      return 'bi-check-circle';
+    case 'exhausted':
+      return 'bi-check-all';
+    case 'expired':
+      return 'bi-clock-history';
+    case 'cancelled':
+      return 'bi-x-circle';
+    default:
+      return 'bi-question-circle';
+  }
 }
 
 export function getBillingIntervalLabel(value: number, type: BillingIntervalType): string {

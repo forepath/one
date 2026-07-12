@@ -117,19 +117,19 @@ export class AdminSubscriptionsPageComponent implements OnInit {
   }
 
   formatDate(value: string | null | undefined): string {
-    if (!value) return '—';
+    if (!value) return '-';
 
-    return this.datePipe.transform(value, 'shortDate') ?? '—';
+    return this.datePipe.transform(value, 'shortDate') ?? '-';
   }
 
   formatSubscriptionPeriod(sub: AdminSubscriptionListItem): string {
-    if (!sub.currentPeriodStart || !sub.currentPeriodEnd) return '—';
+    if (!sub.currentPeriodStart || !sub.currentPeriodEnd) return '-';
 
-    return `${this.formatDate(sub.currentPeriodStart)} – ${this.formatDate(sub.currentPeriodEnd)}`;
+    return `${this.formatDate(sub.currentPeriodStart)} to ${this.formatDate(sub.currentPeriodEnd)}`;
   }
 
   formatPeriodPrice(sub: AdminSubscriptionListItem): string {
-    if (sub.periodTotalPrice == null) return '—';
+    if (sub.periodTotalPrice == null) return '-';
 
     return `${sub.periodTotalPrice.toFixed(2)} EUR`;
   }

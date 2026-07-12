@@ -11,7 +11,14 @@ import {
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { map, switchMap } from 'rxjs';
 
-import { getBillingIntervalLabel, getSubscriptionStatusLabel } from '../billing-status-labels';
+import {
+  getBillingIntervalLabel,
+  getPromotionRedemptionContextLabel,
+  getPromotionRedemptionStatusIconClass,
+  getPromotionRedemptionStatusLabel,
+  getPromotionRedemptionStatusTextClass,
+  getSubscriptionStatusLabel,
+} from '../billing-status-labels';
 import { filterItemsBySearch } from '../billing-list-search';
 import { buildPromotionPeriodPricingPreview } from '../promotion-pricing-preview.util';
 
@@ -60,8 +67,8 @@ export class PromotionsPageComponent implements OnInit {
         item.subscriptionNumber,
         item.subscriptionId,
         item.planName,
-        item.redemptionContext,
-        item.status,
+        this.redemptionContextLabel(item.redemptionContext),
+        this.redemptionStatusLabel(item.status),
         item.redeemedAt,
       ]
         .filter(Boolean)
@@ -213,6 +220,22 @@ export class PromotionsPageComponent implements OnInit {
     return getSubscriptionStatusLabel(status);
   }
 
+  redemptionContextLabel(context: PromotionRedemptionResponse['redemptionContext']): string {
+    return getPromotionRedemptionContextLabel(context);
+  }
+
+  redemptionStatusLabel(status: PromotionRedemptionResponse['status']): string {
+    return getPromotionRedemptionStatusLabel(status);
+  }
+
+  redemptionStatusTextClass(status: PromotionRedemptionResponse['status']): string {
+    return getPromotionRedemptionStatusTextClass(status);
+  }
+
+  redemptionStatusIconClass(status: PromotionRedemptionResponse['status']): string {
+    return getPromotionRedemptionStatusIconClass(status);
+  }
+
   formatCurrencyAmount(amount: number): string {
     return `€${Number.isInteger(amount) ? String(amount) : amount.toFixed(2)}`;
   }
@@ -227,13 +250,13 @@ export class PromotionsPageComponent implements OnInit {
   }
 
   formatDate(value?: string): string {
-    if (!value) return '—';
+    if (!value) return '-';
 
     return this.datePipe.transform(value, 'mediumDate') ?? value;
   }
 
   formatDateTime(value?: string): string {
-    if (!value) return '—';
+    if (!value) return '-';
 
     return this.datePipe.transform(value, 'medium') ?? value;
   }

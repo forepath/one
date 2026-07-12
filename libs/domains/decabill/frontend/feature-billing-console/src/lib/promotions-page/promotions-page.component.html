@@ -34,7 +34,7 @@
             <option value="" i18n="@@featurePromotions-selectSubscriptionPlaceholder">Select subscription</option>
             @if (eligibleSubscriptions$ | async; as subscriptions) {
               @for (sub of subscriptions; track sub.id) {
-                <option [value]="sub.id">{{ sub.number ?? sub.id }} — {{ subscriptionStatusLabel(sub.status) }}</option>
+                <option [value]="sub.id">{{ sub.number ?? sub.id }} ({{ subscriptionStatusLabel(sub.status) }})</option>
               }
             }
           </select>
@@ -209,7 +209,7 @@
                   <div class="fw-semibold mb-1">{{ item.promotionName }} ({{ item.code }})</div>
                   <div class="small text-muted">{{ item.advantageSummary }}</div>
                   <div class="small text-muted mt-1">
-                    {{ formatDate(item.validFrom) }} — {{ formatDate(item.validTo) }}
+                    {{ formatDate(item.validFrom) }} to {{ formatDate(item.validTo) }}
                     @if (item.planName) {
                       · {{ item.planName }}
                     }
@@ -268,6 +268,10 @@
                   <div class="fw-semibold mb-1">{{ item.code }}</div>
                   <div class="small text-muted">{{ item.advantageSummary }}</div>
                   <div class="small text-muted d-flex align-items-center gap-3 flex-wrap mt-1">
+                    <span [ngClass]="redemptionStatusTextClass(item.status)">
+                      <i class="bi me-1" [ngClass]="redemptionStatusIconClass(item.status)" aria-hidden="true"></i
+                      >{{ redemptionStatusLabel(item.status) }}
+                    </span>
                     <span
                       ><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ formatDateTime(item.redeemedAt) }}</span
                     >
@@ -278,8 +282,10 @@
                     @if (item.planName) {
                       <span><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ item.planName }}</span>
                     }
-                    <span><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>{{ item.redemptionContext }}</span>
-                    <span>{{ item.status }}</span>
+                    <span
+                      ><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i
+                      >{{ redemptionContextLabel(item.redemptionContext) }}</span
+                    >
                   </div>
                 </div>
               }

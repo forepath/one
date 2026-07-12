@@ -413,15 +413,15 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   formatDate(value: string | null | undefined): string {
-    if (!value) return '—';
+    if (!value) return '-';
 
-    return this.datePipe.transform(value, 'shortDate') ?? '—';
+    return this.datePipe.transform(value, 'shortDate') ?? '-';
   }
 
   formatSubscriptionPeriod(sub: SubscriptionResponse): string {
-    if (!sub.currentPeriodStart || !sub.currentPeriodEnd) return '—';
+    if (!sub.currentPeriodStart || !sub.currentPeriodEnd) return '-';
 
-    return `${this.formatDate(sub.currentPeriodStart)} – ${this.formatDate(sub.currentPeriodEnd)}`;
+    return `${this.formatDate(sub.currentPeriodStart)} to ${this.formatDate(sub.currentPeriodEnd)}`;
   }
 
   subscriptionSearchHaystack(sub: SubscriptionResponse): string {
@@ -482,7 +482,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
     const total = this.getPlanTotalPrice(plan, serverType);
 
-    if (total === null) return '—';
+    if (total === null) return '-';
 
     return this.formatCurrencyAmount(total);
   }
@@ -491,7 +491,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     return formatServerTypeOption(st, { includePrice: false });
   }
 
-  /** Formats plan price for display (e.g. "€4.51" or "—"). */
+  /** Formats plan price for display (e.g. "€4.51" or "-"). */
   formatPlanPrice(plan: ServicePlanResponse): string {
     return this.formatOrderPlanPrice(plan, this.orderProvisioningServerType);
   }
@@ -510,7 +510,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   formatEntryPeriodPrice(totalPrice: number | null | undefined, plan: ServicePlanResponse | null): string {
     if (totalPrice == null || !Number.isFinite(totalPrice)) {
-      return '—';
+      return '-';
     }
 
     const price = this.formatCurrencyAmount(totalPrice);
@@ -535,7 +535,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     const price = this.formatPlanPrice(plan);
     const interval = `${plan.billingIntervalValue} ${plan.billingIntervalType}(s)`;
 
-    return `${plan.name} – ${price} / ${interval}`;
+    return `${plan.name}: ${price} / ${interval}`;
   }
 
   /** Returns the plan matching planId from the list, or null. */
