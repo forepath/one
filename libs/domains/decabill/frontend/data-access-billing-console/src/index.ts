@@ -3,6 +3,7 @@ export * from './lib/interceptors/tenant.interceptor';
 
 // Types
 export * from './lib/types/billing.types';
+export * from './lib/types/promotions.types';
 export * from './lib/types/projects.types';
 
 // Utils
@@ -26,6 +27,8 @@ export * from './lib/services/customer-profile.service';
 export * from './lib/services/invoices.service';
 export * from './lib/services/admin-billing.service';
 export * from './lib/services/admin-customer-profiles.service';
+export * from './lib/services/promotions.service';
+export * from './lib/services/admin-promotions.service';
 export * from './lib/services/usage.service';
 export * from './lib/services/subscription-items.service';
 export * from './lib/services/projects.service';
@@ -117,6 +120,20 @@ export * from './lib/state/admin-customer-profiles/admin-customer-profiles.effec
 export * from './lib/state/admin-customer-profiles/admin-customer-profiles.facade';
 export * from './lib/state/admin-customer-profiles/admin-customer-profiles.reducer';
 export * from './lib/state/admin-customer-profiles/admin-customer-profiles.selectors';
+
+// Promotions State
+export * from './lib/state/promotions/promotions.actions';
+export * from './lib/state/promotions/promotions.effects';
+export * from './lib/state/promotions/promotions.facade';
+export * from './lib/state/promotions/promotions.reducer';
+export * from './lib/state/promotions/promotions.selectors';
+
+// Admin Promotions State
+export * from './lib/state/admin-promotions/admin-promotions.actions';
+export * from './lib/state/admin-promotions/admin-promotions.effects';
+export * from './lib/state/admin-promotions/admin-promotions.facade';
+export * from './lib/state/admin-promotions/admin-promotions.reducer';
+export * from './lib/state/admin-promotions/admin-promotions.selectors';
 
 // Billing Capabilities State
 export * from './lib/state/billing-capabilities/billing-capabilities.actions';

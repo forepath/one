@@ -1,0 +1,292 @@
+<div class="promotions-container border-top d-flex flex-column h-100">
+  <div class="promotions-header p-3 border-bottom bg-body-tertiary d-flex align-items-center flex-shrink-0">
+    <h5 class="mb-0 fw-semibold" i18n="@@featurePromotions-pageTitle">Promotions</h5>
+  </div>
+
+  <div class="d-flex align-items-center gap-0 d-md-none border-bottom btn-group-options">
+    @for (panel of mobilePanels; track panel) {
+      <button
+        type="button"
+        class="btn btn-sm btn-options"
+        [class.btn-outline-secondary]="mobilePanel() !== panel"
+        [class.btn-primary]="mobilePanel() === panel"
+        (click)="mobilePanel.set(panel)"
+      >
+        {{ mobilePanelLabel(panel) }}
+      </button>
+    }
+  </div>
+
+  <div class="promotions-apply-bar">
+    <div class="p-3">
+      <h6 class="mb-3 fw-semibold" i18n="@@featurePromotions-checkSectionTitle">Apply a promotion code</h6>
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label for="promoSubscriptionId" class="form-label mb-1" i18n="@@featurePromotions-selectSubscription"
+            >Subscription</label
+          >
+          <select
+            id="promoSubscriptionId"
+            class="form-select"
+            [ngModel]="selectedSubscriptionId()"
+            (ngModelChange)="selectedSubscriptionId.set($event); onSubscriptionChange()"
+          >
+            <option value="" i18n="@@featurePromotions-selectSubscriptionPlaceholder">Select subscription</option>
+            @if (eligibleSubscriptions$ | async; as subscriptions) {
+              @for (sub of subscriptions; track sub.id) {
+                <option [value]="sub.id">{{ sub.number ?? sub.id }} — {{ subscriptionStatusLabel(sub.status) }}</option>
+              }
+            }
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="promoCodeInput" class="form-label mb-1" i18n="@@featurePromotions-codePlaceholder"
+            >Promotion code</label
+          >
+          <input
+            id="promoCodeInput"
+            type="text"
+            class="form-control"
+            [ngModel]="promoCode()"
+            (ngModelChange)="promoCode.set($event); onPromoInputChange()"
+            [disabled]="promotionSimulationLocked()"
+            i18n-placeholder="@@featurePromotions-codePlaceholder"
+            placeholder="Promotion code"
+          />
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex flex-wrap gap-2 justify-content-end">
+            @if (!promotionSimulationLocked()) {
+              <button
+                type="button"
+                class="btn btn-outline-primary"
+                [disabled]="!selectedSubscriptionId() || !promoCode().trim() || (validationLoading$ | async)"
+                (click)="checkCode()"
+                i18n="@@featurePromotions-checkCode"
+              >
+                Check code
+              </button>
+            }
+            @if (hasPromotionCheckResult()) {
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="clearPromotionCheck()"
+                i18n-title="@@featurePromotions-clearCheck"
+                title="Clear check"
+                i18n-aria-label="@@featurePromotions-clearCheck"
+                aria-label="Clear check"
+              >
+                <i class="bi bi-trash" aria-hidden="true"></i>
+              </button>
+            }
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="!canRedeem() || (redeeming$ | async)"
+              (click)="redeemNow()"
+              i18n="@@featurePromotions-redeemNow"
+            >
+              Redeem now
+            </button>
+          </div>
+        </div>
+      </div>
+
+      @if (validationPreview(); as preview) {
+        <div
+          class="alert mt-3 mb-0"
+          [class.alert-success]="preview.valid"
+          [class.alert-danger]="!preview.valid"
+          role="status"
+          aria-live="polite"
+        >
+          @if (preview.valid) {
+            <div i18n="@@featurePromotions-validMessage">This code can be applied.</div>
+            <div class="small mt-1">{{ preview.advantageSummary }}</div>
+            @if (promotionPeriodPricing(); as pricing) {
+              <div class="mt-3 p-3 bg-body border rounded small">
+                <dl class="mb-0">
+                  <div class="d-flex justify-content-between gap-3">
+                    <dt class="text-body-secondary" i18n="@@featurePromotions-regularPeriodPrice">
+                      Regular period price
+                    </dt>
+                    <dd class="mb-0 text-nowrap fw-medium">{{ formatPeriodPrice(pricing.regularPeriodPriceNet) }}</dd>
+                  </div>
+                </dl>
+              </div>
+              <div class="mt-3 p-3 bg-body border rounded small">
+                <div class="text-body-secondary mb-2 fw-medium">{{ pricing.duringBenefitLabel }}</div>
+                <dl class="mb-0">
+                  <div class="d-flex justify-content-between gap-3">
+                    <dt class="text-body-secondary" i18n="@@featurePromotions-periodPrice">Period price</dt>
+                    <dd class="mb-0 text-nowrap fw-semibold">
+                      {{ formatPeriodPrice(pricing.duringBenefitPeriodPriceNet) }}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+              @if (pricing.showAfterBenefit) {
+                <div class="mt-3 p-3 bg-body border rounded small">
+                  <div class="text-body-secondary mb-2 fw-medium">{{ pricing.afterBenefitLabel }}</div>
+                  <dl class="mb-0">
+                    <div class="d-flex justify-content-between gap-3">
+                      <dt class="text-body-secondary" i18n="@@featurePromotions-periodPrice">Period price</dt>
+                      <dd class="mb-0 text-nowrap fw-semibold">
+                        {{ formatPeriodPrice(pricing.afterBenefitPeriodPriceNet) }}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              }
+            } @else {
+              <div class="small text-muted mt-2" i18n="@@featurePromotions-pricingUnavailable">
+                Period pricing is not available for this subscription.
+              </div>
+            }
+          } @else {
+            <div>{{ preview.message ?? 'This code cannot be applied.' }}</div>
+          }
+        </div>
+      } @else if (validationError(); as validationError) {
+        <div class="alert alert-danger mt-3 mb-0" role="status" aria-live="polite">{{ validationError }}</div>
+      }
+
+      @if (redeemError$ | async; as redeemError) {
+        <div class="alert alert-danger mt-3 mb-0" role="alert">{{ redeemError }}</div>
+      }
+    </div>
+  </div>
+
+  <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
+    <div class="section__row flex-grow-1 min-h-0">
+      <div
+        class="section__column section__column--active d-md-flex flex-column min-h-0 border-end"
+        [class.d-none]="mobilePanel() !== 'active'"
+      >
+        <div class="customer-plans__lane card h-100 border-0 d-flex flex-column min-h-0">
+          <div class="card-header customer-plans__lane-header py-2 small fw-semibold flex-shrink-0">
+            <span i18n="@@featurePromotions-activeTitle">Active promotions</span>
+          </div>
+          <form class="lane-search" (ngSubmit)="$event.preventDefault()">
+            <label for="activePromotionsSearchInput" class="visually-hidden" i18n="@@featurePromotions-searchActive">
+              Search active promotions
+            </label>
+            <div class="input-group search-input-container border-bottom">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input
+                id="activePromotionsSearchInput"
+                type="search"
+                class="form-control border-0 search-input"
+                placeholder="Search active promotions"
+                i18n-placeholder="@@featurePromotions-searchActive"
+                [ngModel]="activeSearch()"
+                (ngModelChange)="activeSearch.set($event)"
+                name="activePromotionsSearch"
+              />
+            </div>
+          </form>
+          <div class="customer-plans__lane-list list-group list-group-flush flex-grow-1">
+            @if (loadingActive$ | async) {
+              <div class="d-flex justify-content-center align-items-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden" i18n="@@featurePromotions-loading">Loading…</span>
+                </div>
+              </div>
+            } @else if (activePromotions().length === 0) {
+              <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+                <p class="mb-0" i18n="@@featurePromotions-noActive">No active promotions.</p>
+              </div>
+            } @else if (filteredActivePromotions().length === 0) {
+              <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+                <p class="mb-0" i18n="@@featurePromotions-noActiveSearchResults">
+                  No active promotions match your search.
+                </p>
+              </div>
+            } @else {
+              @for (item of filteredActivePromotions(); track item.id) {
+                <div class="list-group-item border-bottom">
+                  <div class="fw-semibold mb-1">{{ item.promotionName }} ({{ item.code }})</div>
+                  <div class="small text-muted">{{ item.advantageSummary }}</div>
+                  <div class="small text-muted mt-1">
+                    {{ formatDate(item.validFrom) }} — {{ formatDate(item.validTo) }}
+                    @if (item.planName) {
+                      · {{ item.planName }}
+                    }
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="section__column section__column--history d-md-flex flex-column min-h-0"
+        [class.d-none]="mobilePanel() !== 'history'"
+      >
+        <div class="customer-plans__lane card h-100 border-0 d-flex flex-column min-h-0">
+          <div class="card-header customer-plans__lane-header py-2 small fw-semibold flex-shrink-0">
+            <span i18n="@@featurePromotions-historyTitle">Redemption history</span>
+          </div>
+          <form class="lane-search" (ngSubmit)="$event.preventDefault()">
+            <label for="redemptionHistorySearchInput" class="visually-hidden" i18n="@@featurePromotions-searchHistory">
+              Search redemption history
+            </label>
+            <div class="input-group search-input-container border-bottom">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input
+                id="redemptionHistorySearchInput"
+                type="search"
+                class="form-control border-0 search-input"
+                placeholder="Search redemption history"
+                i18n-placeholder="@@featurePromotions-searchHistory"
+                [ngModel]="historySearch()"
+                (ngModelChange)="historySearch.set($event)"
+                name="redemptionHistorySearch"
+              />
+            </div>
+          </form>
+          <div class="customer-plans__lane-list list-group list-group-flush flex-grow-1">
+            @if (loadingRedemptions$ | async) {
+              <div class="d-flex justify-content-center align-items-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden" i18n="@@featurePromotions-loading">Loading…</span>
+                </div>
+              </div>
+            } @else if (redemptions().length === 0) {
+              <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+                <p class="mb-0" i18n="@@featurePromotions-noHistory">No redemptions yet.</p>
+              </div>
+            } @else if (filteredRedemptions().length === 0) {
+              <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+                <p class="mb-0" i18n="@@featurePromotions-noHistorySearchResults">No redemptions match your search.</p>
+              </div>
+            } @else {
+              @for (item of filteredRedemptions(); track trackRedemption($index, item)) {
+                <div class="list-group-item border-bottom">
+                  <div class="fw-semibold mb-1">{{ item.code }}</div>
+                  <div class="small text-muted">{{ item.advantageSummary }}</div>
+                  <div class="small text-muted d-flex align-items-center gap-3 flex-wrap mt-1">
+                    <span
+                      ><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ formatDateTime(item.redeemedAt) }}</span
+                    >
+                    <span
+                      ><i class="bi bi-box me-1" aria-hidden="true"></i
+                      >{{ item.subscriptionNumber ?? item.subscriptionId }}</span
+                    >
+                    @if (item.planName) {
+                      <span><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ item.planName }}</span>
+                    }
+                    <span><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i>{{ item.redemptionContext }}</span>
+                    <span>{{ item.status }}</span>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

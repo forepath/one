@@ -20,4 +20,12 @@ export class CreateSubscriptionDto {
   @IsOptional()
   @IsBoolean({ message: 'autoBackorder must be a boolean' })
   autoBackorder?: boolean;
+
+  @IsOptional()
+  @IsString({ message: 'Promotion code must be a string' })
+  promotionCode?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Promotion benefit start must be an ISO date string' })
+  promotionBenefitStartsAt?: string;
 }

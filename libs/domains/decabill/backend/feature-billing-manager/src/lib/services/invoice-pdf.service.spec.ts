@@ -33,11 +33,15 @@ describe('InvoicePdfService', () => {
   const invoicePdfHtmlRendererService = {
     renderHtmlToPdf: jest.fn(),
   } as unknown as InvoicePdfHtmlRendererService;
+  const invoicePromotionApplicationsRepository = {
+    hasApplicationsForInvoice: jest.fn().mockResolvedValue(false),
+  };
   const service = new InvoicePdfService(
     eInvoiceXmlService,
     eInvoiceEmbedService,
     invoicePdfTemplateService,
     invoicePdfHtmlRendererService,
+    invoicePromotionApplicationsRepository as never,
   );
   const purchaseOrderReference = 'SUB-2026-00001';
   const invoicingPeriod = {

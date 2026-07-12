@@ -19,6 +19,8 @@ import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
 import { PAYMENT_PROCESSOR_INIT } from './constants/payment-processor-init.token';
 import { AdminBillingController } from './controllers/admin-billing.controller';
+import { AdminPromotionsController } from './controllers/admin-promotions.controller';
+import { PromotionsController } from './controllers/promotions.controller';
 import { AdminCustomerProfilesController } from './controllers/admin-customer-profiles.controller';
 import { AdminDatevExportsController } from './controllers/admin-datev-exports.controller';
 import { AvailabilityController } from './controllers/availability.controller';
@@ -75,6 +77,9 @@ import { InvoiceNumberSequenceEntity } from './entities/invoice-number-sequence.
 import { InvoiceVoidDocumentEntity } from './entities/invoice-void-document.entity';
 import { InvoiceCreditDocumentEntity } from './entities/invoice-credit-document.entity';
 import { InvoiceEntity } from './entities/invoice.entity';
+import { InvoicePromotionApplicationEntity } from './entities/invoice-promotion-application.entity';
+import { PromotionEntity } from './entities/promotion.entity';
+import { PromotionRedemptionEntity } from './entities/promotion-redemption.entity';
 import { OpenPositionEntity } from './entities/open-position.entity';
 import { PaymentAttemptEntity } from './entities/payment-attempt.entity';
 import { PaymentRefundEntity } from './entities/payment-refund.entity';
@@ -109,6 +114,9 @@ import { InvoiceNumberSequencesRepository } from './repositories/invoice-number-
 import { InvoiceVoidDocumentsRepository } from './repositories/invoice-void-documents.repository';
 import { InvoiceCreditDocumentsRepository } from './repositories/invoice-credit-documents.repository';
 import { InvoicesRepository } from './repositories/invoices.repository';
+import { InvoicePromotionApplicationsRepository } from './repositories/invoice-promotion-applications.repository';
+import { PromotionsRepository } from './repositories/promotions.repository';
+import { PromotionRedemptionsRepository } from './repositories/promotion-redemptions.repository';
 import { OpenPositionsRepository } from './repositories/open-positions.repository';
 import { PaymentAttemptsRepository } from './repositories/payment-attempts.repository';
 import { PaymentRefundsRepository } from './repositories/payment-refunds.repository';
@@ -169,6 +177,11 @@ import { InvoiceService } from './services/invoice.service';
 import { OpenPositionInvoiceJobHandler } from './services/open-position-invoice.job-handler';
 import { PaymentOrchestrationService } from './services/payment-orchestration.service';
 import { PricingService } from './services/pricing.service';
+import { PromotionAdminService } from './services/promotion-admin.service';
+import { PromotionApplicationService } from './services/promotion-application.service';
+import { PromotionRedemptionService } from './services/promotion-redemption.service';
+import { PromotionValidationService } from './services/promotion-validation.service';
+import { SubscriptionChargePeriodService } from './services/subscription-charge-period.service';
 import { ProviderPricingService } from './services/provider-pricing.service';
 import { ProviderRegistryService } from './services/provider-registry.service';
 import { ProviderLocationsService } from './services/provider-locations.service';
@@ -387,6 +400,9 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       ReservedHostnameEntity,
       UsageRecordEntity,
       InvoiceEntity,
+      InvoicePromotionApplicationEntity,
+      PromotionEntity,
+      PromotionRedemptionEntity,
       InvoiceVoidDocumentEntity,
       InvoiceCreditDocumentEntity,
       InvoiceLineItemEntity,
@@ -426,6 +442,8 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     BackordersController,
     PricingController,
     InvoicesController,
+    PromotionsController,
+    AdminPromotionsController,
     AdminBillingController,
     AdminCustomerProfilesController,
     AdminDatevExportsController,
@@ -484,6 +502,11 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     InvoiceService,
     InvoiceIssuanceService,
     InvoiceCreationService,
+    PromotionValidationService,
+    PromotionRedemptionService,
+    PromotionApplicationService,
+    PromotionAdminService,
+    SubscriptionChargePeriodService,
     PaymentProcessorFactory,
     StripePaymentProcessor,
     DynamicProviderLoaderService,
@@ -547,6 +570,9 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     AvailabilitySnapshotsRepository,
     BackordersRepository,
     InvoicesRepository,
+    InvoicePromotionApplicationsRepository,
+    PromotionsRepository,
+    PromotionRedemptionsRepository,
     InvoiceLineItemsRepository,
     InvoiceVoidDocumentsRepository,
     InvoiceCreditDocumentsRepository,

@@ -11,20 +11,23 @@ import { SubscriptionsRepository } from '../repositories/subscriptions.repositor
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { UsageRecordsRepository } from '../repositories/usage-records.repository';
 import { groupOpenPositionsBySubscription } from '../utils/open-position-grouping.util';
-import { calculateProratedAmount } from '../utils/billing-proration.util';
-import { getEarliestProvisionedAt } from '../utils/provisioned-billing.util';
 import { resolveSubscriptionBillingBaseOverride } from '../utils/server-type-billing.utils';
 import { resolvePlanTaxCategory } from '../utils/plan-tax.utils';
 
-import { BillingScheduleService } from './billing-schedule.service';
+import type { LineItemInput } from './tax-calculation.service';
 import { InvoiceService } from './invoice.service';
 import { PricingService } from './pricing.service';
+import { PromotionApplicationService, type PromotionRedemptionUpdate } from './promotion-application.service';
 import { ProviderServerTypesService } from './provider-server-types.service';
+import { SubscriptionChargePeriodService, type SubscriptionChargePeriod } from './subscription-charge-period.service';
+import type { InvoicePromotionApplicationDraft } from '../dto/promotion.dto';
 
 interface InvoiceCreationOptions {
   billUntil?: Date;
   skipIfNoBillableAmount?: boolean;
 }
+
+type ChargePeriodResult = SubscriptionChargePeriod;
 
 const MIN_BILLABLE_AMOUNT = 0.01;
 
@@ -36,11 +39,11 @@ export class InvoiceCreationService {
     private readonly pricingService: PricingService,
     private readonly invoiceService: InvoiceService,
     private readonly usageRecordsRepository: UsageRecordsRepository,
-    private readonly billingScheduleService: BillingScheduleService,
     private readonly openPositionsRepository: OpenPositionsRepository,
-    private readonly invoicesRepository: InvoicesRepository,
     private readonly subscriptionItemsRepository: SubscriptionItemsRepository,
     private readonly providerServerTypesService: ProviderServerTypesService,
+    private readonly promotionApplicationService: PromotionApplicationService,
+    private readonly subscriptionChargePeriodService: SubscriptionChargePeriodService,
   ) {}
 
   async createInvoice(subscriptionId: string, userId: string, description?: string, options?: InvoiceCreationOptions) {
@@ -55,13 +58,22 @@ export class InvoiceCreationService {
     const usage = await this.usageRecordsRepository.findLatestForSubscription(subscriptionId);
     const usageCost = usage ? this.extractUsageCost(usage.usagePayload) : 0;
     const billUntil = options?.billUntil ?? new Date();
-    const baseAmount = await this.calculateBaseAmountSinceLastBilling(
+    const chargePeriod = await this.subscriptionChargePeriodService.resolveChargePeriod(
       subscription,
       plan,
       pricing.totalPrice,
       billUntil,
     );
-    const total = baseAmount + usageCost;
+
+    if (!chargePeriod) {
+      if (options?.skipIfNoBillableAmount) {
+        return undefined;
+      }
+
+      throw new BadRequestException('No billable amount since last invoice');
+    }
+
+    const total = chargePeriod.baseAmount + usageCost;
 
     if (total < MIN_BILLABLE_AMOUNT) {
       if (options?.skipIfNoBillableAmount) {
@@ -73,18 +85,27 @@ export class InvoiceCreationService {
 
     const roundedTotal = Math.round(total * 100) / 100;
     const taxCategory = resolvePlanTaxCategory(plan);
+    const chargeLine = {
+      description: description || 'Subscription charge',
+      quantity: 1,
+      unitPriceNet: roundedTotal,
+      taxCategory,
+    };
+    const promoResult = await this.promotionApplicationService.calculatePromotions({
+      userId,
+      subscriptionId,
+      chargeLines: [chargeLine],
+      defaultTaxCategory: taxCategory,
+      chargePeriod: { start: chargePeriod.periodStart, end: chargePeriod.periodEnd },
+      subscriptionChargeNet: Math.round(chargePeriod.baseAmount * 100) / 100,
+    });
 
-    return await this.invoiceService.createAndIssue({
+    return await this.issueInvoiceWithPromotionCommit({
       subscriptionId,
       userId,
-      lineInputs: [
-        {
-          description: description || 'Subscription charge',
-          quantity: 1,
-          unitPriceNet: roundedTotal,
-          taxCategory,
-        },
-      ],
+      lineInputs: [...promoResult.discountLines, chargeLine],
+      promotionApplications: promoResult.applications,
+      redemptionUpdates: promoResult.redemptionUpdates,
     });
   }
 
@@ -99,6 +120,7 @@ export class InvoiceCreationService {
     const groups = groupOpenPositionsBySubscription(positions);
     const billableGroups: {
       group: (typeof groups)[number];
+      chargePeriod: ChargePeriodResult;
       amount: number;
     }[] = [];
 
@@ -107,10 +129,10 @@ export class InvoiceCreationService {
         throw new BadRequestException('Position does not belong to user');
       }
 
-      const amount = await this.getBillableAmountForPosition(group.representative);
+      const charge = await this.getBillableChargeForPosition(group.representative);
 
-      if (amount >= MIN_BILLABLE_AMOUNT) {
-        billableGroups.push({ group, amount });
+      if (charge && charge.amount >= MIN_BILLABLE_AMOUNT) {
+        billableGroups.push({ group, chargePeriod: charge.chargePeriod, amount: charge.amount });
       }
     }
 
@@ -120,24 +142,41 @@ export class InvoiceCreationService {
       return undefined;
     }
 
-    const lineInputs = await Promise.all(
-      billableGroups.map(async ({ group, amount }) => {
-        const subscription = await this.subscriptionsRepository.findByIdOrThrow(group.subscriptionId);
-        const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
+    const lineInputs: LineItemInput[] = [];
+    const promotionApplications: InvoicePromotionApplicationDraft[] = [];
+    const redemptionUpdates: PromotionRedemptionUpdate[] = [];
 
-        return {
-          description: group.representative.description ?? 'Subscription',
-          quantity: 1,
-          unitPriceNet: Math.round(amount * 100) / 100,
-          taxCategory: resolvePlanTaxCategory(plan),
-        };
-      }),
-    );
+    for (const { group, amount, chargePeriod } of billableGroups) {
+      const subscription = await this.subscriptionsRepository.findByIdOrThrow(group.subscriptionId);
+      const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
+      const taxCategory = resolvePlanTaxCategory(plan);
+      const chargeLine = {
+        description: group.representative.description ?? 'Subscription',
+        quantity: 1,
+        unitPriceNet: Math.round(amount * 100) / 100,
+        taxCategory,
+      };
+      const promoResult = await this.promotionApplicationService.calculatePromotions({
+        userId,
+        subscriptionId: group.subscriptionId,
+        chargeLines: [chargeLine],
+        defaultTaxCategory: taxCategory,
+        chargePeriod: { start: chargePeriod.periodStart, end: chargePeriod.periodEnd },
+        subscriptionChargeNet: Math.round(chargePeriod.baseAmount * 100) / 100,
+      });
+
+      lineInputs.push(...promoResult.discountLines, chargeLine);
+      promotionApplications.push(...promoResult.applications);
+      redemptionUpdates.push(...promoResult.redemptionUpdates);
+    }
+
     const primarySubscriptionId = billableGroups[0].group.subscriptionId;
-    const result = await this.invoiceService.createAndIssue({
+    const result = await this.issueInvoiceWithPromotionCommit({
       subscriptionId: primarySubscriptionId,
       userId,
       lineInputs,
+      promotionApplications,
+      redemptionUpdates,
     });
     const positionIds = billableGroups.flatMap(({ group }) => group.positions.map((position) => position.id));
 
@@ -152,17 +191,50 @@ export class InvoiceCreationService {
     let total = 0;
 
     for (const group of groups) {
-      const amount = await this.getBillableAmountForPosition(group.representative);
+      const netTotal = await this.getBillableNetTotalAfterPromotionsForPosition(group.representative, userId);
 
-      if (amount >= MIN_BILLABLE_AMOUNT) {
-        total += amount;
+      if (netTotal >= MIN_BILLABLE_AMOUNT) {
+        total += netTotal;
       }
     }
 
     return Math.round(total * 100) / 100;
   }
 
-  private async getBillableAmountForPosition(position: OpenPositionEntity): Promise<number> {
+  private async getBillableNetTotalAfterPromotionsForPosition(
+    position: OpenPositionEntity,
+    userId: string,
+  ): Promise<number> {
+    const charge = await this.getBillableChargeForPosition(position);
+
+    if (!charge) {
+      return 0;
+    }
+
+    const subscription = await this.subscriptionsRepository.findByIdOrThrow(position.subscriptionId);
+    const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
+    const taxCategory = resolvePlanTaxCategory(plan);
+    const chargeLine = {
+      description: position.description ?? 'Subscription',
+      quantity: 1,
+      unitPriceNet: Math.round(charge.amount * 100) / 100,
+      taxCategory,
+    };
+    const promoResult = await this.promotionApplicationService.calculatePromotions({
+      userId,
+      subscriptionId: position.subscriptionId,
+      chargeLines: [chargeLine],
+      defaultTaxCategory: taxCategory,
+      chargePeriod: { start: charge.chargePeriod.periodStart, end: charge.chargePeriod.periodEnd },
+      subscriptionChargeNet: Math.round(charge.chargePeriod.baseAmount * 100) / 100,
+    });
+
+    return promoResult.adjustedSubtotalNet;
+  }
+
+  private async getBillableChargeForPosition(
+    position: OpenPositionEntity,
+  ): Promise<{ amount: number; chargePeriod: ChargePeriodResult } | null> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(position.subscriptionId);
 
     if (subscription.userId !== position.userId) {
@@ -173,23 +245,38 @@ export class InvoiceCreationService {
     const pricing = await this.resolveSubscriptionPricing(position.subscriptionId, plan);
     const usage = await this.usageRecordsRepository.findLatestForSubscription(position.subscriptionId);
     const usageCost = usage ? this.extractUsageCost(usage.usagePayload) : 0;
-    const baseAmount = await this.calculateBaseAmountSinceLastBilling(
+    const chargePeriod = await this.subscriptionChargePeriodService.resolveChargePeriod(
       subscription,
       plan,
       pricing.totalPrice,
       position.billUntil,
     );
-    const total = baseAmount + usageCost;
 
-    if (total < MIN_BILLABLE_AMOUNT) {
+    if (!chargePeriod) {
       if (position.skipIfNoBillableAmount) {
-        return 0;
+        return null;
       }
 
       throw new BadRequestException('No billable amount since last invoice');
     }
 
-    return total;
+    const total = chargePeriod.baseAmount + usageCost;
+
+    if (total < MIN_BILLABLE_AMOUNT) {
+      if (position.skipIfNoBillableAmount) {
+        return null;
+      }
+
+      throw new BadRequestException('No billable amount since last invoice');
+    }
+
+    return { amount: total, chargePeriod };
+  }
+
+  private async getBillableAmountForPosition(position: OpenPositionEntity): Promise<number> {
+    const charge = await this.getBillableChargeForPosition(position);
+
+    return charge?.amount ?? 0;
   }
 
   private extractUsageCost(payload: Record<string, unknown>): number {
@@ -230,52 +317,55 @@ export class InvoiceCreationService {
     billUntil: Date,
     now: Date = new Date(),
   ): Promise<number> {
-    const subscriptionStart = subscription.currentPeriodStart ?? subscription.createdAt ?? now;
-    const subscriptionEndOrToday =
-      subscription.cancelEffectiveAt && subscription.cancelEffectiveAt < now ? subscription.cancelEffectiveAt : now;
-    let effectiveUntil = billUntil;
+    const chargePeriod = await this.subscriptionChargePeriodService.resolveChargePeriod(
+      subscription,
+      plan,
+      fullPeriodPrice,
+      billUntil,
+      now,
+    );
 
-    if (effectiveUntil > subscriptionEndOrToday) {
-      effectiveUntil = subscriptionEndOrToday;
+    return chargePeriod?.baseAmount ?? 0;
+  }
+
+  private async resolveChargePeriod(
+    subscription: SubscriptionEntity,
+    plan: ServicePlanEntity,
+    fullPeriodPrice: number,
+    billUntil: Date,
+    now: Date = new Date(),
+  ): Promise<ChargePeriodResult | null> {
+    return await this.subscriptionChargePeriodService.resolveChargePeriod(
+      subscription,
+      plan,
+      fullPeriodPrice,
+      billUntil,
+      now,
+    );
+  }
+
+  private async issueInvoiceWithPromotionCommit(params: {
+    subscriptionId: string;
+    userId: string;
+    lineInputs: LineItemInput[];
+    promotionApplications: InvoicePromotionApplicationDraft[];
+    redemptionUpdates: PromotionRedemptionUpdate[];
+  }): Promise<{ invoiceRefId: string; invoiceNumber?: string }> {
+    const rollback = await this.promotionApplicationService.commitRedemptionUpdatesWithRollback(
+      params.redemptionUpdates,
+    );
+
+    try {
+      return await this.invoiceService.createAndIssue({
+        subscriptionId: params.subscriptionId,
+        userId: params.userId,
+        lineInputs: params.lineInputs,
+        promotionApplications: params.promotionApplications,
+      });
+    } catch (error) {
+      await this.promotionApplicationService.rollbackRedemptionUpdates(rollback);
+      throw error;
     }
-
-    if (effectiveUntil <= subscriptionStart) {
-      return 0;
-    }
-
-    const latestInvoice = await this.invoicesRepository.findLatestBySubscription(subscription.id);
-    let lastBillingAt: Date | undefined = latestInvoice?.createdAt;
-
-    if (!lastBillingAt) {
-      lastBillingAt = subscription.currentPeriodStart ?? subscription.createdAt;
-    }
-
-    if (!lastBillingAt) {
-      return fullPeriodPrice;
-    }
-
-    if (lastBillingAt < subscriptionStart) {
-      lastBillingAt = subscriptionStart;
-    }
-
-    if (subscription.withdrawnAt) {
-      const items = await this.subscriptionItemsRepository.findBySubscription(subscription.id);
-      const provisionedFrom = getEarliestProvisionedAt(items);
-
-      if (!provisionedFrom) {
-        return 0;
-      }
-
-      if (!lastBillingAt || lastBillingAt < provisionedFrom) {
-        lastBillingAt = provisionedFrom;
-      }
-    }
-
-    if (effectiveUntil <= lastBillingAt) {
-      return 0;
-    }
-
-    return calculateProratedAmount(plan, fullPeriodPrice, lastBillingAt, effectiveUntil, this.billingScheduleService);
   }
 
   private async resolveSubscriptionPricing(subscriptionId: string, plan: ServicePlanEntity) {

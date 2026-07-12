@@ -36,6 +36,8 @@ export class SubscriptionsController {
       dto.planId,
       dto.requestedConfig,
       dto.autoBackorder ?? false,
+      dto.promotionCode,
+      dto.promotionBenefitStartsAt,
     );
 
     return (await this.subscriptionService.mapManyToResponses([subscription]))[0];

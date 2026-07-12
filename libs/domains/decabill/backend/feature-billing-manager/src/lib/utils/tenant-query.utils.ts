@@ -13,6 +13,10 @@ export function applyServiceTypeTenantFilter<T>(qb: SelectQueryBuilder<T>, alias
   return qb.andWhere(`${alias}.tenant_id = :tenantId`, { tenantId: getRequiredTenantId() });
 }
 
+export function applyPromotionTenantFilter<T>(qb: SelectQueryBuilder<T>, alias = 'promotion'): SelectQueryBuilder<T> {
+  return qb.andWhere(`${alias}.tenant_id = :tenantId`, { tenantId: getRequiredTenantId() });
+}
+
 export function applyProjectTenantFilter<T>(
   qb: SelectQueryBuilder<T>,
   projectAlias = 'project',

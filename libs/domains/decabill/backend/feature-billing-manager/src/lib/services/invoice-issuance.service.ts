@@ -58,13 +58,17 @@ export class InvoiceIssuanceService {
 
     dueDate.setDate(dueDate.getDate() + dueInDays);
 
+    const balanceDue = Math.max(0, Number(invoice.balanceDue));
+    const isPromotionalZeroBalance = balanceDue === 0;
     const updated = await this.invoicesRepository.update(invoiceId, {
       invoiceNumber,
-      status: InvoiceStatus.ISSUED,
+      status: isPromotionalZeroBalance ? InvoiceStatus.PAID : InvoiceStatus.ISSUED,
       issuedAt,
-      dueDate,
-      balanceDue: invoice.totalGross,
-      paymentProcessor: process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR ?? 'stripe',
+      dueDate: isPromotionalZeroBalance ? undefined : dueDate,
+      balanceDue,
+      paymentProcessor: isPromotionalZeroBalance
+        ? undefined
+        : (process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR ?? 'stripe'),
     });
     const subscription = invoice.subscriptionId
       ? await this.subscriptionsRepository.findByIdOrThrow(invoice.subscriptionId)
@@ -89,7 +93,18 @@ export class InvoiceIssuanceService {
       context: { invoiceNumber, totalGross: issued.totalGross },
     });
 
-    if (!options?.skipNotification) {
+    if (isPromotionalZeroBalance) {
+      await this.auditLog.log({
+        process: 'invoice.paid.promotional_zero_balance',
+        level: 'info',
+        message: `Invoice ${invoiceNumber} marked paid due to promotional zero balance`,
+        invoiceId,
+        userId: invoice.userId,
+        context: { invoiceNumber },
+      });
+    }
+
+    if (!options?.skipNotification && !isPromotionalZeroBalance) {
       await this.invoiceEmailService.notifyInvoiceIssued(issued, pdfStorageKey);
     }
 

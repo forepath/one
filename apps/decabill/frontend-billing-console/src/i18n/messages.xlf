@@ -632,6 +632,189 @@
       <trans-unit id="featureContainer-invoices" datatype="html">
         <source>Billing</source>
         </trans-unit>
+      <trans-unit id="featureContainer-promotionsPage" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-promotionsTitle" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-promotions" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminPromotionsPage" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminPromotionsTitle" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminPromotions" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-pageTitle" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-checkSectionTitle" datatype="html">
+        <source>Apply a promotion code</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-selectSubscription" datatype="html">
+        <source>Subscription</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-selectSubscriptionPlaceholder" datatype="html">
+        <source>Select subscription</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-codePlaceholder" datatype="html">
+        <source>Promotion code</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-checkCode" datatype="html">
+        <source>Check code</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-validMessage" datatype="html">
+        <source>This code can be applied.</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-redeemNow" datatype="html">
+        <source>Redeem now</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-activeTitle" datatype="html">
+        <source>Active promotions</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-loading" datatype="html">
+        <source>Loading…</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-noActive" datatype="html">
+        <source>No active promotions.</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-historyTitle" datatype="html">
+        <source>Redemption history</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-noHistory" datatype="html">
+        <source>No redemptions yet.</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-orderCodeLabel" datatype="html">
+        <source>Promotion code (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-pageTitle" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-create" datatype="html">
+        <source>Create promotion</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-applicablePlansHint" datatype="html">
+        <source>Leave empty to allow all products.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-searchPlaceholder" datatype="html">
+        <source>Search promotions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-loading" datatype="html">
+        <source>Loading…</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-empty" datatype="html">
+        <source>No promotions yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-noSearchResults" datatype="html">
+        <source>No promotions match your search.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-edit" datatype="html">
+        <source>Edit</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-redemptions" datatype="html">
+        <source>Redemptions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-deactivate" datatype="html">
+        <source>Deactivate</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-createTitle" datatype="html">
+        <source>Create promotion</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-editTitle" datatype="html">
+        <source>Edit promotion</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-redemptionsTitle" datatype="html">
+        <source>Redemptions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-noRedemptions" datatype="html">
+        <source>No redemptions yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-advantageTypeFixedAmountNet" datatype="html">
+        <source>Fixed amount (net)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-advantageTypeFreeDays" datatype="html">
+        <source>Free days</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-advantageTypeFreeBillingPeriods" datatype="html">
+        <source>Free billing periods</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-mobileActive" datatype="html">
+        <source>Active promotions</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-mobileHistory" datatype="html">
+        <source>History</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-searchActive" datatype="html">
+        <source>Search active promotions</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-searchHistory" datatype="html">
+        <source>Search redemption history</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-noActiveSearchResults" datatype="html">
+        <source>No active promotions match your search.</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-noHistorySearchResults" datatype="html">
+        <source>No redemptions match your search.</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-clearCheck" datatype="html">
+        <source>Clear check</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-regularPeriodPrice" datatype="html">
+        <source>Regular period price</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-periodPrice" datatype="html">
+        <source>Period price</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-pricingUnavailable" datatype="html">
+        <source>Period pricing is not available for this subscription.</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-duringNextPeriod" datatype="html">
+        <source>Next billing period</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-duringNextPeriods" datatype="html">
+        <source>Next <x id="INTERPOLATION" equiv-text="periods"/> billing periods</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-afterFreePeriod" datatype="html">
+        <source>Following periods</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-afterFreePeriods" datatype="html">
+        <source>After <x id="INTERPOLATION" equiv-text="periods"/> free periods</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-duringFreeDaysUntil" datatype="html">
+        <source>Until <x id="date" equiv-text="benefitEndsLabel"/></source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-duringFreeDays" datatype="html">
+        <source>During free period</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-afterFreeDaysEnds" datatype="html">
+        <source>After <x id="date" equiv-text="benefitEndsLabel"/></source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-afterFreeDays" datatype="html">
+        <source>After free period ends</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-duringCreditRemaining" datatype="html">
+        <source>While credit remains</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-afterCreditUsed" datatype="html">
+        <source>After credit is used</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-orderDiscountLabel" datatype="html">
+        <source>Promotion</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-orderPlanTotal" datatype="html">
+        <source>Plan total (net)</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-orderPricingPending" datatype="html">
+        <source>Check the price summary above after loading completes.</source>
+        </trans-unit>
       <trans-unit id="featureContainer-serviceTypesTitle" datatype="html">
         <source>Providers</source>
         </trans-unit>

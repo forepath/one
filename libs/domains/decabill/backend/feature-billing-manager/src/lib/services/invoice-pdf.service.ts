@@ -15,6 +15,7 @@ import {
   buildInvoiceDocumentOptions,
   buildPartialCreditNoteDocumentOptions,
   buildPartialCreditNoteNumber,
+  buildZeroBalancePromotionalInvoiceDocumentOptions,
 } from './e-invoice-document-options';
 import { EInvoiceEmbedService } from './e-invoice-embed.service';
 import { EInvoiceXmlService } from './e-invoice-xml.service';
@@ -27,6 +28,7 @@ import {
 import { InvoicePdfTemplateService } from './invoice-pdf-template.service';
 import type { InvoicingPeriod } from './invoicing-period.util';
 import { buildInvoicePdfStorageKey } from '../utils/invoice-pdf-storage.util';
+import { InvoicePromotionApplicationsRepository } from '../repositories/invoice-promotion-applications.repository';
 
 export interface VoidDocumentGenerationResult {
   storageKey: string;
@@ -40,6 +42,7 @@ export class InvoicePdfService {
     private readonly eInvoiceEmbedService: EInvoiceEmbedService,
     private readonly invoicePdfTemplateService: InvoicePdfTemplateService,
     private readonly invoicePdfHtmlRendererService: InvoicePdfHtmlRendererService,
+    private readonly invoicePromotionApplicationsRepository: InvoicePromotionApplicationsRepository,
   ) {}
 
   getStorageRoot(): string {
@@ -65,7 +68,13 @@ export class InvoicePdfService {
     purchaseOrderReference: string,
     invoicingPeriod: InvoicingPeriod,
   ): Promise<string> {
-    const documentOptions = buildInvoiceDocumentOptions(invoice);
+    const hasPromotionApplications = await this.invoicePromotionApplicationsRepository.hasApplicationsForInvoice(
+      invoice.id,
+    );
+    const zeroBalancePromotional = Number(invoice.balanceDue) === 0 && hasPromotionApplications;
+    const documentOptions = zeroBalancePromotional
+      ? buildZeroBalancePromotionalInvoiceDocumentOptions(invoice)
+      : buildInvoiceDocumentOptions(invoice);
     const xml = this.eInvoiceXmlService.buildEn16931Xml(
       invoice,
       lineItems,
@@ -75,7 +84,13 @@ export class InvoicePdfService {
       invoicingPeriod,
       documentOptions,
     );
-    const pdfBytes = await this.renderPdf(invoice, lineItems, issuer, buyer, buildInvoicePdfPresentation(invoice));
+    const pdfBytes = await this.renderPdf(
+      invoice,
+      lineItems,
+      issuer,
+      buyer,
+      buildInvoicePdfPresentation(invoice, { zeroBalancePromotional }),
+    );
     const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
     const storageKey = buildInvoicePdfStorageKey(invoice, '.pdf');
     const absolute = this.resolveAbsolutePath(storageKey);

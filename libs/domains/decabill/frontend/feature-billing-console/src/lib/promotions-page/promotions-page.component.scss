@@ -1,0 +1,52 @@
+@use '../section.scss';
+@use '../admin-list-page.scss';
+@use '../customer-lane-layout.scss';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.promotions-container {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.promotions-header {
+  display: flex;
+  align-items: center;
+  min-height: 64px;
+  flex-shrink: 0;
+}
+
+.promotions-apply-bar {
+  flex-shrink: 0;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+  background: var(--bs-body-bg);
+}
+
+.section__row {
+  flex: 1 1 0;
+  min-height: 0;
+  flex-wrap: nowrap;
+}
+
+.section__column--active,
+.section__column--history {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.customer-plans__lane {
+  border-radius: 0;
+
+  .customer-plans__lane-header {
+    background: var(--bs-tertiary-bg);
+    border-radius: 0;
+  }
+}
