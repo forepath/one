@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.15.2](https://github.com/forepath/one/compare/v2.15.1...v2.15.2) (2026-07-12)
+
+
+### Bug Fixes
+
+* server side logouts ([#480](https://github.com/forepath/one/issues/480)) ([7644c90](https://github.com/forepath/one/commit/7644c90908793da0d2a39337f698bfae5d7d548b))
+
 ## [2.15.1](https://github.com/forepath/one/compare/v2.15.0...v2.15.1) (2026-07-12)
 
 
