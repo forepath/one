@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.15.0](https://github.com/forepath/one/compare/v2.14.1...v2.15.0) (2026-07-12)
+
+
+### Features
+
+* admin sidebar collapse ([#468](https://github.com/forepath/one/issues/468)) ([b9f6964](https://github.com/forepath/one/commit/b9f69640e485274268005e1a31cbf878d8396941))
+* custom modal header ([#470](https://github.com/forepath/one/issues/470)) ([07b6f43](https://github.com/forepath/one/commit/07b6f43bbd54906af9d2a336bf37e01e372f1b09))
+* decabill dashboard order button ([#469](https://github.com/forepath/one/issues/469)) ([649c3a1](https://github.com/forepath/one/commit/649c3a1f58c3e732e3789be971db404111c04ae4))
+* decabill promotions support ([#476](https://github.com/forepath/one/issues/476)) ([1c8cae2](https://github.com/forepath/one/commit/1c8cae26906afc81ed6b62f79720f00fd203552e))
+* decabill subscription administration ([#477](https://github.com/forepath/one/issues/477)) ([5cbb7ec](https://github.com/forepath/one/commit/5cbb7ec82c48468d8d51e13f1cb00e76efdcaca5))
+* decabill withdrawal flow, tax rates, and provisioning catalog improvements ([#467](https://github.com/forepath/one/issues/467)) ([71e0a9a](https://github.com/forepath/one/commit/71e0a9a2949e48ed7ef3bcd4ed3a9ddc19f10fbd))
+* stripe fraud protection support ([#460](https://github.com/forepath/one/issues/460)) ([5a20494](https://github.com/forepath/one/commit/5a20494561e79386d797b35423d1ab497007dee2))
+* withdrawal with partial billing support ([#461](https://github.com/forepath/one/issues/461)) ([18b94f9](https://github.com/forepath/one/commit/18b94f9271b99ec96fe8674f6e53560a67944c1e))
+
+
+### Bug Fixes
+
+* cta button styling ([#474](https://github.com/forepath/one/issues/474)) ([9cda4a2](https://github.com/forepath/one/commit/9cda4a21c5961c51ec354f80629121540c8fd4e4))
+* missing decabill ticket delete button ([#472](https://github.com/forepath/one/issues/472)) ([5d2cad5](https://github.com/forepath/one/commit/5d2cad588524d91b229f5e7fb6a713c06930b31f))
+* plan options persistence issue ([#463](https://github.com/forepath/one/issues/463)) ([f4bc8de](https://github.com/forepath/one/commit/f4bc8de6aa2602fb56d862b282c2d48f222803f1))
+
+
+### Chores
+
+* project billing improvements ([#462](https://github.com/forepath/one/issues/462)) ([7bb3974](https://github.com/forepath/one/commit/7bb3974b8f5f127276b884fabfb8faffb6ee165b))
+* subtle region image ([#475](https://github.com/forepath/one/issues/475)) ([8ee8367](https://github.com/forepath/one/commit/8ee836788d9fd85f58ae922abc67e9cccdb07d37))
+* swap plus icons ([#473](https://github.com/forepath/one/issues/473)) ([b0b7ff0](https://github.com/forepath/one/commit/b0b7ff0c7a7aea7385acd29c91529d5be3c72bbd))
+* unified action element styling ([#471](https://github.com/forepath/one/issues/471)) ([9e342b2](https://github.com/forepath/one/commit/9e342b2c568663b160c17eba9446e15a8aa07d4e))
+
+
+### Code Refactoring
+
+* asynchronous service provisioning ([#465](https://github.com/forepath/one/issues/465)) ([350daf6](https://github.com/forepath/one/commit/350daf6637b8bdfcfaa048a4dafbb72333fc4e19))
+* move withdrawals to job ([#464](https://github.com/forepath/one/issues/464)) ([d45838c](https://github.com/forepath/one/commit/d45838c95c7c71c29ba57fb98fb64cf546f82183))
+* order form structure ([#478](https://github.com/forepath/one/issues/478)) ([0453aa5](https://github.com/forepath/one/commit/0453aa58dfe8a20389a7ec03744823ce27f2e486))
+
 ## [2.14.1](https://github.com/forepath/one/compare/v2.14.0...v2.14.1) (2026-07-04)
 
 
