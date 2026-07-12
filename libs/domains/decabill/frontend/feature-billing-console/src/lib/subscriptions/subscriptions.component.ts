@@ -11,7 +11,7 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
@@ -44,7 +44,7 @@ import {
   type ValidatePromotionRequest,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
-import { combineLatest, filter, of, switchMap, take } from 'rxjs';
+import { combineLatest, filter, of, pairwise, switchMap, take, withLatestFrom } from 'rxjs';
 
 import {
   getBackorderStatusBadgeClass,
@@ -66,6 +66,13 @@ import { showBillingModal, watchBillingMutationModalClose } from '../billing-mod
 import { buildPromotionAdjustedOrderPricing } from '../promotion-pricing-preview.util';
 
 type CustomerPlansMobilePanel = 'subscriptions' | 'backorders';
+
+type OrderWizardStepId = 'plan' | 'infrastructure' | 'configuration' | 'summary';
+
+type OrderWizardStep = {
+  id: OrderWizardStepId;
+  label: string;
+};
 
 @Component({
   selector: 'framework-billing-subscriptions',
@@ -255,6 +262,8 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   orderPricingLoading = false;
   /** Signal for reactive conditional form fields; kept in sync with orderRequestedConfig.authenticationMethod. */
   authMethod = signal<'users' | 'api-key' | 'keycloak'>('users');
+  readonly orderWizardStepIndex = signal(0);
+  readonly orderOrderComplete = signal(false);
 
   onServiceChange(value: 'controller' | 'manager'): void {
     this.orderRequestedConfig = { ...this.orderRequestedConfig, service: value };
@@ -574,13 +583,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   openOrderPlanModal(preferredPlanId?: string | null): void {
-    this.orderPlanId = '';
-    this.orderPromotionCode.set('');
-    this.promotionsFacade.clearValidation();
-    this.orderAutoBackorder = true;
-    this.orderAcceptLegal = false;
-    this.orderPricingPreview.set(null);
-    this.orderPricingLoading = false;
+    this.resetOrderFormState();
     this.resetOrderRequestedConfig();
 
     const effectivePreferredPlanId = (preferredPlanId ?? this.initialPlanIdFromQuery)?.trim();
@@ -616,6 +619,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   onOrderPlanIdChange(): void {
     this.promotionsFacade.clearValidation();
+    this.orderWizardStepIndex.set(0);
     this.syncOrderProvisioningLocationState();
     this.syncOrderServerTypeState();
     this.syncOrderProvisioningOptions();
@@ -624,6 +628,204 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   onOrderServerTypeChange(): void {
     this.syncOrderPricingPreview();
+  }
+
+  onOrderLocationChange(): void {
+    this.syncOrderPricingPreview();
+  }
+
+  orderHasInfrastructureStep(): boolean {
+    const plan = this.getCurrentOrderPlan();
+
+    if (!plan) {
+      return false;
+    }
+
+    if (plan.allowCustomerServerTypeSelection && normalizeAllowedServerTypeIds(plan.allowedServerTypes).length > 0) {
+      return true;
+    }
+
+    return plan.allowCustomerLocationSelection;
+  }
+
+  private getCurrentOrderPlan(): ServicePlanResponse | null {
+    return this.servicePlans().find((entry) => entry.id === this.orderPlanId.trim()) ?? null;
+  }
+
+  orderHasConfigurationStep(): boolean {
+    if (!this.orderPlanId.trim()) {
+      return false;
+    }
+
+    if (this.orderProvisioningOptionsLoading || this.orderProvisioningOptionsError) {
+      return true;
+    }
+
+    if (this.orderProvisioningOptions.length === 0) {
+      return false;
+    }
+
+    if (this.showOrderProvisioningPicker()) {
+      return true;
+    }
+
+    if (this.showCustomOrderConfiguration(null)) {
+      return (
+        this.orderCustomOrderFieldsLoading || this.orderCustomOrderFieldsError || this.orderCustomOrderFields.length > 0
+      );
+    }
+
+    return this.showIntegratedOrderConfiguration(null);
+  }
+
+  getOrderWizardSteps(): OrderWizardStep[] {
+    const steps: OrderWizardStep[] = [{ id: 'plan', label: 'Plan' }];
+
+    if (this.orderHasInfrastructureStep()) {
+      steps.push({ id: 'infrastructure', label: 'Server & region' });
+    }
+
+    if (this.orderHasConfigurationStep()) {
+      steps.push({ id: 'configuration', label: 'Configuration' });
+    }
+
+    steps.push({ id: 'summary', label: 'Summary' });
+
+    return steps;
+  }
+
+  getActiveOrderWizardStepId(): OrderWizardStepId {
+    return this.getOrderWizardSteps()[this.orderWizardStepIndex()]?.id ?? 'plan';
+  }
+
+  isOrderWizardStepComplete(stepIndex: number): boolean {
+    if (this.orderOrderComplete()) {
+      return true;
+    }
+
+    return stepIndex < this.orderWizardStepIndex();
+  }
+
+  isOrderWizardStepActive(stepIndex: number): boolean {
+    return !this.orderOrderComplete() && stepIndex === this.orderWizardStepIndex();
+  }
+
+  showOrderWizardBackButton(): boolean {
+    return !this.orderOrderComplete() && this.orderWizardStepIndex() > 0;
+  }
+
+  showOrderWizardNextButton(): boolean {
+    return !this.orderOrderComplete() && this.getActiveOrderWizardStepId() !== 'summary';
+  }
+
+  showOrderWizardSubmitButton(): boolean {
+    return !this.orderOrderComplete() && this.getActiveOrderWizardStepId() === 'summary';
+  }
+
+  canAdvanceOrderWizardStep(): boolean {
+    switch (this.getActiveOrderWizardStepId()) {
+      case 'plan':
+        return Boolean(this.orderPlanId.trim());
+      case 'infrastructure':
+        return this.isOrderInfrastructureStepReady();
+      case 'configuration':
+        return this.isOrderProvisioningReady();
+      case 'summary':
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  goOrderWizardNext(): void {
+    if (!this.canAdvanceOrderWizardStep()) {
+      return;
+    }
+
+    const maxIndex = this.getOrderWizardSteps().length - 1;
+
+    if (this.orderWizardStepIndex() < maxIndex) {
+      this.orderWizardStepIndex.update((index) => index + 1);
+      this.scrollOrderPlanModalToTop();
+    }
+  }
+
+  private clampOrderWizardStepIndex(): void {
+    const maxIndex = Math.max(0, this.getOrderWizardSteps().length - 1);
+
+    if (this.orderWizardStepIndex() > maxIndex) {
+      this.orderWizardStepIndex.set(maxIndex);
+    }
+  }
+
+  goOrderWizardBack(): void {
+    if (this.orderWizardStepIndex() > 0) {
+      this.orderWizardStepIndex.update((index) => index - 1);
+      this.scrollOrderPlanModalToTop();
+    }
+  }
+
+  private scrollOrderPlanModalToTop(): void {
+    const modalEl = this.orderPlanModal?.nativeElement;
+
+    if (!modalEl) {
+      return;
+    }
+
+    queueMicrotask(() => {
+      modalEl.scrollTop = 0;
+      modalEl.querySelector<HTMLElement>('.modal-body')?.scrollTo({ top: 0 });
+      modalEl.querySelector<HTMLElement>('.modal-dialog')?.scrollTo({ top: 0 });
+    });
+  }
+
+  isOrderInfrastructureStepReady(): boolean {
+    if (this.orderServerTypesLoading) {
+      return false;
+    }
+
+    const plan = this.getCurrentOrderPlan();
+    const needsServerType = Boolean(plan?.allowCustomerServerTypeSelection) && this.orderServerTypeOptions.length > 0;
+    const needsLocation =
+      Boolean(plan?.allowCustomerLocationSelection) &&
+      this.orderGeographyFieldKey != null &&
+      this.orderLocationOptions.length > 0;
+
+    if (needsServerType && !this.orderProvisioningServerType.trim()) {
+      return false;
+    }
+
+    if (needsLocation && !this.orderProvisioningLocation.trim()) {
+      return false;
+    }
+
+    return true;
+  }
+
+  onOrderPlanModalHidden(): void {
+    if (this.orderOrderComplete()) {
+      this.resetOrderFormState();
+    }
+
+    this.resetOrderRequestedConfig();
+  }
+
+  private resetOrderFormState(): void {
+    this.orderPlanId = '';
+    this.orderPromotionCode.set('');
+    this.promotionsFacade.clearValidation();
+    this.orderAutoBackorder = true;
+    this.orderAcceptLegal = false;
+    this.orderPricingPreview.set(null);
+    this.orderPricingLoading = false;
+    this.orderWizardStepIndex.set(0);
+    this.orderOrderComplete.set(false);
+  }
+
+  formatOrderServerTypeSummary(): string {
+    const selected = this.orderServerTypeOptions.find((entry) => entry.id === this.orderProvisioningServerType);
+
+    return selected ? this.formatServerTypeOptionLabel(selected) : this.orderProvisioningServerType;
   }
 
   private syncOrderPricingPreview(): void {
@@ -707,6 +909,12 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       if (this.orderCustomOrderFieldsLoading || this.orderCustomOrderFieldsError) {
         return false;
       }
+
+      for (const field of this.orderCustomOrderFields) {
+        if (field.required && !(this.orderCustomEnv[field.key] ?? '').trim()) {
+          return false;
+        }
+      }
     }
 
     if (this.orderProvisioningOptions.length > 1 && !this.orderProvisioningOptionKey.trim()) {
@@ -761,6 +969,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
           this.applyOrderProvisioningOption(options[0]);
         }
 
+        this.clampOrderWizardStepIndex();
         this.cdr.detectChanges();
       },
       error: () => {
@@ -770,6 +979,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
         this.orderProvisioningOptionsLoading = false;
         this.orderProvisioningOptionsError = true;
+        this.clampOrderWizardStepIndex();
         this.cdr.detectChanges();
       },
     });
@@ -980,13 +1190,17 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
             this.orderProvisioningServerType = options.includes(fromPlanStr) ? fromPlanStr : (options[0] ?? '');
             this.orderServerTypesLoading = false;
+            this.clampOrderWizardStepIndex();
             this.syncOrderPricingPreview();
+            this.cdr.detectChanges();
           },
           error: () => {
             this.orderServerTypeOptions = [];
             this.orderProvisioningServerType = '';
             this.orderServerTypesLoading = false;
+            this.clampOrderWizardStepIndex();
             this.syncOrderPricingPreview();
+            this.cdr.detectChanges();
           },
         });
       });
@@ -1227,20 +1441,18 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   private registerModalCloseWatchers(): void {
-    watchBillingMutationModalClose({
-      loading$: this.subscriptionsCreating$,
-      error$: this.subscriptionsError$,
-      modal: () => this.orderPlanModal,
-      destroyRef: this.destroyRef,
-      onSuccess: () => {
-        this.orderPlanId = '';
-        this.orderPromotionCode.set('');
-        this.promotionsFacade.clearValidation();
-        this.orderAutoBackorder = true;
-        this.orderAcceptLegal = false;
-        this.resetOrderRequestedConfig();
-      },
-    });
+    this.subscriptionsCreating$
+      .pipe(
+        pairwise(),
+        filter(([wasLoading, loading]) => wasLoading && !loading),
+        withLatestFrom(this.subscriptionsError$),
+        filter(([, error]) => !error),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.orderOrderComplete.set(true);
+        this.cdr.detectChanges();
+      });
     watchBillingMutationModalClose({
       loading$: this.customerProfileUpdating$,
       error$: this.customerProfileError$,

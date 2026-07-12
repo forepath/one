@@ -385,7 +385,7 @@
   aria-labelledby="orderPlanModalLabel"
   aria-hidden="true"
   #orderPlanModal
-  (hidden.bs.modal)="resetOrderRequestedConfig()"
+  (hidden.bs.modal)="onOrderPlanModalHidden()"
 >
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
@@ -399,149 +399,1077 @@
           [disabled]="(subscriptionsCreating$ | async) === true"
         ></button>
       </div>
-      <form (ngSubmit)="onSubmitOrderPlan()" #orderForm="ngForm">
-        <div class="modal-body">
-          <div class="mb-3">
-            <div class="card bg-body-tertiary">
-              <div class="card-body">
-                <label for="orderPlanId" class="form-label mt-0" i18n="@@featureSubscriptions-selectPlan">Plan</label>
-                <select
-                  id="orderPlanId"
-                  name="planId"
-                  class="form-select"
-                  [(ngModel)]="orderPlanId"
-                  (ngModelChange)="onOrderPlanIdChange()"
-                  required
-                  [disabled]="(subscriptionsCreating$ | async) === true || (servicePlansLoading$ | async) === true"
-                >
-                  <option value="" i18n="@@featureSubscriptions-choosePlan">Choose a plan</option>
-                  @for (plan of servicePlans$ | async; track plan.id) {
-                    <option [value]="plan.id">{{ formatPlanOptionLabel(plan) }}</option>
-                  }
-                </select>
-                @if (orderPlanId && (servicePlans$ | async); as plans) {
-                  @if (getSelectedPlan(plans, orderPlanId); as selectedPlan) {
-                    @if (orderServerTypesLoading) {
-                      <div class="mt-3 text-body-secondary small">Loading server types…</div>
-                    } @else if (orderServerTypeOptions.length > 0) {
-                      <div class="mt-3">
-                        <label for="orderProvisioningServerType" class="form-label">Server type</label>
-                        <select
-                          id="orderProvisioningServerType"
-                          name="orderProvisioningServerType"
-                          class="form-select"
-                          [(ngModel)]="orderProvisioningServerType"
-                          (ngModelChange)="onOrderServerTypeChange()"
-                          [disabled]="(subscriptionsCreating$ | async) === true"
-                        >
-                          @for (st of orderServerTypeOptions; track st.id) {
-                            <option [ngValue]="st.id">{{ formatServerTypeOptionLabel(st) }}</option>
+      @if (orderOrderComplete()) {
+        <div class="modal-body order-wizard__confirmation">
+          <div class="order-wizard__confirmation-content text-center py-4">
+            <i class="bi bi-check-circle-fill text-primary order-wizard__confirmation-icon" aria-hidden="true"></i>
+            <h6 class="mt-3 mb-2" i18n="@@featureSubscriptions-orderConfirmationTitle">Order placed successfully</h6>
+            <p class="text-body-secondary small mb-0" i18n="@@featureSubscriptions-orderConfirmationMessage">
+              Your subscription is being provisioned. You can close this dialog and track progress in your subscriptions
+              list.
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" i18n="@@featureSubscriptions-close">
+            Close
+          </button>
+        </div>
+      } @else {
+        <form (ngSubmit)="onSubmitOrderPlan()" #orderForm="ngForm">
+          <div class="modal-body">
+            @if (servicePlans$ | async; as plans) {
+              @let selectedPlan = getSelectedPlan(plans, orderPlanId);
+              <div class="row g-4 order-wizard__layout">
+                <div class="col-lg-8 order-wizard__main">
+                  <nav class="order-stepper mb-4" aria-label="Order steps">
+                    <ol class="order-stepper__steps px-3">
+                      @for (step of getOrderWizardSteps(); track step.id; let stepIndex = $index) {
+                        <li class="order-stepper__step">
+                          <span
+                            class="order-stepper__step-button"
+                            [class.order-stepper__step-button--active]="isOrderWizardStepActive(stepIndex)"
+                            [class.order-stepper__step-button--complete]="isOrderWizardStepComplete(stepIndex)"
+                            [attr.aria-current]="isOrderWizardStepActive(stepIndex) ? 'step' : null"
+                          >
+                            <span class="order-stepper__step-indicator">{{ stepIndex + 1 }}</span>
+                            <span class="order-stepper__step-label">{{ step.label }}</span>
+                          </span>
+                        </li>
+                      }
+                    </ol>
+                  </nav>
+
+                  @switch (getActiveOrderWizardStepId()) {
+                    @case ('plan') {
+                      <div class="card bg-body-tertiary border">
+                        <div class="card-body">
+                          <label for="orderPlanId" class="form-label mt-0" i18n="@@featureSubscriptions-selectPlan"
+                            >Plan</label
+                          >
+                          <select
+                            id="orderPlanId"
+                            name="planId"
+                            class="form-select"
+                            [(ngModel)]="orderPlanId"
+                            (ngModelChange)="onOrderPlanIdChange()"
+                            required
+                            [disabled]="
+                              (subscriptionsCreating$ | async) === true || (servicePlansLoading$ | async) === true
+                            "
+                          >
+                            @if ((servicePlansLoading$ | async) || plans.length === 0) {
+                              <option value="" i18n="@@featureSubscriptions-choosePlan">Choose a plan</option>
+                            }
+                            @for (plan of plans; track plan.id) {
+                              <option [value]="plan.id">{{ formatPlanOptionLabel(plan) }}</option>
+                            }
+                          </select>
+                          @if (selectedPlan?.description?.trim()) {
+                            <div
+                              class="mt-3 text-body-secondary small p-3 bg-body border rounded"
+                              style="white-space: pre-wrap"
+                              [innerHTML]="selectedPlan!.description"
+                            ></div>
                           }
-                        </select>
-                        <div class="form-text text-body-secondary small">
-                          Choose the server size for this subscription. Price updates based on your selection.
-                        </div>
-                      </div>
-                    }
-                    @if (orderGeographyFieldKey && orderLocationOptions.length > 0) {
-                      <div class="mt-3">
-                        <label for="orderProvisioningLocation" class="form-label">Region / location</label>
-                        <select
-                          id="orderProvisioningLocation"
-                          name="orderProvisioningLocation"
-                          class="form-select"
-                          [(ngModel)]="orderProvisioningLocation"
-                          [disabled]="(subscriptionsCreating$ | async) === true"
-                          [attr.aria-label]="'Provisioning ' + orderGeographyFieldKey"
-                        >
-                          @for (opt of orderLocationOptions; track opt) {
-                            <option [ngValue]="opt">{{ formatOrderLocationLabel(opt) }}</option>
-                          }
-                        </select>
-                        <div class="form-text text-body-secondary small">
-                          Choose where the server is provisioned. Options come from the product configuration.
-                        </div>
-                      </div>
-                    }
-                    @if (selectedPlan.description?.trim()) {
-                      <div
-                        class="mt-3 text-body-secondary small p-3 bg-body border rounded"
-                        style="white-space: pre-wrap"
-                        [innerHTML]="selectedPlan.description"
-                      ></div>
-                    }
-                    @if (selectedPlan.orderingHighlights?.length) {
-                      <div
-                        class="mt-3 text-body-secondary small p-3 bg-body border rounded"
-                        style="white-space: pre-wrap"
-                      >
-                        <ul class="list-unstyled d-flex flex-column gap-2 mt-0 mb-0 small">
-                          @for (line of selectedPlan.orderingHighlights; track $index) {
-                            <li class="d-flex gap-3 align-items-center justify-content-start lh-1">
-                              <i class="fs-7 p-2 bg-body-tertiary border rounded" [class]="line.icon"></i>
-                              <span>{{ line.text }}</span>
-                            </li>
-                          }
-                        </ul>
-                      </div>
-                    }
-                    @if (orderPricingLoading) {
-                      <div class="mt-3 p-3 bg-body border rounded">
-                        <div class="text-body-secondary small d-flex align-items-center gap-2">
-                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                          <span i18n="@@featureSubscriptions-loadingPrice">Loading price…</span>
-                        </div>
-                      </div>
-                    } @else if (orderPricingPreview(); as pricing) {
-                      @if (orderPromotionPricingAdjustment(); as promo) {
-                        <div class="mt-3 p-3 bg-body border rounded">
-                          <div class="text-body-secondary mb-2 fw-medium small">{{ promo.duringBenefit.label }}</div>
-                          <dl class="mb-0 small">
-                            <div class="d-flex justify-content-between gap-3 border-bottom pb-2 mb-2">
-                              <dt class="text-body-secondary fw-semibold" i18n="@@featurePromotions-orderPlanTotal">
-                                Plan total (net)
-                              </dt>
-                              <dd class="mb-0 text-nowrap fw-semibold">
-                                {{ formatCurrencyAmount(pricing.totalPrice) }}
-                              </dd>
+                          @if (selectedPlan?.orderingHighlights?.length) {
+                            <div
+                              class="mt-3 text-body-secondary small p-3 bg-body border rounded"
+                              style="white-space: pre-wrap"
+                            >
+                              <ul class="list-unstyled d-flex flex-column gap-2 mt-0 mb-0 small">
+                                @for (line of selectedPlan!.orderingHighlights; track $index) {
+                                  <li class="d-flex gap-3 align-items-center justify-content-start lh-1">
+                                    <i class="fs-7 p-2 bg-body-tertiary border rounded" [class]="line.icon"></i>
+                                    <span>{{ line.text }}</span>
+                                  </li>
+                                }
+                              </ul>
                             </div>
-                            @if (promo.duringBenefit.discountNet > 0) {
-                              <div class="d-flex justify-content-between gap-3 text-success">
-                                <dt class="text-body-secondary">
-                                  <span i18n="@@featurePromotions-orderDiscountLabel">Promotion</span>
-                                  ({{ promo.promotionLabel }})
-                                </dt>
-                                <dd class="mb-2 text-nowrap fw-medium">
-                                  -{{ formatCurrencyAmount(promo.duringBenefit.discountNet) }}
-                                </dd>
+                          }
+                        </div>
+                      </div>
+                    }
+                    @case ('infrastructure') {
+                      <div class="card bg-body-tertiary border">
+                        <div class="card-body">
+                          @if (orderServerTypesLoading) {
+                            <div class="text-body-secondary small d-flex align-items-center gap-2">
+                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                              <span>Loading server types…</span>
+                            </div>
+                          } @else if (orderServerTypeOptions.length > 0) {
+                            <div class="mb-3">
+                              <label for="orderProvisioningServerType" class="form-label">Server type</label>
+                              <select
+                                id="orderProvisioningServerType"
+                                name="orderProvisioningServerType"
+                                class="form-select"
+                                [(ngModel)]="orderProvisioningServerType"
+                                (ngModelChange)="onOrderServerTypeChange()"
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                              >
+                                @for (st of orderServerTypeOptions; track st.id) {
+                                  <option [ngValue]="st.id">{{ formatServerTypeOptionLabel(st) }}</option>
+                                }
+                              </select>
+                              <div class="form-text text-body-secondary small">
+                                Choose the server size for this subscription. Price updates based on your selection.
+                              </div>
+                            </div>
+                          }
+                          @if (orderGeographyFieldKey && orderLocationOptions.length > 0) {
+                            <div>
+                              <label for="orderProvisioningLocation" class="form-label">Region / location</label>
+                              <select
+                                id="orderProvisioningLocation"
+                                name="orderProvisioningLocation"
+                                class="form-select"
+                                [(ngModel)]="orderProvisioningLocation"
+                                (ngModelChange)="onOrderLocationChange()"
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                                [attr.aria-label]="'Provisioning ' + orderGeographyFieldKey"
+                              >
+                                @for (opt of orderLocationOptions; track opt) {
+                                  <option [ngValue]="opt">{{ formatOrderLocationLabel(opt) }}</option>
+                                }
+                              </select>
+                              <div class="form-text text-body-secondary small">
+                                Choose where the server is provisioned. Options come from the product configuration.
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                    @case ('configuration') {
+                      <div class="card bg-body-tertiary border">
+                        <div class="card-body">
+                          <h6 class="mb-3" i18n="@@featureSubscriptions-cloudInitConfig">Instance configuration</h6>
+                          @if (orderProvisioningOptionsLoading) {
+                            <div class="d-flex align-items-center gap-2 text-body-secondary small" aria-live="polite">
+                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                              <span i18n="@@featureSubscriptions-loadingProvisioningOptions"
+                                >Loading provisioning options…</span
+                              >
+                            </div>
+                          } @else if (orderProvisioningOptionsError) {
+                            <div class="alert alert-danger py-2 mb-0 small" role="alert">
+                              <span i18n="@@featureSubscriptions-provisioningOptionsError"
+                                >Could not load provisioning options for this plan. Choose another plan or try
+                                again.</span
+                              >
+                            </div>
+                          } @else {
+                            @if (showOrderProvisioningPicker()) {
+                              <div class="mb-3">
+                                <label
+                                  for="orderProvisioningOption"
+                                  class="form-label"
+                                  i18n="@@featureSubscriptions-provisioningOption"
+                                  >Provisioning option</label
+                                >
+                                <select
+                                  id="orderProvisioningOption"
+                                  name="orderProvisioningOption"
+                                  class="form-select"
+                                  [ngModel]="orderProvisioningOptionKey"
+                                  (ngModelChange)="onOrderProvisioningOptionKeyChange($event)"
+                                  [disabled]="(subscriptionsCreating$ | async) === true"
+                                  required
+                                >
+                                  @for (option of orderProvisioningOptions; track option.optionKey) {
+                                    <option [ngValue]="option.optionKey">{{ option.label }}</option>
+                                  }
+                                </select>
+                                @if (getSelectedOrderProvisioningOption()?.description?.trim(); as optionDescription) {
+                                  <div class="form-text text-body-secondary small mt-1">{{ optionDescription }}</div>
+                                }
                               </div>
                             }
-                            <div class="d-flex justify-content-between gap-3">
-                              <dt class="text-body-secondary" i18n="@@featureInvoices-subtotalNet">Subtotal (net)</dt>
-                              <dd class="mb-2 text-nowrap fw-medium">
-                                {{ formatCurrencyAmount(promo.duringBenefit.subtotalNet) }}
-                              </dd>
-                            </div>
-                            <div class="d-flex justify-content-between gap-3">
-                              <dt class="text-body-secondary">
-                                <span i18n="@@featureInvoices-taxTotal">Tax total</span>
-                                <span> ({{ promo.taxRate | number: '1.0-1' }}%)</span>
-                              </dt>
-                              <dd class="mb-2 text-nowrap fw-medium">
-                                {{ formatCurrencyAmount(promo.duringBenefit.taxTotal) }}
-                              </dd>
-                            </div>
-                            <div class="d-flex justify-content-between gap-3 border-top pt-2">
-                              <dt class="text-body-secondary fw-semibold" i18n="@@featureInvoices-totalGross">Total</dt>
-                              <dd class="mb-0 text-nowrap fw-semibold">
-                                {{ formatCurrencyAmount(promo.duringBenefit.totalGross) }}
-                              </dd>
-                            </div>
-                          </dl>
+                            @if (showCustomOrderConfiguration(selectedPlan)) {
+                              @if (orderCustomOrderFieldsLoading) {
+                                <div
+                                  class="d-flex align-items-center gap-2 text-body-secondary small"
+                                  aria-live="polite"
+                                >
+                                  <span
+                                    class="spinner-border spinner-border-sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                  ></span>
+                                  <span i18n="@@featureSubscriptions-loadingCustomOrderFields"
+                                    >Loading configuration fields…</span
+                                  >
+                                </div>
+                              } @else if (orderCustomOrderFieldsError) {
+                                <div class="alert alert-danger py-2 mb-0 small" role="alert">
+                                  <span i18n="@@featureSubscriptions-customOrderFieldsError"
+                                    >Could not load configuration fields for this option.</span
+                                  >
+                                </div>
+                              } @else if (orderCustomOrderFields.length === 0) {
+                                <p
+                                  class="text-body-secondary small mb-0"
+                                  i18n="@@featureSubscriptions-customConfigNoFields"
+                                >
+                                  No additional configuration is required for this plan.
+                                </p>
+                              } @else {
+                                @for (field of orderCustomOrderFields; track field.key) {
+                                  <div class="mb-3">
+                                    <label [for]="'orderCustomEnv_' + field.key" class="form-label">{{
+                                      field.label
+                                    }}</label>
+                                    <input
+                                      [type]="
+                                        field.key.toLowerCase().includes('password') ||
+                                        field.key.toLowerCase().includes('secret') ||
+                                        field.key.toLowerCase().includes('token')
+                                          ? 'password'
+                                          : 'text'
+                                      "
+                                      [id]="'orderCustomEnv_' + field.key"
+                                      [name]="'orderCustomEnv_' + field.key"
+                                      class="form-control"
+                                      [(ngModel)]="orderCustomEnv[field.key]"
+                                      [required]="field.required"
+                                      [placeholder]="field.hasDefault ? orderFieldDefaultPlaceholder : ''"
+                                      [disabled]="(subscriptionsCreating$ | async) === true"
+                                      [attr.aria-label]="field.label"
+                                      autocomplete="off"
+                                    />
+                                    @if (showOrderFieldDescription(field)) {
+                                      <div class="form-text text-body-secondary small mb-1">
+                                        {{ field.description }}
+                                      </div>
+                                    }
+                                  </div>
+                                }
+                              }
+                            } @else if (showIntegratedOrderConfiguration(selectedPlan)) {
+                              <div class="mb-3">
+                                <label for="orderAuthMethod" class="form-label" i18n="@@featureSubscriptions-authMethod"
+                                  >Authentication method</label
+                                >
+                                <select
+                                  id="orderAuthMethod"
+                                  name="authMethod"
+                                  class="form-select"
+                                  [ngModel]="orderRequestedConfig.authenticationMethod"
+                                  (ngModelChange)="onAuthMethodChange($event)"
+                                  [disabled]="(subscriptionsCreating$ | async) === true"
+                                  aria-describedby="orderAuthMethodHelp"
+                                >
+                                  @if (orderRequestedConfig.service === 'controller') {
+                                    <option [ngValue]="'users'" i18n="@@featureSubscriptions-authUsers">Users</option>
+                                  }
+                                  <option [ngValue]="'api-key'" i18n="@@featureSubscriptions-authApiKey">
+                                    API Key
+                                  </option>
+                                  <option [ngValue]="'keycloak'" i18n="@@featureSubscriptions-authKeycloak">
+                                    Keycloak
+                                  </option>
+                                </select>
+                                <span
+                                  id="orderAuthMethodHelp"
+                                  class="form-text text-body-secondary"
+                                  i18n="@@featureSubscriptions-authMethodHelp"
+                                >
+                                  How users authenticate to the agent instance.
+                                </span>
+                              </div>
+                              <div>
+                                @switch (authMethod()) {
+                                  @case ('users') {
+                                    @if (orderRequestedConfig.service === 'controller') {
+                                      <div class="form-check mb-3">
+                                        <input
+                                          type="checkbox"
+                                          class="form-check-input"
+                                          id="orderDisableSignup"
+                                          name="disableSignup"
+                                          [(ngModel)]="orderRequestedConfig.disableSignup"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                          aria-describedby="orderDisableSignupHelp"
+                                        />
+                                        <label
+                                          class="form-check-label"
+                                          for="orderDisableSignup"
+                                          i18n="@@featureSubscriptions-disableSignup"
+                                        >
+                                          Disable signup
+                                        </label>
+                                        <span
+                                          id="orderDisableSignupHelp"
+                                          class="form-text text-body-secondary d-block"
+                                          i18n="@@featureSubscriptions-disableSignupHelp"
+                                        >
+                                          Prevents new user registration on this instance.
+                                        </span>
+                                      </div>
+                                    }
+                                  }
+                                  @case ('api-key') {
+                                    <div class="mb-3">
+                                      <label
+                                        for="orderStaticApiKey"
+                                        class="form-label"
+                                        i18n="@@featureSubscriptions-staticApiKey"
+                                      >
+                                        Static API Key
+                                      </label>
+                                      <input
+                                        type="password"
+                                        id="orderStaticApiKey"
+                                        name="staticApiKey"
+                                        class="form-control"
+                                        [(ngModel)]="orderRequestedConfig.staticApiKey"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                        aria-describedby="orderStaticApiKeyHelp"
+                                        aria-label="Static API Key"
+                                      />
+                                      <span
+                                        id="orderStaticApiKeyHelp"
+                                        class="form-text text-body-secondary"
+                                        i18n="@@featureSubscriptions-staticApiKeyHelp"
+                                      >
+                                        API key for authenticating requests. Required when using api-key authentication.
+                                      </span>
+                                    </div>
+                                  }
+                                  @case ('keycloak') {
+                                    <fieldset class="mb-3">
+                                      <legend class="form-label fs-6" i18n="@@featureSubscriptions-keycloakSection">
+                                        Keycloak
+                                      </legend>
+                                      <div class="mb-2">
+                                        <label for="orderKeycloakServerUrl" class="form-label visually-hidden"
+                                          >Keycloak server URL</label
+                                        >
+                                        <input
+                                          type="url"
+                                          id="orderKeycloakServerUrl"
+                                          name="keycloakServerUrl"
+                                          class="form-control"
+                                          [(ngModel)]="orderRequestedConfig.keycloak.serverUrl"
+                                          placeholder="https://keycloak.example.com"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                          aria-label="Keycloak server URL"
+                                        />
+                                      </div>
+                                      <div class="mb-2">
+                                        <label for="orderKeycloakAuthServerUrl" class="form-label visually-hidden"
+                                          >Keycloak auth server URL</label
+                                        >
+                                        <input
+                                          type="url"
+                                          id="orderKeycloakAuthServerUrl"
+                                          name="keycloakAuthServerUrl"
+                                          class="form-control"
+                                          [(ngModel)]="orderRequestedConfig.keycloak.authServerUrl"
+                                          placeholder="https://keycloak.example.com/auth"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                          aria-label="Keycloak auth server URL"
+                                        />
+                                      </div>
+                                      <div class="row g-2 mb-2">
+                                        <div class="col-md-6">
+                                          <label for="orderKeycloakRealm" class="form-label visually-hidden"
+                                            >Keycloak realm</label
+                                          >
+                                          <input
+                                            type="text"
+                                            id="orderKeycloakRealm"
+                                            name="keycloakRealm"
+                                            class="form-control"
+                                            [(ngModel)]="orderRequestedConfig.keycloak.realm"
+                                            placeholder="realm"
+                                            [disabled]="(subscriptionsCreating$ | async) === true"
+                                            aria-label="Keycloak realm"
+                                          />
+                                        </div>
+                                        <div class="col-md-6">
+                                          <label for="orderKeycloakClientId" class="form-label visually-hidden"
+                                            >Keycloak client ID</label
+                                          >
+                                          <input
+                                            type="text"
+                                            id="orderKeycloakClientId"
+                                            name="keycloakClientId"
+                                            class="form-control"
+                                            [(ngModel)]="orderRequestedConfig.keycloak.clientId"
+                                            placeholder="client-id"
+                                            [disabled]="(subscriptionsCreating$ | async) === true"
+                                            aria-label="Keycloak client ID"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <label for="orderKeycloakClientSecret" class="form-label visually-hidden"
+                                          >Keycloak client secret</label
+                                        >
+                                        <input
+                                          type="password"
+                                          id="orderKeycloakClientSecret"
+                                          name="keycloakClientSecret"
+                                          class="form-control"
+                                          [(ngModel)]="orderRequestedConfig.keycloak.clientSecret"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                          aria-label="Keycloak client secret"
+                                        />
+                                      </div>
+                                    </fieldset>
+                                  }
+                                }
+                              </div>
+                              <fieldset class="mb-0">
+                                <legend class="form-label fs-6" i18n="@@featureSubscriptions-smtpSection">
+                                  SMTP (optional)
+                                </legend>
+                                <div class="row g-2 mb-2">
+                                  <div class="col-md-8">
+                                    <label for="orderSmtpHost" class="form-label visually-hidden">SMTP host</label>
+                                    <input
+                                      type="text"
+                                      id="orderSmtpHost"
+                                      name="smtpHost"
+                                      class="form-control"
+                                      [(ngModel)]="orderRequestedConfig.smtp.host"
+                                      placeholder="mailhog"
+                                      [disabled]="(subscriptionsCreating$ | async) === true"
+                                      aria-label="SMTP host"
+                                    />
+                                  </div>
+                                  <div class="col-md-4">
+                                    <label for="orderSmtpPort" class="form-label visually-hidden">SMTP port</label>
+                                    <input
+                                      type="number"
+                                      id="orderSmtpPort"
+                                      name="smtpPort"
+                                      class="form-control"
+                                      [(ngModel)]="orderRequestedConfig.smtp.port"
+                                      placeholder="1025"
+                                      min="1"
+                                      max="65535"
+                                      [disabled]="(subscriptionsCreating$ | async) === true"
+                                      aria-label="SMTP port"
+                                    />
+                                  </div>
+                                </div>
+                                <div class="row g-2 mb-2">
+                                  <div class="col-md-6">
+                                    <label for="orderSmtpUser" class="form-label visually-hidden">SMTP user</label>
+                                    <input
+                                      type="text"
+                                      id="orderSmtpUser"
+                                      name="smtpUser"
+                                      class="form-control"
+                                      [(ngModel)]="orderRequestedConfig.smtp.user"
+                                      [disabled]="(subscriptionsCreating$ | async) === true"
+                                      aria-label="SMTP user"
+                                    />
+                                  </div>
+                                  <div class="col-md-6">
+                                    <label for="orderSmtpPassword" class="form-label visually-hidden"
+                                      >SMTP password</label
+                                    >
+                                    <input
+                                      type="password"
+                                      id="orderSmtpPassword"
+                                      name="smtpPassword"
+                                      class="form-control"
+                                      [(ngModel)]="orderRequestedConfig.smtp.password"
+                                      [disabled]="(subscriptionsCreating$ | async) === true"
+                                      aria-label="SMTP password"
+                                    />
+                                  </div>
+                                </div>
+                                <div>
+                                  <label for="orderSmtpFrom" class="form-label visually-hidden">From address</label>
+                                  <input
+                                    type="text"
+                                    id="orderSmtpFrom"
+                                    name="smtpFrom"
+                                    class="form-control"
+                                    [(ngModel)]="orderRequestedConfig.smtp.from"
+                                    placeholder="noreply@localhost"
+                                    [disabled]="(subscriptionsCreating$ | async) === true"
+                                    aria-label="From address"
+                                  />
+                                </div>
+                              </fieldset>
+                              @if (orderRequestedConfig.service === 'manager') {
+                                <div class="mt-3 mb-2">
+                                  <label
+                                    for="orderCursorApiKey"
+                                    class="form-label"
+                                    i18n="@@featureSubscriptions-cursorApiKey"
+                                  >
+                                    Cursor API key (optional)
+                                  </label>
+                                  <input
+                                    type="password"
+                                    id="orderCursorApiKey"
+                                    name="cursorApiKey"
+                                    class="form-control"
+                                    [(ngModel)]="orderRequestedConfig.cursorApiKey"
+                                    placeholder="Cursor API key for agent communication"
+                                    [disabled]="(subscriptionsCreating$ | async) === true"
+                                    aria-label="Cursor API key"
+                                    autocomplete="off"
+                                  />
+                                  <span
+                                    class="form-text text-body-secondary"
+                                    i18n="@@featureSubscriptions-cursorApiKeyHelp"
+                                  >
+                                    Used by the manager to communicate with Cursor for agent containers. Leave empty if
+                                    not using Cursor agents.
+                                  </span>
+                                </div>
+                                <fieldset class="mt-3 mb-0">
+                                  <legend class="form-label fs-6" i18n="@@featureSubscriptions-gitSection">
+                                    Git (optional)
+                                  </legend>
+                                  <p
+                                    class="form-text text-body-secondary small mb-2"
+                                    i18n="@@featureSubscriptions-gitHelp"
+                                  >
+                                    Git configuration for the agent manager (repository setup, credentials, commit
+                                    author). Leave clone fields empty if not using a remote repository.
+                                  </p>
+                                  <div class="mb-2">
+                                    <label
+                                      for="orderGitSetupMode"
+                                      class="form-label"
+                                      i18n="@@featureSubscriptions-gitSetupMode"
+                                      >Repository setup</label
+                                    >
+                                    <select
+                                      id="orderGitSetupMode"
+                                      name="gitSetupMode"
+                                      class="form-select"
+                                      [ngModel]="orderRequestedConfig.git.setupMode"
+                                      (ngModelChange)="onGitSetupModeChange($event)"
+                                      [disabled]="(subscriptionsCreating$ | async) === true"
+                                      aria-label="Git repository setup mode"
+                                    >
+                                      <option value="clone" i18n="@@featureSubscriptions-gitSetupModeClone">
+                                        Clone from remote
+                                      </option>
+                                      <option value="empty" i18n="@@featureSubscriptions-gitSetupModeEmpty">
+                                        Empty repository (git init)
+                                      </option>
+                                    </select>
+                                    <span
+                                      class="form-text text-body-secondary"
+                                      i18n="@@featureSubscriptions-gitSetupModeHelp"
+                                    >
+                                      Choose whether agent workspaces start from a cloned remote or a new local Git
+                                      repository.
+                                    </span>
+                                  </div>
+                                  @if (isOrderGitCloneMode()) {
+                                    <div class="mb-2">
+                                      <label for="orderGitRepositoryUrl" class="form-label visually-hidden"
+                                        >Git repository URL</label
+                                      >
+                                      <input
+                                        type="url"
+                                        id="orderGitRepositoryUrl"
+                                        name="gitRepositoryUrl"
+                                        class="form-control"
+                                        [(ngModel)]="orderRequestedConfig.git.repositoryUrl"
+                                        placeholder="https://github.com/org/repo.git or git@github.com:org/repo.git"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                        aria-label="Git repository URL"
+                                      />
+                                    </div>
+                                    <div class="row g-2 mb-2">
+                                      <div class="col-md-6">
+                                        <label for="orderGitUsername" class="form-label visually-hidden"
+                                          >Git username</label
+                                        >
+                                        <input
+                                          type="text"
+                                          id="orderGitUsername"
+                                          name="gitUsername"
+                                          class="form-control"
+                                          [(ngModel)]="orderRequestedConfig.git.username"
+                                          placeholder="Username (HTTPS)"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                          aria-label="Git username"
+                                        />
+                                      </div>
+                                      <div class="col-md-6">
+                                        <label for="orderGitToken" class="form-label visually-hidden">Git token</label>
+                                        <input
+                                          type="password"
+                                          id="orderGitToken"
+                                          name="gitToken"
+                                          class="form-control"
+                                          [(ngModel)]="orderRequestedConfig.git.token"
+                                          placeholder="Token / PAT"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                          aria-label="Git token"
+                                          autocomplete="off"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div class="mb-2">
+                                      <label for="orderGitPassword" class="form-label visually-hidden"
+                                        >Git password</label
+                                      >
+                                      <input
+                                        type="password"
+                                        id="orderGitPassword"
+                                        name="gitPassword"
+                                        class="form-control"
+                                        [(ngModel)]="orderRequestedConfig.git.password"
+                                        placeholder="Password (alternative to token)"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                        aria-label="Git password"
+                                        autocomplete="off"
+                                      />
+                                    </div>
+                                    <div class="mb-2">
+                                      <label for="orderGitPrivateKey" class="form-label visually-hidden"
+                                        >Git SSH private key</label
+                                      >
+                                      <textarea
+                                        id="orderGitPrivateKey"
+                                        name="gitPrivateKey"
+                                        class="form-control font-monospace small"
+                                        rows="4"
+                                        [(ngModel)]="orderRequestedConfig.git.privateKey"
+                                        placeholder="-----BEGIN OPENSSH PRIVATE KEY----- ... (for git@ URLs)"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                        aria-label="Git SSH private key"
+                                      ></textarea>
+                                    </div>
+                                    <div class="row g-2 mb-2">
+                                      <div class="col-md-6">
+                                        <label for="orderGitCommitAuthorName" class="form-label visually-hidden"
+                                          >Commit author name</label
+                                        >
+                                        <input
+                                          type="text"
+                                          id="orderGitCommitAuthorName"
+                                          name="gitCommitAuthorName"
+                                          class="form-control"
+                                          [(ngModel)]="orderRequestedConfig.git.commitAuthorName"
+                                          placeholder="Author name"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                          aria-label="Commit author name"
+                                        />
+                                      </div>
+                                      <div class="col-md-6">
+                                        <label for="orderGitCommitAuthorEmail" class="form-label visually-hidden"
+                                          >Commit author email</label
+                                        >
+                                        <input
+                                          type="email"
+                                          id="orderGitCommitAuthorEmail"
+                                          name="gitCommitAuthorEmail"
+                                          class="form-control"
+                                          [(ngModel)]="orderRequestedConfig.git.commitAuthorEmail"
+                                          placeholder="author@example.com"
+                                          [disabled]="(subscriptionsCreating$ | async) === true"
+                                          aria-label="Commit author email"
+                                        />
+                                      </div>
+                                    </div>
+                                  }
+                                </fieldset>
+                              }
+                              @if (orderRequestedConfig.service === 'controller') {
+                                <fieldset class="mt-3 mb-0">
+                                  <legend class="form-label fs-6" i18n="@@featureSubscriptions-provisioningSection">
+                                    Provisioning (optional)
+                                  </legend>
+                                  <p
+                                    class="form-text text-body-secondary small mb-2"
+                                    i18n="@@featureSubscriptions-provisioningHelp"
+                                  >
+                                    If you want this instance to provision additional servers via Hetzner or
+                                    DigitalOcean, provide the API tokens. Leave empty otherwise.
+                                  </p>
+                                  <div class="row g-2 mb-2">
+                                    <div class="col-md-6">
+                                      <label
+                                        for="orderHetznerApiToken"
+                                        class="form-label"
+                                        i18n="@@featureSubscriptions-hetznerApiToken"
+                                      >
+                                        Hetzner API token
+                                      </label>
+                                      <input
+                                        type="password"
+                                        id="orderHetznerApiToken"
+                                        name="hetznerApiToken"
+                                        class="form-control"
+                                        [(ngModel)]="orderRequestedConfig.hetznerApiToken"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                        aria-label="Hetzner API token"
+                                        autocomplete="off"
+                                      />
+                                    </div>
+                                    <div class="col-md-6">
+                                      <label
+                                        for="orderDigitaloceanApiToken"
+                                        class="form-label"
+                                        i18n="@@featureSubscriptions-digitaloceanApiToken"
+                                      >
+                                        DigitalOcean API token
+                                      </label>
+                                      <input
+                                        type="password"
+                                        id="orderDigitaloceanApiToken"
+                                        name="digitaloceanApiToken"
+                                        class="form-control"
+                                        [(ngModel)]="orderRequestedConfig.digitaloceanApiToken"
+                                        [disabled]="(subscriptionsCreating$ | async) === true"
+                                        aria-label="DigitalOcean API token"
+                                        autocomplete="off"
+                                      />
+                                    </div>
+                                  </div>
+                                </fieldset>
+                              }
+                            }
+                          }
                         </div>
-                        @if (promo.showAfterBenefit) {
-                          <div class="mt-3 p-3 bg-body border rounded">
-                            <div class="text-body-secondary mb-2 fw-medium small">{{ promo.afterBenefit.label }}</div>
+                      </div>
+                    }
+                    @case ('summary') {
+                      @if (selectedPlan; as plan) {
+                        <div class="card bg-body-tertiary border">
+                          <div class="card-body">
+                            <h6 class="mb-3" i18n="@@featureSubscriptions-orderSummaryTitle">Order summary</h6>
+                            <dl class="mb-4 small">
+                              <div class="d-flex justify-content-between gap-3 border-bottom pb-2 mb-2">
+                                <dt class="text-body-secondary" i18n="@@featureSubscriptions-selectPlan">Plan</dt>
+                                <dd class="mb-0 text-end fw-medium">{{ plan.name }}</dd>
+                              </div>
+                              @if (orderServerTypeOptions.length > 0) {
+                                <div class="d-flex justify-content-between gap-3 border-bottom pb-2 mb-2">
+                                  <dt class="text-body-secondary">Server type</dt>
+                                  <dd class="mb-0 text-end">{{ formatOrderServerTypeSummary() }}</dd>
+                                </div>
+                              }
+                              @if (orderGeographyFieldKey && orderProvisioningLocation.trim()) {
+                                <div class="d-flex justify-content-between gap-3 border-bottom pb-2 mb-2">
+                                  <dt class="text-body-secondary">Region / location</dt>
+                                  <dd class="mb-0 text-end">
+                                    {{ formatOrderLocationLabel(orderProvisioningLocation) }}
+                                  </dd>
+                                </div>
+                              }
+                              @if (getSelectedOrderProvisioningOption(); as provisioningOption) {
+                                <div class="d-flex justify-content-between gap-3">
+                                  <dt class="text-body-secondary" i18n="@@featureSubscriptions-provisioningOption">
+                                    Provisioning option
+                                  </dt>
+                                  <dd class="mb-0 text-end">{{ provisioningOption.label }}</dd>
+                                </div>
+                              }
+                            </dl>
+                            <div class="mb-3">
+                              <label
+                                class="form-label"
+                                for="orderPromotionCode"
+                                i18n="@@featurePromotions-orderCodeLabel"
+                                >Promotion code (optional)</label
+                              >
+                              <div class="input-group">
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  id="orderPromotionCode"
+                                  name="orderPromotionCode"
+                                  [ngModel]="orderPromotionCode()"
+                                  (ngModelChange)="orderPromotionCode.set($event); onOrderPromotionChange()"
+                                  [disabled]="orderPromotionSimulationLocked()"
+                                  i18n-placeholder="@@featurePromotions-codePlaceholder"
+                                  placeholder="Promotion code"
+                                />
+                                @if (!orderPromotionSimulationLocked()) {
+                                  <button
+                                    type="button"
+                                    class="btn btn-outline-primary"
+                                    [disabled]="
+                                      !orderPlanId.trim() ||
+                                      !orderPromotionCode().trim() ||
+                                      (orderPromotionValidationLoading$ | async)
+                                    "
+                                    (click)="checkOrderPromotionCode()"
+                                    i18n="@@featurePromotions-checkCode"
+                                  >
+                                    Check code
+                                  </button>
+                                }
+                                @if (hasOrderPromotionCheckResult()) {
+                                  <button
+                                    type="button"
+                                    class="btn btn-outline-secondary"
+                                    (click)="clearOrderPromotionCheck()"
+                                    i18n-title="@@featurePromotions-clearCheck"
+                                    title="Clear check"
+                                    i18n-aria-label="@@featurePromotions-clearCheck"
+                                    aria-label="Clear check"
+                                  >
+                                    <i class="bi bi-trash" aria-hidden="true"></i>
+                                  </button>
+                                }
+                              </div>
+                              @if (orderPromotionValidationPreview(); as preview) {
+                                <div
+                                  class="alert mt-2 mb-0"
+                                  [class.alert-success]="preview.valid"
+                                  [class.alert-danger]="!preview.valid"
+                                  role="status"
+                                  aria-live="polite"
+                                >
+                                  @if (preview.valid) {
+                                    <span i18n="@@featurePromotions-validMessage">This code can be applied.</span>
+                                    <div class="small">{{ preview.advantageSummary }}</div>
+                                    @if (!orderPromotionPricingAdjustment()) {
+                                      <div
+                                        class="small text-muted mt-1"
+                                        i18n="@@featurePromotions-orderPricingPendingSidebar"
+                                      >
+                                        Check the price summary for updated totals.
+                                      </div>
+                                    }
+                                  } @else {
+                                    {{ preview.message ?? 'This code cannot be applied.' }}
+                                  }
+                                </div>
+                              } @else if (orderPromotionValidationError(); as validationError) {
+                                <div class="alert alert-danger mt-2 mb-0" role="status" aria-live="polite">
+                                  {{ validationError }}
+                                </div>
+                              }
+                            </div>
+                            @if (plan.withdrawalPolicy) {
+                              <div class="p-3 bg-body border rounded mb-3">
+                                <h6 class="mb-2" i18n="@@featureSubscriptions-withdrawalPolicyTitle">
+                                  Statutory withdrawal
+                                </h6>
+                                <div class="text-body-secondary small">
+                                  <span i18n="@@featureSubscriptions-withdrawalPeriodDays">Withdrawal period</span>
+                                  <strong class="ms-2"
+                                    >{{ plan.withdrawalPolicy.periodDays }}
+                                    <span i18n="@@featureSubscriptions-days">days</span></strong
+                                  >
+                                </div>
+                                @if (plan.withdrawalPolicy.allowedAfterProvisioning) {
+                                  <p
+                                    class="text-body-secondary small mb-0 mt-2"
+                                    i18n="@@featureSubscriptions-withdrawalAfterProvisioning"
+                                  >
+                                    You may withdraw within the statutory period, even after the service is provisioned.
+                                    Refunds for unused time are calculated on a pro-rata basis.
+                                  </p>
+                                } @else {
+                                  <p
+                                    class="text-body-secondary small mb-0 mt-2"
+                                    i18n="@@featureSubscriptions-withdrawalBeforeProvisioningOnly"
+                                  >
+                                    Statutory withdrawal is only available before the service is provisioned.
+                                  </p>
+                                }
+                              </div>
+                            }
+                            <div class="form-check">
+                              <input
+                                type="checkbox"
+                                class="form-check-input"
+                                id="orderAutoBackorder"
+                                name="autoBackorder"
+                                [(ngModel)]="orderAutoBackorder"
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                              />
+                              <label
+                                class="form-check-label"
+                                for="orderAutoBackorder"
+                                i18n="@@featureSubscriptions-autoBackorder"
+                                >Backorder if unavailable</label
+                              >
+                            </div>
+                            <div class="form-check mt-3">
+                              <input
+                                type="checkbox"
+                                class="form-check-input"
+                                id="orderAcceptLegal"
+                                name="acceptLegal"
+                                [(ngModel)]="orderAcceptLegal"
+                                required
+                                [disabled]="(subscriptionsCreating$ | async) === true"
+                              />
+                              <label class="form-check-label" for="orderAcceptLegal">
+                                <span i18n="@@featureSubscriptions-acceptLegalPrefix">I have read and accept the</span>
+                                <a
+                                  [href]="termsUrl"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  class="ms-1"
+                                  i18n="@@featureSubscriptions-termsLink"
+                                  >Terms and Conditions</a
+                                ><span> &amp; </span
+                                ><a
+                                  [href]="privacyUrl"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  class="ms-1"
+                                  i18n="@@featureSubscriptions-privacyLink"
+                                  >Privacy Policy</a
+                                >.
+                              </label>
+                            </div>
+                            @if ((isCustomerProfileComplete$ | async) !== true) {
+                              <div class="alert alert-warning mb-0 mt-3" role="alert">
+                                <span i18n="@@featureSubscriptions-completeProfileToOrder"
+                                  >Complete your billing profile to place an order.</span
+                                >
+                                <a
+                                  routerLink="/subscriptions"
+                                  [queryParams]="{ profile: 'true' }"
+                                  class="alert-link ms-1"
+                                  i18n="@@featureSubscriptions-completeBillingDetails"
+                                  >Complete billing details</a
+                                >
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+                    }
+                  }
+                </div>
+                <div class="col-lg-4 order-wizard__sidebar">
+                  <div class="order-wizard__sidebar-sticky">
+                    <div class="card bg-body border-2 border-primary">
+                      <div class="card-body">
+                        @if (orderPricingLoading) {
+                          <h6 class="mb-3" i18n="@@featureSubscriptions-orderPriceTitle">Price</h6>
+                          <div class="text-body-secondary small d-flex align-items-center gap-2">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span i18n="@@featureSubscriptions-loadingPrice">Loading price…</span>
+                          </div>
+                        } @else if (orderPricingPreview(); as pricing) {
+                          @if (orderPromotionPricingAdjustment(); as promo) {
+                            <h6 class="mb-3 text-primary">{{ promo.duringBenefit.label }}</h6>
+                            <dl class="mb-0 small">
+                              <div class="d-flex justify-content-between gap-3 border-bottom pb-2 mb-2">
+                                <dt class="text-body-secondary fw-semibold" i18n="@@featurePromotions-orderPlanTotal">
+                                  Plan total (net)
+                                </dt>
+                                <dd class="mb-0 text-nowrap fw-semibold">
+                                  {{ formatCurrencyAmount(pricing.totalPrice) }}
+                                </dd>
+                              </div>
+                              @if (promo.duringBenefit.discountNet > 0) {
+                                <div class="d-flex justify-content-between gap-3 text-success">
+                                  <dt class="text-body-secondary">
+                                    <span i18n="@@featurePromotions-orderDiscountLabel">Promotion</span>
+                                    ({{ promo.promotionLabel }})
+                                  </dt>
+                                  <dd class="mb-2 text-nowrap fw-medium">
+                                    -{{ formatCurrencyAmount(promo.duringBenefit.discountNet) }}
+                                  </dd>
+                                </div>
+                              }
+                              <div class="d-flex justify-content-between gap-3">
+                                <dt class="text-body-secondary" i18n="@@featureInvoices-subtotalNet">Subtotal (net)</dt>
+                                <dd class="mb-2 text-nowrap fw-medium">
+                                  {{ formatCurrencyAmount(promo.duringBenefit.subtotalNet) }}
+                                </dd>
+                              </div>
+                              <div class="d-flex justify-content-between gap-3">
+                                <dt class="text-body-secondary">
+                                  <span i18n="@@featureInvoices-taxTotal">Tax total</span>
+                                  <span> ({{ promo.taxRate | number: '1.0-1' }}%)</span>
+                                </dt>
+                                <dd class="mb-2 text-nowrap fw-medium">
+                                  {{ formatCurrencyAmount(promo.duringBenefit.taxTotal) }}
+                                </dd>
+                              </div>
+                              <div class="d-flex justify-content-between gap-3 border-top pt-2">
+                                <dt class="text-body-secondary fw-semibold" i18n="@@featureInvoices-totalGross">
+                                  Total
+                                </dt>
+                                <dd class="mb-0 text-nowrap fw-semibold">
+                                  {{ formatCurrencyAmount(promo.duringBenefit.totalGross) }}
+                                </dd>
+                              </div>
+                            </dl>
+                          } @else {
+                            <h6 class="mb-3 text-primary" i18n="@@featureSubscriptions-orderPriceTitle">Price</h6>
+                            <dl class="mb-0 small">
+                              <div class="d-flex justify-content-between gap-3">
+                                <dt class="text-body-secondary" i18n="@@featureInvoices-subtotalNet">Subtotal (net)</dt>
+                                <dd class="mb-2 text-nowrap fw-medium">
+                                  {{ formatCurrencyAmount(pricing.totalPrice) }}
+                                </dd>
+                              </div>
+                              <div class="d-flex justify-content-between gap-3">
+                                <dt class="text-body-secondary">
+                                  <span i18n="@@featureInvoices-taxTotal">Tax total</span>
+                                  <span> ({{ pricing.taxRate | number: '1.0-1' }}%)</span>
+                                </dt>
+                                <dd class="mb-2 text-nowrap fw-medium">
+                                  {{ formatCurrencyAmount(pricing.taxTotal) }}
+                                </dd>
+                              </div>
+                              <div class="d-flex justify-content-between gap-3 border-top pt-2">
+                                <dt class="text-body-secondary fw-semibold" i18n="@@featureInvoices-totalGross">
+                                  Total
+                                </dt>
+                                <dd class="mb-0 text-nowrap fw-semibold">
+                                  {{ formatCurrencyAmount(pricing.totalGross) }}
+                                </dd>
+                              </div>
+                            </dl>
+                          }
+                        } @else {
+                          <h6 class="mb-3" i18n="@@featureSubscriptions-orderPriceTitle">Price</h6>
+                          <div class="text-body-secondary small">—</div>
+                        }
+                      </div>
+                    </div>
+                    @if (selectedPlan) {
+                      <div class="card bg-body border">
+                        <div class="card-body">
+                          <h6 class="mb-3" i18n="@@featureSubscriptions-orderTermsTitle">Runtime & terms</h6>
+                          <div class="text-body-secondary small">
+                            <span i18n="@@featureSubscriptions-billingInterval">Runtime</span>
+                            <strong class="ms-2"
+                              >{{ selectedPlan.billingIntervalValue }} {{ selectedPlan.billingIntervalType }}(s)</strong
+                            >
+                          </div>
+                          <div class="text-body-secondary small mt-2">
+                            <span i18n="@@featureSubscriptions-minCommitment">Min. commitment</span>
+                            <strong class="ms-2"
+                              >{{ selectedPlan.minCommitmentDays }}
+                              <span i18n="@@featureSubscriptions-days">days</span></strong
+                            >
+                          </div>
+                          <div class="text-body-secondary small mt-2">
+                            <span i18n="@@featureSubscriptions-noticeDays">Notice period</span>
+                            <strong class="ms-2"
+                              >{{ selectedPlan.noticeDays }}
+                              <span i18n="@@featureSubscriptions-days">days</span></strong
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    }
+                    @if (orderPromotionPricingAdjustment(); as promo) {
+                      @if (promo.showAfterBenefit) {
+                        <div class="card bg-body border">
+                          <div class="card-body">
+                            <h6 class="mb-3">{{ promo.afterBenefit.label }}</h6>
                             <dl class="mb-0 small">
                               <div class="d-flex justify-content-between gap-3">
                                 <dt class="text-body-secondary" i18n="@@featureInvoices-subtotalNet">Subtotal (net)</dt>
@@ -568,818 +1496,67 @@
                               </div>
                             </dl>
                           </div>
-                        }
-                      } @else {
-                        <div class="mt-3 p-3 bg-body border rounded">
-                          <dl class="mb-0 small">
-                            <div class="d-flex justify-content-between gap-3">
-                              <dt class="text-body-secondary" i18n="@@featureInvoices-subtotalNet">Subtotal (net)</dt>
-                              <dd class="mb-2 text-nowrap fw-medium">
-                                {{ formatCurrencyAmount(pricing.totalPrice) }}
-                              </dd>
-                            </div>
-                            <div class="d-flex justify-content-between gap-3">
-                              <dt class="text-body-secondary">
-                                <span i18n="@@featureInvoices-taxTotal">Tax total</span>
-                                <span> ({{ pricing.taxRate | number: '1.0-1' }}%)</span>
-                              </dt>
-                              <dd class="mb-2 text-nowrap fw-medium">
-                                {{ formatCurrencyAmount(pricing.taxTotal) }}
-                              </dd>
-                            </div>
-                            <div class="d-flex justify-content-between gap-3 border-top pt-2">
-                              <dt class="text-body-secondary fw-semibold" i18n="@@featureInvoices-totalGross">Total</dt>
-                              <dd class="mb-0 text-nowrap fw-semibold">
-                                {{ formatCurrencyAmount(pricing.totalGross) }}
-                              </dd>
-                            </div>
-                          </dl>
                         </div>
                       }
-                    } @else {
-                      <div class="mt-3 p-3 bg-body border rounded">
-                        <div class="text-body-secondary small">—</div>
-                      </div>
                     }
-                    <div class="mt-3 p-3 bg-body border rounded">
-                      <div class="text-body-secondary small">
-                        <span i18n="@@featureSubscriptions-billingInterval">Runtime</span>
-                        <strong class="ms-2"
-                          >{{ selectedPlan.billingIntervalValue }} {{ selectedPlan.billingIntervalType }}(s)</strong
-                        >
-                      </div>
-                      <div class="text-body-secondary small mt-2">
-                        <span i18n="@@featureSubscriptions-minCommitment">Min. commitment</span>
-                        <strong class="ms-2"
-                          >{{ selectedPlan.minCommitmentDays }}
-                          <span i18n="@@featureSubscriptions-days">days</span></strong
-                        >
-                      </div>
-                      <div class="text-body-secondary small mt-2">
-                        <span i18n="@@featureSubscriptions-noticeDays">Notice period</span>
-                        <strong class="ms-2"
-                          >{{ selectedPlan.noticeDays }} <span i18n="@@featureSubscriptions-days">days</span></strong
-                        >
-                      </div>
-                    </div>
-                    @if (selectedPlan.withdrawalPolicy) {
-                      <div class="mt-3 p-3 bg-body border rounded">
-                        <h6 class="mb-2" i18n="@@featureSubscriptions-withdrawalPolicyTitle">Statutory withdrawal</h6>
-                        <div class="text-body-secondary small">
-                          <span i18n="@@featureSubscriptions-withdrawalPeriodDays">Withdrawal period</span>
-                          <strong class="ms-2"
-                            >{{ selectedPlan.withdrawalPolicy.periodDays }}
-                            <span i18n="@@featureSubscriptions-days">days</span></strong
-                          >
-                        </div>
-                        @if (selectedPlan.withdrawalPolicy.allowedAfterProvisioning) {
-                          <p
-                            class="text-body-secondary small mb-0 mt-2"
-                            i18n="@@featureSubscriptions-withdrawalAfterProvisioning"
-                          >
-                            You may withdraw within the statutory period, even after the service is provisioned. Refunds
-                            for unused time are calculated on a pro-rata basis.
-                          </p>
-                        } @else {
-                          <p
-                            class="text-body-secondary small mb-0 mt-2"
-                            i18n="@@featureSubscriptions-withdrawalBeforeProvisioningOnly"
-                          >
-                            Statutory withdrawal is only available before the service is provisioned.
-                          </p>
-                        }
-                      </div>
-                    }
-                    <div class="mt-3 p-3 bg-body border rounded">
-                      <h6 class="mb-3" i18n="@@featureSubscriptions-cloudInitConfig">Instance configuration</h6>
-                      @if (orderProvisioningOptionsLoading) {
-                        <div class="d-flex align-items-center gap-2 text-body-secondary small" aria-live="polite">
-                          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                          <span i18n="@@featureSubscriptions-loadingProvisioningOptions"
-                            >Loading provisioning options…</span
-                          >
-                        </div>
-                      } @else if (orderProvisioningOptionsError) {
-                        <div class="alert alert-danger py-2 mb-0 small" role="alert">
-                          <span i18n="@@featureSubscriptions-provisioningOptionsError"
-                            >Could not load provisioning options for this plan. Choose another plan or try again.</span
-                          >
-                        </div>
-                      } @else {
-                        @if (showOrderProvisioningPicker()) {
-                          <div class="mb-3">
-                            <label
-                              for="orderProvisioningOption"
-                              class="form-label"
-                              i18n="@@featureSubscriptions-provisioningOption"
-                              >Provisioning option</label
-                            >
-                            <select
-                              id="orderProvisioningOption"
-                              name="orderProvisioningOption"
-                              class="form-select"
-                              [ngModel]="orderProvisioningOptionKey"
-                              (ngModelChange)="onOrderProvisioningOptionKeyChange($event)"
-                              [disabled]="(subscriptionsCreating$ | async) === true"
-                              required
-                            >
-                              @for (option of orderProvisioningOptions; track option.optionKey) {
-                                <option [ngValue]="option.optionKey">{{ option.label }}</option>
-                              }
-                            </select>
-                            @if (getSelectedOrderProvisioningOption()?.description?.trim(); as optionDescription) {
-                              <div class="form-text text-body-secondary small mt-1">{{ optionDescription }}</div>
-                            }
-                          </div>
-                        }
-                        @if (showCustomOrderConfiguration(selectedPlan)) {
-                          @if (orderCustomOrderFieldsLoading) {
-                            <div class="d-flex align-items-center gap-2 text-body-secondary small" aria-live="polite">
-                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                              <span i18n="@@featureSubscriptions-loadingCustomOrderFields"
-                                >Loading configuration fields…</span
-                              >
-                            </div>
-                          } @else if (orderCustomOrderFieldsError) {
-                            <div class="alert alert-danger py-2 mb-0 small" role="alert">
-                              <span i18n="@@featureSubscriptions-customOrderFieldsError"
-                                >Could not load configuration fields for this option.</span
-                              >
-                            </div>
-                          } @else if (orderCustomOrderFields.length === 0) {
-                            <p
-                              class="text-body-secondary small mb-0"
-                              i18n="@@featureSubscriptions-customConfigNoFields"
-                            >
-                              No additional configuration is required for this plan.
-                            </p>
-                          } @else {
-                            @for (field of orderCustomOrderFields; track field.key) {
-                              <div class="mb-3">
-                                <label [for]="'orderCustomEnv_' + field.key" class="form-label">{{
-                                  field.label
-                                }}</label>
-                                <input
-                                  [type]="
-                                    field.key.toLowerCase().includes('password') ||
-                                    field.key.toLowerCase().includes('secret') ||
-                                    field.key.toLowerCase().includes('token')
-                                      ? 'password'
-                                      : 'text'
-                                  "
-                                  [id]="'orderCustomEnv_' + field.key"
-                                  [name]="'orderCustomEnv_' + field.key"
-                                  class="form-control"
-                                  [(ngModel)]="orderCustomEnv[field.key]"
-                                  [required]="field.required"
-                                  [placeholder]="field.hasDefault ? orderFieldDefaultPlaceholder : ''"
-                                  [disabled]="(subscriptionsCreating$ | async) === true"
-                                  [attr.aria-label]="field.label"
-                                  autocomplete="off"
-                                />
-                                @if (showOrderFieldDescription(field)) {
-                                  <div class="form-text text-body-secondary small mb-1">{{ field.description }}</div>
-                                }
-                              </div>
-                            }
-                          }
-                        } @else if (showIntegratedOrderConfiguration(selectedPlan)) {
-                          <div class="mb-3">
-                            <label for="orderAuthMethod" class="form-label" i18n="@@featureSubscriptions-authMethod"
-                              >Authentication method</label
-                            >
-                            <select
-                              id="orderAuthMethod"
-                              name="authMethod"
-                              class="form-select"
-                              [ngModel]="orderRequestedConfig.authenticationMethod"
-                              (ngModelChange)="onAuthMethodChange($event)"
-                              [disabled]="(subscriptionsCreating$ | async) === true"
-                              aria-describedby="orderAuthMethodHelp"
-                            >
-                              @if (orderRequestedConfig.service === 'controller') {
-                                <option [ngValue]="'users'" i18n="@@featureSubscriptions-authUsers">Users</option>
-                              }
-                              <option [ngValue]="'api-key'" i18n="@@featureSubscriptions-authApiKey">API Key</option>
-                              <option [ngValue]="'keycloak'" i18n="@@featureSubscriptions-authKeycloak">
-                                Keycloak
-                              </option>
-                            </select>
-                            <span
-                              id="orderAuthMethodHelp"
-                              class="form-text text-body-secondary"
-                              i18n="@@featureSubscriptions-authMethodHelp"
-                            >
-                              How users authenticate to the agent instance.
-                            </span>
-                          </div>
-                          <div>
-                            @switch (authMethod()) {
-                              @case ('users') {
-                                @if (orderRequestedConfig.service === 'controller') {
-                                  <div class="form-check mb-3">
-                                    <input
-                                      type="checkbox"
-                                      class="form-check-input"
-                                      id="orderDisableSignup"
-                                      name="disableSignup"
-                                      [(ngModel)]="orderRequestedConfig.disableSignup"
-                                      [disabled]="(subscriptionsCreating$ | async) === true"
-                                      aria-describedby="orderDisableSignupHelp"
-                                    />
-                                    <label
-                                      class="form-check-label"
-                                      for="orderDisableSignup"
-                                      i18n="@@featureSubscriptions-disableSignup"
-                                    >
-                                      Disable signup
-                                    </label>
-                                    <span
-                                      id="orderDisableSignupHelp"
-                                      class="form-text text-body-secondary d-block"
-                                      i18n="@@featureSubscriptions-disableSignupHelp"
-                                    >
-                                      Prevents new user registration on this instance.
-                                    </span>
-                                  </div>
-                                }
-                              }
-                              @case ('api-key') {
-                                <div class="mb-3">
-                                  <label
-                                    for="orderStaticApiKey"
-                                    class="form-label"
-                                    i18n="@@featureSubscriptions-staticApiKey"
-                                  >
-                                    Static API Key
-                                  </label>
-                                  <input
-                                    type="password"
-                                    id="orderStaticApiKey"
-                                    name="staticApiKey"
-                                    class="form-control"
-                                    [(ngModel)]="orderRequestedConfig.staticApiKey"
-                                    [disabled]="(subscriptionsCreating$ | async) === true"
-                                    aria-describedby="orderStaticApiKeyHelp"
-                                    aria-label="Static API Key"
-                                  />
-                                  <span
-                                    id="orderStaticApiKeyHelp"
-                                    class="form-text text-body-secondary"
-                                    i18n="@@featureSubscriptions-staticApiKeyHelp"
-                                  >
-                                    API key for authenticating requests. Required when using api-key authentication.
-                                  </span>
-                                </div>
-                              }
-                              @case ('keycloak') {
-                                <fieldset class="mb-3">
-                                  <legend class="form-label fs-6" i18n="@@featureSubscriptions-keycloakSection">
-                                    Keycloak
-                                  </legend>
-                                  <div class="mb-2">
-                                    <label for="orderKeycloakServerUrl" class="form-label visually-hidden"
-                                      >Keycloak server URL</label
-                                    >
-                                    <input
-                                      type="url"
-                                      id="orderKeycloakServerUrl"
-                                      name="keycloakServerUrl"
-                                      class="form-control"
-                                      [(ngModel)]="orderRequestedConfig.keycloak.serverUrl"
-                                      placeholder="https://keycloak.example.com"
-                                      [disabled]="(subscriptionsCreating$ | async) === true"
-                                      aria-label="Keycloak server URL"
-                                    />
-                                  </div>
-                                  <div class="mb-2">
-                                    <label for="orderKeycloakAuthServerUrl" class="form-label visually-hidden"
-                                      >Keycloak auth server URL</label
-                                    >
-                                    <input
-                                      type="url"
-                                      id="orderKeycloakAuthServerUrl"
-                                      name="keycloakAuthServerUrl"
-                                      class="form-control"
-                                      [(ngModel)]="orderRequestedConfig.keycloak.authServerUrl"
-                                      placeholder="https://keycloak.example.com/auth"
-                                      [disabled]="(subscriptionsCreating$ | async) === true"
-                                      aria-label="Keycloak auth server URL"
-                                    />
-                                  </div>
-                                  <div class="row g-2 mb-2">
-                                    <div class="col-md-6">
-                                      <label for="orderKeycloakRealm" class="form-label visually-hidden"
-                                        >Keycloak realm</label
-                                      >
-                                      <input
-                                        type="text"
-                                        id="orderKeycloakRealm"
-                                        name="keycloakRealm"
-                                        class="form-control"
-                                        [(ngModel)]="orderRequestedConfig.keycloak.realm"
-                                        placeholder="realm"
-                                        [disabled]="(subscriptionsCreating$ | async) === true"
-                                        aria-label="Keycloak realm"
-                                      />
-                                    </div>
-                                    <div class="col-md-6">
-                                      <label for="orderKeycloakClientId" class="form-label visually-hidden"
-                                        >Keycloak client ID</label
-                                      >
-                                      <input
-                                        type="text"
-                                        id="orderKeycloakClientId"
-                                        name="keycloakClientId"
-                                        class="form-control"
-                                        [(ngModel)]="orderRequestedConfig.keycloak.clientId"
-                                        placeholder="client-id"
-                                        [disabled]="(subscriptionsCreating$ | async) === true"
-                                        aria-label="Keycloak client ID"
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <label for="orderKeycloakClientSecret" class="form-label visually-hidden"
-                                      >Keycloak client secret</label
-                                    >
-                                    <input
-                                      type="password"
-                                      id="orderKeycloakClientSecret"
-                                      name="keycloakClientSecret"
-                                      class="form-control"
-                                      [(ngModel)]="orderRequestedConfig.keycloak.clientSecret"
-                                      [disabled]="(subscriptionsCreating$ | async) === true"
-                                      aria-label="Keycloak client secret"
-                                    />
-                                  </div>
-                                </fieldset>
-                              }
-                            }
-                          </div>
-                          <fieldset class="mb-0">
-                            <legend class="form-label fs-6" i18n="@@featureSubscriptions-smtpSection">
-                              SMTP (optional)
-                            </legend>
-                            <div class="row g-2 mb-2">
-                              <div class="col-md-8">
-                                <label for="orderSmtpHost" class="form-label visually-hidden">SMTP host</label>
-                                <input
-                                  type="text"
-                                  id="orderSmtpHost"
-                                  name="smtpHost"
-                                  class="form-control"
-                                  [(ngModel)]="orderRequestedConfig.smtp.host"
-                                  placeholder="mailhog"
-                                  [disabled]="(subscriptionsCreating$ | async) === true"
-                                  aria-label="SMTP host"
-                                />
-                              </div>
-                              <div class="col-md-4">
-                                <label for="orderSmtpPort" class="form-label visually-hidden">SMTP port</label>
-                                <input
-                                  type="number"
-                                  id="orderSmtpPort"
-                                  name="smtpPort"
-                                  class="form-control"
-                                  [(ngModel)]="orderRequestedConfig.smtp.port"
-                                  placeholder="1025"
-                                  min="1"
-                                  max="65535"
-                                  [disabled]="(subscriptionsCreating$ | async) === true"
-                                  aria-label="SMTP port"
-                                />
-                              </div>
-                            </div>
-                            <div class="row g-2 mb-2">
-                              <div class="col-md-6">
-                                <label for="orderSmtpUser" class="form-label visually-hidden">SMTP user</label>
-                                <input
-                                  type="text"
-                                  id="orderSmtpUser"
-                                  name="smtpUser"
-                                  class="form-control"
-                                  [(ngModel)]="orderRequestedConfig.smtp.user"
-                                  [disabled]="(subscriptionsCreating$ | async) === true"
-                                  aria-label="SMTP user"
-                                />
-                              </div>
-                              <div class="col-md-6">
-                                <label for="orderSmtpPassword" class="form-label visually-hidden">SMTP password</label>
-                                <input
-                                  type="password"
-                                  id="orderSmtpPassword"
-                                  name="smtpPassword"
-                                  class="form-control"
-                                  [(ngModel)]="orderRequestedConfig.smtp.password"
-                                  [disabled]="(subscriptionsCreating$ | async) === true"
-                                  aria-label="SMTP password"
-                                />
-                              </div>
-                            </div>
-                            <div>
-                              <label for="orderSmtpFrom" class="form-label visually-hidden">From address</label>
-                              <input
-                                type="text"
-                                id="orderSmtpFrom"
-                                name="smtpFrom"
-                                class="form-control"
-                                [(ngModel)]="orderRequestedConfig.smtp.from"
-                                placeholder="noreply@localhost"
-                                [disabled]="(subscriptionsCreating$ | async) === true"
-                                aria-label="From address"
-                              />
-                            </div>
-                          </fieldset>
-                          @if (orderRequestedConfig.service === 'manager') {
-                            <div class="mt-3 mb-2">
-                              <label
-                                for="orderCursorApiKey"
-                                class="form-label"
-                                i18n="@@featureSubscriptions-cursorApiKey"
-                              >
-                                Cursor API key (optional)
-                              </label>
-                              <input
-                                type="password"
-                                id="orderCursorApiKey"
-                                name="cursorApiKey"
-                                class="form-control"
-                                [(ngModel)]="orderRequestedConfig.cursorApiKey"
-                                placeholder="Cursor API key for agent communication"
-                                [disabled]="(subscriptionsCreating$ | async) === true"
-                                aria-label="Cursor API key"
-                                autocomplete="off"
-                              />
-                              <span
-                                class="form-text text-body-secondary"
-                                i18n="@@featureSubscriptions-cursorApiKeyHelp"
-                              >
-                                Used by the manager to communicate with Cursor for agent containers. Leave empty if not
-                                using Cursor agents.
-                              </span>
-                            </div>
-                            <fieldset class="mt-3 mb-0">
-                              <legend class="form-label fs-6" i18n="@@featureSubscriptions-gitSection">
-                                Git (optional)
-                              </legend>
-                              <p class="form-text text-body-secondary small mb-2" i18n="@@featureSubscriptions-gitHelp">
-                                Git configuration for the agent manager (repository setup, credentials, commit author).
-                                Leave clone fields empty if not using a remote repository.
-                              </p>
-                              <div class="mb-2">
-                                <label
-                                  for="orderGitSetupMode"
-                                  class="form-label"
-                                  i18n="@@featureSubscriptions-gitSetupMode"
-                                  >Repository setup</label
-                                >
-                                <select
-                                  id="orderGitSetupMode"
-                                  name="gitSetupMode"
-                                  class="form-select"
-                                  [ngModel]="orderRequestedConfig.git.setupMode"
-                                  (ngModelChange)="onGitSetupModeChange($event)"
-                                  [disabled]="(subscriptionsCreating$ | async) === true"
-                                  aria-label="Git repository setup mode"
-                                >
-                                  <option value="clone" i18n="@@featureSubscriptions-gitSetupModeClone">
-                                    Clone from remote
-                                  </option>
-                                  <option value="empty" i18n="@@featureSubscriptions-gitSetupModeEmpty">
-                                    Empty repository (git init)
-                                  </option>
-                                </select>
-                                <span
-                                  class="form-text text-body-secondary"
-                                  i18n="@@featureSubscriptions-gitSetupModeHelp"
-                                >
-                                  Choose whether agent workspaces start from a cloned remote or a new local Git
-                                  repository.
-                                </span>
-                              </div>
-                              @if (isOrderGitCloneMode()) {
-                                <div class="mb-2">
-                                  <label for="orderGitRepositoryUrl" class="form-label visually-hidden"
-                                    >Git repository URL</label
-                                  >
-                                  <input
-                                    type="url"
-                                    id="orderGitRepositoryUrl"
-                                    name="gitRepositoryUrl"
-                                    class="form-control"
-                                    [(ngModel)]="orderRequestedConfig.git.repositoryUrl"
-                                    placeholder="https://github.com/org/repo.git or git@github.com:org/repo.git"
-                                    [disabled]="(subscriptionsCreating$ | async) === true"
-                                    aria-label="Git repository URL"
-                                  />
-                                </div>
-                                <div class="row g-2 mb-2">
-                                  <div class="col-md-6">
-                                    <label for="orderGitUsername" class="form-label visually-hidden"
-                                      >Git username</label
-                                    >
-                                    <input
-                                      type="text"
-                                      id="orderGitUsername"
-                                      name="gitUsername"
-                                      class="form-control"
-                                      [(ngModel)]="orderRequestedConfig.git.username"
-                                      placeholder="Username (HTTPS)"
-                                      [disabled]="(subscriptionsCreating$ | async) === true"
-                                      aria-label="Git username"
-                                    />
-                                  </div>
-                                  <div class="col-md-6">
-                                    <label for="orderGitToken" class="form-label visually-hidden">Git token</label>
-                                    <input
-                                      type="password"
-                                      id="orderGitToken"
-                                      name="gitToken"
-                                      class="form-control"
-                                      [(ngModel)]="orderRequestedConfig.git.token"
-                                      placeholder="Token / PAT"
-                                      [disabled]="(subscriptionsCreating$ | async) === true"
-                                      aria-label="Git token"
-                                      autocomplete="off"
-                                    />
-                                  </div>
-                                </div>
-                                <div class="mb-2">
-                                  <label for="orderGitPassword" class="form-label visually-hidden">Git password</label>
-                                  <input
-                                    type="password"
-                                    id="orderGitPassword"
-                                    name="gitPassword"
-                                    class="form-control"
-                                    [(ngModel)]="orderRequestedConfig.git.password"
-                                    placeholder="Password (alternative to token)"
-                                    [disabled]="(subscriptionsCreating$ | async) === true"
-                                    aria-label="Git password"
-                                    autocomplete="off"
-                                  />
-                                </div>
-                                <div class="mb-2">
-                                  <label for="orderGitPrivateKey" class="form-label visually-hidden"
-                                    >Git SSH private key</label
-                                  >
-                                  <textarea
-                                    id="orderGitPrivateKey"
-                                    name="gitPrivateKey"
-                                    class="form-control font-monospace small"
-                                    rows="4"
-                                    [(ngModel)]="orderRequestedConfig.git.privateKey"
-                                    placeholder="-----BEGIN OPENSSH PRIVATE KEY----- ... (for git@ URLs)"
-                                    [disabled]="(subscriptionsCreating$ | async) === true"
-                                    aria-label="Git SSH private key"
-                                  ></textarea>
-                                </div>
-                                <div class="row g-2 mb-2">
-                                  <div class="col-md-6">
-                                    <label for="orderGitCommitAuthorName" class="form-label visually-hidden"
-                                      >Commit author name</label
-                                    >
-                                    <input
-                                      type="text"
-                                      id="orderGitCommitAuthorName"
-                                      name="gitCommitAuthorName"
-                                      class="form-control"
-                                      [(ngModel)]="orderRequestedConfig.git.commitAuthorName"
-                                      placeholder="Author name"
-                                      [disabled]="(subscriptionsCreating$ | async) === true"
-                                      aria-label="Commit author name"
-                                    />
-                                  </div>
-                                  <div class="col-md-6">
-                                    <label for="orderGitCommitAuthorEmail" class="form-label visually-hidden"
-                                      >Commit author email</label
-                                    >
-                                    <input
-                                      type="email"
-                                      id="orderGitCommitAuthorEmail"
-                                      name="gitCommitAuthorEmail"
-                                      class="form-control"
-                                      [(ngModel)]="orderRequestedConfig.git.commitAuthorEmail"
-                                      placeholder="author@example.com"
-                                      [disabled]="(subscriptionsCreating$ | async) === true"
-                                      aria-label="Commit author email"
-                                    />
-                                  </div>
-                                </div>
-                              }
-                            </fieldset>
-                          }
-                          @if (orderRequestedConfig.service === 'controller') {
-                            <fieldset class="mt-3 mb-0">
-                              <legend class="form-label fs-6" i18n="@@featureSubscriptions-provisioningSection">
-                                Provisioning (optional)
-                              </legend>
-                              <p
-                                class="form-text text-body-secondary small mb-2"
-                                i18n="@@featureSubscriptions-provisioningHelp"
-                              >
-                                If you want this instance to provision additional servers via Hetzner or DigitalOcean,
-                                provide the API tokens. Leave empty otherwise.
-                              </p>
-                              <div class="row g-2 mb-2">
-                                <div class="col-md-6">
-                                  <label
-                                    for="orderHetznerApiToken"
-                                    class="form-label"
-                                    i18n="@@featureSubscriptions-hetznerApiToken"
-                                  >
-                                    Hetzner API token
-                                  </label>
-                                  <input
-                                    type="password"
-                                    id="orderHetznerApiToken"
-                                    name="hetznerApiToken"
-                                    class="form-control"
-                                    [(ngModel)]="orderRequestedConfig.hetznerApiToken"
-                                    [disabled]="(subscriptionsCreating$ | async) === true"
-                                    aria-label="Hetzner API token"
-                                    autocomplete="off"
-                                  />
-                                </div>
-                                <div class="col-md-6">
-                                  <label
-                                    for="orderDigitaloceanApiToken"
-                                    class="form-label"
-                                    i18n="@@featureSubscriptions-digitaloceanApiToken"
-                                  >
-                                    DigitalOcean API token
-                                  </label>
-                                  <input
-                                    type="password"
-                                    id="orderDigitaloceanApiToken"
-                                    name="digitaloceanApiToken"
-                                    class="form-control"
-                                    [(ngModel)]="orderRequestedConfig.digitaloceanApiToken"
-                                    [disabled]="(subscriptionsCreating$ | async) === true"
-                                    aria-label="DigitalOcean API token"
-                                    autocomplete="off"
-                                  />
-                                </div>
-                              </div>
-                            </fieldset>
-                          }
-                        }
-                      }
-                    </div>
-                  }
-                }
+                  </div>
+                </div>
               </div>
-            </div>
+            }
           </div>
-          <div class="mb-3">
-            <label class="form-label" for="orderPromotionCode" i18n="@@featurePromotions-orderCodeLabel"
-              >Promotion code (optional)</label
-            >
-            <div class="input-group">
-              <input
-                type="text"
-                class="form-control"
-                id="orderPromotionCode"
-                name="orderPromotionCode"
-                [ngModel]="orderPromotionCode()"
-                (ngModelChange)="orderPromotionCode.set($event); onOrderPromotionChange()"
-                [disabled]="orderPromotionSimulationLocked()"
-                i18n-placeholder="@@featurePromotions-codePlaceholder"
-                placeholder="Promotion code"
-              />
-              @if (!orderPromotionSimulationLocked()) {
-                <button
-                  type="button"
-                  class="btn btn-outline-primary"
-                  [disabled]="
-                    !orderPlanId.trim() || !orderPromotionCode().trim() || (orderPromotionValidationLoading$ | async)
-                  "
-                  (click)="checkOrderPromotionCode()"
-                  i18n="@@featurePromotions-checkCode"
-                >
-                  Check code
-                </button>
-              }
-              @if (hasOrderPromotionCheckResult()) {
+          <div class="modal-footer d-flex justify-content-between">
+            <div>
+              @if (showOrderWizardBackButton()) {
                 <button
                   type="button"
                   class="btn btn-outline-secondary"
-                  (click)="clearOrderPromotionCheck()"
-                  i18n-title="@@featurePromotions-clearCheck"
-                  title="Clear check"
-                  i18n-aria-label="@@featurePromotions-clearCheck"
-                  aria-label="Clear check"
+                  (click)="goOrderWizardBack()"
+                  [disabled]="subscriptionsCreating()"
+                  i18n="@@featureSubscriptions-orderStepBack"
                 >
-                  <i class="bi bi-trash" aria-hidden="true"></i>
+                  Back
                 </button>
               }
             </div>
-            @if (orderPromotionValidationPreview(); as preview) {
-              <div
-                class="alert mt-2 mb-0"
-                [class.alert-success]="preview.valid"
-                [class.alert-danger]="!preview.valid"
-                role="status"
-                aria-live="polite"
-              >
-                @if (preview.valid) {
-                  <span i18n="@@featurePromotions-validMessage">This code can be applied.</span>
-                  <div class="small">{{ preview.advantageSummary }}</div>
-                  @if (!orderPromotionPricingAdjustment()) {
-                    <div class="small text-muted mt-1" i18n="@@featurePromotions-orderPricingPending">
-                      Check the price summary above after loading completes.
-                    </div>
+            <div class="d-flex gap-2">
+              @if (showOrderWizardNextButton()) {
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  (click)="goOrderWizardNext()"
+                  [disabled]="!canAdvanceOrderWizardStep() || subscriptionsCreating()"
+                  i18n="@@featureSubscriptions-orderStepNext"
+                >
+                  Next
+                </button>
+              }
+              @if (showOrderWizardSubmitButton()) {
+                <button
+                  type="submit"
+                  class="btn btn-primary d-inline-flex align-items-center gap-2"
+                  [disabled]="
+                    !orderPlanId.trim() ||
+                    !orderAcceptLegal ||
+                    !isOrderProvisioningReady() ||
+                    orderForm.invalid ||
+                    subscriptionsCreating() ||
+                    (isCustomerProfileComplete$ | async) !== true ||
+                    (orderPromotionCode().trim() && !orderPromotionCanProceed())
+                  "
+                >
+                  @if (subscriptionsCreating()) {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span class="visually-hidden" i18n="@@featureSubscriptions-orderInProgress"
+                      >Provisioning in progress, please wait</span
+                    >
                   }
-                } @else {
-                  {{ preview.message ?? 'This code cannot be applied.' }}
-                }
-              </div>
-            } @else if (orderPromotionValidationError(); as validationError) {
-              <div class="alert alert-danger mt-2 mb-0" role="status" aria-live="polite">{{ validationError }}</div>
-            }
-          </div>
-          <div class="form-check">
-            <input
-              type="checkbox"
-              class="form-check-input"
-              id="orderAutoBackorder"
-              name="autoBackorder"
-              [(ngModel)]="orderAutoBackorder"
-              [disabled]="(subscriptionsCreating$ | async) === true"
-            />
-            <label class="form-check-label" for="orderAutoBackorder" i18n="@@featureSubscriptions-autoBackorder"
-              >Backorder if unavailable</label
-            >
-          </div>
-          <div class="form-check mt-3">
-            <input
-              type="checkbox"
-              class="form-check-input"
-              id="orderAcceptLegal"
-              name="acceptLegal"
-              [(ngModel)]="orderAcceptLegal"
-              required
-              [disabled]="(subscriptionsCreating$ | async) === true"
-            />
-            <label class="form-check-label" for="orderAcceptLegal">
-              <span i18n="@@featureSubscriptions-acceptLegalPrefix">I have read and accept the</span>
-              <a
-                [href]="termsUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="ms-1"
-                i18n="@@featureSubscriptions-termsLink"
-                >Terms and Conditions</a
-              ><span> &amp; </span
-              ><a
-                [href]="privacyUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="ms-1"
-                i18n="@@featureSubscriptions-privacyLink"
-                >Privacy Policy</a
-              >.
-            </label>
-          </div>
-          @if ((isCustomerProfileComplete$ | async) !== true) {
-            <div class="alert alert-warning mb-0 mt-3" role="alert">
-              <span i18n="@@featureSubscriptions-completeProfileToOrder"
-                >Complete your billing profile to place an order.</span
-              >
-              <a
-                routerLink="/subscriptions"
-                [queryParams]="{ profile: 'true' }"
-                class="alert-link ms-1"
-                i18n="@@featureSubscriptions-completeBillingDetails"
-                >Complete billing details</a
-              >
+                  <span i18n="@@featureSubscriptions-submitOrder">Order</span>
+                </button>
+              }
             </div>
-          }
-        </div>
-        <div class="modal-footer">
-          <button
-            type="submit"
-            class="btn btn-primary d-inline-flex align-items-center gap-2"
-            [disabled]="
-              !orderPlanId.trim() ||
-              !orderAcceptLegal ||
-              !isOrderProvisioningReady() ||
-              orderForm.invalid ||
-              subscriptionsCreating() ||
-              (isCustomerProfileComplete$ | async) !== true ||
-              (orderPromotionCode().trim() && !orderPromotionCanProceed())
-            "
-          >
-            @if (subscriptionsCreating()) {
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              <span class="visually-hidden" i18n="@@featureSubscriptions-orderInProgress"
-                >Provisioning in progress, please wait</span
-              >
-            }
-            <span i18n="@@featureSubscriptions-submitOrder">Order</span>
-          </button>
-        </div>
-      </form>
+          </div>
+        </form>
+      }
     </div>
   </div>
 </div>
