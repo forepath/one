@@ -21,15 +21,20 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 
+import { CancelSubscriptionDto } from '../dto/cancel-subscription.dto';
+import { ResumeSubscriptionDto } from '../dto/resume-subscription.dto';
+import { WithdrawSubscriptionDto } from '../dto/withdraw-subscription.dto';
 import type {
   AdminBillNowDto,
   AdminBillNowResponseDto,
   AdminBillingSummaryResponseDto,
+  AdminSubscriptionListItemDto,
   BillingStatisticsByProductDto,
   BillingStatisticsSummaryDto,
   MarkInvoicePaymentStatusDto,
   PaginatedAdminInvoicesResponseDto,
   PaginatedBillingAuditLogsResponseDto,
+  PaginatedAdminSubscriptionsResponseDto,
 } from '../dto/admin-billing.dto';
 import type { BillingCapabilitiesResponseDto } from '../dto/admin-datev-export.dto';
 import type { AdminInvoiceListItemDto } from '../dto/admin-billing.dto';
@@ -103,6 +108,45 @@ export class AdminBillingController {
     const rows = await this.billingAdminService.listUserSubscriptions(userId, limit ?? 100, offset ?? 0);
 
     return rows.map((row) => this.mapSubscriptionToResponse(row));
+  }
+
+  @Get('subscriptions')
+  async listSubscriptions(
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+    @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
+    @Query('search') search?: string,
+    @Query('userId') userId?: string,
+  ): Promise<PaginatedAdminSubscriptionsResponseDto> {
+    return await this.billingAdminService.listSubscriptionsForAdmin({
+      limit: limit ?? 10,
+      offset: offset ?? 0,
+      search,
+      userId,
+    });
+  }
+
+  @Post('subscriptions/:id/cancel')
+  async cancelSubscription(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() _dto: CancelSubscriptionDto,
+  ): Promise<AdminSubscriptionListItemDto> {
+    return await this.billingAdminService.cancelSubscriptionForAdmin(id);
+  }
+
+  @Post('subscriptions/:id/withdraw')
+  async withdrawSubscription(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() _dto: WithdrawSubscriptionDto,
+  ): Promise<AdminSubscriptionListItemDto> {
+    return await this.billingAdminService.withdrawSubscriptionForAdmin(id);
+  }
+
+  @Post('subscriptions/:id/resume')
+  async resumeSubscription(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() _dto: ResumeSubscriptionDto,
+  ): Promise<AdminSubscriptionListItemDto> {
+    return await this.billingAdminService.resumeSubscriptionForAdmin(id);
   }
 
   @Get('invoices')

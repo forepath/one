@@ -6,7 +6,14 @@ import { KEYCLOAK_ROLES_KEY, USERS_ROLES_KEY, UserRole } from '@forepath/identit
 import { AdminBillingController } from './admin-billing.controller';
 
 describe('AdminBillingController', () => {
-  const billingAdminService = { getGlobalSummary: jest.fn(), listUserSubscriptions: jest.fn() };
+  const billingAdminService = {
+    getGlobalSummary: jest.fn(),
+    listUserSubscriptions: jest.fn(),
+    listSubscriptionsForAdmin: jest.fn(),
+    cancelSubscriptionForAdmin: jest.fn(),
+    withdrawSubscriptionForAdmin: jest.fn(),
+    resumeSubscriptionForAdmin: jest.fn(),
+  };
   const adminBillNowService = { queueBillNow: jest.fn() };
   const invoiceAdminService = {
     listInvoices: jest.fn(),
@@ -207,6 +214,52 @@ describe('AdminBillingController', () => {
     expect(result).toHaveLength(1);
     expect(result[0].number).toBe('SUB-001');
     expect(billingAdminService.listUserSubscriptions).toHaveBeenCalledWith(userId, 50, 10);
+  });
+
+  it('listSubscriptions delegates to billing admin service', async () => {
+    billingAdminService.listSubscriptionsForAdmin.mockResolvedValue({
+      items: [{ id: 'sub-1', number: 'SUB-001', userEmail: 'a@b.c' }],
+      total: 1,
+      limit: 10,
+      offset: 0,
+    });
+
+    const result = await controller.listSubscriptions(10, 0, 'promo', 'user-1');
+
+    expect(billingAdminService.listSubscriptionsForAdmin).toHaveBeenCalledWith({
+      limit: 10,
+      offset: 0,
+      search: 'promo',
+      userId: 'user-1',
+    });
+    expect(result.items).toHaveLength(1);
+  });
+
+  it('cancelSubscription delegates to billing admin service', async () => {
+    billingAdminService.cancelSubscriptionForAdmin.mockResolvedValue({ id: 'sub-1', status: 'pending_cancel' });
+
+    const result = await controller.cancelSubscription('sub-1', {});
+
+    expect(billingAdminService.cancelSubscriptionForAdmin).toHaveBeenCalledWith('sub-1');
+    expect(result.status).toBe('pending_cancel');
+  });
+
+  it('withdrawSubscription delegates to billing admin service', async () => {
+    billingAdminService.withdrawSubscriptionForAdmin.mockResolvedValue({ id: 'sub-1', status: 'pending_withdrawal' });
+
+    const result = await controller.withdrawSubscription('sub-1', {});
+
+    expect(billingAdminService.withdrawSubscriptionForAdmin).toHaveBeenCalledWith('sub-1');
+    expect(result.status).toBe('pending_withdrawal');
+  });
+
+  it('resumeSubscription delegates to billing admin service', async () => {
+    billingAdminService.resumeSubscriptionForAdmin.mockResolvedValue({ id: 'sub-1', status: 'active' });
+
+    const result = await controller.resumeSubscription('sub-1', {});
+
+    expect(billingAdminService.resumeSubscriptionForAdmin).toHaveBeenCalledWith('sub-1');
+    expect(result.status).toBe('active');
   });
 
   it('getInvoiceDetail delegates to manual invoice service', async () => {

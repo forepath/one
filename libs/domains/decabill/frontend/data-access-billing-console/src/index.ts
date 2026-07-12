@@ -121,6 +121,13 @@ export * from './lib/state/admin-customer-profiles/admin-customer-profiles.facad
 export * from './lib/state/admin-customer-profiles/admin-customer-profiles.reducer';
 export * from './lib/state/admin-customer-profiles/admin-customer-profiles.selectors';
 
+// Admin Subscriptions State
+export * from './lib/state/admin-subscriptions/admin-subscriptions.actions';
+export * from './lib/state/admin-subscriptions/admin-subscriptions.effects';
+export * from './lib/state/admin-subscriptions/admin-subscriptions.facade';
+export * from './lib/state/admin-subscriptions/admin-subscriptions.reducer';
+export * from './lib/state/admin-subscriptions/admin-subscriptions.selectors';
+
 // Promotions State
 export * from './lib/state/promotions/promotions.actions';
 export * from './lib/state/promotions/promotions.effects';
