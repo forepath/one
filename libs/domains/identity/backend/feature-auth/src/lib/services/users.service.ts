@@ -137,6 +137,10 @@ export class UsersService {
 
     const updated = await this.usersRepository.update(id, updateData);
 
+    if (dto.password) {
+      await this.usersRepository.incrementTokenVersion(id);
+    }
+
     this.statisticsService?.recordEntityUpdated('user', id, { role: updated.role }, undefined).catch(() => {
       /* fire and forget */
     });

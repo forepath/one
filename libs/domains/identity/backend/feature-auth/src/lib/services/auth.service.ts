@@ -1,12 +1,21 @@
+import { randomUUID } from 'node:crypto';
+
 import { UserEntity, UserRole, createConfirmationCode, validateConfirmationCode } from '@forepath/identity/backend';
 import { EmailService } from '@forepath/shared/backend';
 import { BadRequestException, Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
+import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
 
 import { UsersService } from './users.service';
+
+export interface LogoutOptions {
+  jti?: string;
+  tokenExpiresAt?: Date;
+  invalidateAllSessions?: boolean;
+}
 
 const JWT_EXPIRES_IN = '7d';
 const PASSWORD_RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
@@ -14,6 +23,11 @@ const PASSWORD_RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 export interface LoginResponse {
   access_token: string;
   user: { id: string; email: string; role: UserRole };
+}
+
+export interface ChangePasswordResponse {
+  message: string;
+  access_token: string;
 }
 
 export interface RegisterResponse {
@@ -25,6 +39,7 @@ export interface RegisterResponse {
 export class AuthService {
   constructor(
     private readonly usersRepository: UsersRepository,
+    private readonly revokedUserTokensRepository: RevokedUserTokensRepository,
     private readonly usersService: UsersService,
     private readonly emailService: EmailService,
     private readonly jwtService: JwtService,
@@ -164,6 +179,7 @@ export class AuthService {
       passwordResetToken: undefined,
       passwordResetTokenExpiresAt: undefined,
     });
+    await this.invalidateAllSessions(user.id);
 
     return { message: 'Password reset successfully. You can now log in with your new password.' };
   }
@@ -173,7 +189,7 @@ export class AuthService {
     currentPassword: string,
     newPassword: string,
     newPasswordConfirmation: string,
-  ): Promise<{ message: string }> {
+  ): Promise<ChangePasswordResponse> {
     if (newPassword !== newPasswordConfirmation) {
       throw new BadRequestException('New password and confirmation do not match');
     }
@@ -193,8 +209,30 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(newPassword, 12);
 
     await this.usersRepository.update(userId, { passwordHash });
+    await this.invalidateAllSessions(userId);
 
-    return { message: 'Password changed successfully.' };
+    const updatedUser = await this.usersRepository.findByIdOrThrow(userId);
+
+    return {
+      message: 'Password changed successfully.',
+      access_token: this.generateToken(updatedUser),
+    };
+  }
+
+  async logout(userId: string, options: LogoutOptions = {}): Promise<void> {
+    if (options.invalidateAllSessions) {
+      await this.invalidateAllSessions(userId);
+
+      return;
+    }
+
+    if (options.jti && options.tokenExpiresAt) {
+      await this.revokedUserTokensRepository.revoke(options.jti, userId, options.tokenExpiresAt);
+    }
+  }
+
+  async invalidateAllSessions(userId: string): Promise<number> {
+    return this.usersRepository.incrementTokenVersion(userId);
   }
 
   private generateToken(user: UserEntity): string {
@@ -203,8 +241,9 @@ export class AuthService {
         sub: user.id,
         email: user.email,
         roles: [user.role],
+        tv: user.tokenVersion ?? 0,
       },
-      { expiresIn: JWT_EXPIRES_IN },
+      { expiresIn: JWT_EXPIRES_IN, jwtid: randomUUID() },
     );
   }
 }

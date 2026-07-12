@@ -63,12 +63,16 @@ export class AuthService {
     currentPassword: string,
     newPassword: string,
     newPasswordConfirmation: string,
-  ): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/auth/change-password`, {
+  ): Observable<{ message: string; access_token: string }> {
+    return this.http.post<{ message: string; access_token: string }>(`${this.apiUrl}/auth/change-password`, {
       currentPassword,
       newPassword,
       newPasswordConfirmation,
     });
+  }
+
+  logout(invalidateAllSessions = false): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/auth/logout`, { invalidateAllSessions });
   }
 
   listUsers(params?: { limit?: number; offset?: number }): Observable<UserResponseDto[]> {

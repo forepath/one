@@ -4,7 +4,9 @@ import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE, TokenValidation } from 'nest-keycloak-connect';
 
+import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
+import { assertUsersJwtSessionValid, UsersJwtSessionPayload } from '../utils/users-jwt-session.util';
 
 /** Minimal Keycloak interface for token validation */
 interface KeycloakInstance {
@@ -28,6 +30,7 @@ export class SocketAuthService {
     @Optional() @Inject(KEYCLOAK_CONNECT_OPTIONS) private readonly keycloakOpts: KeycloakConnectConfig | null,
     @Optional() private readonly jwtService: JwtService | null,
     private readonly usersRepository: UsersRepository,
+    @Optional() private readonly revokedUserTokensRepository: RevokedUserTokensRepository | null,
   ) {}
 
   /**
@@ -176,10 +179,20 @@ export class SocketAuthService {
 
   private async validateUsersToken(token: string, tenantId?: string): Promise<SocketUserInfo | null> {
     try {
-      const payload = await this.jwtService!.verifyAsync<{ sub: string; email?: string; roles?: string[] }>(token);
+      const payload = await this.jwtService!.verifyAsync<UsersJwtSessionPayload>(token);
       const entity = await this.usersRepository.findById(payload.sub);
 
       if (!entity || entity.lockedAt || !this.userMatchesTenant(entity, tenantId)) {
+        return null;
+      }
+
+      if (this.revokedUserTokensRepository) {
+        try {
+          await assertUsersJwtSessionValid(payload, entity, this.revokedUserTokensRepository);
+        } catch {
+          return null;
+        }
+      } else if ((payload.tv ?? 0) !== (entity.tokenVersion ?? 0)) {
         return null;
       }
 

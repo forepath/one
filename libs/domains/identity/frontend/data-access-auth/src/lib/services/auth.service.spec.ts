@@ -80,7 +80,10 @@ describe('AuthService', () => {
   });
 
   it('changePassword posts password change payload', (done) => {
-    service.changePassword('old', 'new', 'new').subscribe(() => done());
+    service.changePassword('old', 'new', 'new').subscribe((result) => {
+      expect(result).toEqual({ message: 'changed', access_token: 'new-token' });
+      done();
+    });
 
     const req = httpMock.expectOne(`${apiUrl}/auth/change-password`);
 
@@ -89,7 +92,26 @@ describe('AuthService', () => {
       newPassword: 'new',
       newPasswordConfirmation: 'new',
     });
-    req.flush({ message: 'changed' });
+    req.flush({ message: 'changed', access_token: 'new-token' });
+  });
+
+  it('logout posts to /auth/logout', (done) => {
+    service.logout(false).subscribe(() => done());
+
+    const req = httpMock.expectOne(`${apiUrl}/auth/logout`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ invalidateAllSessions: false });
+    req.flush(null);
+  });
+
+  it('logout posts invalidateAllSessions when requested', (done) => {
+    service.logout(true).subscribe(() => done());
+
+    const req = httpMock.expectOne(`${apiUrl}/auth/logout`);
+
+    expect(req.request.body).toEqual({ invalidateAllSessions: true });
+    req.flush(null);
   });
 
   it('listUsers GETs /users without params when omitted', (done) => {

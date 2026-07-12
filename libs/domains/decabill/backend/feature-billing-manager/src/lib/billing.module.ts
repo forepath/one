@@ -1,9 +1,11 @@
 import {
   getAuthenticationMethod,
   KeycloakService,
+  RevokedUserTokenEntity,
   SocketAuthService,
   UserEntity,
   UsersRepository,
+  RevokedUserTokensRepository,
 } from '@forepath/identity/backend';
 import { EmailService } from '@forepath/shared/backend';
 import {
@@ -417,6 +419,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       AvailabilitySnapshotEntity,
       CustomerProfileEntity,
       UserEntity,
+      RevokedUserTokenEntity,
       DatevExportEntity,
       DatevDebtorAccountEntity,
       ProjectEntity,
@@ -609,6 +612,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     InvoiceOverdueJobHandler,
     SshExecutorService,
     UsersRepository,
+    RevokedUserTokensRepository,
     SocketAuthService,
     BillingStatusGateway,
     TenantUserGuard,

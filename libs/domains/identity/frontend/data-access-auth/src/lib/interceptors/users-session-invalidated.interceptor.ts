@@ -85,7 +85,7 @@ export const usersSessionInvalidatedInterceptor: HttpInterceptorFn = (req, next)
       }
 
       if (store) {
-        store.dispatch(logout());
+        store.dispatch(logout({}));
       } else if (router) {
         void router.navigate(['/login']);
       }

@@ -1,4 +1,4 @@
-import { UserEntity } from '@forepath/identity/backend';
+import { RevokedUserTokenEntity, UserEntity } from '@forepath/identity/backend';
 import { EmailService } from '@forepath/shared/backend';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
@@ -10,6 +10,7 @@ import { UsersController } from '../controllers/users.controller';
 import { KeycloakRolesGuard } from '../guards/keycloak-roles.guard';
 import { UsersAuthGuard } from '../guards/users-auth.guard';
 import { UsersRolesGuard } from '../guards/users-roles.guard';
+import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
 import { AuthService } from '../services/auth.service';
 import { UsersService } from '../services/users.service';
@@ -27,7 +28,7 @@ import { resolveJwtModuleSecret } from '../utils/resolve-jwt-module-secret';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity]),
+    TypeOrmModule.forFeature([UserEntity, RevokedUserTokenEntity]),
     JwtModule.register({
       global: true,
       secret: resolveJwtModuleSecret('users'),
@@ -37,6 +38,7 @@ import { resolveJwtModuleSecret } from '../utils/resolve-jwt-module-secret';
   controllers: [AuthController, UsersController],
   providers: [
     UsersRepository,
+    RevokedUserTokensRepository,
     UsersService,
     EmailService,
     AuthService,
@@ -46,6 +48,6 @@ import { resolveJwtModuleSecret } from '../utils/resolve-jwt-module-secret';
     { provide: APP_GUARD, useClass: UsersAuthGuard },
     { provide: APP_GUARD, useClass: UsersRolesGuard },
   ],
-  exports: [UsersService, UsersRepository, AuthService],
+  exports: [UsersService, UsersRepository, RevokedUserTokensRepository, AuthService],
 })
 export class UsersAuthModule {}

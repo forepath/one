@@ -14,6 +14,7 @@ describe('UsersService', () => {
     findByEmail: jest.fn(),
     create: jest.fn(),
     remove: jest.fn(),
+    incrementTokenVersion: jest.fn(),
   };
   const mockEmailService = {
     sendConfirmationEmail: jest.fn(),
@@ -98,5 +99,27 @@ describe('UsersService', () => {
 
     await expect(service.lockUser('missing', 'admin-1')).rejects.toThrow(NotFoundException);
     await expect(service.lockUser('missing', 'admin-1')).rejects.toThrow('User not found');
+  });
+
+  it('invalidates sessions when admin updates password', async () => {
+    mockUsersRepository.findByIdForTenant.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      role: UserRole.USER,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    mockUsersRepository.update.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      role: UserRole.USER,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+    });
+    mockUsersRepository.incrementTokenVersion.mockResolvedValue(1);
+
+    await service.update('user-1', { password: 'new-secret' });
+
+    expect(mockUsersRepository.incrementTokenVersion).toHaveBeenCalledWith('user-1');
   });
 });

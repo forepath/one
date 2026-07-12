@@ -31,7 +31,13 @@ import {
   UserEnvironmentReadStateEntity,
 } from '@forepath/agenstra/backend/feature-agent-controller';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
-import { ClientAgentCredentialEntity, ClientEntity, ClientUserEntity, UserEntity } from '@forepath/identity/backend';
+import {
+  ClientAgentCredentialEntity,
+  ClientEntity,
+  ClientUserEntity,
+  RevokedUserTokenEntity,
+  UserEntity,
+} from '@forepath/identity/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 function parseTypeOrmLogLevelsFromEnv(
@@ -68,6 +74,7 @@ export const typeormConfig: DataSourceOptions = {
     ClientUserEntity,
     ProvisioningReferenceEntity,
     UserEntity,
+    RevokedUserTokenEntity,
     StatisticsUserEntity,
     StatisticsClientEntity,
     StatisticsAgentEntity,

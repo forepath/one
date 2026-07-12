@@ -19,6 +19,7 @@ export * from './lib/decorators/users-roles.decorator';
 export * from './lib/entities/authentication-type.enum';
 export * from './lib/entities/client-user.entity';
 export * from './lib/entities/client.entity.types';
+export * from './lib/entities/revoked-user-token.entity';
 export * from './lib/entities/user.entity';
 export * from './lib/password.service';
 export * from './lib/statistics.interface';
@@ -27,3 +28,5 @@ export * from './lib/token.utils';
 // Migrations
 export * from './lib/migrations/1765000000000_CreateUsersTable';
 export * from './lib/migrations/1770550000000_AddTenantIdToUsers';
+export * from './lib/migrations/1775000000000_AddUserTokenVersion';
+export * from './lib/migrations/1775000000001_CreateRevokedUserTokensTable';

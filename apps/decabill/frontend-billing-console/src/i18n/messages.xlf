@@ -638,6 +638,39 @@
       <trans-unit id="featureContainer-logout" datatype="html">
         <source>Logout</source>
         </trans-unit>
+      <trans-unit id="identityLogoutConfirm-usersTitle" datatype="html">
+        <source>Log out?</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-keycloakTitle" datatype="html">
+        <source>Log out?</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-defaultTitle" datatype="html">
+        <source>Log out?</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-usersMessage" datatype="html">
+        <source>You will be signed out of this browser only. Other devices and browsers will stay signed in unless you choose to sign out everywhere below.</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-keycloakMessage" datatype="html">
+        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-defaultMessage" datatype="html">
+        <source>Are you sure you want to log out?</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-logoutAllSessionsLabel" datatype="html">
+        <source>Also sign out all other devices and browsers</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-logoutAllSessionsHint" datatype="html">
+        <source>For security, this ends every active session for your account.</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-closeAria" datatype="html">
+        <source>Close</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-confirm" datatype="html">
+        <source> Log out </source>
+        </trans-unit>
       <trans-unit id="featureContainer-overviewTitle" datatype="html">
         <source>Overview</source>
         </trans-unit>

@@ -9,6 +9,10 @@ describe('AuthService', () => {
     update: jest.fn(),
     count: jest.fn(),
     findByIdOrThrow: jest.fn(),
+    incrementTokenVersion: jest.fn(),
+  };
+  const mockRevokedUserTokensRepository = {
+    revoke: jest.fn(),
   };
   const mockUsersService = {
     create: jest.fn(),
@@ -26,6 +30,7 @@ describe('AuthService', () => {
     jest.clearAllMocks();
     service = new AuthService(
       mockUsersRepository as any,
+      mockRevokedUserTokensRepository as any,
       mockUsersService as any,
       mockEmailService as any,
       mockJwtService as any,
@@ -75,5 +80,79 @@ describe('AuthService', () => {
     await expect(service.login('missing@example.com', 'password123')).rejects.toThrow(UnauthorizedException);
     await expect(service.login('missing@example.com', 'password123')).rejects.toThrow('Invalid email or password');
     expect(mockUsersService.validatePassword).not.toHaveBeenCalled();
+  });
+
+  it('includes token version and jwtid when signing login tokens', async () => {
+    mockUsersRepository.findByEmail.mockResolvedValue({
+      id: 'user-2',
+      email: 'active@example.com',
+      role: UserRole.ADMIN,
+      emailConfirmedAt: new Date('2026-01-01T00:00:00.000Z'),
+      lockedAt: null,
+      passwordHash: '$2b$12$hash',
+      tokenVersion: 3,
+    });
+    mockUsersService.validatePassword.mockResolvedValue(true);
+
+    await service.login('active@example.com', 'password123');
+
+    expect(mockJwtService.sign).toHaveBeenCalledWith(
+      expect.objectContaining({ tv: 3 }),
+      expect.objectContaining({ jwtid: expect.any(String) }),
+    );
+  });
+
+  it('revokes only the current session by default on logout', async () => {
+    const expiresAt = new Date('2026-12-31T00:00:00.000Z');
+
+    await service.logout('user-1', { jti: 'session-1', tokenExpiresAt: expiresAt });
+
+    expect(mockRevokedUserTokensRepository.revoke).toHaveBeenCalledWith('session-1', 'user-1', expiresAt);
+    expect(mockUsersRepository.incrementTokenVersion).not.toHaveBeenCalled();
+  });
+
+  it('invalidates all sessions when logout requests invalidateAllSessions', async () => {
+    mockUsersRepository.incrementTokenVersion.mockResolvedValue(2);
+
+    await service.logout('user-1', { invalidateAllSessions: true, jti: 'session-1' });
+
+    expect(mockUsersRepository.incrementTokenVersion).toHaveBeenCalledWith('user-1');
+    expect(mockRevokedUserTokensRepository.revoke).not.toHaveBeenCalled();
+  });
+
+  it('invalidates sessions and returns new token on changePassword', async () => {
+    mockUsersRepository.findByIdOrThrow.mockResolvedValueOnce({
+      id: 'user-1',
+      email: 'a@b.com',
+      role: UserRole.USER,
+      passwordHash: '$2b$12$hash',
+    });
+    mockUsersService.validatePassword.mockResolvedValue(true);
+    mockUsersRepository.update.mockResolvedValue(undefined);
+    mockUsersRepository.incrementTokenVersion.mockResolvedValue(2);
+    mockUsersRepository.findByIdOrThrow.mockResolvedValueOnce({
+      id: 'user-1',
+      email: 'a@b.com',
+      role: UserRole.USER,
+      tokenVersion: 2,
+    });
+
+    const result = await service.changePassword('user-1', 'old-pass', 'new-pass', 'new-pass');
+
+    expect(mockUsersRepository.incrementTokenVersion).toHaveBeenCalledWith('user-1');
+    expect(mockJwtService.sign).toHaveBeenCalledWith(expect.objectContaining({ tv: 2 }), expect.any(Object));
+    expect(result).toEqual({
+      message: 'Password changed successfully.',
+      access_token: 'jwt-token',
+    });
+  });
+
+  it('invalidates all sessions via invalidateAllSessions', async () => {
+    mockUsersRepository.incrementTokenVersion.mockResolvedValue(1);
+
+    const result = await service.invalidateAllSessions('user-1');
+
+    expect(mockUsersRepository.incrementTokenVersion).toHaveBeenCalledWith('user-1');
+    expect(result).toBe(1);
   });
 });

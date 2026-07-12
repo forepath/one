@@ -70,7 +70,7 @@ describe('usersSessionInvalidatedInterceptor', () => {
     runInInjectionContext(injector, () => usersSessionInvalidatedInterceptor(req, mockNext)).subscribe({
       error: () => {
         expect(removeItemSpy).toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);
-        expect(storeDispatch).toHaveBeenCalledWith(logout());
+        expect(storeDispatch).toHaveBeenCalledWith(logout({}));
         done();
       },
     });
@@ -156,7 +156,7 @@ describe('usersSessionInvalidatedInterceptor', () => {
     runInInjectionContext(injector, () => usersSessionInvalidatedInterceptor(req, mockNext)).subscribe({
       error: () => {
         expect(removeItemSpy).not.toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);
-        expect(storeDispatch).toHaveBeenCalledWith(logout());
+        expect(storeDispatch).toHaveBeenCalledWith(logout({}));
         done();
       },
     });

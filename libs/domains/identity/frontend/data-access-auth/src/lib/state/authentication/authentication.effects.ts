@@ -205,10 +205,11 @@ export const logout$ = createEffect(
     actions$ = inject(Actions),
     authEnvironment = inject<IdentityAuthEnvironment>(IDENTITY_AUTH_ENVIRONMENT),
     keycloakService = inject(KeycloakService, { optional: true }),
+    authService = inject(AuthService, { optional: true }),
   ) => {
     return actions$.pipe(
       ofType(logout),
-      switchMap(() => {
+      switchMap(({ invalidateAllSessions }) => {
         if (authEnvironment.authentication.type === 'api-key') {
           localStorage.removeItem(API_KEY_STORAGE_KEY);
 
@@ -219,6 +220,21 @@ export const logout$ = createEffect(
           return from(keycloakService.logout()).pipe(
             map(() => logoutSuccess()),
             catchError((error) => of(logoutFailure({ error: normalizeError(error) }))),
+          );
+        }
+
+        if (authEnvironment.authentication.type === 'users' && authService) {
+          return authService.logout(invalidateAllSessions === true).pipe(
+            map(() => {
+              localStorage.removeItem(USERS_JWT_STORAGE_KEY);
+
+              return logoutSuccess();
+            }),
+            catchError(() => {
+              localStorage.removeItem(USERS_JWT_STORAGE_KEY);
+
+              return of(logoutSuccess());
+            }),
           );
         }
 
@@ -450,7 +466,11 @@ export const changePassword$ = createEffect(
       ofType(changePassword),
       switchMap(({ currentPassword, newPassword, newPasswordConfirmation }) =>
         authService.changePassword(currentPassword, newPassword, newPasswordConfirmation).pipe(
-          map(() => changePasswordSuccess()),
+          map((response) => {
+            localStorage.setItem(USERS_JWT_STORAGE_KEY, response.access_token);
+
+            return changePasswordSuccess();
+          }),
           catchError((error) => of(changePasswordFailure({ error: normalizeError(error) }))),
         ),
       ),

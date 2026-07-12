@@ -3,6 +3,7 @@ import { runWithTenantId } from '@forepath/shared/backend';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 
+import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
 
 import { UsersAuthGuard } from './users-auth.guard';
@@ -12,6 +13,7 @@ describe('UsersAuthGuard', () => {
   let jwtService: jest.Mocked<Pick<JwtService, 'verifyAsync'>>;
   let reflector: jest.Mocked<Pick<Reflector, 'getAllAndOverride'>>;
   let usersRepository: jest.Mocked<Pick<UsersRepository, 'findById'>>;
+  let revokedUserTokensRepository: jest.Mocked<Pick<RevokedUserTokensRepository, 'isRevoked'>>;
   let originalAuthMethod: string | undefined;
   const createExecutionContext = (request: Record<string, unknown>) =>
     ({
@@ -29,11 +31,13 @@ describe('UsersAuthGuard', () => {
     jwtService = { verifyAsync: jest.fn() };
     reflector = { getAllAndOverride: jest.fn().mockReturnValue(false) };
     usersRepository = { findById: jest.fn() };
+    revokedUserTokensRepository = { isRevoked: jest.fn().mockResolvedValue(false) };
 
     guard = new UsersAuthGuard(
       jwtService as unknown as JwtService,
       reflector as unknown as Reflector,
       usersRepository as unknown as UsersRepository,
+      revokedUserTokensRepository as unknown as RevokedUserTokensRepository,
     );
   });
 
@@ -45,6 +49,68 @@ describe('UsersAuthGuard', () => {
     }
 
     jest.clearAllMocks();
+  });
+
+  it('rejects when token jti is revoked', async () => {
+    const request = { headers: { authorization: 'Bearer valid.jwt.token' } };
+
+    jwtService.verifyAsync.mockResolvedValue({
+      sub: 'user-1',
+      email: 'a@b.com',
+      roles: [UserRole.USER],
+      tv: 1,
+      jti: 'session-1',
+    });
+    usersRepository.findById.mockResolvedValue({
+      id: 'user-1',
+      tenantId: 'default',
+      lockedAt: null,
+      tokenVersion: 1,
+    } as never);
+    revokedUserTokensRepository.isRevoked.mockResolvedValue(true);
+
+    await expect(guard.canActivate(createExecutionContext(request))).rejects.toThrow('Session is no longer valid.');
+  });
+
+  it('rejects when token version does not match user token version', async () => {
+    const request = { headers: { authorization: 'Bearer valid.jwt.token' } };
+
+    jwtService.verifyAsync.mockResolvedValue({
+      sub: 'user-1',
+      email: 'a@b.com',
+      roles: [UserRole.USER],
+      tv: 0,
+    });
+    usersRepository.findById.mockResolvedValue({
+      id: 'user-1',
+      tenantId: 'default',
+      lockedAt: null,
+      tokenVersion: 1,
+    } as never);
+
+    await expect(guard.canActivate(createExecutionContext(request))).rejects.toThrow('Session is no longer valid.');
+  });
+
+  it('accepts legacy JWT without tv claim when user token version is 0', async () => {
+    const request = { headers: { authorization: 'Bearer valid.jwt.token' } };
+
+    jwtService.verifyAsync.mockResolvedValue({
+      sub: 'user-1',
+      email: 'a@b.com',
+      roles: [UserRole.USER],
+    });
+    usersRepository.findById.mockResolvedValue({
+      id: 'user-1',
+      email: 'a@b.com',
+      role: UserRole.USER,
+      tenantId: 'default',
+      lockedAt: null,
+      tokenVersion: 0,
+    } as never);
+
+    const ok = await guard.canActivate(createExecutionContext(request));
+
+    expect(ok).toBe(true);
   });
 
   it('allows request when JWT is valid and user is not locked', async () => {

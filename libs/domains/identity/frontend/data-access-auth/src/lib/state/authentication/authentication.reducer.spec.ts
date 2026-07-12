@@ -122,7 +122,7 @@ describe('authenticationReducer', () => {
         authenticationType: 'api-key',
         error: 'Previous error',
       };
-      const newState = authenticationReducer(state, logout());
+      const newState = authenticationReducer(state, logout({}));
 
       expect(newState.loading).toBe(true);
       expect(newState.error).toBeNull();

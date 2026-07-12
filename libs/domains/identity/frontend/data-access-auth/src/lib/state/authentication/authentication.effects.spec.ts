@@ -10,6 +10,9 @@ import { of, throwError } from 'rxjs';
 import { LOGIN_SUCCESS_REDIRECT_TARGET } from '../../services/auth.service';
 
 import {
+  changePassword,
+  changePasswordFailure,
+  changePasswordSuccess,
   checkAuthentication,
   checkAuthenticationFailure,
   checkAuthenticationSuccess,
@@ -36,6 +39,7 @@ import {
 } from './authentication.actions';
 import {
   checkAuthentication$,
+  changePassword$,
   confirmEmailSuccessRedirect$,
   loadUsers$,
   loadUsersBatch$,
@@ -298,12 +302,12 @@ describe('AuthenticationEffects', () => {
       });
 
       it('should remove API key from localStorage and return logoutSuccess', (done) => {
-        const action = logout();
+        const action = logout({});
         const outcome = logoutSuccess();
 
         actions$ = of(action);
 
-        logout$(actions$, mockAuthEnvironment, mockKeycloakService as any).subscribe((result) => {
+        logout$(actions$, mockAuthEnvironment, mockKeycloakService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           expect(window.localStorage.removeItem).toHaveBeenCalledWith(API_KEY_STORAGE_KEY);
           done();
@@ -342,13 +346,13 @@ describe('AuthenticationEffects', () => {
       });
 
       it('should call KeycloakService.logout and return logoutSuccess', (done) => {
-        const action = logout();
+        const action = logout({});
         const outcome = logoutSuccess();
 
         actions$ = of(action);
         mockKeycloakService.logout = jest.fn().mockResolvedValue(undefined);
 
-        logout$(actions$, mockAuthEnvironment, mockKeycloakService as any).subscribe((result) => {
+        logout$(actions$, mockAuthEnvironment, mockKeycloakService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           expect(mockKeycloakService.logout).toHaveBeenCalled();
           done();
@@ -356,29 +360,121 @@ describe('AuthenticationEffects', () => {
       });
 
       it('should return logoutFailure on Keycloak logout error', (done) => {
-        const action = logout();
+        const action = logout({});
         const error = new Error('Keycloak logout failed');
         const outcome = logoutFailure({ error: 'Keycloak logout failed' });
 
         actions$ = of(action);
         mockKeycloakService.logout = jest.fn().mockRejectedValue(error);
 
-        logout$(actions$, mockAuthEnvironment, mockKeycloakService as any).subscribe((result) => {
+        logout$(actions$, mockAuthEnvironment, mockKeycloakService as any, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           done();
         });
       });
 
       it('should return logoutSuccess if KeycloakService is not available', (done) => {
-        const action = logout();
+        const action = logout({});
         const outcome = logoutSuccess();
 
         actions$ = of(action);
 
-        logout$(actions$, mockAuthEnvironment, null).subscribe((result) => {
+        logout$(actions$, mockAuthEnvironment, null, null).subscribe((result) => {
           expect(result).toEqual(outcome);
           done();
         });
+      });
+    });
+
+    describe('when authentication type is users', () => {
+      const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
+      let mockAuthService: { logout: jest.Mock; changePassword: jest.Mock };
+
+      beforeEach(() => {
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({
+          authentication: {
+            type: 'users',
+          },
+        });
+        mockAuthService = {
+          logout: jest.fn().mockReturnValue(of(undefined)),
+          changePassword: jest.fn(),
+        };
+      });
+
+      it('should call logout API, remove JWT from localStorage, and return logoutSuccess', (done) => {
+        const action = logout({});
+        const outcome = logoutSuccess();
+
+        actions$ = of(action);
+
+        logout$(actions$, mockAuthEnvironment, null, mockAuthService as any).subscribe((result) => {
+          expect(result).toEqual(outcome);
+          expect(mockAuthService.logout).toHaveBeenCalled();
+          expect(window.localStorage.removeItem).toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);
+          done();
+        });
+      });
+
+      it('should still clear JWT and return logoutSuccess when logout API fails', (done) => {
+        const action = logout({});
+        const outcome = logoutSuccess();
+
+        actions$ = of(action);
+        mockAuthService.logout.mockReturnValue(throwError(() => new Error('network error')));
+
+        logout$(actions$, mockAuthEnvironment, null, mockAuthService as any).subscribe((result) => {
+          expect(result).toEqual(outcome);
+          expect(window.localStorage.removeItem).toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);
+          done();
+        });
+      });
+    });
+  });
+
+  describe('changePassword$', () => {
+    const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
+    let mockAuthService: { changePassword: jest.Mock };
+
+    beforeEach(() => {
+      mockAuthService = {
+        changePassword: jest
+          .fn()
+          .mockReturnValue(of({ message: 'Password changed successfully.', access_token: 'new-jwt-token' })),
+      };
+    });
+
+    it('should store new access token and return changePasswordSuccess', (done) => {
+      const action = changePassword({
+        currentPassword: 'old',
+        newPassword: 'new',
+        newPasswordConfirmation: 'new',
+      });
+      const outcome = changePasswordSuccess();
+
+      actions$ = of(action);
+
+      changePassword$(actions$, mockAuthService as any).subscribe((result) => {
+        expect(result).toEqual(outcome);
+        expect(mockAuthService.changePassword).toHaveBeenCalledWith('old', 'new', 'new');
+        expect(window.localStorage.setItem).toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY, 'new-jwt-token');
+        done();
+      });
+    });
+
+    it('should return changePasswordFailure on error', (done) => {
+      const action = changePassword({
+        currentPassword: 'old',
+        newPassword: 'new',
+        newPasswordConfirmation: 'new',
+      });
+
+      actions$ = of(action);
+      mockAuthService.changePassword.mockReturnValue(throwError(() => new Error('Current password is incorrect')));
+
+      changePassword$(actions$, mockAuthService as any).subscribe((result) => {
+        expect(result).toEqual(changePasswordFailure({ error: 'Current password is incorrect' }));
+        done();
       });
     });
   });

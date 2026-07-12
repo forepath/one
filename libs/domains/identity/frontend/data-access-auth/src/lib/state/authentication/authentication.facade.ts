@@ -83,8 +83,8 @@ export class AuthenticationFacade {
     this.store.dispatch(login({ apiKey, email, password }));
   }
 
-  logout(): void {
-    this.store.dispatch(logout());
+  logout(invalidateAllSessions = false): void {
+    this.store.dispatch(logout({ invalidateAllSessions }));
   }
 
   checkAuthentication(): void {

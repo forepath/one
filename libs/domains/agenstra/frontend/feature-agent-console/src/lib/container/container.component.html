@@ -73,7 +73,7 @@
         </label>
       </div>
       @if (isAuthenticated$ | async) {
-        <button class="btn btn-primary me-3" (click)="onLogout()" i18n="@@featureContainer-logout">Logout</button>
+        <button class="btn btn-primary me-3" (click)="onLogoutClick()" i18n="@@featureContainer-logout">Logout</button>
       }
     </div>
   </section>
@@ -207,3 +207,5 @@
     <router-outlet></router-outlet>
   </section>
 </div>
+
+<identity-logout-confirm-modal (confirmed)="onLogoutConfirmed($event)" />
