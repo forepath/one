@@ -61,7 +61,7 @@
                       }}</span>
                       <span
                         ><i class="bi bi-calendar-range me-1" aria-hidden="true"></i
-                        >{{ formatDate(promotion.redeemableFrom) }} — {{ formatDate(promotion.redeemableTo) }}</span
+                        >{{ formatDate(promotion.redeemableFrom) }} to {{ formatDate(promotion.redeemableTo) }}</span
                       >
                       <span
                         ><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ advantageSummaryLabel(promotion) }}</span
@@ -357,7 +357,7 @@
         <h5 class="modal-title">
           <span i18n="@@featureAdminPromotions-redemptionsTitle">Redemptions</span>
           @if (selectedPromotion) {
-            — {{ selectedPromotion.code }}
+            ({{ selectedPromotion.code }})
           }
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -386,6 +386,11 @@
                     @if (item.planName) {
                       <span><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ item.planName }}</span>
                     }
+                    <span
+                      ><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i
+                      >{{ redemptionContextLabel(item.redemptionContext) }}</span
+                    >
+                    <span>{{ redemptionStatusLabel(item.status) }}</span>
                   </div>
                 </div>
               }

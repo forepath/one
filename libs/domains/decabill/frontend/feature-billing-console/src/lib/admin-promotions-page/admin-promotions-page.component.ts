@@ -9,11 +9,17 @@ import {
   type AdminPromotionResponse,
   type CreateAdminPromotionDto,
   type PromotionAdvantageType,
+  type PromotionRedemptionResponse,
   type PromotionSubscriptionEligibility,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { combineLatest, map } from 'rxjs';
 
-import { getActiveStatusLabel, getActiveStatusTextClass } from '../billing-status-labels';
+import {
+  getActiveStatusLabel,
+  getActiveStatusTextClass,
+  getPromotionRedemptionContextLabel,
+  getPromotionRedemptionStatusLabel,
+} from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 
 @Component({
@@ -154,9 +160,17 @@ export class AdminPromotionsPageComponent implements OnInit {
   }
 
   formatDate(value?: string): string {
-    if (!value) return '—';
+    if (!value) return '-';
 
     return this.datePipe.transform(value, 'medium') ?? value;
+  }
+
+  redemptionContextLabel(context: PromotionRedemptionResponse['redemptionContext']): string {
+    return getPromotionRedemptionContextLabel(context);
+  }
+
+  redemptionStatusLabel(status: PromotionRedemptionResponse['status']): string {
+    return getPromotionRedemptionStatusLabel(status);
   }
 
   activeStatusLabel(isActive: boolean): string {
