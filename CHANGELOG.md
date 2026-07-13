@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.15.3](https://github.com/forepath/one/compare/v2.15.2...v2.15.3) (2026-07-13)
+
+
+### Bug Fixes
+
+* billing-portal child frontends ([#481](https://github.com/forepath/one/issues/481)) ([8145f75](https://github.com/forepath/one/commit/8145f752fe1a177f290b6ab7e5747ba9c82b2d26))
+
 ## [2.15.2](https://github.com/forepath/one/compare/v2.15.1...v2.15.2) (2026-07-12)
 
 
