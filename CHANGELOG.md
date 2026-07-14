@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.15.5](https://github.com/forepath/one/compare/v2.15.4...v2.15.5) (2026-07-14)
+
+
+### Chores
+
+* stricter responsible disclosure rules ([#485](https://github.com/forepath/one/issues/485)) ([ae8ca1b](https://github.com/forepath/one/commit/ae8ca1b87e6d0b3cb0eaff855c2acebbc6397a2c))
+
 ## [2.15.4](https://github.com/forepath/one/compare/v2.15.3...v2.15.4) (2026-07-14)
 
 
