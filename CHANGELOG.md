@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.15.4](https://github.com/forepath/one/compare/v2.15.3...v2.15.4) (2026-07-14)
+
+
+### Chores
+
+* system requirements documentation ([#483](https://github.com/forepath/one/issues/483)) ([7410ab4](https://github.com/forepath/one/commit/7410ab49ffc3d161bbc52369fae90b04bfa13357))
+
 ## [2.15.3](https://github.com/forepath/one/compare/v2.15.2...v2.15.3) (2026-07-13)
 
 
