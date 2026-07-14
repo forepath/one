@@ -2,7 +2,7 @@
 
 This section collects **security, compliance-oriented transparency, and hardening** information for Agenstra: mapping to **EU Cyber Resilience Act (CRA)** and **BSI IT-Grundschutz** documentation themes, a formal **accepted-risk register**, **vulnerability reporting**, **SBOM** and **desktop integrity** artifacts, and pointers to **environment variables** for production.
 
-For disclosure, supported versions, SBOM paths, and response-time commitments, see **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**. A concise risk summary table is in **[Accepted risks](./accepted-risks.md)**. The same reporting policy is also published at the repository root as the file `SECURITY.md` (for example on GitHub’s Security tab).
+For disclosure, supported versions, SBOM paths, and response-time commitments, see **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**. **There is no official bug bounty program**; discretionary rewards may apply only to valid, manually verified reports. A concise risk summary table is in **[Accepted risks](./accepted-risks.md)**. The same reporting policy is also published at the repository root as the file `SECURITY.md` (for example on GitHub’s Security tab).
 
 ## Overview
 
@@ -28,7 +28,7 @@ Implemented controls: **container image hardening**, correlation IDs and access 
 
 ### [Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)
 
-Responsible disclosure (contact and process), CycloneDX **SBOM** location, and **desktop release integrity** (`SHA256SUMS`, `integrity-manifest.json`).
+Responsible disclosure (contact and process, **no bug bounty**), CycloneDX **SBOM** location, and **desktop release integrity** (`SHA256SUMS`, `integrity-manifest.json`).
 
 ### [CI security scanning (Trivy)](./ci-security-scanning.md)
 

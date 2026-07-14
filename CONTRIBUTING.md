@@ -158,7 +158,8 @@ We value documentation improvements:
 
 - Don't include sensitive information in issues or PRs
 - Report security vulnerabilities to soc@forepath.io
-- Follow responsible disclosure practices
+- Follow responsible disclosure practices (see [SECURITY.md](./SECURITY.md))
+- **There is no official bug bounty program!** Rewards are discretionary only; automated or AI-generated reports are discarded without review
 
 ## Getting Help
 

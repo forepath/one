@@ -22,6 +22,14 @@ Security updates are intended for supported **2.x.x** releases. Full disclosure 
 
 We take security seriously and appreciate your help in keeping this framework and its users safe.
 
+### Bug bounty and compensation
+
+**Forepath does not operate an official bug bounty program.** There are no published reward tiers, third-party bounty platforms, or guaranteed payouts for Agenstra, Decabill, or other products in this repository. Do not submit reports expecting a bounty.
+
+We still welcome **valid, responsibly disclosed** vulnerabilities with a clear description, demonstrated impact, and reproducible steps. We may, at our **sole discretion**, offer recognition or compensation for especially valuable findings, but **no reward is promised or owed**, and any past payment does not establish a precedent.
+
+**Automated and low-effort reports are discarded without review.** Mass scanner output, duplicated template submissions, and reports that are clearly **AI-generated** without manual verification and original analysis are rejected immediately. Invest time in one verified finding before contacting us.
+
 ### How to Report Security Issues
 
 **Please do NOT report security vulnerabilities through public GitHub issues.**
@@ -54,11 +62,11 @@ When reporting a security vulnerability, please include:
 
 ### Recognition
 
-We believe in recognizing security researchers who help keep this framework secure:
+We may acknowledge researchers who report **valid, verified** issues:
 
-- **Hall of Fame** - Security researchers will be recognized in our security acknowledgments
-- **Responsible Disclosure** - We follow responsible disclosure practices
-- **Collaboration** - We work with researchers to ensure proper fixes
+- **Acknowledgments** - Researchers may be credited in security advisories where appropriate
+- **Responsible disclosure** - We coordinate fixes and disclosure timing with reporters of genuine issues
+- **No guaranteed rewards** - See **Bug bounty and compensation** above; compensation is discretionary only
 
 ## Security Best Practices
 
@@ -191,4 +199,4 @@ Thank you for helping keep this framework and its users secure. Your responsible
 
 **Remember**: Security is everyone's responsibility. Together, we can build and maintain secure software that protects users and their data.
 
-_Last updated: June 2026_
+_Last updated: July 2026_
