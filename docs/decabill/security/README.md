@@ -2,7 +2,7 @@
 
 This section collects **security, compliance-oriented transparency, and hardening** information for Decabill: mapping to **EU Cyber Resilience Act (CRA)** and **BSI IT-Grundschutz** documentation themes, a formal **accepted-risk register**, **vulnerability reporting**, **SBOM** artifacts, and pointers to **environment variables** for production.
 
-For disclosure, supported versions, SBOM paths, and response-time commitments, see **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**. A concise risk summary table is in **[Accepted risks](./accepted-risks.md)**.
+For disclosure, supported versions, SBOM paths, and response-time commitments, see **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)**. **There is no official bug bounty program**; discretionary rewards may apply only to valid, manually verified reports. A concise risk summary table is in **[Accepted risks](./accepted-risks.md)**.
 
 ## Overview
 
@@ -28,7 +28,7 @@ Implemented controls: container image hardening, correlation IDs and access logs
 
 ### [Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)
 
-Responsible disclosure, CycloneDX **SBOM** location on Decabill R2 (`decabill-*.cdx.json`), and downloads at **downloads.decabill.com**.
+Responsible disclosure (**no bug bounty**), CycloneDX **SBOM** location on Decabill R2 (`decabill-*.cdx.json`), and downloads at **downloads.decabill.com**.
 
 ### [CI security scanning (Trivy)](./ci-security-scanning.md)
 
