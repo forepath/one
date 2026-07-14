@@ -1,5 +1,9 @@
 import { AdminBillNowJobName, DatevExportJobName } from '@forepath/decabill/backend';
-import { buildCoordinatorJobId } from '@forepath/shared/backend';
+import {
+  buildCoordinatorJobId,
+  getWebhookDeliveryRetentionCoordinatorIntervalMs,
+  WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
+} from '@forepath/shared/backend';
 
 /** Central registry for billing-manager BullMQ queues, job names, and coordinator schedules. */
 
@@ -28,6 +32,7 @@ export const BillingJobName = {
   ADMIN_BILL_NOW_UNIT: AdminBillNowJobName.UNIT,
   DATEV_EXPORT_COORDINATOR: DatevExportJobName.COORDINATOR,
   DATEV_EXPORT_UNIT: DatevExportJobName.UNIT,
+  WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
 } as const;
 
 export type BillingJobName = (typeof BillingJobName)[keyof typeof BillingJobName];
@@ -113,6 +118,11 @@ export function getBillingRepeatableJobs(): BillingRepeatableJobDefinition[] {
       name: BillingJobName.BACKORDER_RETRY_COORDINATOR,
       coordinatorJobId: buildCoordinatorJobId('backorder-retry'),
       everyMs: parseIntervalMs('BACKORDER_RETRY_INTERVAL_MS', 60_000),
+    },
+    {
+      name: BillingJobName.WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
+      coordinatorJobId: buildCoordinatorJobId('webhook-delivery-retention'),
+      everyMs: getWebhookDeliveryRetentionCoordinatorIntervalMs(),
     },
   ];
 

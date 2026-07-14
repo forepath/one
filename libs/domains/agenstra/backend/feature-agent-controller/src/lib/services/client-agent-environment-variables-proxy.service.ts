@@ -12,6 +12,7 @@ import { ClientsRepository } from '../repositories/clients.repository';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
 
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsService } from './clients.service';
 
 /**
@@ -25,6 +26,7 @@ export class ClientAgentEnvironmentVariablesProxyService {
   constructor(
     private readonly clientsService: ClientsService,
     private readonly clientsRepository: ClientsRepository,
+    private readonly notificationPublisher: AgenstraNotificationPublisher,
   ) {}
 
   /**
@@ -192,10 +194,14 @@ export class ClientAgentEnvironmentVariablesProxyService {
     agentId: string,
     createDto: CreateEnvironmentVariableDto,
   ): Promise<EnvironmentVariableResponseDto> {
-    return await this.makeRequest<EnvironmentVariableResponseDto>(clientId, agentId, {
+    const created = await this.makeRequest<EnvironmentVariableResponseDto>(clientId, agentId, {
       method: 'POST',
       data: createDto,
     });
+
+    this.notificationPublisher.publishEnvironment('environment.created', clientId, created);
+
+    return created;
   }
 
   /**
@@ -212,11 +218,15 @@ export class ClientAgentEnvironmentVariablesProxyService {
     id: string,
     updateDto: UpdateEnvironmentVariableDto,
   ): Promise<EnvironmentVariableResponseDto> {
-    return await this.makeRequest<EnvironmentVariableResponseDto>(clientId, agentId, {
+    const updated = await this.makeRequest<EnvironmentVariableResponseDto>(clientId, agentId, {
       method: 'PUT',
       url: `/${id}`,
       data: updateDto,
     });
+
+    this.notificationPublisher.publishEnvironment('environment.updated', clientId, updated);
+
+    return updated;
   }
 
   /**
@@ -229,6 +239,11 @@ export class ClientAgentEnvironmentVariablesProxyService {
     await this.makeRequest<void>(clientId, agentId, {
       method: 'DELETE',
       url: `/${id}`,
+    });
+
+    this.notificationPublisher.publishEnvironment('environment.deleted', clientId, {
+      id,
+      agentId,
     });
   }
 

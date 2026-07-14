@@ -13,6 +13,7 @@ import { InvoiceCreditDocumentsRepository } from '../repositories/invoice-credit
 import { InvoiceVoidDocumentsRepository } from '../repositories/invoice-void-documents.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { buildDatevExportFileName, buildDatevStorageKey, formatDatevHeaderDate } from '../utils/datev-format.util';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { DatevBookingMapperService } from './datev-booking-mapper.service';
 import { DatevDebtorAccountService } from './datev-debtor-account.service';
 import { DatevDebtorMapperService } from './datev-debtor-mapper.service';
@@ -70,6 +71,7 @@ export class DatevExportService {
     private readonly debtorAccountService: DatevDebtorAccountService,
     private readonly extfCsvService: DatevExtfCsvService,
     private readonly documentArchiveService: DatevDocumentArchiveService,
+    private readonly billingNotificationPublisher: BillingNotificationPublisher,
   ) {}
 
   async runExport(params: DatevExportRunParams): Promise<DatevExportEntity> {
@@ -106,6 +108,12 @@ export class DatevExportService {
       errorMessage: undefined,
     });
 
+    this.billingNotificationPublisher.publishDatevExport('datev_export.started', {
+      ...exportRecord,
+      status: DatevExportStatus.RUNNING,
+      startedAt: new Date(),
+    });
+
     try {
       const result = await this.buildExportBundle(params);
       const fileName = buildDatevExportFileName(params.scope, params.year, params.month);
@@ -125,7 +133,11 @@ export class DatevExportService {
         completedAt: new Date(),
       });
 
-      return updated ?? exportRecord;
+      const completed = updated ?? exportRecord;
+
+      this.billingNotificationPublisher.publishDatevExport('datev_export.completed', completed);
+
+      return completed;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'DATEV export failed';
 
@@ -137,7 +149,15 @@ export class DatevExportService {
         completedAt: new Date(),
       });
 
-      return failed ?? exportRecord;
+      const failedRecord = failed ?? exportRecord;
+
+      this.billingNotificationPublisher.publishDatevExport('datev_export.failed', {
+        ...failedRecord,
+        status: DatevExportStatus.FAILED,
+        errorMessage: message,
+      });
+
+      return failedRecord;
     }
   }
 

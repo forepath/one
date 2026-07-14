@@ -11,7 +11,7 @@ describe('controller job-registry', () => {
     const names = jobs.map((job) => job.name);
 
     expect(names).toContain(ControllerJobName.FILTER_RULES_SYNC_COORDINATOR);
-    expect(names).toContain(ControllerJobName.AUTONOMOUS_TICKET_COORDINATOR);
+    expect(names).toContain(ControllerJobName.WEBHOOK_DELIVERY_RETENTION_COORDINATOR);
   });
 
   it('coordinator job ids are valid for BullMQ (no colons)', () => {

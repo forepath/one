@@ -19,6 +19,7 @@ import { AgentConsoleRegexFilterRuleSyncTargetEntity } from '../entities/agent-c
 import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-regex-filter-rule.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { AgentManagerFilterRulesClientService } from './agent-manager-filter-rules-client.service';
 
 @Injectable()
@@ -34,6 +35,7 @@ export class FilterRulesService {
     private readonly targetsRepo: Repository<AgentConsoleRegexFilterRuleSyncTargetEntity>,
     private readonly clientsRepository: ClientsRepository,
     private readonly agentManagerFilterRulesClient: AgentManagerFilterRulesClientService,
+    private readonly notificationPublisher: AgenstraNotificationPublisher,
   ) {}
 
   async findAll(limit = 10, offset = 0): Promise<FilterRuleResponseDto[]> {
@@ -90,7 +92,11 @@ export class FilterRulesService {
 
     await this.reconcileSyncTargets(saved.id, true);
 
-    return this.findOne(saved.id);
+    const response = await this.findOne(saved.id);
+
+    this.notificationPublisher.publishFilterRule('filter_rule.created', response);
+
+    return response;
   }
 
   async update(id: string, dto: UpdateFilterRuleDto): Promise<FilterRuleResponseDto> {
@@ -167,7 +173,11 @@ export class FilterRulesService {
 
     await this.reconcileSyncTargets(id, true);
 
-    return this.findOne(id);
+    const response = await this.findOne(id);
+
+    this.notificationPublisher.publishFilterRule('filter_rule.updated', response);
+
+    return response;
   }
 
   async delete(id: string): Promise<void> {
@@ -176,6 +186,8 @@ export class FilterRulesService {
     if (!rule) {
       throw new NotFoundException(`Filter rule ${id} not found`);
     }
+
+    const response = await this.findOne(id);
 
     const targets = await this.targetsRepo.find({ where: { ruleId: id } });
 
@@ -192,6 +204,7 @@ export class FilterRulesService {
     }
 
     await this.rulesRepo.remove(rule);
+    this.notificationPublisher.publishFilterRule('filter_rule.deleted', response);
   }
 
   private validateWorkspaceIds(dto: CreateFilterRuleDto): void {

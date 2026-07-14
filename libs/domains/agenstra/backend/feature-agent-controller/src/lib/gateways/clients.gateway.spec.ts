@@ -8,6 +8,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
@@ -168,6 +169,10 @@ describe('ClientsGateway', () => {
     onAgentChatActivity: jest.fn().mockResolvedValue(undefined),
     notifyVcsStateChanged: jest.fn().mockResolvedValue(undefined),
   };
+  const mockNotificationPublisher = {
+    publishChatMessage: jest.fn(),
+    publishFilterRuleTriggered: jest.fn(),
+  };
   const createMockSocket = (id = 'socket-1', withUserInfo = true) => {
     const emitted: Record<string, unknown>[] = [];
     const socket = {
@@ -203,6 +208,10 @@ describe('ClientsGateway', () => {
         {
           provide: ClientWorkspaceConfigurationOverridesProxyService,
           useValue: mockWorkspaceConfigurationOverridesProxy,
+        },
+        {
+          provide: AgenstraNotificationPublisher,
+          useValue: mockNotificationPublisher,
         },
       ],
     }).compile();

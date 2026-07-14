@@ -55,6 +55,12 @@ describe('InvoiceIssuanceService', () => {
     invoicePdfService as never,
     invoiceEmailService as never,
     auditLog as never,
+    {
+      publishInvoice: jest.fn(),
+      publishPayment: jest.fn(),
+      publishSubscription: jest.fn(),
+      publish: jest.fn(),
+    } as never,
   );
   const draftInvoice = {
     id: 'inv-1',

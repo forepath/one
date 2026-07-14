@@ -1,7 +1,9 @@
 import {
   ClientUserEntity,
   ClientUserRole,
+  IDENTITY_NOTIFICATION_PUBLISHER,
   IDENTITY_STATISTICS_SERVICE,
+  IIdentityNotificationPublisher,
   IIdentityStatisticsService,
   UserRole,
 } from '@forepath/identity/backend';
@@ -24,6 +26,9 @@ export class ClientUsersService {
     @Optional()
     @Inject(IDENTITY_STATISTICS_SERVICE)
     private readonly statisticsService: IIdentityStatisticsService | null,
+    @Optional()
+    @Inject(IDENTITY_NOTIFICATION_PUBLISHER)
+    private readonly notificationPublisher: IIdentityNotificationPublisher | null,
   ) {}
 
   /**
@@ -97,6 +102,16 @@ export class ClientUsersService {
       .catch(() => {
         /* fire and forget */
       });
+    this.notificationPublisher?.publishClientUserCreated(
+      {
+        id: clientUser.id,
+        clientId,
+        userId: user.id,
+        email: user.email,
+        role: addClientUserDto.role,
+      },
+      clientId,
+    );
 
     return this.mapToResponseDto(clientUser, user.email);
   }
@@ -147,6 +162,15 @@ export class ClientUsersService {
     this.statisticsService?.recordEntityDeleted('client_user', relationshipId, requestingUserId).catch(() => {
       /* fire and forget */
     });
+    this.notificationPublisher?.publishClientUserDeleted(
+      {
+        id: relationship.id,
+        clientId: relationship.clientId,
+        userId: relationship.userId,
+        role: relationship.role,
+      },
+      clientId,
+    );
 
     // Delete the relationship
     await this.clientUsersRepository.delete(relationshipId);

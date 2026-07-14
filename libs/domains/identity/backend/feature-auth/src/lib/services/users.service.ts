@@ -1,6 +1,8 @@
 import {
   createConfirmationCode,
+  IDENTITY_NOTIFICATION_PUBLISHER,
   IDENTITY_STATISTICS_SERVICE,
+  IIdentityNotificationPublisher,
   IIdentityStatisticsService,
   UserEntity,
   UserRole,
@@ -31,6 +33,9 @@ export class UsersService {
     @Optional()
     @Inject(IDENTITY_STATISTICS_SERVICE)
     private readonly statisticsService: IIdentityStatisticsService | null,
+    @Optional()
+    @Inject(IDENTITY_NOTIFICATION_PUBLISHER)
+    private readonly notificationPublisher: IIdentityNotificationPublisher | null,
   ) {}
 
   async mapToResponseDto(user: UserEntity): Promise<UserResponseDto> {
@@ -84,6 +89,12 @@ export class UsersService {
 
     this.statisticsService?.recordEntityCreated('user', user.id, { role }, undefined).catch(() => {
       /* fire and forget */
+    });
+    this.notificationPublisher?.publishUserCreated({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt.toISOString(),
     });
 
     if (!isFirstUser) {
@@ -144,6 +155,12 @@ export class UsersService {
     this.statisticsService?.recordEntityUpdated('user', id, { role: updated.role }, undefined).catch(() => {
       /* fire and forget */
     });
+    this.notificationPublisher?.publishUserUpdated({
+      id: updated.id,
+      email: updated.email,
+      role: updated.role,
+      updatedAt: updated.updatedAt.toISOString(),
+    });
 
     if (emailChanged && dto.email && confirmationCode) {
       await this.emailService.sendConfirmationEmail(dto.email, confirmationCode);
@@ -161,6 +178,11 @@ export class UsersService {
 
     this.statisticsService?.recordEntityDeleted('user', id, requestingUserId).catch(() => {
       /* fire and forget */
+    });
+    this.notificationPublisher?.publishUserDeleted({
+      id: user.id,
+      email: user.email,
+      role: user.role,
     });
     await this.usersRepository.remove(id);
   }

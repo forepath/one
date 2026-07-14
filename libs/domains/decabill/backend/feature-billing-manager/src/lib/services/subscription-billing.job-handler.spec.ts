@@ -17,11 +17,15 @@ describe('SubscriptionBillingJobHandler', () => {
     create: jest.fn(),
     hasUnbilledForSubscription: jest.fn(),
   } as any;
+  const billingNotificationPublisher = {
+    publishSubscription: jest.fn(),
+  } as any;
   const handler = new SubscriptionBillingJobHandler(
     subscriptionsRepository,
     servicePlansRepository,
     billingScheduleService,
     openPositionsRepository,
+    billingNotificationPublisher,
   );
 
   beforeEach(() => {
@@ -59,11 +63,15 @@ describe('SubscriptionBillingJobHandler', () => {
       billingDayOfMonth: undefined,
     });
     openPositionsRepository.create.mockResolvedValue({});
-    subscriptionsRepository.update.mockResolvedValue({});
+    subscriptionsRepository.update.mockResolvedValue({ id: 'sub-1', userId: 'user-1' });
 
     await handler.processSubscription('sub-1');
 
     expect(openPositionsRepository.create).toHaveBeenCalled();
     expect(subscriptionsRepository.update).toHaveBeenCalled();
+    expect(billingNotificationPublisher.publishSubscription).toHaveBeenCalledWith(
+      'subscription.updated',
+      expect.objectContaining({ id: 'sub-1' }),
+    );
   });
 });

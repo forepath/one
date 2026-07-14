@@ -109,8 +109,28 @@ See **[Projects](./projects.md)** for assignment rules, KPIs, and bill-time prec
 - **Billing dashboard** (`/administration/billing`) - KPIs, charts, bill-now
 - **Customer profiles** (`/administration/customer-profiles`) - Admin CRUD
 - **Projects** (`/administration/projects`) - Project CRUD and bill-time
+- **Webhooks** (`/webhooks`) - Tenant-scoped outbound notification endpoints; see [Webhooks](./webhooks.md)
 - **Service types and plans** - Catalog administration in the billing console
 - **Users** (`/users`) - Shared identity user manager
+
+## Webhook Notifications
+
+Admin and API-key clients manage tenant-scoped webhook endpoints under `/admin/billing/webhooks`.
+
+| Method | Path                                      | Purpose                                           |
+| ------ | ----------------------------------------- | ------------------------------------------------- |
+| GET    | `/admin/billing/webhooks/event-types`     | Supported billing event catalog                   |
+| GET    | `/admin/billing/webhooks`                 | List endpoints for current tenant                 |
+| POST   | `/admin/billing/webhooks`                 | Create endpoint (returns one-time signing secret) |
+| GET    | `/admin/billing/webhooks/{id}`            | Get endpoint                                      |
+| POST   | `/admin/billing/webhooks/{id}`            | Update endpoint                                   |
+| DELETE | `/admin/billing/webhooks/{id}`            | Delete endpoint                                   |
+| POST   | `/admin/billing/webhooks/{id}/test`       | Send sample event                                 |
+| GET    | `/admin/billing/webhooks/{id}/deliveries` | Paginated delivery log                            |
+
+**Frontend:** `/webhooks` in the billing console (admin only).
+
+See **[Webhooks](./webhooks.md)** for payload envelope, signing, and event types.
 
 ## Related Documentation
 

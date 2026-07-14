@@ -10,7 +10,7 @@ describe('billing job-registry', () => {
     const jobs = getBillingRepeatableJobs();
 
     expect(jobs.length).toBeGreaterThanOrEqual(7);
-    expect(jobs.map((job) => job.name)).toContain(BillingJobName.INVOICE_OVERDUE_COORDINATOR);
+    expect(jobs.map((job) => job.name)).toContain(BillingJobName.WEBHOOK_DELIVERY_RETENTION_COORDINATOR);
 
     delete process.env.BILLING_DATEV_EXPORT_ENABLED;
     const withDatev = getBillingRepeatableJobs();

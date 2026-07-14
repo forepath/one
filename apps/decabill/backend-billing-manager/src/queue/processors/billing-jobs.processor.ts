@@ -15,7 +15,17 @@ import {
   SubscriptionRenewalReminderJobHandler,
   SubscriptionWithdrawalJobHandler,
 } from '@forepath/decabill/backend';
-import { DEFAULT_TENANT, enqueueUnitJob, runWithTenantId } from '@forepath/shared/backend';
+import {
+  DEFAULT_TENANT,
+  enqueueUnitJob,
+  runWithTenantId,
+  resolveWebhookDeliverJobPayload,
+  WEBHOOK_DELIVER_JOB_NAME,
+  WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
+  WebhookDeliveryRetentionService,
+  WebhookDeliveryService,
+  type WebhookDeliverJobPayload,
+} from '@forepath/shared/backend';
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job, Queue } from 'bullmq';
@@ -48,12 +58,20 @@ export class BillingJobsProcessor extends WorkerHost {
     private readonly adminBillNow: AdminBillNowService,
     private readonly datevExportConfig: DatevExportConfigService,
     private readonly datevExportJobHandler: DatevExportJobHandler,
+    private readonly webhookDeliveryService: WebhookDeliveryService,
+    private readonly webhookDeliveryRetentionService: WebhookDeliveryRetentionService,
   ) {
     super();
   }
 
   async process(job: Job): Promise<void> {
     switch (job.name) {
+      case WEBHOOK_DELIVER_JOB_NAME:
+        await this.runWebhookDeliver(job);
+        break;
+      case WEBHOOK_DELIVERY_RETENTION_COORDINATOR:
+        await this.webhookDeliveryRetentionService.applyRetentionForAllEndpoints();
+        break;
       case BillingJobName.SUBSCRIPTION_BILLING_COORDINATOR:
         await this.runSubscriptionBillingCoordinator();
         break;
@@ -156,6 +174,11 @@ export class BillingJobsProcessor extends WorkerHost {
           }
         });
     }
+  }
+
+  private async runWebhookDeliver(job: Job<WebhookDeliverJobPayload>): Promise<void> {
+    const payload = resolveWebhookDeliverJobPayload(job);
+    await runWithTenantId(payload.scopeKey, () => this.webhookDeliveryService.deliver(payload));
   }
 
   private async runWithJobTenant<T>(job: Job, data: TenantScopedPayload, run: () => Promise<T>): Promise<T> {

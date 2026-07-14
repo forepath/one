@@ -65,6 +65,7 @@
           "mkdir -p dist/apps/agenstra/backend-agent-controller/src/migrations",
           "(npx tsc $(find apps/agenstra/backend-agent-controller/src/migrations -name '*.ts' 2>/dev/null || echo '') --outDir dist/apps/agenstra/backend-agent-controller/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/agenstra/backend-agent-controller/src/migrations 2>/dev/null || true)",
           "npx tsc $(find libs/domains/identity/backend/util-auth/src/lib/migrations -name '*.ts') --outDir dist/apps/agenstra/backend-agent-controller/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir libs/domains/identity/backend/util-auth/src/lib/migrations",
+          "npx tsc $(find libs/domains/shared/backend/feature-notifications/src/lib/migrations -name '*.ts') --outDir dist/apps/agenstra/backend-agent-controller/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir libs/domains/shared/backend/feature-notifications/src/lib/migrations",
           "npx esbuild apps/agenstra/backend-agent-controller/src/scripts/install-provider-plugins.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/apps/agenstra/backend-agent-controller/install-provider-plugins.js --tsconfig=tsconfig.base.json --packages=external"
         ]
       }

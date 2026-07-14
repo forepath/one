@@ -89,6 +89,7 @@ import { TicketAutomationService } from '../services/ticket-automation.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
 
+import { AgenstraNotificationsModule } from './agenstra-notifications.module';
 import { ContextImportModule } from './context-import.module';
 import { FilterRulesModule } from './filter-rules.module';
 import { StatisticsModule } from './statistics.module';
@@ -124,6 +125,7 @@ const authMethod = getAuthenticationMethod();
       UserEnvironmentReadStateEntity,
     ]),
     RedisCacheModule,
+    AgenstraNotificationsModule,
     StatisticsModule,
     forwardRef(() => FilterRulesModule),
     forwardRef(() => ContextImportModule),

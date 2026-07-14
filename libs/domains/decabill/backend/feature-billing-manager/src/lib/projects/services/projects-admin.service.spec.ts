@@ -26,6 +26,9 @@ describe('ProjectsAdminService', () => {
   const projectTimeReportService = {
     generateLivePdf: jest.fn(),
   };
+  const billingNotificationPublisher = {
+    publishProject: jest.fn(),
+  };
 
   let service: ProjectsAdminService;
 
@@ -37,6 +40,7 @@ describe('ProjectsAdminService', () => {
       usersRepository as never,
       projectBillingService as never,
       projectTimeReportService as never,
+      billingNotificationPublisher as never,
     );
   });
 
@@ -57,6 +61,7 @@ describe('ProjectsAdminService', () => {
     await service.create({ userId: 'u1', name: 'P', hourlyRateNet: 100, targetHours: 40 } as never);
 
     expect(projectsRepository.create).toHaveBeenCalledWith(expect.objectContaining({ targetHours: 40 }));
+    expect(billingNotificationPublisher.publishProject).toHaveBeenCalledWith('project.created', created);
   });
 
   it('create stores null targetHours when omitted', async () => {

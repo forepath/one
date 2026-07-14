@@ -1,4 +1,5 @@
 import {
+  AgenstraNotificationsModule,
   ClientsModule,
   ContextImportModule,
   FilterRulesModule,
@@ -15,6 +16,7 @@ import { ControllerJobsProcessor } from './processors/controller-jobs.processor'
     SharedQueueModule.forRoot({
       queueNames: [CONTROLLER_QUEUE_NAME],
     }),
+    AgenstraNotificationsModule,
     forwardRef(() => ClientsModule),
     forwardRef(() => FilterRulesModule),
     forwardRef(() => ContextImportModule),

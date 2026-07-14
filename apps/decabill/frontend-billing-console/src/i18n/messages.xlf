@@ -101,6 +101,9 @@
       <trans-unit id="featureAdminInvoices-downloadVoidPdfButtonTitle" datatype="html">
         <source>Download void PDF</source>
         </trans-unit>
+      <trans-unit id="featureAdminInvoices-downloadTimeReportButtonTitle" datatype="html">
+        <source>Download time report</source>
+        </trans-unit>
       <trans-unit id="featureAdminInvoices-historyButtonTitle" datatype="html">
         <source>View history</source>
         </trans-unit>
@@ -115,9 +118,6 @@
         </trans-unit>
       <trans-unit id="featureAdminBilling-billNowResult" datatype="html">
         <source>Billing queued for <x id="INTERPOLATION" equiv-text="{{ result.userCount }}"/> user(s). Request ID: <x id="INTERPOLATION_1" equiv-text="{{ result.requestId }}"/>.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-cancel" datatype="html">
-        <source> Cancel </source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-confirmBillNow" datatype="html">
         <source>Bill now</source>
@@ -149,14 +149,29 @@
       <trans-unit id="featureAdminInvoices-selectUserFirst" datatype="html">
         <source>Select a user first</source>
         </trans-unit>
+      <trans-unit id="featureAdminInvoices-addLineItem" datatype="html">
+        <source>Add line item</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-draftTotal" datatype="html">
+        <source>Draft total</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-create" datatype="html">
+        <source> Create </source>
+        </trans-unit>
       <trans-unit id="featureAdminInvoices-editTitle" datatype="html">
         <source>Edit draft invoice</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-save" datatype="html">
+        <source> Save </source>
         </trans-unit>
       <trans-unit id="featureAdminInvoices-issueTitle" datatype="html">
         <source>Issue invoice</source>
         </trans-unit>
       <trans-unit id="featureAdminInvoices-dueInDays" datatype="html">
         <source>Due in days</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-issue" datatype="html">
+        <source> Issue </source>
         </trans-unit>
       <trans-unit id="featureAdminInvoices-deleteTitle" datatype="html">
         <source>Delete draft</source>
@@ -167,17 +182,8 @@
       <trans-unit id="featureAdminInvoices-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
         </trans-unit>
-      <trans-unit id="featureAdminInvoices-save" datatype="html">
-        <source>Save</source>
-        </trans-unit>
-      <trans-unit id="featureAdminInvoices-create" datatype="html">
-        <source>Create</source>
-        </trans-unit>
       <trans-unit id="featureAdminInvoices-delete" datatype="html">
-        <source>Delete</source>
-        </trans-unit>
-      <trans-unit id="featureAdminInvoices-issue" datatype="html">
-        <source>Issue</source>
+        <source> Delete </source>
         </trans-unit>
       <trans-unit id="featureAdminInvoices-lineDescription" datatype="html">
         <source>Description</source>
@@ -194,20 +200,8 @@
       <trans-unit id="featureAdminInvoices-lineTotal" datatype="html">
         <source>Line total</source>
         </trans-unit>
-      <trans-unit id="featureAdminInvoices-draftTotal" datatype="html">
-        <source>Draft total</source>
-        </trans-unit>
-      <trans-unit id="featureAdminInvoices-taxStandard" datatype="html">
-        <source>Standard</source>
-        </trans-unit>
-      <trans-unit id="featureAdminInvoices-taxReduced" datatype="html">
-        <source>Reduced</source>
-        </trans-unit>
       <trans-unit id="featureAdminInvoices-removeLine" datatype="html">
         <source>Remove line</source>
-        </trans-unit>
-      <trans-unit id="featureAdminInvoices-addLineItem" datatype="html">
-        <source>Add line item</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-mobilePanelOverview" datatype="html">
         <source>Dashboard</source>
@@ -245,8 +239,14 @@
       <trans-unit id="featureAdminProfiles-createTitle" datatype="html">
         <source>Create billing profile</source>
         </trans-unit>
+      <trans-unit id="featureAdminProfiles-create" datatype="html">
+        <source> Create </source>
+        </trans-unit>
       <trans-unit id="featureAdminProfiles-editTitle" datatype="html">
         <source>Edit billing profile</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-save" datatype="html">
+        <source> Save </source>
         </trans-unit>
       <trans-unit id="featureAdminProfiles-deleteTitle" datatype="html">
         <source>Delete profile</source>
@@ -257,35 +257,8 @@
       <trans-unit id="featureAdminProfiles-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
         </trans-unit>
-      <trans-unit id="featureAdminProfiles-create" datatype="html">
-        <source>Create</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-save" datatype="html">
-        <source>Save</source>
-        </trans-unit>
       <trans-unit id="featureAdminProfiles-delete" datatype="html">
-        <source>Delete</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-title" datatype="html">
-        <source>Contracts</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-summaryTotal" datatype="html">
-        <source>Contracts</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-summaryActive" datatype="html">
-        <source>Active</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-search" datatype="html">
-        <source>Search contracts</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-searchPlaceholder" datatype="html">
-        <source>Search by number, email, plan, or status</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-loading" datatype="html">
-        <source>Loading contracts...</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-empty" datatype="html">
-        <source>No contracts found.</source>
+        <source> Delete </source>
         </trans-unit>
       <trans-unit id="featureAdminDatevExports-title" datatype="html">
         <source>DATEV exports</source>
@@ -338,17 +311,254 @@
       <trans-unit id="featureAdminDatevExports-scopeUnified" datatype="html">
         <source>Unified</source>
         </trans-unit>
-      <trans-unit id="featureAdminDatevExports-cancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
-      <trans-unit id="featureAdminDatevExports-confirmExport" datatype="html">
-        <source>Start export</source>
-        </trans-unit>
       <trans-unit id="featureAdminDatevExports-export" datatype="html">
         <source>Export</source>
         </trans-unit>
       <trans-unit id="featureAdminDatevExports-queuedMessage" datatype="html">
         <source>Queued — waiting for export to start…</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-title" datatype="html">
+        <source>Projects</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-add" datatype="html">
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-searchPlaceholder" datatype="html">
+        <source>Search projects</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-empty" datatype="html">
+        <source>No projects found</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-edit" datatype="html">
+        <source>Edit</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-createTitle" datatype="html">
+        <source>Create project</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-nameLabel" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-rateLabel" datatype="html">
+        <source>Hourly rate (net)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-targetHoursLabel" datatype="html">
+        <source>Target hours</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-targetHoursHint" datatype="html">
+        <source> Optional. Leave empty for no target. </source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-create" datatype="html">
+        <source> Create </source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-editTitle" datatype="html">
+        <source>Edit project</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-statusLabel" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-statusActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-statusArchived" datatype="html">
+        <source>Archived</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-save" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-deleteTitle" datatype="html">
+        <source>Delete project</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-deleteConfirm" datatype="html">
+        <source>Delete this project? Unbilled time must be cleared first.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProjects-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-pageTitle" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-create" datatype="html">
+        <source>Create promotion</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-searchPlaceholder" datatype="html">
+        <source>Search promotions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-loading" datatype="html">
+        <source>Loading…</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-empty" datatype="html">
+        <source>No promotions yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-noSearchResults" datatype="html">
+        <source>No promotions match your search.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-redemptionCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ promotion.redemptionCount }}"/> redemptions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-edit" datatype="html">
+        <source>Edit</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-redemptions" datatype="html">
+        <source>Redemptions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-deactivate" datatype="html">
+        <source>Deactivate</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-createTitle" datatype="html">
+        <source>Create promotion</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-save" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-editTitle" datatype="html">
+        <source>Edit promotion</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-colCode" datatype="html">
+        <source>Code</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-colName" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-description" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-redeemableFrom" datatype="html">
+        <source>Redeemable from</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-redeemableTo" datatype="html">
+        <source>Redeemable to</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-maxTotal" datatype="html">
+        <source>Max total redemptions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-maxPerUser" datatype="html">
+        <source>Max per user</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-colEligibility" datatype="html">
+        <source>Subscription eligibility</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-advantageType" datatype="html">
+        <source>Advantage type</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-amountNet" datatype="html">
+        <source>Amount (net)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-freeDays" datatype="html">
+        <source>Free days</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-freePeriods" datatype="html">
+        <source>Free billing periods</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-applicablePlans" datatype="html">
+        <source>Applicable plans</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-applicablePlansHint" datatype="html">
+        <source> Leave empty to allow all products. </source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-colActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-redemptionsTitle" datatype="html">
+        <source>Redemptions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-noRedemptions" datatype="html">
+        <source>No redemptions yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-eligibilityNew" datatype="html">
+        <source>New subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-eligibilityExisting" datatype="html">
+        <source>Existing subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-eligibilityBoth" datatype="html">
+        <source>New and existing</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-advantageTypeFixedAmountNet" datatype="html">
+        <source>Fixed amount (net)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-advantageTypeFreeDays" datatype="html">
+        <source>Free days</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-advantageTypeFreeBillingPeriods" datatype="html">
+        <source>Free billing periods</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-advantageAmountNet" datatype="html">
+        <source><x id="PH" equiv-text="Number(config[&apos;amountNet&apos;] ?? 0)"/> net credit</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-advantageFreeDays" datatype="html">
+        <source><x id="PH" equiv-text="Number(config[&apos;days&apos;] ?? 0)"/> free days</source>
+        </trans-unit>
+      <trans-unit id="featureAdminPromotions-advantageFreePeriods" datatype="html">
+        <source><x id="PH" equiv-text="Number(config[&apos;periods&apos;] ?? 0)"/> free billing periods</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-title" datatype="html">
+        <source>Contracts</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-summaryTotal" datatype="html">
+        <source> Contracts </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-summaryActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-search" datatype="html">
+        <source> Search contracts </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-searchPlaceholder" datatype="html">
+        <source>Search by number, email, plan, or status</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-loading" datatype="html">
+        <source>Loading contracts...</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-empty" datatype="html">
+        <source>No contracts found.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-subscriptionActionsAria" datatype="html">
+        <source>Subscription actions</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawButtonTitle" datatype="html">
+        <source>Withdraw subscription</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-cancelButtonTitle" datatype="html">
+        <source>Cancel subscription</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-resumeButtonTitle" datatype="html">
+        <source>Resume subscription</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-cancelSubscriptionTitle" datatype="html">
+        <source>Cancel subscription?</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-cancelSubscriptionConfirm" datatype="html">
+        <source> Are you sure you want to cancel this subscription? It will remain active until the end of the current period. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawSubscriptionTitle" datatype="html">
+        <source>Withdraw subscription?</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawSubscriptionConfirm" datatype="html">
+        <source> Are you sure you want to exercise your statutory right of withdrawal? The subscription will end immediately and provisioned services will be removed. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawalDeadline" datatype="html">
+        <source>Withdrawal deadline</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-estimatedRefund" datatype="html">
+        <source>Estimated refund</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdraw" datatype="html">
+        <source> Withdraw </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-resumeSubscriptionTitle" datatype="html">
+        <source>Resume subscription?</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-resumeSubscriptionConfirm" datatype="html">
+        <source> Resume this subscription so it continues after the current period. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-resume" datatype="html">
+        <source> Resume </source>
         </trans-unit>
       <trans-unit id="featureBillingAdminSubscriptionSelect-clearSelectionAria" datatype="html">
         <source>Clear selected subscription</source>
@@ -371,14 +581,26 @@
       <trans-unit id="featureBillingAdminUserSelect-placeholder" datatype="html">
         <source>Search by email or ID</source>
         </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-page" datatype="html">
+        <source>Withdrawal</source>
+        </trans-unit>
       <trans-unit id="featureContainer-overviewPage" datatype="html">
         <source>Overview</source>
         </trans-unit>
       <trans-unit id="featureContainer-subscriptionsPage" datatype="html">
         <source>Plans</source>
         </trans-unit>
+      <trans-unit id="featureContainer-promotionsPage" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
       <trans-unit id="featureContainer-invoicesPage" datatype="html">
         <source>Invoices</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-projectsPage" datatype="html">
+        <source>Projects</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-projectDetailPage" datatype="html">
+        <source>Project</source>
         </trans-unit>
       <trans-unit id="featureContainer-serviceTypesPage" datatype="html">
         <source>Service Providers</source>
@@ -389,6 +611,9 @@
       <trans-unit id="featureContainer-servicePlansPage" datatype="html">
         <source>Service Plans</source>
         </trans-unit>
+      <trans-unit id="featureContainer-adminPromotionsPage" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
       <trans-unit id="featureContainer-adminBillingPage" datatype="html">
         <source>Billing</source>
         </trans-unit>
@@ -397,6 +622,12 @@
         </trans-unit>
       <trans-unit id="featureContainer-adminSubscriptionsPage" datatype="html">
         <source>Contracts</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminProjectsPage" datatype="html">
+        <source>Projects</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminProjectDetailPage" datatype="html">
+        <source>Project</source>
         </trans-unit>
       <trans-unit id="featureContainer-adminDatevExportsPage" datatype="html">
         <source>DATEV Exports</source>
@@ -422,6 +653,15 @@
       <trans-unit id="featureBilling-subscriptionStatusPendingWithdrawal" datatype="html">
         <source>Pending withdrawal</source>
         </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusCanceled" datatype="html">
+        <source>Canceled</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-provisioningStatusEmpty" datatype="html">
+        <source>Unknown</source>
+        </trans-unit>
       <trans-unit id="featureBilling-provisioningStatusPending" datatype="html">
         <source>Provisioning</source>
         </trans-unit>
@@ -431,16 +671,7 @@
       <trans-unit id="featureBilling-provisioningStatusFailed" datatype="html">
         <source>Provisioning failed</source>
         </trans-unit>
-      <trans-unit id="featureBilling-provisioningStatusEmpty" datatype="html">
-        <source>Unknown</source>
-        </trans-unit>
       <trans-unit id="featureBilling-provisioningStatusUnknown" datatype="html">
-        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
-        </trans-unit>
-      <trans-unit id="featureBilling-subscriptionStatusCanceled" datatype="html">
-        <source>Canceled</source>
-        </trans-unit>
-      <trans-unit id="featureBilling-subscriptionStatusUnknown" datatype="html">
         <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
         </trans-unit>
       <trans-unit id="featureBilling-backorderStatusEmpty" datatype="html">
@@ -494,6 +725,18 @@
       <trans-unit id="featureBilling-activeStatusInactive" datatype="html">
         <source>Inactive</source>
         </trans-unit>
+      <trans-unit id="featureBilling-timeEntryStatusBilled" datatype="html">
+        <source>Billed</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-timeEntryStatusUnbilled" datatype="html">
+        <source>Unbilled</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-projectStatusActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-projectStatusArchived" datatype="html">
+        <source>Archived</source>
+        </trans-unit>
       <trans-unit id="featureBilling-datevExportStatusEmpty" datatype="html">
         <source>Unknown</source>
         </trans-unit>
@@ -520,6 +763,30 @@
         </trans-unit>
       <trans-unit id="featureBilling-profileIncomplete" datatype="html">
         <source>Incomplete</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-promotionRedemptionContextNew" datatype="html">
+        <source>New subscription</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-promotionRedemptionContextExisting" datatype="html">
+        <source>Existing subscription</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-promotionRedemptionContextUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="context"/>)</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-promotionRedemptionStatusActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-promotionRedemptionStatusExhausted" datatype="html">
+        <source>Fully used</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-promotionRedemptionStatusExpired" datatype="html">
+        <source>Expired</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-promotionRedemptionStatusCancelled" datatype="html">
+        <source>Cancelled</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-promotionRedemptionStatusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
         </trans-unit>
       <trans-unit id="featureBilling-intervalMonthly" datatype="html">
         <source>Monthly</source>
@@ -581,6 +848,9 @@
       <trans-unit id="featureCloudInitConfigs-dockerImage" datatype="html">
         <source>Docker image</source>
         </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-loadExample" datatype="html">
+        <source>Load example</source>
+        </trans-unit>
       <trans-unit id="featureCloudInitConfigs-containerPort" datatype="html">
         <source>Container port</source>
         </trans-unit>
@@ -599,20 +869,17 @@
       <trans-unit id="featureCloudInitConfigs-addEnvVar" datatype="html">
         <source>Add line</source>
         </trans-unit>
-      <trans-unit id="featureCloudInitConfigs-loadExample" datatype="html">
-        <source>Load example</source>
-        </trans-unit>
-      <trans-unit id="featureCloudInitConfigs-cancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
-      <trans-unit id="featureCloudInitConfigs-save" datatype="html">
-        <source> Save </source>
+      <trans-unit id="featureServicePlans-removeHighlight" datatype="html">
+        <source>Remove</source>
         </trans-unit>
       <trans-unit id="featureCloudInitConfigs-create" datatype="html">
-        <source>Create</source>
+        <source> Create </source>
         </trans-unit>
       <trans-unit id="featureCloudInitConfigs-editTitle" datatype="html">
         <source>Edit CloudInit config</source>
+        </trans-unit>
+      <trans-unit id="featureCloudInitConfigs-save" datatype="html">
+        <source> Save </source>
         </trans-unit>
       <trans-unit id="featureCloudInitConfigs-deleteTitle" datatype="html">
         <source>Delete config</source>
@@ -638,39 +905,6 @@
       <trans-unit id="featureContainer-logout" datatype="html">
         <source>Logout</source>
         </trans-unit>
-      <trans-unit id="identityLogoutConfirm-usersTitle" datatype="html">
-        <source>Log out?</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-keycloakTitle" datatype="html">
-        <source>Log out?</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-defaultTitle" datatype="html">
-        <source>Log out?</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-usersMessage" datatype="html">
-        <source>You will be signed out of this browser only. Other devices and browsers will stay signed in unless you choose to sign out everywhere below.</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-keycloakMessage" datatype="html">
-        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-defaultMessage" datatype="html">
-        <source>Are you sure you want to log out?</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-logoutAllSessionsLabel" datatype="html">
-        <source>Also sign out all other devices and browsers</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-logoutAllSessionsHint" datatype="html">
-        <source>For security, this ends every active session for your account.</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-closeAria" datatype="html">
-        <source>Close</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-cancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-confirm" datatype="html">
-        <source> Log out </source>
-        </trans-unit>
       <trans-unit id="featureContainer-overviewTitle" datatype="html">
         <source>Overview</source>
         </trans-unit>
@@ -683,194 +917,32 @@
       <trans-unit id="featureContainer-subscriptions" datatype="html">
         <source>Plans</source>
         </trans-unit>
-      <trans-unit id="featureContainer-invoicesTitle" datatype="html">
-        <source>Invoices</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-invoices" datatype="html">
-        <source>Billing</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-promotionsPage" datatype="html">
-        <source>Promotions</source>
-        </trans-unit>
       <trans-unit id="featureContainer-promotionsTitle" datatype="html">
         <source>Promotions</source>
         </trans-unit>
       <trans-unit id="featureContainer-promotions" datatype="html">
         <source>Promotions</source>
         </trans-unit>
-      <trans-unit id="featureContainer-adminPromotionsPage" datatype="html">
-        <source>Promotions</source>
+      <trans-unit id="featureContainer-invoicesTitle" datatype="html">
+        <source>Invoices</source>
         </trans-unit>
-      <trans-unit id="featureContainer-adminPromotionsTitle" datatype="html">
-        <source>Promotions</source>
+      <trans-unit id="featureContainer-invoices" datatype="html">
+        <source>Billing</source>
         </trans-unit>
-      <trans-unit id="featureContainer-adminPromotions" datatype="html">
-        <source>Promotions</source>
+      <trans-unit id="featureContainer-projectsTitle" datatype="html">
+        <source>Projects</source>
         </trans-unit>
-      <trans-unit id="featurePromotions-pageTitle" datatype="html">
-        <source>Promotions</source>
+      <trans-unit id="featureContainer-projects" datatype="html">
+        <source>Projects</source>
         </trans-unit>
-      <trans-unit id="featurePromotions-checkSectionTitle" datatype="html">
-        <source>Apply a promotion code</source>
+      <trans-unit id="featureContainer-adminTitle" datatype="html">
+        <source>Admin</source>
         </trans-unit>
-      <trans-unit id="featurePromotions-selectSubscription" datatype="html">
-        <source>Subscription</source>
+      <trans-unit id="featureContainer-admin" datatype="html">
+        <source>Admin</source>
         </trans-unit>
-      <trans-unit id="featurePromotions-selectSubscriptionPlaceholder" datatype="html">
-        <source>Select subscription</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-codePlaceholder" datatype="html">
-        <source>Promotion code</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-checkCode" datatype="html">
-        <source>Check code</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-validMessage" datatype="html">
-        <source>This code can be applied.</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-redeemNow" datatype="html">
-        <source>Redeem now</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-activeTitle" datatype="html">
-        <source>Active promotions</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-loading" datatype="html">
-        <source>Loading…</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-noActive" datatype="html">
-        <source>No active promotions.</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-historyTitle" datatype="html">
-        <source>Redemption history</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-noHistory" datatype="html">
-        <source>No redemptions yet.</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-orderCodeLabel" datatype="html">
-        <source>Promotion code (optional)</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-pageTitle" datatype="html">
-        <source>Promotions</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-create" datatype="html">
-        <source>Create promotion</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-applicablePlansHint" datatype="html">
-        <source>Leave empty to allow all products.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-searchPlaceholder" datatype="html">
-        <source>Search promotions</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-loading" datatype="html">
-        <source>Loading…</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-empty" datatype="html">
-        <source>No promotions yet.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-noSearchResults" datatype="html">
-        <source>No promotions match your search.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-edit" datatype="html">
-        <source>Edit</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-redemptions" datatype="html">
-        <source>Redemptions</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-deactivate" datatype="html">
-        <source>Deactivate</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-createTitle" datatype="html">
-        <source>Create promotion</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-editTitle" datatype="html">
-        <source>Edit promotion</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-save" datatype="html">
-        <source>Save</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-redemptionsTitle" datatype="html">
-        <source>Redemptions</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-noRedemptions" datatype="html">
-        <source>No redemptions yet.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-advantageTypeFixedAmountNet" datatype="html">
-        <source>Fixed amount (net)</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-advantageTypeFreeDays" datatype="html">
-        <source>Free days</source>
-        </trans-unit>
-      <trans-unit id="featureAdminPromotions-advantageTypeFreeBillingPeriods" datatype="html">
-        <source>Free billing periods</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-mobileActive" datatype="html">
-        <source>Active promotions</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-mobileHistory" datatype="html">
-        <source>History</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-searchActive" datatype="html">
-        <source>Search active promotions</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-searchHistory" datatype="html">
-        <source>Search redemption history</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-noActiveSearchResults" datatype="html">
-        <source>No active promotions match your search.</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-noHistorySearchResults" datatype="html">
-        <source>No redemptions match your search.</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-clearCheck" datatype="html">
-        <source>Clear check</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-regularPeriodPrice" datatype="html">
-        <source>Regular period price</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-periodPrice" datatype="html">
-        <source>Period price</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-pricingUnavailable" datatype="html">
-        <source>Period pricing is not available for this subscription.</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-duringNextPeriod" datatype="html">
-        <source>Next billing period</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-duringNextPeriods" datatype="html">
-        <source>Next <x id="INTERPOLATION" equiv-text="periods"/> billing periods</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-afterFreePeriod" datatype="html">
-        <source>Following periods</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-afterFreePeriods" datatype="html">
-        <source>After <x id="INTERPOLATION" equiv-text="periods"/> free periods</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-duringFreeDaysUntil" datatype="html">
-        <source>Until <x id="date" equiv-text="benefitEndsLabel"/></source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-duringFreeDays" datatype="html">
-        <source>During free period</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-afterFreeDaysEnds" datatype="html">
-        <source>After <x id="date" equiv-text="benefitEndsLabel"/></source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-afterFreeDays" datatype="html">
-        <source>After free period ends</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-duringCreditRemaining" datatype="html">
-        <source>While credit remains</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-afterCreditUsed" datatype="html">
-        <source>After credit is used</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-orderDiscountLabel" datatype="html">
-        <source>Promotion</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-orderPlanTotal" datatype="html">
-        <source>Plan total (net)</source>
-        </trans-unit>
-      <trans-unit id="featurePromotions-orderPricingPending" datatype="html">
-        <source>Check the price summary above after loading completes.</source>
+      <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
+        <source>Role <x id="role" equiv-text="role"/></source>
         </trans-unit>
       <trans-unit id="featureContainer-serviceTypesTitle" datatype="html">
         <source>Providers</source>
@@ -890,6 +962,24 @@
       <trans-unit id="featureContainer-servicePlans" datatype="html">
         <source>Plans</source>
         </trans-unit>
+      <trans-unit id="featureContainer-adminSubscriptionsTitle" datatype="html">
+        <source>Contracts</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminSubscriptions" datatype="html">
+        <source>Contracts</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminPromotionsTitle" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminPromotions" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-webhooksTitle" datatype="html">
+        <source>Webhooks</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-webhooks" datatype="html">
+        <source>Webhooks</source>
+        </trans-unit>
       <trans-unit id="featureContainer-userManagementTitle" datatype="html">
         <source>User Management</source>
         </trans-unit>
@@ -902,11 +992,11 @@
       <trans-unit id="featureContainer-adminProfiles" datatype="html">
         <source>Profiles</source>
         </trans-unit>
-      <trans-unit id="featureContainer-adminSubscriptionsTitle" datatype="html">
-        <source>Contracts</source>
+      <trans-unit id="featureContainer-adminProjectsTitle" datatype="html">
+        <source>Projects</source>
         </trans-unit>
-      <trans-unit id="featureContainer-adminSubscriptions" datatype="html">
-        <source>Contracts</source>
+      <trans-unit id="featureContainer-adminProjects" datatype="html">
+        <source>Projects</source>
         </trans-unit>
       <trans-unit id="featureContainer-adminBillingTitle" datatype="html">
         <source>Billing</source>
@@ -919,15 +1009,6 @@
         </trans-unit>
       <trans-unit id="featureContainer-adminDatevExports" datatype="html">
         <source>DATEV</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-admin" datatype="html">
-        <source>Admin</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-adminTitle" datatype="html">
-        <source>Admin</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
-        <source>Role <x id="role" equiv-text="role"/></source>
         </trans-unit>
       <trans-unit id="featureInvoices-title" datatype="html">
         <source>Billing</source>
@@ -995,6 +1076,9 @@
       <trans-unit id="featureInvoices-downloadCreditNoteButtonTitle" datatype="html">
         <source>Download credit note</source>
         </trans-unit>
+      <trans-unit id="featureInvoices-downloadTimeReportButtonTitle" datatype="html">
+        <source>Download time report</source>
+        </trans-unit>
       <trans-unit id="featureInvoices-previewTitle" datatype="html">
         <source>Invoice preview</source>
         </trans-unit>
@@ -1049,20 +1133,14 @@
       <trans-unit id="featureInvoices-balanceDue" datatype="html">
         <source>Balance due</source>
         </trans-unit>
-      <trans-unit id="featureInvoices-close" datatype="html">
-        <source> Close </source>
-        </trans-unit>
       <trans-unit id="featureInvoices-createTitle" datatype="html">
         <source>Create invoice</source>
         </trans-unit>
       <trans-unit id="featureInvoices-description" datatype="html">
         <source>Description</source>
         </trans-unit>
-      <trans-unit id="featureInvoices-cancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
       <trans-unit id="featureInvoices-create" datatype="html">
-        <source>Create</source>
+        <source> Create </source>
         </trans-unit>
       <trans-unit id="featureInvoices-createInvoiceDisabledFinalized" datatype="html">
         <source>Subscription is finalized; no further invoices can be created.</source>
@@ -1084,6 +1162,9 @@
         </trans-unit>
       <trans-unit id="featureOverview-orderPlanButtonTitle" datatype="html">
         <source>Place order</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-completeProfileToOrder" datatype="html">
+        <source>Complete your billing profile to place an order</source>
         </trans-unit>
       <trans-unit id="featureOverview-projects" datatype="html">
         <source>Active projects</source>
@@ -1130,6 +1211,12 @@
       <trans-unit id="featureOverview-viewSubscription" datatype="html">
         <source>View subscription</source>
         </trans-unit>
+      <trans-unit id="featureOverview-provisioningPendingHint" datatype="html">
+        <source> Your server is being set up. This usually takes less than a minute. </source>
+        </trans-unit>
+      <trans-unit id="featureOverview-provisioningFailedHint" datatype="html">
+        <source> Server setup did not complete. Check backorders or contact support if this persists. </source>
+        </trans-unit>
       <trans-unit id="featureOverview-serverActionsAria" datatype="html">
         <source>Server actions</source>
         </trans-unit>
@@ -1148,14 +1235,8 @@
       <trans-unit id="featureOverview-openConsoleButtonTitle" datatype="html">
         <source>Open console</source>
         </trans-unit>
-      <trans-unit id="featureOverview-managerService" datatype="html">
-        <source>Agenstra Manager</source>
-        </trans-unit>
       <trans-unit id="featureOverview-customService" datatype="html">
         <source>Custom application</source>
-        </trans-unit>
-      <trans-unit id="featureOverview-controllerService" datatype="html">
-        <source>Agenstra Controller</source>
         </trans-unit>
       <trans-unit id="featureOverview-serverStatusOnline" datatype="html">
         <source>Online</source>
@@ -1166,11 +1247,663 @@
       <trans-unit id="featureOverview-serverStatusUpdatingLabel" datatype="html">
         <source>Updating</source>
         </trans-unit>
-      <trans-unit id="featureOverview-provisioningPendingHint" datatype="html">
-        <source>Your server is being set up. This usually takes less than a minute.</source>
+      <trans-unit id="featureProjectBoard-title" datatype="html">
+        <source>Board</source>
         </trans-unit>
-      <trans-unit id="featureOverview-provisioningFailedHint" datatype="html">
-        <source>Server setup did not complete. Check backorders or contact support if this persists.</source>
+      <trans-unit id="featureProjectBoard-globalSearchOpenTitle" datatype="html">
+        <source>Search tickets (Ctrl+F)</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-globalSearchOpenAria" datatype="html">
+        <source>Search tickets</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-add" datatype="html">
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-searchLaneLabel" datatype="html">
+        <source>Search tickets</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-searchLanePlaceholder" datatype="html">
+        <source>Search tickets</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-subtaskCountTitle" datatype="html">
+        <source>Direct subtasks (done / total)</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-dropHere" datatype="html">
+        <source> Drop tickets here </source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-noMatchingTickets" datatype="html">
+        <source> No matching tickets </source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-modalLoadingTitle" datatype="html">
+        <source>Ticket</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-modalCloseAria" datatype="html">
+        <source>Close</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-breadcrumbNavAria" datatype="html">
+        <source>Ticket hierarchy</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-lockTicketTitle" datatype="html">
+        <source>Lock ticket</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-detailLoading" datatype="html">
+        <source>Loading ticket…</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-fieldShas" datatype="html">
+        <source>SHAs</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-statusLabel" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-priorityLabel" datatype="html">
+        <source>Priority</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-milestoneLabel" datatype="html">
+        <source>Milestone</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-acceptanceLabel" datatype="html">
+        <source> Acceptance <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;acceptancePct + &apos;%&apos;&quot;
+                      &gt;"/><x id="INTERPOLATION" equiv-text="{{ acceptancePct | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                    &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-subtaskProgressLabel" datatype="html">
+        <source> Subtasks <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;stPct + &apos;%&apos;&quot;
+                        &gt;"/><x id="INTERPOLATION" equiv-text="{{ stPct | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                      &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-contentLabel" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-subtasksHeading" datatype="html">
+        <source>Subtasks</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-addSubtask" datatype="html">
+        <source>Add subtask</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-subtasksEmpty" datatype="html">
+        <source>No subtasks yet.</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-openSubtaskTitle" datatype="html">
+        <source>Open subtask</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-timeEntriesHeading" datatype="html">
+        <source>Time entries</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-addTimeEntry" datatype="html">
+        <source>Add time</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-timeEntriesLoading" datatype="html">
+        <source>Loading time…</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-timeEntriesEmpty" datatype="html">
+        <source> No time logged on this ticket yet. </source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-commentsHeading" datatype="html">
+        <source>Comments</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-commentPlaceholder" datatype="html">
+        <source>Add a comment…</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-addComment" datatype="html">
+        <source> Add </source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-commentAuthorDash" datatype="html">
+        <source>—</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-activityHeading" datatype="html">
+        <source>Activity</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-deleteTitle" datatype="html">
+        <source>Permanently delete this ticket</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-delete" datatype="html">
+        <source> Delete </source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-deleteConfirmModalTitle" datatype="html">
+        <source>Delete ticket</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-deleteConfirmModalLead" datatype="html">
+        <source>Are you sure you want to delete this ticket?</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-deleteConfirmCannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-createSubtaskTitle" datatype="html">
+        <source>New subtask</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-createTitle" datatype="html">
+        <source>New ticket</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-titleLabel" datatype="html">
+        <source>Title</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-createTitlePlaceholder" datatype="html">
+        <source>Short summary</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-create" datatype="html">
+        <source> Create </source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-globalSearchTitle" datatype="html">
+        <source> Search tickets </source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-globalSearchInputLabel" datatype="html">
+        <source>Search tickets</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-globalSearchPlaceholder" datatype="html">
+        <source>Search by title, description, or id</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-globalSearchHint" datatype="html">
+        <source> Type to search all tickets in this project, including done and closed. </source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-globalSearchNoResults" datatype="html">
+        <source>No matching tickets</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-createTimeEntryTitle" datatype="html">
+        <source>New time entry</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-timeStartLabel" datatype="html">
+        <source>Start</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-timeEndLabel" datatype="html">
+        <source>End</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-timeDescriptionLabel" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-milestoneNone" datatype="html">
+        <source>None</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-priorityLow" datatype="html">
+        <source>Low</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-priorityMedium" datatype="html">
+        <source>Medium</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-priorityHigh" datatype="html">
+        <source>High</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-priorityCritical" datatype="html">
+        <source>Critical</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-lockedTicket" datatype="html">
+        <source>Locked</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-backToAdminProjects" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-left me-1&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Back to projects </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-assignee" datatype="html">
+        <source>Assignee: <x id="INTERPOLATION" equiv-text="{{ email }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-trackedTime" datatype="html">
+        <source>Tracked time</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-unbilledTime" datatype="html">
+        <source> Unbilled time </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-openBillable" datatype="html">
+        <source> Open billable </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-openMilestones" datatype="html">
+        <source> Open milestones </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-completedMilestones" datatype="html">
+        <source> Completed milestones </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-milestonesProgressAria" datatype="html">
+        <source>Milestone completion</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-openTickets" datatype="html">
+        <source> Open tickets </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-completedTickets" datatype="html">
+        <source> Completed tickets </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-ticketsProgressAria" datatype="html">
+        <source>Tickets done</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-timeEntries" datatype="html">
+        <source>Time entries</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-addTime" datatype="html">
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTime" datatype="html">
+        <source>Bill unbilled time</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-timeReport" datatype="html">
+        <source>Time report</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-timeEntriesEmpty" datatype="html">
+        <source>No time entries yet</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-editTime" datatype="html">
+        <source>Edit</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-deleteTime" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-createTimeTitle" datatype="html">
+        <source>New time entry</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-startLabel" datatype="html">
+        <source>Start</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-endLabel" datatype="html">
+        <source>End</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-descriptionLabel" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-create" datatype="html">
+        <source> Create </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-editTimeTitle" datatype="html">
+        <source>Edit time entry</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-save" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-deleteTimeTitle" datatype="html">
+        <source>Delete time entry</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-deleteTimeConfirm" datatype="html">
+        <source> Delete this time entry (<x id="INTERPOLATION" equiv-text="{{ formatMinutes(entry.durationMinutes) }}"/>)? This cannot be undone. </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-delete" datatype="html">
+        <source> Delete </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeTitle" datatype="html">
+        <source>Bill unbilled time</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeLoading" datatype="html">
+        <source>Loading range…</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeFromLabel" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeToLabel" datatype="html">
+        <source>To</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeRangeHint" datatype="html">
+        <source> Only time entries fully within the selected range are included (start on or after From, end on or before To). </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeNoUnbilled" datatype="html">
+        <source> No unbilled time entries to bill. </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeSubscription" datatype="html">
+        <source>Subscription (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeAdditionalLines" datatype="html">
+        <source>Additional line items (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeAdditionalLinesHint" datatype="html">
+        <source> Unbilled time is billed as the first invoice line. Add extra lines here if needed. </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-billTimeAddLine" datatype="html">
+        <source>Add line item</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-bill" datatype="html">
+        <source> Bill </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-timeReportTitle" datatype="html">
+        <source>Time report</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-timeReportLoading" datatype="html">
+        <source>Loading range…</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-timeReportFromLabel" datatype="html">
+        <source>From</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-timeReportToLabel" datatype="html">
+        <source>To</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-timeReportRangeHint" datatype="html">
+        <source> Only time entries fully within the selected range are included (start on or after From, end on or before To). </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-timeReportUnbilledOnly" datatype="html">
+        <source> Only include unbilled positions </source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-trackedTimeProgressAria" datatype="html">
+        <source>Tracked time progress</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-tabBoard" datatype="html">
+        <source>Board</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-tabMilestones" datatype="html">
+        <source>Milestones</source>
+        </trans-unit>
+      <trans-unit id="featureProjectDetail-tabTime" datatype="html">
+        <source>Time</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestoneSelect-clearSelectionAria" datatype="html">
+        <source>Clear selected milestone</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestoneSelect-noMilestones" datatype="html">
+        <source>No milestones found.</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestoneSelect-placeholder" datatype="html">
+        <source>Search milestones by name</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-title" datatype="html">
+        <source>Milestones</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-add" datatype="html">
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-empty" datatype="html">
+        <source>No milestones yet</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-edit" datatype="html">
+        <source>Edit</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-lock" datatype="html">
+        <source>Lock</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-createTitle" datatype="html">
+        <source>New milestone</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-nameLabel" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-namePlaceholder" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-create" datatype="html">
+        <source> Create </source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-editTitle" datatype="html">
+        <source>Edit milestone</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-descriptionLabel" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-targetDateLabel" datatype="html">
+        <source>Target date</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-save" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-deleteTitle" datatype="html">
+        <source>Delete milestone</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-deleteConfirm" datatype="html">
+        <source> Delete milestone &quot;<x id="INTERPOLATION" equiv-text="{{ milestone.name }}"/>&quot;? This cannot be undone. </source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-openTicketCount" datatype="html">
+        <source><x id="PH" equiv-text="milestone.openTicketCount"/> open</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-doneTicketCount" datatype="html">
+        <source><x id="PH" equiv-text="milestone.doneTicketCount"/> done</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-progress" datatype="html">
+        <source><x id="PH" equiv-text="milestone.progressPercent"/>%</source>
+        </trans-unit>
+      <trans-unit id="featureProjectMilestones-locked" datatype="html">
+        <source>Locked</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-activityActionCreated" datatype="html">
+        <source>Created</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-activityActionDeleted" datatype="html">
+        <source>Deleted</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-activityActionCommentAdded" datatype="html">
+        <source>Comment added</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-activityActionStatusChanged" datatype="html">
+        <source>Status changed</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-activityActionPriorityChanged" datatype="html">
+        <source>Priority changed</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-activityActionParentChanged" datatype="html">
+        <source>Parent changed</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-activityActionMilestoneChanged" datatype="html">
+        <source>Milestone changed</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-activityActionLocked" datatype="html">
+        <source>Locked</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-activityActionFieldUpdated" datatype="html">
+        <source>Details updated</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-activityActionUnknown" datatype="html">
+        <source>Unknown activity</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-laneDraft" datatype="html">
+        <source>Draft</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-laneTodo" datatype="html">
+        <source>To do</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-laneInProgress" datatype="html">
+        <source>In progress</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-lanePrototype" datatype="html">
+        <source>Prototype</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-laneDone" datatype="html">
+        <source>Done</source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-laneClosed" datatype="html">
+        <source>Closed</source>
+        </trans-unit>
+      <trans-unit id="featureProjects-title" datatype="html">
+        <source>Projects</source>
+        </trans-unit>
+      <trans-unit id="featureProjects-searchPlaceholder" datatype="html">
+        <source>Search projects</source>
+        </trans-unit>
+      <trans-unit id="featureProjects-empty" datatype="html">
+        <source>No projects assigned to you</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-duringFreeDaysUntil" datatype="html">
+        <source>Until <x id="date" equiv-text="benefitEndsLabel"/></source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-duringNextPeriod" datatype="html">
+        <source>Next billing period</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-afterFreeDaysEnds" datatype="html">
+        <source>After <x id="date" equiv-text="benefitEndsLabel"/></source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-afterFreeDays" datatype="html">
+        <source>After free period ends</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-duringNextPeriods" datatype="html">
+        <source>Next <x id="PH" equiv-text="periods"/> billing periods</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-afterFreePeriod" datatype="html">
+        <source>Following periods</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-afterFreePeriods" datatype="html">
+        <source>After <x id="PH" equiv-text="periods"/> free periods</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-duringCreditRemaining" datatype="html">
+        <source>While credit remains</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-afterCreditUsed" datatype="html">
+        <source>After credit is used</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-pageTitle" datatype="html">
+        <source>Promotions</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-checkSectionTitle" datatype="html">
+        <source>Apply a promotion code</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-selectSubscription" datatype="html">
+        <source>Subscription</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-selectSubscriptionPlaceholder" datatype="html">
+        <source>Select subscription</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-codePlaceholder" datatype="html">
+        <source>Promotion code</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-checkCode" datatype="html">
+        <source> Check code </source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-clearCheck" datatype="html">
+        <source>Clear check</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-redeemNow" datatype="html">
+        <source> Redeem now </source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-validMessage" datatype="html">
+        <source>This code can be applied.</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-regularPeriodPrice" datatype="html">
+        <source> Regular period price </source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-periodPrice" datatype="html">
+        <source>Period price</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-pricingUnavailable" datatype="html">
+        <source> Period pricing is not available for this subscription. </source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-activeTitle" datatype="html">
+        <source>Active promotions</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-searchActive" datatype="html">
+        <source> Search active promotions </source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-loading" datatype="html">
+        <source>Loading…</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-noActive" datatype="html">
+        <source>No active promotions.</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-noActiveSearchResults" datatype="html">
+        <source> No active promotions match your search. </source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-historyTitle" datatype="html">
+        <source>Redemption history</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-searchHistory" datatype="html">
+        <source> Search redemption history </source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-noHistory" datatype="html">
+        <source>No redemptions yet.</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-noHistorySearchResults" datatype="html">
+        <source>No redemptions match your search.</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-mobileActive" datatype="html">
+        <source>Active promotions</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-mobileHistory" datatype="html">
+        <source>History</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-title" datatype="html">
+        <source>Statutory Withdrawal</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-formTitle" datatype="html">
+        <source> Withdrawal Request </source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-addresseeLoading" datatype="html">
+        <source>Loading addressee...</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-addresseeTitle" datatype="html">
+        <source> Your withdrawal is addressed to </source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-vatIdLabel" datatype="html">
+        <source>VAT ID:</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-emailLabel" datatype="html">
+        <source>Email:</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-addresseeError" datatype="html">
+        <source>We could not load the withdrawal addressee. You can still continue with your request.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-dismissSuccessA11y" datatype="html">
+        <source>Dismiss success message</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-dismissErrorA11y" datatype="html">
+        <source>Dismiss error message</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-subscriptionNumberLabel" datatype="html">
+        <source>Subscription number</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-subscriptionNumberPlaceholder" datatype="html">
+        <source>SUB-000001</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-subscriptionNumberRequired" datatype="html">
+        <source>Subscription number is required.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-subscriptionNumberPattern" datatype="html">
+        <source>Enter a valid subscription number (e.g. SUB-000001).</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-customerNameLabel" datatype="html">
+        <source>Customer name</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-customerNameRequired" datatype="html">
+        <source> Customer name is required. </source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-emailFieldLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-emailInvalid" datatype="html">
+        <source>Please enter a valid email address.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-companyLabel" datatype="html">
+        <source>Company (optional)</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-orderedOnLabel" datatype="html">
+        <source>Ordered on</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-orderedOnRequired" datatype="html">
+        <source> Ordered on date is required. </source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-receivedOnLabel" datatype="html">
+        <source>Received on (optional)</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-receivedOnHelp" datatype="html">
+        <source> Required only if your service was already received or deployed. </source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-submitDetails" datatype="html">
+        <source>Continue</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-resumedCode" datatype="html">
+        <source>Continue where you left off. Enter your confirmation code.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-codeLabel" datatype="html">
+        <source>Confirmation code</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-codeRequired" datatype="html">
+        <source>Confirmation code is required.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-codePattern" datatype="html">
+        <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-verifyCode" datatype="html">
+        <source>Verify code</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-resumedAcknowledge" datatype="html">
+        <source>Continue where you left off. Please confirm your withdrawal below.</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-acknowledgeLabel" datatype="html">
+        <source> I hereby withdraw from the contract for the subscription I provided in accordance with applicable statutory withdrawal rights. </source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-acknowledgeRequired" datatype="html">
+        <source> You must confirm your withdrawal to continue. </source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-submitWithdrawal" datatype="html">
+        <source>Submit withdrawal</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-doneMessage" datatype="html">
+        <source> Your withdrawal request has been submitted successfully. </source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-backToLogin" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
+      <trans-unit id="featurePublicWithdrawal-backToLoginLink" datatype="html">
+        <source>Back to login</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-title" datatype="html">
         <source>Service Plans</source>
@@ -1215,7 +1948,7 @@
         <source>Ordering highlights</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-addHighlight" datatype="html">
-        <source> Add line </source>
+        <source>Add line</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-orderingHighlightsHint" datatype="html">
         <source> Optional icon key and label text for the order page (in addition to the description). </source>
@@ -1231,9 +1964,6 @@
         </trans-unit>
       <trans-unit id="featureServicePlans-moveHighlightDown" datatype="html">
         <source>Move down</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-removeHighlight" datatype="html">
-        <source> Remove </source>
         </trans-unit>
       <trans-unit id="featureServicePlans-billingIntervalType" datatype="html">
         <source>Interval type</source>
@@ -1259,6 +1989,12 @@
       <trans-unit id="featureServicePlans-marginFixed" datatype="html">
         <source>Margin fixed</source>
         </trans-unit>
+      <trans-unit id="featureServicePlans-taxCategory" datatype="html">
+        <source>VAT rate</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-estimatedPrices" datatype="html">
+        <source>Estimated prices</source>
+        </trans-unit>
       <trans-unit id="featureServicePlans-estimatedPrice" datatype="html">
         <source>Estimated price</source>
         </trans-unit>
@@ -1280,12 +2016,6 @@
       <trans-unit id="featureServicePlans-productDefaults" datatype="html">
         <source>Product defaults</source>
         </trans-unit>
-      <trans-unit id="featureServicePlans-hideProductDefaults" datatype="html">
-        <source>Hide</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-showProductDefaults" datatype="html">
-        <source>Show</source>
-        </trans-unit>
       <trans-unit id="featureServicePlans-productDefaultsHelp" datatype="html">
         <source> Defaults for integrated stacks and CloudInit environment variables required by the selected customer options. </source>
         </trans-unit>
@@ -1294,9 +2024,6 @@
         </trans-unit>
       <trans-unit id="featureServicePlans-active" datatype="html">
         <source>Active</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-close" datatype="html">
-        <source> Close </source>
         </trans-unit>
       <trans-unit id="featureServicePlans-create" datatype="html">
         <source> Create </source>
@@ -1320,7 +2047,13 @@
         <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-delete" datatype="html">
-        <source>Delete</source>
+        <source> Delete </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-showProductDefaults" datatype="html">
+        <source>Show</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-hideProductDefaults" datatype="html">
+        <source>Hide</source>
         </trans-unit>
       <trans-unit id="featureBilling-planHighlightsSingular" datatype="html">
         <source>1 highlight</source>
@@ -1379,29 +2112,20 @@
       <trans-unit id="featureServiceTypes-noProvidersHint" datatype="html">
         <source>No providers configured. Enter provider id manually.</source>
         </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaults" datatype="html">
+        <source>Provider defaults</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaultsHelp" datatype="html">
+        <source> Overrides platform environment variables for this service type. Leave blank to use the environment default. </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaultEnvPlaceholder" datatype="html">
+        <source>Using environment default</source>
+        </trans-unit>
       <trans-unit id="featureServiceTypes-active" datatype="html">
         <source>Active</source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-disallowStatutoryWithdrawal" datatype="html">
         <source>Disallow statutory withdrawal after provisioning</source>
-        </trans-unit>
-      <trans-unit id="featureServiceTypes-providerDefaults" datatype="html">
-        <source>Provider defaults</source>
-        </trans-unit>
-      <trans-unit id="featureServiceTypes-showProviderDefaults" datatype="html">
-        <source>Show</source>
-        </trans-unit>
-      <trans-unit id="featureServiceTypes-hideProviderDefaults" datatype="html">
-        <source>Hide</source>
-        </trans-unit>
-      <trans-unit id="featureServiceTypes-providerDefaultsHelp" datatype="html">
-        <source>Overrides platform environment variables for this service type. Leave blank to use the environment default.</source>
-        </trans-unit>
-      <trans-unit id="featureServiceTypes-providerDefaultEnvPlaceholder" datatype="html">
-        <source>Using environment default</source>
-        </trans-unit>
-      <trans-unit id="featureServiceTypes-close" datatype="html">
-        <source> Close </source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-create" datatype="html">
         <source> Create </source>
@@ -1422,7 +2146,13 @@
         <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-delete" datatype="html">
-        <source>Delete</source>
+        <source> Delete </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-showProviderDefaults" datatype="html">
+        <source>Show</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-hideProviderDefaults" datatype="html">
+        <source>Hide</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-title" datatype="html">
         <source>Plans &amp; Subscriptions</source>
@@ -1475,18 +2205,6 @@
       <trans-unit id="featureSubscriptions-noBackorderSearchResults" datatype="html">
         <source> No backorders match your search. </source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-subscriptionActionsAria" datatype="html">
-        <source>Subscription actions</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-cancelButtonTitle" datatype="html">
-        <source>Cancel subscription</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-withdrawButtonTitle" datatype="html">
-        <source>Withdraw subscription</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-resumeButtonTitle" datatype="html">
-        <source>Resume subscription</source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-backorderActionsAria" datatype="html">
         <source>Backorder actions</source>
         </trans-unit>
@@ -1499,41 +2217,20 @@
       <trans-unit id="featureSubscriptions-orderPlanTitle" datatype="html">
         <source>Order plan</source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-orderConfirmationTitle" datatype="html">
+        <source>Order placed successfully</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-orderConfirmationMessage" datatype="html">
+        <source> Your subscription is being provisioned. You can close this dialog and track progress in your subscriptions list. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-close" datatype="html">
+        <source> Close </source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-selectPlan" datatype="html">
         <source>Plan</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-choosePlan" datatype="html">
         <source>Choose a plan</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-price" datatype="html">
-        <source>Price</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-loadingPrice" datatype="html">
-        <source>Loading price…</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-billingInterval" datatype="html">
-        <source>Runtime</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-minCommitment" datatype="html">
-        <source>Min. commitment</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-days" datatype="html">
-        <source>days</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-noticeDays" datatype="html">
-        <source>Notice period</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-withdrawalPolicyTitle" datatype="html">
-        <source>Statutory withdrawal</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-withdrawalPeriodDays" datatype="html">
-        <source>Withdrawal period</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-withdrawalAfterProvisioning" datatype="html">
-        <source>You may withdraw within the statutory period, even after the service is provisioned. Refunds for unused time are calculated on a pro-rata basis.</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-withdrawalBeforeProvisioningOnly" datatype="html">
-        <source>Statutory withdrawal is only available before the service is provisioned.</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-cloudInitConfig" datatype="html">
         <source>Instance configuration</source>
@@ -1563,7 +2260,7 @@
         <source>Users</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-authApiKey" datatype="html">
-        <source>API Key</source>
+        <source> API Key </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-authKeycloak" datatype="html">
         <source> Keycloak </source>
@@ -1625,6 +2322,30 @@
       <trans-unit id="featureSubscriptions-digitaloceanApiToken" datatype="html">
         <source> DigitalOcean API token </source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-orderSummaryTitle" datatype="html">
+        <source>Order summary</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-orderCodeLabel" datatype="html">
+        <source>Promotion code (optional)</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-orderPricingPendingSidebar" datatype="html">
+        <source> Check the price summary for updated totals. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawalPolicyTitle" datatype="html">
+        <source> Statutory withdrawal </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawalPeriodDays" datatype="html">
+        <source>Withdrawal period</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-days" datatype="html">
+        <source>days</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawalAfterProvisioning" datatype="html">
+        <source> You may withdraw within the statutory period, even after the service is provisioned. Refunds for unused time are calculated on a pro-rata basis. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-withdrawalBeforeProvisioningOnly" datatype="html">
+        <source> Statutory withdrawal is only available before the service is provisioned. </source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-autoBackorder" datatype="html">
         <source>Backorder if unavailable</source>
         </trans-unit>
@@ -1637,14 +2358,38 @@
       <trans-unit id="featureSubscriptions-privacyLink" datatype="html">
         <source>Privacy Policy</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-completeProfileToOrder" datatype="html">
-        <source>Complete your billing profile to place an order.</source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-completeBillingDetails" datatype="html">
         <source>Complete billing details</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-close" datatype="html">
-        <source> Close </source>
+      <trans-unit id="featureSubscriptions-orderPriceTitle" datatype="html">
+        <source>Price</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-loadingPrice" datatype="html">
+        <source>Loading price…</source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-orderPlanTotal" datatype="html">
+        <source> Plan total (net) </source>
+        </trans-unit>
+      <trans-unit id="featurePromotions-orderDiscountLabel" datatype="html">
+        <source>Promotion</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-orderTermsTitle" datatype="html">
+        <source>Runtime &amp; terms</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-billingInterval" datatype="html">
+        <source>Runtime</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-minCommitment" datatype="html">
+        <source>Min. commitment</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-noticeDays" datatype="html">
+        <source>Notice period</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-orderStepBack" datatype="html">
+        <source> Back </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-orderStepNext" datatype="html">
+        <source> Next </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-orderInProgress" datatype="html">
         <source>Provisioning in progress, please wait</source>
@@ -1652,53 +2397,11 @@
       <trans-unit id="featureSubscriptions-submitOrder" datatype="html">
         <source>Order</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-cancelSubscriptionTitle" datatype="html">
-        <source> Cancel subscription? </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-cancelSubscriptionConfirm" datatype="html">
-        <source> Are you sure you want to cancel this subscription? It will remain active until the end of the current period. </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-confirmCancel" datatype="html">
-        <source> Confirm cancel </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-cancel" datatype="html">
-        <source>Cancel</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-withdrawSubscriptionTitle" datatype="html">
-        <source> Withdraw subscription? </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-withdrawSubscriptionConfirm" datatype="html">
-        <source> Are you sure you want to exercise your statutory right of withdrawal? The subscription will end immediately and provisioned services will be removed. </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-withdrawalDeadline" datatype="html">
-        <source>Withdrawal deadline</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-estimatedRefund" datatype="html">
-        <source>Estimated refund</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-confirmWithdraw" datatype="html">
-        <source> Confirm withdrawal </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-withdraw" datatype="html">
-        <source>Withdraw</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-resumeSubscriptionTitle" datatype="html">
-        <source> Resume subscription? </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-resumeSubscriptionConfirm" datatype="html">
-        <source> Resume this subscription so it continues after the current period. </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-resume" datatype="html">
-        <source>Resume</source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-withdrawOrderTitle" datatype="html">
         <source> Withdraw order? </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-withdrawOrderConfirm" datatype="html">
         <source>Are you sure you want to withdraw this order?</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-confirmWithdrawOrder" datatype="html">
-        <source> Confirm withdrawal </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-editProfileTitle" datatype="html">
         <source> Edit customer profile </source>
@@ -1740,7 +2443,7 @@
         <source>Phone</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-save" datatype="html">
-        <source>Save</source>
+        <source> Save </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-mobilePanelSubscriptions" datatype="html">
         <source>Subscriptions</source>
@@ -1803,117 +2506,6 @@
         <source>Confirm Email</source>
         </trans-unit>
       <trans-unit id="featureConfirmEmail-backToLogin" datatype="html">
-        <source>Back to login</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-page" datatype="html">
-        <source>Withdrawal</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-title" datatype="html">
-        <source>Statutory Withdrawal</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-formTitle" datatype="html">
-        <source>Withdrawal Request</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-addresseeTitle" datatype="html">
-        <source>Your withdrawal is addressed to</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-addresseeLoading" datatype="html">
-        <source>Loading addressee...</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-addresseeError" datatype="html">
-        <source>We could not load the withdrawal addressee. You can still continue with your request.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-vatIdLabel" datatype="html">
-        <source>VAT ID:</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-emailLabel" datatype="html">
-        <source>Email:</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-dismissSuccessA11y" datatype="html">
-        <source>Dismiss success message</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-dismissErrorA11y" datatype="html">
-        <source>Dismiss error message</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-subscriptionNumberLabel" datatype="html">
-        <source>Subscription number</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-subscriptionNumberPlaceholder" datatype="html">
-        <source>SUB-000001</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-subscriptionNumberRequired" datatype="html">
-        <source>Subscription number is required.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-subscriptionNumberPattern" datatype="html">
-        <source>Enter a valid subscription number (e.g. SUB-000001).</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-customerNameLabel" datatype="html">
-        <source>Customer name</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-customerNameRequired" datatype="html">
-        <source>Customer name is required.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-emailFieldLabel" datatype="html">
-        <source>Email</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-emailRequired" datatype="html">
-        <source>Email is required.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-emailInvalid" datatype="html">
-        <source>Please enter a valid email address.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-companyLabel" datatype="html">
-        <source>Company (optional)</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-orderedOnLabel" datatype="html">
-        <source>Ordered on</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-orderedOnRequired" datatype="html">
-        <source>Ordered on date is required.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-receivedOnLabel" datatype="html">
-        <source>Received on (optional)</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-receivedOnHelp" datatype="html">
-        <source>Required only if your service was already received or deployed.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-submitDetails" datatype="html">
-        <source>Continue</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-resumedCode" datatype="html">
-        <source>Continue where you left off. Enter your confirmation code.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-codeLabel" datatype="html">
-        <source>Confirmation code</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-codeRequired" datatype="html">
-        <source>Confirmation code is required.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-codePattern" datatype="html">
-        <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-verifyCode" datatype="html">
-        <source>Verify code</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-resumedAcknowledge" datatype="html">
-        <source>Continue where you left off. Please confirm your withdrawal below.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-acknowledgeLabel" datatype="html">
-        <source>I hereby withdraw from the contract for the subscription I provided in accordance with applicable statutory withdrawal rights.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-acknowledgeRequired" datatype="html">
-        <source>You must confirm your withdrawal to continue.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-submitWithdrawal" datatype="html">
-        <source>Submit withdrawal</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-doneMessage" datatype="html">
-        <source>Your withdrawal request has been submitted successfully.</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-backToLogin" datatype="html">
-        <source>Back to login</source>
-        </trans-unit>
-      <trans-unit id="featurePublicWithdrawal-backToLoginLink" datatype="html">
         <source>Back to login</source>
         </trans-unit>
       <trans-unit id="featureAuth-loginPage" datatype="html">
@@ -1984,6 +2576,39 @@
         </trans-unit>
       <trans-unit id="featureLogin-submit" datatype="html">
         <source>Login</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-closeAria" datatype="html">
+        <source>Close</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-confirm" datatype="html">
+        <source> Log out </source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-usersTitle" datatype="html">
+        <source>Log out?</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-keycloakTitle" datatype="html">
+        <source>Log out?</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-defaultTitle" datatype="html">
+        <source>Log out?</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-usersMessage" datatype="html">
+        <source>You will be signed out of this browser only. Other devices and browsers will stay signed in unless you choose to sign out everywhere below.</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-keycloakMessage" datatype="html">
+        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-defaultMessage" datatype="html">
+        <source>Are you sure you want to log out?</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-logoutAllSessionsLabel" datatype="html">
+        <source>Also sign out all other devices and browsers</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-logoutAllSessionsHint" datatype="html">
+        <source>For security, this ends every active session for your account.</source>
         </trans-unit>
       <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
         <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
@@ -2237,9 +2862,6 @@
       <trans-unit id="featureUserManager-addUserTitle" datatype="html">
         <source>Add user</source>
         </trans-unit>
-      <trans-unit id="featureUserManager-addUser" datatype="html">
-        <source>Add</source>
-        </trans-unit>
       <trans-unit id="featureUserManager-searchUsersPlaceholder" datatype="html">
         <source>Search users</source>
         </trans-unit>
@@ -2293,9 +2915,6 @@
         </trans-unit>
       <trans-unit id="featureUserManager-roleLabel" datatype="html">
         <source>Role</source>
-        </trans-unit>
-      <trans-unit id="featureUserManager-cancel" datatype="html">
-        <source> Cancel </source>
         </trans-unit>
       <trans-unit id="featureUserManager-create" datatype="html">
         <source>Create</source>
@@ -2406,6 +3025,277 @@
       <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
         <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
         </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Contact<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> us </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-heroLead" datatype="html">
+        <source> Tell us about your project or question. We typically reply within one business day. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-successTitle" datatype="html">
+        <source>Message sent</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-successLead" datatype="html">
+        <source> Thank you for reaching out. We received your message and will get back to you soon. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-nameLabel" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-nameRequired" datatype="html">
+        <source> Name is required. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailRequired" datatype="html">
+        <source> Email is required. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailInvalid" datatype="html">
+        <source> Enter a valid email address. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
+        <source>Phone <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
+        <source>Company <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
+        <source>Message</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-messageRequired" datatype="html">
+        <source> Message is required. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyAcceptPrefix" datatype="html">
+        <source>I accept the</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyPolicyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyRequired" datatype="html">
+        <source> You must accept the Privacy Policy to send your message. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-submitting" datatype="html">
+        <source>Sending…</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-submit" datatype="html">
+        <source>Send message</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsAriaLabel" datatype="html">
+        <source>Contact information</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsTitle" datatype="html">
+        <source> Contact information </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsLead" datatype="html">
+        <source> Prefer to reach us directly? Use the details below. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsEmailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsPhoneLabel" datatype="html">
+        <source>Phone</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsFaxLabel" datatype="html">
+        <source>Fax</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsWebLabel" datatype="html">
+        <source>Web</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaTitle" datatype="html">
+        <source>Contact :: <x id="productName" equiv-text="productName"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaDescription" datatype="html">
+        <source>Send us a message. We typically reply within one business day.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaKeywords" datatype="html">
+        <source>contact, support, <x id="productName" equiv-text="productName"/></source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-webhooksPage" datatype="html">
+        <source>Webhooks</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-title" datatype="html">
+        <source>Webhooks</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-addWebhookTitle" datatype="html">
+        <source>Add webhook</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-testSuccess" datatype="html">
+        <source>Test delivery succeeded.</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-testFailed" datatype="html">
+        <source>Test delivery failed.</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-dismissTestResult" datatype="html">
+        <source>Dismiss</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-searchPlaceholder" datatype="html">
+        <source>Search webhooks</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-loading" datatype="html">
+        <source>Loading webhooks...</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-empty" datatype="html">
+        <source>No webhooks configured</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-events" datatype="html">
+        <source>events</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-failures" datatype="html">
+        <source>failures</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-viewDeliveriesTitle" datatype="html">
+        <source>View deliveries</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-testWebhookTitle" datatype="html">
+        <source>Send test delivery</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-editWebhookTitle" datatype="html">
+        <source>Edit webhook</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deleteWebhookTitle" datatype="html">
+        <source>Delete webhook</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-createWebhookTitle" datatype="html">
+        <source> Create webhook </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-closeAriaLabel" datatype="html">
+        <source>Close</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-signingSecretTitle" datatype="html">
+        <source>Signing secret</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-signingSecretHint" datatype="html">
+        <source> Copy this signing secret now. It will not be shown again. </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-done" datatype="html">
+        <source> Done </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-editWebhookModalTitle" datatype="html">
+        <source> Edit webhook </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-update" datatype="html">
+        <source>Update</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-nameLabel" datatype="html">
+        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-httpMethodLabel" datatype="html">
+        <source>HTTP method</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-urlLabel" datatype="html">
+        <source>URL <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-clientLabel" datatype="html">
+        <source>Client</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-allClientsOption" datatype="html">
+        <source>All clients</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authTypeLabel" datatype="html">
+        <source>Authentication</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authNone" datatype="html">
+        <source>None</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authAuthorization" datatype="html">
+        <source> Authorization header </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authCustomHeader" datatype="html">
+        <source> Custom header </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authQueryParam" datatype="html">
+        <source> Query parameter </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-enabledLabel" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authHeaderNameLabel" datatype="html">
+        <source>Header name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authValueLabel" datatype="html">
+        <source> Auth value <x id="START_BLOCK_IF" equiv-text="@if (!hasExistingAuthValue) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/></source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authValueKeepHint" datatype="html">
+        <source>Leave empty to keep the current value</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-subscribedEventsLabel" datatype="html">
+        <source>Subscribed events <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-loadingEventTypes" datatype="html">
+        <source>Loading event types...</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-noEventTypes" datatype="html">
+        <source>No event types available</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deleteWebhookModalTitle" datatype="html">
+        <source> Delete webhook </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deleteConfirm" datatype="html">
+        <source> Are you sure you want to delete the webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+            &gt;"/>? </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveriesTitle" datatype="html">
+        <source> Recent deliveries </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-loadingDeliveries" datatype="html">
+        <source>Loading deliveries...</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-noDeliveries" datatype="html">
+        <source>No deliveries yet</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryTime" datatype="html">
+        <source>Time</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryEvent" datatype="html">
+        <source>Event</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryStatus" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryAttempt" datatype="html">
+        <source>Attempt</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryDetails" datatype="html">
+        <source>Details</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliverySuccess" datatype="html">
+        <source>Success</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryError" datatype="html">
+        <source>Error</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryPayload" datatype="html">
+        <source>Payload</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryResponse" datatype="html">
+        <source>Response</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-moreDeliveries" datatype="html">
+        <source> More deliveries exist than shown. </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-totalDeliveries" datatype="html">
+        <source>total deliveries</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-allClients" datatype="html">
+        <source>All clients</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-disabled" datatype="html">
+        <source>Disabled</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-enabled" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>
         </trans-unit>
@@ -2421,276 +3311,6 @@
       <trans-unit id="utilCookieConsent-link" datatype="html">
         <source>Learn more</source>
         </trans-unit>
-      <trans-unit id="featureContainer-projectsPage" datatype="html">
-        <source>Projects</source>
-      </trans-unit>
-      <trans-unit id="featureContainer-projectDetailPage" datatype="html">
-        <source>Project</source>
-      </trans-unit>
-      <trans-unit id="featureContainer-adminProjectsPage" datatype="html">
-        <source>Projects</source>
-      </trans-unit>
-      <trans-unit id="featureContainer-projectsTitle" datatype="html">
-        <source>Projects</source>
-      </trans-unit>
-      <trans-unit id="featureContainer-projects" datatype="html">
-        <source>Projects</source>
-      </trans-unit>
-      <trans-unit id="featureContainer-adminProjectsTitle" datatype="html">
-        <source>Projects</source>
-      </trans-unit>
-      <trans-unit id="featureContainer-adminProjects" datatype="html">
-        <source>Projects</source>
-      </trans-unit>
-      <trans-unit id="featureProjects-title" datatype="html">
-        <source>Projects</source>
-      </trans-unit>
-      <trans-unit id="featureProjects-searchPlaceholder" datatype="html">
-        <source>Search projects</source>
-      </trans-unit>
-      <trans-unit id="featureProjects-empty" datatype="html">
-        <source>No projects assigned to you</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-title" datatype="html">
-        <source>Projects</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-add" datatype="html">
-        <source>Add</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-searchPlaceholder" datatype="html">
-        <source>Search projects</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-empty" datatype="html">
-        <source>No projects found</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-edit" datatype="html">
-        <source>Edit</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-delete" datatype="html">
-        <source>Delete</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-createTitle" datatype="html">
-        <source>Create project</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-nameLabel" datatype="html">
-        <source>Name</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-rateLabel" datatype="html">
-        <source>Hourly rate (net)</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-targetHoursLabel" datatype="html">
-        <source>Target hours</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-targetHoursHint" datatype="html">
-        <source>Optional. Leave empty for no target.</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-cancel" datatype="html">
-        <source>Cancel</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-create" datatype="html">
-        <source>Create</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-editTitle" datatype="html">
-        <source>Edit project</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-statusLabel" datatype="html">
-        <source>Status</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-statusActive" datatype="html">
-        <source>Active</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-statusArchived" datatype="html">
-        <source>Archived</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-save" datatype="html">
-        <source>Save</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-deleteTitle" datatype="html">
-        <source>Delete project</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-deleteConfirm" datatype="html">
-        <source>Delete this project? Unbilled time must be cleared first.</source>
-      </trans-unit>
-      <trans-unit id="featureAdminProjects-cannotUndo" datatype="html">
-        <source>This action cannot be undone.</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-trackedTime" datatype="html">
-        <source>Tracked time</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-targetTime" datatype="html">
-        <source>Target: <x id="PH" equiv-text="formatted duration"/></source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-unbilledTime" datatype="html">
-        <source>Unbilled time</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-openBillable" datatype="html">
-        <source>Open billable</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-openMilestones" datatype="html">
-        <source>Open milestones</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-completedMilestones" datatype="html">
-        <source>Completed milestones</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-milestonesProgressAria" datatype="html">
-        <source>Milestone completion</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-ticketsProgressAria" datatype="html">
-        <source>Tickets done</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-trackedTimeProgressAria" datatype="html">
-        <source>Tracked time progress</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-openTickets" datatype="html">
-        <source>Open tickets</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-completedTickets" datatype="html">
-        <source>Completed tickets</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-tabBoard" datatype="html">
-        <source>Board</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-tabMilestones" datatype="html">
-        <source>Milestones</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-tabTime" datatype="html">
-        <source>Time</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-timeEntries" datatype="html">
-        <source>Time entries</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-billTime" datatype="html">
-        <source>Bill unbilled time</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-bill" datatype="html">
-        <source>Bill</source>
-        </trans-unit>
-      <trans-unit id="featureProjectDetail-create" datatype="html">
-        <source>Create</source>
-        </trans-unit>
-      <trans-unit id="featureProjectDetail-save" datatype="html">
-        <source>Save</source>
-        </trans-unit>
-      <trans-unit id="featureProjectDetail-delete" datatype="html">
-        <source>Delete</source>
-        </trans-unit>
-      <trans-unit id="featureProjectDetail-durationLabel" datatype="html">
-        <source>Minutes</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-dateLabel" datatype="html">
-        <source>Date</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-descriptionLabel" datatype="html">
-        <source>Description</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-addTime" datatype="html">
-        <source>Add</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-billTimeAddLine" datatype="html">
-        <source>Add line item</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-backToAdminProjects" datatype="html">
-        <source>Back to projects</source>
-      </trans-unit>
-      <trans-unit id="featureProjectDetail-assignee" datatype="html">
-        <source>Assignee: <x id="INTERPOLATION" equiv-text="{{ email }}"/></source>
-      </trans-unit>
-      <trans-unit id="featureContainer-adminProjectDetailPage" datatype="html">
-        <source>Project</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-title" datatype="html">
-        <source>Board</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-addTicket" datatype="html">
-        <source>Add ticket</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-emptyLane" datatype="html">
-        <source>No tickets</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-titleLabel" datatype="html">
-        <source>Title</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-contentLabel" datatype="html">
-        <source>Content</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-priorityLabel" datatype="html">
-        <source>Priority</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-statusLabel" datatype="html">
-        <source>Status</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-save" datatype="html">
-        <source>Save</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-comments" datatype="html">
-        <source>Comments</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-commentPlaceholder" datatype="html">
-        <source>Add a comment</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-addComment" datatype="html">
-        <source>Comment</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-createTitle" datatype="html">
-        <source>New ticket</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-cancel" datatype="html">
-        <source>Cancel</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-create" datatype="html">
-        <source>Create</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-delete" datatype="html">
-        <source>Delete</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-deleteTitle" datatype="html">
-        <source>Permanently delete this ticket</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-deleteConfirmModalTitle" datatype="html">
-        <source>Delete ticket</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-deleteConfirmModalLead" datatype="html">
-        <source>Are you sure you want to delete this ticket?</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-deleteConfirmCannotUndo" datatype="html">
-        <source>This action cannot be undone.</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-laneDraft" datatype="html">
-        <source>Draft</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-laneTodo" datatype="html">
-        <source>To do</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-laneInProgress" datatype="html">
-        <source>In progress</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-lanePrototype" datatype="html">
-        <source>Prototype</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-laneDone" datatype="html">
-        <source>Done</source>
-      </trans-unit>
-      <trans-unit id="featureProjectBoard-laneClosed" datatype="html">
-        <source>Closed</source>
-      </trans-unit>
-      <trans-unit id="featureProjectMilestones-title" datatype="html">
-        <source>Milestones</source>
-      </trans-unit>
-      <trans-unit id="featureProjectMilestones-add" datatype="html">
-        <source>Add</source>
-      </trans-unit>
-      <trans-unit id="featureProjectMilestones-namePlaceholder" datatype="html">
-        <source>Name</source>
-      </trans-unit>
-      <trans-unit id="featureProjectMilestones-create" datatype="html">
-        <source>Create</source>
-      </trans-unit>
-      <trans-unit id="featureProjectMilestones-empty" datatype="html">
-        <source>No milestones yet</source>
-      </trans-unit>
-      <trans-unit id="featureProjectMilestones-lock" datatype="html">
-        <source>Lock</source>
-      </trans-unit>
     </body>
   </file>
 </xliff>

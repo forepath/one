@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 
 import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
 import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
+import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import type {
   CreateProjectTimeEntryDto,
   PaginatedProjectTimeEntriesResponseDto,
@@ -26,6 +27,7 @@ export class ProjectTimeEntriesService {
     private readonly ticketsRepository: ProjectTicketsRepository,
     private readonly projectBoardRealtime: ProjectBoardRealtimeService,
     private readonly projectBoardSummary: ProjectBoardSummaryService,
+    private readonly billingNotificationPublisher: BillingNotificationPublisher,
   ) {}
 
   async list(
@@ -97,6 +99,7 @@ export class ProjectTimeEntriesService {
 
     const mapped = this.mapEntry(entry);
 
+    this.billingNotificationPublisher.publishTimeEntry('time_entry.created', project.userId, mapped);
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.timeEntryUpsert, mapped);
 
     await this.projectBoardSummary.emitSummaryChanged(project);
@@ -157,6 +160,7 @@ export class ProjectTimeEntriesService {
 
     const mapped = this.mapEntry(updated);
 
+    this.billingNotificationPublisher.publishTimeEntry('time_entry.updated', project.userId, mapped);
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.timeEntryUpsert, mapped);
 
     await this.projectBoardSummary.emitSummaryChanged(project);
@@ -182,6 +186,7 @@ export class ProjectTimeEntriesService {
 
     await this.timeEntriesRepository.delete(entryId);
 
+    this.billingNotificationPublisher.publishTimeEntry('time_entry.deleted', project.userId, entry);
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.timeEntryRemoved, {
       id: entryId,
       projectId,

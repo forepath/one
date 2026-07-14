@@ -188,6 +188,10 @@ import {
   writeFile$,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { adminGuard, authGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/identity/frontend';
+import {
+  createNotificationAdminRoutes,
+  notificationAdminProviders,
+} from '@forepath/shared/frontend/feature-notifications';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 import { provideMonacoEditor } from 'ngx-monaco-editor-v2';
@@ -200,6 +204,7 @@ import { configEditorGuard } from './guards/config-editor.guard';
 import { ticketsRequireActiveClientGuard } from './guards/tickets-require-active-client.guard';
 import { KnowledgeBoardComponent } from './knowledge/knowledge-board.component';
 import { RuleManagerComponent } from './rule-manager/rule-manager.component';
+import { provideAgenstraNotificationAdminClientProvider } from './providers/notification-admin.providers';
 import { TicketsBoardComponent } from './tickets/tickets-board.component';
 
 export const agentConsoleRoutes: Route[] = [
@@ -214,6 +219,7 @@ export const agentConsoleRoutes: Route[] = [
       },
       // Identity auth routes (login, register, password reset, email confirmation, user management)
       ...identityAuthRoutes,
+      ...createNotificationAdminRoutes([authGuard, adminGuard]),
       {
         path: 'audit',
         canActivate: [authGuard],
@@ -302,6 +308,8 @@ export const agentConsoleRoutes: Route[] = [
     providers: [
       // Identity auth state (authentication reducer, facade, and auth effects)
       ...identityAuthProviders,
+      ...notificationAdminProviders,
+      provideAgenstraNotificationAdminClientProvider(),
       // Facades
       AgentsFacade,
       ClientsFacade,

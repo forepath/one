@@ -1,4 +1,8 @@
-import { ClientsModule, IdentityStatisticsBridgeModule } from '@forepath/agenstra/backend/feature-agent-controller';
+import {
+  ClientsModule,
+  IdentityNotificationBridgeModule,
+  IdentityStatisticsBridgeModule,
+} from '@forepath/agenstra/backend/feature-agent-controller';
 import { MonitoringModule } from '@forepath/shared/backend';
 import {
   BullBoardSkippingThrottlerGuard,
@@ -33,6 +37,7 @@ const authMethod = getAuthenticationMethod();
     ...(authMethod === 'users' ? [UsersAuthModule] : []),
     ClientsModule,
     IdentityStatisticsBridgeModule,
+    IdentityNotificationBridgeModule,
     MonitoringModule,
   ],
   // Use hybrid guards (checks STATIC_API_KEY to determine authentication method)

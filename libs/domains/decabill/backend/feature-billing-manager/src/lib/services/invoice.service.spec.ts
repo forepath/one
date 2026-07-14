@@ -69,6 +69,12 @@ describe('InvoiceService', () => {
   const promotionApplicationService = {
     revertPromotionApplicationsForInvoice: jest.fn().mockResolvedValue(undefined),
   };
+  const billingNotificationPublisher = {
+    publishInvoice: jest.fn(),
+    publishPayment: jest.fn(),
+    publishSubscription: jest.fn(),
+    publish: jest.fn(),
+  };
   const service = new InvoiceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -85,6 +91,7 @@ describe('InvoiceService', () => {
     projectTimeReportService as never,
     invoicePromotionApplicationsRepository as never,
     promotionApplicationService as never,
+    billingNotificationPublisher as never,
   );
   const subscriptionId = 'sub-1';
   const userId = 'user-1';

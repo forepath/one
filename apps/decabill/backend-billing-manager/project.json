@@ -74,6 +74,7 @@
           "mkdir -p dist/apps/decabill/backend-billing-manager/src/migrations",
           "(npx tsc $(find apps/decabill/backend-billing-manager/src/migrations -name '*.ts' 2>/dev/null || echo '') --outDir dist/apps/decabill/backend-billing-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/decabill/backend-billing-manager/src/migrations 2>/dev/null || true)",
           "npx tsc $(find libs/domains/identity/backend/util-auth/src/lib/migrations -name '*.ts') --outDir dist/apps/decabill/backend-billing-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir libs/domains/identity/backend/util-auth/src/lib/migrations",
+          "npx tsc $(find libs/domains/shared/backend/feature-notifications/src/lib/migrations -name '*.ts') --outDir dist/apps/decabill/backend-billing-manager/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir libs/domains/shared/backend/feature-notifications/src/lib/migrations",
           "npx esbuild apps/decabill/backend-billing-manager/src/scripts/install-provider-plugins.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/apps/decabill/backend-billing-manager/install-provider-plugins.js --tsconfig=tsconfig.base.json --packages=external"
         ]
       }

@@ -67,7 +67,7 @@ These variables apply to **stored client workspace URLs** (the agent-manager bas
 
 - `HETZNER_API_TOKEN` - Hetzner Cloud API token (for server provisioning)
 - `DIGITALOCEAN_API_TOKEN` - DigitalOcean API token (for server provisioning)
-- `ENCRYPTION_KEY` - Encryption key for sensitive data
+- `ENCRYPTION_KEY` - Encryption key for sensitive data (Atlassian tokens, webhook auth/signing secrets)
 
 ### Atlassian import (external)
 

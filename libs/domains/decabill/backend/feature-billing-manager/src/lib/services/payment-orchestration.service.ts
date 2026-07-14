@@ -14,6 +14,7 @@ import { PaymentWebhookEventsRepository } from '../repositories/payment-webhook-
 import { buildStripeCheckoutReturnUrl } from '../utils/tenant-frontend-url.utils';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 
 @Injectable()
 export class PaymentOrchestrationService {
@@ -26,6 +27,7 @@ export class PaymentOrchestrationService {
     private readonly customerProfilesRepository: CustomerProfilesRepository,
     private readonly paymentProcessorFactory: PaymentProcessorFactory,
     private readonly auditLog: BillingAuditLogService,
+    private readonly billingNotificationPublisher: BillingNotificationPublisher,
   ) {}
 
   async initiatePayment(invoiceId: string, subscriptionId: string, userId: string): Promise<{ checkoutUrl: string }> {
@@ -111,6 +113,11 @@ export class PaymentOrchestrationService {
       context: { processor: processorType, externalId: session.externalId },
     });
 
+    this.billingNotificationPublisher.publishPayment('payment.initiated', invoice, {
+      processor: processorType,
+      externalId: session.externalId,
+    });
+
     return { checkoutUrl: session.checkoutUrl };
   }
 
@@ -171,7 +178,7 @@ export class PaymentOrchestrationService {
     const attempt = await this.paymentAttemptsRepository.findByExternalId(processorType, update.externalId);
 
     if (update.status === 'succeeded') {
-      await this.invoicesRepository.update(invoice.id, {
+      const paid = await this.invoicesRepository.update(invoice.id, {
         status: InvoiceStatus.PAID,
         balanceDue: 0,
       });
@@ -189,6 +196,11 @@ export class PaymentOrchestrationService {
         context: { externalId: update.externalId },
       });
 
+      this.billingNotificationPublisher.publishPayment('payment.succeeded', paid, {
+        processor: processorType,
+        externalId: update.externalId,
+      });
+
       return;
     }
 
@@ -199,6 +211,11 @@ export class PaymentOrchestrationService {
 
     if (update.status === 'failed' && attempt) {
       await this.paymentAttemptsRepository.update(attempt.id, { status: PaymentAttemptStatus.FAILED });
+
+      this.billingNotificationPublisher.publishPayment('payment.failed', invoice, {
+        processor: processorType,
+        externalId: update.externalId,
+      });
     }
   }
 }

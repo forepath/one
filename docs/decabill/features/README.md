@@ -99,6 +99,10 @@ Admin-only features for manual invoices, customer billing profiles, operational 
 - Billing summary, statistics, and open or overdue invoice lists
 - Bill-now to force invoice generation outside the scheduler
 
+### [Webhooks](./webhooks.md)
+
+Tenant-scoped outbound webhook endpoints for billing lifecycle events with signed HTTPS deliveries.
+
 ### [Customer Profiles](./customer-profiles.md)
 
 Billing metadata required before subscription orders and for compliant invoice issuance.

@@ -6,6 +6,7 @@ import {
   getUsersSessionInvalidationInterceptor,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/shared/frontend/util-configuration';
+import { NOTIFICATION_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-notifications';
 import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideKeycloak } from '@forepath/identity/frontend';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
@@ -28,6 +29,16 @@ export const appConfig: ApplicationConfig = {
         controllerApiUrl: env.controller.restApiUrl,
         termsUrl: env.cookieConsent.termsUrl,
         privacyPolicyUrl: env.cookieConsent.privacyPolicyUrl,
+      }),
+      deps: [ENVIRONMENT],
+    },
+    {
+      provide: NOTIFICATION_ADMIN_ENVIRONMENT,
+      useFactory: (env: Environment) => ({
+        apiUrl: env.controller.restApiUrl,
+        webhooksBasePath: 'admin/webhooks',
+        applicationId: 'agenstra' as const,
+        clientFilterEnabled: true,
       }),
       deps: [ENVIRONMENT],
     },

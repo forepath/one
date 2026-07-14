@@ -173,6 +173,8 @@ export * from './lib/constants/datev-export.constants';
 export * from './lib/services/datev-export-config.service';
 export * from './lib/services/datev-export.job-handler';
 export * from './lib/queue/billing-queue.constants';
+export * from './lib/notifications/billing-notification.events';
+export * from './lib/notifications/billing-notification.publisher';
 export * from './lib/queue/datev-export.payload';
 export * from './lib/payment-processors/payment-processor.factory';
 export * from './lib/payment-processors/payment-processor.interface';

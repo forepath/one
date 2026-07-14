@@ -33,6 +33,7 @@ import {
   PublicWithdrawalRequestEntity,
   UsageRecordEntity,
 } from '@forepath/decabill/backend';
+import { WebhookDeliveryEntity, WebhookEndpointEntity } from '@forepath/shared/backend';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
 import { RevokedUserTokenEntity, UserEntity } from '@forepath/identity/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';
@@ -101,11 +102,14 @@ export const typeormConfig: DataSourceOptions = {
     PublicWithdrawalRequestEntity,
     UserEntity,
     RevokedUserTokenEntity,
+    WebhookEndpointEntity,
+    WebhookDeliveryEntity,
   ],
   migrations: [
     'src/migrations/*.js',
     'apps/decabill/backend-billing-manager/src/migrations/*.ts',
     'libs/domains/identity/backend/util-auth/src/lib/migrations/*.ts',
+    'libs/domains/shared/backend/feature-notifications/src/lib/migrations/*.ts',
   ],
   synchronize: false,
   logging:

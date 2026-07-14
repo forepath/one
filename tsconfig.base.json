@@ -158,6 +158,21 @@
       ],
       "@forepath/shared/frontend/feature-landingpage": [
         "libs/domains/shared/frontend/feature-landingpage/src/index.ts"
+      ],
+      "@forepath/shared/backend/util-webhook": [
+        "libs/domains/shared/backend/util-webhook/src/index.ts"
+      ],
+      "@forepath/shared/backend/feature-notifications": [
+        "libs/domains/shared/backend/feature-notifications/src/index.ts"
+      ],
+      "@forepath/shared/frontend/data-access-notifications": [
+        "libs/domains/shared/frontend/data-access-notifications/src/index.ts"
+      ],
+      "@forepath/shared/frontend/feature-notifications": [
+        "libs/domains/shared/frontend/feature-notifications/src/index.ts"
+      ],
+      "@shared/backend/util-crypto": [
+        "libs/domains/shared/backend/util-crypto/src/index.ts"
       ]
     }
   },

@@ -1,4 +1,8 @@
-import { buildCoordinatorJobId } from '@forepath/shared/backend';
+import {
+  buildCoordinatorJobId,
+  getWebhookDeliveryRetentionCoordinatorIntervalMs,
+  WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
+} from '@forepath/shared/backend';
 
 /** Central registry for agent-controller BullMQ queues, job names, and coordinator schedules. */
 
@@ -14,6 +18,7 @@ export const ControllerJobName = {
   FILTER_RULES_RECONCILE: 'filter-rules-sync.reconcile',
   AUTONOMOUS_TICKET_COORDINATOR: 'autonomous-ticket.coordinator',
   AUTONOMOUS_TICKET_UNIT: 'autonomous-ticket.unit',
+  WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
 } as const;
 
 export type ControllerJobName = (typeof ControllerJobName)[keyof typeof ControllerJobName];
@@ -49,6 +54,11 @@ export function getControllerRepeatableJobs(): ControllerRepeatableJobDefinition
       name: ControllerJobName.AUTONOMOUS_TICKET_COORDINATOR,
       coordinatorJobId: buildCoordinatorJobId('autonomous-ticket'),
       everyMs: parseIntervalMs('AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS', 60_000),
+    },
+    {
+      name: ControllerJobName.WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
+      coordinatorJobId: buildCoordinatorJobId('webhook-delivery-retention'),
+      everyMs: getWebhookDeliveryRetentionCoordinatorIntervalMs(),
     },
   ];
 

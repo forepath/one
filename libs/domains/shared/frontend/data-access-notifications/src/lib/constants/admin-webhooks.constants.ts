@@ -1,0 +1,1 @@
+export const ADMIN_WEBHOOKS_BATCH_SIZE = 10;

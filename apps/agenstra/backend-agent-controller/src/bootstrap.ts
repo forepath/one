@@ -7,6 +7,7 @@ import {
 } from '@forepath/shared/backend/util-http-context';
 import { createOriginAllowlistMiddleware } from '@forepath/identity/backend';
 import { assertProductionEncryptionKeyOrExit } from '@forepath/shared/backend';
+import { assertProductionWebhookEscapeHatchesDisabled } from '@forepath/shared/backend/util-webhook';
 import {
   assertBullBoardAuthConfigured,
   getBullBoardGlobalPrefixExcludes,
@@ -27,6 +28,7 @@ import { typeormConfig } from './typeorm.config';
 export async function bootstrap(): Promise<void> {
   assertProductionEncryptionKeyOrExit(new Logger('EncryptionKey'));
   assertProductionClientEndpointAllowlistConfigured(new Logger('ClientEndpointAllowlist'));
+  assertProductionWebhookEscapeHatchesDisabled(new Logger('WebhookSafety'));
 
   const appLogger = new CorrelationAwareConsoleLogger({ json: true, colors: false });
 

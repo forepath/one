@@ -11,7 +11,8 @@
     "shared-backend-util-email",
     "shared-backend-util-dynamic-provider-registry",
     "shared-backend-util-provisioning-geography",
-    "shared-backend-util-redis-cache"
+    "shared-backend-util-redis-cache",
+    "shared-backend-feature-notifications"
   ],
   "targets": {
     "test": {

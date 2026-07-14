@@ -17,6 +17,8 @@ import { ClientsService } from './clients.service';
 import { ExternalImportSyncMarkerService } from './external-import-sync-marker.service';
 import { TicketAutomationService } from './ticket-automation.service';
 import { TicketBoardRealtimeService } from './ticket-board-realtime.service';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
+
 import { TicketsService } from './tickets.service';
 
 jest.mock('@forepath/identity/backend', () => {
@@ -143,6 +145,16 @@ describe('TicketsService', () => {
         {
           provide: ExternalImportSyncMarkerService,
           useValue: { applyTicketDeleteInTransaction: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: AgenstraNotificationPublisher,
+          useValue: {
+            publishTicket: jest.fn(),
+            publishTicketComment: jest.fn(),
+            publishClient: jest.fn(),
+            publishFilterRule: jest.fn(),
+            publish: jest.fn(),
+          },
         },
       ],
     }).compile();

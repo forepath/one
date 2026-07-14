@@ -28,7 +28,7 @@ describe('UsersService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new UsersService(mockUsersRepository as any, mockEmailService as any, mockStatisticsService as any);
+    service = new UsersService(mockUsersRepository as any, mockEmailService as any, mockStatisticsService as any, null);
   });
 
   it('locks a target user by setting lockedAt', async () => {
