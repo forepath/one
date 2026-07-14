@@ -39,6 +39,7 @@ Product capabilities including subscriptions, invoices, administration, projects
 
 - [Local Development](./deployment/local-development.md)
 - [Docker Deployment](./deployment/docker-deployment.md)
+- [System Requirements](./deployment/system-requirements.md)
 - [Environment Configuration](./deployment/environment-configuration.md)
 - [Production Checklist](./deployment/production-checklist.md)
 - [Background Jobs](./deployment/background-jobs.md)

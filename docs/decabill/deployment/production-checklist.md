@@ -61,7 +61,7 @@ Comprehensive checklist for deploying Decabill to production.
 ### Infrastructure
 
 - [ ] Container images from trusted registry tags (not `latest` in production unless policy allows)
-- [ ] Resource limits set on API, worker, scheduler, and Redis
+- [ ] Resource limits set on API, worker, scheduler, and Redis (see **[System Requirements](./system-requirements.md)**)
 - [ ] Centralized logging configured
 - [ ] Health checks and uptime monitoring on `/api/health`
 - [ ] Mailhog replaced with production SMTP

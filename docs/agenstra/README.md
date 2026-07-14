@@ -76,6 +76,7 @@ Deployment guides and configuration:
 
 - [Local Development](./deployment/local-development.md) - Setting up for local development
 - [Docker Deployment](./deployment/docker-deployment.md) - Containerized deployment guide
+- [System Requirements](./deployment/system-requirements.md) - CPU, memory, and disk by role
 - [Production Checklist](./deployment/production-checklist.md) - Production deployment guide
 - [Environment Configuration](./deployment/environment-configuration.md) - Complete environment variables reference
 

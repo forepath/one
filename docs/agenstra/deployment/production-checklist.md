@@ -43,7 +43,7 @@ Comprehensive checklist for deploying Agenstra to production.
 - Docker is properly configured
 - Docker socket is securely mounted (agent-manager); understand host-level privilege implications
 - Container images use non-root users; secrets supplied at deploy time, not baked into images
-- Container resource limits are set
+- Container resource limits are set (see **[System Requirements](./system-requirements.md)**)
 - Logging is configured
 - Monitoring is set up
 - Health checks are configured
