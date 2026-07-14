@@ -30,6 +30,15 @@ Containerized deployment using Docker:
 - Volume management for invoice PDFs and provider plugins
 - Network configuration and multi-container orchestration
 
+### [System Requirements](./system-requirements.md)
+
+CPU, memory, and disk guidance by deployment role:
+
+- API, worker, and scheduler sizing for the billing manager
+- PostgreSQL and Redis baselines
+- Frontend SSR hosts and mixed local-development hosts
+- Production split examples
+
 ### [Environment Configuration](./environment-configuration.md)
 
 Complete environment variables reference:

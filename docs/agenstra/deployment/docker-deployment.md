@@ -260,6 +260,7 @@ docker compose logs --tail=100 api
 
 ## Related Documentation
 
+- **[System Requirements](./system-requirements.md)** - CPU, memory, and disk by role
 - **[Local Development](./local-development.md)** - Local setup
 - **[Production Checklist](./production-checklist.md)** - Production deployment
 - **[Environment Configuration](./environment-configuration.md)** - Environment variables
