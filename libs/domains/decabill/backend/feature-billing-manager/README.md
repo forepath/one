@@ -85,8 +85,9 @@ Use `GET /customer-profile` to retrieve the profile and `POST /customer-profile`
 profile. The backend returns 400 if the profile is missing or incomplete. Required fields: first name, last name, email,
 address line, city, country. See `docs/billing-profile-required-for-order-spec.md` and `docs/sequence-subscription-order.mmd`.
 
-Usage records can be posted to `POST /usage/record` and will be included in invoice creation if a `usagePayload` with
-`totalCost` or `usageCost` is present, or when `units` and `unitPrice` are provided.
+Usage records can be posted to `POST /admin/usage/record` (admin JWT or `STATIC_API_KEY` only; customers cannot
+self-report) and will be included in invoice creation if a `usagePayload` with `totalCost` or `usageCost` is present,
+or when `units` and `unitPrice` are provided.
 
 ## Provider details
 

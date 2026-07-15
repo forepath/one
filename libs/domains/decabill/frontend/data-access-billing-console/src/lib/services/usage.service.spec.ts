@@ -82,7 +82,7 @@ describe('UsageService', () => {
         done();
       });
 
-      const req = httpMock.expectOne(`${apiUrl}/usage/record`);
+      const req = httpMock.expectOne(`${apiUrl}/admin/usage/record`);
 
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(dto);

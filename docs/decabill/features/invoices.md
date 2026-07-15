@@ -87,7 +87,7 @@ PDFs are stored under `BILLING_INVOICE_PDF_STORAGE_PATH`. Issuer details come fr
 
 ## Usage on Invoices
 
-Usage records posted via `POST /usage/record` appear on invoices when pricing includes usage cost or unit counts.
+Usage records posted via `POST /admin/usage/record` (admin or API key only) appear on invoices when pricing includes usage cost or unit counts. Customers can read usage via `GET /usage/summary/{subscriptionId}` but cannot submit records.
 
 ## Payment
 

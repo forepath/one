@@ -28,9 +28,9 @@ export class UsageService {
   }
 
   /**
-   * Record usage for a subscription.
+   * Record usage for a subscription (admin or API key only; rejected for customer JWT).
    */
   recordUsage(record: CreateUsageRecordDto): Observable<UsageRecordResponse> {
-    return this.http.post<UsageRecordResponse>(`${this.apiUrl}/usage/record`, record);
+    return this.http.post<UsageRecordResponse>(`${this.apiUrl}/admin/usage/record`, record);
   }
 }

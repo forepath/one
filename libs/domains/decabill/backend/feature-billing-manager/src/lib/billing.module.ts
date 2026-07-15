@@ -67,6 +67,7 @@ import { CloudInitConfigsController } from './controllers/cloud-init-configs.con
 import { ServiceTypesController } from './controllers/service-types.controller';
 import { SubscriptionItemsController } from './controllers/subscription-items.controller';
 import { SubscriptionsController } from './controllers/subscriptions.controller';
+import { AdminUsageController } from './controllers/admin-usage.controller';
 import { UsageController } from './controllers/usage.controller';
 import { AvailabilitySnapshotEntity } from './entities/availability-snapshot.entity';
 import { BackorderEntity } from './entities/backorder.entity';
@@ -451,6 +452,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     AdminCustomerProfilesController,
     AdminDatevExportsController,
     PaymentsWebhookController,
+    AdminUsageController,
     UsageController,
     CustomerProfilesController,
     ProjectsController,
