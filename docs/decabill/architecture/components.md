@@ -87,6 +87,29 @@ This document describes the major runtime components in Decabill, their responsi
 
 **Documentation**: [Frontend Billing Console Application](../applications/frontend-billing-console.md)
 
+## Frontend Landing Page
+
+**Location**: `apps/decabill/frontend-landingpage`
+
+**Purpose**: Angular SSR marketing site for [decabill.com](https://decabill.com) with localized routes for home, pricing, competitor comparisons, and legal pages.
+
+**Feature library**: `libs/domains/decabill/frontend/feature-landingpage`
+
+**License**: **Source-available** (viewing only; see [LICENSE](../../../apps/decabill/frontend-landingpage/LICENSE))
+
+### Key responsibilities
+
+- Public marketing pages, pricing tiers, and competitor comparison content
+- Localized Angular builds with Express SSR in production
+- Cookie consent and Bootstrap layout shared with other ForePath frontends
+
+### Ports
+
+| Mode                 | Default  | Notes                             |
+| -------------------- | -------- | --------------------------------- |
+| `nx serve`           | **4302** | Angular dev server                |
+| Express SSR / Docker | **4302** | Serves `browser/{locale}` bundles |
+
 ## PostgreSQL
 
 **Role**: System of record for tenants, users (identity), subscriptions, subscription items, invoices, open positions, backorders, service catalog, customer billing profiles, and audit-oriented admin data.

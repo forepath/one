@@ -98,6 +98,7 @@ Decabill is the ForePath billing product for subscriptions, invoicing, payment p
 | ------------------------ | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | Backend billing manager  | `decabill-backend-billing-manager`  | [`apps/decabill/backend-billing-manager`](./apps/decabill/backend-billing-manager/)                                                      | Subscriptions, invoicing, Stripe integration |
 | Frontend billing console | `decabill-frontend-billing-console` | [`apps/decabill/frontend-billing-console`](./apps/decabill/frontend-billing-console/)                                                    | Admin and customer billing UI                |
+| Frontend landing page    | `decabill-frontend-landingpage`     | [`apps/decabill/frontend-landingpage`](./apps/decabill/frontend-landingpage/)                                                            | Public Decabill marketing and pricing site   |
 | Frontend docs            | `decabill-frontend-docs`            | [`apps/decabill/frontend-docs`](./apps/decabill/frontend-docs/) (patch over [`apps/shared/frontend-docs`](./apps/shared/frontend-docs/)) | In-product documentation site                |
 
 ### Shared platform
@@ -200,6 +201,10 @@ The following components are source-available. You may view the source code to u
 - [`apps/agenstra/frontend-landingpage`](./apps/agenstra/frontend-landingpage/) ([LICENSE](./apps/agenstra/frontend-landingpage/LICENSE))
 - [`libs/domains/agenstra/frontend/feature-landingpage`](./libs/domains/agenstra/frontend/feature-landingpage/) ([LICENSE](./libs/domains/agenstra/frontend/feature-landingpage/LICENSE))
 - [`apps/agenstra/frontend-docs`](./apps/agenstra/frontend-docs/) ([LICENSE](./apps/agenstra/frontend-docs/LICENSE))
+
+**Decabill domain**
+
+- [`apps/decabill/frontend-landingpage`](./apps/decabill/frontend-landingpage/) ([LICENSE](./apps/decabill/frontend-landingpage/LICENSE))
 - [`apps/decabill/frontend-docs`](./apps/decabill/frontend-docs/) ([LICENSE](./apps/decabill/frontend-docs/LICENSE))
 - [`apps/shared/frontend-docs`](./apps/shared/frontend-docs/) ([LICENSE](./apps/shared/frontend-docs/LICENSE))
 - [`libs/domains/shared/frontend/feature-docs`](./libs/domains/shared/frontend/feature-docs/) ([LICENSE](./libs/domains/shared/frontend/feature-docs/LICENSE))

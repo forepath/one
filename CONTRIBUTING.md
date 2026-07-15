@@ -186,7 +186,7 @@ Contributors will be recognized in:
 
 ## License
 
-By contributing to this framework, you agree that your contributions will be licensed under the MIT License.
+By contributing to this framework, you agree that your contributions will be licensed under the MIT or respective sub-license.
 
 ## Thank You
 
