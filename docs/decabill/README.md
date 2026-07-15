@@ -87,12 +87,13 @@ graph TB
 
 Decabill uses a split license model aligned with the [pricing tiers](https://decabill.com/pricing):
 
-| Component                                         | Path                                                                                                                                                             | License                                                          |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Billing manager (backend API, jobs, provisioning) | `apps/decabill/backend-billing-manager`, `libs/domains/decabill/backend/feature-billing-manager`                                                                 | [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html)           |
-| Billing console (Angular UI)                      | `apps/decabill/frontend-billing-console`, `libs/domains/decabill/frontend/feature-billing-console`, `libs/domains/decabill/frontend/data-access-billing-console` | [BUSL-1.1](https://mariadb.com/bsl11/) with Additional Use Grant |
+| Component                                         | Path                                                                                                                                                             | License                                                                        |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Billing manager (backend API, jobs, provisioning) | `apps/decabill/backend-billing-manager`, `libs/domains/decabill/backend/feature-billing-manager`                                                                 | [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html)                         |
+| Billing console (Angular UI)                      | `apps/decabill/frontend-billing-console`, `libs/domains/decabill/frontend/feature-billing-console`, `libs/domains/decabill/frontend/data-access-billing-console` | [BUSL-1.1](https://mariadb.com/bsl11/) with Additional Use Grant               |
+| Landing page (marketing site)                     | `apps/decabill/frontend-landingpage`, `libs/domains/decabill/frontend/feature-landingpage`                                                                       | Source-available ([LICENSE](../../apps/decabill/frontend-landingpage/LICENSE)) |
 
-The AGPL backend is available under the **Open Source** tier. The BUSL billing console is included from the **Startup** tier onward when your organization qualifies for the Additional Use Grant. See the LICENSE file in each component directory for the full text.
+The AGPL backend is available under the **Open Source** tier. The BUSL billing console is included from the **Startup** tier onward when your organization qualifies for the Additional Use Grant. The landing page is source-available; you may view the source code but no other rights are granted. See the LICENSE file in each component directory for the full text.
 
 ---
 
