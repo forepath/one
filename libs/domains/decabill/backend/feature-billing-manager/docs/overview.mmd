@@ -24,7 +24,7 @@ flowchart TB
         BILL_USE --> BILL2["🧾 List Invoices<br/>GET /invoices/:subscriptionId"]
         BILL_USE --> BILL3["➕ Create Invoice<br/>POST /invoices/:subscriptionId"]
         BILL_USE --> BILL4["📊 Usage Summary<br/>GET /usage/summary/:subscriptionId"]
-        BILL_USE --> BILL5["📥 Record Usage<br/>POST /usage/record"]
+        BILL_USE --> BILL5["📥 Record Usage<br/>POST /admin/usage/record"]
     end
 
     subgraph PROFILE["👤 Customer Profile"]

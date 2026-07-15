@@ -2135,9 +2135,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /usage/record:
+  /admin/usage/record:
     post:
-      summary: Record usage
+      tags: [Admin Billing]
+      summary: Record usage (admin or API key only)
+      description: |
+        Records billable usage for a subscription. Restricted to billing administrators and trusted
+        `STATIC_API_KEY` automation callers. Customers cannot self-report usage via this endpoint.
       operationId: recordUsage
       requestBody:
         required: true
@@ -2160,6 +2164,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Admin or API key access required
           content:
             application/json:
               schema:

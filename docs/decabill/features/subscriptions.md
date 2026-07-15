@@ -156,7 +156,7 @@ The **subscription-item-update** scheduler refreshes bundled controller and mana
 
 ## Usage Records
 
-Usage-based plans accept metering via `POST /usage/record`. Usage is included in invoice line items when `usagePayload` or `units` and `unitPrice` are present. Summary available at `GET /usage/summary/{subscriptionId}`.
+Usage-based plans accept metering via `POST /admin/usage/record` (billing admin or `STATIC_API_KEY` only; not customer self-service). Usage is included in invoice line items when `usagePayload` or `units` and `unitPrice` are present. Customers may read their summary at `GET /usage/summary/{subscriptionId}`.
 
 ## Pricing Preview
 

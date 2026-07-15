@@ -8,7 +8,7 @@ import { UsageController } from './usage.controller';
 
 describe('UsageController', () => {
   let controller: UsageController;
-  let usageService: jest.Mocked<Pick<UsageService, 'getLatestUsage' | 'createUsage'>>;
+  let usageService: jest.Mocked<Pick<UsageService, 'getLatestUsage'>>;
   let subscriptionService: jest.Mocked<Pick<SubscriptionService, 'getSubscription'>>;
   const subscriptionId = '11111111-1111-4111-8111-111111111111';
   const userId = 'user-1';
@@ -17,7 +17,6 @@ describe('UsageController', () => {
   beforeEach(async () => {
     usageService = {
       getLatestUsage: jest.fn().mockResolvedValue(null),
-      createUsage: jest.fn().mockResolvedValue({ id: 'record-1' }),
     };
     subscriptionService = {
       getSubscription: jest.fn().mockResolvedValue({ id: subscriptionId, userId }),
@@ -82,56 +81,6 @@ describe('UsageController', () => {
 
       await expect(controller.summary(subscriptionId, reqWithUser as never)).rejects.toThrow(BadRequestException);
       expect(usageService.getLatestUsage).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('record', () => {
-    it('creates usage record when authenticated and subscription belongs to user', async () => {
-      const body = {
-        subscriptionId,
-        periodStart: '2025-01-01T00:00:00.000Z',
-        periodEnd: '2025-01-31T23:59:59.999Z',
-        usagePayload: { requests: 50 },
-      };
-      const result = await controller.record(body, reqWithUser as never);
-
-      expect(subscriptionService.getSubscription).toHaveBeenCalledWith(subscriptionId, userId);
-      expect(usageService.createUsage).toHaveBeenCalledWith({
-        subscriptionId: body.subscriptionId,
-        periodStart: new Date(body.periodStart),
-        periodEnd: new Date(body.periodEnd),
-        usagePayload: body.usagePayload,
-        usageSource: 'dataset',
-      });
-      expect(result).toEqual({ id: 'record-1' });
-    });
-
-    it('throws BadRequestException when user not authenticated', async () => {
-      const body = {
-        subscriptionId,
-        periodStart: '2025-01-01T00:00:00.000Z',
-        periodEnd: '2025-01-31T23:59:59.999Z',
-        usagePayload: {},
-      };
-
-      await expect(controller.record(body, {} as never)).rejects.toThrow(BadRequestException);
-      expect(subscriptionService.getSubscription).not.toHaveBeenCalled();
-      expect(usageService.createUsage).not.toHaveBeenCalled();
-    });
-
-    it('throws when subscription does not belong to user', async () => {
-      subscriptionService.getSubscription.mockRejectedValue(
-        new BadRequestException('Subscription does not belong to user'),
-      );
-      const body = {
-        subscriptionId,
-        periodStart: '2025-01-01T00:00:00.000Z',
-        periodEnd: '2025-01-31T23:59:59.999Z',
-        usagePayload: {},
-      };
-
-      await expect(controller.record(body, reqWithUser as never)).rejects.toThrow(BadRequestException);
-      expect(usageService.createUsage).not.toHaveBeenCalled();
     });
   });
 });

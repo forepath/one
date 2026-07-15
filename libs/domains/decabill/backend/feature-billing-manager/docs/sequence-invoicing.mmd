@@ -1,23 +1,23 @@
 sequenceDiagram
-    participant User
+    participant AdminOrSystem
     participant BillingAPI
     participant UsageStore
     participant Database
     participant PdfService
 
-    User->>BillingAPI: POST /usage/record
+    AdminOrSystem->>BillingAPI: POST /admin/usage/record
     BillingAPI->>UsageStore: Store usage record
     UsageStore-->>BillingAPI: record id
-    BillingAPI-->>User: 200 UsageRecordResponse
+    BillingAPI-->>AdminOrSystem: 200 UsageRecordResponse
 
-    Note over User,Database: Manual invoice create (POST /invoices/:subscriptionId)
-    User->>BillingAPI: POST /invoices/:subscriptionId
+    Note over AdminOrSystem,Database: Manual invoice create (POST /invoices/:subscriptionId)
+    AdminOrSystem->>BillingAPI: POST /invoices/:subscriptionId
     BillingAPI->>Database: Fetch subscription + plan + open positions
     BillingAPI->>Database: Fetch latest usage (optional)
     BillingAPI->>Database: Issue invoice (line items, tax, number sequence)
     BillingAPI->>PdfService: Generate PDF + ZUGFeRD XML embed
     PdfService-->>BillingAPI: pdf path
     BillingAPI->>Database: Update invoice status + pdf path
-    BillingAPI-->>User: 200 CreateInvoiceResponse
+    BillingAPI-->>AdminOrSystem: 200 CreateInvoiceResponse
 
-    Note over User,Database: Scheduled invoice create from open positions (see sequence-open-positions-billing-day.mmd)
+    Note over AdminOrSystem,Database: Scheduled invoice create from open positions (see sequence-open-positions-billing-day.mmd)
