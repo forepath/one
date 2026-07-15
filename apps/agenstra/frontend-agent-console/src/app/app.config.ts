@@ -22,6 +22,7 @@ export const appConfig: ApplicationConfig = {
       useFactory: (env: Environment) => ({
         productName: env.productName,
         authMarketing: env.authMarketing,
+        authLayout: env.authLayout,
         apiUrl: env.controller.restApiUrl,
         authentication: env.authentication,
         controllerApiUrl: env.controller.restApiUrl,

@@ -19,6 +19,7 @@ function mergeEnvironmentOverrides(base: Environment, overrides: Partial<Environ
       ? { ...base.authentication, ...overrides.authentication }
       : base.authentication,
     authMarketing: overrides.authMarketing ? { ...base.authMarketing, ...overrides.authMarketing } : base.authMarketing,
+    authLayout: overrides.authLayout ? { ...base.authLayout, ...overrides.authLayout } : base.authLayout,
     chatModelOptions: overrides.chatModelOptions
       ? { ...base.chatModelOptions, ...overrides.chatModelOptions }
       : base.chatModelOptions,

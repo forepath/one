@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RouterModule } from '@angular/router';
 import type { IdentityAuthEnvironment, UsersAuthenticationConfig } from '@forepath/identity/frontend';
 import { AuthenticationFacade, loginSuccess } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
+import { IDENTITY_AUTH_ENVIRONMENT, isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
@@ -45,6 +45,7 @@ export class IdentityLoginComponent implements OnInit {
 
   protected readonly productName = this.environment.productName;
   protected readonly authMarketing = this.environment.authMarketing;
+  protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authLayout);
 
   /**
    * Whether signup is disabled (users auth only). When true, the "Create an account" link is hidden.

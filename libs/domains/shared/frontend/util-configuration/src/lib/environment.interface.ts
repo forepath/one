@@ -15,6 +15,14 @@ export type {
   UsersAuthenticationConfig,
 };
 
+export interface AuthLayoutConfig {
+  /**
+   * When false, hides the left marketing panel on login-like pages so the form area spans full width.
+   * Defaults to true when omitted.
+   */
+  showMarketingPanel?: boolean;
+}
+
 export interface Environment {
   production: boolean;
   /** Product name shown in page titles, auth screens, and other branded UI. */
@@ -39,6 +47,8 @@ export interface Environment {
   authentication: AuthenticationConfig;
   /** Brand-specific copy for login, registration, and related auth screens. */
   authMarketing: AuthMarketing;
+  /** Layout options for login, registration, and related public auth screens. */
+  authLayout?: AuthLayoutConfig;
   chatModelOptions: { [provider: string]: Record<string, string> };
   editor: {
     openInNewWindow: boolean;

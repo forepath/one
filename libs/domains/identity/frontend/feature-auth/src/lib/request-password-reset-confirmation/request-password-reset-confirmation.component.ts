@@ -11,7 +11,12 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { AuthenticationFacade, IDENTITY_AUTH_ENVIRONMENT, resetPasswordSuccess } from '@forepath/identity/frontend';
+import {
+  AuthenticationFacade,
+  IDENTITY_AUTH_ENVIRONMENT,
+  isAuthMarketingPanelVisible,
+  resetPasswordSuccess,
+} from '@forepath/identity/frontend';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
@@ -40,6 +45,7 @@ export class IdentityRequestPasswordResetConfirmationComponent implements OnInit
   resettingPassword$: Observable<boolean> = this.authFacade.resettingPassword$;
 
   protected readonly authMarketing = this.environment.authMarketing;
+  protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authLayout);
 
   get isUsersAuth(): boolean {
     return this.environment.authentication.type === 'users';
