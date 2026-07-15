@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import type { AuthMarketing } from '@forepath/shared/frontend/util-configuration';
+import type { AuthLayoutConfig, AuthMarketing } from '@forepath/shared/frontend/util-configuration';
 
 /**
  * Authentication configuration types.
@@ -39,6 +39,8 @@ export interface IdentityAuthEnvironment {
   productName: string;
   /** Brand-specific copy for login, registration, and related auth screens. */
   authMarketing: AuthMarketing;
+  /** Layout options for login, registration, and related public auth screens. */
+  authLayout?: AuthLayoutConfig;
   /** The base URL of the REST API (used to scope auth headers to API requests) */
   apiUrl: string;
   /**
@@ -88,3 +90,11 @@ export interface IdentityAuthEnvironment {
  * ```
  */
 export const IDENTITY_AUTH_ENVIRONMENT = new InjectionToken<IdentityAuthEnvironment>('IdentityAuthEnvironment');
+
+/**
+ * Whether the left marketing panel should be shown on login-like pages.
+ * Defaults to true when {@link AuthLayoutConfig.showMarketingPanel} is omitted.
+ */
+export function isAuthMarketingPanelVisible(authLayout?: AuthLayoutConfig): boolean {
+  return authLayout?.showMarketingPanel !== false;
+}

@@ -15,8 +15,26 @@
   min-height: 0; // Critical for flex scrolling
   overflow: hidden; // Prevent page-level overflow
 
+  &--marketing-hidden {
+    .section__column--marketing {
+      display: none;
+    }
+
+    .section__column--form {
+      flex: 1 1 100%;
+    }
+  }
+}
+
+.section__column--marketing {
   @media (max-width: 767.98px) {
-    flex-direction: column;
+    display: none;
+  }
+}
+
+.section__row .section__column--form {
+  @media (max-width: 767.98px) {
+    flex: 1 1 100%;
   }
 }
 
@@ -27,4 +45,14 @@
   min-width: 0; // Critical for flex shrinking
   min-height: 0; // Critical for flex scrolling
   overflow: hidden; // Prevent horizontal overflow
+}
+
+.section__column--scroll {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.section__column-title {
+  font-size: 1.25rem;
+  font-weight: 600;
 }

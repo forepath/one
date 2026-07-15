@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { RouterModule } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import { AuthenticationFacade, requestPasswordResetSuccess } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
+import { IDENTITY_AUTH_ENVIRONMENT, isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
@@ -30,6 +30,7 @@ export class IdentityRequestPasswordResetComponent implements OnInit {
   successMessage$: Observable<string | null> = this.authFacade.successMessage$;
 
   protected readonly authMarketing = this.environment.authMarketing;
+  protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authLayout);
 
   get isUsersAuth(): boolean {
     return this.environment.authentication.type === 'users';

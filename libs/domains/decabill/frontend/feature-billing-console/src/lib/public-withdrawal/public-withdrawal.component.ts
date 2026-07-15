@@ -9,6 +9,7 @@ import type {
   PublicWithdrawalStep,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { IdentityOtpInputComponent } from '@forepath/identity/frontend';
+import { isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import type { Observable } from 'rxjs';
 
@@ -49,6 +50,7 @@ export class PublicWithdrawalComponent implements OnInit {
 
   protected readonly productName = this.environment.productName;
   protected readonly authMarketing = this.environment.authMarketing;
+  protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authLayout);
   protected readonly requestId = toSignal(this.publicWithdrawalFacade.requestId$, { initialValue: null });
 
   readonly step$: Observable<PublicWithdrawalStep> = this.publicWithdrawalFacade.step$;

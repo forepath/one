@@ -12,7 +12,7 @@ import {
 import { RouterModule } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import { AuthenticationFacade, registerSuccess } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
+import { IDENTITY_AUTH_ENVIRONMENT, isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
@@ -40,6 +40,7 @@ export class IdentityRegisterComponent implements OnInit {
   protected readonly termsUrl = this.environment.termsUrl;
   protected readonly privacyPolicyUrl = this.environment.privacyPolicyUrl;
   protected readonly registerDescription = this.environment.authMarketing.registerDescription;
+  protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authLayout);
 
   get isUsersAuth(): boolean {
     return this.environment.authentication.type === 'users';
