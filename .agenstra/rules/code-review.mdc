@@ -26,6 +26,7 @@ alwaysApply: true
 - [ ] Are edge cases handled?
 - [ ] Is error handling appropriate?
 - [ ] Are there N+1 queries or performance issues?
+- [ ] For cross-project or API changes: was blast radius checked via **Knowledge Graph Skill** / `graph/graph.json` (deps, endpoints, docs)?
 
 **Code Quality:**
 - [ ] Is the code readable and maintainable?
@@ -51,6 +52,7 @@ alwaysApply: true
 - [ ] Complex logic is commented?
 - [ ] Are breaking API changes documented?
 - [ ] Is documentation updated?
+- [ ] Do related `docs/` concepts still match (incoming `documents` edges in the knowledge graph)?
 
 ## Review Feedback
 

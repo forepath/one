@@ -47,4 +47,13 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# 6. Regenerate knowledge graph and stage artifacts for this commit
+echo "📊 Regenerating knowledge graph..."
+nx run graph:generate-kg
+if [ $? -ne 0 ]; then
+  echo "❌ Knowledge graph generation failed."
+  exit 1
+fi
+git add graph/graph.json graph/graph.html
+
 echo "✅ All pre-commit checks passed!"

@@ -46,6 +46,10 @@ Reusable slash-style commands with prompts and optional agent binding. Stored as
 
 Domain-specific knowledge (patterns, best practices) as **MDC** (`.skill.mdc`) in `skills/`. Tools that support skills get them as separate files; others receive skills merged into rules or instructions.
 
+### [Knowledge graph](./knowledge-graph.md)
+
+Pre-computed monorepo map at `graph/graph.json` (projects, OpenAPI/AsyncAPI, docs concepts). Regenerated and staged on pre-commit. Use with **Knowledge Graph Skill**.
+
 ### [Agents](./agents.md)
 
 Primary agents and subagents defined as **MDC** (YAML frontmatter + body) in `agents/` (`.agent.mdc`) and `subagents/` (`.subagent.mdc`). Frontmatter includes id, name, description, mode, temperature, model, tools; body is the prompt/instructions. Transformed into Cursor agents (`.md`), OpenCode agents (`.md`), and GitHub Copilot instructions (`.github/instructions/agents.instructions.md` with both agents and subagents; Copilot has no native subagent config).

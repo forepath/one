@@ -51,6 +51,7 @@
       "@forepath/shared/keycloak": ["libs/domains/shared/keycloak/index.ts"],
       "@forepath/shared/shared": ["libs/domains/shared/shared/index.ts"],
       "@forepath/code": ["tools/code/src/index.ts"],
+      "@forepath/graph": ["tools/graph/src/index.ts"],
       "@forepath/agenstra/backend": ["libs/domains/agenstra/backend/index.ts"],
       "@forepath/agenstra/frontend": [
         "libs/domains/agenstra/frontend/index.ts"

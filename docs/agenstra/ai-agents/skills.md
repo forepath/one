@@ -57,6 +57,7 @@ description: Reusable patterns and trade-offs
 
 ## Related
 
+- [Knowledge graph](./knowledge-graph.md) – `graph/graph.json` and the **Knowledge Graph Skill** for structural navigation
 - [Agents](./agents.md) – Agents reference skills
 - [Rules](./rules.md) – Rules vs. skills: rules are project instructions; skills are reusable knowledge
 - [README](./README.md) – Overview of `.agenstra/` and transformation

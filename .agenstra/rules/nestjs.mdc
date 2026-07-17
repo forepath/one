@@ -9,6 +9,8 @@ alwaysApply: false
 
 Use this checklist when adding domain features to NestJS backend apps (for example `apps/<domain>/backend-<name>` backed by `libs/domains/<domain>/backend/feature-*`).
 
+**Before coding:** For existing projects or API changes, follow **Knowledge Graph Skill** recipes R1 (project blast radius) and R3 (endpoint owners / docs). Prefer `graph/graph.json` over ad-hoc repo scans.
+
 ## Feature Implementation Checklist
 
 Complete **every** step below. Registering entities only in `TypeOrmModule.forFeature` is not enough for CLI migrations and shared config.
@@ -18,10 +20,10 @@ Complete **every** step below. Registering entities only in `TypeOrmModule.forFe
 3. **Library exports:** Export new entities (and public DTOs or services as needed) from the feature library `src/index.ts`.
 4. **Nest module:** Register entities in `TypeOrmModule.forFeature([...])`, plus controllers, providers, and repositories in the feature module (for example `billing.module.ts`).
 5. **TypeORM CLI config:** Register the same entities in `apps/<domain>/backend-<name>/src/typeorm.config.ts` (`entities` array and imports from `@forepath/<domain>/backend`).
-6. **OpenAPI:** Extend the feature library OpenAPI spec (`spec/openapi.yaml`) with paths, schemas, and operation IDs.
+6. **OpenAPI:** Extend the feature library OpenAPI spec (`spec/openapi.yaml`) with paths, schemas, and operation IDs. After changing paths or `operationId`s, use **Knowledge Graph Skill** R3/R6 to find implementers and docs that still point at the old surface.
 7. **AsyncAPI:** When adding WebSocket gateways, extend `spec/asyncapi.yaml` and add gateway unit tests.
 8. **Tests:** Add unit tests for services, repositories, access guards, and gateway behavior.
-9. **Documentation:** Update `docs/<domain>/`, the feature library README, and app docs when the feature is user-facing.
+9. **Documentation:** Update `docs/<domain>/`, the feature library README, and app docs when the feature is user-facing. Use **Knowledge Graph Skill** R2 to list concepts that already `documents` this project.
 
 ## TypeORM Configuration (Critical)
 
