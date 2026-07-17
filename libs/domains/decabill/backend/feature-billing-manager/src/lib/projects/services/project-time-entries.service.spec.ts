@@ -16,6 +16,9 @@ describe('ProjectTimeEntriesService', () => {
   const ticketsRepository = { findByIdOrThrow: jest.fn() };
   const projectBoardRealtime = { emitToProject: jest.fn() };
   const projectBoardSummary = { emitSummaryChanged: jest.fn() };
+  const billingNotificationPublisher = {
+    publishTimeEntry: jest.fn(),
+  };
 
   const project = { id: 'p1', userId: 'admin-1' };
   const adminReq = {
@@ -33,6 +36,7 @@ describe('ProjectTimeEntriesService', () => {
       ticketsRepository as never,
       projectBoardRealtime as never,
       projectBoardSummary as never,
+      billingNotificationPublisher as never,
     );
     projectsRepository.findByIdOrThrow.mockResolvedValue(project);
   });
@@ -122,6 +126,11 @@ describe('ProjectTimeEntriesService', () => {
     );
 
     expect(result.id).toBe('e1');
+    expect(billingNotificationPublisher.publishTimeEntry).toHaveBeenCalledWith(
+      'time_entry.created',
+      'admin-1',
+      expect.objectContaining({ id: 'e1' }),
+    );
     expect(projectBoardRealtime.emitToProject).toHaveBeenCalledWith(
       'p1',
       PROJECTS_BOARD_EVENTS.timeEntryUpsert,

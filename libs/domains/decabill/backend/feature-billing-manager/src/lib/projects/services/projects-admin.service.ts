@@ -15,6 +15,7 @@ import type {
 } from '../dto/project.dto';
 import type { ProjectEntity } from '../entities/project.entity';
 import { ProjectsRepository } from '../repositories/projects.repository';
+import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import { ProjectBillingService } from './project-billing.service';
 import { ProjectTimeReportService } from './project-time-report.service';
 import { ProjectsService } from './projects.service';
@@ -27,6 +28,7 @@ export class ProjectsAdminService {
     private readonly usersRepository: UsersRepository,
     private readonly projectBillingService: ProjectBillingService,
     private readonly projectTimeReportService: ProjectTimeReportService,
+    private readonly billingNotificationPublisher: BillingNotificationPublisher,
   ) {}
 
   async list(
@@ -91,6 +93,8 @@ export class ProjectsAdminService {
       currency: dto.currency ?? 'EUR',
     });
 
+    this.billingNotificationPublisher.publishProject('project.created', project);
+
     return this.mapResponse(project);
   }
 
@@ -124,11 +128,13 @@ export class ProjectsAdminService {
       currency: dto.currency,
     });
 
+    this.billingNotificationPublisher.publishProject('project.updated', updated);
+
     return this.mapResponse(updated);
   }
 
   async delete(id: string): Promise<void> {
-    await this.projectsRepository.findByIdOrThrow(id);
+    const project = await this.projectsRepository.findByIdOrThrow(id);
     const unbilledCount = await this.projectsRepository.countUnbilledTimeEntries(id);
 
     if (unbilledCount > 0) {
@@ -136,6 +142,7 @@ export class ProjectsAdminService {
     }
 
     await this.projectsRepository.delete(id);
+    this.billingNotificationPublisher.publishProject('project.deleted', project);
   }
 
   async billTime(projectId: string, adminUserId: string, dto: BillProjectTimeDto): Promise<BillProjectTimeResponseDto> {

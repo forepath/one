@@ -187,7 +187,11 @@ import {
   validatePromotion$,
   redeemPromotion$,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { authGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/identity/frontend';
+import { authGuard, adminGuard, identityAuthProviders, identityAuthRoutes } from '@forepath/identity/frontend';
+import {
+  createNotificationAdminRoutes,
+  notificationAdminProviders,
+} from '@forepath/shared/frontend/feature-notifications';
 import { buildPageTitle } from '@forepath/shared/frontend/util-configuration';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
@@ -226,6 +230,7 @@ export const billingConsoleRoutes: Route[] = [
       },
       // Identity auth routes (login, register, password reset, email confirmation, user management)
       ...identityAuthRoutes,
+      ...createNotificationAdminRoutes([authGuard, adminGuard]),
       {
         path: 'withdrawal',
         component: PublicWithdrawalComponent,
@@ -373,6 +378,7 @@ export const billingConsoleRoutes: Route[] = [
     ],
     providers: [
       ...identityAuthProviders,
+      ...notificationAdminProviders,
       CloudInitConfigsFacade,
       SubscriptionsFacade,
       SubscriptionServerInfoFacade,

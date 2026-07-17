@@ -57,6 +57,9 @@ export {
   // Statistics interface
   IIdentityStatisticsService,
   IDENTITY_STATISTICS_SERVICE,
+  // Notification interface
+  IIdentityNotificationPublisher,
+  IDENTITY_NOTIFICATION_PUBLISHER,
   // Token utils
   createConfirmationCode,
   validateConfirmationCode,
@@ -109,6 +112,8 @@ export * from './lib/controllers/tickets.controller';
 export * from './lib/modules/filter-rules.module';
 export * from './lib/modules/context-import.module';
 export * from './lib/modules/clients.module';
+export * from './lib/modules/agenstra-notifications.module';
+export * from './lib/modules/identity-notification-bridge.module';
 export * from './lib/modules/identity-statistics-bridge.module';
 export * from './lib/modules/statistics.module';
 export * from './lib/repositories/clients.repository';
@@ -134,4 +139,6 @@ export * from './lib/services/ticket-automation.service';
 export * from './lib/services/clients.service';
 export * from './lib/services/tickets.service';
 export * from './lib/services/statistics.service';
+export * from './lib/notifications/agenstra-notification.events';
+export * from './lib/notifications/agenstra-notification.publisher';
 export * from './lib/utils/client-endpoint-security';

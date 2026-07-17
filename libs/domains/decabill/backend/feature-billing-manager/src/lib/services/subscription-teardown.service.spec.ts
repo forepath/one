@@ -26,6 +26,9 @@ describe('SubscriptionTeardownService', () => {
     applyProvisionedWithdrawalRefund: jest.fn(),
     estimateRefundGross: jest.fn(),
   };
+  const billingNotificationPublisher = {
+    publishSubscription: jest.fn(),
+  };
 
   const service = new SubscriptionTeardownService(
     subscriptionsRepository as never,
@@ -35,6 +38,7 @@ describe('SubscriptionTeardownService', () => {
     hostnameReservationService as never,
     cloudflareDnsService as never,
     withdrawalRefundService as never,
+    billingNotificationPublisher as never,
   );
 
   beforeEach(() => {
@@ -57,7 +61,7 @@ describe('SubscriptionTeardownService', () => {
     openPositionsRepository.create.mockResolvedValue(undefined);
     hostnameReservationService.releaseHostname.mockResolvedValue(undefined);
     cloudflareDnsService.deleteRecord.mockResolvedValue(undefined);
-    subscriptionsRepository.update.mockResolvedValue(undefined);
+    subscriptionsRepository.update.mockResolvedValue({ id: 'sub-1', status: SubscriptionStatus.CANCELED });
   });
 
   it('deprovisions items, records open position, and cancels subscription', async () => {
@@ -76,6 +80,10 @@ describe('SubscriptionTeardownService', () => {
     expect(subscriptionsRepository.update).toHaveBeenCalledWith(
       'sub-1',
       expect.objectContaining({ status: SubscriptionStatus.CANCELED }),
+    );
+    expect(billingNotificationPublisher.publishSubscription).toHaveBeenCalledWith(
+      'subscription.canceled',
+      expect.objectContaining({ id: 'sub-1' }),
     );
   });
 

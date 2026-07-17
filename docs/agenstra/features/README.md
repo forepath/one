@@ -158,6 +158,10 @@ Multiple authentication methods with configurable user registration. Support for
 - Admin user management
 - Optional signup disable for controlled onboarding
 
+### [Webhooks](./webhooks.md)
+
+Instance-scoped outbound webhook endpoints for controller events with optional workspace filters.
+
 ### [Tickets and Workspaces](./tickets-and-workspaces.md)
 
 Workspace-scoped tickets with collaboration, migration between clients, and ticket automation with realtime board updates.

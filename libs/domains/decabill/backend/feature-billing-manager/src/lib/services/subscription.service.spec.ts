@@ -123,6 +123,12 @@ describe('SubscriptionService', () => {
   const promotionRedemptionService = {
     redeem: jest.fn(),
   };
+  const billingNotificationPublisher = {
+    publishInvoice: jest.fn(),
+    publishPayment: jest.fn(),
+    publishSubscription: jest.fn(),
+    publish: jest.fn(),
+  };
   const service = new SubscriptionService(
     plansRepository,
     typesRepository,
@@ -144,6 +150,7 @@ describe('SubscriptionService', () => {
     withdrawalRefundService,
     backordersRepository,
     promotionRedemptionService as never,
+    billingNotificationPublisher as never,
   );
 
   beforeEach(() => {

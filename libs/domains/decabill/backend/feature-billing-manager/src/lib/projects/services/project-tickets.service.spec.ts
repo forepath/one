@@ -19,6 +19,10 @@ describe('ProjectTicketsService', () => {
   const usersRepository = { findByIdForTenant: jest.fn() };
   const projectBoardRealtime = { emitToProject: jest.fn() };
   const projectBoardSummary = { emitSummaryChanged: jest.fn() };
+  const billingNotificationPublisher = {
+    publishTicket: jest.fn(),
+    publishTicketComment: jest.fn(),
+  };
 
   let service: ProjectTicketsService;
 
@@ -33,6 +37,7 @@ describe('ProjectTicketsService', () => {
       usersRepository as never,
       projectBoardRealtime as never,
       projectBoardSummary as never,
+      billingNotificationPublisher as never,
     );
   });
 
@@ -286,6 +291,11 @@ describe('ProjectTicketsService', () => {
     } as never);
 
     expect(result.title).toBe('New');
+    expect(billingNotificationPublisher.publishTicket).toHaveBeenCalledWith(
+      'ticket.created',
+      'admin-1',
+      expect.objectContaining({ id: 't1', title: 'New' }),
+    );
     expect(activitiesRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({ actionType: ProjectTicketActionType.CREATED }),
     );
@@ -426,6 +436,11 @@ describe('ProjectTicketsService', () => {
     } as never);
 
     expect(result.body).toBe('Hello');
+    expect(billingNotificationPublisher.publishTicketComment).toHaveBeenCalledWith(
+      'admin-1',
+      'p1',
+      expect.objectContaining({ id: 'c1', ticketId: 't1', body: 'Hello' }),
+    );
     expect(projectBoardRealtime.emitToProject).toHaveBeenCalled();
   });
 

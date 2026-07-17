@@ -6,6 +6,7 @@ import { SubscriptionItemsRepository } from '../repositories/subscription-items.
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { getProvisioningCredentials } from '../utils/provider-env-defaults.utils';
 
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { CloudflareDnsService } from './cloudflare-dns.service';
 import { HostnameReservationService } from './hostname-reservation.service';
 import { ProvisioningService } from './provisioning.service';
@@ -29,6 +30,7 @@ export class SubscriptionTeardownService {
     private readonly hostnameReservationService: HostnameReservationService,
     private readonly cloudflareDnsService: CloudflareDnsService,
     private readonly withdrawalRefundService: WithdrawalRefundService,
+    private readonly billingNotificationPublisher: BillingNotificationPublisher,
   ) {}
 
   /**
@@ -107,9 +109,11 @@ export class SubscriptionTeardownService {
       }
     }
 
-    await this.subscriptionsRepository.update(subscription.id, {
+    const canceled = await this.subscriptionsRepository.update(subscription.id, {
       status: SubscriptionStatus.CANCELED,
       ...(options.withdrawn ? { withdrawnAt: billUntil } : {}),
     });
+
+    this.billingNotificationPublisher.publishSubscription('subscription.canceled', canceled);
   }
 }

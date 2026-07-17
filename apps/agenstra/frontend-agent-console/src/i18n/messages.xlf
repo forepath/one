@@ -24,7 +24,7 @@
         <source> Atlassian import (Jira &amp; Confluence) </source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-refresh" datatype="html">
-        <source> Refresh </source>
+        <source>Refresh</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-dismiss" datatype="html">
         <source> Dismiss </source>
@@ -134,20 +134,8 @@
       <trans-unit id="featureAtlassianImportAdmin-newConnApiToken" datatype="html">
         <source>API token</source>
         </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-cancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-save" datatype="html">
-        <source> Save </source>
-        </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-create" datatype="html">
-        <source>Create</source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-delete" datatype="html">
-        <source>Delete</source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-clear" datatype="html">
-        <source>Clear</source>
+        <source> Create </source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-newConfigTitle" datatype="html">
         <source> New import config </source>
@@ -239,6 +227,9 @@
       <trans-unit id="featureAtlassianImportAdmin-editConnNewApiTokenOptional" datatype="html">
         <source> New API token (optional) </source>
         </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-save" datatype="html">
+        <source> Save </source>
+        </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-editConfigHeading" datatype="html">
         <source> Edit import config (<x id="INTERPOLATION" equiv-text="{{ configToEdit.importKind }}"/>) </source>
         </trans-unit>
@@ -269,8 +260,11 @@
       <trans-unit id="featureAtlassianImportAdmin-deleteConnectionBody" datatype="html">
         <source> Delete connection &quot;<x id="INTERPOLATION" equiv-text="{{ connectionLabel(connectionPendingDelete) }}"/>&quot;? Related import configs may stop working. </source>
         </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-deleteConnectionConfirm" datatype="html">
-        <source> Delete connection </source>
+      <trans-unit id="featureAtlassianImportAdmin-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-delete" datatype="html">
+        <source> Delete </source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-deleteConfigHeading" datatype="html">
         <source> Delete import config </source>
@@ -278,20 +272,14 @@
       <trans-unit id="featureAtlassianImportAdmin-deleteConfigBody" datatype="html">
         <source> Delete <x id="INTERPOLATION" equiv-text="{{ configPendingDelete.importKind }}"/> import config for workspace <x id="INTERPOLATION_1" equiv-text="{{ clientName(configPendingDelete.clientId) }}"/>? </source>
         </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-deleteConfigConfirm" datatype="html">
-        <source> Delete config </source>
-        </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-cannotUndo" datatype="html">
-        <source>This action cannot be undone.</source>
-        </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-clearMarkersHeading" datatype="html">
         <source> Clear sync markers </source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-clearMarkersBody" datatype="html">
         <source> Clear all sync markers for this <x id="INTERPOLATION" equiv-text="{{ configPendingClearMarkers.importKind }}"/> config? External items may be re-imported as duplicates. </source>
         </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-clearMarkersConfirm" datatype="html">
-        <source> Clear markers </source>
+      <trans-unit id="featureAtlassianImportAdmin-clear" datatype="html">
+        <source> Clear </source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-swimlaneDraft" datatype="html">
         <source>Draft</source>
@@ -593,18 +581,6 @@
       <trans-unit id="featureChat-studio" datatype="html">
         <source>Studio</source>
         </trans-unit>
-      <trans-unit id="featureChat-fileTree" datatype="html">
-        <source>File Tree</source>
-        </trans-unit>
-      <trans-unit id="featureChat-chat" datatype="html">
-        <source>Chat</source>
-        </trans-unit>
-      <trans-unit id="featureChat-terminal" datatype="html">
-        <source>Terminal</source>
-        </trans-unit>
-      <trans-unit id="featureChat-versionControl" datatype="html">
-        <source>Version Control</source>
-        </trans-unit>
       <trans-unit id="featureChat-shareFileLink" datatype="html">
         <source>Share file link</source>
         </trans-unit>
@@ -616,9 +592,6 @@
         </trans-unit>
       <trans-unit id="featureChat-addWorkspaceTitle" datatype="html">
         <source>Add Workspace</source>
-        </trans-unit>
-      <trans-unit id="featureChat-add" datatype="html">
-        <source>Add</source>
         </trans-unit>
       <trans-unit id="featureChat-searchWorkspacesPlaceholder" datatype="html">
         <source>Search workspaces</source>
@@ -713,18 +686,6 @@
       <trans-unit id="featureChat-disconnected" datatype="html">
         <source>Disconnected</source>
         </trans-unit>
-      <trans-unit id="featureChat-openEditor" datatype="html">
-        <source>Open Editor</source>
-        </trans-unit>
-      <trans-unit id="featureChat-openAgentConfigFiles" datatype="html">
-        <source>Open agent config</source>
-        </trans-unit>
-      <trans-unit id="featureChat-openVirtualDesktop" datatype="html">
-        <source>Open Virtual Desktop</source>
-        </trans-unit>
-      <trans-unit id="featureChat-openDeployments" datatype="html">
-        <source>Open Deployments</source>
-        </trans-unit>
       <trans-unit id="featureChat-sshCommand" datatype="html">
         <source>SSH Command</source>
         </trans-unit>
@@ -754,6 +715,9 @@
         </trans-unit>
       <trans-unit id="featureChat-dismissEnhanceError" datatype="html">
         <source>Dismiss</source>
+        </trans-unit>
+      <trans-unit id="featureChat-chat" datatype="html">
+        <source>Chat</source>
         </trans-unit>
       <trans-unit id="featureChat-commandsLabel" datatype="html">
         <source>Commands</source>
@@ -867,9 +831,6 @@
       <trans-unit id="featureChat-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
         </trans-unit>
-      <trans-unit id="featureChat-cancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
       <trans-unit id="featureChat-delete" datatype="html">
         <source>Delete</source>
         </trans-unit>
@@ -884,7 +845,7 @@
         <source> Existing Workspace </source>
         </trans-unit>
       <trans-unit id="featureChat-provisionServer" datatype="html">
-        <source>Provision</source>
+        <source>Provision Server</source>
         </trans-unit>
       <trans-unit id="featureChat-nameLabel" datatype="html">
         <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
@@ -1010,9 +971,6 @@
         </trans-unit>
       <trans-unit id="featureChat-envVarsWarning" datatype="html">
         <source>Changing the environment variables will re-create the agent&apos;s container. Context may be lost.</source>
-        </trans-unit>
-      <trans-unit id="featureChat-close" datatype="html">
-        <source>Close</source>
         </trans-unit>
       <trans-unit id="featureChat-manageEnvVarsModalTitle" datatype="html">
         <source> Manage Environment Variables </source>
@@ -1161,6 +1119,9 @@
       <trans-unit id="featureChat-openEditorNewWindow" datatype="html">
         <source>Open Editor in New Window</source>
         </trans-unit>
+      <trans-unit id="featureChat-openEditor" datatype="html">
+        <source>Open Editor</source>
+        </trans-unit>
       <trans-unit id="featureChat-openAgentConfigFilesNewWindow" datatype="html">
         <source>Open agent config in New Window</source>
         </trans-unit>
@@ -1230,39 +1191,6 @@
       <trans-unit id="featureContainer-logout" datatype="html">
         <source>Logout</source>
         </trans-unit>
-      <trans-unit id="identityLogoutConfirm-usersTitle" datatype="html">
-        <source>Log out?</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-keycloakTitle" datatype="html">
-        <source>Log out?</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-defaultTitle" datatype="html">
-        <source>Log out?</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-usersMessage" datatype="html">
-        <source>You will be signed out of this browser only. Other devices and browsers will stay signed in unless you choose to sign out everywhere below.</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-keycloakMessage" datatype="html">
-        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-defaultMessage" datatype="html">
-        <source>Are you sure you want to log out?</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-logoutAllSessionsLabel" datatype="html">
-        <source>Also sign out all other devices and browsers</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-logoutAllSessionsHint" datatype="html">
-        <source>For security, this ends every active session for your account.</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-closeAria" datatype="html">
-        <source>Close</source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-cancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
-      <trans-unit id="identityLogoutConfirm-confirm" datatype="html">
-        <source> Log out </source>
-        </trans-unit>
       <trans-unit id="featureContainer-spacesTitle" datatype="html">
         <source>Spaces</source>
         </trans-unit>
@@ -1290,6 +1218,21 @@
       <trans-unit id="featureContainer-audit" datatype="html">
         <source>Audit</source>
         </trans-unit>
+      <trans-unit id="featureContainer-adminTitle" datatype="html">
+        <source>Admin</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-admin" datatype="html">
+        <source>Admin</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
+        <source>Role <x id="role" equiv-text="role"/></source>
+        </trans-unit>
+      <trans-unit id="featureContainer-webhooksTitle" datatype="html">
+        <source>Webhooks</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-webhooks" datatype="html">
+        <source>Webhooks</source>
+        </trans-unit>
       <trans-unit id="featureContainer-userManagementTitle" datatype="html">
         <source>User Management</source>
         </trans-unit>
@@ -1304,15 +1247,6 @@
         </trans-unit>
       <trans-unit id="featureContainer-importTitle" datatype="html">
         <source>Import</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-admin" datatype="html">
-        <source>Admin</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-adminTitle" datatype="html">
-        <source>Admin</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
-        <source>Role <x id="role" equiv-text="role"/></source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-loadingConfig" datatype="html">
         <source>Loading configuration...</source>
@@ -1384,7 +1318,7 @@
         <source>No deployment configuration found. Create one to get started.</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-createConfigButton" datatype="html">
-        <source>Create Configuration</source>
+        <source> Create Configuration </source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-closeAriaLabel" datatype="html">
         <source>Close</source>
@@ -1428,8 +1362,11 @@
       <trans-unit id="featureDeploymentConfig-gitlabBaseUrlHint" datatype="html">
         <source>Leave empty for GitLab.com</source>
         </trans-unit>
-      <trans-unit id="featureDeploymentConfig-cancelButton" datatype="html">
-        <source>Cancel</source>
+      <trans-unit id="featureDeploymentConfig-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureDeploymentConfig-create" datatype="html">
+        <source>Create</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-deleteConfirmModalTitle" datatype="html">
         <source> Delete deployment configuration </source>
@@ -1440,11 +1377,8 @@
       <trans-unit id="featureDeploymentConfig-deleteConfirmCannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
         </trans-unit>
-      <trans-unit id="featureDeploymentConfig-deleteConfirmCancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-deleteConfirmSubmit" datatype="html">
-        <source>Delete configuration</source>
+      <trans-unit id="featureDeploymentConfig-delete" datatype="html">
+        <source>Delete</source>
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-editModalTitle" datatype="html">
         <source>Edit Deployment Configuration</source>
@@ -1469,18 +1403,6 @@
         </trans-unit>
       <trans-unit id="featureDeploymentConfig-tokenPlaceholderEnter" datatype="html">
         <source>Enter token</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-updateButton" datatype="html">
-        <source>Save</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-save" datatype="html">
-        <source>Save</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-delete" datatype="html">
-        <source>Delete</source>
-        </trans-unit>
-      <trans-unit id="featureDeploymentConfig-create" datatype="html">
-        <source>Create</source>
         </trans-unit>
       <trans-unit id="featureDeploymentManager-configurationHeader" datatype="html">
         <source> Deployment Configuration </source>
@@ -1566,11 +1488,8 @@
       <trans-unit id="featureDeploymentRunDetails-cancelConfirmWarning" datatype="html">
         <source>This cannot be undone.</source>
         </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-cancelConfirmDismiss" datatype="html">
-        <source> Keep running </source>
-        </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-cancel" datatype="html">
-        <source>Cancel</source>
+        <source> Cancel </source>
         </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-cancelRun" datatype="html">
         <source>Cancel run</source>
@@ -1638,9 +1557,6 @@
       <trans-unit id="featureFileEditor-saveTitle" datatype="html">
         <source>Save (Ctrl+S)</source>
         </trans-unit>
-      <trans-unit id="featureFileEditor-saveButton" datatype="html">
-        <source>Save</source>
-        </trans-unit>
       <trans-unit id="featureFileEditor-loadingFile" datatype="html">
         <source>Loading file...</source>
         </trans-unit>
@@ -1690,11 +1606,8 @@
       <trans-unit id="featureFileEditor-overrideNewerConfirm" datatype="html">
         <source>Are you sure you want to proceed?</source>
         </trans-unit>
-      <trans-unit id="featureFileEditor-cancelButton" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
       <trans-unit id="featureFileEditor-save" datatype="html">
-        <source>Save</source>
+        <source> Save </source>
         </trans-unit>
       <trans-unit id="featureFileTree-filesHeader" datatype="html">
         <source>Files</source>
@@ -1753,17 +1666,14 @@
       <trans-unit id="featureFileTree-deleteModalWarning" datatype="html">
         <source>This action cannot be undone.</source>
         </trans-unit>
-      <trans-unit id="featureFileTree-cancelButton" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
       <trans-unit id="featureFileTree-delete" datatype="html">
-        <source>Delete</source>
+        <source> Delete </source>
         </trans-unit>
       <trans-unit id="featureFileTree-newNameLabel" datatype="html">
         <source>New Name</source>
         </trans-unit>
       <trans-unit id="featureFileTree-rename" datatype="html">
-        <source>Rename</source>
+        <source> Rename </source>
         </trans-unit>
       <trans-unit id="featureFileTree-destinationPathLabel" datatype="html">
         <source>Destination Path</source>
@@ -1775,7 +1685,7 @@
         <source> Use &apos;.&apos; for root directory, or enter a relative path like &apos;folder&apos; or &apos;folder/subfolder&apos; </source>
         </trans-unit>
       <trans-unit id="featureFileTree-move" datatype="html">
-        <source>Move</source>
+        <source> Move </source>
         </trans-unit>
       <trans-unit id="featureFileTree-enterFileName" datatype="html">
         <source>Enter file name...</source>
@@ -1909,9 +1819,6 @@
       <trans-unit id="featureGitBranchModal-willCreateLabel" datatype="html">
         <source> Will create: <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/><x id="INTERPOLATION" equiv-text="{{ branchName() }}"/><x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/></source>
         </trans-unit>
-      <trans-unit id="featureGitBranchModal-closeButton" datatype="html">
-        <source> Close </source>
-        </trans-unit>
       <trans-unit id="featureGitDiffViewer-header" datatype="html">
         <source>File Diff</source>
         </trans-unit>
@@ -1957,9 +1864,6 @@
       <trans-unit id="featureGitManager-unstageAllTitle" datatype="html">
         <source>Unstage all</source>
         </trans-unit>
-      <trans-unit id="featureGitManager-unstageAllButton" datatype="html">
-        <source>Unstage All</source>
-        </trans-unit>
       <trans-unit id="featureGitManager-binaryBadge" datatype="html">
         <source>Binary</source>
         </trans-unit>
@@ -1971,9 +1875,6 @@
         </trans-unit>
       <trans-unit id="featureGitManager-stageAllTitle" datatype="html">
         <source>Stage all</source>
-        </trans-unit>
-      <trans-unit id="featureGitManager-stageAllButton" datatype="html">
-        <source>Stage All</source>
         </trans-unit>
       <trans-unit id="featureGitManager-stageTitle" datatype="html">
         <source>Stage</source>
@@ -2011,9 +1912,6 @@
       <trans-unit id="featureTerminal-newTerminalTitle" datatype="html">
         <source>New Terminal</source>
         </trans-unit>
-      <trans-unit id="featureTerminal-newButton" datatype="html">
-        <source>New</source>
-        </trans-unit>
       <trans-unit id="featureTerminal-noSession" datatype="html">
         <source>No terminal session</source>
         </trans-unit>
@@ -2021,7 +1919,7 @@
         <source>Click &quot;New&quot; to create a terminal session</source>
         </trans-unit>
       <trans-unit id="featureTerminal-newTerminalButton" datatype="html">
-        <source>Create Terminal</source>
+        <source> Create Terminal </source>
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-title" datatype="html">
         <source>Knowledge</source>
@@ -2046,9 +1944,6 @@
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-addRelations" datatype="html">
         <source> Add relations </source>
-        </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-add" datatype="html">
-        <source>Add</source>
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-loadingRelations" datatype="html">
         <source>Loading relations...</source>
@@ -2086,9 +1981,6 @@
       <trans-unit id="featureKnowledgeBoard-noMatchingNodes" datatype="html">
         <source> No matching pages or folders </source>
         </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-close" datatype="html">
-        <source> Close </source>
-        </trans-unit>
       <trans-unit id="featureKnowledgeBoard-relationsModalTitle" datatype="html">
         <source> Add relations </source>
         </trans-unit>
@@ -2101,8 +1993,8 @@
       <trans-unit id="featureKnowledgeBoard-searchRelationsHint" datatype="html">
         <source> Search by title or SHA and add one or more relation targets. </source>
         </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-cancel" datatype="html">
-        <source> Cancel </source>
+      <trans-unit id="featureKnowledgeBoard-add" datatype="html">
+        <source>Add</source>
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-switchWorkspaceModalTitle" datatype="html">
         <source> Switch workspace </source>
@@ -2160,9 +2052,6 @@
         </trans-unit>
       <trans-unit id="featureKnowledgeTree-renameModalTitle" datatype="html">
         <source>Rename item</source>
-        </trans-unit>
-      <trans-unit id="featureKnowledgeTree-cancel" datatype="html">
-        <source> Cancel </source>
         </trans-unit>
       <trans-unit id="featureKnowledgeTree-rename" datatype="html">
         <source>Rename</source>
@@ -2233,9 +2122,6 @@
       <trans-unit id="featureRuleManager-addButtonTitle" datatype="html">
         <source>Add filter rule</source>
         </trans-unit>
-      <trans-unit id="featureRuleManager-add" datatype="html">
-        <source>Add</source>
-        </trans-unit>
       <trans-unit id="featureRuleManager-searchPlaceholder" datatype="html">
         <source>Search rules</source>
         </trans-unit>
@@ -2269,9 +2155,6 @@
       <trans-unit id="featureRuleManager-createTitle" datatype="html">
         <source>Add filter rule</source>
         </trans-unit>
-      <trans-unit id="featureRuleManager-create" datatype="html">
-        <source>Create</source>
-        </trans-unit>
       <trans-unit id="featureRuleManager-pattern" datatype="html">
         <source>Pattern</source>
         </trans-unit>
@@ -2302,14 +2185,14 @@
       <trans-unit id="featureRuleManager-pickWorkspaces" datatype="html">
         <source>Workspaces</source>
         </trans-unit>
-      <trans-unit id="featureRuleManager-cancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-save" datatype="html">
-        <source> Save </source>
+      <trans-unit id="featureRuleManager-create" datatype="html">
+        <source> Create </source>
         </trans-unit>
       <trans-unit id="featureRuleManager-editTitle" datatype="html">
         <source>Edit filter rule</source>
+        </trans-unit>
+      <trans-unit id="featureRuleManager-save" datatype="html">
+        <source> Save </source>
         </trans-unit>
       <trans-unit id="featureRuleManager-deleteTitle" datatype="html">
         <source>Delete rule</source>
@@ -2328,9 +2211,6 @@
         </trans-unit>
       <trans-unit id="featureRuleManager-runTest" datatype="html">
         <source> Run test </source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-close" datatype="html">
-        <source> Close </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-runStatusPending" datatype="html">
         <source>Pending</source>
@@ -2571,7 +2451,7 @@
         <source>Describe the ticket. Changes save when you leave this field.</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-addSubtask" datatype="html">
-        <source> Add subtask </source>
+        <source>Add subtask</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-subtasksHeading" datatype="html">
         <source>Subtasks</source>
@@ -2741,9 +2621,6 @@
       <trans-unit id="featureTicketsBoard-delete" datatype="html">
         <source> Delete </source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-close" datatype="html">
-        <source> Close </source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-relationsModalTitle" datatype="html">
         <source> Add relations </source>
         </trans-unit>
@@ -2756,14 +2633,8 @@
       <trans-unit id="featureTicketsBoard-relationsSearchHint" datatype="html">
         <source> Search by title or SHA and add one or more relation targets. </source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-relationsCancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-relationsAdd" datatype="html">
         <source>Add</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-move" datatype="html">
-        <source>Move</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-migrateModalTitle" datatype="html">
         <source> Move ticket to workspace </source>
@@ -2774,8 +2645,8 @@
       <trans-unit id="featureTicketsBoard-migrateTargetLabel" datatype="html">
         <source>Target workspace</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-migrateCancel" datatype="html">
-        <source> Cancel </source>
+      <trans-unit id="featureTicketsBoard-move" datatype="html">
+        <source> Move </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-automationRunModalTitle" datatype="html">
         <source> Automation run </source>
@@ -2867,11 +2738,8 @@
       <trans-unit id="featureTicketsBoard-createPriorityLabel" datatype="html">
         <source>Priority</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-createCancel" datatype="html">
-        <source> Cancel </source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-create" datatype="html">
-        <source>Create</source>
+        <source> Create </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-globalSearchTitle" datatype="html">
         <source> Search tickets </source>
@@ -2888,9 +2756,6 @@
       <trans-unit id="featureTicketsBoard-globalSearchNoResults" datatype="html">
         <source>No matching tickets</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-globalSearchClose" datatype="html">
-        <source> Close </source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherTitle" datatype="html">
         <source> Switch workspace </source>
         </trans-unit>
@@ -2905,9 +2770,6 @@
         </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherCurrent" datatype="html">
         <source>Current</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-workspaceSwitcherClose" datatype="html">
-        <source> Close </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-bodyGenMissingContext" datatype="html">
         <source>Could not apply generated text (missing session).</source>
@@ -3148,6 +3010,39 @@
         </trans-unit>
       <trans-unit id="featureLogin-submit" datatype="html">
         <source>Login</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-closeAria" datatype="html">
+        <source>Close</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-confirm" datatype="html">
+        <source> Log out </source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-usersTitle" datatype="html">
+        <source>Log out?</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-keycloakTitle" datatype="html">
+        <source>Log out?</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-defaultTitle" datatype="html">
+        <source>Log out?</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-usersMessage" datatype="html">
+        <source>You will be signed out of this browser only. Other devices and browsers will stay signed in unless you choose to sign out everywhere below.</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-keycloakMessage" datatype="html">
+        <source>You will be signed out of this browser. If you use single sign-on, other applications may also require you to sign in again.</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-defaultMessage" datatype="html">
+        <source>Are you sure you want to log out?</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-logoutAllSessionsLabel" datatype="html">
+        <source>Also sign out all other devices and browsers</source>
+        </trans-unit>
+      <trans-unit id="identityLogoutConfirm-logoutAllSessionsHint" datatype="html">
+        <source>For security, this ends every active session for your account.</source>
         </trans-unit>
       <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
         <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
@@ -3401,9 +3296,6 @@
       <trans-unit id="featureUserManager-addUserTitle" datatype="html">
         <source>Add user</source>
         </trans-unit>
-      <trans-unit id="featureUserManager-addUser" datatype="html">
-        <source>Add</source>
-        </trans-unit>
       <trans-unit id="featureUserManager-searchUsersPlaceholder" datatype="html">
         <source>Search users</source>
         </trans-unit>
@@ -3457,9 +3349,6 @@
         </trans-unit>
       <trans-unit id="featureUserManager-roleLabel" datatype="html">
         <source>Role</source>
-        </trans-unit>
-      <trans-unit id="featureUserManager-cancel" datatype="html">
-        <source> Cancel </source>
         </trans-unit>
       <trans-unit id="featureUserManager-create" datatype="html">
         <source>Create</source>
@@ -3569,6 +3458,277 @@
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
         <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Contact<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> us </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-heroLead" datatype="html">
+        <source> Tell us about your project or question. We typically reply within one business day. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-successTitle" datatype="html">
+        <source>Message sent</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-successLead" datatype="html">
+        <source> Thank you for reaching out. We received your message and will get back to you soon. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-nameLabel" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-nameRequired" datatype="html">
+        <source> Name is required. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailRequired" datatype="html">
+        <source> Email is required. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailInvalid" datatype="html">
+        <source> Enter a valid email address. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
+        <source>Phone <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
+        <source>Company <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
+        <source>Message</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-messageRequired" datatype="html">
+        <source> Message is required. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyAcceptPrefix" datatype="html">
+        <source>I accept the</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyPolicyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyRequired" datatype="html">
+        <source> You must accept the Privacy Policy to send your message. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-submitting" datatype="html">
+        <source>Sending…</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-submit" datatype="html">
+        <source>Send message</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsAriaLabel" datatype="html">
+        <source>Contact information</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsTitle" datatype="html">
+        <source> Contact information </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsLead" datatype="html">
+        <source> Prefer to reach us directly? Use the details below. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsEmailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsPhoneLabel" datatype="html">
+        <source>Phone</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsFaxLabel" datatype="html">
+        <source>Fax</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsWebLabel" datatype="html">
+        <source>Web</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaTitle" datatype="html">
+        <source>Contact :: <x id="productName" equiv-text="productName"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaDescription" datatype="html">
+        <source>Send us a message. We typically reply within one business day.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaKeywords" datatype="html">
+        <source>contact, support, <x id="productName" equiv-text="productName"/></source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-webhooksPage" datatype="html">
+        <source>Webhooks</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-title" datatype="html">
+        <source>Webhooks</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-addWebhookTitle" datatype="html">
+        <source>Add webhook</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-testSuccess" datatype="html">
+        <source>Test delivery succeeded.</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-testFailed" datatype="html">
+        <source>Test delivery failed.</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-dismissTestResult" datatype="html">
+        <source>Dismiss</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-searchPlaceholder" datatype="html">
+        <source>Search webhooks</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-loading" datatype="html">
+        <source>Loading webhooks...</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-empty" datatype="html">
+        <source>No webhooks configured</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-events" datatype="html">
+        <source>events</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-failures" datatype="html">
+        <source>failures</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-viewDeliveriesTitle" datatype="html">
+        <source>View deliveries</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-testWebhookTitle" datatype="html">
+        <source>Send test delivery</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-editWebhookTitle" datatype="html">
+        <source>Edit webhook</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deleteWebhookTitle" datatype="html">
+        <source>Delete webhook</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-createWebhookTitle" datatype="html">
+        <source> Create webhook </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-closeAriaLabel" datatype="html">
+        <source>Close</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-signingSecretTitle" datatype="html">
+        <source>Signing secret</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-signingSecretHint" datatype="html">
+        <source> Copy this signing secret now. It will not be shown again. </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-done" datatype="html">
+        <source> Done </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-editWebhookModalTitle" datatype="html">
+        <source> Edit webhook </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-update" datatype="html">
+        <source>Update</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-nameLabel" datatype="html">
+        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-httpMethodLabel" datatype="html">
+        <source>HTTP method</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-urlLabel" datatype="html">
+        <source>URL <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-clientLabel" datatype="html">
+        <source>Client</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-allClientsOption" datatype="html">
+        <source>All clients</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authTypeLabel" datatype="html">
+        <source>Authentication</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authNone" datatype="html">
+        <source>None</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authAuthorization" datatype="html">
+        <source> Authorization header </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authCustomHeader" datatype="html">
+        <source> Custom header </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authQueryParam" datatype="html">
+        <source> Query parameter </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-enabledLabel" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authHeaderNameLabel" datatype="html">
+        <source>Header name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authValueLabel" datatype="html">
+        <source> Auth value <x id="START_BLOCK_IF" equiv-text="@if (!hasExistingAuthValue) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/></source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-authValueKeepHint" datatype="html">
+        <source>Leave empty to keep the current value</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-subscribedEventsLabel" datatype="html">
+        <source>Subscribed events <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-loadingEventTypes" datatype="html">
+        <source>Loading event types...</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-noEventTypes" datatype="html">
+        <source>No event types available</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deleteWebhookModalTitle" datatype="html">
+        <source> Delete webhook </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deleteConfirm" datatype="html">
+        <source> Are you sure you want to delete the webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+            &gt;"/>? </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveriesTitle" datatype="html">
+        <source> Recent deliveries </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-loadingDeliveries" datatype="html">
+        <source>Loading deliveries...</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-noDeliveries" datatype="html">
+        <source>No deliveries yet</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryTime" datatype="html">
+        <source>Time</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryEvent" datatype="html">
+        <source>Event</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryStatus" datatype="html">
+        <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryAttempt" datatype="html">
+        <source>Attempt</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryDetails" datatype="html">
+        <source>Details</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliverySuccess" datatype="html">
+        <source>Success</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryError" datatype="html">
+        <source>Error</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryPayload" datatype="html">
+        <source>Payload</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-deliveryResponse" datatype="html">
+        <source>Response</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-moreDeliveries" datatype="html">
+        <source> More deliveries exist than shown. </source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-totalDeliveries" datatype="html">
+        <source>total deliveries</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-allClients" datatype="html">
+        <source>All clients</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-disabled" datatype="html">
+        <source>Disabled</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-enabled" datatype="html">
+        <source>Enabled</source>
         </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>

@@ -1,0 +1,21 @@
+{
+  "name": "shared-frontend-data-access-notifications",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/shared/frontend/data-access-notifications/src",
+  "prefix": "shared",
+  "projectType": "library",
+  "tags": ["domain:shared", "scope:frontend", "type:data-access"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/shared/frontend/data-access-notifications/jest.config.cts",
+        "tsConfig": "libs/domains/shared/frontend/data-access-notifications/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

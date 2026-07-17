@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 
 import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
+import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import type {
   CreateProjectMilestoneDto,
   ProjectMilestoneResponseDto,
@@ -24,6 +25,7 @@ export class ProjectMilestonesService {
     private readonly ticketsRepository: ProjectTicketsRepository,
     private readonly projectBoardRealtime: ProjectBoardRealtimeService,
     private readonly projectBoardSummary: ProjectBoardSummaryService,
+    private readonly billingNotificationPublisher: BillingNotificationPublisher,
   ) {}
 
   async list(projectId: string, userInfo: UserInfoFromRequest): Promise<ProjectMilestoneResponseDto[]> {
@@ -56,6 +58,7 @@ export class ProjectMilestonesService {
 
     const mapped = await this.mapMilestone(milestone);
 
+    this.billingNotificationPublisher.publishMilestone('milestone.created', project.userId, mapped);
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.milestoneUpsert, mapped);
     await this.projectBoardSummary.emitSummaryChanged(project);
 
@@ -91,6 +94,7 @@ export class ProjectMilestonesService {
 
     const mapped = await this.mapMilestone(updated);
 
+    this.billingNotificationPublisher.publishMilestone('milestone.updated', project.userId, mapped);
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.milestoneUpsert, mapped);
     await this.projectBoardSummary.emitSummaryChanged(project);
 
@@ -118,6 +122,7 @@ export class ProjectMilestonesService {
 
     const mapped = await this.mapMilestone(updated);
 
+    this.billingNotificationPublisher.publishMilestone('milestone.updated', project.userId, mapped);
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.milestoneUpsert, mapped);
     await this.projectBoardSummary.emitSummaryChanged(project);
 
@@ -141,6 +146,7 @@ export class ProjectMilestonesService {
 
     await this.milestonesRepository.delete(milestoneId);
 
+    this.billingNotificationPublisher.publishMilestone('milestone.deleted', project.userId, milestone);
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.milestoneRemoved, {
       id: milestoneId,
       projectId,

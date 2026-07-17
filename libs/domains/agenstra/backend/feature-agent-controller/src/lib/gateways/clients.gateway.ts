@@ -24,6 +24,7 @@ import type { Socket as ClientSocket } from 'socket.io-client';
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
@@ -119,6 +120,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly autoContextResolverService: AutoContextResolverService,
     private readonly workspaceConfigurationOverridesProxy: ClientWorkspaceConfigurationOverridesProxyService,
     private readonly agentConsoleStatusService: AgentConsoleStatusService,
+    private readonly notificationPublisher: AgenstraNotificationPublisher,
   ) {}
 
   afterInit(server: Server): void {
@@ -389,6 +391,14 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
               .recordChatOutput(currentClientId, lastAgentId, wordCount, charCount, userId)
               .catch(() => undefined);
 
+            this.notificationPublisher.publishChatMessage(currentClientId, {
+              agentId: lastAgentId,
+              direction: 'outgoing',
+              source: 'agent',
+              message: text,
+              userId: userId ?? null,
+            });
+
             void this.agentConsoleStatusService
               .onAgentChatActivity(currentClientId, lastAgentId)
               .catch(() => undefined);
@@ -440,6 +450,18 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 matchedFilter?.reason,
               )
               .catch(() => undefined);
+
+            this.notificationPublisher.publishFilterRuleTriggered(currentClientId, {
+              agentId: lastAgentId,
+              direction: direction === FilterDropDirection.OUTGOING ? 'outgoing' : 'incoming',
+              status: 'dropped',
+              filterType: matchedFilter?.type ?? 'unknown',
+              filterDisplayName: matchedFilter?.displayName ?? 'Unknown Filter',
+              reason: matchedFilter?.reason ?? null,
+              wordCount,
+              charCount,
+              userId: userId ?? null,
+            });
           } else if (payload?.status === 'filtered') {
             const flagDirection =
               payload.direction === 'outgoing' ? FilterFlagDirection.OUTGOING : FilterFlagDirection.INCOMING;
@@ -475,6 +497,19 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
                 matchedFilter?.reason,
               )
               .catch(() => undefined);
+
+            this.notificationPublisher.publishFilterRuleTriggered(currentClientId, {
+              agentId: lastAgentId,
+              direction: flagDirection === FilterFlagDirection.OUTGOING ? 'outgoing' : 'incoming',
+              status: 'filtered',
+              filterType: matchedFilter?.type ?? 'unknown',
+              filterDisplayName: matchedFilter?.displayName ?? 'Unknown Filter',
+              reason: matchedFilter?.reason ?? null,
+              wordCount,
+              charCount,
+              userId: userId ?? null,
+              messagePreview: msg || this.lastChatMessageBySocket.get(socket.id) || null,
+            });
           }
         }
 
@@ -1068,6 +1103,13 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         this.statisticsService
           .recordChatInput(clientId, agentId, wordCount, charCount, userInfo?.userId)
           .catch(() => undefined);
+        this.notificationPublisher.publishChatMessage(clientId, {
+          agentId,
+          direction: 'incoming',
+          source: 'user',
+          message,
+          userId: userInfo?.userId ?? null,
+        });
         this.lastAgentIdBySocket.set(socket.id, agentId);
         this.lastChatMessageBySocket.set(socket.id, message);
       } else if (event === 'enhanceChat' && agentId) {

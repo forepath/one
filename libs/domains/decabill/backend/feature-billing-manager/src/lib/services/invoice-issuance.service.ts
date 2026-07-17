@@ -11,6 +11,7 @@ import { SubscriptionsRepository } from '../repositories/subscriptions.repositor
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { InvoiceEmailService } from './invoice-email.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
@@ -33,6 +34,7 @@ export class InvoiceIssuanceService {
     private readonly invoicePdfService: InvoicePdfService,
     private readonly invoiceEmailService: InvoiceEmailService,
     private readonly auditLog: BillingAuditLogService,
+    private readonly billingNotificationPublisher: BillingNotificationPublisher,
   ) {}
 
   async issueDraft(invoiceId: string, dueInDays = 14, options?: IssueDraftOptions): Promise<InvoiceEntity> {
@@ -107,6 +109,8 @@ export class InvoiceIssuanceService {
     if (!options?.skipNotification && !isPromotionalZeroBalance) {
       await this.invoiceEmailService.notifyInvoiceIssued(issued, pdfStorageKey);
     }
+
+    this.billingNotificationPublisher.publishInvoice('invoice.issued', issued);
 
     return issued;
   }

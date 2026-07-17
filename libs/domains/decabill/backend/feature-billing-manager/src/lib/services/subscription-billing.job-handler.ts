@@ -5,6 +5,7 @@ import { OpenPositionsRepository } from '../repositories/open-positions.reposito
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { BillingScheduleService } from './billing-schedule.service';
 
 @Injectable()
@@ -17,6 +18,7 @@ export class SubscriptionBillingJobHandler {
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly billingScheduleService: BillingScheduleService,
     private readonly openPositionsRepository: OpenPositionsRepository,
+    private readonly billingNotificationPublisher: BillingNotificationPublisher,
   ) {}
 
   async findDueSubscriptionIds(): Promise<string[]> {
@@ -50,11 +52,13 @@ export class SubscriptionBillingJobHandler {
       plan.billingDayOfMonth,
     );
 
-    await this.subscriptionsRepository.update(subscription.id, {
+    const updated = await this.subscriptionsRepository.update(subscription.id, {
       currentPeriodStart: schedule.currentPeriodStart,
       currentPeriodEnd: schedule.currentPeriodEnd,
       nextBillingAt: schedule.nextBillingAt,
     });
+
+    this.billingNotificationPublisher.publishSubscription('subscription.updated', updated);
 
     this.logger.log(`Billed subscription ${subscription.id}, next billing at ${schedule.nextBillingAt.toISOString()}`);
   }

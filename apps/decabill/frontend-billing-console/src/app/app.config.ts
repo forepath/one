@@ -5,6 +5,7 @@ import { getAuthInterceptor, getUsersSessionInvalidationInterceptor } from '@for
 import { getBillingTenantInterceptor } from '@forepath/decabill/frontend/data-access-billing-console';
 import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/shared/frontend/util-configuration';
 import { cookieConfig } from '@forepath/shared/frontend/util-cookie-consent';
+import { NOTIFICATION_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-notifications';
 import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideKeycloak } from '@forepath/identity/frontend';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
@@ -27,6 +28,16 @@ export const appConfig: ApplicationConfig = {
         controllerApiUrl: env.controller.restApiUrl,
         termsUrl: env.cookieConsent.termsUrl,
         privacyPolicyUrl: env.cookieConsent.privacyPolicyUrl,
+      }),
+      deps: [ENVIRONMENT],
+    },
+    {
+      provide: NOTIFICATION_ADMIN_ENVIRONMENT,
+      useFactory: (env: Environment) => ({
+        apiUrl: env.billing.restApiUrl,
+        webhooksBasePath: 'admin/billing/webhooks',
+        applicationId: 'decabill' as const,
+        clientFilterEnabled: false,
       }),
       deps: [ENVIRONMENT],
     },

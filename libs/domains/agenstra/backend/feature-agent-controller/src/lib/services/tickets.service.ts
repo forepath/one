@@ -47,6 +47,7 @@ import {
   TicketStatus,
 } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { buildSpecificationSubtaskSeeds } from '../utils/specification-ticket-subtasks.utils';
 import { derivePatchActionType, type FieldChange } from '../utils/ticket-activity-payload.utils';
 import {
@@ -97,6 +98,7 @@ export class TicketsService {
     private readonly clientAutomationChatRealtime: ClientAutomationChatRealtimeService,
     @Inject(forwardRef(() => ExternalImportSyncMarkerService))
     private readonly externalImportSyncMarkerService: ExternalImportSyncMarkerService,
+    private readonly notificationPublisher: AgenstraNotificationPublisher,
   ) {}
 
   /**
@@ -486,6 +488,7 @@ export class TicketsService {
       const ticketDto = allDtos[i];
 
       this.boardEmitTicketUpsert(ticketDto.clientId, ticketDto);
+      this.notificationPublisher.publishTicket('ticket.created', ticketDto);
       const activityRows = await this.activityRepo.find({
         where: { ticketId: allRows[i].id },
         order: { occurredAt: 'DESC' },
@@ -621,6 +624,7 @@ export class TicketsService {
     }
 
     this.boardEmitTicketUpsert(mapped.clientId, mapped);
+    this.notificationPublisher.publishTicket('ticket.updated', mapped);
     const activityRows = await this.activityRepo.find({
       where: { ticketId: id },
       order: { occurredAt: 'DESC' },
@@ -745,6 +749,7 @@ export class TicketsService {
     }
 
     const clientId = ticket.clientId;
+    const mapped = await this.mapTicketInWorkspace(ticket);
 
     await this.ticketRepo.manager.transaction(async (em) => {
       const aRepo = em.getRepository(TicketActivityEntity);
@@ -762,6 +767,7 @@ export class TicketsService {
       await this.externalImportSyncMarkerService.applyTicketDeleteInTransaction(em, id, releaseExternalSyncMarker);
       await tRepo.delete(id);
     });
+    this.notificationPublisher.publishTicket('ticket.deleted', mapped);
     this.boardEmitTicketRemoved(clientId, id);
   }
 
@@ -953,6 +959,7 @@ export class TicketsService {
     const ticketRow = await this.loadTicketOrThrow(ticketId);
     const mappedComment = await this.mapComment(saved);
 
+    this.notificationPublisher.publishTicketComment(ticketRow.clientId, mappedComment);
     this.boardEmitTicketComment(ticketRow.clientId, mappedComment);
     await this.boardEmitTicketActivityMapped(ticketRow.clientId, activityRow);
 

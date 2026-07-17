@@ -1,0 +1,66 @@
+.webhook-manager-container {
+  min-height: 0;
+}
+
+.search-input {
+  border-radius: 0;
+  position: relative;
+  padding-left: 0;
+  box-shadow: none;
+}
+
+.search-input-container {
+  position: relative;
+
+  i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+.info-badge {
+  font-size: 0.75rem;
+}
+
+.event-type-list {
+  max-height: 12rem;
+  overflow: auto;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+.delivery-details-cell {
+  min-width: 16rem;
+  max-width: 28rem;
+}
+
+.delivery-detail-block + .delivery-detail-block {
+  margin-top: 0.5rem;
+}
+
+.delivery-detail-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--bs-secondary-color);
+  margin-bottom: 0.25rem;
+}
+
+.delivery-detail-content {
+  font-family: var(--bs-font-monospace);
+  font-size: 0.75rem;
+  margin-bottom: 0;
+  max-height: 10rem;
+  overflow: auto;
+  padding: 0.5rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--bs-tertiary-bg);
+  border-radius: 0.25rem;
+}

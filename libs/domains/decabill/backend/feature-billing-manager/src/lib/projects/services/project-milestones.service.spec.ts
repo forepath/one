@@ -16,6 +16,9 @@ describe('ProjectMilestonesService', () => {
   const ticketsRepository = { countByMilestone: jest.fn() };
   const projectBoardRealtime = { emitToProject: jest.fn() };
   const projectBoardSummary = { emitSummaryChanged: jest.fn() };
+  const billingNotificationPublisher = {
+    publishMilestone: jest.fn(),
+  };
 
   const adminInfo = {
     userId: 'admin-1',
@@ -45,6 +48,7 @@ describe('ProjectMilestonesService', () => {
       ticketsRepository as never,
       projectBoardRealtime as never,
       projectBoardSummary as never,
+      billingNotificationPublisher as never,
     );
     projectsRepository.findByIdOrThrow.mockResolvedValue(project);
     ticketsRepository.countByMilestone.mockResolvedValue({ open: 1, done: 2 });
@@ -71,6 +75,11 @@ describe('ProjectMilestonesService', () => {
     const result = await service.create('p1', { name: 'M1' }, adminInfo);
 
     expect(result.id).toBe('m1');
+    expect(billingNotificationPublisher.publishMilestone).toHaveBeenCalledWith(
+      'milestone.created',
+      'admin-1',
+      expect.objectContaining({ id: 'm1' }),
+    );
     expect(projectBoardRealtime.emitToProject).toHaveBeenCalledWith(
       'p1',
       PROJECTS_BOARD_EVENTS.milestoneUpsert,
@@ -113,6 +122,11 @@ describe('ProjectMilestonesService', () => {
     await service.delete('p1', 'm1', adminInfo);
 
     expect(milestonesRepository.delete).toHaveBeenCalledWith('m1');
+    expect(billingNotificationPublisher.publishMilestone).toHaveBeenCalledWith(
+      'milestone.deleted',
+      'admin-1',
+      milestone,
+    );
     expect(projectBoardRealtime.emitToProject).toHaveBeenCalledWith('p1', PROJECTS_BOARD_EVENTS.milestoneRemoved, {
       id: 'm1',
       projectId: 'p1',

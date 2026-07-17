@@ -3882,6 +3882,149 @@ paths:
                 $ref: '#/components/schemas/StatisticsEntityEventListDto'
         '403':
           description: Access denied to requested client
+  /admin/webhooks/event-types:
+    get:
+      tags: [Admin]
+      summary: List webhook event types (admin)
+      operationId: listAgenstraWebhookEventTypes
+      responses:
+        '200':
+          description: Event catalog
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WebhookEventTypeResponseDto'
+  /admin/webhooks:
+    get:
+      tags: [Admin]
+      summary: List webhook endpoints (admin)
+      operationId: listAgenstraWebhookEndpoints
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Webhook endpoints
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WebhookEndpointResponseDto'
+    post:
+      tags: [Admin]
+      summary: Create webhook endpoint (admin)
+      operationId: createAgenstraWebhookEndpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWebhookEndpointDto'
+      responses:
+        '201':
+          description: Created endpoint
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookEndpointResponseDto'
+  /admin/webhooks/{id}:
+    get:
+      tags: [Admin]
+      summary: Get webhook endpoint (admin)
+      operationId: getAgenstraWebhookEndpoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Webhook endpoint
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookEndpointResponseDto'
+    put:
+      tags: [Admin]
+      summary: Update webhook endpoint (admin)
+      operationId: updateAgenstraWebhookEndpoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWebhookEndpointDto'
+      responses:
+        '200':
+          description: Updated endpoint
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookEndpointResponseDto'
+    delete:
+      tags: [Admin]
+      summary: Delete webhook endpoint (admin)
+      operationId: deleteAgenstraWebhookEndpoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Deleted
+  /admin/webhooks/{id}/test:
+    post:
+      tags: [Admin]
+      summary: Send test webhook delivery (admin)
+      operationId: testAgenstraWebhookEndpoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Delivery result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookDeliveryResponseDto'
+  /admin/webhooks/{id}/deliveries:
+    get:
+      tags: [Admin]
+      summary: List webhook deliveries (admin)
+      operationId: listAgenstraWebhookDeliveries
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Paginated deliveries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWebhookDeliveriesResponseDto'
 components:
   securitySchemes:
     bearerAuth:
@@ -6097,3 +6240,96 @@ components:
         agenstraParentFolderId:
           type: string
           format: uuid
+    WebhookEventTypeResponseDto:
+      type: object
+      properties:
+        type: { type: string }
+        description: { type: string }
+    CreateWebhookEndpointDto:
+      type: object
+      required: [name, url, httpMethod, subscribedEvents, authType]
+      properties:
+        name: { type: string }
+        url: { type: string, format: uri }
+        httpMethod: { type: string, enum: [POST, GET] }
+        subscribedEvents:
+          type: array
+          items: { type: string }
+        enabled: { type: boolean }
+        authType:
+          {
+            type: string,
+            enum: [none, authorization, custom_header, query_param],
+          }
+        authHeaderName: { type: string }
+        authValue: { type: string }
+        clientId: { type: string, format: uuid, nullable: true }
+        deliveryLogRetentionDays: { type: integer, minimum: 1, maximum: 365 }
+        deliveryLogMaxEntries: { type: integer, minimum: 1, maximum: 10000 }
+    UpdateWebhookEndpointDto:
+      type: object
+      properties:
+        name: { type: string }
+        url: { type: string, format: uri }
+        httpMethod: { type: string, enum: [POST, GET] }
+        subscribedEvents:
+          type: array
+          items: { type: string }
+        enabled: { type: boolean }
+        authType:
+          {
+            type: string,
+            enum: [none, authorization, custom_header, query_param],
+          }
+        authHeaderName: { type: string }
+        authValue: { type: string }
+        clientId: { type: string, format: uuid, nullable: true }
+        deliveryLogRetentionDays:
+          { type: integer, minimum: 1, maximum: 365, nullable: true }
+        deliveryLogMaxEntries:
+          { type: integer, minimum: 1, maximum: 10000, nullable: true }
+    WebhookEndpointResponseDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        scopeKey: { type: string }
+        clientId: { type: string, format: uuid, nullable: true }
+        name: { type: string }
+        url: { type: string }
+        httpMethod: { type: string, enum: [POST, GET] }
+        subscribedEvents:
+          type: array
+          items: { type: string }
+        enabled: { type: boolean }
+        authType: { type: string }
+        authHeaderName: { type: string, nullable: true }
+        hasAuthValue: { type: boolean }
+        consecutiveFailures: { type: integer }
+        disabledReason: { type: string, nullable: true }
+        deliveryLogRetentionDays: { type: integer, nullable: true }
+        deliveryLogMaxEntries: { type: integer, nullable: true }
+        signingSecret: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    WebhookDeliveryResponseDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        endpointId: { type: string, format: uuid }
+        eventId: { type: string, format: uuid }
+        eventType: { type: string }
+        payload: { type: object, additionalProperties: true }
+        httpStatus: { type: integer, nullable: true }
+        responseBody: { type: string, nullable: true }
+        success: { type: boolean }
+        attempt: { type: integer }
+        errorMessage: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+    PaginatedWebhookDeliveriesResponseDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookDeliveryResponseDto'
+        total: { type: integer }

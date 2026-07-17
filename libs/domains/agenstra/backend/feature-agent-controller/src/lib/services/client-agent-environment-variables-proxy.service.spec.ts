@@ -10,6 +10,7 @@ import axios, { AxiosError } from 'axios';
 
 import { ClientsRepository } from '../repositories/clients.repository';
 
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientAgentEnvironmentVariablesProxyService } from './client-agent-environment-variables-proxy.service';
 import { ClientsService } from './clients.service';
 
@@ -48,6 +49,9 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
   const mockClientsRepository = {
     findByIdOrThrow: jest.fn(),
   };
+  const mockNotificationPublisher = {
+    publishEnvironment: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -60,6 +64,10 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
         {
           provide: ClientsRepository,
           useValue: mockClientsRepository,
+        },
+        {
+          provide: AgenstraNotificationPublisher,
+          useValue: mockNotificationPublisher,
         },
       ],
     }).compile();
@@ -172,6 +180,11 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
           data: createDto,
         }),
       );
+      expect(mockNotificationPublisher.publishEnvironment).toHaveBeenCalledWith(
+        'environment.created',
+        mockClientId,
+        mockEnvironmentVariable,
+      );
     });
   });
 
@@ -203,6 +216,11 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
           data: updateDto,
         }),
       );
+      expect(mockNotificationPublisher.publishEnvironment).toHaveBeenCalledWith(
+        'environment.updated',
+        mockClientId,
+        updatedEnvVar,
+      );
     });
   });
 
@@ -222,6 +240,10 @@ describe('ClientAgentEnvironmentVariablesProxyService', () => {
           url: expect.stringContaining(`/api/agents/${mockAgentId}/environment/${mockEnvVarId}`),
         }),
       );
+      expect(mockNotificationPublisher.publishEnvironment).toHaveBeenCalledWith('environment.deleted', mockClientId, {
+        id: mockEnvVarId,
+        agentId: mockAgentId,
+      });
     });
   });
 

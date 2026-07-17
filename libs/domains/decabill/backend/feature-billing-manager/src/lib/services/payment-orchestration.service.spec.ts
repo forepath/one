@@ -32,6 +32,12 @@ describe('PaymentOrchestrationService', () => {
   const auditLog = {
     log: jest.fn(),
   };
+  const billingNotificationPublisher = {
+    publishPayment: jest.fn(),
+    publishInvoice: jest.fn(),
+    publishSubscription: jest.fn(),
+    publish: jest.fn(),
+  };
   let processor: jest.Mocked<PaymentProcessor>;
   let factory: PaymentProcessorFactory;
   let service: PaymentOrchestrationService;
@@ -58,6 +64,7 @@ describe('PaymentOrchestrationService', () => {
       customerProfilesRepository as never,
       factory,
       auditLog as never,
+      billingNotificationPublisher as never,
     );
   });
 

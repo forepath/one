@@ -17,6 +17,7 @@ import { ProjectTimeReportService } from '../projects/services/project-time-repo
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { buildCreditNoteNumber } from './e-invoice-document-options';
 import { InvoiceEmailService } from './invoice-email.service';
 import { InvoiceIssuanceService } from './invoice-issuance.service';
@@ -54,6 +55,7 @@ export class InvoiceService {
     private readonly projectTimeReportService: ProjectTimeReportService,
     private readonly invoicePromotionApplicationsRepository: InvoicePromotionApplicationsRepository,
     private readonly promotionApplicationService: PromotionApplicationService,
+    private readonly billingNotificationPublisher: BillingNotificationPublisher,
   ) {}
 
   async createAndIssue(params: CreateInvoiceDraftParams): Promise<{ invoiceRefId: string; invoiceNumber?: string }> {
@@ -114,6 +116,8 @@ export class InvoiceService {
       userId: params.userId,
       context: { subscriptionId: params.subscriptionId, totalGross: totals.totalGross },
     });
+
+    this.billingNotificationPublisher.publishInvoice('invoice.created', invoice);
 
     return invoice;
   }
@@ -178,6 +182,8 @@ export class InvoiceService {
         ...(adminUserId ? { adminUserId } : {}),
       },
     });
+
+    this.billingNotificationPublisher.publishInvoice('invoice.voided', voided);
 
     return voided;
   }

@@ -8,6 +8,8 @@ import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-reg
 import { ClientsRepository } from '../repositories/clients.repository';
 
 import { AgentManagerFilterRulesClientService } from './agent-manager-filter-rules-client.service';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
+
 import { FilterRulesService } from './filter-rules.service';
 
 describe('FilterRulesService', () => {
@@ -44,6 +46,15 @@ describe('FilterRulesService', () => {
         { provide: getRepositoryToken(AgentConsoleRegexFilterRuleSyncTargetEntity), useValue: targetsRepo },
         { provide: ClientsRepository, useValue: clientsRepository },
         { provide: AgentManagerFilterRulesClientService, useValue: amClient },
+        {
+          provide: AgenstraNotificationPublisher,
+          useValue: {
+            publishFilterRule: jest.fn(),
+            publishClient: jest.fn(),
+            publishTicket: jest.fn(),
+            publish: jest.fn(),
+          },
+        },
       ],
     }).compile();
 

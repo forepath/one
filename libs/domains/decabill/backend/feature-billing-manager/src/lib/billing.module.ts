@@ -7,7 +7,7 @@ import {
   UsersRepository,
   RevokedUserTokensRepository,
 } from '@forepath/identity/backend';
-import { EmailService } from '@forepath/shared/backend';
+import { EmailService, getTenantIdOrDefault, NotificationsModule } from '@forepath/shared/backend';
 import {
   DynamicProviderLoaderService,
   registerDynamicProviderMetadata,
@@ -20,6 +20,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
 import { PAYMENT_PROCESSOR_INIT } from './constants/payment-processor-init.token';
+import { BILLING_NOTIFICATION_EVENTS } from './notifications/billing-notification.events';
+import { BillingNotificationPublisher } from './notifications/billing-notification.publisher';
+import { BILLING_QUEUE_NAME } from './queue/billing-queue.constants';
+import { ensureAdmin, getUserFromRequest, type RequestWithUser } from './utils/billing-access.utils';
 import { AdminBillingController } from './controllers/admin-billing.controller';
 import { AdminPromotionsController } from './controllers/admin-promotions.controller';
 import { PromotionsController } from './controllers/promotions.controller';
@@ -392,6 +396,16 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
   properties: applyProviderConfigFieldScopes(DIGITALOCEAN_CONFIG_PROPERTIES, ['serverType', 'region']),
 };
 
+const billingNotificationsModule = NotificationsModule.register({
+  applicationId: 'decabill',
+  scopeMode: 'tenant_id',
+  controllerPath: 'admin/billing/webhooks',
+  queueName: BILLING_QUEUE_NAME,
+  eventCatalog: BILLING_NOTIFICATION_EVENTS,
+  resolveScopeKey: () => getTenantIdOrDefault(),
+  assertAdmin: (req) => ensureAdmin(getUserFromRequest(req as RequestWithUser)),
+});
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -432,6 +446,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       PublicWithdrawalRequestEntity,
     ]),
     RedisCacheModule,
+    billingNotificationsModule,
     ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],
   controllers: [
@@ -494,6 +509,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     AdminBillNowService,
     BillingAdminService,
     BillingAuditLogService,
+    BillingNotificationPublisher,
     BillingTenantService,
     BillingStatisticsQueryService,
     InvoiceAdminService,
@@ -629,6 +645,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     BackorderService,
     BackorderRetryJobHandler,
     BillingScheduleService,
+    BillingNotificationPublisher,
     BillingTenantService,
     CancellationPolicyService,
     CloudflareDnsService,
@@ -674,6 +691,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     DatevExportJobHandler,
     DatevExportConfigService,
     ProviderRegistryService,
+    billingNotificationsModule,
   ],
 })
 export class BillingModule implements OnModuleInit {

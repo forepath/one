@@ -89,6 +89,9 @@ describe('DatevExportService', () => {
 
   const creditDocumentsRepository = { findWithdrawnInPeriod: jest.fn().mockResolvedValue([]) };
   const invoicePdfService = { readPdf: jest.fn() };
+  const billingNotificationPublisher = {
+    publishDatevExport: jest.fn(),
+  };
 
   const service = new DatevExportService(
     configService as never,
@@ -105,6 +108,7 @@ describe('DatevExportService', () => {
     debtorAccountService as never,
     extfCsvService as never,
     documentArchiveService as never,
+    billingNotificationPublisher as never,
   );
 
   beforeEach(() => {
@@ -152,6 +156,7 @@ describe('DatevExportService', () => {
 
     expect(result.id).toBe('existing');
     expect(storageService.writeFile).not.toHaveBeenCalled();
+    expect(billingNotificationPublisher.publishDatevExport).not.toHaveBeenCalled();
   });
 
   it('writes zip for empty month export', async () => {
@@ -170,6 +175,14 @@ describe('DatevExportService', () => {
     expect(result.status).toBe(DatevExportStatus.COMPLETED);
     expect(storageService.writeFile).toHaveBeenCalled();
     expect(extfCsvService.buildBookingBatchCsv).toHaveBeenCalled();
+    expect(billingNotificationPublisher.publishDatevExport).toHaveBeenCalledWith(
+      'datev_export.started',
+      expect.objectContaining({ id: 'exp-1', status: DatevExportStatus.RUNNING }),
+    );
+    expect(billingNotificationPublisher.publishDatevExport).toHaveBeenCalledWith(
+      'datev_export.completed',
+      expect.objectContaining({ id: 'exp-1', status: DatevExportStatus.COMPLETED }),
+    );
   });
 
   it('uses distinct PDF paths for unified exports with same invoice numbers', async () => {
@@ -233,6 +246,18 @@ describe('DatevExportService', () => {
 
     expect(result.status).toBe(DatevExportStatus.FAILED);
     expect(result.errorMessage).toContain('Customer profile missing for invoice(s): inv-1');
+    expect(billingNotificationPublisher.publishDatevExport).toHaveBeenCalledWith(
+      'datev_export.started',
+      expect.objectContaining({ id: 'exp-1', status: DatevExportStatus.RUNNING }),
+    );
+    expect(billingNotificationPublisher.publishDatevExport).toHaveBeenCalledWith(
+      'datev_export.failed',
+      expect.objectContaining({
+        id: 'exp-1',
+        status: DatevExportStatus.FAILED,
+        errorMessage: expect.stringContaining('Customer profile missing'),
+      }),
+    );
   });
 
   it('uses per-tenant DATEV config for unified booking rows', async () => {

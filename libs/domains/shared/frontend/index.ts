@@ -7,3 +7,5 @@ export * from './util-loading-indicator/src';
 export * from './util-meta/src';
 export * from './data-access-communication/src';
 export * from './feature-landingpage/src';
+export * from './data-access-notifications/src';
+export * from './feature-notifications/src';

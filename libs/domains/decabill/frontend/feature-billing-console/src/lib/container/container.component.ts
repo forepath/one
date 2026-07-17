@@ -69,7 +69,8 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
             url.includes('/invoices') ||
             url.includes('/projects') ||
             url.includes('/administration') ||
-            url.includes('/users'),
+            url.includes('/users') ||
+            url.includes('/webhooks'),
         ),
       ),
     {
@@ -80,7 +81,8 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
         this.router.url.includes('/invoices') ||
         this.router.url.includes('/projects') ||
         this.router.url.includes('/administration') ||
-        this.router.url.includes('/users'),
+        this.router.url.includes('/users') ||
+        this.router.url.includes('/webhooks'),
     },
   );
 
@@ -104,10 +106,13 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
       map(() => this.router.url),
       startWith(this.router.url),
-      map((url) => url.includes('/administration') || url.includes('/users')),
+      map((url) => url.includes('/administration') || url.includes('/users') || url.includes('/webhooks')),
     ),
     {
-      initialValue: this.router.url.includes('/administration') || this.router.url.includes('/users'),
+      initialValue:
+        this.router.url.includes('/administration') ||
+        this.router.url.includes('/users') ||
+        this.router.url.includes('/webhooks'),
     },
   );
 
@@ -331,6 +336,13 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
         icon: 'bi-tag',
         title: $localize`:@@featureContainer-adminPromotionsTitle:Promotions`,
         label: $localize`:@@featureContainer-adminPromotions:Promotions`,
+      },
+      {
+        routerLink: ['/webhooks'],
+        activePaths: ['/webhooks'],
+        icon: 'bi-broadcast',
+        title: $localize`:@@featureContainer-webhooksTitle:Webhooks`,
+        label: $localize`:@@featureContainer-webhooks:Webhooks`,
       },
       {
         routerLink: ['/users'],

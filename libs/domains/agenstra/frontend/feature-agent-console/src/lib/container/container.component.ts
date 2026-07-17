@@ -70,6 +70,7 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
             (url.includes('/clients') ||
               url.includes('/users') ||
               url.includes('/filters') ||
+              url.includes('/webhooks') ||
               url.includes('/audit') ||
               url.includes('/tickets') ||
               url.includes('/imports') ||
@@ -124,13 +125,17 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
       map(() => this.router.url),
       startWith(this.router.url),
-      map((url) => url.includes('/users') || url.includes('/filters') || url.includes('/imports')),
+      map(
+        (url) =>
+          url.includes('/users') || url.includes('/filters') || url.includes('/imports') || url.includes('/webhooks'),
+      ),
     ),
     {
       initialValue:
         this.router.url.includes('/users') ||
         this.router.url.includes('/filters') ||
-        this.router.url.includes('/imports'),
+        this.router.url.includes('/imports') ||
+        this.router.url.includes('/webhooks'),
     },
   );
 
@@ -323,6 +328,13 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
 
   private getAdminNavItems(): AdminNavItem[] {
     return [
+      {
+        routerLink: ['/webhooks'],
+        activePaths: ['/webhooks'],
+        icon: 'bi-broadcast',
+        title: $localize`:@@featureContainer-webhooksTitle:Webhooks`,
+        label: $localize`:@@featureContainer-webhooks:Webhooks`,
+      },
       {
         routerLink: ['/users'],
         activePaths: ['/users'],

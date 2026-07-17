@@ -6,7 +6,15 @@ import {
   FilterRulesSyncService,
   KnowledgeEmbeddingIndexService,
 } from '@forepath/agenstra/backend/feature-agent-controller';
-import { enqueueUnitJob } from '@forepath/shared/backend';
+import {
+  enqueueUnitJob,
+  resolveWebhookDeliverJobPayload,
+  WebhookDeliveryRetentionService,
+  WebhookDeliveryService,
+  WEBHOOK_DELIVER_JOB_NAME,
+  WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
+  type WebhookDeliverJobPayload,
+} from '@forepath/shared/backend';
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job, Queue } from 'bullmq';
@@ -36,6 +44,8 @@ export class ControllerJobsProcessor extends WorkerHost {
     private readonly filterRulesSync: FilterRulesSyncService,
     private readonly filterRulesService: FilterRulesService,
     private readonly autonomousOrchestrator: AutonomousRunOrchestratorService,
+    private readonly webhookDeliveryService: WebhookDeliveryService,
+    private readonly webhookDeliveryRetentionService: WebhookDeliveryRetentionService,
   ) {
     super();
   }
@@ -78,6 +88,12 @@ export class ControllerJobsProcessor extends WorkerHost {
         await this.autonomousOrchestrator.tryStartRunForCandidate(
           job.data as { ticket_id: string; client_id: string; agent_id: string },
         );
+        break;
+      case WEBHOOK_DELIVER_JOB_NAME:
+        await this.webhookDeliveryService.deliver(resolveWebhookDeliverJobPayload(job));
+        break;
+      case WEBHOOK_DELIVERY_RETENTION_COORDINATOR:
+        await this.webhookDeliveryRetentionService.applyRetentionForAllEndpoints();
         break;
       default:
         this.logger.warn(`Unknown controller job name: ${job.name}`);

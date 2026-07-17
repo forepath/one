@@ -3,6 +3,7 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 
 import type { UserInfoFromRequest } from '../../utils/billing-access.utils';
 import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
+import { BillingNotificationPublisher } from '../../notifications/billing-notification.publisher';
 import type {
   CreateProjectTicketCommentDto,
   CreateProjectTicketDto,
@@ -49,6 +50,7 @@ export class ProjectTicketsService {
     private readonly usersRepository: UsersRepository,
     private readonly projectBoardRealtime: ProjectBoardRealtimeService,
     private readonly projectBoardSummary: ProjectBoardSummaryService,
+    private readonly billingNotificationPublisher: BillingNotificationPublisher,
   ) {}
 
   async listTickets(
@@ -152,6 +154,7 @@ export class ProjectTicketsService {
 
     const mapped = await this.findOne(projectId, saved.id, false, userInfo);
 
+    this.billingNotificationPublisher.publishTicket('ticket.created', project.userId, mapped);
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.ticketUpsert, mapped);
     await this.projectBoardSummary.emitSummaryChanged(project);
 
@@ -192,6 +195,7 @@ export class ProjectTicketsService {
 
       const mapped = await this.findOne(projectId, ticketId, false, userInfo);
 
+      this.billingNotificationPublisher.publishTicket('ticket.updated', project.userId, mapped);
       this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.ticketUpsert, mapped);
       await this.projectBoardSummary.emitSummaryChanged(project);
 
@@ -228,6 +232,7 @@ export class ProjectTicketsService {
 
     const mapped = await this.findOne(projectId, ticketId, false, userInfo);
 
+    this.billingNotificationPublisher.publishTicket('ticket.updated', project.userId, mapped);
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.ticketUpsert, mapped);
     await this.projectBoardSummary.emitSummaryChanged(project);
 
@@ -260,6 +265,7 @@ export class ProjectTicketsService {
 
     await this.ticketsRepository.delete(ticketId);
 
+    this.billingNotificationPublisher.publishTicket('ticket.deleted', project.userId, ticket);
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.ticketRemoved, {
       id: ticketId,
       projectId,
@@ -316,6 +322,7 @@ export class ProjectTicketsService {
 
     const mapped = await this.mapComment(comment);
 
+    this.billingNotificationPublisher.publishTicketComment(project.userId, projectId, mapped);
     this.projectBoardRealtime.emitToProject(projectId, PROJECTS_BOARD_EVENTS.ticketCommentCreated, mapped);
 
     const activityRows = await this.activitiesRepository.findAllByTicket(ticketId, 1, 0);

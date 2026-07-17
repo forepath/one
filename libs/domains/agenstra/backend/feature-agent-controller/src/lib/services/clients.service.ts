@@ -20,6 +20,7 @@ import { StatisticsEntityType } from '../entities/statistics-entity-event.entity
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { StatisticsService } from './statistics.service';
 
@@ -39,6 +40,7 @@ export class ClientsService {
     private readonly provisioningReferencesRepository: ProvisioningReferencesRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
     private readonly statisticsService: StatisticsService,
+    private readonly notificationPublisher: AgenstraNotificationPublisher,
   ) {}
 
   /**
@@ -122,6 +124,7 @@ export class ClientsService {
     this.statisticsService
       .recordEntityCreated(StatisticsEntityType.CLIENT, client.id, {}, userId ?? undefined)
       .catch(() => undefined);
+    this.notificationPublisher.publishClient('client.created', client);
 
     return {
       ...response,
@@ -365,6 +368,7 @@ export class ClientsService {
     this.statisticsService
       .recordEntityUpdated(StatisticsEntityType.CLIENT, id, {}, userId ?? undefined)
       .catch(() => undefined);
+    this.notificationPublisher.publishClient('client.updated', updatedClient);
     const dto = await this.mapToResponseDto(updatedClient, { userId, userRole, isApiKeyAuth });
 
     // Fetch config from agent-manager, but don't fail if request fails
@@ -413,6 +417,7 @@ export class ClientsService {
     this.statisticsService
       .recordEntityDeleted(StatisticsEntityType.CLIENT, id, userId ?? undefined)
       .catch(() => undefined);
+    this.notificationPublisher.publishClient('client.deleted', client);
     await this.clientsRepository.delete(id);
   }
 

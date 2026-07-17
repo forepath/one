@@ -17,6 +17,8 @@ import { ClientsRepository } from '../repositories/clients.repository';
 import { ProvisioningReferencesRepository } from '../repositories/provisioning-references.repository';
 
 import { ClientAgentProxyService } from './client-agent-proxy.service';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
+
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
 
@@ -108,6 +110,15 @@ describe('ClientsService', () => {
         {
           provide: StatisticsService,
           useValue: mockStatisticsService,
+        },
+        {
+          provide: AgenstraNotificationPublisher,
+          useValue: {
+            publishClient: jest.fn(),
+            publishTicket: jest.fn(),
+            publishFilterRule: jest.fn(),
+            publish: jest.fn(),
+          },
         },
       ],
     }).compile();

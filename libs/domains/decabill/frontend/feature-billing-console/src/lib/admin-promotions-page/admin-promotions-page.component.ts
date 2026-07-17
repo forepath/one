@@ -18,7 +18,9 @@ import {
   getActiveStatusLabel,
   getActiveStatusTextClass,
   getPromotionRedemptionContextLabel,
+  getPromotionRedemptionStatusIconClass,
   getPromotionRedemptionStatusLabel,
+  getPromotionRedemptionStatusTextClass,
 } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 
@@ -171,6 +173,14 @@ export class AdminPromotionsPageComponent implements OnInit {
 
   redemptionStatusLabel(status: PromotionRedemptionResponse['status']): string {
     return getPromotionRedemptionStatusLabel(status);
+  }
+
+  redemptionStatusTextClass(status: PromotionRedemptionResponse['status']): string {
+    return getPromotionRedemptionStatusTextClass(status);
+  }
+
+  redemptionStatusIconClass(status: PromotionRedemptionResponse['status']): string {
+    return getPromotionRedemptionStatusIconClass(status);
   }
 
   activeStatusLabel(isActive: boolean): string {

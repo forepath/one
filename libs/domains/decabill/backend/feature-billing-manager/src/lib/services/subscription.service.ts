@@ -51,6 +51,7 @@ import { PricingService } from './pricing.service';
 import { ProvisioningService } from './provisioning.service';
 import { PromotionRedemptionService } from './promotion-redemption.service';
 import { TaxCalculationService } from './tax-calculation.service';
+import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 
 @Injectable()
 export class SubscriptionService {
@@ -77,6 +78,7 @@ export class SubscriptionService {
     private readonly withdrawalRefundService: WithdrawalRefundService,
     private readonly backordersRepository: BackordersRepository,
     private readonly promotionRedemptionService: PromotionRedemptionService,
+    private readonly billingNotificationPublisher: BillingNotificationPublisher,
   ) {}
 
   async createSubscription(
@@ -259,7 +261,11 @@ export class SubscriptionService {
 
     // Reload so DB-generated columns (e.g. the sequence-backed `number`) are populated on the
     // returned entity; save() does not reliably hydrate database defaults.
-    return await this.subscriptionsRepository.findByIdOrThrow(subscription.id);
+    const created = await this.subscriptionsRepository.findByIdOrThrow(subscription.id);
+
+    this.billingNotificationPublisher.publishSubscription('subscription.created', created);
+
+    return created;
   }
 
   /**
@@ -452,11 +458,15 @@ export class SubscriptionService {
       throw new BadRequestException(decision.reason || 'Cancellation not permitted');
     }
 
-    return await this.subscriptionsRepository.update(subscriptionId, {
+    const canceled = await this.subscriptionsRepository.update(subscriptionId, {
       status: SubscriptionStatus.PENDING_CANCEL,
       cancelRequestedAt: new Date(),
       cancelEffectiveAt: decision.effectiveAt,
     });
+
+    this.billingNotificationPublisher.publishSubscription('subscription.canceled', canceled);
+
+    return canceled;
   }
 
   async resumeSubscription(subscriptionId: string, userId: string): Promise<SubscriptionEntity> {
@@ -466,12 +476,16 @@ export class SubscriptionService {
       throw new BadRequestException('Subscription is not pending cancel');
     }
 
-    return await this.subscriptionsRepository.update(subscriptionId, {
+    const resumed = await this.subscriptionsRepository.update(subscriptionId, {
       status: SubscriptionStatus.ACTIVE,
       resumedAt: new Date(),
       cancelRequestedAt: null,
       cancelEffectiveAt: null,
     });
+
+    this.billingNotificationPublisher.publishSubscription('subscription.updated', resumed);
+
+    return resumed;
   }
 
   async withdrawSubscription(
@@ -520,6 +534,9 @@ export class SubscriptionService {
     });
 
     const updated = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
+
+    this.billingNotificationPublisher.publishSubscription('subscription.updated', updated);
+
     const withdrawalResult: WithdrawalResultDto = {
       refundGross: estimatedRefundGross,
       paymentRefundStatus: estimatedRefundGross ? 'pending' : 'not_applicable',

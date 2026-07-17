@@ -1,0 +1,627 @@
+<div class="webhook-manager-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="mb-0 fw-semibold" i18n="@@featureNotifications-title">Webhooks</h5>
+    </div>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      (click)="onAddWebhook()"
+      [disabled]="(saving$ | async) === true"
+      i18n-title="@@featureNotifications-addWebhookTitle"
+      title="Add webhook"
+      i18n-aria-label="@@featureNotifications-addWebhookTitle"
+      aria-label="Add webhook"
+    >
+      <i class="bi bi-plus" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  @if (lastTestDelivery(); as delivery) {
+    <div
+      class="alert mb-0 rounded-0"
+      [class.alert-success]="delivery.success"
+      [class.alert-danger]="!delivery.success"
+      role="status"
+    >
+      <div class="d-flex justify-content-between align-items-start gap-3">
+        <div>
+          @if (delivery.success) {
+            <span i18n="@@featureNotifications-testSuccess">Test delivery succeeded.</span>
+          } @else {
+            <span i18n="@@featureNotifications-testFailed">Test delivery failed.</span>
+          }
+          <span class="ms-2 text-muted">{{ delivery.eventType }} · HTTP {{ delivery.httpStatus ?? '—' }}</span>
+          @if (delivery.errorMessage) {
+            <div class="small mt-1">{{ delivery.errorMessage }}</div>
+          }
+        </div>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="dismissTestResult()"
+          i18n-aria-label="@@featureNotifications-dismissTestResult"
+          aria-label="Dismiss"
+        ></button>
+      </div>
+    </div>
+  }
+
+  <form #searchForm="ngForm">
+    <div class="input-group search-input-container border-bottom">
+      <i class="bi bi-search"></i>
+      <input
+        type="text"
+        class="form-control border-0 search-input"
+        placeholder="Search webhooks"
+        i18n-placeholder="@@featureNotifications-searchPlaceholder"
+        name="search"
+        [(ngModel)]="searchQuery"
+        required
+      />
+    </div>
+  </form>
+
+  <div class="flex-grow-1 overflow-auto">
+    @if (endpointsLoading$ | async) {
+      <div class="d-flex justify-content-center align-items-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden" i18n="@@featureNotifications-loading">Loading webhooks...</span>
+        </div>
+      </div>
+    } @else {
+      @if (endpointsError(); as error) {
+        <div class="alert alert-danger m-3" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {{ error }}
+        </div>
+      }
+
+      @if (endpoints().length === 0) {
+        <div class="d-flex justify-content-center align-items-center p-4">
+          <div class="text-center text-muted">
+            <i class="bi bi-broadcast fs-1 d-block mb-2"></i>
+            <p class="mb-0" i18n="@@featureNotifications-empty">No webhooks configured</p>
+          </div>
+        </div>
+      } @else {
+        <div class="list-group list-group-flush">
+          @for (endpoint of endpoints(); track endpoint.id) {
+            <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3">
+              <div class="min-w-0">
+                <div class="fw-semibold mb-1">{{ endpoint.name }}</div>
+                <div class="small text-muted text-break mb-2">{{ endpoint.url }}</div>
+                <div class="small text-muted d-flex align-items-center gap-2 flex-wrap">
+                  <span class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded">{{
+                    endpoint.httpMethod
+                  }}</span>
+                  <span [ngClass]="enabledStatusTextClass(endpoint)">
+                    @if (endpoint.enabled) {
+                      <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                    } @else {
+                      <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
+                    }
+                    {{ statusLabel(endpoint) }}
+                  </span>
+                  @if (clientFilterEnabled) {
+                    <span class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded">{{
+                      clientLabel(endpoint.clientId)
+                    }}</span>
+                  }
+                  <span
+                    >{{ endpoint.subscribedEvents.length }}
+                    <ng-container i18n="@@featureNotifications-events">events</ng-container></span
+                  >
+                  @if (endpoint.consecutiveFailures > 0) {
+                    <span class="text-danger">
+                      <i class="bi bi-exclamation-circle me-1"></i>
+                      {{ endpoint.consecutiveFailures }}
+                      <ng-container i18n="@@featureNotifications-failures">failures</ng-container>
+                    </span>
+                  }
+                  <span>{{ formatDate(endpoint.updatedAt) }}</span>
+                </div>
+              </div>
+              <div class="btn-group btn-group-sm flex-shrink-0">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="onViewDeliveries(endpoint)"
+                  i18n-title="@@featureNotifications-viewDeliveriesTitle"
+                  title="View deliveries"
+                >
+                  <i class="bi bi-list-ul"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-info"
+                  (click)="onTestWebhook(endpoint)"
+                  [disabled]="(testing$ | async) === true || !endpoint.enabled"
+                  i18n-title="@@featureNotifications-testWebhookTitle"
+                  title="Send test delivery"
+                >
+                  <i class="bi bi-lightning"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  (click)="onEditWebhook(endpoint)"
+                  i18n-title="@@featureNotifications-editWebhookTitle"
+                  title="Edit webhook"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger"
+                  (click)="onDeleteWebhook(endpoint)"
+                  i18n-title="@@featureNotifications-deleteWebhookTitle"
+                  title="Delete webhook"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="createWebhookModal"
+  tabindex="-1"
+  aria-labelledby="createWebhookModalLabel"
+  aria-hidden="true"
+  #createWebhookModal
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createWebhookModalLabel" i18n="@@featureNotifications-createWebhookTitle">
+          Create webhook
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="onCreateDone()"
+          i18n-aria-label="@@featureNotifications-closeAriaLabel"
+          aria-label="Close"
+          [disabled]="(saving$ | async) === true"
+        ></button>
+      </div>
+
+      @if (lastCreatedSigningSecret(); as signingSecret) {
+        <div class="modal-body">
+          <div class="alert alert-warning" role="alert">
+            <div class="fw-semibold mb-2" i18n="@@featureNotifications-signingSecretTitle">Signing secret</div>
+            <p class="mb-2" i18n="@@featureNotifications-signingSecretHint">
+              Copy this signing secret now. It will not be shown again.
+            </p>
+            <code class="d-block p-2 bg-body-tertiary rounded user-select-all">{{ signingSecret }}</code>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" (click)="onCreateDone()" i18n="@@featureNotifications-done">
+            Done
+          </button>
+        </div>
+      } @else {
+        <form (ngSubmit)="onSubmitCreateWebhook()">
+          <div class="modal-body">
+            <ng-container
+              *ngTemplateOutlet="
+                webhookFormFields;
+                context: { form: createForm, formPrefix: 'create', readonly: false, hasExistingAuthValue: false }
+              "
+            ></ng-container>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="(saving$ | async) === true || !isCreateFormValid()"
+            >
+              @if (saving$ | async) {
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+              }
+              <span i18n="@@featureNotifications-create">Create</span>
+            </button>
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="editWebhookModal"
+  tabindex="-1"
+  aria-labelledby="editWebhookModalLabel"
+  aria-hidden="true"
+  #editWebhookModal
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editWebhookModalLabel" i18n="@@featureNotifications-editWebhookModalTitle">
+          Edit webhook
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cancelEditWebhook()"
+          i18n-aria-label="@@featureNotifications-closeAriaLabel"
+          aria-label="Close"
+          [disabled]="(saving$ | async) === true"
+        ></button>
+      </div>
+      <form (ngSubmit)="onSubmitEditWebhook()">
+        <div class="modal-body">
+          <ng-container
+            *ngTemplateOutlet="
+              webhookFormFields;
+              context: {
+                form: editForm,
+                formPrefix: 'edit',
+                readonly: false,
+                hasExistingAuthValue: endpointToEdit?.hasAuthValue ?? false,
+              }
+            "
+          ></ng-container>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" [disabled]="(saving$ | async) === true || !isEditFormValid()">
+            @if (saving$ | async) {
+              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            }
+            <span i18n="@@featureNotifications-update">Update</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<ng-template
+  #webhookFormFields
+  let-form="form"
+  let-formPrefix="formPrefix"
+  let-readonly="readonly"
+  let-hasExistingAuthValue="hasExistingAuthValue"
+>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label" [for]="formPrefix + 'Name'" i18n="@@featureNotifications-nameLabel"
+        >Name <span class="text-danger">*</span></label
+      >
+      <input
+        type="text"
+        class="form-control"
+        [id]="formPrefix + 'Name'"
+        [(ngModel)]="form.name"
+        [name]="formPrefix + 'Name'"
+        required
+        [disabled]="(saving$ | async) === true || readonly"
+      />
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" [for]="formPrefix + 'HttpMethod'" i18n="@@featureNotifications-httpMethodLabel"
+        >HTTP method</label
+      >
+      <select
+        class="form-select"
+        [id]="formPrefix + 'HttpMethod'"
+        [(ngModel)]="form.httpMethod"
+        [name]="formPrefix + 'HttpMethod'"
+        [disabled]="(saving$ | async) === true || readonly"
+      >
+        <option [ngValue]="WebhookHttpMethod.POST">POST</option>
+        <option [ngValue]="WebhookHttpMethod.GET">GET</option>
+      </select>
+    </div>
+    <div class="col-12">
+      <label class="form-label" [for]="formPrefix + 'Url'" i18n="@@featureNotifications-urlLabel"
+        >URL <span class="text-danger">*</span></label
+      >
+      <input
+        type="text"
+        class="form-control"
+        [id]="formPrefix + 'Url'"
+        [(ngModel)]="form.url"
+        [name]="formPrefix + 'Url'"
+        required
+        autocomplete="url"
+        inputmode="url"
+        [disabled]="(saving$ | async) === true || readonly"
+      />
+    </div>
+    @if (clientFilterEnabled) {
+      <div class="col-12">
+        <label class="form-label" [for]="formPrefix + 'Client'" i18n="@@featureNotifications-clientLabel">Client</label>
+        <select
+          class="form-select"
+          [id]="formPrefix + 'Client'"
+          [(ngModel)]="form.clientId"
+          [name]="formPrefix + 'Client'"
+          [disabled]="(saving$ | async) === true || readonly"
+        >
+          <option value="" i18n="@@featureNotifications-allClientsOption">All clients</option>
+          @for (client of clients(); track client.id) {
+            <option [value]="client.id">{{ client.label }}</option>
+          }
+        </select>
+      </div>
+    }
+    <div class="col-md-6">
+      <label class="form-label" [for]="formPrefix + 'AuthType'" i18n="@@featureNotifications-authTypeLabel"
+        >Authentication</label
+      >
+      <select
+        class="form-select"
+        [id]="formPrefix + 'AuthType'"
+        [(ngModel)]="form.authType"
+        [name]="formPrefix + 'AuthType'"
+        [disabled]="(saving$ | async) === true || readonly"
+      >
+        <option [ngValue]="WebhookAuthType.NONE" i18n="@@featureNotifications-authNone">None</option>
+        <option [ngValue]="WebhookAuthType.AUTHORIZATION" i18n="@@featureNotifications-authAuthorization">
+          Authorization header
+        </option>
+        <option [ngValue]="WebhookAuthType.CUSTOM_HEADER" i18n="@@featureNotifications-authCustomHeader">
+          Custom header
+        </option>
+        <option [ngValue]="WebhookAuthType.QUERY_PARAM" i18n="@@featureNotifications-authQueryParam">
+          Query parameter
+        </option>
+      </select>
+    </div>
+    <div class="col-md-6 d-flex align-items-end">
+      <div class="form-check">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          [(ngModel)]="form.enabled"
+          [name]="formPrefix + 'Enabled'"
+          [id]="formPrefix + 'Enabled'"
+          [disabled]="(saving$ | async) === true || readonly"
+        />
+        <label class="form-check-label" [for]="formPrefix + 'Enabled'" i18n="@@featureNotifications-enabledLabel"
+          >Enabled</label
+        >
+      </div>
+    </div>
+    @if (authHeaderRequired(form.authType)) {
+      <div class="col-12">
+        <label
+          class="form-label"
+          [for]="formPrefix + 'AuthHeaderName'"
+          i18n="@@featureNotifications-authHeaderNameLabel"
+          >Header name <span class="text-danger">*</span></label
+        >
+        <input
+          type="text"
+          class="form-control"
+          [id]="formPrefix + 'AuthHeaderName'"
+          [(ngModel)]="form.authHeaderName"
+          [name]="formPrefix + 'AuthHeaderName'"
+          [disabled]="(saving$ | async) === true || readonly"
+        />
+      </div>
+    }
+    @if (authValueRequired(form.authType)) {
+      <div class="col-12">
+        <label class="form-label" [for]="formPrefix + 'AuthValue'" i18n="@@featureNotifications-authValueLabel">
+          Auth value
+          @if (!hasExistingAuthValue) {
+            <span class="text-danger">*</span>
+          }
+        </label>
+        <input
+          type="password"
+          class="form-control"
+          [id]="formPrefix + 'AuthValue'"
+          [(ngModel)]="form.authValue"
+          [name]="formPrefix + 'AuthValue'"
+          [placeholder]="hasExistingAuthValue ? 'Leave empty to keep current' : ''"
+          i18n-placeholder="@@featureNotifications-authValueKeepPlaceholder"
+          [disabled]="(saving$ | async) === true || readonly"
+        />
+        @if (hasExistingAuthValue) {
+          <small class="form-text text-muted" i18n="@@featureNotifications-authValueKeepHint"
+            >Leave empty to keep the current value</small
+          >
+        }
+      </div>
+    }
+    <div class="col-12">
+      <label class="form-label" i18n="@@featureNotifications-subscribedEventsLabel"
+        >Subscribed events <span class="text-danger">*</span></label
+      >
+      @if ((eventTypesLoading$ | async) === true) {
+        <div class="text-muted small" i18n="@@featureNotifications-loadingEventTypes">Loading event types...</div>
+      } @else if (eventTypes().length === 0) {
+        <div class="text-muted small" i18n="@@featureNotifications-noEventTypes">No event types available</div>
+      } @else {
+        <div class="event-type-list border rounded p-2">
+          @for (eventType of eventTypes(); track eventType.type) {
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                [id]="formPrefix + '-' + eventType.type"
+                [checked]="isEventSelected(form, eventType.type)"
+                (change)="toggleSubscribedEvent(form, eventType.type, $any($event.target).checked)"
+                [disabled]="(saving$ | async) === true || readonly"
+              />
+              <label class="form-check-label" [for]="formPrefix + '-' + eventType.type">
+                <span class="fw-medium">{{ eventType.type }}</span>
+                @if (eventType.description !== eventType.type) {
+                  <span class="text-muted ms-1">{{ eventType.description }}</span>
+                }
+              </label>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</ng-template>
+
+<div
+  class="modal fade"
+  id="deleteWebhookModal"
+  tabindex="-1"
+  aria-labelledby="deleteWebhookModalLabel"
+  aria-hidden="true"
+  #deleteWebhookModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteWebhookModalLabel" i18n="@@featureNotifications-deleteWebhookModalTitle">
+          Delete webhook
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cancelDeleteWebhook()"
+          i18n-aria-label="@@featureNotifications-closeAriaLabel"
+          aria-label="Close"
+          [disabled]="(deleting$ | async) === true"
+        ></button>
+      </div>
+      <div class="modal-body">
+        @if (endpointToDelete) {
+          <p i18n="@@featureNotifications-deleteConfirm">
+            Are you sure you want to delete the webhook <strong>{{ endpointToDelete.name }}</strong
+            >?
+          </p>
+        }
+        <p class="text-danger mb-0">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span i18n="@@featureNotifications-cannotUndo">This action cannot be undone.</span>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="confirmDeleteWebhook()"
+          [disabled]="(deleting$ | async) === true"
+        >
+          @if (deleting$ | async) {
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          }
+          <span i18n="@@featureNotifications-delete">Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="deliveriesModal"
+  tabindex="-1"
+  aria-labelledby="deliveriesModalLabel"
+  aria-hidden="true"
+  #deliveriesModal
+>
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deliveriesModalLabel" i18n="@@featureNotifications-deliveriesTitle">
+          Recent deliveries
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="onCloseDeliveries()"
+          i18n-aria-label="@@featureNotifications-closeAriaLabel"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        @if (deliveriesLoading$ | async) {
+          <div class="d-flex justify-content-center p-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden" i18n="@@featureNotifications-loadingDeliveries">Loading deliveries...</span>
+            </div>
+          </div>
+        } @else {
+          @if (deliveriesError$ | async; as deliveriesError) {
+            <div class="alert alert-danger" role="alert">{{ deliveriesError }}</div>
+          }
+          @if ((deliveries$ | async)?.length === 0) {
+            <div class="text-muted text-center py-4" i18n="@@featureNotifications-noDeliveries">No deliveries yet</div>
+          } @else {
+            <div class="table-responsive">
+              <table class="table table-sm align-middle">
+                <thead>
+                  <tr>
+                    <th i18n="@@featureNotifications-deliveryTime">Time</th>
+                    <th i18n="@@featureNotifications-deliveryEvent">Event</th>
+                    <th i18n="@@featureNotifications-deliveryStatus">Status</th>
+                    <th i18n="@@featureNotifications-deliveryAttempt">Attempt</th>
+                    <th i18n="@@featureNotifications-deliveryDetails">Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (delivery of deliveries$ | async; track delivery.id) {
+                    <tr>
+                      <td>{{ formatDate(delivery.createdAt) }}</td>
+                      <td>{{ delivery.eventType }}</td>
+                      <td>
+                        @if (delivery.success) {
+                          <span class="text-success" i18n="@@featureNotifications-deliverySuccess">Success</span>
+                        } @else {
+                          <span class="text-danger" i18n="@@featureNotifications-deliveryFailed">Failed</span>
+                        }
+                        @if (delivery.httpStatus) {
+                          <span class="text-muted ms-1">({{ delivery.httpStatus }})</span>
+                        }
+                      </td>
+                      <td>{{ delivery.attempt }}</td>
+                      <td class="delivery-details-cell">
+                        @if (delivery.errorMessage) {
+                          <div class="delivery-detail-error small text-danger mb-2">
+                            <span class="fw-semibold" i18n="@@featureNotifications-deliveryError">Error</span>:
+                            {{ delivery.errorMessage }}
+                          </div>
+                        }
+                        <div class="delivery-detail-block">
+                          <div class="delivery-detail-label" i18n="@@featureNotifications-deliveryPayload">Payload</div>
+                          <pre class="delivery-detail-content">{{ formatDeliveryPayload(delivery.payload) }}</pre>
+                        </div>
+                        <div class="delivery-detail-block">
+                          <div class="delivery-detail-label" i18n="@@featureNotifications-deliveryResponse">
+                            Response
+                          </div>
+                          <pre class="delivery-detail-content">{{ formatDeliveryResponse(delivery.responseBody) }}</pre>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            @if (deliveriesHasMore$ | async) {
+              <div class="text-muted small" i18n="@@featureNotifications-moreDeliveries">
+                More deliveries exist than shown.
+              </div>
+            }
+            @if (deliveriesTotal$ | async; as total) {
+              <div class="text-muted small">
+                {{ total }} <ng-container i18n="@@featureNotifications-totalDeliveries">total deliveries</ng-container>
+              </div>
+            }
+          }
+        }
+      </div>
+    </div>
+  </div>
+</div>

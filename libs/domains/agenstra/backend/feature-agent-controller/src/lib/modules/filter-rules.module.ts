@@ -10,6 +10,7 @@ import { AgentManagerFilterRulesClientService } from '../services/agent-manager-
 import { FilterRulesSyncService } from '../services/filter-rules-sync.service';
 import { FilterRulesService } from '../services/filter-rules.service';
 
+import { AgenstraNotificationsModule } from './agenstra-notifications.module';
 import { ClientsModule } from './clients.module';
 
 /**
@@ -25,6 +26,7 @@ import { ClientsModule } from './clients.module';
       AgentConsoleRegexFilterRuleSyncTargetEntity,
       ClientEntity,
     ]),
+    AgenstraNotificationsModule,
     forwardRef(() => ClientsModule),
   ],
   controllers: [FilterRulesController],

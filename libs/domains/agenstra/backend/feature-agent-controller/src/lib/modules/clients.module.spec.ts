@@ -49,8 +49,10 @@ import { ClientsService } from '../services/clients.service';
 import { ExternalImportSyncMarkerService } from '../services/external-import-sync-marker.service';
 
 import { ClientsModule } from './clients.module';
+import { AgenstraNotificationsModule } from './agenstra-notifications.module';
 import { ContextImportModule } from './context-import.module';
 import { FilterRulesModule } from './filter-rules.module';
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 
 @Module({})
 class StubFilterRulesModule {}
@@ -68,6 +70,22 @@ class StubFilterRulesModule {}
   exports: [ExternalImportSyncMarkerService],
 })
 class StubContextImportModule {}
+
+@Module({
+  providers: [
+    {
+      provide: AgenstraNotificationPublisher,
+      useValue: {
+        publishClient: jest.fn(),
+        publishTicket: jest.fn(),
+        publishFilterRule: jest.fn(),
+        publish: jest.fn(),
+      },
+    },
+  ],
+  exports: [AgenstraNotificationPublisher],
+})
+class StubAgenstraNotificationsModule {}
 
 describe('ClientsModule', () => {
   let module: TestingModule;
@@ -123,6 +141,8 @@ describe('ClientsModule', () => {
       .useModule(StubFilterRulesModule)
       .overrideModule(ContextImportModule)
       .useModule(StubContextImportModule)
+      .overrideModule(AgenstraNotificationsModule)
+      .useModule(StubAgenstraNotificationsModule)
       .overrideProvider(getRepositoryToken(ClientEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(ClientAgentCredentialEntity))
