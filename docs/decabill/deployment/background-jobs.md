@@ -67,6 +67,8 @@ Coordinators fan out unit jobs such as:
 - `backorder-retry.unit`
 - Admin bill-now coordinator and unit jobs (`AdminBillNowJobName`)
 - `datev-export.coordinator` and `datev-export.unit` (when `BILLING_DATEV_EXPORT_ENABLED=true`)
+- `webhook-deliver` — outbound webhook notification delivery
+- `email-deliver` — transactional email delivery (Handlebars + nodemailer)
 
 BullMQ `jobId` values prevent duplicate active work for the same entity. Custom job IDs use `.` separators and only allowed characters (alphanumeric, `.`, `-`, `_`, `~`).
 

@@ -16,19 +16,25 @@ describe('UsersService', () => {
     remove: jest.fn(),
     incrementTokenVersion: jest.fn(),
   };
-  const mockEmailService = {
-    sendConfirmationEmail: jest.fn(),
-  };
   const mockStatisticsService = {
     recordEntityCreated: jest.fn().mockResolvedValue(undefined),
     recordEntityUpdated: jest.fn().mockResolvedValue(undefined),
     recordEntityDeleted: jest.fn().mockResolvedValue(undefined),
   };
+  const mockEmailDispatcher = {
+    publishEmail: jest.fn(),
+  };
   let service: UsersService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new UsersService(mockUsersRepository as any, mockEmailService as any, mockStatisticsService as any, null);
+    mockEmailDispatcher.publishEmail.mockResolvedValue(undefined);
+    service = new UsersService(
+      mockUsersRepository as any,
+      mockStatisticsService as any,
+      null,
+      mockEmailDispatcher as any,
+    );
   });
 
   it('locks a target user by setting lockedAt', async () => {
@@ -121,5 +127,78 @@ describe('UsersService', () => {
     await service.update('user-1', { password: 'new-secret' });
 
     expect(mockUsersRepository.incrementTokenVersion).toHaveBeenCalledWith('user-1');
+  });
+
+  it('publishes confirmation email when creating a non-first user', async () => {
+    mockUsersRepository.findByEmail.mockResolvedValue(null);
+    mockUsersRepository.create.mockResolvedValue({
+      id: 'user-2',
+      email: 'new@example.com',
+      role: UserRole.USER,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    mockUsersRepository.update.mockResolvedValue({
+      id: 'user-2',
+      email: 'new@example.com',
+      role: UserRole.USER,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+
+    await service.create({ email: 'new@example.com', password: 'secret-pass' }, false);
+
+    expect(mockEmailDispatcher.publishEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'user.email_confirmation_requested',
+        to: 'new@example.com',
+        templateKey: 'email-confirmation',
+        templateContext: expect.objectContaining({ code: expect.any(String) }),
+      }),
+    );
+  });
+
+  it('does not publish confirmation email when creating the first user', async () => {
+    mockUsersRepository.findByEmail.mockResolvedValue(null);
+    mockUsersRepository.create.mockResolvedValue({
+      id: 'user-1',
+      email: 'admin@example.com',
+      role: UserRole.ADMIN,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+
+    await service.create({ email: 'admin@example.com', password: 'secret-pass' }, true);
+
+    expect(mockEmailDispatcher.publishEmail).not.toHaveBeenCalled();
+  });
+
+  it('publishes confirmation email when email changes', async () => {
+    mockUsersRepository.findByIdForTenant.mockResolvedValue({
+      id: 'user-1',
+      email: 'old@example.com',
+      role: UserRole.USER,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    mockUsersRepository.findByEmail.mockResolvedValue(null);
+    mockUsersRepository.update.mockResolvedValue({
+      id: 'user-1',
+      email: 'new@example.com',
+      role: UserRole.USER,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+    });
+
+    await service.update('user-1', { email: 'new@example.com' });
+
+    expect(mockEmailDispatcher.publishEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'user.email_confirmation_requested',
+        to: 'new@example.com',
+        templateKey: 'email-confirmation',
+        templateContext: expect.objectContaining({ code: expect.any(String) }),
+      }),
+    );
   });
 });

@@ -1,5 +1,6 @@
 import {
   ClientsModule,
+  IdentityEmailBridgeModule,
   IdentityNotificationBridgeModule,
   IdentityStatisticsBridgeModule,
 } from '@forepath/agenstra/backend/feature-agent-controller';
@@ -38,6 +39,7 @@ const authMethod = getAuthenticationMethod();
     ClientsModule,
     IdentityStatisticsBridgeModule,
     IdentityNotificationBridgeModule,
+    IdentityEmailBridgeModule,
     MonitoringModule,
   ],
   // Use hybrid guards (checks STATIC_API_KEY to determine authentication method)

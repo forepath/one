@@ -1,4 +1,12 @@
-import { INSTANCE_SCOPE_KEY, NotificationsModule } from '@forepath/shared/backend';
+import {
+  INSTANCE_SCOPE_KEY,
+  IDENTITY_EMAIL_EVENTS,
+  IDENTITY_EMAIL_SUBJECTS,
+  NotificationsModule,
+  resolveEmailCompanyName,
+  resolveEmailCompanyFrom,
+  resolveIdentityEmailTemplateRoots,
+} from '@forepath/shared/backend';
 import { Module } from '@nestjs/common';
 
 import { AGENSTRA_NOTIFICATION_EVENTS } from '../notifications/agenstra-notification.events';
@@ -15,6 +23,13 @@ const notificationsModule = NotificationsModule.register({
   eventCatalog: AGENSTRA_NOTIFICATION_EVENTS,
   resolveScopeKey: () => INSTANCE_SCOPE_KEY,
   assertAdmin: assertNotificationAdmin,
+  email: {
+    templateRoots: resolveIdentityEmailTemplateRoots(),
+    emailEventCatalog: IDENTITY_EMAIL_EVENTS,
+    subjectRegistry: IDENTITY_EMAIL_SUBJECTS,
+    resolveCompanyName: () => resolveEmailCompanyName(),
+    resolveCompanyFrom: () => resolveEmailCompanyFrom(),
+  },
 });
 
 @Module({

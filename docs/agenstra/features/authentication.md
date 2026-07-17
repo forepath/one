@@ -85,7 +85,7 @@ DISABLE_SIGNUP=false  # Set to true to disable self-registration
 3. If signup is disabled, registration returns 503 Service Unavailable
 4. If enabled, user account is created:
    - First user: Auto-confirmed and assigned admin role
-   - Subsequent users: Receive 6-character alphanumeric confirmation code via email
+   - Subsequent users: Receive 6-character alphanumeric confirmation code via email (queued; see [Email notifications](./email-notifications.md))
 
 ### Email Confirmation
 

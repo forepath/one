@@ -85,6 +85,8 @@ PDFs are stored under `BILLING_INVOICE_PDF_STORAGE_PATH`. Issuer details come fr
 - `BILLING_ISSUER_*` (name, VAT ID, address, email, IBAN)
 - `BILLING_TAX_RATE_STANDARD` and `BILLING_TAX_RATE_REDUCED`
 
+Issued invoices (and credit notes) also enqueue customer emails via BullMQ; see [Email notifications](./email-notifications.md).
+
 ## Usage on Invoices
 
 Usage records posted via `POST /admin/usage/record` (admin or API key only) appear on invoices when pricing includes usage cost or unit counts. Customers can read usage via `GET /usage/summary/{subscriptionId}` but cannot submit records.

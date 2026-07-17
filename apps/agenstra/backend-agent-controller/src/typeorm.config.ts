@@ -30,7 +30,7 @@ import {
   TicketEntity,
   UserEnvironmentReadStateEntity,
 } from '@forepath/agenstra/backend/feature-agent-controller';
-import { WebhookDeliveryEntity, WebhookEndpointEntity } from '@forepath/shared/backend';
+import { WebhookDeliveryEntity, WebhookEndpointEntity, EmailDeliveryEntity } from '@forepath/shared/backend';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
 import {
   ClientAgentCredentialEntity,
@@ -107,6 +107,7 @@ export const typeormConfig: DataSourceOptions = {
     UserEnvironmentReadStateEntity,
     WebhookEndpointEntity,
     WebhookDeliveryEntity,
+    EmailDeliveryEntity,
   ],
   migrations: [
     'src/migrations/*.js',

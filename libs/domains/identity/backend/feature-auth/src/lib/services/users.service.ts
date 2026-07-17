@@ -1,13 +1,14 @@
 import {
   createConfirmationCode,
+  IDENTITY_EMAIL_DISPATCHER,
   IDENTITY_NOTIFICATION_PUBLISHER,
   IDENTITY_STATISTICS_SERVICE,
+  IIdentityEmailDispatcher,
   IIdentityNotificationPublisher,
   IIdentityStatisticsService,
   UserEntity,
   UserRole,
 } from '@forepath/identity/backend';
-import { EmailService } from '@forepath/shared/backend';
 import {
   BadRequestException,
   ConflictException,
@@ -29,13 +30,15 @@ const BCRYPT_ROUNDS = 12;
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
-    private readonly emailService: EmailService,
     @Optional()
     @Inject(IDENTITY_STATISTICS_SERVICE)
     private readonly statisticsService: IIdentityStatisticsService | null,
     @Optional()
     @Inject(IDENTITY_NOTIFICATION_PUBLISHER)
     private readonly notificationPublisher: IIdentityNotificationPublisher | null,
+    @Optional()
+    @Inject(IDENTITY_EMAIL_DISPATCHER)
+    private readonly emailDispatcher: IIdentityEmailDispatcher | null,
   ) {}
 
   async mapToResponseDto(user: UserEntity): Promise<UserResponseDto> {
@@ -102,7 +105,12 @@ export class UsersService {
       const codeHash = await hash;
 
       await this.usersRepository.update(user.id, { emailConfirmationToken: codeHash });
-      await this.emailService.sendConfirmationEmail(user.email, code);
+      await this.emailDispatcher?.publishEmail({
+        eventType: 'user.email_confirmation_requested',
+        to: user.email,
+        templateKey: 'email-confirmation',
+        templateContext: { code },
+      });
     }
 
     return this.mapToResponseDto(user);
@@ -163,7 +171,12 @@ export class UsersService {
     });
 
     if (emailChanged && dto.email && confirmationCode) {
-      await this.emailService.sendConfirmationEmail(dto.email, confirmationCode);
+      await this.emailDispatcher?.publishEmail({
+        eventType: 'user.email_confirmation_requested',
+        to: dto.email,
+        templateKey: 'email-confirmation',
+        templateContext: { code: confirmationCode },
+      });
     }
 
     return this.mapToResponseDto(updated);

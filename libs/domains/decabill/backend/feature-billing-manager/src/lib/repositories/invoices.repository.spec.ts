@@ -98,6 +98,17 @@ describe('InvoicesRepository', () => {
     expect(mockQueryBuilder.getCount).toHaveBeenCalled();
   });
 
+  it('existsAuthorizedByPdfOrTimeReportStorageKey queries tenant-scoped storage keys', async () => {
+    mockQueryBuilder.getCount.mockResolvedValue(1);
+
+    await expect(repository.existsAuthorizedByPdfOrTimeReportStorageKey('sub/inv.pdf')).resolves.toBe(true);
+    expect(mockQueryBuilder.where).toHaveBeenCalledWith(
+      '(inv.pdf_storage_key = :storageKey OR inv.time_report_storage_key = :storageKey)',
+      { storageKey: 'sub/inv.pdf' },
+    );
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalled();
+  });
+
   it('delete removes invoice', async () => {
     const invoice = { id: 'inv-1', userId: 'user-1', status: InvoiceStatus.DRAFT };
 

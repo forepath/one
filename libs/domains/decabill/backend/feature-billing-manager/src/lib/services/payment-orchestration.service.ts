@@ -15,6 +15,7 @@ import { buildStripeCheckoutReturnUrl } from '../utils/tenant-frontend-url.utils
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 
 @Injectable()
 export class PaymentOrchestrationService {
@@ -28,6 +29,7 @@ export class PaymentOrchestrationService {
     private readonly paymentProcessorFactory: PaymentProcessorFactory,
     private readonly auditLog: BillingAuditLogService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
+    private readonly billingEmailPublisher: BillingEmailPublisher,
   ) {}
 
   async initiatePayment(invoiceId: string, subscriptionId: string, userId: string): Promise<{ checkoutUrl: string }> {
@@ -200,6 +202,10 @@ export class PaymentOrchestrationService {
         processor: processorType,
         externalId: update.externalId,
       });
+      await this.billingEmailPublisher.publishPaymentSucceeded(paid, {
+        processor: processorType,
+        externalId: update.externalId,
+      });
 
       return;
     }
@@ -213,6 +219,10 @@ export class PaymentOrchestrationService {
       await this.paymentAttemptsRepository.update(attempt.id, { status: PaymentAttemptStatus.FAILED });
 
       this.billingNotificationPublisher.publishPayment('payment.failed', invoice, {
+        processor: processorType,
+        externalId: update.externalId,
+      });
+      await this.billingEmailPublisher.publishPaymentFailed(invoice, {
         processor: processorType,
         externalId: update.externalId,
       });

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
-import { EmailService } from '@forepath/shared/backend';
 
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { computePublicWithdrawalExpiresAt } from '../constants/public-withdrawal.config';
 import type { ConfirmPublicWithdrawalDto } from '../dto/confirm-public-withdrawal.dto';
 import type {
@@ -48,7 +48,7 @@ export class PublicWithdrawalService {
     private readonly publicWithdrawalRequestsRepository: PublicWithdrawalRequestsRepository,
     private readonly subscriptionService: SubscriptionService,
     private readonly billingIssuerConfig: BillingIssuerConfigService,
-    private readonly emailService: EmailService,
+    private readonly billingEmailPublisher: BillingEmailPublisher,
   ) {}
 
   getAddressee(): PublicWithdrawalAddresseeDto {
@@ -119,11 +119,7 @@ export class PublicWithdrawalService {
     const profileEmail = match.profile.email?.trim();
 
     if (profileEmail) {
-      const sent = await this.emailService.sendWithdrawalConfirmationEmail(profileEmail, code, expiresAt);
-
-      if (!sent) {
-        this.logger.warn(`Withdrawal confirmation email was not sent to profile for request ${request.id}`);
-      }
+      await this.billingEmailPublisher.publishWithdrawalConfirmation(profileEmail, code, expiresAt);
     }
 
     return {

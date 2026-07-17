@@ -108,6 +108,20 @@ export class InvoicesRepository {
       .getOne();
   }
 
+  /**
+   * True when the storage key matches an invoice PDF or time report for the current tenant.
+   */
+  async existsAuthorizedByPdfOrTimeReportStorageKey(storageKey: string): Promise<boolean> {
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('(inv.pdf_storage_key = :storageKey OR inv.time_report_storage_key = :storageKey)', { storageKey });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return (await qb.getCount()) > 0;
+  }
+
   async findByIdForUser(invoiceId: string, userId: string): Promise<InvoiceEntity | null> {
     const invoice = await this.findById(invoiceId);
 

@@ -20,7 +20,7 @@ import { resolveSubscriptionBillingBaseOverride } from '../utils/server-type-bil
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
 import { BillingScheduleService } from './billing-schedule.service';
-import { InvoiceEmailService } from './invoice-email.service';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { PricingService } from './pricing.service';
@@ -59,7 +59,7 @@ export class WithdrawalRefundService {
     private readonly customerProfilesRepository: CustomerProfilesRepository,
     private readonly billingIssuerConfig: BillingIssuerConfigService,
     private readonly invoicePdfService: InvoicePdfService,
-    private readonly invoiceEmailService: InvoiceEmailService,
+    private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly auditLog: BillingAuditLogService,
   ) {}
 
@@ -128,7 +128,7 @@ export class WithdrawalRefundService {
       description: lineDescription,
     });
 
-    await this.invoiceEmailService.notifyPartialCreditDocument(
+    await this.billingEmailPublisher.publishPartialCreditDocument(
       invoice,
       storageKey,
       documentNumber,

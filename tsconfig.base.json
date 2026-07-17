@@ -163,6 +163,9 @@
       "@forepath/shared/backend/util-webhook": [
         "libs/domains/shared/backend/util-webhook/src/index.ts"
       ],
+      "@forepath/shared/backend/util-email": [
+        "libs/domains/shared/backend/util-email/src/index.ts"
+      ],
       "@forepath/shared/backend/feature-notifications": [
         "libs/domains/shared/backend/feature-notifications/src/index.ts"
       ],

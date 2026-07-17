@@ -7,12 +7,16 @@ import {
   KnowledgeEmbeddingIndexService,
 } from '@forepath/agenstra/backend/feature-agent-controller';
 import {
+  EMAIL_DELIVER_JOB_NAME,
+  EmailDeliveryService,
   enqueueUnitJob,
+  resolveEmailDeliverJobPayload,
   resolveWebhookDeliverJobPayload,
   WebhookDeliveryRetentionService,
   WebhookDeliveryService,
   WEBHOOK_DELIVER_JOB_NAME,
   WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
+  type EmailDeliverJobPayload,
   type WebhookDeliverJobPayload,
 } from '@forepath/shared/backend';
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
@@ -46,6 +50,7 @@ export class ControllerJobsProcessor extends WorkerHost {
     private readonly autonomousOrchestrator: AutonomousRunOrchestratorService,
     private readonly webhookDeliveryService: WebhookDeliveryService,
     private readonly webhookDeliveryRetentionService: WebhookDeliveryRetentionService,
+    private readonly emailDeliveryService: EmailDeliveryService,
   ) {
     super();
   }
@@ -91,6 +96,9 @@ export class ControllerJobsProcessor extends WorkerHost {
         break;
       case WEBHOOK_DELIVER_JOB_NAME:
         await this.webhookDeliveryService.deliver(resolveWebhookDeliverJobPayload(job));
+        break;
+      case EMAIL_DELIVER_JOB_NAME:
+        await this.emailDeliveryService.deliver(resolveEmailDeliverJobPayload(job as Job<EmailDeliverJobPayload>));
         break;
       case WEBHOOK_DELIVERY_RETENTION_COORDINATOR:
         await this.webhookDeliveryRetentionService.applyRetentionForAllEndpoints();

@@ -87,7 +87,7 @@ DISABLE_SIGNUP=false
 3. If signup is disabled, registration returns 503 Service Unavailable
 4. If enabled, user account is created in the current tenant (from `X-Tenant`):
    - First user in the tenant: auto-confirmed and assigned admin role
-   - Subsequent users: receive confirmation code via email
+   - Subsequent users: receive confirmation code via email (queued delivery; see [Email notifications](./email-notifications.md))
 
 ### Email Confirmation
 

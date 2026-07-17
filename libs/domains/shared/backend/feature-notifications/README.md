@@ -1,6 +1,6 @@
 # shared-backend-feature-notifications
 
-Shared NestJS module for tenant- or instance-scoped webhook notification endpoints, async delivery via BullMQ, and admin CRUD.
+Shared NestJS module for tenant- or instance-scoped webhook notification endpoints, async delivery via BullMQ, optional transactional email delivery, and admin webhook CRUD.
 
 ## Registration
 
@@ -13,18 +13,29 @@ NotificationsModule.register({
   queueName: 'billing',
   resolveScopeKey: () => getTenantIdOrDefault(),
   assertAdmin: (req) => assertBillingAdmin(req),
+  email: {
+    templateRoots: resolveBillingEmailTemplateRoots(),
+    emailEventCatalog: BILLING_EMAIL_EVENTS,
+    subjectRegistry: BILLING_EMAIL_SUBJECTS,
+    companyName: resolveEmailCompanyName(),
+    companyFrom: resolveEmailCompanyFrom(),
+  },
 });
 ```
 
+Company brand fields resolve from `EMAIL_COMPANY_*` with `BILLING_ISSUER_*` fallback (see `resolveEmailCompanyFrom`).
+
 ## Exports
 
-- `NotificationsModule` — dynamic module with entities, repositories, dispatcher, delivery service, and admin controller factory
+- `NotificationsModule` — dynamic module with webhook + optional email channel
 - `NotificationDispatcherService` — matches endpoints and enqueues `webhook-deliver` jobs
+- `EmailNotificationDispatcherService` — enqueues `email-deliver` jobs (when `email` options set)
+- `EmailDeliveryService` — renders Handlebars templates and sends via nodemailer
 - `WebhookEndpointService` / `WebhookDeliveryService` — admin CRUD and HTTP delivery
 
 ## Migrations
 
-Webhook tables are defined in `src/lib/migrations/1774300000000_CreateWebhookNotificationTables.ts`. Both Decabill and Agenstra compile this shared migration into their deploy artifacts (same pattern as identity `util-auth` migrations).
+Shared migrations live in `src/lib/migrations/` and are compiled into both Decabill and Agenstra deploy artifacts via each app’s `compile-migrations` target (same pattern as identity `util-auth` migrations).
 
 ## Tests
 

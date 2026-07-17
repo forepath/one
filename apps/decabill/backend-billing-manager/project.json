@@ -23,13 +23,33 @@
           "apps/decabill/backend-billing-manager/src/assets",
           "apps/decabill/backend-billing-manager/src/migrations",
           {
-            "glob": "invoice-pdf.template.html",
+            "glob": "*.template.html",
             "input": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates",
             "output": "templates"
           },
           {
-            "glob": "time-report-pdf.template.html",
+            "glob": "*.template.txt",
             "input": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates",
+            "output": "templates"
+          },
+          {
+            "glob": "email-layout.partial.html",
+            "input": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates",
+            "output": "templates"
+          },
+          {
+            "glob": "*.template.html",
+            "input": "libs/domains/shared/backend/feature-notifications/src/lib/templates",
+            "output": "templates"
+          },
+          {
+            "glob": "*.template.txt",
+            "input": "libs/domains/shared/backend/feature-notifications/src/lib/templates",
+            "output": "templates"
+          },
+          {
+            "glob": "email-layout.partial.html",
+            "input": "libs/domains/shared/backend/feature-notifications/src/lib/templates",
             "output": "templates"
           }
         ],

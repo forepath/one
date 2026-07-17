@@ -33,7 +33,7 @@ import {
   PublicWithdrawalRequestEntity,
   UsageRecordEntity,
 } from '@forepath/decabill/backend';
-import { WebhookDeliveryEntity, WebhookEndpointEntity } from '@forepath/shared/backend';
+import { WebhookDeliveryEntity, WebhookEndpointEntity, EmailDeliveryEntity } from '@forepath/shared/backend';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
 import { RevokedUserTokenEntity, UserEntity } from '@forepath/identity/backend';
 import { DataSource, DataSourceOptions } from 'typeorm';
@@ -104,6 +104,7 @@ export const typeormConfig: DataSourceOptions = {
     RevokedUserTokenEntity,
     WebhookEndpointEntity,
     WebhookDeliveryEntity,
+    EmailDeliveryEntity,
   ],
   migrations: [
     'src/migrations/*.js',

@@ -7,7 +7,15 @@ import {
   UsersRepository,
   RevokedUserTokensRepository,
 } from '@forepath/identity/backend';
-import { EmailService, getTenantIdOrDefault, NotificationsModule } from '@forepath/shared/backend';
+import {
+  EMAIL_ATTACHMENT_RESOLVER,
+  EmailDeliveriesRepository,
+  EmailDeliveryService,
+  EmailService,
+  EmailTemplateRendererService,
+  NOTIFICATIONS_MODULE_OPTIONS,
+  type NotificationsModuleOptions,
+} from '@forepath/shared/backend';
 import {
   DynamicProviderLoaderService,
   registerDynamicProviderMetadata,
@@ -20,10 +28,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
 import { PAYMENT_PROCESSOR_INIT } from './constants/payment-processor-init.token';
-import { BILLING_NOTIFICATION_EVENTS } from './notifications/billing-notification.events';
+import { BillingEmailAttachmentResolver } from './email/billing-email-attachment.resolver';
+import { BillingEmailPublisher } from './email/billing-email.publisher';
+import { BillingIdentityEmailBridgeModule } from './modules/billing-identity-email-bridge.module';
 import { BillingNotificationPublisher } from './notifications/billing-notification.publisher';
-import { BILLING_QUEUE_NAME } from './queue/billing-queue.constants';
-import { ensureAdmin, getUserFromRequest, type RequestWithUser } from './utils/billing-access.utils';
 import { AdminBillingController } from './controllers/admin-billing.controller';
 import { AdminPromotionsController } from './controllers/admin-promotions.controller';
 import { PromotionsController } from './controllers/promotions.controller';
@@ -174,7 +182,6 @@ import { HostnameReservationService } from './services/hostname-reservation.serv
 import { InvoiceAdminService } from './services/invoice-admin.service';
 import { InvoiceCreationService } from './services/invoice-creation.service';
 import { ManualInvoiceService } from './services/manual-invoice.service';
-import { InvoiceEmailService } from './services/invoice-email.service';
 import { InvoiceIssuanceService } from './services/invoice-issuance.service';
 import { InvoiceOverdueJobHandler } from './services/invoice-overdue.job-handler';
 import { InvoicePdfHtmlRendererService } from './services/invoice-pdf-html-renderer.service';
@@ -396,18 +403,9 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
   properties: applyProviderConfigFieldScopes(DIGITALOCEAN_CONFIG_PROPERTIES, ['serverType', 'region']),
 };
 
-const billingNotificationsModule = NotificationsModule.register({
-  applicationId: 'decabill',
-  scopeMode: 'tenant_id',
-  controllerPath: 'admin/billing/webhooks',
-  queueName: BILLING_QUEUE_NAME,
-  eventCatalog: BILLING_NOTIFICATION_EVENTS,
-  resolveScopeKey: () => getTenantIdOrDefault(),
-  assertAdmin: (req) => ensureAdmin(getUserFromRequest(req as RequestWithUser)),
-});
-
 @Module({
   imports: [
+    BillingIdentityEmailBridgeModule,
     TypeOrmModule.forFeature([
       ServiceTypeEntity,
       ServicePlanEntity,
@@ -446,7 +444,7 @@ const billingNotificationsModule = NotificationsModule.register({
       PublicWithdrawalRequestEntity,
     ]),
     RedisCacheModule,
-    billingNotificationsModule,
+    BillingIdentityEmailBridgeModule,
     ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
   ],
   controllers: [
@@ -519,7 +517,29 @@ const billingNotificationsModule = NotificationsModule.register({
     InvoicePdfTemplateService,
     InvoicePdfHtmlRendererService,
     InvoicePdfService,
-    InvoiceEmailService,
+    BillingEmailPublisher,
+    BillingEmailAttachmentResolver,
+    {
+      provide: EMAIL_ATTACHMENT_RESOLVER,
+      useExisting: BillingEmailAttachmentResolver,
+    },
+    {
+      provide: EmailDeliveryService,
+      useFactory: (
+        emailService: EmailService,
+        templateRenderer: EmailTemplateRendererService,
+        deliveriesRepository: EmailDeliveriesRepository,
+        options: NotificationsModuleOptions,
+        attachmentResolver: BillingEmailAttachmentResolver,
+      ) => new EmailDeliveryService(emailService, templateRenderer, deliveriesRepository, options, attachmentResolver),
+      inject: [
+        EmailService,
+        EmailTemplateRendererService,
+        EmailDeliveriesRepository,
+        NOTIFICATIONS_MODULE_OPTIONS,
+        BillingEmailAttachmentResolver,
+      ],
+    },
     InvoiceService,
     InvoiceIssuanceService,
     InvoiceCreationService,
@@ -647,6 +667,9 @@ const billingNotificationsModule = NotificationsModule.register({
     BillingScheduleService,
     BillingNotificationPublisher,
     BillingTenantService,
+    BillingEmailAttachmentResolver,
+    EMAIL_ATTACHMENT_RESOLVER,
+    EmailDeliveryService,
     CancellationPolicyService,
     CloudflareDnsService,
     DigitaloceanProvisioningService,
@@ -691,7 +714,7 @@ const billingNotificationsModule = NotificationsModule.register({
     DatevExportJobHandler,
     DatevExportConfigService,
     ProviderRegistryService,
-    billingNotificationsModule,
+    BillingIdentityEmailBridgeModule,
   ],
 })
 export class BillingModule implements OnModuleInit {

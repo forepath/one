@@ -27,6 +27,13 @@ Job registration (queue names, repeatable intervals, job names) lives in:
 
 Coordinators fan out **unit jobs** (one ticket, one import config, etc.). BullMQ `jobId` values prevent duplicate active work for the same entity. Custom job IDs use `.` separators and only allowed characters (alphanumeric, `.`, `-`, `_`, `~`), for example `coordinator.filter-rules-sync`. Colons and slashes are not valid.
 
+Notification delivery jobs on the same queue:
+
+- `webhook-deliver` — outbound webhook HTTPS delivery
+- `email-deliver` — transactional identity email (Handlebars + nodemailer)
+
+See [Email notifications](../features/email-notifications.md).
+
 ## Redis and queue environment variables
 
 | Variable                    | Purpose                                 | Default (local)                                       |

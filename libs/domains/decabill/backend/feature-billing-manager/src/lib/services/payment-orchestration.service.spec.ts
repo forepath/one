@@ -38,6 +38,10 @@ describe('PaymentOrchestrationService', () => {
     publishSubscription: jest.fn(),
     publish: jest.fn(),
   };
+  const billingEmailPublisher = {
+    publishPaymentSucceeded: jest.fn(),
+    publishPaymentFailed: jest.fn(),
+  };
   let processor: jest.Mocked<PaymentProcessor>;
   let factory: PaymentProcessorFactory;
   let service: PaymentOrchestrationService;
@@ -65,6 +69,7 @@ describe('PaymentOrchestrationService', () => {
       factory,
       auditLog as never,
       billingNotificationPublisher as never,
+      billingEmailPublisher as never,
     );
   });
 

@@ -22,7 +22,22 @@
         "tsConfig": "apps/agenstra/backend-agent-controller/tsconfig.app.json",
         "assets": [
           "apps/agenstra/backend-agent-controller/src/assets",
-          "apps/agenstra/backend-agent-controller/src/migrations"
+          "apps/agenstra/backend-agent-controller/src/migrations",
+          {
+            "glob": "*.template.html",
+            "input": "libs/domains/shared/backend/feature-notifications/src/lib/templates",
+            "output": "templates"
+          },
+          {
+            "glob": "*.template.txt",
+            "input": "libs/domains/shared/backend/feature-notifications/src/lib/templates",
+            "output": "templates"
+          },
+          {
+            "glob": "email-layout.partial.html",
+            "input": "libs/domains/shared/backend/feature-notifications/src/lib/templates",
+            "output": "templates"
+          }
         ],
         "webpackConfig": "apps/agenstra/backend-agent-controller/webpack.config.cjs",
         "generatePackageJson": true

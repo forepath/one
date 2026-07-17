@@ -62,16 +62,16 @@ Billing data and users are partitioned by **`tenant_id`**. HTTP clients send **`
 
 ### Encryption and Issuer Details
 
-| Variable                                   | Description                                                                          |
-| ------------------------------------------ | ------------------------------------------------------------------------------------ |
-| `ENCRYPTION_KEY`                           | Encrypts sensitive stored data (API tokens, snapshots, webhook auth/signing secrets) |
-| `BILLING_ISSUER_*`                         | Legal entity on invoices and public withdrawal addressee (name, VAT, address, bank)  |
-| `PUBLIC_WITHDRAWAL_CONFIRMATION_TTL_HOURS` | Hours until a public withdrawal confirmation code expires (default `48`)             |
-| `BILLING_TAX_RATE_STANDARD`                | Default standard tax rate (default `19`)                                             |
-| `BILLING_TAX_RATE_REDUCED`                 | Reduced tax rate (default `7`)                                                       |
-| `BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS` | Days after provisioning during which statutory withdrawal is allowed (default `14`)  |
-| `BILLING_INVOICE_PDF_STORAGE_PATH`         | PDF output path (default `/data/invoices`)                                           |
-| `BILLING_SKIP_FILE_CACHE`                  | Skip PDF file cache when `true`                                                      |
+| Variable                                   | Description                                                                                                                      |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `ENCRYPTION_KEY`                           | Encrypts sensitive stored data (API tokens, snapshots, webhook auth/signing secrets)                                             |
+| `BILLING_ISSUER_*`                         | Legal entity on invoices and public withdrawal addressee (name, VAT, address, bank); also fallback for email brand header/footer |
+| `PUBLIC_WITHDRAWAL_CONFIRMATION_TTL_HOURS` | Hours until a public withdrawal confirmation code expires (default `48`)                                                         |
+| `BILLING_TAX_RATE_STANDARD`                | Default standard tax rate (default `19`)                                                                                         |
+| `BILLING_TAX_RATE_REDUCED`                 | Reduced tax rate (default `7`)                                                                                                   |
+| `BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS` | Days after provisioning during which statutory withdrawal is allowed (default `14`)                                              |
+| `BILLING_INVOICE_PDF_STORAGE_PATH`         | PDF output path (default `/data/invoices`)                                                                                       |
+| `BILLING_SKIP_FILE_CACHE`                  | Skip PDF file cache when `true`                                                                                                  |
 
 ### DATEV EXTF Export
 
@@ -119,13 +119,24 @@ Per-tenant exports are scoped to the request **`X-Tenant`**. Unified exports agg
 
 ### Email (SMTP)
 
-| Variable        | Description      | Local default       |
-| --------------- | ---------------- | ------------------- |
-| `SMTP_HOST`     | SMTP server host | `mailhog`           |
-| `SMTP_PORT`     | SMTP port        | `1025`              |
-| `SMTP_USER`     | SMTP username    | empty               |
-| `SMTP_PASSWORD` | SMTP password    | empty               |
-| `EMAIL_FROM`    | From address     | `noreply@localhost` |
+Transactional email uses BullMQ (`email-deliver`). See [Email notifications](../features/email-notifications.md).
+
+| Variable                      | Description                                                             | Local default       |
+| ----------------------------- | ----------------------------------------------------------------------- | ------------------- |
+| `SMTP_HOST`                   | SMTP server host (required to enable sending)                           | `mailhog`           |
+| `SMTP_PORT`                   | SMTP port                                                               | `1025`              |
+| `SMTP_USER`                   | SMTP username                                                           | empty               |
+| `SMTP_PASSWORD`               | SMTP password                                                           | empty               |
+| `EMAIL_FROM`                  | Envelope From address                                                   | `noreply@localhost` |
+| `EMAIL_COMPANY_NAME`          | Brand name in email header/footer (falls back to `BILLING_ISSUER_NAME`) | empty               |
+| `EMAIL_COMPANY_ADDRESS_LINE1` | Footer address line 1 (falls back to `BILLING_ISSUER_ADDRESS_LINE1`)    | empty               |
+| `EMAIL_COMPANY_POSTAL_CODE`   | Footer postal code (falls back to `BILLING_ISSUER_POSTAL_CODE`)         | empty               |
+| `EMAIL_COMPANY_CITY`          | Footer city (falls back to `BILLING_ISSUER_CITY`)                       | empty               |
+| `EMAIL_COMPANY_COUNTRY`       | Footer country ISO-2 (falls back to `BILLING_ISSUER_COUNTRY`)           | empty               |
+| `EMAIL_COMPANY_VAT_ID`        | Footer VAT id (falls back to `BILLING_ISSUER_VAT_ID`)                   | empty               |
+| `EMAIL_COMPANY_EMAIL`         | Footer contact email (falls back to `BILLING_ISSUER_EMAIL`)             | empty               |
+
+When `EMAIL_COMPANY_*` is unset, Decabill typically relies on `BILLING_ISSUER_*` so invoice and email branding stay aligned.
 
 ### Provisioning and DNS
 

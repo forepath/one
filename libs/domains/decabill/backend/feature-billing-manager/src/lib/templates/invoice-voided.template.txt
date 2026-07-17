@@ -1,0 +1,7 @@
+Credit note issued
+
+Dear {{recipientName}},
+
+We have voided invoice {{invoiceNumber}}. The attached credit note {{creditNoteNumber}} confirms the cancellation.
+
+The original invoice PDF remains available in your billing account for your records.

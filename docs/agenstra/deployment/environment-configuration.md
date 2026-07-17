@@ -42,6 +42,22 @@ Complete reference for all environment variables used in Agenstra.
 
 **Note for Backend Agent Manager**: When using Keycloak authentication, the JWT token must include the `agent_management` role to access agent-manager endpoints.
 
+### Email (SMTP)
+
+Transactional identity email via BullMQ (`email-deliver`). See [Email notifications](../features/email-notifications.md).
+
+- `SMTP_HOST` - SMTP server host (required to enable sending; compose default `mailhog`)
+- `SMTP_PORT` - SMTP port (compose default `1025`)
+- `SMTP_USER` / `SMTP_PASSWORD` - Optional SMTP auth
+- `EMAIL_FROM` - Envelope From address (default `noreply@localhost`)
+- `EMAIL_COMPANY_NAME` - Brand name in email header/footer (falls back to `BILLING_ISSUER_NAME`)
+- `EMAIL_COMPANY_ADDRESS_LINE1` - Footer address (falls back to `BILLING_ISSUER_ADDRESS_LINE1`)
+- `EMAIL_COMPANY_POSTAL_CODE` - Footer postal code (falls back to `BILLING_ISSUER_POSTAL_CODE`)
+- `EMAIL_COMPANY_CITY` - Footer city (falls back to `BILLING_ISSUER_CITY`)
+- `EMAIL_COMPANY_COUNTRY` - Footer country ISO-2 (falls back to `BILLING_ISSUER_COUNTRY`)
+- `EMAIL_COMPANY_VAT_ID` - Footer VAT id (falls back to `BILLING_ISSUER_VAT_ID`)
+- `EMAIL_COMPANY_EMAIL` - Footer contact email (falls back to `BILLING_ISSUER_EMAIL`)
+
 ### CORS Configuration
 
 - `CORS_ORIGIN` - Allowed CORS origins (comma-separated list)

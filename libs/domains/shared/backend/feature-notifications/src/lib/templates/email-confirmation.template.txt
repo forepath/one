@@ -1,0 +1,7 @@
+Confirm your email
+
+Please confirm your email using the following code:
+
+{{code}}
+
+Enter this code on the confirmation page. The code will expire when you confirm.

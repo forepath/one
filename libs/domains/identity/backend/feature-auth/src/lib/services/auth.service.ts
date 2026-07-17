@@ -1,8 +1,22 @@
 import { randomUUID } from 'node:crypto';
 
-import { UserEntity, UserRole, createConfirmationCode, validateConfirmationCode } from '@forepath/identity/backend';
-import { EmailService } from '@forepath/shared/backend';
-import { BadRequestException, Injectable, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import {
+  UserEntity,
+  UserRole,
+  createConfirmationCode,
+  validateConfirmationCode,
+  IDENTITY_EMAIL_DISPATCHER,
+  type IIdentityEmailDispatcher,
+} from '@forepath/identity/backend';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  Optional,
+  ServiceUnavailableException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
@@ -37,12 +51,16 @@ export interface RegisterResponse {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly revokedUserTokensRepository: RevokedUserTokensRepository,
     private readonly usersService: UsersService,
-    private readonly emailService: EmailService,
     private readonly jwtService: JwtService,
+    @Optional()
+    @Inject(IDENTITY_EMAIL_DISPATCHER)
+    private readonly emailDispatcher: IIdentityEmailDispatcher | null,
   ) {}
 
   async login(email: string, password: string): Promise<LoginResponse> {
@@ -143,12 +161,18 @@ export class AuthService {
       passwordResetTokenExpiresAt: expiresAt,
     });
 
-    await this.emailService.send({
-      to: user.email,
-      subject: 'Reset your password',
-      text: `You requested a password reset. Use the following code to reset your password:\n\n${code}\n\nEnter this code on the reset password page. This code expires in 1 hour.`,
-      html: `<p>You requested a password reset. Use the following code to reset your password:</p><p><strong>${code}</strong></p><p>Enter this code on the reset password page. This code expires in 1 hour.</p>`,
-    });
+    try {
+      await this.emailDispatcher?.publishEmail({
+        eventType: 'user.password_reset_requested',
+        to: user.email,
+        templateKey: 'password-reset',
+        templateContext: { code },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'email enqueue failed';
+
+      this.logger.error(`Failed to enqueue password reset email: ${message}`);
+    }
 
     return {
       message: 'If an account exists with this email, you will receive a password reset code.',

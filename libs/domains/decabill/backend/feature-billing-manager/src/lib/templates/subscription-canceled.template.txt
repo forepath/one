@@ -1,0 +1,10 @@
+Subscription canceled
+
+Dear {{recipientName}},
+
+Your subscription "{{planName}}" has been canceled.
+{{#if effectiveDate}}
+Effective date: {{effectiveDate}}
+{{/if}}
+
+If this was unexpected, please contact support or renew from your billing account.
