@@ -1,0 +1,10 @@
+{{#> email-layout}}
+<h1 class="email-title">Your invoice is ready</h1>
+<p>Dear {{recipientName}},</p>
+<p>Your invoice <strong>{{invoiceNumber}}</strong> is now available.</p>
+<p>Total amount: <strong>{{amountLabel}}</strong></p>
+{{#if dueDateLabel}}
+<p>Due date: <strong>{{dueDateLabel}}</strong></p>
+{{/if}}
+<p>The invoice PDF is attached to this email. You can also view and download it from your billing account.</p>
+{{/email-layout}}

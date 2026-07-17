@@ -162,6 +162,10 @@ Multiple authentication methods with configurable user registration. Support for
 
 Instance-scoped outbound webhook endpoints for controller events with optional workspace filters.
 
+### [Email notifications](./email-notifications.md)
+
+Queued identity emails (confirmation, password reset) via BullMQ.
+
 ### [Tickets and Workspaces](./tickets-and-workspaces.md)
 
 Workspace-scoped tickets with collaboration, migration between clients, and ticket automation with realtime board updates.

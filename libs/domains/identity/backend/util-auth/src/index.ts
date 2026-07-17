@@ -24,6 +24,7 @@ export * from './lib/entities/user.entity';
 export * from './lib/password.service';
 export * from './lib/statistics.interface';
 export * from './lib/notification.interface';
+export * from './lib/email-dispatcher.interface';
 export * from './lib/token.utils';
 
 // Migrations

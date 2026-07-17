@@ -1,0 +1,9 @@
+{{#> email-layout}}
+<h1 class="email-title">Payment failed</h1>
+<p>Dear {{recipientName}},</p>
+<p>We were unable to process payment for invoice <strong>{{invoiceNumber}}</strong>.</p>
+{{#if amountLabel}}
+<p>Amount due: <strong>{{amountLabel}}</strong></p>
+{{/if}}
+<p>Please update your payment method or try again from your billing account.</p>
+{{/email-layout}}

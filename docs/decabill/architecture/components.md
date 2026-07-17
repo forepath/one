@@ -153,7 +153,7 @@ This document describes the major runtime components in Decabill, their responsi
 
 **Ports** (default compose): SMTP **1026**, UI **8026**
 
-Replace with production SMTP settings (`SMTP_*`, `EMAIL_FROM`) in real deployments.
+Replace with production SMTP settings (`SMTP_*`, `EMAIL_FROM`) and optional brand block (`EMAIL_COMPANY_*`, fallback `BILLING_ISSUER_*`) in real deployments. See [Email notifications](../features/email-notifications.md).
 
 ## Cloud Providers
 

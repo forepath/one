@@ -1,0 +1,7 @@
+Partial credit note issued
+
+Dear {{recipientName}},
+
+Following your statutory withdrawal, we issued credit note {{creditNoteNumber}} for {{creditAmountLabel}} regarding invoice {{invoiceNumber}}.
+
+The credit note is attached for your records.

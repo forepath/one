@@ -1,0 +1,10 @@
+Payment received
+
+Dear {{recipientName}},
+
+We received your payment for invoice {{invoiceNumber}}.
+{{#if amountLabel}}
+Amount paid: {{amountLabel}}
+{{/if}}
+
+Thank you for your payment.

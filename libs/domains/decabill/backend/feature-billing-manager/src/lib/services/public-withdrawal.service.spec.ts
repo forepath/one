@@ -26,8 +26,8 @@ describe('PublicWithdrawalService', () => {
   const billingIssuerConfig = {
     getConfig: jest.fn(),
   };
-  const emailService = {
-    sendWithdrawalConfirmationEmail: jest.fn(),
+  const billingEmailPublisher = {
+    publishWithdrawalConfirmation: jest.fn(),
   };
 
   let service: PublicWithdrawalService;
@@ -48,7 +48,7 @@ describe('PublicWithdrawalService', () => {
       publicWithdrawalRequestsRepository as never,
       subscriptionService as never,
       billingIssuerConfig as never,
-      emailService as never,
+      billingEmailPublisher as never,
     );
 
     subscriptionsRepository.findByNumberWithBillingProfile.mockResolvedValue({
@@ -61,7 +61,6 @@ describe('PublicWithdrawalService', () => {
       },
     });
     subscriptionItemsRepository.findBySubscription.mockResolvedValue([]);
-    emailService.sendWithdrawalConfirmationEmail.mockResolvedValue(true);
   });
 
   it('returns addressee from billing issuer config', () => {
@@ -103,7 +102,7 @@ describe('PublicWithdrawalService', () => {
     const result = await service.requestWithdrawal(baseDto);
 
     expect(publicWithdrawalRequestsRepository.createRequest).toHaveBeenCalled();
-    expect(emailService.sendWithdrawalConfirmationEmail).toHaveBeenCalled();
+    expect(billingEmailPublisher.publishWithdrawalConfirmation).toHaveBeenCalled();
     expect(result).toEqual({
       requestId: 'req-1',
       resumed: false,
@@ -121,7 +120,7 @@ describe('PublicWithdrawalService', () => {
     const result = await service.requestWithdrawal(baseDto);
 
     expect(publicWithdrawalRequestsRepository.createRequest).not.toHaveBeenCalled();
-    expect(emailService.sendWithdrawalConfirmationEmail).not.toHaveBeenCalled();
+    expect(billingEmailPublisher.publishWithdrawalConfirmation).not.toHaveBeenCalled();
     expect(result.resumed).toBe(true);
     expect(result.resumeStep).toBe('code');
   });

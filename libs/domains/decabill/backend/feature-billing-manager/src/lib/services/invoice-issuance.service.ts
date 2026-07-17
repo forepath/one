@@ -12,7 +12,7 @@ import { SubscriptionsRepository } from '../repositories/subscriptions.repositor
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
-import { InvoiceEmailService } from './invoice-email.service';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
@@ -32,7 +32,7 @@ export class InvoiceIssuanceService {
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly billingIssuerConfig: BillingIssuerConfigService,
     private readonly invoicePdfService: InvoicePdfService,
-    private readonly invoiceEmailService: InvoiceEmailService,
+    private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly auditLog: BillingAuditLogService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
   ) {}
@@ -107,7 +107,7 @@ export class InvoiceIssuanceService {
     }
 
     if (!options?.skipNotification && !isPromotionalZeroBalance) {
-      await this.invoiceEmailService.notifyInvoiceIssued(issued, pdfStorageKey);
+      await this.billingEmailPublisher.publishInvoiceIssued(issued, pdfStorageKey);
     }
 
     this.billingNotificationPublisher.publishInvoice('invoice.issued', issued);

@@ -5,6 +5,8 @@ import { CustomerProfilesRepository } from '../repositories/customer-profiles.re
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
+
 export interface RenewalReminderUnitPayload {
   subscriptionId: string;
   periodKey: string;
@@ -21,6 +23,7 @@ export class SubscriptionRenewalReminderJobHandler {
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly customerProfilesRepository: CustomerProfilesRepository,
     private readonly emailService: EmailService,
+    private readonly billingEmailPublisher: BillingEmailPublisher,
   ) {}
 
   isEmailEnabled(): boolean {
@@ -54,15 +57,15 @@ export class SubscriptionRenewalReminderJobHandler {
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const renewalDate = subscription.nextBillingAt?.toLocaleDateString() ?? 'soon';
-    const sent = await this.emailService.send({
-      to: email,
-      subject: `Upcoming subscription renewal: ${plan.name}`,
-      text: `Dear ${profile.firstName ?? 'Customer'},\n\nYour subscription "${plan.name}" is scheduled for renewal on ${renewalDate}.\n\nIf you wish to cancel, please log in to your account before the renewal date.\n\nBest regards,\nThe Billing Team`,
-      html: `<p>Dear ${profile.firstName ?? 'Customer'},</p><p>Your subscription "<strong>${plan.name}</strong>" is scheduled for renewal on <strong>${renewalDate}</strong>.</p><p>If you wish to cancel, please log in to your account before the renewal date.</p><p>Best regards,<br>The Billing Team</p>`,
-    });
 
-    if (sent) {
-      this.logger.log(`Sent renewal reminder for subscription ${subscription.id} to ${email}`);
-    }
+    await this.billingEmailPublisher.publishRenewalReminder(
+      subscription,
+      plan.name,
+      email,
+      profile.firstName?.trim() || 'Customer',
+      renewalDate,
+    );
+
+    this.logger.log(`Enqueued renewal reminder for subscription ${subscription.id} to ${email}`);
   }
 }

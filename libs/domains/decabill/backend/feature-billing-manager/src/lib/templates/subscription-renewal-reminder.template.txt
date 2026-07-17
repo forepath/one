@@ -1,0 +1,7 @@
+Upcoming subscription renewal
+
+Dear {{recipientName}},
+
+Your subscription "{{planName}}" is scheduled for renewal on {{renewalDate}}.
+
+If you wish to cancel, please log in to your account before the renewal date.

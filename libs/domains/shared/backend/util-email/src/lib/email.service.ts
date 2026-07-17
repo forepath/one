@@ -16,9 +16,11 @@ export interface EmailOptions {
 }
 
 /**
- * Email service for sending transactional emails via SMTP.
+ * Transport-only email service for SMTP delivery via nodemailer.
  * - MailHog (development): SMTP_HOST=mailhog, SMTP_PORT=1025, no auth
  * - Production: Set SMTP_USER and SMTP_PASSWORD for authenticated SMTP. Use port 465 for SMTPS.
+ *
+ * Content (subjects, Handlebars bodies) is owned by the notifications email channel.
  */
 @Injectable()
 export class EmailService {
@@ -55,60 +57,43 @@ export class EmailService {
   }
 
   async send(options: EmailOptions): Promise<boolean> {
-    if (!this.transporter) {
-      this.logger.debug('Email not sent (SMTP not configured):', options.subject, 'to', options.to);
-
-      return false;
-    }
-
     try {
-      await this.transporter.sendMail({
-        from: this.from,
-        to: options.to,
-        subject: options.subject,
-        text: options.text,
-        html: options.html ?? options.text.replace(/\n/g, '<br>'),
-        ...(options.attachments?.length ? { attachments: options.attachments } : {}),
-      });
-      this.logger.debug(`Email sent: ${options.subject} to ${options.to}`);
+      await this.sendOrThrow(options);
 
       return true;
     } catch (error) {
+      if (!this.transporter) {
+        return false;
+      }
+
       this.logger.error(`Failed to send email to ${options.to}:`, error);
 
       return false;
     }
   }
 
+  /**
+   * Sends mail or throws so BullMQ workers can retry on SMTP failures.
+   * Throws when SMTP is disabled so callers that require delivery fail closed at the job layer.
+   */
+  async sendOrThrow(options: EmailOptions): Promise<void> {
+    if (!this.transporter) {
+      this.logger.debug('Email not sent (SMTP not configured):', options.subject, 'to', options.to);
+      throw new Error('Email service is disabled: SMTP_HOST and SMTP_PORT not set');
+    }
+
+    await this.transporter.sendMail({
+      from: this.from,
+      to: options.to,
+      subject: options.subject,
+      text: options.text,
+      html: options.html ?? options.text.replace(/\n/g, '<br>'),
+      ...(options.attachments?.length ? { attachments: options.attachments } : {}),
+    });
+    this.logger.debug(`Email sent: ${options.subject} to ${options.to}`);
+  }
+
   isEnabled(): boolean {
     return this.enabled;
-  }
-
-  /**
-   * Sends the standard email confirmation message (same for self-registration and admin actions).
-   * The code is a 6-character alphanumeric code (A-Z, 0-9).
-   */
-  async sendConfirmationEmail(to: string, code: string): Promise<boolean> {
-    return this.send({
-      to,
-      subject: 'Confirm your email',
-      text: `Please confirm your email using the following code:\n\n${code}\n\nEnter this code on the confirmation page. The code will expire when you confirm.`,
-      html: `<p>Please confirm your email using the following code:</p><p><strong>${code}</strong></p><p>Enter this code on the confirmation page. The code will expire when you confirm.</p>`,
-    });
-  }
-
-  /**
-   * Sends the statutory withdrawal confirmation code email.
-   */
-  async sendWithdrawalConfirmationEmail(to: string, code: string, expiresAt: Date): Promise<boolean> {
-    const hoursRemaining = Math.max(1, Math.round((expiresAt.getTime() - Date.now()) / (60 * 60 * 1000)));
-    const expiryText = hoursRemaining === 1 ? '1 hour' : `${hoursRemaining} hours`;
-
-    return this.send({
-      to,
-      subject: 'Confirm your statutory withdrawal',
-      text: `Please confirm your statutory withdrawal using the following code:\n\n${code}\n\nEnter this code on the withdrawal page. The code expires in ${expiryText}.`,
-      html: `<p>Please confirm your statutory withdrawal using the following code:</p><p><strong>${code}</strong></p><p>Enter this code on the withdrawal page. The code expires in ${expiryText}.</p>`,
-    });
   }
 }

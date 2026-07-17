@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-17T13:50:04.833Z",
+  "generatedAt": "2026-07-17T17:06:38.603Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -3547,6 +3547,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/features/email-notifications.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/email-notifications.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/features/file-management.md",
       "type": "doc",
       "attrs": {
@@ -3911,6 +3919,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/features/dynamic-provider-plugins.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/features/email-notifications.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/email-notifications.md",
         "languageOrKind": "md"
       }
     },
@@ -10869,6 +10885,56 @@
       }
     },
     {
+      "id": "concept:agenstra-email-notifications-agenstra",
+      "type": "concept",
+      "attrs": {
+        "title": "Email notifications (Agenstra)",
+        "docPath": "docs/agenstra/features/email-notifications.md",
+        "sectionAnchor": "email-notifications-agenstra",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-transport",
+      "type": "concept",
+      "attrs": {
+        "title": "Transport",
+        "docPath": "docs/agenstra/features/email-notifications.md",
+        "sectionAnchor": "transport",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-wiring",
+      "type": "concept",
+      "attrs": {
+        "title": "Wiring",
+        "docPath": "docs/agenstra/features/email-notifications.md",
+        "sectionAnchor": "wiring",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-templates",
+      "type": "concept",
+      "attrs": {
+        "title": "Templates",
+        "docPath": "docs/agenstra/features/email-notifications.md",
+        "sectionAnchor": "templates",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-events",
+      "type": "concept",
+      "attrs": {
+        "title": "Events",
+        "docPath": "docs/agenstra/features/email-notifications.md",
+        "sectionAnchor": "events",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-file-management",
       "type": "concept",
       "attrs": {
@@ -11265,16 +11331,6 @@
         "title": "Connection Flow",
         "docPath": "docs/agenstra/features/websocket-communication.md",
         "sectionAnchor": "connection-flow",
-        "domain": "agenstra"
-      }
-    },
-    {
-      "id": "concept:agenstra-events",
-      "type": "concept",
-      "attrs": {
-        "title": "Events",
-        "docPath": "docs/agenstra/features/websocket-communication.md",
-        "sectionAnchor": "events",
         "domain": "agenstra"
       }
     },
@@ -14419,6 +14475,66 @@
       }
     },
     {
+      "id": "concept:decabill-email-notifications-decabill",
+      "type": "concept",
+      "attrs": {
+        "title": "Email notifications (Decabill)",
+        "docPath": "docs/decabill/features/email-notifications.md",
+        "sectionAnchor": "email-notifications-decabill",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-transport",
+      "type": "concept",
+      "attrs": {
+        "title": "Transport",
+        "docPath": "docs/decabill/features/email-notifications.md",
+        "sectionAnchor": "transport",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-templates",
+      "type": "concept",
+      "attrs": {
+        "title": "Templates",
+        "docPath": "docs/decabill/features/email-notifications.md",
+        "sectionAnchor": "templates",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-event-catalog-implemented",
+      "type": "concept",
+      "attrs": {
+        "title": "Event catalog (implemented)",
+        "docPath": "docs/decabill/features/email-notifications.md",
+        "sectionAnchor": "event-catalog-implemented",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-delivery-retries",
+      "type": "concept",
+      "attrs": {
+        "title": "Delivery & retries",
+        "docPath": "docs/decabill/features/email-notifications.md",
+        "sectionAnchor": "delivery-retries",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-future-webhook-only-today",
+      "type": "concept",
+      "attrs": {
+        "title": "Future (webhook-only today)",
+        "docPath": "docs/decabill/features/email-notifications.md",
+        "sectionAnchor": "future-webhook-only-today",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-invoices",
       "type": "concept",
       "attrs": {
@@ -16698,6 +16814,11 @@
     {
       "from": "project:decabill-frontend-data-access-portal",
       "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-backend-feature-notifications",
+      "to": "project:shared-backend-util-email",
       "type": "depends_on"
     },
     {
@@ -21916,6 +22037,31 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/agenstra/features/email-notifications.md",
+      "to": "concept:agenstra-email-notifications-agenstra",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/email-notifications.md",
+      "to": "concept:agenstra-transport",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/email-notifications.md",
+      "to": "concept:agenstra-wiring",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/email-notifications.md",
+      "to": "concept:agenstra-templates",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/email-notifications.md",
+      "to": "concept:agenstra-events",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/agenstra/features/file-management.md",
       "to": "concept:agenstra-file-management",
       "type": "contains"
@@ -24313,6 +24459,36 @@
     {
       "from": "file:docs/decabill/features/dynamic-provider-plugins.md",
       "to": "concept:decabill-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/email-notifications.md",
+      "to": "concept:decabill-email-notifications-decabill",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/email-notifications.md",
+      "to": "concept:decabill-transport",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/email-notifications.md",
+      "to": "concept:decabill-templates",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/email-notifications.md",
+      "to": "concept:decabill-event-catalog-implemented",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/email-notifications.md",
+      "to": "concept:decabill-delivery-retries",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/email-notifications.md",
+      "to": "concept:decabill-future-webhook-only-today",
       "type": "contains"
     },
     {
@@ -31336,6 +31512,46 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-email-notifications-agenstra",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-transport",
+      "to": "project:code",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-transport",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-wiring",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-wiring",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-templates",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-events",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-events",
+      "to": "api:HTTP:POST:/auth/login",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-file-management",
       "to": "project:ai",
       "type": "documents"
@@ -31717,16 +31933,6 @@
     },
     {
       "from": "concept:agenstra-connection-flow",
-      "to": "api:HTTP:POST:/auth/login",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-events",
-      "to": "project:ai",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-events",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
     },
@@ -33152,6 +33358,11 @@
     },
     {
       "from": "concept:decabill-job-registry",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-job-registry",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
     },
@@ -34447,6 +34658,46 @@
     },
     {
       "from": "concept:decabill-docker-compose-example",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-email-notifications-decabill",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-transport",
+      "to": "project:code",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-transport",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-templates",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-event-catalog-implemented",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-delivery-retries",
+      "to": "project:code",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-delivery-retries",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-future-webhook-only-today",
       "to": "project:ai",
       "type": "documents"
     },
@@ -37656,6 +37907,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/features/email-notifications.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/features/file-management.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -37882,6 +38138,11 @@
     },
     {
       "from": "file:docs/decabill/features/dynamic-provider-plugins.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/email-notifications.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -39236,6 +39497,31 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-email-notifications-agenstra",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-transport",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-wiring",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-templates",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-events",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-file-management",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -39432,11 +39718,6 @@
     },
     {
       "from": "concept:agenstra-connection-flow",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:agenstra-events",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -41007,6 +41288,36 @@
     },
     {
       "from": "concept:decabill-docker-compose-example",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-email-notifications-decabill",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-transport",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-templates",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-event-catalog-implemented",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-delivery-retries",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-future-webhook-only-today",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

@@ -52,6 +52,7 @@ import { ProvisioningService } from './provisioning.service';
 import { PromotionRedemptionService } from './promotion-redemption.service';
 import { TaxCalculationService } from './tax-calculation.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 
 @Injectable()
 export class SubscriptionService {
@@ -79,6 +80,7 @@ export class SubscriptionService {
     private readonly backordersRepository: BackordersRepository,
     private readonly promotionRedemptionService: PromotionRedemptionService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
+    private readonly billingEmailPublisher: BillingEmailPublisher,
   ) {}
 
   async createSubscription(
@@ -465,6 +467,7 @@ export class SubscriptionService {
     });
 
     this.billingNotificationPublisher.publishSubscription('subscription.canceled', canceled);
+    void this.billingEmailPublisher.publishSubscriptionCanceled(canceled, plan.name);
 
     return canceled;
   }

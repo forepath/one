@@ -19,7 +19,7 @@ import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { buildCreditNoteNumber } from './e-invoice-document-options';
-import { InvoiceEmailService } from './invoice-email.service';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { InvoiceIssuanceService } from './invoice-issuance.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { PromotionApplicationService } from './promotion-application.service';
@@ -49,7 +49,7 @@ export class InvoiceService {
     private readonly invoiceIssuanceService: InvoiceIssuanceService,
     private readonly invoicePdfService: InvoicePdfService,
     private readonly invoiceVoidDocumentsRepository: InvoiceVoidDocumentsRepository,
-    private readonly invoiceEmailService: InvoiceEmailService,
+    private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly billingIssuerConfig: BillingIssuerConfigService,
     private readonly auditLog: BillingAuditLogService,
     private readonly projectTimeReportService: ProjectTimeReportService,
@@ -156,7 +156,7 @@ export class InvoiceService {
     if (!options?.skipNotification && !existingVoidDocument) {
       const voidDocumentStorageKey = await this.ensureVoidDocumentStored(invoice, voidedAt);
 
-      await this.invoiceEmailService.notifyVoidDocument(
+      await this.billingEmailPublisher.publishVoidDocument(
         invoice,
         voidDocumentStorageKey,
         buildCreditNoteNumber(invoice.invoiceNumber),

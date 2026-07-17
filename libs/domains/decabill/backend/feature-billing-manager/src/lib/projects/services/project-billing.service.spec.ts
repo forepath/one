@@ -25,7 +25,7 @@ describe('ProjectBillingService', () => {
   };
   const invoiceService = { createDraft: jest.fn(), voidInvoice: jest.fn() };
   const invoiceIssuanceService = { issueDraft: jest.fn() };
-  const invoiceEmailService = { notifyInvoiceIssued: jest.fn().mockResolvedValue(true) };
+  const billingEmailPublisher = { publishInvoiceIssued: jest.fn().mockResolvedValue(true) };
   const taxCalculationService = new TaxCalculationService(new TaxRateConfigService());
   const auditLog = { log: jest.fn() };
   const projectBoardSummary = { emitSummaryChanged: jest.fn() };
@@ -61,7 +61,7 @@ describe('ProjectBillingService', () => {
       customerProfilesService as never,
       invoiceService as never,
       invoiceIssuanceService as never,
-      invoiceEmailService as never,
+      billingEmailPublisher as never,
       taxCalculationService,
       auditLog as never,
       projectBoardSummary as never,
@@ -136,7 +136,7 @@ describe('ProjectBillingService', () => {
     expect(result.amountNet).toBe(150);
     expect(invoiceIssuanceService.issueDraft).toHaveBeenCalledWith('draft-1', 14, { skipNotification: true });
     expect(timeEntriesRepository.markBilled).toHaveBeenCalledWith('p1', ['e1', 'e2'], 'inv-1', expect.any(Date));
-    expect(invoiceEmailService.notifyInvoiceIssued).toHaveBeenCalledWith(
+    expect(billingEmailPublisher.publishInvoiceIssued).toHaveBeenCalledWith(
       expect.objectContaining({
         pdfStorageKey: 'sub-1/inv-1.pdf',
         timeReportStorageKey: 'sub-1/inv-1-time-report.pdf',
@@ -192,7 +192,7 @@ describe('ProjectBillingService', () => {
     );
     expect(projectTimeReportService.generateAndStoreForBilling).not.toHaveBeenCalled();
     expect(invoicesRepository.update).not.toHaveBeenCalled();
-    expect(invoiceEmailService.notifyInvoiceIssued).not.toHaveBeenCalled();
+    expect(billingEmailPublisher.publishInvoiceIssued).not.toHaveBeenCalled();
   });
 
   it('combines custom line items with generated time line', async () => {

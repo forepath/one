@@ -23,6 +23,7 @@
     "class-transformer": "0.5.1",
     "class-validator": "0.14.2",
     "dockerode": "5.0.0",
+    "handlebars": "4.7.9",
     "ioredis": "5.10.1",
     "keycloak-connect": "24.0.1",
     "nest-keycloak-connect": "2.0.0-alpha.2",

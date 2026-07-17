@@ -103,6 +103,10 @@ Admin-only features for manual invoices, customer billing profiles, operational 
 
 Tenant-scoped outbound webhook endpoints for billing lifecycle events with signed HTTPS deliveries.
 
+### [Email notifications](./email-notifications.md)
+
+Queued transactional email (invoices, payments, auth, withdrawal) via BullMQ and Handlebars templates.
+
 ### [Customer Profiles](./customer-profiles.md)
 
 Billing metadata required before subscription orders and for compliant invoice issuance.

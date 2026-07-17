@@ -1,5 +1,4 @@
 import { UserEntity } from '@forepath/identity/backend';
-import { EmailService } from '@forepath/shared/backend';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
@@ -17,6 +16,8 @@ import { resolveJwtModuleSecret } from '../utils/resolve-jwt-module-secret';
  * Module that syncs Keycloak-authenticated users to the users table.
  * Provides UsersController for user management when Keycloak is active.
  * Only load when AUTHENTICATION_METHOD=keycloak.
+ *
+ * Transactional email (if any) is enqueued via IDENTITY_EMAIL_DISPATCHER from the host app.
  *
  * To enable statistics tracking, the consuming module should provide:
  * ```ts
@@ -36,7 +37,6 @@ import { resolveJwtModuleSecret } from '../utils/resolve-jwt-module-secret';
   providers: [
     UsersRepository,
     UsersService,
-    EmailService,
     UsersAuthGuard,
     KeycloakRolesGuard,
     { provide: APP_GUARD, useClass: KeycloakAuthGuard },

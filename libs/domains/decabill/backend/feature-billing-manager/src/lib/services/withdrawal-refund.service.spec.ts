@@ -27,7 +27,7 @@ describe('WithdrawalRefundService', () => {
       documentNumber: 'CN-001',
     }),
   };
-  const invoiceEmailService = { notifyPartialCreditDocument: jest.fn() };
+  const billingEmailPublisher = { publishPartialCreditDocument: jest.fn() };
   const auditLog = { log: jest.fn() };
 
   const subscriptionItemsRepository = {
@@ -56,7 +56,7 @@ describe('WithdrawalRefundService', () => {
     customerProfilesRepository as never,
     billingIssuerConfig as never,
     invoicePdfService as never,
-    invoiceEmailService as never,
+    billingEmailPublisher as never,
     auditLog as never,
   );
 
@@ -219,7 +219,7 @@ describe('WithdrawalRefundService', () => {
       customerProfilesRepository as never,
       billingIssuerConfig as never,
       invoicePdfService as never,
-      invoiceEmailService as never,
+      billingEmailPublisher as never,
       auditLog as never,
     );
 

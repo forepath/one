@@ -17,13 +17,17 @@ import {
 } from '@forepath/decabill/backend';
 import {
   DEFAULT_TENANT,
+  EMAIL_DELIVER_JOB_NAME,
+  EmailDeliveryService,
   enqueueUnitJob,
   runWithTenantId,
+  resolveEmailDeliverJobPayload,
   resolveWebhookDeliverJobPayload,
   WEBHOOK_DELIVER_JOB_NAME,
   WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
   WebhookDeliveryRetentionService,
   WebhookDeliveryService,
+  type EmailDeliverJobPayload,
   type WebhookDeliverJobPayload,
 } from '@forepath/shared/backend';
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
@@ -60,6 +64,7 @@ export class BillingJobsProcessor extends WorkerHost {
     private readonly datevExportJobHandler: DatevExportJobHandler,
     private readonly webhookDeliveryService: WebhookDeliveryService,
     private readonly webhookDeliveryRetentionService: WebhookDeliveryRetentionService,
+    private readonly emailDeliveryService: EmailDeliveryService,
   ) {
     super();
   }
@@ -68,6 +73,9 @@ export class BillingJobsProcessor extends WorkerHost {
     switch (job.name) {
       case WEBHOOK_DELIVER_JOB_NAME:
         await this.runWebhookDeliver(job);
+        break;
+      case EMAIL_DELIVER_JOB_NAME:
+        await this.runEmailDeliver(job);
         break;
       case WEBHOOK_DELIVERY_RETENTION_COORDINATOR:
         await this.webhookDeliveryRetentionService.applyRetentionForAllEndpoints();
@@ -179,6 +187,11 @@ export class BillingJobsProcessor extends WorkerHost {
   private async runWebhookDeliver(job: Job<WebhookDeliverJobPayload>): Promise<void> {
     const payload = resolveWebhookDeliverJobPayload(job);
     await runWithTenantId(payload.scopeKey, () => this.webhookDeliveryService.deliver(payload));
+  }
+
+  private async runEmailDeliver(job: Job<EmailDeliverJobPayload>): Promise<void> {
+    const payload = resolveEmailDeliverJobPayload(job);
+    await runWithTenantId(payload.scopeKey, () => this.emailDeliveryService.deliver(payload));
   }
 
   private async runWithJobTenant<T>(job: Job, data: TenantScopedPayload, run: () => Promise<T>): Promise<T> {

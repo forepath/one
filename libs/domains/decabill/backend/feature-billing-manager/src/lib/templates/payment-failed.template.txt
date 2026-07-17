@@ -1,0 +1,10 @@
+Payment failed
+
+Dear {{recipientName}},
+
+We were unable to process payment for invoice {{invoiceNumber}}.
+{{#if amountLabel}}
+Amount due: {{amountLabel}}
+{{/if}}
+
+Please update your payment method or try again from your billing account.

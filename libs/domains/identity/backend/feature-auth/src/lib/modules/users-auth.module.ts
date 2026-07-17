@@ -1,5 +1,4 @@
 import { RevokedUserTokenEntity, UserEntity } from '@forepath/identity/backend';
-import { EmailService } from '@forepath/shared/backend';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
@@ -21,6 +20,8 @@ import { resolveJwtModuleSecret } from '../utils/resolve-jwt-module-secret';
  * Provides JWT-based auth with user registration, email confirmation, password reset.
  * Only load this module when AUTHENTICATION_METHOD=users.
  *
+ * Transactional email is enqueued via IDENTITY_EMAIL_DISPATCHER (provided by the host app).
+ *
  * To enable statistics tracking, the consuming module should provide:
  * ```ts
  * { provide: IDENTITY_STATISTICS_SERVICE, useExisting: YourStatisticsService }
@@ -40,7 +41,6 @@ import { resolveJwtModuleSecret } from '../utils/resolve-jwt-module-secret';
     UsersRepository,
     RevokedUserTokensRepository,
     UsersService,
-    EmailService,
     AuthService,
     UsersAuthGuard,
     KeycloakRolesGuard,

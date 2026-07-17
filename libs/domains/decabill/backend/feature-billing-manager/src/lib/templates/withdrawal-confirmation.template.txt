@@ -1,0 +1,7 @@
+Confirm your statutory withdrawal
+
+Please confirm your statutory withdrawal using the following code:
+
+{{code}}
+
+Enter this code on the withdrawal page. The code expires in {{expiryText}}.

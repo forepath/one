@@ -54,8 +54,8 @@ describe('InvoiceService', () => {
       country: 'DE',
     }),
   };
-  const invoiceEmailService = {
-    notifyVoidDocument: jest.fn(),
+  const billingEmailPublisher = {
+    publishVoidDocument: jest.fn(),
   };
   const auditLog = {
     log: jest.fn(),
@@ -85,7 +85,7 @@ describe('InvoiceService', () => {
     invoiceIssuanceService as never,
     invoicePdfService as never,
     invoiceVoidDocumentsRepository as never,
-    invoiceEmailService as never,
+    billingEmailPublisher as never,
     billingIssuerConfig as never,
     auditLog as never,
     projectTimeReportService as never,
@@ -168,7 +168,7 @@ describe('InvoiceService', () => {
         pdfStorageKey: 'sub-1/inv-1-void.pdf',
       });
       expect(auditLog.log).toHaveBeenCalledWith(expect.objectContaining({ process: 'invoice.void' }));
-      expect(invoiceEmailService.notifyVoidDocument).toHaveBeenCalledWith(
+      expect(billingEmailPublisher.publishVoidDocument).toHaveBeenCalledWith(
         invoice,
         'sub-1/inv-1-void.pdf',
         'INV-2026-00001-CN',
@@ -193,7 +193,7 @@ describe('InvoiceService', () => {
 
       await service.voidInvoice('inv-1', subscriptionId);
 
-      expect(invoiceEmailService.notifyVoidDocument).not.toHaveBeenCalled();
+      expect(billingEmailPublisher.publishVoidDocument).not.toHaveBeenCalled();
     });
 
     it('throws when invoice not found', async () => {
@@ -268,7 +268,7 @@ describe('InvoiceService', () => {
       await service.voidInvoice('inv-1', subscriptionId, 'admin-1', undefined, { skipNotification: true });
 
       expect(invoicePdfService.generateVoidDocumentAndStore).not.toHaveBeenCalled();
-      expect(invoiceEmailService.notifyVoidDocument).not.toHaveBeenCalled();
+      expect(billingEmailPublisher.publishVoidDocument).not.toHaveBeenCalled();
       expect(invoicesRepository.update).toHaveBeenCalled();
     });
   });

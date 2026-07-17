@@ -114,6 +114,7 @@ export * from './lib/modules/context-import.module';
 export * from './lib/modules/clients.module';
 export * from './lib/modules/agenstra-notifications.module';
 export * from './lib/modules/identity-notification-bridge.module';
+export * from './lib/modules/identity-email-bridge.module';
 export * from './lib/modules/identity-statistics-bridge.module';
 export * from './lib/modules/statistics.module';
 export * from './lib/repositories/clients.repository';

@@ -4,7 +4,7 @@ import { DataSource } from 'typeorm';
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { BillingAuditLogService } from '../../services/billing-audit-log.service';
 import { CustomerProfilesService } from '../../services/customer-profiles.service';
-import { InvoiceEmailService } from '../../services/invoice-email.service';
+import { BillingEmailPublisher } from '../../email/billing-email.publisher';
 import { InvoiceIssuanceService } from '../../services/invoice-issuance.service';
 import { InvoiceService } from '../../services/invoice.service';
 import { SubscriptionsRepository } from '../../repositories/subscriptions.repository';
@@ -33,7 +33,7 @@ export class ProjectBillingService {
     private readonly customerProfilesService: CustomerProfilesService,
     private readonly invoiceService: InvoiceService,
     private readonly invoiceIssuanceService: InvoiceIssuanceService,
-    private readonly invoiceEmailService: InvoiceEmailService,
+    private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly taxCalculationService: TaxCalculationService,
     private readonly auditLog: BillingAuditLogService,
     private readonly projectBoardSummary: ProjectBoardSummaryService,
@@ -158,7 +158,7 @@ export class ProjectBillingService {
       throw new BadRequestException('Issued invoice is missing PDF storage key');
     }
 
-    await this.invoiceEmailService.notifyInvoiceIssued(issuedWithTimeReport, issuedWithTimeReport.pdfStorageKey);
+    await this.billingEmailPublisher.publishInvoiceIssued(issuedWithTimeReport, issuedWithTimeReport.pdfStorageKey);
 
     await this.auditLog.log({
       process: 'project.bill_time',

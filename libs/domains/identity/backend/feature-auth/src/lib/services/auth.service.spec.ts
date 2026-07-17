@@ -18,11 +18,11 @@ describe('AuthService', () => {
     create: jest.fn(),
     validatePassword: jest.fn(),
   };
-  const mockEmailService = {
-    send: jest.fn(),
-  };
   const mockJwtService = {
     sign: jest.fn().mockReturnValue('jwt-token'),
+  };
+  const mockEmailDispatcher = {
+    publishEmail: jest.fn(),
   };
   let service: AuthService;
 
@@ -32,8 +32,8 @@ describe('AuthService', () => {
       mockUsersRepository as any,
       mockRevokedUserTokensRepository as any,
       mockUsersService as any,
-      mockEmailService as any,
       mockJwtService as any,
+      mockEmailDispatcher as any,
     );
   });
 
@@ -154,5 +154,42 @@ describe('AuthService', () => {
 
     expect(mockUsersRepository.incrementTokenVersion).toHaveBeenCalledWith('user-1');
     expect(result).toBe(1);
+  });
+
+  it('publishes password reset email when account exists', async () => {
+    mockUsersRepository.findByEmail.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      passwordHash: '$2b$12$hash',
+    });
+    mockUsersRepository.update.mockResolvedValue(undefined);
+
+    const result = await service.requestPasswordReset('user@example.com');
+
+    expect(mockUsersRepository.update).toHaveBeenCalledWith(
+      'user-1',
+      expect.objectContaining({
+        passwordResetToken: expect.any(String),
+        passwordResetTokenExpiresAt: expect.any(Date),
+      }),
+    );
+    expect(mockEmailDispatcher.publishEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'user.password_reset_requested',
+        to: 'user@example.com',
+        templateKey: 'password-reset',
+        templateContext: expect.objectContaining({ code: expect.any(String) }),
+      }),
+    );
+    expect(result.message).toContain('password reset code');
+  });
+
+  it('does not publish password reset email when account does not exist', async () => {
+    mockUsersRepository.findByEmail.mockResolvedValue(null);
+
+    const result = await service.requestPasswordReset('missing@example.com');
+
+    expect(mockEmailDispatcher.publishEmail).not.toHaveBeenCalled();
+    expect(result.message).toContain('password reset code');
   });
 });

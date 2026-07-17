@@ -38,8 +38,8 @@ describe('InvoiceIssuanceService', () => {
   const invoicePdfService = {
     generateAndStore: jest.fn(),
   };
-  const invoiceEmailService = {
-    notifyInvoiceIssued: jest.fn(),
+  const billingEmailPublisher = {
+    publishInvoiceIssued: jest.fn(),
   };
   const auditLog = {
     log: jest.fn(),
@@ -53,7 +53,7 @@ describe('InvoiceIssuanceService', () => {
     servicePlansRepository as never,
     billingIssuerConfig as never,
     invoicePdfService as never,
-    invoiceEmailService as never,
+    billingEmailPublisher as never,
     auditLog as never,
     {
       publishInvoice: jest.fn(),
@@ -162,7 +162,7 @@ describe('InvoiceIssuanceService', () => {
       expect.objectContaining({ process: 'invoice.issue', invoiceId: 'inv-1' }),
     );
     expect(result.pdfStorageKey).toBe('sub-1/inv-1.pdf');
-    expect(invoiceEmailService.notifyInvoiceIssued).toHaveBeenCalledWith(
+    expect(billingEmailPublisher.publishInvoiceIssued).toHaveBeenCalledWith(
       expect.objectContaining({ pdfStorageKey: 'sub-1/inv-1.pdf' }),
       'sub-1/inv-1.pdf',
     );
@@ -213,7 +213,7 @@ describe('InvoiceIssuanceService', () => {
   it('skips invoice email when skipNotification is set', async () => {
     await service.issueDraft('inv-1', 14, { skipNotification: true });
 
-    expect(invoiceEmailService.notifyInvoiceIssued).not.toHaveBeenCalled();
+    expect(billingEmailPublisher.publishInvoiceIssued).not.toHaveBeenCalled();
   });
 
   it('throws when invoice is not a draft', async () => {

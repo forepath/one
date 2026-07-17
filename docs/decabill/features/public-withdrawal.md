@@ -87,12 +87,13 @@ OpenAPI operation IDs: `getPublicWithdrawalAddressee`, `requestPublicWithdrawal`
 
 ## Configuration
 
-| Variable                                   | Description                                                | Default  |
-| ------------------------------------------ | ---------------------------------------------------------- | -------- |
-| `PUBLIC_WITHDRAWAL_CONFIRMATION_TTL_HOURS` | Hours until a pending request expires                      | `48`     |
-| `BILLING_ISSUER_*`                         | Legal entity shown as withdrawal addressee and on invoices | —        |
-| `ENCRYPTION_KEY`                           | Encrypts confirmation codes at rest                        | required |
-| `SMTP_*` / `EMAIL_FROM`                    | Outbound confirmation email                                | —        |
+| Variable                                   | Description                                                                               | Default  |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------- | -------- |
+| `PUBLIC_WITHDRAWAL_CONFIRMATION_TTL_HOURS` | Hours until a pending request expires                                                     | `48`     |
+| `BILLING_ISSUER_*`                         | Legal entity shown as withdrawal addressee and on invoices                                | —        |
+| `ENCRYPTION_KEY`                           | Encrypts confirmation codes at rest                                                       | required |
+| `SMTP_*` / `EMAIL_FROM`                    | Outbound confirmation email (queued; see [Email notifications](./email-notifications.md)) | —        |
+| `EMAIL_COMPANY_*` / `BILLING_ISSUER_*`     | Optional brand header/footer on the confirmation email                                    | —        |
 
 See [Environment Configuration](../deployment/environment-configuration.md).
 
