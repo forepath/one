@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.16.0](https://github.com/forepath/one/compare/v2.15.5...v2.16.0) (2026-07-17)
+
+
+### Features
+
+* webhook support ([#484](https://github.com/forepath/one/issues/484)) ([d9b0d71](https://github.com/forepath/one/commit/d9b0d71c40c3763ea9de21591c637e671f8a0645))
+
+
+### Bug Fixes
+
+* auth pages configuration ([#486](https://github.com/forepath/one/issues/486)) ([8bec48c](https://github.com/forepath/one/commit/8bec48c44613c82adfa70a22d9a96ff07d71ee5a))
+* decabill usage recording endpoint ([#488](https://github.com/forepath/one/issues/488)) ([9687352](https://github.com/forepath/one/commit/9687352bb66901c6af1b1751f1dc99a41a791cac))
+
+
+### Chores
+
+* license cleanup ([#487](https://github.com/forepath/one/issues/487)) ([c490491](https://github.com/forepath/one/commit/c490491689d4a92271ae9caa077fb0dcbe66f166))
+
 ## [2.15.5](https://github.com/forepath/one/compare/v2.15.4...v2.15.5) (2026-07-14)
 
 
