@@ -36,7 +36,7 @@ Applications and libraries are grouped by product domain. Nx project names use a
 | `shared`   | Cross-product platform services                                                   | Platform authentication (Keycloak), MCP devkit, MCP proxy                       | Monitoring, configuration, Express SSR utilities, queue, crypto         |
 | `identity` | Authentication shared across products                                             | none                                                                            | Keycloak integration for backend and frontend                           |
 
-Workspace tooling under `tools/` (`code`, `ai`, `sbom`, `release-integrity`) supports generators, agent context, and release automation. It is covered by the root MIT license unless noted otherwise in the component.
+Workspace tooling under `tools/` (`code`, `ai`, `sbom`, `release-integrity`, `graph`) supports generators, agent context, release automation, and the knowledge graph. It is covered by the root MIT license unless noted otherwise in the component (for example `@forepath/graph` is AGPL-3.0).
 
 ## Projects
 
@@ -174,6 +174,7 @@ The following components are sublicensed under AGPL-3.0. Modifications and deriv
 - [`libs/domains/shared/backend/util-http-context`](./libs/domains/shared/backend/util-http-context/) ([LICENSE](./libs/domains/shared/backend/util-http-context/LICENSE))
 - [`apps/decabill/backend-billing-manager`](./apps/decabill/backend-billing-manager/) ([LICENSE](./apps/decabill/backend-billing-manager/LICENSE))
 - [`libs/domains/decabill/backend/feature-billing-manager`](./libs/domains/decabill/backend/feature-billing-manager/) ([LICENSE](./libs/domains/decabill/backend/feature-billing-manager/LICENSE))
+- [`tools/graph`](./tools/graph/) ([LICENSE](./tools/graph/LICENSE))
 
 ### Business Source License 1.1 (BUSL-1.1)
 

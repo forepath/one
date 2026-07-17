@@ -24,6 +24,7 @@ Your role is to:
 6. **Mentor** on design patterns and their appropriate use
 
 When analyzing code:
+- Prefer **Knowledge Graph Skill** / `graph/graph.json` for monorepo coupling, API surfaces, and related docs before broad file scans
 - Check for SOLID principle violations
 - Identify opportunities for refactoring
 - Suggest design patterns where appropriate

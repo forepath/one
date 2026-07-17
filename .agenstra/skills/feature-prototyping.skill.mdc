@@ -16,6 +16,7 @@ Use this skill when turning an idea into working code in the repository (spike, 
 
 ## Supporting skills and rules (use as needed)
 
+- **Knowledge Graph Skill** – before locating projects, APIs, and docs; use recipes R1–R6 on `graph/graph.json`
 - **`solid-principles.skill.mdc`** – shape services and boundaries before deep implementation
 - **`design-patterns.skill.mdc`** – when behavior needs extensibility or clear structure
 - **`security-patterns.skill.mdc`** – auth, input handling, and sensitive flows
@@ -26,7 +27,7 @@ Use this skill when turning an idea into working code in the repository (spike, 
 ### 1. Align
 
 - Restate the goal, acceptance signal, and out-of-scope items in one short paragraph
-- Locate similar features, APIs, or UI in the repo; list the Nx projects you expect to touch (`project.json` / `nx graph`)
+- Locate similar features, APIs, or UI via **Knowledge Graph Skill** (and `graph/graph.json`); list the Nx projects you expect to touch
 - If new libraries or apps are required, use workspace generators (e.g. `tools/code`) and their schemas instead of hand-rolling layout
 
 ### 2. Design minimally

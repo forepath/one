@@ -1,0 +1,141 @@
+---
+id: graph-kg
+name: Knowledge Graph Skill
+description: >
+  Use when you need structural understanding of this Nx monorepo.
+  Builds/consumes graph/graph.json from the project graph, OpenAPI/AsyncAPI,
+  and docs/<domain>. Prefer before large refactors, cross-service changes, or architecture reviews.
+---
+
+# Knowledge Graph Skill
+
+Prefer `graph/graph.json` over scanning the whole repo for project relationships, API surfaces, or doc concepts. Use the recipes below as **repeatable patterns** — do not invent ad-hoc traversals when a recipe fits.
+
+## Operating rules
+
+1. **Read before large change** — before refactoring a project, moving APIs, or touching cross-domain flows, run the matching recipe and summarize findings first.
+2. **Query, then open files** — resolve owning projects, specs, and docs from the graph; only then read source under each project's `root`.
+3. **Stale tree** — if the working tree changed since the last commit and the task depends on structure, run `nx run graph:generate-kg` first.
+4. **Missing edges are normal** — fall back to source when `implements` / `documents` are absent; do not invent links.
+
+## Generating / viewing
+
+Pre-commit regenerates and stages `graph/graph.json` + `graph/graph.html` via `nx run graph:generate-kg`.
+
+```bash
+nx run graph:generate-kg          # refresh artifacts
+nx run graph:serve                # http://127.0.0.1:4211/ (not file://)
+```
+
+## Schema (quick reference)
+
+| Kind | Id pattern | Meaning |
+| ---- | ---------- | ------- |
+| `app` / `lib` | `project:<nxName>` | Nx application or library |
+| `domain` | `domain:<name>` | Product domain (`domain:*` tag or path) |
+| `context` | `context:<name>` | Bounded context (`scope:*` tag) |
+| `feature-group` | `feature-group:<name>` | Feature group (`type:*` tag) |
+| `file` | `file:<path>` | Controllers and other indexed sources |
+| `doc` | `file:<path>` | Markdown under `docs/` |
+| `readme` | `file:<path>` | Markdown outside `docs/` |
+| `openapi` / `asyncapi` | `file:<path>` | Spec files |
+| `diagram` | `file:<path>` | Mermaid `.mmd` |
+| `endpoint` | `api:HTTP:<METHOD>:<path>` or `api:channel:<name>` | Spec operation / channel |
+| `concept` | `concept:<slug>` | Heading from `docs/` |
+
+| Edge | Direction | Use for |
+| ---- | --------- | ------- |
+| `depends_on` | project → project | Build / import coupling |
+| `contains` | project → file; file → endpoint/concept | Ownership and membership |
+| `implements` | file/project → endpoint | Controller ↔ OpenAPI match (heuristic) |
+| `documents` | concept → project/endpoint | Docs that mention a project or API |
+| `belongs_to` | project/doc/concept → domain\|context\|feature-group | Cluster membership |
+
+Attrs of interest: project `root`, `tags`, `targets`, `domain`, `context`, `featureGroup`; cluster `name`, `kind`, `label`, `source`; file `path`, `languageOrKind`, `projectName`; endpoint `method`, `pathOrChannel`, `operationId`, `specKind`; concept `title`, `docPath`, `domain`.
+
+## How to query
+
+Work from `graph/graph.json`. Prefer targeted search (ripgrep / structured JSON tools) over loading the whole file into context.
+
+- **By id prefix:** `project:`, `domain:`, `context:`, `feature-group:`, `file:`, `api:HTTP:`, `api:channel:`, `concept:`
+- **By type:** filter `nodes` where `type` is `app` \| `lib` \| `domain` \| `context` \| `feature-group` \| `doc` \| `endpoint` \| …
+- **Outgoing edges:** `edges` with `from === <id>`
+- **Incoming edges:** `edges` with `to === <id>`
+- **By edge type:** filter `edges` where `type` is `depends_on` \| `contains` \| `implements` \| `documents` \| `belongs_to`
+
+## Recipes
+
+### R1 — Before changing project `X`
+
+Goal: blast radius and related docs/APIs before editing.
+
+1. Locate `project:<X>` (match Nx project name).
+2. List **outgoing** `depends_on` (what X imports) and **incoming** `depends_on` (who depends on X).
+3. Follow **outgoing** `contains` → `openapi` / `asyncapi` / `file` / `diagram` / `readme` owned by X.
+4. From those files, follow `contains` → `endpoint` nodes (API surface of X).
+5. Collect **incoming** `documents` where `to` is `project:<X>` or any of those endpoints → open each concept's `docPath`.
+6. Only then open source under attrs.`root`.
+
+### R2 — Find all docs touching project `Y`
+
+Goal: every curated doc concept that references Y.
+
+1. Start at `project:<Y>`.
+2. Take all edges with `type === "documents"` and `to === "project:<Y>"`.
+3. For each `from` (`concept:…`), read attrs.`title`, `docPath`, `sectionAnchor`.
+4. Optionally expand: endpoints contained by Y (R1 steps 3–4), then incoming `documents` to those endpoints.
+5. Ignore `readme` nodes for this recipe unless you need project-local READMEs; concepts come only from `doc` markdown under `docs/`.
+
+### R3 — Before changing an HTTP path or channel
+
+Goal: owners, implementers, and docs for one API surface.
+
+1. Find `endpoint` by id (`api:HTTP:<METHOD>:<path>` or `api:channel:<name>`) or by attrs.`pathOrChannel` / `operationId`.
+2. Incoming `contains` → owning `openapi` / `asyncapi` file → incoming `contains` → owning `project:…`.
+3. Incoming `implements` → controller `file:…` and/or `project:…` (may be empty — heuristic).
+4. Incoming `documents` → concepts; open `docPath`.
+5. Sibling endpoints: other `contains` children of the same spec file.
+
+### R4 — Before a cross-service / cross-domain change
+
+Goal: shared libs and documentation bridges between apps.
+
+1. Resolve each involved project's `domain` / `context` via attrs or outgoing `belongs_to`.
+2. Start from `domain:<name>` nodes; take **incoming** `belongs_to` for member projects, docs, and concepts.
+3. For each member project, run R1 (deps + contained specs).
+4. Intersect dependency neighborhoods: shared `lib` projects on paths between the apps (often under `domain:shared`).
+5. Summarize: domains involved, shared libraries, shared endpoints, and doc concepts that bind the change together.
+
+### R5 — Map a feature area by keyword
+
+Goal: discover related endpoints and docs when you only have a term (e.g. resource name).
+
+1. Search node ids and attrs (`pathOrChannel`, `operationId`, `summary`, `title`, `path`, `docPath`, cluster `name`) for the keyword.
+2. Classify hits: `endpoint` vs `concept` vs `doc`/`readme` vs `project` vs `domain`/`context`/`feature-group`.
+3. For each `endpoint` hit → R3. For each `project` hit → R1. For each `concept` hit → follow outgoing `documents`. For each cluster hit → incoming `belongs_to`.
+4. Deduplicate projects and `docPath`s before reading source.
+
+### R6 — Trace who implements an OpenAPI/AsyncAPI file
+
+1. Find the `openapi` or `asyncapi` node (`file:…/openapi.yaml` etc.).
+2. Incoming `contains` from `project:…` → owner.
+3. Outgoing `contains` → all `endpoint` children.
+4. For each endpoint, incoming `implements` → controllers/projects.
+5. Endpoints with no `implements` edge need a manual controller/spec check.
+
+### R7 — Domain map for product `D`
+
+Goal: everything in one product domain.
+
+1. Open `domain:<D>` (type `domain`).
+2. Incoming `belongs_to` → member `app`/`lib` projects, `doc` files, and `concept`s.
+3. For projects, also note `context` and `featureGroup` attrs (or their `belongs_to` targets).
+4. Optional: filter members by `context:frontend` / `context:backend` or `feature-group:feature`.
+5. Then apply R1/R2 on the projects you care about.
+
+## Edge cases
+
+- **No docs for a project** — use project + file + endpoint nodes; read source under `root`.
+- **Weak `implements`** — dynamic Nest routes may not match; open the controller and spec.
+- **Stale graph** — regenerate before architecture reviews on a dirty tree.
+- **Secrets** — graph stores paths and API metadata only, never `.env` values or credentials.

@@ -7,6 +7,10 @@ alwaysApply: true
 ---
 # Architecture and Design Patterns
 
+## Monorepo structure first
+
+Before large refactors, cross-service changes, or architecture reviews in this Nx workspace, load **Knowledge Graph Skill** and query `graph/graph.json` (recipes R1, R4, R5). Prefer the knowledge graph over scanning the whole tree for project dependencies, API surfaces, and docs.
+
 ## Architectural Approaches
 
 ### Monolithic Architecture
@@ -71,3 +75,4 @@ alwaysApply: true
 - **Loose Coupling:** Minimize dependencies between modules
 - **High Cohesion:** Keep related functionality together
 - **Testability:** Design modules to be independently testable
+- **Discover coupling:** Use **Knowledge Graph Skill** (`depends_on`, `contains`, `implements`, `documents`) to verify real boundaries before introducing new abstractions

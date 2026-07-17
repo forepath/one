@@ -1,0 +1,58 @@
+{
+  "name": "graph",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "root": "tools/graph",
+  "sourceRoot": "tools/graph/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/tools/graph",
+        "main": "tools/graph/src/index.ts",
+        "tsConfig": "tools/graph/tsconfig.lib.json",
+        "assets": [
+          "tools/graph/*.md",
+          {
+            "input": "./tools/graph/src",
+            "glob": "**/!(*.ts)",
+            "output": "./src"
+          },
+          {
+            "input": "./tools/graph/src",
+            "glob": "**/*.d.ts",
+            "output": "./src"
+          },
+          {
+            "input": "./tools/graph",
+            "glob": "generators.json",
+            "output": "."
+          }
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "tools/graph/jest.config.ts"
+      }
+    },
+    "generate-kg": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/tools/graph/src/cli.js"
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/tools/graph/src/serve.js"
+      }
+    }
+  }
+}

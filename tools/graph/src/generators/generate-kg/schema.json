@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "GenerateKg",
+  "title": "Generate Knowledge Graph",
+  "description": "Build graph/graph.json and graph/graph.html from the Nx project graph, OpenAPI/AsyncAPI specs, and docs/<domain> Markdown.",
+  "type": "object",
+  "properties": {
+    "outDir": {
+      "type": "string",
+      "description": "Output directory relative to workspace root.",
+      "default": "graph"
+    },
+    "skipHtml": {
+      "type": "boolean",
+      "description": "Skip writing graph.html.",
+      "default": false
+    }
+  },
+  "required": []
+}

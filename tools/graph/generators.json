@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "generate-kg": {
+      "factory": "./src/generators/generate-kg/generate-kg",
+      "schema": "./src/generators/generate-kg/schema.json",
+      "description": "Generate the monorepo knowledge graph (graph/graph.json + graph.html)"
+    }
+  }
+}

@@ -9,10 +9,12 @@ alwaysApply: false
 
 Use this checklist when adding domain features to Angular apps (for example `apps/<domain>/frontend-<name>` with libraries under `libs/domains/<domain>/frontend/`).
 
+**Before coding:** When wiring to an existing backend API or shared lib, use **Knowledge Graph Skill** (R1 for the target project, R3 for endpoints, R4 for cross-app work) so HTTP services stay aligned with OpenAPI owners and docs.
+
 ## Feature Implementation Checklist
 
 1. **Types:** Add shared API types (for example `<feature>.types.ts`) in the data-access library.
-2. **HTTP services:** Add or extend services that call backend REST endpoints; keep URLs aligned with OpenAPI.
+2. **HTTP services:** Add or extend services that call backend REST endpoints; keep URLs aligned with OpenAPI. Resolve owning `openapi` / `endpoint` nodes via **Knowledge Graph Skill** R3 when the contract is unclear.
 3. **NgRx state:** Add slices under `data-access-*/src/lib/state/<feature>/` (actions, reducer, effects, selectors, constants, and specs).
 4. **Realtime (if applicable):** Add a dedicated socket slice and effects; mirror reconnect and context-restore patterns from similar features (for example Agenstra tickets board socket).
 5. **Feature UI:** Build pages and components in `feature-*/src/lib/<feature>/`.
