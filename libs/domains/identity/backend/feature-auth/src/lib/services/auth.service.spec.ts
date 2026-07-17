@@ -8,6 +8,7 @@ describe('AuthService', () => {
     findByEmail: jest.fn(),
     update: jest.fn(),
     count: jest.fn(),
+    countByTenant: jest.fn(),
     findByIdOrThrow: jest.fn(),
     incrementTokenVersion: jest.fn(),
   };
@@ -155,6 +156,51 @@ describe('AuthService', () => {
 
     expect(mockUsersRepository.incrementTokenVersion).toHaveBeenCalledWith('user-1');
     expect(result).toBe(1);
+  });
+
+  it('returns emailConfirmed true for the first registered account', async () => {
+    mockUsersRepository.countByTenant.mockResolvedValue(0);
+    mockUsersService.create.mockResolvedValue({
+      id: 'admin-1',
+      email: 'admin@example.com',
+      role: UserRole.ADMIN,
+      emailConfirmedAt: '2026-01-01T00:00:00.000Z',
+    });
+
+    const result = await service.register('admin@example.com', 'password123');
+
+    expect(mockUsersService.create).toHaveBeenCalledWith(
+      { email: 'admin@example.com', password: 'password123', role: UserRole.ADMIN },
+      true,
+    );
+    expect(result).toEqual({
+      user: { id: 'admin-1', email: 'admin@example.com', role: UserRole.ADMIN },
+      message: 'Account created successfully. You can log in immediately.',
+      emailConfirmed: true,
+    });
+  });
+
+  it('returns emailConfirmed false for subsequent registrations', async () => {
+    mockUsersRepository.countByTenant.mockResolvedValue(1);
+    mockUsersService.create.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      role: UserRole.USER,
+      emailConfirmedAt: null,
+    });
+
+    const result = await service.register('user@example.com', 'password123');
+
+    expect(mockUsersService.create).toHaveBeenCalledWith(
+      { email: 'user@example.com', password: 'password123', role: UserRole.USER },
+      false,
+    );
+    expect(result).toEqual({
+      user: { id: 'user-1', email: 'user@example.com', role: UserRole.USER },
+      message:
+        'Account created. Please confirm your email before logging in. Check your inbox for the confirmation code.',
+      emailConfirmed: false,
+    });
   });
 
   it('publishes password reset email when account exists', async () => {

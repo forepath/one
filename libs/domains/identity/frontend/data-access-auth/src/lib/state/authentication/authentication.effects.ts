@@ -354,7 +354,13 @@ export const register$ = createEffect(
       ofType(register),
       switchMap(({ email, password }) =>
         authService.register(email, password).pipe(
-          map((res) => registerSuccess({ user: res.user, message: res.message })),
+          map((res) =>
+            registerSuccess({
+              user: res.user,
+              message: res.message,
+              emailConfirmed: res.emailConfirmed,
+            }),
+          ),
           catchError((error) => of(registerFailure({ error: normalizeError(error) }))),
         ),
       ),
@@ -367,7 +373,13 @@ export const registerSuccessRedirect$ = createEffect(
   (actions$ = inject(Actions), router = inject(Router)) => {
     return actions$.pipe(
       ofType(registerSuccess),
-      tap(({ user }) => {
+      tap(({ user, emailConfirmed }) => {
+        if (emailConfirmed) {
+          router.navigate(['/login']);
+
+          return;
+        }
+
         router.navigate(['/confirm-email'], {
           queryParams: { email: user.email },
         });

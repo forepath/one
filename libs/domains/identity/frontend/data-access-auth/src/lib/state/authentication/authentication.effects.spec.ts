@@ -761,10 +761,11 @@ describe('AuthenticationEffects', () => {
   });
 
   describe('registerSuccessRedirect$', () => {
-    it('should navigate to /confirm-email when registerSuccess action is dispatched', (done) => {
+    it('should navigate to /confirm-email when email is not yet confirmed', (done) => {
       const action = registerSuccess({
         user: { id: 'user-1', email: 'test@example.com', role: 'user' },
         message: 'Registration successful',
+        emailConfirmed: false,
       });
 
       actions$ = of(action);
@@ -776,6 +777,27 @@ describe('AuthenticationEffects', () => {
             expect(mockRouter.navigate).toHaveBeenCalledWith(['/confirm-email'], {
               queryParams: { email: 'test@example.com' },
             });
+            expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+            done();
+          },
+        });
+      });
+    });
+
+    it('should navigate to /login when email is already confirmed', (done) => {
+      const action = registerSuccess({
+        user: { id: 'user-1', email: 'admin@example.com', role: 'admin' },
+        message: 'Account created successfully. You can log in immediately.',
+        emailConfirmed: true,
+      });
+
+      actions$ = of(action);
+      mockRouter.navigate = jest.fn().mockResolvedValue(true);
+
+      TestBed.runInInjectionContext(() => {
+        registerSuccessRedirect$(actions$, mockRouter as any).subscribe({
+          complete: () => {
+            expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
             expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
             done();
           },
