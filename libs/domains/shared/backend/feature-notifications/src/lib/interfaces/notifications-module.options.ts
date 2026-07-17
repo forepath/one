@@ -1,21 +1,22 @@
 import type { Request } from 'express';
 import type { EmailSubjectRegistry } from '@forepath/shared/backend/util-email';
 
+import type { EmailCompanyFrom } from '../email/resolve-email-company-name';
+
 export type NotificationScopeMode = 'tenant_id' | 'instance';
 
 export interface NotificationsEmailOptions {
   templateRoots: string[];
   emailEventCatalog: readonly string[];
   subjectRegistry: EmailSubjectRegistry;
-  /** Shown in the email layout header (invoice-style company name). */
-  companyName?: string;
-  /** Invoice-style "From" block shown in the email layout footer. */
-  companyFrom?: {
-    name: string;
-    lines: string[];
-    vatId?: string;
-    email?: string;
-  };
+  /**
+   * Brand name for the email header. Prefer a getter so env is read after bootstrap.
+   */
+  resolveCompanyName?: () => string;
+  /**
+   * Invoice-style "From" footer. Prefer a getter so env is read after bootstrap.
+   */
+  resolveCompanyFrom?: () => EmailCompanyFrom | undefined;
 }
 
 export interface NotificationsModuleOptions {

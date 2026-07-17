@@ -202,7 +202,7 @@ export class PaymentOrchestrationService {
         processor: processorType,
         externalId: update.externalId,
       });
-      void this.billingEmailPublisher.publishPaymentSucceeded(paid, {
+      await this.billingEmailPublisher.publishPaymentSucceeded(paid, {
         processor: processorType,
         externalId: update.externalId,
       });
@@ -222,7 +222,7 @@ export class PaymentOrchestrationService {
         processor: processorType,
         externalId: update.externalId,
       });
-      void this.billingEmailPublisher.publishPaymentFailed(invoice, {
+      await this.billingEmailPublisher.publishPaymentFailed(invoice, {
         processor: processorType,
         externalId: update.externalId,
       });

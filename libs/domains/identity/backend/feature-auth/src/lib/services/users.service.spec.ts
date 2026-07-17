@@ -28,6 +28,7 @@ describe('UsersService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockEmailDispatcher.publishEmail.mockResolvedValue(undefined);
     service = new UsersService(
       mockUsersRepository as any,
       mockStatisticsService as any,

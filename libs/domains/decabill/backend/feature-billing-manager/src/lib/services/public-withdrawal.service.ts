@@ -119,7 +119,7 @@ export class PublicWithdrawalService {
     const profileEmail = match.profile.email?.trim();
 
     if (profileEmail) {
-      this.billingEmailPublisher.publishWithdrawalConfirmation(profileEmail, code, expiresAt);
+      await this.billingEmailPublisher.publishWithdrawalConfirmation(profileEmail, code, expiresAt);
     }
 
     return {

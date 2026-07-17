@@ -1,4 +1,4 @@
-import { IDENTITY_EMAIL_DISPATCHER } from '@forepath/identity/backend';
+import { IDENTITY_EMAIL_DISPATCHER, type IdentityEmailPublishInput } from '@forepath/identity/backend';
 import {
   EmailNotificationDispatcherService,
   getTenantIdOrDefault,
@@ -17,8 +17,6 @@ import { BILLING_NOTIFICATION_EVENTS } from '../notifications/billing-notificati
 import { BILLING_QUEUE_NAME } from '../queue/billing-queue.constants';
 import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
-const emailCompanyFrom = resolveEmailCompanyFrom();
-
 export const billingNotificationsModule = NotificationsModule.register({
   applicationId: 'decabill',
   scopeMode: 'tenant_id',
@@ -31,8 +29,8 @@ export const billingNotificationsModule = NotificationsModule.register({
     templateRoots: [...resolveBillingEmailTemplateRoots(), ...resolveIdentityEmailTemplateRoots()],
     emailEventCatalog: [...BILLING_EMAIL_EVENTS, ...IDENTITY_EMAIL_EVENTS],
     subjectRegistry: { ...BILLING_EMAIL_SUBJECTS, ...IDENTITY_EMAIL_SUBJECTS },
-    companyName: resolveEmailCompanyName(),
-    ...(emailCompanyFrom ? { companyFrom: emailCompanyFrom } : {}),
+    resolveCompanyName: () => resolveEmailCompanyName(),
+    resolveCompanyFrom: () => resolveEmailCompanyFrom(),
   },
 });
 
@@ -46,13 +44,8 @@ export const billingNotificationsModule = NotificationsModule.register({
     {
       provide: IDENTITY_EMAIL_DISPATCHER,
       useFactory: (dispatcher: EmailNotificationDispatcherService) => ({
-        publishEmail: (input: {
-          eventType: string;
-          to: string;
-          templateKey: string;
-          templateContext: Record<string, unknown>;
-        }) => {
-          dispatcher.publishFireAndForget({
+        publishEmail: async (input: IdentityEmailPublishInput): Promise<void> => {
+          await dispatcher.publish({
             eventType: input.eventType,
             scopeKey: getTenantIdOrDefault(),
             to: input.to,

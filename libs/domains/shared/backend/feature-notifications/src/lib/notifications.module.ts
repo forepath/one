@@ -76,7 +76,16 @@ export class NotificationsModule {
         WebhookEndpointService,
         WebhookDeliveryService,
         WebhookDeliveryRetentionService,
-        ...(options.email ? [EmailNotificationDispatcherService, EmailDeliveryService, EmailService] : []),
+        NOTIFICATIONS_MODULE_OPTIONS,
+        ...(options.email
+          ? [
+              EmailNotificationDispatcherService,
+              EmailDeliveryService,
+              EmailService,
+              EmailTemplateRendererService,
+              EmailDeliveriesRepository,
+            ]
+          : []),
       ],
     };
   }

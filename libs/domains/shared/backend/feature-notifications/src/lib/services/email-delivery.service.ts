@@ -1,5 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { EmailService, EmailTemplateRendererService, resolveEmailSubject } from '@forepath/shared/backend/util-email';
 
 import {
@@ -10,7 +9,9 @@ import {
 import type { EmailAttachmentResolver, EmailDeliverJobPayload } from '../interfaces/notification.interfaces';
 import type { NotificationsModuleOptions } from '../interfaces/notifications-module.options';
 import { EmailDeliveriesRepository } from '../repositories/email-deliveries.repository';
+import { assertEmailDeliveryAllowed } from '../utils/assert-email-delivery-allowed';
 import { sanitizeEmailTemplateContext } from '../utils/sanitize-email-template-context';
+import { unsealEmailTemplateContext } from '../utils/seal-email-template-context';
 
 @Injectable()
 export class EmailDeliveryService {
@@ -21,7 +22,9 @@ export class EmailDeliveryService {
     private readonly templateRenderer: EmailTemplateRendererService,
     private readonly deliveriesRepository: EmailDeliveriesRepository,
     @Inject(NOTIFICATIONS_MODULE_OPTIONS) private readonly options: NotificationsModuleOptions,
-    private readonly moduleRef: ModuleRef,
+    @Optional()
+    @Inject(EMAIL_ATTACHMENT_RESOLVER)
+    private readonly attachmentResolver: EmailAttachmentResolver | null = null,
   ) {}
 
   async deliver(payload: EmailDeliverJobPayload): Promise<void> {
@@ -31,12 +34,15 @@ export class EmailDeliveryService {
       throw new Error('Email channel is not configured on NotificationsModule');
     }
 
+    assertEmailDeliveryAllowed(emailOptions, payload.eventType, payload.templateKey);
+
     const maxAttempts = payload.maxAttempts ?? EMAIL_DELIVER_MAX_ATTEMPTS;
-    const sanitizedContext = sanitizeEmailTemplateContext(payload.templateContext);
-    const companyName = emailOptions.companyName?.trim() || emailOptions.companyFrom?.name?.trim() || undefined;
-    const companyFrom = emailOptions.companyFrom;
+    const templateContext = unsealEmailTemplateContext(payload.templateContext, payload.encryptedTemplateSecrets);
+    const sanitizedContext = sanitizeEmailTemplateContext(templateContext);
+    const companyName = emailOptions.resolveCompanyName?.().trim() || undefined;
+    const companyFrom = emailOptions.resolveCompanyFrom?.();
     const renderContext: Record<string, unknown> = {
-      ...payload.templateContext,
+      ...templateContext,
       ...(companyName ? { companyName } : {}),
       ...(companyFrom ? { companyFrom } : {}),
     };
@@ -95,26 +101,12 @@ export class EmailDeliveryService {
       return undefined;
     }
 
-    const resolver = this.lookupAttachmentResolver();
-
-    if (!resolver) {
+    if (!this.attachmentResolver) {
       throw new Error(
         `Email attachments present for ${payload.eventType} but EMAIL_ATTACHMENT_RESOLVER is not registered`,
       );
     }
 
-    return await resolver.resolve(payload.attachments);
-  }
-
-  /**
-   * Resolves the host-app attachment resolver across module boundaries.
-   * NotificationsModule cannot inject BillingModule providers via constructor DI.
-   */
-  private lookupAttachmentResolver(): EmailAttachmentResolver | undefined {
-    try {
-      return this.moduleRef.get<EmailAttachmentResolver>(EMAIL_ATTACHMENT_RESOLVER, { strict: false });
-    } catch {
-      return undefined;
-    }
+    return await this.attachmentResolver.resolve(payload.attachments);
   }
 }

@@ -12,8 +12,8 @@ export interface IdentityEmailPublishInput {
 }
 
 /**
- * Fire-and-forget email enqueue for identity transactional mail.
+ * Enqueues identity transactional mail; callers should await so Redis failures surface.
  */
 export interface IIdentityEmailDispatcher {
-  publishEmail(input: IdentityEmailPublishInput): void;
+  publishEmail(input: IdentityEmailPublishInput): Promise<void>;
 }

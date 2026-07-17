@@ -8,10 +8,14 @@ import { EmailService } from '@forepath/shared/backend/util-email';
 import {
   EMAIL_DELIVER_JOB_NAME,
   EMAIL_DELIVER_MAX_ATTEMPTS,
+  EMAIL_DELIVER_REMOVE_ON_COMPLETE,
+  EMAIL_DELIVER_REMOVE_ON_FAIL,
   NOTIFICATIONS_MODULE_OPTIONS,
 } from '../constants/notification.constants';
 import type { EmailDeliverJobPayload, EmailPublishContext } from '../interfaces/notification.interfaces';
 import type { NotificationsModuleOptions } from '../interfaces/notifications-module.options';
+import { assertEmailDeliveryAllowed } from '../utils/assert-email-delivery-allowed';
+import { sealEmailTemplateContext } from '../utils/seal-email-template-context';
 
 @Injectable()
 export class EmailNotificationDispatcherService {
@@ -36,14 +40,18 @@ export class EmailNotificationDispatcherService {
       return;
     }
 
+    assertEmailDeliveryAllowed(this.options.email, context.eventType, context.templateKey);
+
     const eventId = context.correlationId ?? randomUUID();
+    const sealed = sealEmailTemplateContext(context.templateContext);
     const payload: EmailDeliverJobPayload = {
       eventId,
       eventType: context.eventType,
       scopeKey: context.scopeKey,
       to: context.to,
       templateKey: context.templateKey,
-      templateContext: context.templateContext,
+      templateContext: sealed.templateContext,
+      ...(sealed.encryptedTemplateSecrets ? { encryptedTemplateSecrets: sealed.encryptedTemplateSecrets } : {}),
       attachments: context.attachments,
       attempt: 1,
     };
@@ -54,7 +62,11 @@ export class EmailNotificationDispatcherService {
       payload,
       jobIdNamespace: 'email',
       jobIdParts: [payload.eventId, payload.templateKey, payload.to],
-      opts: { attempts: EMAIL_DELIVER_MAX_ATTEMPTS },
+      opts: {
+        attempts: EMAIL_DELIVER_MAX_ATTEMPTS,
+        removeOnComplete: EMAIL_DELIVER_REMOVE_ON_COMPLETE,
+        removeOnFail: EMAIL_DELIVER_REMOVE_ON_FAIL,
+      },
     });
   }
 

@@ -1,7 +1,7 @@
 import { BillingEmailPublisher } from './billing-email.publisher';
 
 describe('BillingEmailPublisher', () => {
-  const emailDispatcher = { publishFireAndForget: jest.fn() };
+  const emailDispatcher = { publish: jest.fn() };
   const customerProfilesRepository = { findByUserId: jest.fn() };
   const usersRepository = { findByIdForTenant: jest.fn() };
 
@@ -28,6 +28,7 @@ describe('BillingEmailPublisher', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    emailDispatcher.publish.mockResolvedValue(undefined);
     customerProfilesRepository.findByUserId.mockResolvedValue(profile);
     usersRepository.findByIdForTenant.mockResolvedValue(null);
   });
@@ -35,7 +36,7 @@ describe('BillingEmailPublisher', () => {
   it('publishes invoice issued email with attachment refs', async () => {
     await publisher.publishInvoiceIssued(invoice as never, 'pdf-key');
 
-    expect(emailDispatcher.publishFireAndForget).toHaveBeenCalledWith(
+    expect(emailDispatcher.publish).toHaveBeenCalledWith(
       expect.objectContaining({
         eventType: 'invoice.issued',
         to: 'billing@example.com',
@@ -54,7 +55,7 @@ describe('BillingEmailPublisher', () => {
   it('includes time report attachment when present', async () => {
     await publisher.publishInvoiceIssued({ ...invoice, timeReportStorageKey: 'time-key' } as never, 'pdf-key');
 
-    expect(emailDispatcher.publishFireAndForget).toHaveBeenCalledWith(
+    expect(emailDispatcher.publish).toHaveBeenCalledWith(
       expect.objectContaining({
         attachments: [
           { storageKey: 'pdf-key', filename: 'INV-1.pdf' },
@@ -67,7 +68,7 @@ describe('BillingEmailPublisher', () => {
   it('skips invoice email without invoice number', async () => {
     await publisher.publishInvoiceIssued({ ...invoice, invoiceNumber: null } as never, 'pdf-key');
 
-    expect(emailDispatcher.publishFireAndForget).not.toHaveBeenCalled();
+    expect(emailDispatcher.publish).not.toHaveBeenCalled();
   });
 
   it('skips when recipient cannot be resolved', async () => {
@@ -76,7 +77,7 @@ describe('BillingEmailPublisher', () => {
 
     await publisher.publishInvoiceIssued(invoice as never, 'pdf-key');
 
-    expect(emailDispatcher.publishFireAndForget).not.toHaveBeenCalled();
+    expect(emailDispatcher.publish).not.toHaveBeenCalled();
   });
 
   it('falls back to user email when profile email is missing', async () => {
@@ -85,7 +86,7 @@ describe('BillingEmailPublisher', () => {
 
     await publisher.publishInvoiceIssued({ ...invoice, dueDate: 'not-a-date' } as never, 'pdf-key');
 
-    expect(emailDispatcher.publishFireAndForget).toHaveBeenCalledWith(
+    expect(emailDispatcher.publish).toHaveBeenCalledWith(
       expect.objectContaining({
         to: 'user@example.com',
         templateContext: expect.not.objectContaining({ dueDateLabel: expect.anything() }),
@@ -96,7 +97,7 @@ describe('BillingEmailPublisher', () => {
   it('publishes void document email', async () => {
     await publisher.publishVoidDocument(invoice as never, 'void-key', 'CN-1');
 
-    expect(emailDispatcher.publishFireAndForget).toHaveBeenCalledWith(
+    expect(emailDispatcher.publish).toHaveBeenCalledWith(
       expect.objectContaining({
         eventType: 'invoice.voided',
         templateKey: 'invoice-voided',
@@ -112,18 +113,18 @@ describe('BillingEmailPublisher', () => {
 
   it('skips void document without invoice number or recipient', async () => {
     await publisher.publishVoidDocument({ ...invoice, invoiceNumber: undefined } as never, 'void-key', 'CN-1');
-    expect(emailDispatcher.publishFireAndForget).not.toHaveBeenCalled();
+    expect(emailDispatcher.publish).not.toHaveBeenCalled();
 
     customerProfilesRepository.findByUserId.mockResolvedValue(null);
     usersRepository.findByIdForTenant.mockResolvedValue(null);
     await publisher.publishVoidDocument(invoice as never, 'void-key', 'CN-1');
-    expect(emailDispatcher.publishFireAndForget).not.toHaveBeenCalled();
+    expect(emailDispatcher.publish).not.toHaveBeenCalled();
   });
 
   it('publishes partial credit document email', async () => {
     await publisher.publishPartialCreditDocument(invoice as never, 'credit-key', 'CN-2', 4.5);
 
-    expect(emailDispatcher.publishFireAndForget).toHaveBeenCalledWith(
+    expect(emailDispatcher.publish).toHaveBeenCalledWith(
       expect.objectContaining({
         eventType: 'invoice.partial_credit_issued',
         templateKey: 'invoice-partial-credit',
@@ -138,18 +139,18 @@ describe('BillingEmailPublisher', () => {
 
   it('skips partial credit without invoice number or recipient', async () => {
     await publisher.publishPartialCreditDocument({ ...invoice, invoiceNumber: '' } as never, 'k', 'CN', 1);
-    expect(emailDispatcher.publishFireAndForget).not.toHaveBeenCalled();
+    expect(emailDispatcher.publish).not.toHaveBeenCalled();
 
     customerProfilesRepository.findByUserId.mockResolvedValue(null);
     usersRepository.findByIdForTenant.mockResolvedValue(null);
     await publisher.publishPartialCreditDocument(invoice as never, 'k', 'CN', 1);
-    expect(emailDispatcher.publishFireAndForget).not.toHaveBeenCalled();
+    expect(emailDispatcher.publish).not.toHaveBeenCalled();
   });
 
   it('publishes renewal reminder', async () => {
     await publisher.publishRenewalReminder({ id: 'sub-1' } as never, 'Pro Plan', 'a@example.com', 'Ada', '2026-09-01');
 
-    expect(emailDispatcher.publishFireAndForget).toHaveBeenCalledWith(
+    expect(emailDispatcher.publish).toHaveBeenCalledWith(
       expect.objectContaining({
         eventType: 'subscription.renewal_reminder',
         templateKey: 'subscription-renewal-reminder',
@@ -164,12 +165,12 @@ describe('BillingEmailPublisher', () => {
     );
   });
 
-  it('publishes withdrawal confirmation with expiry text', () => {
+  it('publishes withdrawal confirmation with expiry text', async () => {
     const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000);
 
-    publisher.publishWithdrawalConfirmation('a@example.com', 'ABC123', expiresAt);
+    await publisher.publishWithdrawalConfirmation('a@example.com', 'ABC123', expiresAt);
 
-    expect(emailDispatcher.publishFireAndForget).toHaveBeenCalledWith(
+    expect(emailDispatcher.publish).toHaveBeenCalledWith(
       expect.objectContaining({
         eventType: 'withdrawal.confirmation_requested',
         templateKey: 'withdrawal-confirmation',
@@ -186,7 +187,7 @@ describe('BillingEmailPublisher', () => {
     await publisher.publishPaymentSucceeded(invoice as never, { processor: 'stripe' });
     await publisher.publishPaymentFailed(invoice as never);
 
-    expect(emailDispatcher.publishFireAndForget).toHaveBeenNthCalledWith(
+    expect(emailDispatcher.publish).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
         eventType: 'payment.succeeded',
@@ -194,7 +195,7 @@ describe('BillingEmailPublisher', () => {
         templateContext: expect.objectContaining({ processor: 'stripe' }),
       }),
     );
-    expect(emailDispatcher.publishFireAndForget).toHaveBeenNthCalledWith(
+    expect(emailDispatcher.publish).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
         eventType: 'payment.failed',
@@ -205,12 +206,12 @@ describe('BillingEmailPublisher', () => {
 
   it('skips payment emails without invoice number or recipient', async () => {
     await publisher.publishPaymentSucceeded({ ...invoice, invoiceNumber: null } as never);
-    expect(emailDispatcher.publishFireAndForget).not.toHaveBeenCalled();
+    expect(emailDispatcher.publish).not.toHaveBeenCalled();
 
     customerProfilesRepository.findByUserId.mockResolvedValue(null);
     usersRepository.findByIdForTenant.mockResolvedValue(null);
     await publisher.publishPaymentFailed(invoice as never);
-    expect(emailDispatcher.publishFireAndForget).not.toHaveBeenCalled();
+    expect(emailDispatcher.publish).not.toHaveBeenCalled();
   });
 
   it('publishes subscription canceled email', async () => {
@@ -222,7 +223,7 @@ describe('BillingEmailPublisher', () => {
       'Pro Plan',
     );
 
-    expect(emailDispatcher.publishFireAndForget).toHaveBeenCalledWith(
+    expect(emailDispatcher.publish).toHaveBeenCalledWith(
       expect.objectContaining({
         eventType: 'subscription.canceled',
         templateKey: 'subscription-canceled',
@@ -240,7 +241,7 @@ describe('BillingEmailPublisher', () => {
 
     await publisher.publishSubscriptionCanceled({ userId: 'user-1' } as never, 'Pro Plan');
 
-    expect(emailDispatcher.publishFireAndForget).not.toHaveBeenCalled();
+    expect(emailDispatcher.publish).not.toHaveBeenCalled();
   });
 
   it('uses Customer greeting when firstName is empty', async () => {
@@ -248,7 +249,7 @@ describe('BillingEmailPublisher', () => {
 
     await publisher.publishInvoiceIssued({ ...invoice, dueDate: null } as never, 'pdf-key');
 
-    expect(emailDispatcher.publishFireAndForget).toHaveBeenCalledWith(
+    expect(emailDispatcher.publish).toHaveBeenCalledWith(
       expect.objectContaining({
         templateContext: expect.objectContaining({ recipientName: 'Customer' }),
       }),

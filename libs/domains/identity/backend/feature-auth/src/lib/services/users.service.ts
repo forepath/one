@@ -105,7 +105,7 @@ export class UsersService {
       const codeHash = await hash;
 
       await this.usersRepository.update(user.id, { emailConfirmationToken: codeHash });
-      this.emailDispatcher?.publishEmail({
+      await this.emailDispatcher?.publishEmail({
         eventType: 'user.email_confirmation_requested',
         to: user.email,
         templateKey: 'email-confirmation',
@@ -171,7 +171,7 @@ export class UsersService {
     });
 
     if (emailChanged && dto.email && confirmationCode) {
-      this.emailDispatcher?.publishEmail({
+      await this.emailDispatcher?.publishEmail({
         eventType: 'user.email_confirmation_requested',
         to: dto.email,
         templateKey: 'email-confirmation',

@@ -17,6 +17,21 @@ export class InvoiceCreditDocumentsRepository {
     return await this.repository.find({ where: { invoiceId }, order: { createdAt: 'DESC' } });
   }
 
+  /**
+   * True when the storage key matches a credit PDF for an invoice in the current tenant.
+   */
+  async existsAuthorizedByPdfStorageKey(storageKey: string): Promise<boolean> {
+    const qb = this.repository
+      .createQueryBuilder('credit')
+      .innerJoin('credit.invoice', 'invoice')
+      .innerJoin('users', 'user', 'user.id = invoice.user_id')
+      .where('credit.pdf_storage_key = :storageKey', { storageKey });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return (await qb.getCount()) > 0;
+  }
+
   async create(dto: {
     invoiceId: string;
     documentNumber: string;

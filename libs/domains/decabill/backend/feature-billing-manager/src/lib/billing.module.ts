@@ -7,7 +7,15 @@ import {
   UsersRepository,
   RevokedUserTokensRepository,
 } from '@forepath/identity/backend';
-import { EMAIL_ATTACHMENT_RESOLVER, EmailService } from '@forepath/shared/backend';
+import {
+  EMAIL_ATTACHMENT_RESOLVER,
+  EmailDeliveriesRepository,
+  EmailDeliveryService,
+  EmailService,
+  EmailTemplateRendererService,
+  NOTIFICATIONS_MODULE_OPTIONS,
+  type NotificationsModuleOptions,
+} from '@forepath/shared/backend';
 import {
   DynamicProviderLoaderService,
   registerDynamicProviderMetadata,
@@ -515,6 +523,23 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       provide: EMAIL_ATTACHMENT_RESOLVER,
       useExisting: BillingEmailAttachmentResolver,
     },
+    {
+      provide: EmailDeliveryService,
+      useFactory: (
+        emailService: EmailService,
+        templateRenderer: EmailTemplateRendererService,
+        deliveriesRepository: EmailDeliveriesRepository,
+        options: NotificationsModuleOptions,
+        attachmentResolver: BillingEmailAttachmentResolver,
+      ) => new EmailDeliveryService(emailService, templateRenderer, deliveriesRepository, options, attachmentResolver),
+      inject: [
+        EmailService,
+        EmailTemplateRendererService,
+        EmailDeliveriesRepository,
+        NOTIFICATIONS_MODULE_OPTIONS,
+        BillingEmailAttachmentResolver,
+      ],
+    },
     InvoiceService,
     InvoiceIssuanceService,
     InvoiceCreationService,
@@ -644,6 +669,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     BillingTenantService,
     BillingEmailAttachmentResolver,
     EMAIL_ATTACHMENT_RESOLVER,
+    EmailDeliveryService,
     CancellationPolicyService,
     CloudflareDnsService,
     DigitaloceanProvisioningService,

@@ -467,7 +467,7 @@ export class SubscriptionService {
     });
 
     this.billingNotificationPublisher.publishSubscription('subscription.canceled', canceled);
-    void this.billingEmailPublisher.publishSubscriptionCanceled(canceled, plan.name);
+    await this.billingEmailPublisher.publishSubscriptionCanceled(canceled, plan.name);
 
     return canceled;
   }

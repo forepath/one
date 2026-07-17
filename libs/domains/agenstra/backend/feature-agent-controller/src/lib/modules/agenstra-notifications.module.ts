@@ -15,8 +15,6 @@ import { assertNotificationAdmin } from '../notifications/assert-notification-ad
 
 export const AGENSTRA_CONTROLLER_QUEUE_NAME = 'agent-controller';
 
-const emailCompanyFrom = resolveEmailCompanyFrom();
-
 const notificationsModule = NotificationsModule.register({
   applicationId: 'agenstra',
   scopeMode: 'instance',
@@ -29,8 +27,8 @@ const notificationsModule = NotificationsModule.register({
     templateRoots: resolveIdentityEmailTemplateRoots(),
     emailEventCatalog: IDENTITY_EMAIL_EVENTS,
     subjectRegistry: IDENTITY_EMAIL_SUBJECTS,
-    companyName: resolveEmailCompanyName(),
-    ...(emailCompanyFrom ? { companyFrom: emailCompanyFrom } : {}),
+    resolveCompanyName: () => resolveEmailCompanyName(),
+    resolveCompanyFrom: () => resolveEmailCompanyFrom(),
   },
 });
 

@@ -28,6 +28,7 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockEmailDispatcher.publishEmail.mockResolvedValue(undefined);
     service = new AuthService(
       mockUsersRepository as any,
       mockRevokedUserTokensRepository as any,

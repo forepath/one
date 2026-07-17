@@ -33,7 +33,10 @@ export interface EmailDeliverJobPayload {
   scopeKey: string;
   to: string;
   templateKey: string;
+  /** Non-sensitive template fields only (secrets live in encryptedTemplateSecrets). */
   templateContext: Record<string, unknown>;
+  /** AES-256-GCM sealed sensitive template fields (OTP/reset codes). */
+  encryptedTemplateSecrets?: string;
   attachments?: EmailAttachmentRef[];
   attempt: number;
   maxAttempts?: number;

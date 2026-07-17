@@ -1,10 +1,10 @@
-import { UsersRepository } from '@forepath/identity/backend';
 import {
   EmailNotificationDispatcherService,
   getTenantIdOrDefault,
   type EmailAttachmentRef,
 } from '@forepath/shared/backend';
 import { Injectable, Logger } from '@nestjs/common';
+import { UsersRepository } from '@forepath/identity/backend';
 
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
@@ -47,7 +47,7 @@ export class BillingEmailPublisher {
       });
     }
 
-    this.emailDispatcher.publishFireAndForget({
+    await this.emailDispatcher.publish({
       eventType: 'invoice.issued',
       scopeKey: getTenantIdOrDefault(),
       to,
@@ -76,7 +76,7 @@ export class BillingEmailPublisher {
       return;
     }
 
-    this.emailDispatcher.publishFireAndForget({
+    await this.emailDispatcher.publish({
       eventType: 'invoice.voided',
       scopeKey: getTenantIdOrDefault(),
       to,
@@ -109,7 +109,7 @@ export class BillingEmailPublisher {
       return;
     }
 
-    this.emailDispatcher.publishFireAndForget({
+    await this.emailDispatcher.publish({
       eventType: 'invoice.partial_credit_issued',
       scopeKey: getTenantIdOrDefault(),
       to,
@@ -131,7 +131,7 @@ export class BillingEmailPublisher {
     recipientName: string,
     renewalDate: string,
   ): Promise<void> {
-    this.emailDispatcher.publishFireAndForget({
+    await this.emailDispatcher.publish({
       eventType: 'subscription.renewal_reminder',
       scopeKey: getTenantIdOrDefault(),
       to: recipientEmail,
@@ -145,11 +145,11 @@ export class BillingEmailPublisher {
     });
   }
 
-  publishWithdrawalConfirmation(to: string, code: string, expiresAt: Date): void {
+  async publishWithdrawalConfirmation(to: string, code: string, expiresAt: Date): Promise<void> {
     const hoursRemaining = Math.max(1, Math.round((expiresAt.getTime() - Date.now()) / (60 * 60 * 1000)));
     const expiryText = hoursRemaining === 1 ? '1 hour' : `${hoursRemaining} hours`;
 
-    this.emailDispatcher.publishFireAndForget({
+    await this.emailDispatcher.publish({
       eventType: 'withdrawal.confirmation_requested',
       scopeKey: getTenantIdOrDefault(),
       to,
@@ -183,7 +183,7 @@ export class BillingEmailPublisher {
       ? subscription.cancelEffectiveAt.toLocaleDateString()
       : undefined;
 
-    this.emailDispatcher.publishFireAndForget({
+    await this.emailDispatcher.publish({
       eventType: 'subscription.canceled',
       scopeKey: getTenantIdOrDefault(),
       to,
@@ -215,7 +215,7 @@ export class BillingEmailPublisher {
       return;
     }
 
-    this.emailDispatcher.publishFireAndForget({
+    await this.emailDispatcher.publish({
       eventType,
       scopeKey: getTenantIdOrDefault(),
       to,

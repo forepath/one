@@ -12,6 +12,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  Logger,
   Optional,
   ServiceUnavailableException,
   UnauthorizedException,
@@ -50,6 +51,8 @@ export interface RegisterResponse {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly revokedUserTokensRepository: RevokedUserTokensRepository,
@@ -158,12 +161,18 @@ export class AuthService {
       passwordResetTokenExpiresAt: expiresAt,
     });
 
-    this.emailDispatcher?.publishEmail({
-      eventType: 'user.password_reset_requested',
-      to: user.email,
-      templateKey: 'password-reset',
-      templateContext: { code },
-    });
+    try {
+      await this.emailDispatcher?.publishEmail({
+        eventType: 'user.password_reset_requested',
+        to: user.email,
+        templateKey: 'password-reset',
+        templateContext: { code },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'email enqueue failed';
+
+      this.logger.error(`Failed to enqueue password reset email: ${message}`);
+    }
 
     return {
       message: 'If an account exists with this email, you will receive a password reset code.',
