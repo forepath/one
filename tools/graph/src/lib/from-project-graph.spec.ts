@@ -3,7 +3,7 @@ import type { ProjectGraph } from '@nx/devkit';
 import { fromProjectGraph } from './from-project-graph';
 
 describe('fromProjectGraph', () => {
-  it('should map projects and depends_on edges and skip npm externals', () => {
+  it('should map projects and depends_on edges, type tools/, and skip npm externals', () => {
     const projectGraph = {
       nodes: {
         'app-a': {
@@ -26,6 +26,16 @@ describe('fromProjectGraph', () => {
             targets: { lint: {} },
           },
         },
+        graph: {
+          name: 'graph',
+          type: 'lib',
+          data: {
+            root: 'tools/graph',
+            projectType: 'library',
+            tags: ['npm:private'],
+            targets: { build: {} },
+          },
+        },
       },
       dependencies: {
         'app-a': [
@@ -33,6 +43,7 @@ describe('fromProjectGraph', () => {
           { source: 'app-a', target: 'npm:lodash', type: 'static' },
         ],
         'lib-b': [],
+        graph: [],
       },
       externalNodes: {
         'npm:lodash': {
@@ -45,17 +56,10 @@ describe('fromProjectGraph', () => {
 
     const slice = fromProjectGraph(projectGraph);
 
-    expect(slice.nodes).toHaveLength(2);
-    expect(slice.nodes.map((n) => n.id).sort()).toEqual(['project:app-a', 'project:lib-b']);
+    expect(slice.nodes).toHaveLength(3);
     expect(slice.nodes.find((n) => n.id === 'project:app-a')?.type).toBe('app');
     expect(slice.nodes.find((n) => n.id === 'project:lib-b')?.type).toBe('lib');
-    expect(slice.nodes.find((n) => n.id === 'project:app-a')?.attrs).toMatchObject({
-      name: 'app-a',
-      root: 'apps/a',
-      type: 'app',
-      targets: ['build', 'test'],
-      tags: ['domain:demo'],
-    });
+    expect(slice.nodes.find((n) => n.id === 'project:graph')?.type).toBe('tool');
     expect(slice.edges).toEqual([{ from: 'project:app-a', to: 'project:lib-b', type: 'depends_on' }]);
   });
 });

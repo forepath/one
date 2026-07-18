@@ -3,13 +3,19 @@ import * as path from 'path';
 import type { ProjectGraph } from '@nx/devkit';
 
 import { discoverFiles } from './discover-files';
+import { discoverPatches } from './discover-patches';
+import { discoverToolDirectories } from './discover-tools';
 import { buildClusterSlice } from './build-clusters';
 import { fromProjectGraph } from './from-project-graph';
 import { linkDocuments } from './link-documents';
 import { linkImplements } from './link-implements';
+import { linkPackages } from './link-packages';
+import { linkToolUsage } from './link-tool-usage';
+import { linkStateServices } from './link-state-services';
 import { parseAsyncApiFile } from './parse-asyncapi';
 import { parseMarkdownFile } from './parse-markdown';
 import { parseOpenApiFile } from './parse-openapi';
+import { parseWebhookEventsCatalogFile } from './parse-webhook-events';
 import {
   fileNodeId,
   fileNodeTypeFromKind,
@@ -60,6 +66,32 @@ export function buildKnowledgeGraph(options: BuildKnowledgeGraphOptions): Knowle
     addEdge(edge);
   }
 
+  const toolDirs = discoverToolDirectories(workspaceRoot, projectGraph);
+  for (const node of toolDirs.nodes) {
+    addNode(node);
+  }
+
+  const packageSlice = linkPackages({ projectGraph, workspaceRoot });
+  for (const node of packageSlice.nodes) {
+    addNode(node);
+  }
+  for (const edge of packageSlice.edges) {
+    addEdge(edge);
+  }
+
+  const toolUsage = linkToolUsage({ projectGraph, workspaceRoot });
+  for (const edge of toolUsage.edges) {
+    addEdge(edge);
+  }
+
+  const patchSlice = discoverPatches(workspaceRoot, [...nodesById.values()]);
+  for (const node of patchSlice.nodes) {
+    addNode(node);
+  }
+  for (const edge of patchSlice.edges) {
+    addEdge(edge);
+  }
+
   const discovered = discoverFiles(workspaceRoot, projectGraph);
   for (const node of discovered.nodes) {
     addNode(node);
@@ -72,6 +104,16 @@ export function buildKnowledgeGraph(options: BuildKnowledgeGraphOptions): Knowle
   const conceptTexts = new Map<string, string>();
 
   for (const file of discovered.files) {
+    if (file.webhookEventsCatalog) {
+      const parsed = parseWebhookEventsCatalogFile(file.relativePath, file.absolutePath, file.projectName);
+      for (const node of parsed.nodes) {
+        addNode(node);
+      }
+      for (const edge of parsed.edges) {
+        addEdge(edge);
+      }
+      continue;
+    }
     if (file.languageOrKind === 'openapi') {
       const parsed = parseOpenApiFile(file.relativePath, file.absolutePath);
       for (const node of parsed.nodes) {
@@ -116,12 +158,31 @@ export function buildKnowledgeGraph(options: BuildKnowledgeGraphOptions): Knowle
     }
   }
 
-  const controllerFiles = discovered.files.filter((f) => f.languageOrKind === 'ts');
+  const controllerFiles = discovered.files.filter((f) => {
+    if (f.languageOrKind !== 'ts' || f.stateSlice) {
+      return false;
+    }
+    const base = f.relativePath.replace(/\\/g, '/').split('/').pop()?.toLowerCase() ?? '';
+    return base.endsWith('.controller.ts') || base.includes('controller.');
+  });
+  const gatewayFiles = discovered.files.filter((f) => {
+    if (f.languageOrKind !== 'ts' || f.stateSlice) {
+      return false;
+    }
+    const base = f.relativePath.replace(/\\/g, '/').split('/').pop()?.toLowerCase() ?? '';
+    return base.endsWith('.gateway.ts');
+  });
   const implementsEdges = linkImplements({
     controllerFiles,
+    gatewayFiles,
     apiNodes: [...nodesById.values()].filter((n) => n.type === 'endpoint'),
   });
   for (const edge of implementsEdges) {
+    addEdge(edge);
+  }
+
+  const stateServiceEdges = linkStateServices([...nodesById.values()]);
+  for (const edge of stateServiceEdges) {
     addEdge(edge);
   }
 

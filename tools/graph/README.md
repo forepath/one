@@ -2,10 +2,17 @@
 
 Nx plugin that builds a **knowledge graph** of this monorepo from:
 
-- the Nx project graph (projects + `depends_on`)
+- the Nx project graph (projects + `depends_on`; `tools/*` as `tool`)
+- app/lib → tool links from `project.json` references (executor ids, package names, implicitDependencies, `tools/<name>` paths)
+- production npm packages attributed to apps via Nx `createPackageJson`
+- patch-package files under `patches/` (when they target attributed packages)
 - OpenAPI / AsyncAPI specs under project roots
 - Markdown docs under `docs/<domain>/`
-- NestJS controller ↔ OpenAPI `implements` heuristics
+- Architectural TypeScript sources (controllers, gateways, jobs, services, repositories, entities, DTOs, guards, modules, domain providers)
+- Accumulated NgRx `state` slice folders (linked to matching `*.service.ts`)
+- Accumulated email templates (`*.template.html` / `*.template.txt`)
+- Outbound webhook / notification events from `*notification.events.ts`
+- NestJS controller ↔ OpenAPI and gateway ↔ AsyncAPI `implements` heuristics
 
 ## Generate
 
