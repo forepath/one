@@ -190,4 +190,95 @@ describe('AuthService', () => {
     expect(req.request.method).toBe('POST');
     req.flush({ id: 'user-1', email: 'a@b.com', role: 'user' });
   });
+
+  it('listTokenScopes GETs /auth/token-scopes', (done) => {
+    service.listTokenScopes().subscribe((result) => {
+      expect(result).toEqual([{ scope: 'read' }]);
+      done();
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/auth/token-scopes`);
+
+    expect(req.request.method).toBe('GET');
+    req.flush([{ scope: 'read' }]);
+  });
+
+  it('listPersonalAccessTokens GETs /auth/tokens', (done) => {
+    service.listPersonalAccessTokens().subscribe(() => done());
+
+    const req = httpMock.expectOne(`${apiUrl}/auth/tokens`);
+
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
+
+  it('createPersonalAccessToken POSTs to /auth/tokens', (done) => {
+    const dto = { name: 'CI', scopes: ['read'] };
+
+    service.createPersonalAccessToken(dto).subscribe(() => done());
+
+    const req = httpMock.expectOne(`${apiUrl}/auth/tokens`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(dto);
+    req.flush({
+      id: '1',
+      name: 'CI',
+      tokenPrefix: 'fp_pat_x',
+      scopes: ['read'],
+      expiresAt: null,
+      revokedAt: null,
+      lastUsedAt: null,
+      createdAt: '2024-01-01T00:00:00.000Z',
+      token: 'fp_pat_secret',
+    });
+  });
+
+  it('revokePersonalAccessToken DELETEs /auth/tokens/:id', (done) => {
+    service.revokePersonalAccessToken('token-1').subscribe(() => done());
+
+    const req = httpMock.expectOne(`${apiUrl}/auth/tokens/token-1`);
+
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+  });
+
+  it('updatePersonalAccessToken PATCHes /auth/tokens/:id', (done) => {
+    const dto = { name: 'CI', scopes: ['write'] };
+
+    service.updatePersonalAccessToken('token-1', dto).subscribe(() => done());
+
+    const req = httpMock.expectOne(`${apiUrl}/auth/tokens/token-1`);
+
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual(dto);
+    req.flush({
+      id: 'token-1',
+      name: 'CI',
+      tokenPrefix: 'fp_pat_x',
+      scopes: ['write'],
+      expiresAt: null,
+      revokedAt: null,
+      lastUsedAt: null,
+      createdAt: '2024-01-01T00:00:00.000Z',
+    });
+  });
+
+  it('listUserPersonalAccessTokens GETs /users/:userId/tokens', (done) => {
+    service.listUserPersonalAccessTokens('user-1').subscribe(() => done());
+
+    const req = httpMock.expectOne(`${apiUrl}/users/user-1/tokens`);
+
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
+
+  it('revokeUserPersonalAccessToken DELETEs /users/:userId/tokens/:tokenId', (done) => {
+    service.revokeUserPersonalAccessToken('user-1', 'token-1').subscribe(() => done());
+
+    const req = httpMock.expectOne(`${apiUrl}/users/user-1/tokens/token-1`);
+
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+  });
 });

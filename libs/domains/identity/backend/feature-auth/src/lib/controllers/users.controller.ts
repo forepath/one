@@ -16,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 
+import { RequireScopes } from '../decorators/require-scopes.decorator';
 import { CreateUserDto } from '../dto/auth/create-user.dto';
 import { UpdateUserDto } from '../dto/auth/update-user.dto';
 import { UsersAuthGuard } from '../guards/users-auth.guard';
@@ -25,6 +26,7 @@ import { UsersService } from '../services/users.service';
 @UseGuards(UsersAuthGuard)
 @KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
+@RequireScopes('users:admin')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

@@ -24,6 +24,7 @@ import {
   ensureClientAccess,
   ensureWorkspaceManagementAccess,
   getUserFromRequest,
+  RequireScopes,
   type RequestWithUser,
   UserRole,
 } from '@forepath/identity/backend';
@@ -87,6 +88,7 @@ export class ClientsController {
    * @returns Array of client response DTOs
    */
   @Get()
+  @RequireScopes('clients:read')
   async getClients(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
@@ -100,6 +102,7 @@ export class ClientsController {
       userInfo.userId,
       userInfo.userRole,
       userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
     );
   }
 
@@ -112,6 +115,7 @@ export class ClientsController {
    * @returns The created client response DTO with generated API key (if applicable)
    */
   @Post()
+  @RequireScopes('clients:write')
   async createClient(
     @Body() createClientDto: CreateClientDto,
     @Req() req?: RequestWithUser,
@@ -131,6 +135,7 @@ export class ClientsController {
    * @returns Array of agent response DTOs
    */
   @Get(':id/agents')
+  @RequireScopes('agents:read')
   async getClientAgents(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -145,6 +150,7 @@ export class ClientsController {
       userInfo.userId,
       userInfo.userRole,
       userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
     );
 
     if (!access.hasAccess) {
@@ -164,6 +170,7 @@ export class ClientsController {
    * @returns Map of model id to display name
    */
   @Get(':id/agents/:agentId/models')
+  @RequireScopes('agents:read')
   async listClientAgentModels(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -177,6 +184,7 @@ export class ClientsController {
       userInfo.userId,
       userInfo.userRole,
       userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
     );
 
     if (!access.hasAccess) {
@@ -195,6 +203,7 @@ export class ClientsController {
    * @returns The agent response DTO
    */
   @Get(':id/agents/:agentId')
+  @RequireScopes('agents:read')
   async getClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -208,6 +217,7 @@ export class ClientsController {
       userInfo.userId,
       userInfo.userRole,
       userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
     );
 
     if (!access.hasAccess) {
@@ -227,6 +237,7 @@ export class ClientsController {
    * @returns The updated agent response DTO
    */
   @Post(':id/agents/:agentId')
+  @RequireScopes('agents:write')
   async updateClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -249,6 +260,7 @@ export class ClientsController {
    * @returns The created agent response DTO with generated password
    */
   @Post(':id/agents')
+  @RequireScopes('agents:write')
   async createClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() createAgentDto: CreateAgentDto,
@@ -269,6 +281,7 @@ export class ClientsController {
    */
   @Delete(':id/agents/:agentId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agents:write')
   async deleteClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -289,6 +302,7 @@ export class ClientsController {
    * @returns The agent response DTO
    */
   @Post(':id/agents/:agentId/start')
+  @RequireScopes('agents:lifecycle')
   async startClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -308,6 +322,7 @@ export class ClientsController {
    * @returns The agent response DTO
    */
   @Post(':id/agents/:agentId/stop')
+  @RequireScopes('agents:lifecycle')
   async stopClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -327,6 +342,7 @@ export class ClientsController {
    * @returns The agent response DTO
    */
   @Post(':id/agents/:agentId/restart')
+  @RequireScopes('agents:lifecycle')
   async restartClientAgent(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -345,13 +361,16 @@ export class ClientsController {
    * @returns The client response DTO
    */
   @Get(':id')
+  @RequireScopes('clients:read')
   async getClient(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req?: RequestWithUser,
   ): Promise<ClientResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
 
-    return await this.clientsService.findOne(id, userInfo.userId, userInfo.userRole, userInfo.isApiKeyAuth);
+    return await this.clientsService.findOne(id, userInfo.userId, userInfo.userRole, userInfo.isApiKeyAuth, {
+      amr: userInfo.amr,
+    });
   }
 
   /**
@@ -363,6 +382,7 @@ export class ClientsController {
    * @returns The updated client response DTO
    */
   @Post(':id')
+  @RequireScopes('clients:write')
   async updateClient(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateClientDto: UpdateClientDto,
@@ -376,6 +396,7 @@ export class ClientsController {
       userInfo.userId,
       userInfo.userRole,
       userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
     );
   }
 
@@ -388,6 +409,7 @@ export class ClientsController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('clients:write')
   async deleteClient(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req?: RequestWithUser,
@@ -447,6 +469,7 @@ export class ClientsController {
    * @returns File content (base64-encoded) and encoding type
    */
   @Get(':id/agents/:agentId/files/*path')
+  @RequireScopes('agents:files')
   async readFile(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -483,6 +506,7 @@ export class ClientsController {
    */
   @Put(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agents:files')
   async writeFile(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -521,6 +545,7 @@ export class ClientsController {
    * @returns Array of file nodes
    */
   @Get(':id/agents/:agentId/files')
+  @RequireScopes('agents:files')
   async listDirectory(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -544,6 +569,7 @@ export class ClientsController {
    */
   @Post(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.CREATED)
+  @RequireScopes('agents:files')
   async createFileOrDirectory(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -588,6 +614,7 @@ export class ClientsController {
    */
   @Delete(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agents:files')
   async deleteFileOrDirectory(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -626,6 +653,7 @@ export class ClientsController {
    */
   @Patch(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agents:files')
   async moveFileOrDirectory(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -663,6 +691,7 @@ export class ClientsController {
    * @returns Array of provider information
    */
   @Get('provisioning/providers')
+  @RequireScopes('clients:read')
   async getProvisioningProviders(): Promise<Array<{ type: string; displayName: string }>> {
     return this.provisioningProviderFactory.getAllProviders().map((provider) => ({
       type: provider.getType(),
@@ -676,6 +705,7 @@ export class ClientsController {
    * @returns Array of server types with specifications and pricing
    */
   @Get('provisioning/providers/:providerType/server-types')
+  @RequireScopes('clients:read')
   async getServerTypes(@Param('providerType') providerType: string) {
     if (!this.provisioningProviderFactory.hasProvider(providerType)) {
       throw new BadRequestException(
@@ -694,6 +724,7 @@ export class ClientsController {
    * @returns Array of locations/regions with human-readable labels
    */
   @Get('provisioning/providers/:providerType/locations')
+  @RequireScopes('clients:read')
   async getLocations(@Param('providerType') providerType: string) {
     if (!this.provisioningProviderFactory.hasProvider(providerType)) {
       throw new BadRequestException(
@@ -714,6 +745,7 @@ export class ClientsController {
    * @returns Provisioned server response with client information
    */
   @Post('provisioning/provision')
+  @RequireScopes('clients:write')
   async provisionServer(
     @Body() provisionServerDto: ProvisionServerDto,
     @Req() req?: RequestWithUser,
@@ -736,6 +768,7 @@ export class ClientsController {
    * @returns Server information
    */
   @Get(':id/provisioning/info')
+  @RequireScopes('clients:read')
   async getServerInfo(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Req() req?: RequestWithUser) {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
 
@@ -750,6 +783,7 @@ export class ClientsController {
    */
   @Delete(':id/provisioning')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('clients:write')
   async deleteProvisionedServer(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req?: RequestWithUser,
@@ -771,6 +805,7 @@ export class ClientsController {
    * @returns Array of environment variable response DTOs
    */
   @Get(':id/agents/:agentId/environment')
+  @RequireScopes('agents:environment')
   async getClientAgentEnvironmentVariables(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -797,6 +832,7 @@ export class ClientsController {
    * @returns Count of environment variables
    */
   @Get(':id/agents/:agentId/environment/count')
+  @RequireScopes('agents:environment')
   async countClientAgentEnvironmentVariables(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -818,6 +854,7 @@ export class ClientsController {
    */
   @Post(':id/agents/:agentId/environment')
   @HttpCode(HttpStatus.CREATED)
+  @RequireScopes('agents:environment')
   async createClientAgentEnvironmentVariable(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -840,6 +877,7 @@ export class ClientsController {
    * @returns The updated environment variable response DTO
    */
   @Put(':id/agents/:agentId/environment/:envVarId')
+  @RequireScopes('agents:environment')
   async updateClientAgentEnvironmentVariable(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -867,6 +905,7 @@ export class ClientsController {
    */
   @Delete(':id/agents/:agentId/environment/:envVarId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agents:environment')
   async deleteClientAgentEnvironmentVariable(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -887,6 +926,7 @@ export class ClientsController {
    */
   @Delete(':id/agents/:agentId/environment')
   @HttpCode(HttpStatus.OK)
+  @RequireScopes('agents:environment')
   async deleteAllClientAgentEnvironmentVariables(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
@@ -905,6 +945,7 @@ export class ClientsController {
    * @returns Array of client-user relationships
    */
   @Get(':id/users')
+  @RequireScopes('clients:read')
   async getClientUsers(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Req() req?: RequestWithUser,
@@ -917,6 +958,7 @@ export class ClientsController {
       userInfo.userId,
       userInfo.userRole,
       userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
     );
 
     if (!access.hasAccess) {
@@ -936,6 +978,7 @@ export class ClientsController {
    */
   @Post(':id/users')
   @HttpCode(HttpStatus.CREATED)
+  @RequireScopes('clients:write')
   async addClientUser(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() addClientUserDto: AddClientUserDto,
@@ -949,6 +992,7 @@ export class ClientsController {
       userInfo.userId,
       userInfo.userRole,
       userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
     );
 
     if (!access.hasAccess) {
@@ -965,6 +1009,7 @@ export class ClientsController {
       userInfo.userRole || UserRole.USER,
       isClientCreator,
       access.clientUserRole,
+      { amr: userInfo.amr },
     );
   }
 
@@ -977,6 +1022,7 @@ export class ClientsController {
    */
   @Delete(':id/users/:relationshipId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('clients:write')
   async removeClientUser(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('relationshipId', new ParseUUIDPipe({ version: '4' })) relationshipId: string,
@@ -990,6 +1036,7 @@ export class ClientsController {
       userInfo.userId,
       userInfo.userRole,
       userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
     );
 
     if (!access.hasAccess) {
@@ -1006,6 +1053,7 @@ export class ClientsController {
       userInfo.userRole || UserRole.USER,
       isClientCreator,
       access.clientUserRole,
+      { amr: userInfo.amr },
     );
   }
 }

@@ -910,6 +910,14 @@
         <source>Users</source>
         <target>Benutzer</target>
       </trans-unit>
+      <trans-unit id="featureContainer-tokensTitle" datatype="html">
+        <source>Access Tokens</source>
+        <target>Zugriffstoken</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-tokens" datatype="html">
+        <source>Tokens</source>
+        <target>Token</target>
+      </trans-unit>
       <trans-unit id="featureContainer-adminProfilesTitle" datatype="html">
         <source>Billing Profiles</source>
         <target>Abrechnungsprofile</target>
@@ -2294,6 +2302,10 @@
         <source>User Management</source>
         <target>Benutzerverwaltung</target>
       </trans-unit>
+      <trans-unit id="featureAuth-tokensPage" datatype="html">
+        <source>Personal Access Tokens</source>
+        <target>Persönliche Zugriffstoken</target>
+      </trans-unit>
       <trans-unit id="featureLogin-title" datatype="html">
         <source>Login</source>
         <target>Anmelden</target>
@@ -2357,6 +2369,10 @@
       <trans-unit id="featureLogin-submit" datatype="html">
         <source>Login</source>
         <target>Anmelden</target>
+      </trans-unit>
+      <trans-unit id="featureLogin-patNotAllowed" datatype="html">
+        <source>Personal access tokens cannot be used to sign in to the console. Use your account password instead.</source>
+        <target>Persönliche Zugriffstoken können nicht zur Anmeldung an der Konsole verwendet werden. Verwenden Sie stattdessen Ihr Kontopasswort.</target>
       </trans-unit>
       <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
         <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
@@ -2815,6 +2831,122 @@
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
         <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-title" datatype="html">
+        <source>Personal Access Tokens</source>
+        <target>Persönliche Zugriffstoken</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-addTokenTitle" datatype="html">
+        <source>Create token</source>
+        <target>Token erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-searchPlaceholder" datatype="html">
+        <source>Search tokens</source>
+        <target>Token suchen</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-loading" datatype="html">
+        <source>Loading tokens...</source>
+        <target>Token werden geladen...</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-empty" datatype="html">
+        <source>No personal access tokens</source>
+        <target>Keine persönlichen Zugriffstoken</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-scopes" datatype="html">
+        <source>scopes</source>
+        <target>Berechtigungen</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-created" datatype="html">
+        <source>Created</source>
+        <target>Erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-expires" datatype="html">
+        <source>Expires</source>
+        <target>Läuft ab</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-noExpiry" datatype="html">
+        <source>No expiry</source>
+        <target>Kein Ablaufdatum</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-lastUsed" datatype="html">
+        <source>Last used</source>
+        <target>Zuletzt verwendet</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-revokeTitle" datatype="html">
+        <source>Revoke token</source>
+        <target>Token widerrufen</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-createTitle" datatype="html">
+        <source>Create personal access token</source>
+        <target>Persönliches Zugriffstoken erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-closeAriaLabel" datatype="html">
+        <source>Close</source>
+        <target>Schließen</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-plaintextTitle" datatype="html">
+        <source>Token value</source>
+        <target>Tokenwert</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-plaintextHint" datatype="html">
+        <source>Copy this token now. It will not be shown again.</source>
+        <target>Kopieren Sie dieses Token jetzt. Es wird nicht erneut angezeigt.</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-copied" datatype="html">
+        <source>Copied</source>
+        <target>Kopiert</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-copy" datatype="html">
+        <source>Copy</source>
+        <target>Kopieren</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-done" datatype="html">
+        <source>Done</source>
+        <target>Fertig</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-nameLabel" datatype="html">
+        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-expiresAtLabel" datatype="html">
+        <source>Expires at</source>
+        <target>Läuft ab am</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-expiresAtHint" datatype="html">
+        <source>Optional. Leave empty for a token that does not expire.</source>
+        <target>Optional. Leer lassen für ein Token ohne Ablaufdatum.</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-scopesLabel" datatype="html">
+        <source>Scopes <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <target>Berechtigungen <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-loadingScopes" datatype="html">
+        <source>Loading scopes...</source>
+        <target>Berechtigungen werden geladen...</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-noScopes" datatype="html">
+        <source>No scopes available</source>
+        <target>Keine Berechtigungen verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-create" datatype="html">
+        <source>Create</source>
+        <target>Erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-revokeModalTitle" datatype="html">
+        <source>Revoke token</source>
+        <target>Token widerrufen</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-revokeConfirm" datatype="html">
+        <source>Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>?</source>
+        <target>Möchten Sie das Token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich widerrufen?</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-revoke" datatype="html">
+        <source>Revoke</source>
+        <target>Widerrufen</target>
       </trans-unit>
       <trans-unit id="featureDocsBreadcrumbs-documentation" datatype="html">
         <source>Documentation</source>

@@ -74,6 +74,18 @@ describe('FilterRulesController', () => {
       await controller.list(adminReq);
       expect(mockService.findAll).toHaveBeenCalled();
     });
+
+    it('allows PAT admin sessions through assertAdmin and relies on RequireScopes for PAT scope enforcement', async () => {
+      getUserFromRequestMock.mockReturnValueOnce({
+        userId: 'user-1',
+        userRole: identity.UserRole.ADMIN,
+        isApiKeyAuth: false,
+        amr: ['pat'],
+      } as identity.UserInfoFromRequest);
+      (mockService.findAll as jest.Mock).mockResolvedValue([]);
+      await controller.list(adminReq);
+      expect(mockService.findAll).toHaveBeenCalled();
+    });
   });
 
   describe('list', () => {

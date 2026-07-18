@@ -1,4 +1,4 @@
-import { getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
+import { RequireScopes, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
 import { Controller, ForbiddenException, Get, ParseIntPipe, Query, Req } from '@nestjs/common';
 
 import { ChatDirection } from '../entities/statistics-chat-io.entity';
@@ -12,6 +12,7 @@ import { StatisticsQueryService } from '../services/statistics-query.service';
  * When clientId query param is provided, validates the user has access to that client.
  */
 @Controller('statistics')
+@RequireScopes('statistics:read')
 export class StatisticsController {
   constructor(
     private readonly clientsService: ClientsService,
@@ -24,6 +25,7 @@ export class StatisticsController {
       userInfo.userId,
       userInfo.userRole,
       userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
     );
 
     if (clientId) {

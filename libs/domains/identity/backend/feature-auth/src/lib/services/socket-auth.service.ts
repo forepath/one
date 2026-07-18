@@ -91,6 +91,19 @@ export class SocketAuthService {
   }
 
   private async validateKeycloakToken(token: string, tenantId?: string): Promise<SocketUserInfo | null> {
+    // Reject app-signed PAT JWTs explicitly (same policy as users-mode sockets).
+    if (this.jwtService) {
+      try {
+        const appPayload = await this.jwtService.verifyAsync<UsersJwtSessionPayload>(token);
+
+        if ((appPayload.amr ?? []).includes('pat')) {
+          return null;
+        }
+      } catch {
+        // Not an app-signed JWT — continue with Keycloak OIDC validation.
+      }
+    }
+
     // Use exact same validation logic as HTTP AuthGuard from nest-keycloak-connect
     const tokenValidation = this.keycloakOpts?.tokenValidation || TokenValidation.ONLINE;
     const gm = this.keycloak!.grantManager;
@@ -180,6 +193,12 @@ export class SocketAuthService {
   private async validateUsersToken(token: string, tenantId?: string): Promise<SocketUserInfo | null> {
     try {
       const payload = await this.jwtService!.verifyAsync<UsersJwtSessionPayload>(token);
+
+      // Interactive console sockets reject machine (PAT) sessions.
+      if ((payload.amr ?? ['pwd']).includes('pat')) {
+        return null;
+      }
+
       const entity = await this.usersRepository.findById(payload.sub);
 
       if (!entity || entity.lockedAt || !this.userMatchesTenant(entity, tenantId)) {
@@ -198,15 +217,18 @@ export class SocketAuthService {
 
       const roles = payload.roles ?? ['user'];
       const isAdmin = roles.includes('admin');
+      const amr = payload.amr ?? ['pwd'];
 
       return {
         userId: payload.sub,
         userRole: isAdmin ? UserRole.ADMIN : UserRole.USER,
         isApiKeyAuth: false,
+        amr,
         user: {
           id: payload.sub,
           email: payload.email,
           roles,
+          amr,
         },
       };
     } catch {

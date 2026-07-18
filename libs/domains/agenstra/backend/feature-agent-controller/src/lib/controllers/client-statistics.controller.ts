@@ -1,4 +1,9 @@
-import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
+import {
+  ClientUsersRepository,
+  ensureClientAccess,
+  RequireScopes,
+  type RequestWithUser,
+} from '@forepath/identity/backend';
 import { Controller, Get, Param, ParseIntPipe, ParseUUIDPipe, Query, Req } from '@nestjs/common';
 
 import { ChatDirection } from '../entities/statistics-chat-io.entity';
@@ -11,6 +16,7 @@ import { StatisticsQueryService } from '../services/statistics-query.service';
  * All endpoints require access to the client via ensureClientAccess.
  */
 @Controller('clients/:clientId/statistics')
+@RequireScopes('statistics:read')
 export class ClientStatisticsController {
   constructor(
     private readonly clientsRepository: ClientsRepository,

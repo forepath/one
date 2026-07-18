@@ -1,4 +1,4 @@
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -45,6 +45,7 @@ export class ServiceTypesController {
    * Get server types with specs and pricing for a provider (e.g. hetzner).
    * Used by the billing console to show server type dropdown with price and to auto-set base price.
    */
+  @RequireScopes('subscriptions:read')
   @Get('providers/:providerId/server-types')
   async getProviderServerTypes(
     @Param('providerId') providerId: string,
@@ -69,6 +70,7 @@ export class ServiceTypesController {
    * Get geography options (locations/regions) with human-readable labels for a provider.
    * Used by the billing console for location/region enum dropdowns.
    */
+  @RequireScopes('subscriptions:read')
   @Get('providers/:providerId/locations')
   async getProviderLocations(
     @Param('providerId') providerId: string,
@@ -93,11 +95,13 @@ export class ServiceTypesController {
    * Get all registered provider details (id, displayName, configSchema).
    * Used by clients to build provider selectors and validate provider-specific config.
    */
+  @RequireScopes('subscriptions:read')
   @Get('providers')
   async getProviders(): Promise<ProviderDetailDto[]> {
     return this.providerRegistry.getProviders();
   }
 
+  @RequireScopes('subscriptions:read')
   @Get()
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -108,6 +112,7 @@ export class ServiceTypesController {
     return rows.map((row) => this.mapToResponse(row));
   }
 
+  @RequireScopes('subscriptions:read')
   @Get(':id')
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<ServiceTypeResponseDto> {
     const row = await this.serviceTypesRepository.findByIdOrThrow(id);
@@ -115,6 +120,7 @@ export class ServiceTypesController {
     return this.mapToResponse(row);
   }
 
+  @RequireScopes('catalog:write')
   @Post()
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -134,6 +140,7 @@ export class ServiceTypesController {
     return this.mapToResponse(row);
   }
 
+  @RequireScopes('catalog:write')
   @Post(':id')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -162,6 +169,7 @@ export class ServiceTypesController {
     return this.mapToResponse(row);
   }
 
+  @RequireScopes('catalog:write')
   @Delete(':id')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)

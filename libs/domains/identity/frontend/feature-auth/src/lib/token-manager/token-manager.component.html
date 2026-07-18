@@ -1,0 +1,383 @@
+<div class="token-manager-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <div>
+      <h5 class="mb-0 fw-semibold" i18n="@@featureTokenManager-title">Personal Access Tokens</h5>
+    </div>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      (click)="onAddToken()"
+      [disabled]="(saving$ | async) === true"
+      i18n-title="@@featureTokenManager-addTokenTitle"
+      title="Create token"
+      i18n-aria-label="@@featureTokenManager-addTokenTitle"
+      aria-label="Create token"
+    >
+      <i class="bi bi-plus" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <form #searchForm="ngForm">
+    <div class="input-group search-input-container border-bottom">
+      <i class="bi bi-search"></i>
+      <input
+        type="text"
+        class="form-control border-0 search-input"
+        placeholder="Search tokens"
+        i18n-placeholder="@@featureTokenManager-searchPlaceholder"
+        name="search"
+        [(ngModel)]="searchQuery"
+        required
+      />
+    </div>
+  </form>
+
+  <div class="flex-grow-1 overflow-auto">
+    @if (loading$ | async) {
+      <div class="d-flex justify-content-center align-items-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden" i18n="@@featureTokenManager-loading">Loading tokens...</span>
+        </div>
+      </div>
+    } @else {
+      @if (error(); as errorMessage) {
+        <div class="alert alert-danger m-3" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          {{ errorMessage }}
+        </div>
+      }
+
+      @if (tokens().length === 0) {
+        <div class="d-flex justify-content-center align-items-center p-4">
+          <div class="text-center text-muted">
+            <i class="bi bi-key fs-1 d-block mb-2"></i>
+            <p class="mb-0" i18n="@@featureTokenManager-empty">No personal access tokens</p>
+          </div>
+        </div>
+      } @else {
+        <div class="list-group list-group-flush">
+          @for (token of tokens(); track token.id) {
+            <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3">
+              <div class="min-w-0">
+                <div class="fw-semibold mb-1">{{ token.name }}</div>
+                <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+                  <span class="info-badge scopes-badge text-muted bg-body-tertiary py-1 px-2 rounded" tabindex="0">
+                    {{ token.scopes.length }}
+                    <ng-container i18n="@@featureTokenManager-scopes">scopes</ng-container>
+                    <span class="scopes-tooltip" role="tooltip">{{ token.scopes.join('\n') }}</span>
+                  </span>
+                  <span>
+                    <i class="bi bi-calendar-plus me-1" aria-hidden="true"></i>{{ formatDate(token.createdAt) }}
+                  </span>
+                  @if (token.expiresAt) {
+                    <span>
+                      <i class="bi bi-calendar-x me-1" aria-hidden="true"></i>{{ formatDate(token.expiresAt) }}
+                    </span>
+                  } @else {
+                    <span>
+                      <i class="bi bi-infinity me-1" aria-hidden="true"></i>
+                      <ng-container i18n="@@featureTokenManager-noExpiry">No expiry</ng-container>
+                    </span>
+                  }
+                  @if (token.lastUsedAt) {
+                    <span>
+                      <i class="bi bi-clock-history me-1" aria-hidden="true"></i>{{ formatDate(token.lastUsedAt) }}
+                    </span>
+                  }
+                </div>
+              </div>
+              <div class="btn-group btn-group-sm flex-shrink-0">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  (click)="onEditToken(token)"
+                  i18n-title="@@featureTokenManager-editButtonTitle"
+                  title="Edit token"
+                >
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger"
+                  (click)="onRevokeToken(token)"
+                  [disabled]="(revoking$ | async) === true"
+                  i18n-title="@@featureTokenManager-revokeTitle"
+                  title="Revoke token"
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="createTokenModal"
+  tabindex="-1"
+  aria-labelledby="createTokenModalLabel"
+  aria-hidden="true"
+  #createTokenModal
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createTokenModalLabel" i18n="@@featureTokenManager-createTitle">
+          Create personal access token
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="onCreateDone()"
+          i18n-aria-label="@@featureTokenManager-closeAriaLabel"
+          aria-label="Close"
+          [disabled]="(saving$ | async) === true"
+        ></button>
+      </div>
+
+      @if (lastCreatedPlaintext(); as plaintext) {
+        <div class="modal-body">
+          <div class="alert alert-warning" role="alert">
+            <div class="fw-semibold mb-2" i18n="@@featureTokenManager-plaintextTitle">Token value</div>
+            <p class="mb-2" i18n="@@featureTokenManager-plaintextHint">
+              Copy this token now. It will not be shown again.
+            </p>
+            <code class="d-block p-2 bg-body-tertiary rounded user-select-all text-break">{{ plaintext }}</code>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="copyPlaintext()">
+            @if (copied()) {
+              <span i18n="@@featureTokenManager-copied">Copied</span>
+            } @else {
+              <span i18n="@@featureTokenManager-copy">Copy</span>
+            }
+          </button>
+          <button type="button" class="btn btn-primary" (click)="onCreateDone()" i18n="@@featureTokenManager-done">
+            Done
+          </button>
+        </div>
+      } @else {
+        <form (ngSubmit)="onSubmitCreateToken()">
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="createTokenName" i18n="@@featureTokenManager-nameLabel"
+                  >Name <span class="text-danger">*</span></label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="createTokenName"
+                  name="createTokenName"
+                  [(ngModel)]="createForm.name"
+                  required
+                  [disabled]="(saving$ | async) === true"
+                />
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="createTokenExpiresAt" i18n="@@featureTokenManager-expiresAtLabel"
+                  >Expires at</label
+                >
+                <input
+                  type="datetime-local"
+                  class="form-control"
+                  id="createTokenExpiresAt"
+                  name="createTokenExpiresAt"
+                  [(ngModel)]="createForm.expiresAt"
+                  [disabled]="(saving$ | async) === true"
+                />
+                <small class="form-text text-muted" i18n="@@featureTokenManager-expiresAtHint"
+                  >Optional. Leave empty for a token that does not expire.</small
+                >
+              </div>
+              <div class="col-12">
+                <label class="form-label" i18n="@@featureTokenManager-scopesLabel"
+                  >Scopes <span class="text-danger">*</span></label
+                >
+                @if ((scopesLoading$ | async) === true) {
+                  <div class="text-muted small" i18n="@@featureTokenManager-loadingScopes">Loading scopes...</div>
+                } @else if (scopes().length === 0) {
+                  <div class="text-muted small" i18n="@@featureTokenManager-noScopes">No scopes available</div>
+                } @else {
+                  <div class="scope-list border rounded p-2">
+                    @for (scopeItem of scopes(); track scopeItem.scope) {
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          [id]="'create-scope-' + scopeItem.scope"
+                          [checked]="isScopeSelected(createForm, scopeItem.scope)"
+                          (change)="toggleScope(createForm, scopeItem.scope, $any($event.target).checked)"
+                          [disabled]="(saving$ | async) === true"
+                        />
+                        <label class="form-check-label" [for]="'create-scope-' + scopeItem.scope">
+                          <span class="fw-medium">{{ scopeItem.scope }}</span>
+                        </label>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="(saving$ | async) === true || !isFormValid(createForm)"
+            >
+              @if (saving$ | async) {
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+              }
+              <span i18n="@@featureTokenManager-create">Create</span>
+            </button>
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="editTokenModal"
+  tabindex="-1"
+  aria-labelledby="editTokenModalLabel"
+  aria-hidden="true"
+  #editTokenModal
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTokenModalLabel" i18n="@@featureTokenManager-editModalTitle">
+          Edit personal access token
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cancelEditToken()"
+          i18n-aria-label="@@featureTokenManager-closeAriaLabel"
+          aria-label="Close"
+          [disabled]="(saving$ | async) === true"
+        ></button>
+      </div>
+      <form (ngSubmit)="onSubmitEditToken()">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label" for="editTokenName" i18n="@@featureTokenManager-nameLabel"
+                >Name <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="editTokenName"
+                name="editTokenName"
+                [(ngModel)]="editForm.name"
+                required
+                [disabled]="(saving$ | async) === true"
+              />
+            </div>
+            <div class="col-12">
+              <label class="form-label" i18n="@@featureTokenManager-scopesLabel"
+                >Scopes <span class="text-danger">*</span></label
+              >
+              @if ((scopesLoading$ | async) === true) {
+                <div class="text-muted small" i18n="@@featureTokenManager-loadingScopes">Loading scopes...</div>
+              } @else if (scopes().length === 0) {
+                <div class="text-muted small" i18n="@@featureTokenManager-noScopes">No scopes available</div>
+              } @else {
+                <div class="scope-list border rounded p-2">
+                  @for (scopeItem of scopes(); track scopeItem.scope) {
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        [id]="'edit-scope-' + scopeItem.scope"
+                        [checked]="isScopeSelected(editForm, scopeItem.scope)"
+                        (change)="toggleScope(editForm, scopeItem.scope, $any($event.target).checked)"
+                        [disabled]="(saving$ | async) === true"
+                      />
+                      <label class="form-check-label" [for]="'edit-scope-' + scopeItem.scope">
+                        <span class="fw-medium">{{ scopeItem.scope }}</span>
+                      </label>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="(saving$ | async) === true || !isFormValid(editForm)"
+          >
+            @if (saving$ | async) {
+              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            }
+            <span i18n="@@featureTokenManager-update">Update</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="revokeTokenModal"
+  tabindex="-1"
+  aria-labelledby="revokeTokenModalLabel"
+  aria-hidden="true"
+  #revokeTokenModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="revokeTokenModalLabel" i18n="@@featureTokenManager-revokeModalTitle">
+          Revoke token
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cancelRevokeToken()"
+          i18n-aria-label="@@featureTokenManager-closeAriaLabel"
+          aria-label="Close"
+          [disabled]="(revoking$ | async) === true"
+        ></button>
+      </div>
+      <div class="modal-body">
+        @if (tokenToRevoke) {
+          <p i18n="@@featureTokenManager-revokeConfirm">
+            Are you sure you want to revoke the token <strong>{{ tokenToRevoke.name }}</strong
+            >?
+          </p>
+        }
+        <p class="text-danger mb-0">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <span i18n="@@featureTokenManager-cannotUndo">This action cannot be undone.</span>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="confirmRevokeToken()"
+          [disabled]="(revoking$ | async) === true"
+        >
+          @if (revoking$ | async) {
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          }
+          <span i18n="@@featureTokenManager-revoke">Revoke</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-import { type RequestWithUser } from '@forepath/identity/backend';
+import { RequireScopes, type RequestWithUser } from '@forepath/identity/backend';
 import { Body, Controller, Get, Param, ParseUUIDPipe, Put, Req } from '@nestjs/common';
 
 import { UpsertClientAgentAutonomyDto } from '../dto/ticket-automation';
@@ -9,6 +9,7 @@ export class ClientAgentAutonomyController {
   constructor(private readonly clientAgentAutonomyService: ClientAgentAutonomyService) {}
 
   @Get()
+  @RequireScopes('agents:read')
   async get(
     @Param('clientId', ParseUUIDPipe) clientId: string,
     @Param('agentId', ParseUUIDPipe) agentId: string,
@@ -18,6 +19,7 @@ export class ClientAgentAutonomyController {
   }
 
   @Put()
+  @RequireScopes('agents:write')
   async put(
     @Param('clientId', ParseUUIDPipe) clientId: string,
     @Param('agentId', ParseUUIDPipe) agentId: string,

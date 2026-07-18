@@ -6,8 +6,11 @@ import {
   checkAuthentication$,
   confirmEmail$,
   confirmEmailSuccessRedirect$,
+  createPersonalAccessToken$,
   createUser$,
   deleteUser$,
+  loadPersonalAccessTokenScopes$,
+  loadPersonalAccessTokens$,
   loadUsers$,
   loadUsersBatch$,
   lockUser$,
@@ -15,13 +18,17 @@ import {
   loginSuccessRedirect$,
   logout$,
   logoutSuccessRedirect$,
+  PersonalAccessTokensFacade,
+  personalAccessTokensReducer,
   register$,
   registerSuccessRedirect$,
   requestPasswordReset$,
   requestPasswordResetSuccessRedirect$,
   resetPassword$,
   resetPasswordSuccessRedirect$,
+  revokePersonalAccessToken$,
   unlockUser$,
+  updatePersonalAccessToken$,
   updateUser$,
 } from '@forepath/identity/frontend';
 import { buildPageTitle } from '@forepath/shared/frontend/util-configuration';
@@ -32,12 +39,14 @@ import { IdentityConfirmEmailComponent } from './confirm-email/confirm-email.com
 import { adminGuard } from './guards/admin.guard';
 import { authGuard } from './guards/auth.guard';
 import { loginGuard } from './guards/login.guard';
+import { patUiGuard } from './guards/pat-ui.guard';
 import { signupDisabledGuard } from './guards/signup-disabled.guard';
 import { IdentityLoginComponent } from './login/login.component';
 import { IdentityRegisterComponent } from './register/register.component';
 import { IdentityRequestPasswordResetComponent } from './request-password-reset/request-password-reset.component';
 import { IdentityRequestPasswordResetConfirmationComponent } from './request-password-reset-confirmation/request-password-reset-confirmation.component';
 import { IdentityResetPasswordComponent } from './reset-password/reset-password.component';
+import { IdentityTokenManagerComponent } from './token-manager/token-manager.component';
 import { IdentityUserManagerComponent } from './user-manager/user-manager.component';
 
 /**
@@ -107,6 +116,12 @@ export const identityAuthRoutes: Route[] = [
     component: IdentityUserManagerComponent,
     title: () => buildPageTitle($localize`:@@featureAuth-usersPage:User Management`),
   },
+  {
+    path: 'settings/tokens',
+    canActivate: [authGuard, patUiGuard],
+    component: IdentityTokenManagerComponent,
+    title: () => buildPageTitle($localize`:@@featureAuth-tokensPage:Personal Access Tokens`),
+  },
 ];
 
 /**
@@ -135,7 +150,9 @@ export const identityAuthRoutes: Route[] = [
  */
 export const identityAuthProviders = [
   AuthenticationFacade,
+  PersonalAccessTokensFacade,
   provideState('authentication', authenticationReducer),
+  provideState('personalAccessTokens', personalAccessTokensReducer),
   provideEffects({
     login$,
     loginSuccessRedirect$,
@@ -158,5 +175,10 @@ export const identityAuthProviders = [
     deleteUser$,
     lockUser$,
     unlockUser$,
+    loadPersonalAccessTokens$,
+    loadPersonalAccessTokenScopes$,
+    createPersonalAccessToken$,
+    updatePersonalAccessToken$,
+    revokePersonalAccessToken$,
   }),
 ];

@@ -1,4 +1,4 @@
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -21,6 +21,7 @@ import { CloudInitConfigsRepository } from '../repositories/cloud-init-configs.r
 import { CloudInitConfigService } from '../services/cloud-init-config.service';
 
 @Controller('cloud-init-configs')
+@RequireScopes('catalog:write')
 export class CloudInitConfigsController {
   constructor(
     private readonly cloudInitConfigsRepository: CloudInitConfigsRepository,

@@ -1,7 +1,9 @@
 import { Public } from '@forepath/identity/backend';
 import { BadRequestException, Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 
+import { RequirePasswordSession } from '../decorators/require-scopes.decorator';
 import { ChangePasswordDto } from '../dto/auth/change-password.dto';
 import { ConfirmEmailDto } from '../dto/auth/confirm-email.dto';
 import { LoginDto } from '../dto/auth/login.dto';
@@ -16,11 +18,15 @@ interface RequestWithUser extends Request {
   user?: AuthenticatedUsersRequestUser;
 }
 
+/** Stricter than the global limiter: bcrypt compare is expensive on these routes. */
+const AUTH_SECRET_THROTTLE = { default: { limit: 10, ttl: 60_000 } };
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @Throttle(AUTH_SECRET_THROTTLE)
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto) {
@@ -54,6 +60,7 @@ export class AuthController {
     return this.authService.resetPassword(dto.email, dto.code, dto.newPassword);
   }
 
+  @RequirePasswordSession()
   @UseGuards(UsersAuthGuard)
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
@@ -71,6 +78,7 @@ export class AuthController {
     return this.authService.changePassword(userId, dto.currentPassword, dto.newPassword, dto.newPasswordConfirmation);
   }
 
+  @RequirePasswordSession()
   @UseGuards(UsersAuthGuard)
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)

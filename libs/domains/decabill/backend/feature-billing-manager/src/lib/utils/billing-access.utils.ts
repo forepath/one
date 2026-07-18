@@ -3,7 +3,14 @@ import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Request } from 'express';
 
 export interface RequestWithUser extends Request {
-  user?: { id: string; email?: string; roles?: string[]; username?: string };
+  user?: {
+    id: string;
+    email?: string;
+    roles?: string[];
+    username?: string;
+    amr?: string[];
+    scopes?: string[];
+  };
   apiKeyAuthenticated?: boolean;
 }
 
@@ -11,6 +18,8 @@ export interface UserInfoFromRequest {
   userId?: string;
   userRole?: UserRole;
   isApiKeyAuth: boolean;
+  amr?: string[];
+  scopes?: string[];
 }
 
 export function getUserFromRequest(req: RequestWithUser): UserInfoFromRequest {
@@ -36,6 +45,8 @@ export function getUserFromRequest(req: RequestWithUser): UserInfoFromRequest {
     userId: user.id,
     userRole,
     isApiKeyAuth: false,
+    amr: user.amr,
+    scopes: user.scopes,
   };
 }
 

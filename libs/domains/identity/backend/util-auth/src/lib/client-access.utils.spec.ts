@@ -1,7 +1,9 @@
 import { ForbiddenException } from '@nestjs/common';
 
 import {
+  assertPatScopes,
   assertWorkspaceManagementAccessForUser,
+  buildRequestFromSocketUser,
   canManageWorkspaceConfiguration,
   checkClientAccess,
   ensureClientAccess,
@@ -58,11 +60,95 @@ describe('client-access.utils', () => {
       expect(result.userRole).toBe(UserRole.ADMIN);
     });
 
+    it('should include amr and scopes from the request user', () => {
+      const req = {
+        apiKeyAuthenticated: false,
+        user: { id: 'user-1', roles: ['user'], amr: ['pat'], scopes: ['usage:write'] },
+      } as RequestWithUser;
+
+      expect(getUserFromRequest(req)).toEqual({
+        userId: 'user-1',
+        userRole: UserRole.USER,
+        isApiKeyAuth: false,
+        amr: ['pat'],
+        scopes: ['usage:write'],
+      });
+    });
+
     it('should return isApiKeyAuth false when no user', () => {
       const req = {} as RequestWithUser;
       const result = getUserFromRequest(req);
 
       expect(result).toEqual({ isApiKeyAuth: false });
+    });
+  });
+
+  describe('buildRequestFromSocketUser', () => {
+    it('builds a request from socket user payload and amr', () => {
+      const request = buildRequestFromSocketUser({
+        userId: 'user-1',
+        isApiKeyAuth: false,
+        amr: ['pwd'],
+        user: { id: 'user-1', email: 'a@b.c', roles: ['user'], amr: ['pwd'] },
+      });
+
+      expect(request.apiKeyAuthenticated).toBe(false);
+      expect(request.user).toEqual({
+        id: 'user-1',
+        email: 'a@b.c',
+        roles: ['user'],
+        amr: ['pwd'],
+      });
+    });
+
+    it('falls back to userId when socket.user is absent', () => {
+      const request = buildRequestFromSocketUser({
+        userId: 'user-2',
+        isApiKeyAuth: false,
+        amr: ['pat'],
+      });
+
+      expect(request.user).toEqual({ id: 'user-2', roles: [], amr: ['pat'] });
+    });
+  });
+
+  describe('assertPatScopes', () => {
+    it('no-ops for password and API-key sessions', () => {
+      expect(() =>
+        assertPatScopes({ userId: 'u1', userRole: UserRole.USER, isApiKeyAuth: false, amr: ['pwd'] }, 'usage:write'),
+      ).not.toThrow();
+      expect(() => assertPatScopes({ isApiKeyAuth: true }, 'usage:write')).not.toThrow();
+    });
+
+    it('allows PAT sessions that include required scopes', () => {
+      expect(() =>
+        assertPatScopes(
+          {
+            userId: 'u1',
+            userRole: UserRole.USER,
+            isApiKeyAuth: false,
+            amr: ['pat'],
+            scopes: ['usage:write', 'tickets:read'],
+          },
+          'usage:write',
+        ),
+      ).not.toThrow();
+    });
+
+    it('throws when PAT session is missing required scopes', () => {
+      expect(() =>
+        assertPatScopes(
+          {
+            userId: 'u1',
+            userRole: UserRole.USER,
+            isApiKeyAuth: false,
+            amr: ['pat'],
+            scopes: ['tickets:read'],
+          },
+          'usage:write',
+          'webhooks:admin',
+        ),
+      ).toThrow(/Insufficient token scope\. Missing: usage:write, webhooks:admin/);
     });
   });
 
@@ -106,6 +192,23 @@ describe('client-access.utils', () => {
 
       expect(result).toEqual({ hasAccess: true, isClientCreator: false });
       expect(mockClientsRepository.findById).not.toHaveBeenCalled();
+    });
+
+    it('should not grant global-admin bypass for PAT sessions', async () => {
+      mockClientsRepository.findById.mockResolvedValue(null);
+
+      const result = await checkClientAccess(
+        mockClientsRepository as any,
+        mockClientUsersRepository as any,
+        'client-1',
+        'user-1',
+        UserRole.ADMIN,
+        false,
+        { amr: ['pat'] },
+      );
+
+      expect(result).toEqual({ hasAccess: false, isClientCreator: false });
+      expect(mockClientsRepository.findById).toHaveBeenCalled();
     });
 
     it('should grant access when user is client creator', async () => {
@@ -223,6 +326,18 @@ describe('client-access.utils', () => {
       };
 
       expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: true, isClientCreator: false })).toBe(true);
+    });
+
+    it('returns false for PAT global admin without workspace membership', () => {
+      const userInfo: UserInfoFromRequest = {
+        userId: 'u1',
+        userRole: UserRole.ADMIN,
+        isApiKeyAuth: false,
+        amr: ['pat'],
+        scopes: ['usage:write'],
+      };
+
+      expect(canManageWorkspaceConfiguration(userInfo, { hasAccess: false, isClientCreator: false })).toBe(false);
     });
 
     it('returns true for workspace creator', () => {

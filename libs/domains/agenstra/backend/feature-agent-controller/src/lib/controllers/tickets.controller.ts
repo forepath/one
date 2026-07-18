@@ -1,4 +1,4 @@
-import { type RequestWithUser } from '@forepath/identity/backend';
+import { RequireScopes, type RequestWithUser } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -32,6 +32,7 @@ export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
   @Get()
+  @RequireScopes('tickets:read')
   async list(
     @Query('clientId', new ParseUUIDPipe({ optional: true })) clientId?: string,
     @Query('status') status?: TicketStatus,
@@ -51,21 +52,25 @@ export class TicketsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @RequireScopes('tickets:write')
   async create(@Body() dto: CreateTicketDto, @Req() req?: RequestWithUser) {
     return await this.ticketsService.create(dto, req);
   }
 
   @Get(':id/prototype-prompt')
+  @RequireScopes('tickets:read')
   async prototypePrompt(@Param('id', ParseUUIDPipe) id: string, @Req() req?: RequestWithUser) {
     return await this.ticketsService.getPrototypePrompt(id, req);
   }
 
   @Get(':id/comments')
+  @RequireScopes('tickets:read')
   async listComments(@Param('id', ParseUUIDPipe) id: string, @Req() req?: RequestWithUser) {
     return await this.ticketsService.listComments(id, req);
   }
 
   @Post(':id/comments')
+  @RequireScopes('tickets:write')
   async addComment(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateTicketCommentDto,
@@ -75,6 +80,7 @@ export class TicketsController {
   }
 
   @Get(':id/activity')
+  @RequireScopes('tickets:read')
   async listActivity(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
@@ -85,6 +91,7 @@ export class TicketsController {
   }
 
   @Post(':id/body-generation-sessions')
+  @RequireScopes('tickets:write')
   async startBodySession(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: StartBodyGenerationSessionDto,
@@ -94,6 +101,7 @@ export class TicketsController {
   }
 
   @Post(':id/apply-generated-body')
+  @RequireScopes('tickets:write')
   async applyGeneratedBody(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ApplyGeneratedBodyDto,
@@ -103,11 +111,13 @@ export class TicketsController {
   }
 
   @Post(':id/migrate')
+  @RequireScopes('tickets:write')
   async migrate(@Param('id', ParseUUIDPipe) id: string, @Body() dto: MigrateTicketDto, @Req() req?: RequestWithUser) {
     return await this.ticketsService.migrateTicket(id, dto, req);
   }
 
   @Get(':id')
+  @RequireScopes('tickets:read')
   async getOne(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('includeDescendants') includeDescendants?: string,
@@ -119,12 +129,14 @@ export class TicketsController {
   }
 
   @Patch(':id')
+  @RequireScopes('tickets:write')
   async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateTicketDto, @Req() req?: RequestWithUser) {
     return await this.ticketsService.update(id, dto, req);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('tickets:write')
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('releaseExternalSyncMarker') releaseExternalSyncMarkerRaw?: string,

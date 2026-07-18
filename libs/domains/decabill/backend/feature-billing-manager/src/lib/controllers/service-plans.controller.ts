@@ -1,4 +1,4 @@
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -43,6 +43,7 @@ export class ServicePlansController {
     private readonly withdrawalPolicyService: WithdrawalPolicyService,
   ) {}
 
+  @RequireScopes('subscriptions:read')
   @Get()
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -58,6 +59,7 @@ export class ServicePlansController {
     return await Promise.all(rows.map((row) => this.mapToResponse(row)));
   }
 
+  @RequireScopes('subscriptions:read')
   @Get(':id/order-provisioning-options')
   async listOrderProvisioningOptions(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -67,6 +69,7 @@ export class ServicePlansController {
     return this.cloudInitConfigService.buildOrderProvisioningOptions(row.providerConfigDefaults ?? {});
   }
 
+  @RequireScopes('subscriptions:read')
   @Get(':id/cloud-init-configs/:configId/order-fields')
   async getCloudInitOrderFields(
     @Param('id', new ParseUUIDPipe({ version: '4' })) planId: string,
@@ -75,6 +78,7 @@ export class ServicePlansController {
     return this.cloudInitConfigService.getOrderFieldsForPlan(planId, configId);
   }
 
+  @RequireScopes('subscriptions:read')
   @Get(':id')
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<ServicePlanResponseDto> {
     const row = await this.servicePlansRepository.findByIdOrThrow(id);
@@ -82,6 +86,7 @@ export class ServicePlansController {
     return await this.mapToResponse(row);
   }
 
+  @RequireScopes('catalog:write')
   @Post()
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -124,6 +129,7 @@ export class ServicePlansController {
     return await this.mapToResponse(row);
   }
 
+  @RequireScopes('catalog:write')
   @Post(':id')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -197,6 +203,7 @@ export class ServicePlansController {
     return await this.mapToResponse(row);
   }
 
+  @RequireScopes('catalog:write')
   @Delete(':id')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)

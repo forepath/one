@@ -1,3 +1,4 @@
+import { RequireScopes } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -23,6 +24,7 @@ import { getUserFromRequest, type RequestWithUser } from '../utils/billing-acces
 export class SubscriptionsController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
+  @RequireScopes('subscriptions:write')
   @Post()
   async create(@Body() dto: CreateSubscriptionDto, @Req() req?: RequestWithUser): Promise<SubscriptionResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
@@ -43,6 +45,7 @@ export class SubscriptionsController {
     return (await this.subscriptionService.mapManyToResponses([subscription]))[0];
   }
 
+  @RequireScopes('subscriptions:read')
   @Get()
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -60,6 +63,7 @@ export class SubscriptionsController {
     return await this.subscriptionService.mapManyToResponses(rows);
   }
 
+  @RequireScopes('subscriptions:read')
   @Get(':id')
   async get(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -76,6 +80,7 @@ export class SubscriptionsController {
     return (await this.subscriptionService.mapManyToResponses([row]))[0];
   }
 
+  @RequireScopes('subscriptions:write')
   @Post(':id/cancel')
   async cancel(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -93,6 +98,7 @@ export class SubscriptionsController {
     return (await this.subscriptionService.mapManyToResponses([row]))[0];
   }
 
+  @RequireScopes('subscriptions:write')
   @Post(':id/withdraw')
   async withdraw(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -112,6 +118,7 @@ export class SubscriptionsController {
     return { ...mapped, withdrawalResult };
   }
 
+  @RequireScopes('subscriptions:write')
   @Post(':id/resume')
   async resume(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,

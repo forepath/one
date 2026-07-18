@@ -32,7 +32,12 @@
         }
 
         <!-- Error Alert -->
-        @if (error$ | async; as error) {
+        @if (patRejectedError; as patError) {
+          <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span>{{ patError }}</span>
+          </div>
+        } @else if (error$ | async; as error) {
           <div class="alert alert-danger" role="alert">
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
             <span>{{ error }}</span>

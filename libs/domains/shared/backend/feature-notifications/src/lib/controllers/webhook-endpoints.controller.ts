@@ -13,6 +13,7 @@ import {
   Put,
   Query,
   Req,
+  SetMetadata,
 } from '@nestjs/common';
 import type { Request } from 'express';
 
@@ -30,6 +31,9 @@ import { WebhookDeliveriesRepository } from '../repositories/webhook-deliveries.
 import { NotificationDispatcherService } from '../services/notification-dispatcher.service';
 import { WebhookDeliveryService } from '../services/webhook-delivery.service';
 import { WebhookEndpointService } from '../services/webhook-endpoint.service';
+
+/** Must match identity `REQUIRE_SCOPES_KEY` (avoid shared→identity dependency). */
+const REQUIRE_SCOPES_KEY = 'identity.require_scopes';
 
 export class WebhookEndpointsController {
   constructor(
@@ -151,6 +155,7 @@ export class WebhookEndpointsController {
 
 export function createWebhookEndpointsController(controllerPath: string): typeof WebhookEndpointsController {
   @Controller(controllerPath)
+  @SetMetadata(REQUIRE_SCOPES_KEY, ['webhooks:admin'])
   class ConfiguredWebhookEndpointsController extends WebhookEndpointsController {}
 
   Object.defineProperty(ConfiguredWebhookEndpointsController, 'name', {

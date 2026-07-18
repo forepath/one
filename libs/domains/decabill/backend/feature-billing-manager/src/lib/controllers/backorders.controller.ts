@@ -1,3 +1,4 @@
+import { RequireScopes } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -27,6 +28,7 @@ export class BackordersController {
     private readonly backordersRepository: BackordersRepository,
   ) {}
 
+  @RequireScopes('subscriptions:read')
   @Get()
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -44,6 +46,7 @@ export class BackordersController {
     return await this.backorderService.mapManyToResponses(rows);
   }
 
+  @RequireScopes('subscriptions:write')
   @Post(':id/retry')
   async retry(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -67,6 +70,7 @@ export class BackordersController {
     return await this.backorderService.mapToResponse(row);
   }
 
+  @RequireScopes('subscriptions:write')
   @Post(':id/cancel')
   @HttpCode(HttpStatus.OK)
   async cancel(

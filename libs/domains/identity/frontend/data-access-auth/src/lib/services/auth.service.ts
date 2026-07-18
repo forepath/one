@@ -10,6 +10,12 @@ import type {
   UpdateUserDto,
   UserResponseDto,
 } from '../state/authentication/authentication.types';
+import type {
+  CreatePersonalAccessTokenDto,
+  PersonalAccessTokenResponseDto,
+  PersonalAccessTokenScopeDto,
+  UpdatePersonalAccessTokenDto,
+} from '../types/personal-access-token.types';
 
 /**
  * Injection token to configure the post-login redirect target.
@@ -111,5 +117,33 @@ export class AuthService {
 
   unlockUser(id: string): Observable<UserResponseDto> {
     return this.http.post<UserResponseDto>(`${this.apiUrl}/users/${id}/unlock`, {});
+  }
+
+  listTokenScopes(): Observable<PersonalAccessTokenScopeDto[]> {
+    return this.http.get<PersonalAccessTokenScopeDto[]>(`${this.apiUrl}/auth/token-scopes`);
+  }
+
+  listPersonalAccessTokens(): Observable<PersonalAccessTokenResponseDto[]> {
+    return this.http.get<PersonalAccessTokenResponseDto[]>(`${this.apiUrl}/auth/tokens`);
+  }
+
+  createPersonalAccessToken(dto: CreatePersonalAccessTokenDto): Observable<PersonalAccessTokenResponseDto> {
+    return this.http.post<PersonalAccessTokenResponseDto>(`${this.apiUrl}/auth/tokens`, dto);
+  }
+
+  updatePersonalAccessToken(id: string, dto: UpdatePersonalAccessTokenDto): Observable<PersonalAccessTokenResponseDto> {
+    return this.http.patch<PersonalAccessTokenResponseDto>(`${this.apiUrl}/auth/tokens/${id}`, dto);
+  }
+
+  revokePersonalAccessToken(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/auth/tokens/${id}`);
+  }
+
+  listUserPersonalAccessTokens(userId: string): Observable<PersonalAccessTokenResponseDto[]> {
+    return this.http.get<PersonalAccessTokenResponseDto[]>(`${this.apiUrl}/users/${userId}/tokens`);
+  }
+
+  revokeUserPersonalAccessToken(userId: string, tokenId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/users/${userId}/tokens/${tokenId}`);
   }
 }

@@ -1,4 +1,4 @@
-import { type RequestWithUser } from '@forepath/identity/backend';
+import { RequireScopes, type RequestWithUser } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -30,16 +30,19 @@ import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 export class KnowledgeTreeController {
   constructor(private readonly knowledgeTreeService: KnowledgeTreeService) {}
 
+  @RequireScopes('knowledge:read')
   @Get()
   async listByClient(@Query('clientId', ParseUUIDPipe) clientId: string, @Req() req?: RequestWithUser) {
     return await this.knowledgeTreeService.listNodes(clientId, req);
   }
 
+  @RequireScopes('knowledge:read')
   @Get('tree')
   async getTree(@Query('clientId', ParseUUIDPipe) clientId: string, @Req() req?: RequestWithUser) {
     return await this.knowledgeTreeService.getTree(clientId, req);
   }
 
+  @RequireScopes('knowledge:read')
   @Get('by-sha')
   async getBySha(
     @Query('clientId', ParseUUIDPipe) clientId: string,
@@ -49,18 +52,21 @@ export class KnowledgeTreeController {
     return await this.knowledgeTreeService.findNodeBySha(clientId, sha, req);
   }
 
+  @RequireScopes('knowledge:write')
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createNode(@Body() dto: CreateKnowledgeNodeDto, @Req() req?: RequestWithUser) {
     return await this.knowledgeTreeService.createNode(dto, req);
   }
 
+  @RequireScopes('knowledge:write')
   @Post('relations')
   @HttpCode(HttpStatus.CREATED)
   async createRelation(@Body() dto: CreateKnowledgeRelationDto, @Req() req?: RequestWithUser) {
     return await this.knowledgeTreeService.createRelation(dto, req);
   }
 
+  @RequireScopes('knowledge:read')
   @Get('relations')
   async listRelations(
     @Query('clientId', ParseUUIDPipe) clientId: string,
@@ -71,12 +77,14 @@ export class KnowledgeTreeController {
     return await this.knowledgeTreeService.listRelations(clientId, sourceType, sourceId, req);
   }
 
+  @RequireScopes('knowledge:write')
   @Delete('relations/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteRelation(@Param('id', ParseUUIDPipe) id: string, @Req() req?: RequestWithUser) {
     await this.knowledgeTreeService.deleteRelation(id, req);
   }
 
+  @RequireScopes('knowledge:read')
   @Get('relations/prompt-context')
   async getPromptContexts(
     @Query('clientId', ParseUUIDPipe) clientId: string,
@@ -87,11 +95,13 @@ export class KnowledgeTreeController {
     return await this.knowledgeTreeService.collectPromptContextsForSource(clientId, sourceType, sourceId, req);
   }
 
+  @RequireScopes('knowledge:read')
   @Get(':id')
   async getNode(@Param('id', ParseUUIDPipe) id: string, @Req() req?: RequestWithUser) {
     return await this.knowledgeTreeService.getNode(id, req);
   }
 
+  @RequireScopes('knowledge:read')
   @Get(':id/activity')
   async listActivity(
     @Param('id', ParseUUIDPipe) id: string,
@@ -102,6 +112,7 @@ export class KnowledgeTreeController {
     return await this.knowledgeTreeService.listPageActivity(id, limit, offset, req);
   }
 
+  @RequireScopes('knowledge:write')
   @Patch(':id')
   async updateNode(
     @Param('id', ParseUUIDPipe) id: string,
@@ -111,6 +122,7 @@ export class KnowledgeTreeController {
     return await this.knowledgeTreeService.updateNode(id, dto, req);
   }
 
+  @RequireScopes('knowledge:write')
   @Post(':id/reorder')
   async reorderNode(
     @Param('id', ParseUUIDPipe) id: string,
@@ -120,11 +132,13 @@ export class KnowledgeTreeController {
     return await this.knowledgeTreeService.reorderNode(id, dto, req);
   }
 
+  @RequireScopes('knowledge:write')
   @Post(':id/duplicate')
   async duplicateNode(@Param('id', ParseUUIDPipe) id: string, @Req() req?: RequestWithUser) {
     return await this.knowledgeTreeService.duplicateNode(id, req);
   }
 
+  @RequireScopes('knowledge:write')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteNode(

@@ -2,12 +2,14 @@ import {
   BillingIdentityNotificationBridgeModule,
   BillingKeycloakUserSyncModule,
   BillingModule,
+  BillingPatAuthModule,
   BillingUsersAuthModule,
 } from '@forepath/decabill/backend';
 import {
   BullBoardSkippingThrottlerGuard,
   getAuthenticationMethod,
   getHybridAuthGuards,
+  getKeycloakPatAuthGuards,
   getRateLimitConfig,
   KeycloakModule,
   KeycloakService,
@@ -36,13 +38,14 @@ const authMethod = getAuthenticationMethod();
           KeycloakModule,
           KeycloakConnectModule.registerAsync({ useExisting: KeycloakService }),
           BillingKeycloakUserSyncModule,
+          BillingPatAuthModule,
         ]
       : []),
     ...(authMethod === 'users' ? [BillingUsersAuthModule] : []),
     MonitoringModule,
   ],
   providers: [
-    ...getHybridAuthGuards(),
+    ...(authMethod === 'keycloak' ? getKeycloakPatAuthGuards() : getHybridAuthGuards()),
     {
       provide: APP_GUARD,
       useClass: BullBoardSkippingThrottlerGuard,

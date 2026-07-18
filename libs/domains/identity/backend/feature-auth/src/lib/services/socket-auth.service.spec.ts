@@ -97,4 +97,33 @@ describe('SocketAuthService', () => {
       }),
     );
   });
+
+  it('rejects Keycloak-mode PAT JWTs before OIDC validation', async () => {
+    process.env.AUTHENTICATION_METHOD = 'keycloak';
+    const keycloak = {
+      grantManager: {
+        createGrant: jest.fn(),
+        validateAccessToken: jest.fn(),
+        validateToken: jest.fn(),
+      },
+    };
+
+    jwtService.verifyAsync.mockResolvedValue({
+      sub: 'user-1',
+      amr: ['pat'],
+      patId: 't1',
+      scopes: ['clients:read'],
+    });
+    const keycloakService = new SocketAuthService(
+      keycloak as never,
+      { tokenValidation: 'ONLINE' } as never,
+      jwtService as unknown as JwtService,
+      usersRepository as unknown as UsersRepository,
+      revokedUserTokensRepository as unknown as RevokedUserTokensRepository,
+    );
+    const result = await keycloakService.validateAndGetUser('Bearer pat.jwt.token');
+
+    expect(result).toBeNull();
+    expect(keycloak.grantManager.createGrant).not.toHaveBeenCalled();
+  });
 });

@@ -16,6 +16,9 @@ paths:
   /auth/login:
     post:
       summary: Login (users auth only)
+      description: |
+        Interactive console login with account password only.
+        Personal access tokens are not accepted; use POST /auth/token instead.
       operationId: login
       security: []
       requestBody:
@@ -33,6 +36,29 @@ paths:
                 $ref: '#/components/schemas/LoginResponse'
         '401':
           description: Invalid credentials, email not confirmed, or account locked
+  /auth/token:
+    post:
+      summary: Exchange personal access token for machine JWT
+      description: |
+        Token-only exchange (no email). Returns a JWT with `amr: ["pat"]` and capability `scopes`.
+        Must not be used for console sessions.
+      operationId: exchangePersonalAccessToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExchangePersonalAccessTokenDto'
+      responses:
+        '200':
+          description: JWT access token, user info, and scopes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatLoginResponse'
+        '401':
+          description: Invalid, expired, or revoked token
   /auth/register:
     post:
       summary: Register new user (users auth only)
@@ -139,6 +165,163 @@ paths:
           description: Session invalidated
         '401':
           description: Unauthorized
+  /auth/token-scopes:
+    get:
+      summary: List grantable PAT scopes for the current user
+      operationId: listPersonalAccessTokenScopes
+      responses:
+        '200':
+          description: Scope catalog filtered by role
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonalAccessTokenScopeDto'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Password session required
+  /auth/tokens:
+    get:
+      summary: List own personal access tokens
+      operationId: listPersonalAccessTokens
+      responses:
+        '200':
+          description: Active tokens (no hashes)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonalAccessTokenResponseDto'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Password session required
+    post:
+      summary: Create a personal access token
+      operationId: createPersonalAccessToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePersonalAccessTokenDto'
+      responses:
+        '201':
+          description: Token created; plaintext returned once
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonalAccessTokenResponseDto'
+        '400':
+          description: Invalid scopes or name
+        '401':
+          description: Unauthorized
+        '403':
+          description: Password session required or cannot grant scopes
+  /auth/tokens/{id}:
+    patch:
+      summary: Update own personal access token name and scopes
+      operationId: updatePersonalAccessToken
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePersonalAccessTokenDto'
+      responses:
+        '200':
+          description: Token updated (secret unchanged)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonalAccessTokenResponseDto'
+        '400':
+          description: Invalid scopes or name
+        '401':
+          description: Unauthorized
+        '403':
+          description: Password session required or cannot grant scopes
+        '404':
+          description: Token not found
+    delete:
+      summary: Revoke own personal access token
+      operationId: revokePersonalAccessToken
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Revoked
+        '401':
+          description: Unauthorized
+        '403':
+          description: Password session required
+        '404':
+          description: Token not found
+  /users/{userId}/tokens:
+    get:
+      summary: List personal access tokens for a user (admin)
+      operationId: listUserPersonalAccessTokens
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tokens for user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonalAccessTokenResponseDto'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin + password session required
+  /users/{userId}/tokens/{tokenId}:
+    delete:
+      summary: Revoke a user's personal access token (admin)
+      operationId: revokeUserPersonalAccessToken
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: tokenId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Revoked
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin + password session required
+        '404':
+          description: Token not found
   /users:
     get:
       summary: List users (admin only)
@@ -4152,6 +4335,90 @@ components:
               type: string
             role:
               $ref: '#/components/schemas/UserRole'
+    PatLoginResponse:
+      allOf:
+        - $ref: '#/components/schemas/LoginResponse'
+        - type: object
+          properties:
+            scopes:
+              type: array
+              items:
+                type: string
+    ExchangePersonalAccessTokenDto:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: Full personal access token (`fp_pat_…`)
+    CreatePersonalAccessTokenDto:
+      type: object
+      required: [name, scopes]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        scopes:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+    UpdatePersonalAccessTokenDto:
+      type: object
+      required: [name, scopes]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        scopes:
+          type: array
+          minItems: 1
+          items:
+            type: string
+    PersonalAccessTokenScopeDto:
+      type: object
+      required: [scope]
+      properties:
+        scope:
+          type: string
+    PersonalAccessTokenResponseDto:
+      type: object
+      required: [id, name, tokenPrefix, scopes, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        tokenPrefix:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        revokedAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        token:
+          type: string
+          description: Plaintext token; only present on create
     RegisterResponse:
       type: object
       required: [user, message]

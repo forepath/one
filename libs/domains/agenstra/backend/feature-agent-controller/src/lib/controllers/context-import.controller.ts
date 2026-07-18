@@ -3,7 +3,7 @@
  * Encrypted Atlassian tokens are never returned from list/get connection APIs. The scheduler runs only
  * configs loaded from the database and does not accept arbitrary client IDs from HTTP.
  */
-import { UserRole, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -34,6 +34,7 @@ import { ExternalImportConfigService } from '../services/external-import-config.
 import { ExternalImportSyncMarkerService } from '../services/external-import-sync-marker.service';
 
 @Controller('imports/atlassian')
+@RequireScopes('imports:write')
 export class ContextImportController {
   constructor(
     private readonly connections: AtlassianSiteConnectionService,
@@ -46,7 +47,11 @@ export class ContextImportController {
   private assertAdmin(req?: RequestWithUser): void {
     const u = getUserFromRequest(req || ({} as RequestWithUser));
 
-    if (!u.isApiKeyAuth && u.userRole !== UserRole.ADMIN) {
+    if (u.isApiKeyAuth) {
+      return;
+    }
+
+    if (u.userRole !== UserRole.ADMIN) {
       throw new ForbiddenException('Admin only');
     }
   }

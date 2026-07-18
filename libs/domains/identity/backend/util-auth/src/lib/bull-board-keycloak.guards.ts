@@ -12,11 +12,21 @@ function shouldSkipForBullBoard(context: ExecutionContext): boolean {
   return isBullBoardRequestPath(getHttpRequestPath(context));
 }
 
-/** Keycloak AuthGuard that skips Bull Board routes (HTTP Basic auth on the board). */
+function isPatAuthenticated(context: ExecutionContext): boolean {
+  const request = context.switchToHttp().getRequest<{ patAuthenticated?: boolean }>();
+
+  return request.patAuthenticated === true;
+}
+
+function shouldSkipKeycloakGuard(context: ExecutionContext): boolean {
+  return shouldSkipForBullBoard(context) || isPatAuthenticated(context);
+}
+
+/** Keycloak AuthGuard that skips Bull Board routes and app-signed PAT JWTs. */
 @Injectable()
 export class BullBoardSkippingAuthGuard extends KeycloakAuthGuard {
   canActivate(context: ExecutionContext): Promise<boolean> {
-    if (shouldSkipForBullBoard(context)) {
+    if (shouldSkipKeycloakGuard(context)) {
       return Promise.resolve(true);
     }
 
@@ -24,11 +34,11 @@ export class BullBoardSkippingAuthGuard extends KeycloakAuthGuard {
   }
 }
 
-/** Keycloak ResourceGuard that skips Bull Board routes. */
+/** Keycloak ResourceGuard that skips Bull Board routes and app-signed PAT JWTs. */
 @Injectable()
 export class BullBoardSkippingResourceGuard extends KeycloakResourceGuard {
   canActivate(context: ExecutionContext): Promise<boolean> {
-    if (shouldSkipForBullBoard(context)) {
+    if (shouldSkipKeycloakGuard(context)) {
       return Promise.resolve(true);
     }
 
@@ -36,11 +46,11 @@ export class BullBoardSkippingResourceGuard extends KeycloakResourceGuard {
   }
 }
 
-/** Keycloak RoleGuard that skips Bull Board routes. */
+/** Keycloak RoleGuard that skips Bull Board routes and app-signed PAT JWTs. */
 @Injectable()
 export class BullBoardSkippingRoleGuard extends KeycloakRoleGuard {
   canActivate(context: ExecutionContext): Promise<boolean> {
-    if (shouldSkipForBullBoard(context)) {
+    if (shouldSkipKeycloakGuard(context)) {
       return Promise.resolve(true);
     }
 

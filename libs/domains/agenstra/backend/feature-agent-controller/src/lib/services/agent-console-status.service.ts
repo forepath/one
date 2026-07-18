@@ -147,6 +147,7 @@ export class AgentConsoleStatusService {
       userInfo.userId ?? userId,
       userInfo.userRole,
       userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
     );
     const environments = await this.buildEnvironmentsForUser(userId, clientIds);
     const clients = rollupClients(environments);

@@ -1,3 +1,4 @@
+import { RequireScopes } from '@forepath/identity/backend';
 import { BadRequestException, Controller, Get, Param, ParseUUIDPipe, Req } from '@nestjs/common';
 
 import { UsageSummaryDto } from '../dto/usage-summary.dto';
@@ -12,6 +13,7 @@ export class UsageController {
     private readonly subscriptionService: SubscriptionService,
   ) {}
 
+  @RequireScopes('usage:read')
   @Get('summary/:subscriptionId')
   async summary(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,

@@ -156,7 +156,8 @@ export class UsersService {
 
     const updated = await this.usersRepository.update(id, updateData);
 
-    if (dto.password) {
+    // Password or role changes invalidate outstanding JWTs via tokenVersion.
+    if (dto.password || (dto.role !== undefined && dto.role !== user.role)) {
       await this.usersRepository.incrementTokenVersion(id);
     }
 

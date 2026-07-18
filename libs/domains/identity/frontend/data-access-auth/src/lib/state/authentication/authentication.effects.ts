@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
+import { IDENTITY_AUTH_ENVIRONMENT, jwtPayloadHasPatAmr, parseJwtPayload } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { KeycloakService } from 'keycloak-angular';
 import { catchError, from, map, of, switchMap, tap } from 'rxjs';
@@ -315,12 +315,28 @@ export const checkAuthentication$ = createEffect(
 
           if (jwt) {
             try {
-              const payload = JSON.parse(atob(jwt.split('.')[1] ?? '{}'));
-              const exp = payload.exp ? payload.exp * 1000 : 0;
+              const payload = parseJwtPayload(jwt);
+
+              if (!payload || jwtPayloadHasPatAmr(payload)) {
+                localStorage.removeItem(USERS_JWT_STORAGE_KEY);
+
+                return of(checkAuthenticationSuccess({ isAuthenticated: false }));
+              }
+
+              const exp = typeof payload['exp'] === 'number' ? payload['exp'] * 1000 : 0;
               const isAuthenticated = exp > Date.now();
-              const role = payload.roles?.find((role: string) => role === 'admin') ? 'admin' : 'user';
+              const roles = Array.isArray(payload['roles'])
+                ? payload['roles'].filter((role): role is string => typeof role === 'string')
+                : [];
+              const role = roles.includes('admin') ? 'admin' : 'user';
               const user =
-                payload.sub && payload.email ? { id: payload.sub, email: payload.email, role: role } : undefined;
+                typeof payload['sub'] === 'string' && typeof payload['email'] === 'string'
+                  ? { id: payload['sub'], email: payload['email'], role }
+                  : undefined;
+
+              if (!isAuthenticated) {
+                localStorage.removeItem(USERS_JWT_STORAGE_KEY);
+              }
 
               return of(
                 checkAuthenticationSuccess({

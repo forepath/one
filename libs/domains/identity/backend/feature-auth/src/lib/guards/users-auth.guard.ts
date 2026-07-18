@@ -12,6 +12,7 @@ import { Request } from 'express';
 
 import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
+import { PersonalAccessTokenService } from '../services/personal-access-token.service';
 import { assertUsersJwtSessionValid, UsersJwtSessionPayload } from '../utils/users-jwt-session.util';
 
 export type UsersJwtPayload = UsersJwtSessionPayload;
@@ -20,6 +21,9 @@ export interface AuthenticatedUsersRequestUser {
   id: string;
   email: string;
   roles: string[];
+  amr?: string[];
+  scopes?: string[];
+  patId?: string;
   jti?: string;
   exp?: number;
 }
@@ -31,6 +35,7 @@ export class UsersAuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly usersRepository: UsersRepository,
     private readonly revokedUserTokensRepository: RevokedUserTokensRepository,
+    private readonly personalAccessTokenService: PersonalAccessTokenService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -43,19 +48,37 @@ export class UsersAuthGuard implements CanActivate {
       return true;
     }
 
-    if (getAuthenticationMethod() !== 'users') {
-      return true;
-    }
-
     // Bull Board uses HTTP Basic auth (QUEUE_BULL_BOARD_*), not JWT
     if (isBullBoardRequestPath(getHttpRequestPath(context))) {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<Request & { tenantId?: string }>();
+    const authMethod = getAuthenticationMethod();
+    const request = context.switchToHttp().getRequest<
+      Request & {
+        tenantId?: string;
+        patAuthenticated?: boolean;
+        apiKeyAuthenticated?: boolean;
+        user?: AuthenticatedUsersRequestUser | { id?: string };
+      }
+    >();
+
+    // Keycloak / api-key: global guards authenticate. When this guard is used at controller
+    // level (e.g. PAT CRUD), require a resolved local user id (synced OIDC or PAT).
+    if (authMethod === 'keycloak') {
+      if (request.patAuthenticated || request.user?.id) {
+        return true;
+      }
+
+      throw new UnauthorizedException('Missing or invalid authorization token');
+    }
+
+    if (authMethod !== 'users') {
+      return true;
+    }
 
     // Pass through when user is already set (e.g. by API key or other auth)
-    if (request['user']) {
+    if (request.user) {
       return true;
     }
 
@@ -86,10 +109,31 @@ export class UsersAuthGuard implements CanActivate {
 
       await assertUsersJwtSessionValid(payload, user, this.revokedUserTokensRepository);
 
-      request['user'] = {
+      const amr = payload.amr ?? ['pwd'];
+      let scopes = payload.scopes;
+
+      if (amr.includes('pat')) {
+        if (!payload.patId) {
+          throw new UnauthorizedException('Session is no longer valid.');
+        }
+
+        const active = await this.personalAccessTokenService.assertPatJwtActive(
+          payload.patId,
+          payload.sub,
+          payload.scopes,
+        );
+
+        scopes = active.scopes;
+      }
+
+      request.user = {
         id: payload.sub,
-        email: payload.email,
-        roles: payload.roles ?? ['user'],
+        // Always use live DB role so demotion takes effect without waiting for JWT expiry.
+        email: user.email,
+        roles: [user.role],
+        amr,
+        scopes,
+        patId: payload.patId,
         jti: payload.jti,
         exp: typeof payload.exp === 'number' ? payload.exp : undefined,
       } satisfies AuthenticatedUsersRequestUser;

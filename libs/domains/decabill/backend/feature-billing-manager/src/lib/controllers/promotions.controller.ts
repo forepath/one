@@ -1,3 +1,4 @@
+import { RequireScopes } from '@forepath/identity/backend';
 import { Body, Controller, Get, Param, ParseIntPipe, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
 import { IsEnum, IsISO8601, IsNotEmpty, IsOptional, IsString, IsUUID, ValidateIf } from 'class-validator';
 
@@ -46,6 +47,7 @@ class RedeemPromotionBodyDto implements RedeemPromotionDto {
 }
 
 @Controller('promotions')
+@RequireScopes('promotions:read')
 export class PromotionsController {
   constructor(private readonly promotionRedemptionService: PromotionRedemptionService) {}
 

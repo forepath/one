@@ -4,7 +4,14 @@ import { Router, type CanActivateFn } from '@angular/router';
 // Import from util-auth barrel directly to avoid circular dependency
 // (feature-auth is re-exported from the @forepath/identity/frontend barrel)
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { IDENTITY_AUTH_ENVIRONMENT, isAuthenticated, type IdentityAuthEnvironment } from '../../../../util-auth/src';
+import {
+  IDENTITY_AUTH_ENVIRONMENT,
+  isAuthenticated,
+  isUsersConsoleJwtValid,
+  jwtPayloadHasPatAmr,
+  parseJwtPayload,
+  type IdentityAuthEnvironment,
+} from '../../../../util-auth/src';
 
 /**
  * LocalStorage key for storing the API key
@@ -19,7 +26,8 @@ const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
  * Guard that protects routes based on authentication configuration.
  * - If authentication type is 'keycloak', uses Keycloak authentication guard
  * - If authentication type is 'api-key', allows access if API key exists in environment or localStorage
- * - If authentication type is 'users', allows access if valid JWT exists in localStorage
+ * - If authentication type is 'users', allows access if valid password-session JWT exists in localStorage
+ * - Personal access token JWTs (`amr` includes `pat`) are cleared and treated as logged out
  * - Otherwise, redirects to /login route
  */
 export const authGuard: CanActivateFn = (route, state) => {
@@ -56,15 +64,16 @@ export const authGuard: CanActivateFn = (route, state) => {
     const jwt = localStorage.getItem(USERS_JWT_STORAGE_KEY);
 
     if (jwt) {
-      try {
-        const payload = JSON.parse(atob(jwt.split('.')[1] ?? '{}'));
-        const exp = payload.exp ? payload.exp * 1000 : 0;
+      const payload = parseJwtPayload(jwt);
 
-        if (exp > Date.now()) {
-          return true;
-        }
-      } catch {
-        // Invalid JWT, fall through to redirect
+      if (jwtPayloadHasPatAmr(payload)) {
+        localStorage.removeItem(USERS_JWT_STORAGE_KEY);
+
+        return router.createUrlTree(['/login']);
+      }
+
+      if (isUsersConsoleJwtValid(jwt)) {
+        return true;
       }
     }
 

@@ -11,7 +11,12 @@ import {
   StageFilesDto,
   UnstageFilesDto,
 } from '@forepath/agenstra/backend/feature-agent-manager';
-import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
+import {
+  ClientUsersRepository,
+  ensureClientAccess,
+  RequireScopes,
+  type RequestWithUser,
+} from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -35,6 +40,7 @@ import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.s
  * Provides endpoints that proxy VCS requests to client endpoints.
  */
 @Controller('clients/:clientId/agents/:agentId/vcs')
+@RequireScopes('agents:vcs')
 export class ClientsVcsController {
   constructor(
     private readonly clientAgentVcsProxyService: ClientAgentVcsProxyService,

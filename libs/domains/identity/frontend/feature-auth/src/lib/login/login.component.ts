@@ -28,6 +28,8 @@ export class IdentityLoginComponent implements OnInit {
   loading$: Observable<boolean> = this.authFacade.loading$;
   error$: Observable<string | null> = this.authFacade.error$;
   successMessage$: Observable<string | null> = this.authFacade.successMessage$;
+  /** Set when a personal access token is pasted into the password field. */
+  patRejectedError: string | null = null;
 
   /**
    * Whether the current authentication type is user-based (email/password)
@@ -112,10 +114,19 @@ export class IdentityLoginComponent implements OnInit {
     if (this.loginForm.valid) {
       if (this.isUsersAuth) {
         const email = this.loginForm.get('email')?.value;
-        const password = this.loginForm.get('password')?.value;
+        const password = this.loginForm.get('password')?.value as string;
 
+        if (typeof password === 'string' && password.startsWith('fp_pat_')) {
+          this.patRejectedError = $localize`:@@featureLogin-patNotAllowed:Personal access tokens cannot be used to sign in to the console. Use your account password instead.`;
+          this.authFacade.clearError();
+
+          return;
+        }
+
+        this.patRejectedError = null;
         this.authFacade.login(undefined, email, password);
       } else {
+        this.patRejectedError = null;
         const apiKey = this.loginForm.get('apiKey')?.value;
 
         this.authFacade.login(apiKey);

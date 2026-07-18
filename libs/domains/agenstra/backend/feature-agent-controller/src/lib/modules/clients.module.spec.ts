@@ -9,6 +9,7 @@ import {
   RevokedUserTokenEntity,
   SocketAuthService,
   UserEntity,
+  UserPersonalAccessTokenEntity,
   UsersRepository,
 } from '@forepath/identity/backend';
 import { Module } from '@nestjs/common';
@@ -154,6 +155,8 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(UserEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(RevokedUserTokenEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(UserPersonalAccessTokenEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(StatisticsUserEntity))
       .useValue(mockRepository)

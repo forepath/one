@@ -30,6 +30,8 @@ describe('billing-access.utils', () => {
       userId: 'admin-1',
       userRole: UserRole.ADMIN,
       isApiKeyAuth: false,
+      amr: undefined,
+      scopes: undefined,
     });
   });
 
@@ -53,5 +55,35 @@ describe('billing-access.utils', () => {
     expect(() => ensureAdmin({ userId: 'u1', userRole: UserRole.USER, isApiKeyAuth: false })).toThrow(
       ForbiddenException,
     );
+  });
+
+  it('ensureAdmin allows password admin sessions', () => {
+    expect(() =>
+      ensureAdmin({ userId: 'u1', userRole: UserRole.ADMIN, isApiKeyAuth: false, amr: ['pwd'] }),
+    ).not.toThrow();
+  });
+
+  it('ensureAdmin allows PAT admin when role is admin (scopes enforced by PatScopesGuard)', () => {
+    expect(() =>
+      ensureAdmin({
+        userId: 'u1',
+        userRole: UserRole.ADMIN,
+        isApiKeyAuth: false,
+        amr: ['pat'],
+        scopes: ['usage:write'],
+      }),
+    ).not.toThrow();
+  });
+
+  it('ensureAdmin rejects PAT non-admin even with scopes', () => {
+    expect(() =>
+      ensureAdmin({
+        userId: 'u1',
+        userRole: UserRole.USER,
+        isApiKeyAuth: false,
+        amr: ['pat'],
+        scopes: ['usage:write'],
+      }),
+    ).toThrow(ForbiddenException);
   });
 });

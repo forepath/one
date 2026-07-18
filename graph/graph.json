@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-18T15:32:33.646Z",
+  "generatedAt": "2026-07-19T12:33:17.315Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -6233,6 +6233,24 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-pat-auth.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-pat-auth.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-users-auth.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-users-auth.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/payment-processors/processors/stripe-payment.processor.ts",
       "type": "provider",
       "attrs": {
@@ -8796,6 +8814,23 @@
       }
     },
     {
+      "id": "file:libs/domains/identity/frontend/data-access-auth/src/lib/state/personal-access-tokens",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/identity/frontend/data-access-auth/src/lib/state/personal-access-tokens",
+        "languageOrKind": "ts",
+        "projectName": "identity-frontend-data-access-auth",
+        "sliceName": "personal-access-tokens",
+        "memberFiles": [
+          "personal-access-tokens.actions.ts",
+          "personal-access-tokens.effects.ts",
+          "personal-access-tokens.facade.ts",
+          "personal-access-tokens.reducer.ts",
+          "personal-access-tokens.selectors.ts"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/shared/frontend/util-configuration/README.md",
       "type": "readme",
       "attrs": {
@@ -8967,6 +9002,15 @@
       }
     },
     {
+      "id": "file:libs/domains/identity/frontend/feature-auth/src/lib/guards/pat-ui.guard.ts",
+      "type": "guard",
+      "attrs": {
+        "path": "libs/domains/identity/frontend/feature-auth/src/lib/guards/pat-ui.guard.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-frontend-feature-auth"
+      }
+    },
+    {
       "id": "file:libs/domains/identity/frontend/feature-auth/src/lib/guards/signup-disabled.guard.ts",
       "type": "guard",
       "attrs": {
@@ -8989,6 +9033,24 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/personal-access-tokens.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/controllers/personal-access-tokens.controller.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-feature-auth"
       }
@@ -9052,6 +9114,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/identity/backend/feature-auth/src/lib/dto/auth/logout.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/personal-access-token.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/dto/auth/personal-access-token.dto.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-feature-auth"
       }
@@ -9138,6 +9209,24 @@
       }
     },
     {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/pat-bearer-auth.guard.ts",
+      "type": "guard",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/guards/pat-bearer-auth.guard.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/pat-scopes.guard.ts",
+      "type": "guard",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/guards/pat-scopes.guard.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
       "id": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/users-auth.guard.ts",
       "type": "guard",
       "attrs": {
@@ -9165,6 +9254,15 @@
       }
     },
     {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/pat-auth.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/modules/pat-auth.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
       "id": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/users-auth.module.ts",
       "type": "module",
       "attrs": {
@@ -9178,6 +9276,15 @@
       "type": "repository",
       "attrs": {
         "path": "libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/personal-access-tokens.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/repositories/personal-access-tokens.repository.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-feature-auth"
       }
@@ -9223,6 +9330,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/identity/backend/feature-auth/src/lib/services/keycloak-token.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/services/personal-access-token.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/services/personal-access-token.service.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-feature-auth"
       }
@@ -9358,6 +9474,15 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/identity/backend/util-auth/src/lib/entities/revoked-user-token.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-util-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/util-auth/src/lib/entities/user-personal-access-token.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/identity/backend/util-auth/src/lib/entities/user-personal-access-token.entity.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-util-auth"
       }
@@ -11184,6 +11309,17 @@
       }
     },
     {
+      "id": "api:HTTP:POST:/auth/token",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/auth/token",
+        "operationId": "exchangePersonalAccessToken",
+        "summary": "Exchange personal access token for machine JWT",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:POST:/auth/register",
       "type": "endpoint",
       "attrs": {
@@ -11246,6 +11382,83 @@
         "pathOrChannel": "/auth/logout",
         "operationId": "logout",
         "summary": "Log out (users auth only; revokes current session by default)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/auth/token-scopes",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/auth/token-scopes",
+        "operationId": "listPersonalAccessTokenScopes",
+        "summary": "List grantable PAT scopes for the current user",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/auth/tokens",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/auth/tokens",
+        "operationId": "listPersonalAccessTokens",
+        "summary": "List own personal access tokens",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/auth/tokens",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/auth/tokens",
+        "operationId": "createPersonalAccessToken",
+        "summary": "Create a personal access token",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PATCH:/auth/tokens/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PATCH",
+        "pathOrChannel": "/auth/tokens/{id}",
+        "operationId": "updatePersonalAccessToken",
+        "summary": "Update own personal access token name and scopes",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/auth/tokens/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/auth/tokens/{id}",
+        "operationId": "revokePersonalAccessToken",
+        "summary": "Revoke own personal access token",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/users/{userId}/tokens",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/users/{userId}/tokens",
+        "operationId": "listUserPersonalAccessTokens",
+        "summary": "List personal access tokens for a user (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/users/{userId}/tokens/{tokenId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/users/{userId}/tokens/{tokenId}",
+        "operationId": "revokeUserPersonalAccessToken",
+        "summary": "Revoke a user's personal access token (admin)",
         "specKind": "openapi"
       }
     },
@@ -24178,6 +24391,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:identity-backend-feature-auth",
+      "to": "project:identity-backend-util-auth",
+      "type": "depends_on"
+    },
+    {
       "from": "project:shared-frontend-feature-docs",
       "to": "project:shared-frontend-util-docs-parser",
       "type": "depends_on"
@@ -28369,6 +28587,16 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-pat-auth.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-users-auth.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/payment-processors/processors/stripe-payment.processor.ts",
       "type": "contains"
     },
@@ -29778,6 +30006,11 @@
       "type": "contains"
     },
     {
+      "from": "project:identity-frontend-data-access-auth",
+      "to": "file:libs/domains/identity/frontend/data-access-auth/src/lib/state/personal-access-tokens",
+      "type": "contains"
+    },
+    {
       "from": "project:shared-frontend-util-configuration",
       "to": "file:libs/domains/shared/frontend/util-configuration/README.md",
       "type": "contains"
@@ -29874,6 +30107,11 @@
     },
     {
       "from": "project:identity-frontend-feature-auth",
+      "to": "file:libs/domains/identity/frontend/feature-auth/src/lib/guards/pat-ui.guard.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-frontend-feature-auth",
       "to": "file:libs/domains/identity/frontend/feature-auth/src/lib/guards/signup-disabled.guard.ts",
       "type": "contains"
     },
@@ -29885,6 +30123,16 @@
     {
       "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/personal-access-tokens.controller.ts",
       "type": "contains"
     },
     {
@@ -29920,6 +30168,11 @@
     {
       "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/logout.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/personal-access-token.dto.ts",
       "type": "contains"
     },
     {
@@ -29969,6 +30222,16 @@
     },
     {
       "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/pat-bearer-auth.guard.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/pat-scopes.guard.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/guards/users-auth.guard.ts",
       "type": "contains"
     },
@@ -29984,12 +30247,22 @@
     },
     {
       "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/pat-auth.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/modules/users-auth.module.ts",
       "type": "contains"
     },
     {
       "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/personal-access-tokens.repository.ts",
       "type": "contains"
     },
     {
@@ -30015,6 +30288,11 @@
     {
       "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/keycloak-token.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/services/personal-access-token.service.ts",
       "type": "contains"
     },
     {
@@ -30090,6 +30368,11 @@
     {
       "from": "project:identity-backend-util-auth",
       "to": "file:libs/domains/identity/backend/util-auth/src/lib/entities/revoked-user-token.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-util-auth",
+      "to": "file:libs/domains/identity/backend/util-auth/src/lib/entities/user-personal-access-token.entity.ts",
       "type": "contains"
     },
     {
@@ -30579,6 +30862,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/token",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/auth/register",
       "type": "contains"
     },
@@ -30605,6 +30893,41 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/auth/logout",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/auth/token-scopes",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/auth/tokens",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/tokens",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PATCH:/auth/tokens/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/auth/tokens/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/users/{userId}/tokens",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/users/{userId}/tokens/{tokenId}",
       "type": "contains"
     },
     {
@@ -31559,6 +31882,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/token",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/auth/register",
       "type": "contains"
     },
@@ -31585,6 +31913,41 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/auth/logout",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/auth/token-scopes",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/auth/tokens",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/tokens",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:PATCH:/auth/tokens/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/auth/tokens/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/users/{userId}/tokens",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/users/{userId}/tokens/{tokenId}",
       "type": "contains"
     },
     {
@@ -41864,6 +42227,16 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/token",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:POST:/auth/token",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
       "to": "api:HTTP:POST:/auth/register",
       "type": "implements"
     },
@@ -41920,6 +42293,141 @@
     {
       "from": "project:identity-backend-feature-auth",
       "to": "api:HTTP:POST:/auth/logout",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/token-scopes",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:GET:/auth/token-scopes",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/tokens",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:GET:/auth/tokens",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/tokens",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:POST:/auth/tokens",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:PATCH:/auth/tokens/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:PATCH:/auth/tokens/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/tokens/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:DELETE:/auth/tokens/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/login",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/token",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/confirm-email",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/request-password-reset",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/reset-password",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/change-password",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/logout",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:GET:/auth/token-scopes",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:GET:/auth/tokens",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/tokens",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:PATCH:/auth/tokens/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/tokens/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/users.controller.ts",
+      "to": "api:HTTP:GET:/users/{userId}/tokens",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:GET:/users/{userId}/tokens",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/users.controller.ts",
+      "to": "api:HTTP:DELETE:/users/{userId}/tokens/{tokenId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:DELETE:/users/{userId}/tokens/{tokenId}",
       "type": "implements"
     },
     {
@@ -43884,7 +44392,37 @@
     },
     {
       "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:POST:/auth/login",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:POST:/auth/token",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
       "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-authentication-methods",
+      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
@@ -45244,7 +45782,52 @@
     },
     {
       "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:POST:/auth/login",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:POST:/auth/token",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
       "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:GET:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:POST:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:GET:/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:GET:/invoices",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-authentication-methods",
+      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {

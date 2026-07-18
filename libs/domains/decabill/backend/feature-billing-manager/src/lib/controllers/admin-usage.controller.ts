@@ -1,4 +1,4 @@
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import { BadRequestException, Body, Controller, Post, Req } from '@nestjs/common';
 
 import { CreateUsageRecordDto } from '../dto/create-usage-record.dto';
@@ -16,6 +16,7 @@ export class AdminUsageController {
   ) {}
 
   @Post('record')
+  @RequireScopes('usage:write')
   async record(@Body() body: CreateUsageRecordDto, @Req() req?: RequestWithUser) {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
 

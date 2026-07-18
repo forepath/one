@@ -20,9 +20,11 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
+import { DUMMY_PAT_BCRYPT_HASH, PAT_TOKEN_PREFIX } from '../constants/pat.constants';
 import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
 
+import { PersonalAccessTokenService } from './personal-access-token.service';
 import { UsersService } from './users.service';
 
 export interface LogoutOptions {
@@ -37,6 +39,13 @@ const PASSWORD_RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 export interface LoginResponse {
   access_token: string;
   user: { id: string; email: string; role: UserRole };
+  scopes?: string[];
+}
+
+export interface GenerateTokenOptions {
+  amr: 'pwd' | 'pat';
+  scopes?: string[];
+  patId?: string;
 }
 
 export interface ChangePasswordResponse {
@@ -60,12 +69,19 @@ export class AuthService {
     private readonly revokedUserTokensRepository: RevokedUserTokensRepository,
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly personalAccessTokenService: PersonalAccessTokenService,
     @Optional()
     @Inject(IDENTITY_EMAIL_DISPATCHER)
     private readonly emailDispatcher: IIdentityEmailDispatcher | null,
   ) {}
 
   async login(email: string, password: string): Promise<LoginResponse> {
+    // PATs must use POST /auth/token — never accept them on interactive login.
+    if (password.startsWith(PAT_TOKEN_PREFIX)) {
+      await this.usersService.validatePassword(password, DUMMY_PAT_BCRYPT_HASH);
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
     const user = await this.usersRepository.findByEmail(email);
 
     if (!user) {
@@ -90,11 +106,26 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const accessToken = this.generateToken(user);
+    const accessToken = this.generateToken(user, { amr: 'pwd' });
 
     return {
       access_token: accessToken,
       user: { id: user.id, email: user.email, role: user.role },
+    };
+  }
+
+  async exchangePat(token: string): Promise<LoginResponse> {
+    const verified = await this.personalAccessTokenService.verifyToken(token);
+    const accessToken = this.generateToken(verified.user, {
+      amr: 'pat',
+      scopes: verified.scopes,
+      patId: verified.patId,
+    });
+
+    return {
+      access_token: accessToken,
+      user: { id: verified.user.id, email: verified.user.email, role: verified.user.role },
+      scopes: verified.scopes,
     };
   }
 
@@ -244,7 +275,7 @@ export class AuthService {
 
     return {
       message: 'Password changed successfully.',
-      access_token: this.generateToken(updatedUser),
+      access_token: this.generateToken(updatedUser, { amr: 'pwd' }),
     };
   }
 
@@ -264,12 +295,14 @@ export class AuthService {
     return this.usersRepository.incrementTokenVersion(userId);
   }
 
-  private generateToken(user: UserEntity): string {
+  private generateToken(user: UserEntity, options: GenerateTokenOptions): string {
     return this.jwtService.sign(
       {
         sub: user.id,
         email: user.email,
         roles: [user.role],
+        amr: [options.amr],
+        ...(options.amr === 'pat' && options.scopes ? { scopes: options.scopes, patId: options.patId } : {}),
         tv: user.tokenVersion ?? 0,
       },
       { expiresIn: JWT_EXPIRES_IN, jwtid: randomUUID() },

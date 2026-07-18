@@ -24,10 +24,10 @@ describe('BullBoardSkipping Keycloak guards', () => {
     jest.restoreAllMocks();
   });
 
-  function createContext(path: string): ExecutionContext {
+  function createContext(path: string, extras: Record<string, unknown> = {}): ExecutionContext {
     return {
       switchToHttp: () => ({
-        getRequest: () => ({ originalUrl: path, url: path }),
+        getRequest: () => ({ originalUrl: path, url: path, ...extras }),
       }),
     } as ExecutionContext;
   }
@@ -43,6 +43,14 @@ describe('BullBoardSkipping Keycloak guards', () => {
     expect(superCanActivate).toHaveBeenCalledTimes(1);
   });
 
+  it('BullBoardSkippingAuthGuard skips when patAuthenticated', async () => {
+    const guard = Object.create(BullBoardSkippingAuthGuard.prototype) as BullBoardSkippingAuthGuard;
+    const superCanActivate = jest.spyOn(KeycloakAuthGuard.prototype, 'canActivate').mockResolvedValue(false);
+
+    await expect(guard.canActivate(createContext('/api/clients', { patAuthenticated: true }))).resolves.toBe(true);
+    expect(superCanActivate).not.toHaveBeenCalled();
+  });
+
   it('BullBoardSkippingResourceGuard skips Bull Board paths', async () => {
     const guard = Object.create(BullBoardSkippingResourceGuard.prototype) as BullBoardSkippingResourceGuard;
     const superCanActivate = jest.spyOn(KeycloakResourceGuard.prototype, 'canActivate').mockResolvedValue(false);
@@ -54,6 +62,14 @@ describe('BullBoardSkipping Keycloak guards', () => {
     expect(superCanActivate).toHaveBeenCalledTimes(1);
   });
 
+  it('BullBoardSkippingResourceGuard skips when patAuthenticated', async () => {
+    const guard = Object.create(BullBoardSkippingResourceGuard.prototype) as BullBoardSkippingResourceGuard;
+    const superCanActivate = jest.spyOn(KeycloakResourceGuard.prototype, 'canActivate').mockResolvedValue(false);
+
+    await expect(guard.canActivate(createContext('/api/clients', { patAuthenticated: true }))).resolves.toBe(true);
+    expect(superCanActivate).not.toHaveBeenCalled();
+  });
+
   it('BullBoardSkippingRoleGuard skips Bull Board paths', async () => {
     const guard = Object.create(BullBoardSkippingRoleGuard.prototype) as BullBoardSkippingRoleGuard;
     const superCanActivate = jest.spyOn(KeycloakRoleGuard.prototype, 'canActivate').mockResolvedValue(false);
@@ -63,5 +79,13 @@ describe('BullBoardSkipping Keycloak guards', () => {
 
     await expect(guard.canActivate(createContext('/api/clients'))).resolves.toBe(false);
     expect(superCanActivate).toHaveBeenCalledTimes(1);
+  });
+
+  it('BullBoardSkippingRoleGuard skips when patAuthenticated', async () => {
+    const guard = Object.create(BullBoardSkippingRoleGuard.prototype) as BullBoardSkippingRoleGuard;
+    const superCanActivate = jest.spyOn(KeycloakRoleGuard.prototype, 'canActivate').mockResolvedValue(false);
+
+    await expect(guard.canActivate(createContext('/api/clients', { patAuthenticated: true }))).resolves.toBe(true);
+    expect(superCanActivate).not.toHaveBeenCalled();
   });
 });

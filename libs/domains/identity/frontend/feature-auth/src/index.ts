@@ -8,6 +8,7 @@ export { IdentityRequestPasswordResetComponent } from './lib/request-password-re
 export { IdentityResetPasswordComponent } from './lib/reset-password/reset-password.component';
 export { IdentityLogoutConfirmModalComponent } from './lib/logout-confirm/logout-confirm-modal.component';
 export type { LogoutConfirmResult } from './lib/logout-confirm/logout-confirm-modal.component';
+export { IdentityTokenManagerComponent } from './lib/token-manager/token-manager.component';
 export { IdentityUserManagerComponent } from './lib/user-manager/user-manager.component';
 
 // Guards

@@ -93,7 +93,6 @@ export * from './lib/projects/entities/project-time-entry.entity';
 export {
   UserEntity as BillingUserEntity,
   UserRole as BillingUserRole,
-  UsersAuthModule as BillingUsersAuthModule,
   KeycloakUserSyncModule as BillingKeycloakUserSyncModule,
   AuthService,
   UsersService,
@@ -107,6 +106,7 @@ export {
   Public,
   UsersRoles,
   KeycloakRoles,
+  RequireScopes,
   LoginDto,
   RegisterDto,
   ConfirmEmailDto,
@@ -117,6 +117,10 @@ export {
   UpdateUserDto,
   UserResponseDto,
 } from '@forepath/identity/backend';
+
+export { BillingUsersAuthModule } from './lib/modules/billing-users-auth.module';
+export { BillingPatAuthModule } from './lib/modules/billing-pat-auth.module';
+export * from './lib/auth/billing-pat.scopes';
 
 export { EmailService } from '@forepath/shared/backend';
 

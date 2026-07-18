@@ -1,4 +1,4 @@
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -48,6 +48,7 @@ export class InvoicesController {
     private readonly subscriptionsRepository: SubscriptionsRepository,
   ) {}
 
+  @RequireScopes('invoices:read')
   @Get('summary')
   async getSummary(@Req() req?: RequestWithUser): Promise<InvoicesSummaryResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
@@ -71,6 +72,7 @@ export class InvoicesController {
     };
   }
 
+  @RequireScopes('invoices:read')
   @Get('open-overdue')
   async listOpenOverdue(@Req() req?: RequestWithUser): Promise<InvoiceResponseDto[]> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
@@ -84,6 +86,7 @@ export class InvoicesController {
     return rows.map((row) => this.invoiceService.mapToResponse(row, row.subscription?.number));
   }
 
+  @RequireScopes('invoices:read')
   @Get('history')
   async listHistory(@Req() req?: RequestWithUser): Promise<InvoiceResponseDto[]> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
@@ -97,6 +100,7 @@ export class InvoicesController {
     return rows.map((row) => this.invoiceService.mapToResponse(row, row.subscription?.number));
   }
 
+  @RequireScopes('invoices:read')
   @Get('ref/:invoiceRefId')
   async getDetailByRef(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
@@ -111,6 +115,7 @@ export class InvoicesController {
     return await this.invoiceService.getDetailForUser(invoiceRefId, userInfo.userId);
   }
 
+  @RequireScopes('invoices:read')
   @Get('ref/:invoiceRefId/pdf')
   @Header('Content-Type', 'application/pdf')
   async downloadPdfByRef(
@@ -138,6 +143,7 @@ export class InvoicesController {
     return new StreamableFile(buffer);
   }
 
+  @RequireScopes('invoices:read')
   @Get('ref/:invoiceRefId/void-document/pdf')
   @Header('Content-Type', 'application/pdf')
   async downloadVoidDocumentPdfByRef(
@@ -165,6 +171,7 @@ export class InvoicesController {
     return new StreamableFile(buffer);
   }
 
+  @RequireScopes('invoices:read')
   @Get('ref/:invoiceRefId/time-report/pdf')
   @Header('Content-Type', 'application/pdf')
   async downloadTimeReportPdfByRef(
@@ -192,6 +199,7 @@ export class InvoicesController {
     return new StreamableFile(buffer);
   }
 
+  @RequireScopes('invoices:pay')
   @Post('ref/:invoiceRefId/pay')
   async initiatePaymentByRef(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
@@ -206,6 +214,7 @@ export class InvoicesController {
     return await this.paymentOrchestrationService.initiatePaymentForUser(invoiceRefId, userInfo.userId);
   }
 
+  @RequireScopes('invoices:read')
   @Get(':subscriptionId')
   async list(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
@@ -223,6 +232,7 @@ export class InvoicesController {
     return rows.map((row) => this.invoiceService.mapToResponse(row));
   }
 
+  @RequireScopes('invoices:read')
   @Get(':subscriptionId/ref/:invoiceRefId')
   async getDetail(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
@@ -240,6 +250,7 @@ export class InvoicesController {
     return await this.invoiceService.getDetail(invoiceRefId, subscriptionId);
   }
 
+  @RequireScopes('invoices:read')
   @Get(':subscriptionId/ref/:invoiceRefId/pdf')
   @Header('Content-Type', 'application/pdf')
   async downloadPdf(
@@ -274,6 +285,7 @@ export class InvoicesController {
     return new StreamableFile(buffer);
   }
 
+  @RequireScopes('invoices:read')
   @Get(':subscriptionId/ref/:invoiceRefId/void-document/pdf')
   @Header('Content-Type', 'application/pdf')
   async downloadVoidDocumentPdf(
@@ -308,6 +320,7 @@ export class InvoicesController {
     return new StreamableFile(buffer);
   }
 
+  @RequireScopes('invoices:read')
   @Get(':subscriptionId/ref/:invoiceRefId/time-report/pdf')
   @Header('Content-Type', 'application/pdf')
   async downloadTimeReportPdf(
@@ -342,6 +355,7 @@ export class InvoicesController {
     return new StreamableFile(buffer);
   }
 
+  @RequireScopes('invoices:write')
   @Post(':subscriptionId')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -367,6 +381,7 @@ export class InvoicesController {
     });
   }
 
+  @RequireScopes('invoices:write')
   @Post(':subscriptionId/ref/:invoiceRefId/void')
   @KeycloakRoles(UserRole.ADMIN)
   @UsersRoles(UserRole.ADMIN)
@@ -394,6 +409,7 @@ export class InvoicesController {
     return this.invoiceService.mapToResponse(voided);
   }
 
+  @RequireScopes('invoices:pay')
   @Post(':subscriptionId/ref/:invoiceRefId/pay')
   async initiatePayment(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,

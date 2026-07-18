@@ -298,6 +298,27 @@ describe('loginGuard', () => {
       expect(result).toBe(true);
       expect(mockRouter.createUrlTree).not.toHaveBeenCalled();
     });
+
+    it('should clear PAT JWT and allow login access', () => {
+      const injector = setupTestBed({
+        authentication: {
+          type: 'users',
+        },
+      });
+      const exp = Math.floor((Date.now() + 3600000) / 1000);
+      const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'test@example.com', exp, amr: ['pat'] }));
+      const jwt = `header.${payload}.signature`;
+
+      (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+        key === 'agent-controller-users-jwt' ? jwt : null,
+      );
+
+      const result = runInInjectionContext(injector, () => loginGuard(mockRoute, mockState));
+
+      expect(result).toBe(true);
+      expect(window.localStorage.removeItem).toHaveBeenCalledWith('agent-controller-users-jwt');
+      expect(mockRouter.createUrlTree).not.toHaveBeenCalled();
+    });
   });
 
   describe('when authentication type is unknown', () => {

@@ -1,4 +1,4 @@
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -27,6 +27,7 @@ import { getUserFromRequest, type RequestWithUser } from '../utils/billing-acces
 @Controller('admin/billing/datev-exports')
 @KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
+@RequireScopes('datev:write')
 @UseGuards(DatevExportEnabledGuard)
 export class AdminDatevExportsController {
   constructor(private readonly datevExportAdminService: DatevExportAdminService) {}
