@@ -343,7 +343,7 @@
                           </span>
                           <span class="me-2">
                             <i class="bi bi-cash-stack me-1" aria-hidden="true"></i
-                            >{{ invoice.balance ?? 0 | number: '1.2-2' }} EUR
+                            >{{ invoice.totalGross ?? invoice.balance ?? 0 | number: '1.2-2' }} EUR
                           </span>
                           <span class="me-2">
                             <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(invoice.createdAt) }}

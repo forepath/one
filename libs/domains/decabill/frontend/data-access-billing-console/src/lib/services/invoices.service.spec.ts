@@ -63,6 +63,18 @@ describe('InvoicesService', () => {
     req.flush([mockInvoice]);
   });
 
+  it('should get history invoices', (done) => {
+    const historyInvoice = { ...mockInvoice, id: 'inv-2', status: 'paid' as const };
+
+    service.getHistoryInvoices().subscribe((res) => {
+      expect(res).toEqual([historyInvoice]);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/invoices/history`);
+
+    req.flush([historyInvoice]);
+  });
+
   it('should list invoices', (done) => {
     service.listInvoices('sub-1').subscribe((res) => {
       expect(res).toEqual([mockInvoice]);

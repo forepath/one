@@ -20,6 +20,9 @@ import {
   loadOpenOverdueInvoices,
   loadOpenOverdueInvoicesFailure,
   loadOpenOverdueInvoicesSuccess,
+  loadHistoryInvoices,
+  loadHistoryInvoicesFailure,
+  loadHistoryInvoicesSuccess,
 } from './invoices.actions';
 import { invoicesReducer, initialInvoicesState, type InvoicesState } from './invoices.reducer';
 
@@ -296,6 +299,50 @@ describe('invoicesReducer', () => {
 
       expect(newState.openOverdueListLoading).toBe(false);
       expect(newState.openOverdueListError).toBe('Open overdue load failed');
+    });
+  });
+
+  describe('loadHistoryInvoices', () => {
+    it('should set historyListLoading to true and clear historyListError', () => {
+      const state: InvoicesState = { ...initialInvoicesState, historyListError: 'Previous error' };
+      const newState = invoicesReducer(state, loadHistoryInvoices());
+
+      expect(newState.historyListLoading).toBe(true);
+      expect(newState.historyListError).toBeNull();
+    });
+
+    it('should leave loading flags unchanged when silent', () => {
+      const state: InvoicesState = {
+        ...initialInvoicesState,
+        historyListLoading: false,
+        historyListError: 'Previous error',
+      };
+      const newState = invoicesReducer(state, loadHistoryInvoices(true));
+
+      expect(newState.historyListLoading).toBe(false);
+      expect(newState.historyListError).toBe('Previous error');
+    });
+  });
+
+  describe('loadHistoryInvoicesSuccess', () => {
+    it('should set historyList and clear loading', () => {
+      const state: InvoicesState = { ...initialInvoicesState, historyListLoading: true };
+      const invoices = [mockInvoice];
+      const newState = invoicesReducer(state, loadHistoryInvoicesSuccess({ invoices }));
+
+      expect(newState.historyList).toEqual(invoices);
+      expect(newState.historyListLoading).toBe(false);
+      expect(newState.historyListError).toBeNull();
+    });
+  });
+
+  describe('loadHistoryInvoicesFailure', () => {
+    it('should set historyListError and clear loading', () => {
+      const state: InvoicesState = { ...initialInvoicesState, historyListLoading: true };
+      const newState = invoicesReducer(state, loadHistoryInvoicesFailure({ error: 'History load failed' }));
+
+      expect(newState.historyListLoading).toBe(false);
+      expect(newState.historyListError).toBe('History load failed');
     });
   });
 

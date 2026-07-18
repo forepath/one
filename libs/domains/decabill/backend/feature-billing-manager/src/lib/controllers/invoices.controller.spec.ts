@@ -17,7 +17,12 @@ describe('InvoicesController', () => {
   let invoicesRepository: jest.Mocked<
     Pick<
       InvoicesRepository,
-      'findBySubscription' | 'findOpenOverdueSummaryByUserId' | 'findByIdForUser' | 'findByIdAndSubscriptionId'
+      | 'findBySubscription'
+      | 'findOpenOverdueByUserId'
+      | 'findHistoryByUserId'
+      | 'findOpenOverdueSummaryByUserId'
+      | 'findByIdForUser'
+      | 'findByIdAndSubscriptionId'
     >
   >;
   let invoiceService: jest.Mocked<
@@ -47,6 +52,8 @@ describe('InvoicesController', () => {
   beforeEach(async () => {
     invoicesRepository = {
       findBySubscription: jest.fn().mockResolvedValue([]),
+      findOpenOverdueByUserId: jest.fn().mockResolvedValue([]),
+      findHistoryByUserId: jest.fn().mockResolvedValue([]),
       findOpenOverdueSummaryByUserId: jest.fn().mockResolvedValue({ count: 0, totalBalance: 0 }),
       findByIdForUser: jest.fn(),
       findByIdAndSubscriptionId: jest.fn(),
@@ -137,6 +144,54 @@ describe('InvoicesController', () => {
 
       expect(result).toHaveLength(1);
       expect(subscriptionService.getSubscription).toHaveBeenCalledWith(subscriptionId, userId);
+    });
+  });
+
+  describe('listOpenOverdue', () => {
+    it('lists open and overdue invoices for authenticated user', async () => {
+      invoicesRepository.findOpenOverdueByUserId.mockResolvedValue([
+        {
+          id: 'inv-1',
+          subscriptionId,
+          userId,
+          status: InvoiceStatus.ISSUED,
+          subscription: { number: 'SUB-1' },
+        } as never,
+      ]);
+
+      const result = await controller.listOpenOverdue(reqWithUser as never);
+
+      expect(result).toHaveLength(1);
+      expect(invoicesRepository.findOpenOverdueByUserId).toHaveBeenCalledWith(userId);
+      expect(invoiceService.mapToResponse).toHaveBeenCalled();
+    });
+
+    it('throws when user not authenticated', async () => {
+      await expect(controller.listOpenOverdue({} as never)).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('listHistory', () => {
+    it('lists history invoices for authenticated user', async () => {
+      invoicesRepository.findHistoryByUserId.mockResolvedValue([
+        {
+          id: 'inv-2',
+          subscriptionId,
+          userId,
+          status: InvoiceStatus.PAID,
+          subscription: { number: 'SUB-1' },
+        } as never,
+      ]);
+
+      const result = await controller.listHistory(reqWithUser as never);
+
+      expect(result).toHaveLength(1);
+      expect(invoicesRepository.findHistoryByUserId).toHaveBeenCalledWith(userId);
+      expect(invoiceService.mapToResponse).toHaveBeenCalled();
+    });
+
+    it('throws when user not authenticated', async () => {
+      await expect(controller.listHistory({} as never)).rejects.toThrow(BadRequestException);
     });
   });
 

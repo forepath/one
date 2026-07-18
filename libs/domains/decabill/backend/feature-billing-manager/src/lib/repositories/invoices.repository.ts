@@ -6,6 +6,8 @@ import { Repository } from 'typeorm';
 import { AutoPaymentStatus } from '../constants/auto-payment-status.constants';
 import {
   BILLED_INVOICE_STATUSES,
+  CUSTOMER_VISIBLE_INVOICE_STATUSES,
+  HISTORY_INVOICE_STATUSES,
   InvoiceStatus,
   OPEN_OVERDUE_INVOICE_STATUSES,
 } from '../constants/invoice-status.constants';
@@ -51,6 +53,7 @@ export class InvoicesRepository {
       .innerJoin('users', 'user', 'user.id = inv.user_id')
       .where('inv.user_id = :userId', { userId })
       .andWhere('inv.subscription_id = :subscriptionId', { subscriptionId })
+      .andWhere('inv.status IN (:...statuses)', { statuses: CUSTOMER_VISIBLE_INVOICE_STATUSES })
       .orderBy('inv.createdAt', 'DESC');
 
     applyUserTenantFilter(qb, 'user');
@@ -93,7 +96,8 @@ export class InvoicesRepository {
       .createQueryBuilder('inv')
       .innerJoin('users', 'user', 'user.id = inv.user_id')
       .where('inv.id = :id', { id })
-      .andWhere('inv.subscription_id = :subscriptionId', { subscriptionId });
+      .andWhere('inv.subscription_id = :subscriptionId', { subscriptionId })
+      .andWhere('inv.status IN (:...statuses)', { statuses: CUSTOMER_VISIBLE_INVOICE_STATUSES });
 
     applyUserTenantFilter(qb, 'user');
 
@@ -127,6 +131,10 @@ export class InvoicesRepository {
     const invoice = await this.findById(invoiceId);
 
     if (!invoice || invoice.userId !== userId) {
+      return null;
+    }
+
+    if (!CUSTOMER_VISIBLE_INVOICE_STATUSES.includes(invoice.status)) {
       return null;
     }
 
@@ -261,6 +269,20 @@ export class InvoicesRepository {
       .leftJoinAndSelect('inv.subscription', 'subscription')
       .where('inv.user_id = :userId', { userId })
       .andWhere('inv.status IN (:...statuses)', { statuses: OPEN_OVERDUE_INVOICE_STATUSES })
+      .orderBy('inv.createdAt', 'DESC');
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
+  }
+
+  async findHistoryByUserId(userId: string): Promise<InvoiceEntity[]> {
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .leftJoinAndSelect('inv.subscription', 'subscription')
+      .where('inv.user_id = :userId', { userId })
+      .andWhere('inv.status IN (:...statuses)', { statuses: HISTORY_INVOICE_STATUSES })
       .orderBy('inv.createdAt', 'DESC');
 
     applyUserTenantFilter(qb, 'user');

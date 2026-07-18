@@ -12,6 +12,7 @@ import {
   loadInvoiceDetails,
   loadInvoices,
   loadInvoicesSummary as loadInvoicesSummaryAction,
+  loadHistoryInvoices,
   loadOpenOverdueInvoices,
 } from './invoices.actions';
 import { InvoicesFacade } from './invoices.facade';
@@ -147,6 +148,16 @@ describe('InvoicesFacade', () => {
     it('should dispatch silent loadOpenOverdueInvoices', () => {
       facade.loadOpenOverdueInvoices({ silent: true });
       expect(store.dispatch).toHaveBeenCalledWith(loadOpenOverdueInvoices(true));
+    });
+
+    it('should dispatch loadHistoryInvoices', () => {
+      facade.loadHistoryInvoices();
+      expect(store.dispatch).toHaveBeenCalledWith(loadHistoryInvoices());
+    });
+
+    it('should dispatch silent loadHistoryInvoices', () => {
+      facade.loadHistoryInvoices({ silent: true });
+      expect(store.dispatch).toHaveBeenCalledWith(loadHistoryInvoices(true));
     });
 
     it('should dispatch initiatePayment', () => {

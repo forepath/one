@@ -444,6 +444,7 @@ export class InvoiceService {
       invoiceNumber: invoice.invoiceNumber,
       status: invoice.status,
       balance: Number(invoice.balanceDue),
+      totalGross: Number(invoice.totalGross),
       subscriptionNumber,
       createdAt: invoice.createdAt,
       dueDate: invoice.dueDate,

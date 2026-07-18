@@ -183,90 +183,61 @@
       </div>
 
       <div
-        class="section__column section__column--subscription d-md-flex flex-column min-h-0"
-        [class.d-none]="mobilePanel() !== 'subscription'"
+        class="section__column section__column--history d-md-flex flex-column min-h-0"
+        [class.d-none]="mobilePanel() !== 'history'"
       >
         <div class="customer-billing__lane card h-100 border-0 d-flex flex-column min-h-0">
           <div class="card-header customer-billing__lane-header py-2 small fw-semibold flex-shrink-0">
-            <span i18n="@@featureInvoices-invoices">Invoices</span>
+            <span i18n="@@featureInvoices-historyList">Invoice history</span>
           </div>
-          <div class="customer-billing__lane-subscription-select border-bottom p-3 flex-shrink-0">
-            <label for="subscriptionSelect" class="form-label small mb-1" i18n="@@featureInvoices-selectSubscription">
-              Subscription
+          <form class="lane-search" (ngSubmit)="$event.preventDefault()">
+            <label for="historyInvoicesSearchInput" class="visually-hidden" i18n="@@featureInvoices-searchHistory">
+              Search invoice history
             </label>
-            <select
-              id="subscriptionSelect"
-              name="subscriptionId"
-              class="form-select form-select-sm"
-              [ngModel]="selectedSubscriptionId"
-              (ngModelChange)="onSelectSubscription($event)"
-              [disabled]="(subscriptions$ | async)?.length === 0"
-            >
-              <option value="" i18n="@@featureInvoices-chooseSubscription">Choose a subscription</option>
-              @for (sub of subscriptions$ | async; track sub.id) {
-                <option [value]="sub.id">
-                  @if (servicePlans$ | async; as plans) {
-                    {{ sub.number || '—' }} – {{ planNameByPlanId(sub.planId, plans) }} ({{
-                      subscriptionStatusLabel(sub.status)
-                    }})
-                  } @else {
-                    {{ sub.number || '—' }} – {{ sub.planId }} ({{ subscriptionStatusLabel(sub.status) }})
-                  }
-                </option>
-              }
-            </select>
-          </div>
-          @if (selectedSubscriptionId) {
-            <form class="lane-search" (ngSubmit)="$event.preventDefault()">
-              <label
-                for="subscriptionInvoicesSearchInput"
-                class="visually-hidden"
-                i18n="@@featureInvoices-searchInvoices"
-              >
-                Search invoices
-              </label>
-              <div class="input-group search-input-container border-bottom">
-                <i class="bi bi-search" aria-hidden="true"></i>
-                <input
-                  id="subscriptionInvoicesSearchInput"
-                  type="search"
-                  class="form-control border-0 search-input"
-                  placeholder="Search invoices"
-                  i18n-placeholder="@@featureInvoices-searchInvoices"
-                  [ngModel]="subscriptionInvoicesSearch()"
-                  (ngModelChange)="onSubscriptionInvoicesSearchChange($event)"
-                  name="subscriptionInvoicesSearch"
-                />
-              </div>
-            </form>
-          }
+            <div class="input-group search-input-container border-bottom">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input
+                id="historyInvoicesSearchInput"
+                type="search"
+                class="form-control border-0 search-input"
+                placeholder="Search invoice history"
+                i18n-placeholder="@@featureInvoices-searchHistory"
+                [ngModel]="historyInvoicesSearch()"
+                (ngModelChange)="onHistoryInvoicesSearchChange($event)"
+                name="historyInvoicesSearch"
+              />
+            </div>
+          </form>
           <div class="customer-billing__lane-list list-group list-group-flush flex-grow-1">
-            @if (!selectedSubscriptionId) {
-              <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-                <p class="mb-0" i18n="@@featureInvoices-selectFirst">Select a subscription to view invoices.</p>
-              </div>
-            } @else if (invoicesLoading$ | async) {
+            @if (historyListLoading$ | async) {
               <div class="d-flex justify-content-center align-items-center p-4">
                 <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden" i18n="@@featureInvoices-loading">Loading invoices...</span>
+                  <span class="visually-hidden" i18n="@@featureInvoices-loadingHistory"
+                    >Loading invoice history...</span
+                  >
                 </div>
               </div>
-            } @else if (allInvoices().length === 0) {
-              <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-                <p class="mb-0" i18n="@@featureInvoices-noInvoices">No invoices for this subscription.</p>
-              </div>
-            } @else if (filteredAllInvoices().length === 0) {
-              <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-                <p class="mb-0" i18n="@@featureInvoices-noSearchResults">No invoices match your search.</p>
-              </div>
             } @else {
-              @for (inv of filteredAllInvoices(); track inv.id) {
-                <ng-container
-                  *ngTemplateOutlet="
-                    invoiceListItem;
-                    context: { $implicit: inv, subscriptionId: selectedSubscriptionId }
-                  "
-                ></ng-container>
+              @if (historyListError$ | async; as listErr) {
+                <div class="alert alert-warning m-3" role="alert">{{ listErr }}</div>
+              }
+              @if (historyList().length === 0) {
+                <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+                  <p class="mb-0" i18n="@@featureInvoices-noHistory">No invoice history.</p>
+                </div>
+              } @else if (filteredHistoryList().length === 0) {
+                <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+                  <p class="mb-0" i18n="@@featureInvoices-noSearchResults">No invoices match your search.</p>
+                </div>
+              } @else {
+                @for (inv of filteredHistoryList(); track inv.id) {
+                  <ng-container
+                    *ngTemplateOutlet="
+                      invoiceListItem;
+                      context: { $implicit: inv, subscriptionId: inv.subscriptionId, showTotalGross: true }
+                    "
+                  ></ng-container>
+                }
               }
             }
           </div>
@@ -276,7 +247,7 @@
   </div>
 </div>
 
-<ng-template #invoiceListItem let-inv let-subscriptionId="subscriptionId">
+<ng-template #invoiceListItem let-inv let-subscriptionId="subscriptionId" let-showTotalGross="showTotalGross">
   <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-2">
     <div class="min-w-0">
       <div class="fw-semibold mb-1">{{ invoiceDisplayTitle(inv) }}</div>
@@ -295,8 +266,13 @@
             </span>
           }
           <span class="me-2">
-            <i class="bi bi-cash-stack me-1" aria-hidden="true"></i
-            >{{ inv.balance !== null && inv.balance !== undefined ? (inv.balance | number: '1.2-2') + ' EUR' : '—' }}
+            <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>
+            @let listAmount = invoiceListAmount(inv, showTotalGross);
+            @if (listAmount !== null) {
+              {{ listAmount | number: '1.2-2' }} EUR
+            } @else {
+              —
+            }
           </span>
           <span class="me-2">
             <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(inv.createdAt) }}

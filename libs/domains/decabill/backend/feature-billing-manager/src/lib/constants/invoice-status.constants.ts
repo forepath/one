@@ -13,6 +13,15 @@ export const OPEN_OVERDUE_INVOICE_STATUSES: InvoiceStatus[] = [
   InvoiceStatus.OVERDUE,
 ];
 
+/** Customer invoice history (excludes drafts and open/overdue). */
+export const HISTORY_INVOICE_STATUSES: InvoiceStatus[] = [InvoiceStatus.PAID, InvoiceStatus.VOID];
+
+/** Statuses customers may see via list/detail APIs (never draft). */
+export const CUSTOMER_VISIBLE_INVOICE_STATUSES: InvoiceStatus[] = [
+  ...OPEN_OVERDUE_INVOICE_STATUSES,
+  ...HISTORY_INVOICE_STATUSES,
+];
+
 /** Issued invoices included in admin billing turnover charts (excludes draft/void). */
 export const BILLED_INVOICE_STATUSES: InvoiceStatus[] = [
   InvoiceStatus.ISSUED,

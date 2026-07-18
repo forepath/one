@@ -84,6 +84,19 @@ export class InvoicesController {
     return rows.map((row) => this.invoiceService.mapToResponse(row, row.subscription?.number));
   }
 
+  @Get('history')
+  async listHistory(@Req() req?: RequestWithUser): Promise<InvoiceResponseDto[]> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    const rows = await this.invoicesRepository.findHistoryByUserId(userInfo.userId);
+
+    return rows.map((row) => this.invoiceService.mapToResponse(row, row.subscription?.number));
+  }
+
   @Get('ref/:invoiceRefId')
   async getDetailByRef(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,

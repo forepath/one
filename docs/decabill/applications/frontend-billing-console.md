@@ -14,7 +14,7 @@ This application provides:
 
 - **Overview dashboard** - Subscription cards, server status, start/stop/restart actions
 - **Plans** - Browse and order service plans, manage subscription lifecycle
-- **Invoices** - List, detail, download, and Stripe checkout redirect
+- **Invoices** - Two-column customer view (open/overdue and invoice history), detail, download, and Stripe checkout redirect
 - **Customer profile** - Billing metadata required before ordering
 - **Administration** - Service types, CloudInit configs, service plans, billing KPIs, manual invoices, billing profiles (admin only)
 - **Identity UI** - Login, registration, password reset, email confirmation, user management
@@ -43,14 +43,14 @@ All routes render inside `BillingConsoleContainerComponent` unless noted. Paths 
 
 ### Default and customer routes
 
-| Path                   | Guard       | Component      | Description                              |
-| ---------------------- | ----------- | -------------- | ---------------------------------------- |
-| `/`                    | none        | redirect       | Redirects to `dashboard`                 |
-| `/dashboard`           | `authGuard` | Overview       | Subscription overview and server control |
-| `/subscriptions`       | `authGuard` | Subscriptions  | Plans list and ordering                  |
-| `/invoices`            | `authGuard` | Invoices       | Invoice list, payment, and detail        |
-| `/projects`            | `authGuard` | Projects       | Assigned projects list                   |
-| `/projects/:projectId` | `authGuard` | Project detail | Read-only board and KPI summary          |
+| Path                   | Guard       | Component      | Description                                   |
+| ---------------------- | ----------- | -------------- | --------------------------------------------- |
+| `/`                    | none        | redirect       | Redirects to `dashboard`                      |
+| `/dashboard`           | `authGuard` | Overview       | Subscription overview and server control      |
+| `/subscriptions`       | `authGuard` | Subscriptions  | Plans list and ordering                       |
+| `/invoices`            | `authGuard` | Invoices       | Open/overdue + history lists, payment, detail |
+| `/projects`            | `authGuard` | Projects       | Assigned projects list                        |
+| `/projects/:projectId` | `authGuard` | Project detail | Read-only board and KPI summary               |
 
 Stripe return URLs typically land on `/invoices?payment=success` or `?payment=cancel`. The invoices page shows a waiting message until the webhook marks the invoice paid (or a canceled message on cancel).
 

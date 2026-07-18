@@ -3,6 +3,9 @@ import type { InvoiceDetailResponse, InvoiceResponse } from '../../types/billing
 import { initialInvoicesState, type InvoicesState } from './invoices.reducer';
 import {
   selectHasInvoicesBySubscriptionId,
+  selectHistoryList,
+  selectHistoryListError,
+  selectHistoryListLoading,
   selectInvoiceDetailByRefId,
   selectInvoiceDetailsLoading,
   selectInvoicesBySubscriptionId,
@@ -16,6 +19,9 @@ import {
   selectInvoicesSummary,
   selectInvoicesSummaryError,
   selectInvoicesSummaryLoading,
+  selectOpenOverdueList,
+  selectOpenOverdueListError,
+  selectOpenOverdueListLoading,
   selectPayingInvoiceRefId,
 } from './invoices.selectors';
 
@@ -163,6 +169,36 @@ describe('Invoices Selectors', () => {
       const rootState = { invoices: state };
 
       expect(selectInvoicesSummaryError(rootState as never)).toBe('Summary failed');
+    });
+  });
+
+  describe('selectOpenOverdueList', () => {
+    it('should return open overdue list state', () => {
+      const state = createState({
+        openOverdueList: [mockInvoice],
+        openOverdueListLoading: true,
+        openOverdueListError: 'open fail',
+      });
+      const rootState = { invoices: state };
+
+      expect(selectOpenOverdueList(rootState as never)).toEqual([mockInvoice]);
+      expect(selectOpenOverdueListLoading(rootState as never)).toBe(true);
+      expect(selectOpenOverdueListError(rootState as never)).toBe('open fail');
+    });
+  });
+
+  describe('selectHistoryList', () => {
+    it('should return history list state', () => {
+      const state = createState({
+        historyList: [mockInvoice],
+        historyListLoading: true,
+        historyListError: 'history fail',
+      });
+      const rootState = { invoices: state };
+
+      expect(selectHistoryList(rootState as never)).toEqual([mockInvoice]);
+      expect(selectHistoryListLoading(rootState as never)).toBe(true);
+      expect(selectHistoryListError(rootState as never)).toBe('history fail');
     });
   });
 

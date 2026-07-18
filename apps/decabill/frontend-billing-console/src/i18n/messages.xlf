@@ -1052,6 +1052,18 @@
       <trans-unit id="featureInvoices-invoices" datatype="html">
         <source>Invoices</source>
         </trans-unit>
+      <trans-unit id="featureInvoices-historyList" datatype="html">
+        <source>Invoice history</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-searchHistory" datatype="html">
+        <source> Search invoice history </source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-loadingHistory" datatype="html">
+        <source>Loading invoice history...</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-noHistory" datatype="html">
+        <source>No invoice history.</source>
+        </trans-unit>
       <trans-unit id="featureInvoices-selectSubscription" datatype="html">
         <source> Subscription </source>
         </trans-unit>
@@ -1159,6 +1171,9 @@
         </trans-unit>
       <trans-unit id="featureInvoices-mobileOpenOverdue" datatype="html">
         <source>Open &amp; overdue</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-mobileHistory" datatype="html">
+        <source>History</source>
         </trans-unit>
       <trans-unit id="featureInvoices-mobileSubscription" datatype="html">
         <source>By subscription</source>

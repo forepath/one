@@ -19,6 +19,9 @@ import {
   loadInvoicesSummary,
   loadInvoicesSummaryFailure,
   loadInvoicesSummarySuccess,
+  loadHistoryInvoices,
+  loadHistoryInvoicesFailure,
+  loadHistoryInvoicesSuccess,
   loadOpenOverdueInvoices,
   loadOpenOverdueInvoicesFailure,
   loadOpenOverdueInvoicesSuccess,
@@ -37,6 +40,9 @@ export interface InvoicesState {
   openOverdueList: InvoiceResponse[];
   openOverdueListLoading: boolean;
   openOverdueListError: string | null;
+  historyList: InvoiceResponse[];
+  historyListLoading: boolean;
+  historyListError: string | null;
   error: string | null;
 }
 
@@ -53,6 +59,9 @@ export const initialInvoicesState: InvoicesState = {
   openOverdueList: [],
   openOverdueListLoading: false,
   openOverdueListError: null,
+  historyList: [],
+  historyListLoading: false,
+  historyListError: null,
   error: null,
 };
 
@@ -97,6 +106,26 @@ export const invoicesReducer = createReducer(
     ...state,
     openOverdueListLoading: false,
     openOverdueListError: error,
+  })),
+  on(loadHistoryInvoices, (state, { silent }) =>
+    silent
+      ? state
+      : {
+          ...state,
+          historyListLoading: true,
+          historyListError: null,
+        },
+  ),
+  on(loadHistoryInvoicesSuccess, (state, { invoices }) => ({
+    ...state,
+    historyList: invoices,
+    historyListLoading: false,
+    historyListError: null,
+  })),
+  on(loadHistoryInvoicesFailure, (state, { error }) => ({
+    ...state,
+    historyListLoading: false,
+    historyListError: error,
   })),
   on(loadInvoices, (state, { silent }) =>
     silent

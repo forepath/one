@@ -16,26 +16,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationFacade } from '@forepath/identity/frontend';
 import {
   InvoicesFacade,
-  ServicePlansFacade,
   SubscriptionsFacade,
   type CreateInvoiceDto,
   type InvoiceDetailResponse,
   type InvoiceResponse,
   type InvoicesSummaryResponse,
-  type ServicePlanResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { BehaviorSubject, combineLatest, filter, interval, map, Observable, of, switchMap, take } from 'rxjs';
 
-import {
-  getInvoiceStatusBadgeClass,
-  getInvoiceStatusLabel,
-  getSubscriptionStatusLabel,
-} from '../billing-status-labels';
+import { getInvoiceStatusBadgeClass, getInvoiceStatusLabel } from '../billing-status-labels';
 import { filterItemsBySearch } from '../billing-list-search';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { NextBillingDayPipe } from '../pipes/next-billing-day.pipe';
 
-type CustomerBillingMobilePanel = 'openOverdue' | 'subscription';
+type CustomerBillingMobilePanel = 'openOverdue' | 'history';
 
 type PaymentReturnFeedback = 'waiting' | 'confirmed' | 'canceled';
 
@@ -57,20 +51,18 @@ export class InvoicesComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly invoicesFacade = inject(InvoicesFacade);
   private readonly subscriptionsFacade = inject(SubscriptionsFacade);
-  private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly authFacade = inject(AuthenticationFacade);
   private readonly datePipe = inject(DatePipe);
 
-  readonly mobilePanels: CustomerBillingMobilePanel[] = ['openOverdue', 'subscription'];
+  readonly mobilePanels: CustomerBillingMobilePanel[] = ['openOverdue', 'history'];
   readonly mobilePanel = signal<CustomerBillingMobilePanel>('openOverdue');
   readonly openOverdueSearch = signal('');
-  readonly subscriptionInvoicesSearch = signal('');
+  readonly historyInvoicesSearch = signal('');
   paymentReturnFeedback: PaymentReturnFeedback | null = null;
 
   readonly isAdmin$ = this.authFacade.canAccessBillingAdministration$;
 
   readonly subscriptions$ = this.subscriptionsFacade.getSubscriptions$();
-  readonly servicePlans$ = this.servicePlansFacade.getServicePlans$();
 
   readonly selectedSubscriptionId$ = new BehaviorSubject<string>('');
   readonly previewInvoiceRefId$ = new BehaviorSubject<string | null>(null);
@@ -82,14 +74,11 @@ export class InvoicesComponent implements OnInit {
     ),
   );
 
-  readonly allInvoices = toSignal(
-    this.selectedSubscriptionId$.pipe(
-      switchMap((id) => (id ? this.invoicesFacade.getInvoicesBySubscriptionId$(id) : of([]))),
-    ),
-    { initialValue: [] as InvoiceResponse[] },
-  );
-
   readonly openOverdueList = toSignal(this.invoicesFacade.getOpenOverdueList$(), {
+    initialValue: [] as InvoiceResponse[],
+  });
+
+  readonly historyList = toSignal(this.invoicesFacade.getHistoryList$(), {
     initialValue: [] as InvoiceResponse[],
   });
 
@@ -99,13 +88,12 @@ export class InvoicesComponent implements OnInit {
     ),
   );
 
-  readonly filteredAllInvoices = computed(() =>
-    filterItemsBySearch(this.allInvoices(), this.subscriptionInvoicesSearch(), (invoice) =>
+  readonly filteredHistoryList = computed(() =>
+    filterItemsBySearch(this.historyList(), this.historyInvoicesSearch(), (invoice) =>
       this.invoiceSearchHaystack(invoice),
     ),
   );
 
-  readonly invoicesLoading$ = this.invoicesFacade.getInvoicesLoading$();
   readonly invoicesCreating$ = this.invoicesFacade.getInvoicesCreating$();
   readonly invoicesError$ = this.invoicesFacade.getInvoicesError$();
   readonly payingInvoiceRefId$ = this.invoicesFacade.getPayingInvoiceRefId$();
@@ -115,9 +103,10 @@ export class InvoicesComponent implements OnInit {
     initialValue: null as InvoicesSummaryResponse | null,
   });
   readonly invoicesSummaryLoading$ = this.invoicesFacade.getInvoicesSummaryLoading$();
-  readonly openOverdueList$ = this.invoicesFacade.getOpenOverdueList$();
   readonly openOverdueListLoading$ = this.invoicesFacade.getOpenOverdueListLoading$();
   readonly openOverdueListError$ = this.invoicesFacade.getOpenOverdueListError$();
+  readonly historyListLoading$ = this.invoicesFacade.getHistoryListLoading$();
+  readonly historyListError$ = this.invoicesFacade.getHistoryListError$();
 
   readonly selectedSubscription$ = combineLatest([this.subscriptions$, this.selectedSubscriptionId$]).pipe(
     map(([subscriptions, id]) => subscriptions.find((s) => s.id === id) ?? null),
@@ -133,23 +122,11 @@ export class InvoicesComponent implements OnInit {
   readonly payInvoiceTitle = $localize`:@@featureInvoices-payButtonTitle:Pay invoice`;
   private readonly defaultMinCheckoutPaymentAmount = 1;
 
-  planNameByPlanId(planId: string, plans: ServicePlanResponse[] | null): string {
-    if (!plans) return planId;
-
-    const plan = plans.find((p) => p.id === planId);
-
-    return plan?.name ?? planId;
-  }
-
-  subscriptionStatusLabel(status: string | null | undefined): string {
-    return getSubscriptionStatusLabel(status);
-  }
-
   ngOnInit(): void {
     this.subscriptionsFacade.loadSubscriptions();
-    this.servicePlansFacade.loadServicePlans();
     this.invoicesFacade.loadInvoicesSummary();
     this.invoicesFacade.loadOpenOverdueInvoices();
+    this.invoicesFacade.loadHistoryInvoices();
     this.handlePaymentReturnQueryParams();
     watchBillingMutationModalClose({
       loading$: this.invoicesCreating$,
@@ -222,14 +199,10 @@ export class InvoicesComponent implements OnInit {
 
     this.invoicesFacade.loadInvoicesSummary(silent);
     this.invoicesFacade.loadOpenOverdueInvoices(silent);
+    this.invoicesFacade.loadHistoryInvoices(silent);
 
     if (invoiceRefId) {
       this.invoicesFacade.loadInvoiceDetails(subscriptionId, invoiceRefId, silent);
-    }
-
-    if (subscriptionId) {
-      this.selectedSubscriptionId$.next(subscriptionId);
-      this.invoicesFacade.loadInvoices(subscriptionId, silent);
     }
   }
 
@@ -245,7 +218,6 @@ export class InvoicesComponent implements OnInit {
     const id = subscriptionId || '';
 
     this.selectedSubscriptionId$.next(id);
-    this.subscriptionInvoicesSearch.set('');
 
     if (id) {
       this.invoicesFacade.loadInvoices(id);
@@ -256,8 +228,8 @@ export class InvoicesComponent implements OnInit {
     this.openOverdueSearch.set(value);
   }
 
-  onSubscriptionInvoicesSearchChange(value: string): void {
-    this.subscriptionInvoicesSearch.set(value);
+  onHistoryInvoicesSearchChange(value: string): void {
+    this.historyInvoicesSearch.set(value);
   }
 
   openCreateInvoiceModal(): void {
@@ -394,6 +366,16 @@ export class InvoicesComponent implements OnInit {
     return invoice.invoiceNumber?.trim() || getInvoiceStatusLabel('draft');
   }
 
+  invoiceListAmount(invoice: InvoiceResponse, showTotalGross = false): number | null {
+    const amount = showTotalGross ? invoice.totalGross : invoice.balance;
+
+    if (amount === null || amount === undefined) {
+      return null;
+    }
+
+    return Number(amount);
+  }
+
   invoiceSearchHaystack(invoice: InvoiceResponse): string {
     return [
       invoice.invoiceNumber,
@@ -401,6 +383,7 @@ export class InvoicesComponent implements OnInit {
       invoice.status,
       getInvoiceStatusLabel(invoice.status),
       invoice.balance,
+      invoice.totalGross,
       invoice.createdAt,
       invoice.dueDate,
     ]
@@ -417,6 +400,6 @@ export class InvoicesComponent implements OnInit {
   mobilePanelLabel(panel: CustomerBillingMobilePanel): string {
     return panel === 'openOverdue'
       ? $localize`:@@featureInvoices-mobileOpenOverdue:Open & overdue`
-      : $localize`:@@featureInvoices-mobileSubscription:By subscription`;
+      : $localize`:@@featureInvoices-mobileHistory:History`;
   }
 }
