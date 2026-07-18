@@ -7,6 +7,7 @@ export class InvoiceResponseDto {
   invoiceNumber?: string;
   status?: InvoiceStatus | string;
   balance?: number;
+  totalGross?: number;
   subscriptionNumber?: string;
   createdAt!: Date;
   dueDate?: Date;

@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap, tap } from 'rxjs';
+import { catchError, map, mergeMap, of, switchMap, tap } from 'rxjs';
 
 import { InvoicesService } from '../../services/invoices.service';
 
@@ -11,6 +11,9 @@ import {
   initiatePayment,
   initiatePaymentFailure,
   initiatePaymentSuccess,
+  loadHistoryInvoices,
+  loadHistoryInvoicesFailure,
+  loadHistoryInvoicesSuccess,
   loadInvoiceDetails,
   loadInvoiceDetailsFailure,
   loadInvoiceDetailsSuccess,
@@ -65,6 +68,21 @@ export const loadOpenOverdueInvoices$ = createEffect(
   { functional: true },
 );
 
+export const loadHistoryInvoices$ = createEffect(
+  (actions$ = inject(Actions), invoicesService = inject(InvoicesService)) => {
+    return actions$.pipe(
+      ofType(loadHistoryInvoices),
+      switchMap(() =>
+        invoicesService.getHistoryInvoices().pipe(
+          map((invoices) => loadHistoryInvoicesSuccess({ invoices })),
+          catchError((error) => of(loadHistoryInvoicesFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
 export const loadInvoices$ = createEffect(
   (actions$ = inject(Actions), invoicesService = inject(InvoicesService)) => {
     return actions$.pipe(
@@ -99,7 +117,12 @@ export const reloadInvoicesAfterCreate$ = createEffect(
   (actions$ = inject(Actions)) => {
     return actions$.pipe(
       ofType(createInvoiceSuccess),
-      map(({ subscriptionId }) => loadInvoices({ subscriptionId })),
+      mergeMap(({ subscriptionId }) => [
+        loadInvoices({ subscriptionId }),
+        loadHistoryInvoices(),
+        loadOpenOverdueInvoices(),
+        loadInvoicesSummary(),
+      ]),
     );
   },
   { functional: true },

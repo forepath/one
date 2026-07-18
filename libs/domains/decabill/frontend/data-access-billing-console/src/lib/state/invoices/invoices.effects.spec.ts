@@ -22,6 +22,9 @@ import {
   loadInvoicesSummary,
   loadInvoicesSummaryFailure,
   loadInvoicesSummarySuccess,
+  loadHistoryInvoices,
+  loadHistoryInvoicesFailure,
+  loadHistoryInvoicesSuccess,
   loadOpenOverdueInvoices,
   loadOpenOverdueInvoicesFailure,
   loadOpenOverdueInvoicesSuccess,
@@ -29,10 +32,12 @@ import {
 import {
   createInvoice$,
   initiatePaymentRedirect$,
+  loadHistoryInvoices$,
   loadInvoiceDetails$,
   loadInvoices$,
   loadInvoicesSummary$,
   loadOpenOverdueInvoices$,
+  reloadInvoicesAfterCreate$,
 } from './invoices.effects';
 
 describe('InvoicesEffects', () => {
@@ -54,6 +59,7 @@ describe('InvoicesEffects', () => {
       createInvoice: jest.fn(),
       getInvoicesSummary: jest.fn(),
       getOpenOverdueInvoices: jest.fn(),
+      getHistoryInvoices: jest.fn(),
       getInvoiceDetails: jest.fn(),
       initiatePayment: jest.fn(),
     } as never;
@@ -111,6 +117,54 @@ describe('InvoicesEffects', () => {
       loadOpenOverdueInvoices$(actions$, invoicesService).subscribe((result) => {
         expect(result).toEqual(loadOpenOverdueInvoicesFailure({ error: 'Open overdue failed' }));
         done();
+      });
+    });
+  });
+
+  describe('loadHistoryInvoices$', () => {
+    it('should return loadHistoryInvoicesSuccess on success', (done) => {
+      const invoices = [mockInvoice];
+
+      actions$ = of(loadHistoryInvoices());
+      invoicesService.getHistoryInvoices.mockReturnValue(of(invoices));
+
+      loadHistoryInvoices$(actions$, invoicesService).subscribe((result) => {
+        expect(result).toEqual(loadHistoryInvoicesSuccess({ invoices }));
+        expect(invoicesService.getHistoryInvoices).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('should return loadHistoryInvoicesFailure on error', (done) => {
+      actions$ = of(loadHistoryInvoices());
+      invoicesService.getHistoryInvoices.mockReturnValue(throwError(() => new Error('History failed')));
+
+      loadHistoryInvoices$(actions$, invoicesService).subscribe((result) => {
+        expect(result).toEqual(loadHistoryInvoicesFailure({ error: 'History failed' }));
+        done();
+      });
+    });
+  });
+
+  describe('reloadInvoicesAfterCreate$', () => {
+    it('should reload subscription, history, open/overdue, and summary lists', (done) => {
+      const emitted: unknown[] = [];
+
+      actions$ = of(createInvoiceSuccess({ subscriptionId, response: { id: 'inv-1' } as never }));
+
+      reloadInvoicesAfterCreate$(actions$).subscribe({
+        next: (result) => {
+          emitted.push(result);
+          if (emitted.length === 4) {
+            expect(emitted).toEqual([
+              loadInvoices({ subscriptionId }),
+              loadHistoryInvoices(),
+              loadOpenOverdueInvoices(),
+              loadInvoicesSummary(),
+            ]);
+            done();
+          }
+        },
       });
     });
   });

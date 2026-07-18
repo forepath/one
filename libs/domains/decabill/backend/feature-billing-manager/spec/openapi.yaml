@@ -1839,6 +1839,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /invoices/history:
+    get:
+      summary: List invoice history
+      operationId: listInvoiceHistory
+      description: |
+        Returns paid and void invoices for the current user.
+        Draft invoices are never included in customer-facing lists.
+      responses:
+        '200':
+          description: Array of history invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /invoices/ref/{invoiceRefId}:
     get:
       summary: Get invoice details by reference (no subscription)
@@ -1974,11 +1996,12 @@ paths:
     get:
       summary: List invoices
       operationId: listInvoices
+      description: Returns non-draft invoices for the subscription owned by the current user.
       parameters:
         - $ref: '#/components/parameters/SubscriptionId'
       responses:
         '200':
-          description: Array of invoices
+          description: Array of invoices (drafts excluded)
           content:
             application/json:
               schema:
@@ -4718,6 +4741,8 @@ components:
         invoiceNumber: { type: string, nullable: true }
         status: { type: string, nullable: true }
         balance: { type: number, nullable: true, description: Balance due }
+        totalGross:
+          { type: number, nullable: true, description: Invoice total (gross) }
         subscriptionNumber: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
         dueDate: { type: string, format: date, nullable: true }

@@ -281,6 +281,7 @@ describe('InvoiceService', () => {
         subscriptionId,
         status: InvoiceStatus.ISSUED,
         balanceDue: 50,
+        totalGross: 119,
         pdfStorageKey: 'sub-1/inv-1.pdf',
         createdAt: new Date(),
       } as InvoiceEntity);
@@ -289,6 +290,8 @@ describe('InvoiceService', () => {
       expect(response.canDownload).toBe(true);
       expect(response.canPreview).toBe(true);
       expect(response.canDownloadVoidDocument).toBe(false);
+      expect(response.balance).toBe(50);
+      expect(response.totalGross).toBe(119);
     });
 
     it('blocks canPay when balance is below the minimum checkout amount', () => {

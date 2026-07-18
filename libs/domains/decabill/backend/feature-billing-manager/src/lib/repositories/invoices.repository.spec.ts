@@ -47,7 +47,7 @@ describe('InvoicesRepository', () => {
   });
 
   it('findByIdForUser returns invoice when user owns it', async () => {
-    const invoice = { id: 'inv-1', userId: 'user-1' };
+    const invoice = { id: 'inv-1', userId: 'user-1', status: InvoiceStatus.ISSUED };
 
     mockQueryBuilder.getOne.mockResolvedValue(invoice);
 
@@ -55,7 +55,13 @@ describe('InvoicesRepository', () => {
   });
 
   it('findByIdForUser returns null when user mismatch', async () => {
-    mockQueryBuilder.getOne.mockResolvedValue({ id: 'inv-1', userId: 'other-user' });
+    mockQueryBuilder.getOne.mockResolvedValue({ id: 'inv-1', userId: 'other-user', status: InvoiceStatus.ISSUED });
+
+    await expect(repository.findByIdForUser('inv-1', 'user-1')).resolves.toBeNull();
+  });
+
+  it('findByIdForUser returns null for draft invoices', async () => {
+    mockQueryBuilder.getOne.mockResolvedValue({ id: 'inv-1', userId: 'user-1', status: InvoiceStatus.DRAFT });
 
     await expect(repository.findByIdForUser('inv-1', 'user-1')).resolves.toBeNull();
   });
@@ -96,6 +102,60 @@ describe('InvoicesRepository', () => {
 
     await expect(repository.countByUserId('user-1')).resolves.toBe(3);
     expect(mockQueryBuilder.getCount).toHaveBeenCalled();
+  });
+
+  it('findOpenOverdueByUserId filters open and overdue statuses', async () => {
+    const items = [{ id: 'inv-1' }];
+
+    mockQueryBuilder.getMany.mockResolvedValue(items);
+
+    await expect(repository.findOpenOverdueByUserId('user-1')).resolves.toEqual(items);
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('inv.status IN (:...statuses)', {
+      statuses: [InvoiceStatus.ISSUED, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.OVERDUE],
+    });
+  });
+
+  it('findBySubscription excludes draft invoices', async () => {
+    const items = [{ id: 'inv-1' }];
+
+    mockQueryBuilder.getMany.mockResolvedValue(items);
+
+    await expect(repository.findBySubscription('user-1', 'sub-1')).resolves.toEqual(items);
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('inv.status IN (:...statuses)', {
+      statuses: [
+        InvoiceStatus.ISSUED,
+        InvoiceStatus.PARTIALLY_PAID,
+        InvoiceStatus.OVERDUE,
+        InvoiceStatus.PAID,
+        InvoiceStatus.VOID,
+      ],
+    });
+  });
+
+  it('findByIdAndSubscriptionId excludes draft invoices', async () => {
+    mockQueryBuilder.getOne.mockResolvedValue(null);
+
+    await expect(repository.findByIdAndSubscriptionId('inv-1', 'sub-1')).resolves.toBeNull();
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('inv.status IN (:...statuses)', {
+      statuses: [
+        InvoiceStatus.ISSUED,
+        InvoiceStatus.PARTIALLY_PAID,
+        InvoiceStatus.OVERDUE,
+        InvoiceStatus.PAID,
+        InvoiceStatus.VOID,
+      ],
+    });
+  });
+
+  it('findHistoryByUserId filters paid and void statuses', async () => {
+    const items = [{ id: 'inv-2' }];
+
+    mockQueryBuilder.getMany.mockResolvedValue(items);
+
+    await expect(repository.findHistoryByUserId('user-1')).resolves.toEqual(items);
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('inv.status IN (:...statuses)', {
+      statuses: [InvoiceStatus.PAID, InvoiceStatus.VOID],
+    });
   });
 
   it('existsAuthorizedByPdfOrTimeReportStorageKey queries tenant-scoped storage keys', async () => {

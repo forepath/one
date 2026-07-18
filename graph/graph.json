@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-18T08:41:27.696Z",
+  "generatedAt": "2026-07-18T09:23:41.638Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -6659,6 +6659,17 @@
         "pathOrChannel": "/invoices/open-overdue",
         "operationId": "listOpenOverdueInvoices",
         "summary": "List open and overdue invoices",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/invoices/history",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/invoices/history",
+        "operationId": "listInvoiceHistory",
+        "summary": "List invoice history",
         "specKind": "openapi"
       }
     },
@@ -19570,6 +19581,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/invoices/history",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/invoices/ref/{invoiceRefId}",
       "type": "contains"
     },
@@ -27990,6 +28006,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/invoices.controller.ts",
+      "to": "api:HTTP:GET:/invoices/history",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/invoices/history",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/invoices.controller.ts",
       "to": "api:HTTP:GET:/invoices/ref/{invoiceRefId}",
       "type": "implements"
     },
@@ -29656,6 +29682,16 @@
     {
       "from": "project:graph",
       "to": "api:HTTP:GET:/invoices/open-overdue",
+      "type": "implements"
+    },
+    {
+      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
+      "to": "api:HTTP:GET:/invoices/history",
+      "type": "implements"
+    },
+    {
+      "from": "project:graph",
+      "to": "api:HTTP:GET:/invoices/history",
       "type": "implements"
     },
     {
@@ -35190,6 +35226,11 @@
     },
     {
       "from": "concept:decabill-customer-invoice-access",
+      "to": "api:HTTP:GET:/invoices/history",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-customer-invoice-access",
       "to": "api:HTTP:GET:/invoices/ref/{invoiceRefId}",
       "type": "documents"
     },
@@ -35401,6 +35442,16 @@
     {
       "from": "concept:decabill-api-endpoints-summary",
       "to": "api:HTTP:GET:/invoices/summary",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-api-endpoints-summary",
+      "to": "api:HTTP:GET:/invoices/open-overdue",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-api-endpoints-summary",
+      "to": "api:HTTP:GET:/invoices/history",
       "type": "documents"
     },
     {

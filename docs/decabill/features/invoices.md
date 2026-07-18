@@ -54,7 +54,12 @@ Configure scheduler interval with `OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL` (de
 ### Summary and Lists
 
 - `GET /invoices/summary` - Aggregated counts and amounts for the authenticated user
-- `GET /invoices/open-overdue` - Open and overdue invoices for the user
+- `GET /invoices/open-overdue` - Open and overdue invoices for the user (`issued`, `partially_paid`, `overdue`)
+- `GET /invoices/history` - Paid and void invoices for the user (drafts are never shown to customers)
+
+The customer invoices page shows these as two columns: **Open and overdue invoices** and **Invoice history**. Both lists are user-scoped (not filtered by subscription). Subscription-scoped `GET /invoices/{subscriptionId}` remains available for other flows and also excludes drafts.
+
+Customer invoice list and detail endpoints (including by-ref and subscription-scoped paths) never return `draft` invoices. Drafts remain admin-only until issued.
 
 ### By Reference
 
@@ -131,10 +136,10 @@ See **[Projects](./projects.md)** for KPIs, reassignment rules, and minimum bill
 
 ## API Endpoints Summary
 
-| Audience | Key paths                                                                                                                              |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Customer | `/invoices/summary`, `/invoices/ref/{invoiceRefId}`, `/invoices/ref/{invoiceRefId}/pdf`, `/invoices/ref/{invoiceRefId}/pay`            |
-| Admin    | `/admin/billing/invoices`, `/admin/billing/invoices/manual`, `/admin/billing/invoices/{invoiceRefId}/issue`, `/admin/billing/bill-now` |
+| Audience | Key paths                                                                                                                                                                  |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Customer | `/invoices/summary`, `/invoices/open-overdue`, `/invoices/history`, `/invoices/ref/{invoiceRefId}`, `/invoices/ref/{invoiceRefId}/pdf`, `/invoices/ref/{invoiceRefId}/pay` |
+| Admin    | `/admin/billing/invoices`, `/admin/billing/invoices/manual`, `/admin/billing/invoices/{invoiceRefId}/issue`, `/admin/billing/bill-now`                                     |
 
 Full schemas: [Billing Manager OpenAPI](/spec/billing-manager/openapi.yaml).
 

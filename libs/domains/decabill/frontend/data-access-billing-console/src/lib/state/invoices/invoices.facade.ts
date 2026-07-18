@@ -15,12 +15,16 @@ import {
   createInvoice,
   initiatePayment,
   loadInvoiceDetails,
+  loadHistoryInvoices,
   loadInvoices,
   loadInvoicesSummary as loadInvoicesSummaryAction,
   loadOpenOverdueInvoices,
 } from './invoices.actions';
 import {
   selectHasInvoicesBySubscriptionId,
+  selectHistoryList,
+  selectHistoryListError,
+  selectHistoryListLoading,
   selectInvoiceDetailByRefId,
   selectInvoiceDetailsLoading,
   selectInvoicesBySubscriptionId,
@@ -107,6 +111,22 @@ export class InvoicesFacade {
 
   loadOpenOverdueInvoices(options?: { silent?: boolean }): void {
     this.store.dispatch(loadOpenOverdueInvoices(options?.silent === true));
+  }
+
+  getHistoryList$(): Observable<InvoiceResponse[]> {
+    return this.store.select(selectHistoryList);
+  }
+
+  getHistoryListLoading$(): Observable<boolean> {
+    return this.store.select(selectHistoryListLoading);
+  }
+
+  getHistoryListError$(): Observable<string | null> {
+    return this.store.select(selectHistoryListError);
+  }
+
+  loadHistoryInvoices(options?: { silent?: boolean }): void {
+    this.store.dispatch(loadHistoryInvoices(options?.silent === true));
   }
 
   getInvoicesCountBySubscriptionId$(subscriptionId: string): Observable<number> {

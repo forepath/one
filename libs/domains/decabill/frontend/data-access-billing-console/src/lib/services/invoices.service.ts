@@ -32,6 +32,10 @@ export class InvoicesService {
     return this.http.get<InvoiceResponse[]>(`${this.apiUrl}/invoices/open-overdue`);
   }
 
+  getHistoryInvoices(): Observable<InvoiceResponse[]> {
+    return this.http.get<InvoiceResponse[]>(`${this.apiUrl}/invoices/history`);
+  }
+
   listInvoices(subscriptionId: string): Observable<InvoiceResponse[]> {
     return this.http.get<InvoiceResponse[]>(`${this.apiUrl}/invoices/${subscriptionId}`);
   }

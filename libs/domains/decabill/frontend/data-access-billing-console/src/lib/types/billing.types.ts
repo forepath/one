@@ -521,6 +521,7 @@ export interface InvoiceResponse {
   invoiceNumber?: string | null;
   status?: InvoiceStatus | string | null;
   balance?: number | null;
+  totalGross?: number | null;
   subscriptionNumber?: string | null;
   createdAt: string;
   dueDate?: string | null;

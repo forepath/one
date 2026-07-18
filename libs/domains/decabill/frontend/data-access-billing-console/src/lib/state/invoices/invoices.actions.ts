@@ -27,6 +27,18 @@ export const loadOpenOverdueInvoicesFailure = createAction(
   props<{ error: string }>(),
 );
 
+export const loadHistoryInvoices = createAction('[Invoices] Load History Invoices', (silent = false) => ({
+  silent,
+}));
+export const loadHistoryInvoicesSuccess = createAction(
+  '[Invoices] Load History Invoices Success',
+  props<{ invoices: InvoiceResponse[] }>(),
+);
+export const loadHistoryInvoicesFailure = createAction(
+  '[Invoices] Load History Invoices Failure',
+  props<{ error: string }>(),
+);
+
 export const loadInvoices = createAction(
   '[Invoices] Load Invoices',
   props<{ subscriptionId: string; silent?: boolean }>(),
