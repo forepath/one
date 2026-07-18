@@ -1,4 +1,5 @@
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import type { AutoPaymentStatus } from '../constants/auto-payment-status.constants';
 
 export class InvoiceResponseDto {
   id!: string;
@@ -15,6 +16,7 @@ export class InvoiceResponseDto {
   canDownloadVoidDocument?: boolean;
   canDownloadTimeReport?: boolean;
   voidDocumentNumber?: string;
+  autoPaymentStatus?: AutoPaymentStatus | string;
 }
 
 export class InitiatePaymentResponseDto {

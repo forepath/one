@@ -7,10 +7,14 @@ describe('PaymentProcessorFactory', () => {
     const processor: PaymentProcessor = {
       getType: () => 'stripe',
       getDisplayName: () => 'Stripe',
+      supportsAutoPayment: () => true,
       createCheckoutSession: jest.fn(),
+      createSetupSession: jest.fn(),
+      chargeOffSession: jest.fn(),
       verifyWebhookSignature: jest.fn(),
       parseWebhookEvent: jest.fn(),
       mapWebhookToPaymentUpdate: jest.fn(),
+      mapWebhookToSetupUpdate: jest.fn(),
       refundPayment: jest.fn(),
     };
 

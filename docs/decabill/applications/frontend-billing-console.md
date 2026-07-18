@@ -52,7 +52,7 @@ All routes render inside `BillingConsoleContainerComponent` unless noted. Paths 
 | `/projects`            | `authGuard` | Projects       | Assigned projects list                   |
 | `/projects/:projectId` | `authGuard` | Project detail | Read-only board and KPI summary          |
 
-Stripe return URLs typically land on `/invoices?payment=success` or `?payment=cancel`.
+Stripe return URLs typically land on `/invoices?payment=success` or `?payment=cancel`. The invoices page shows a waiting message until the webhook marks the invoice paid (or a canceled message on cancel).
 
 ### Identity routes (from `identityAuthRoutes`)
 

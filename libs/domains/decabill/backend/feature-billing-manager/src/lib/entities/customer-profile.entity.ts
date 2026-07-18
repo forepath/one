@@ -44,6 +44,12 @@ export class CustomerProfileEntity {
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'stripe_customer_id' })
   stripeCustomerId?: string;
 
+  @Column({ type: 'boolean', name: 'auto_billing_enabled', default: false })
+  autoBillingEnabled!: boolean;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'default_payment_method_external_id' })
+  defaultPaymentMethodExternalId?: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

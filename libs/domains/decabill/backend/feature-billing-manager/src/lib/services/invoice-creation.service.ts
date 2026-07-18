@@ -1,5 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
+import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
 import type { OpenPositionEntity } from '../entities/open-position.entity';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
@@ -15,6 +16,7 @@ import { resolveSubscriptionBillingBaseOverride } from '../utils/server-type-bil
 import { resolvePlanTaxCategory } from '../utils/plan-tax.utils';
 
 import type { LineItemInput } from './tax-calculation.service';
+import { TaxCalculationService } from './tax-calculation.service';
 import { InvoiceService } from './invoice.service';
 import { PricingService } from './pricing.service';
 import { PromotionApplicationService, type PromotionRedemptionUpdate } from './promotion-application.service';
@@ -29,10 +31,13 @@ interface InvoiceCreationOptions {
 
 type ChargePeriodResult = SubscriptionChargePeriod;
 
+/** Floor for treating a charge period as billable at all (not the checkout payment minimum). */
 const MIN_BILLABLE_AMOUNT = 0.01;
 
 @Injectable()
 export class InvoiceCreationService {
+  private readonly logger = new Logger(InvoiceCreationService.name);
+
   constructor(
     private readonly subscriptionsRepository: SubscriptionsRepository,
     private readonly servicePlansRepository: ServicePlansRepository,
@@ -44,6 +49,7 @@ export class InvoiceCreationService {
     private readonly providerServerTypesService: ProviderServerTypesService,
     private readonly promotionApplicationService: PromotionApplicationService,
     private readonly subscriptionChargePeriodService: SubscriptionChargePeriodService,
+    private readonly taxCalculationService: TaxCalculationService,
   ) {}
 
   async createInvoice(subscriptionId: string, userId: string, description?: string, options?: InvoiceCreationOptions) {
@@ -99,11 +105,29 @@ export class InvoiceCreationService {
       chargePeriod: { start: chargePeriod.periodStart, end: chargePeriod.periodEnd },
       subscriptionChargeNet: Math.round(chargePeriod.baseAmount * 100) / 100,
     });
+    const lineInputs = [...promoResult.discountLines, chargeLine];
+    const totals = this.taxCalculationService.computeLines(lineInputs);
+    const minCheckoutPaymentAmount = getMinCheckoutPaymentAmount();
+
+    // Align with accumulate/hold: do not issue positive balances below the Checkout minimum.
+    if (totals.totalGross > 0 && totals.totalGross < minCheckoutPaymentAmount) {
+      if (options?.skipIfNoBillableAmount) {
+        this.logger.debug(
+          `Skipping invoice for subscription ${subscriptionId}: payable amount ${totals.totalGross.toFixed(2)} is below minimum ${minCheckoutPaymentAmount.toFixed(2)}`,
+        );
+
+        return undefined;
+      }
+
+      throw new BadRequestException(
+        `Invoice amount is below the minimum payment amount of ${minCheckoutPaymentAmount.toFixed(2)}`,
+      );
+    }
 
     return await this.issueInvoiceWithPromotionCommit({
       subscriptionId,
       userId,
-      lineInputs: [...promoResult.discountLines, chargeLine],
+      lineInputs,
       promotionApplications: promoResult.applications,
       redemptionUpdates: promoResult.redemptionUpdates,
     });
@@ -171,6 +195,19 @@ export class InvoiceCreationService {
     }
 
     const primarySubscriptionId = billableGroups[0].group.subscriptionId;
+    const totals = this.taxCalculationService.computeLines(lineInputs);
+    const minCheckoutPaymentAmount = getMinCheckoutPaymentAmount();
+
+    // Hold unbilled positions when there is a positive payable amount below the Checkout minimum.
+    // Zero-gross (e.g. fully promotional) invoices are still issued.
+    if (totals.totalGross > 0 && totals.totalGross < minCheckoutPaymentAmount) {
+      this.logger.debug(
+        `Holding open positions for user ${userId}: payable amount ${totals.totalGross.toFixed(2)} is below minimum ${minCheckoutPaymentAmount.toFixed(2)}`,
+      );
+
+      return undefined;
+    }
+
     const result = await this.issueInvoiceWithPromotionCommit({
       subscriptionId: primarySubscriptionId,
       userId,

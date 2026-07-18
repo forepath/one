@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   AvailabilityService,
   BackordersFacade,
@@ -44,7 +44,7 @@ import {
   type ValidatePromotionRequest,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
-import { combineLatest, filter, of, pairwise, switchMap, take, withLatestFrom } from 'rxjs';
+import { combineLatest, filter, interval, of, pairwise, switchMap, take, withLatestFrom } from 'rxjs';
 
 import {
   getBackorderStatusBadgeClass,
@@ -66,6 +66,8 @@ import { showBillingModal, watchBillingMutationModalClose } from '../billing-mod
 import { buildPromotionAdjustedOrderPricing } from '../promotion-pricing-preview.util';
 
 type CustomerPlansMobilePanel = 'subscriptions' | 'backorders';
+
+type AutoBillingSetupFeedback = 'waiting' | 'confirmed' | 'canceled';
 
 type OrderWizardStepId = 'plan' | 'infrastructure' | 'configuration' | 'summary';
 
@@ -172,9 +174,11 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   readonly countryOptions: BillingCountryOption[] = BILLING_COUNTRY_OPTIONS;
 
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   private initialPlanIdFromQuery: string | null = null;
+  autoBillingSetupFeedback: AutoBillingSetupFeedback | null = null;
 
   orderPlanId = '';
   orderPromotionCode = signal('');
@@ -576,6 +580,23 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     }
 
     const profileParam = queryParamMap.get('profile');
+    const autoBillingParam = queryParamMap.get('autoBilling');
+
+    if (autoBillingParam === 'setup_success') {
+      this.autoBillingSetupFeedback = 'waiting';
+      this.startAutoBillingConfirmationPoll();
+    } else if (autoBillingParam === 'setup_cancel') {
+      this.autoBillingSetupFeedback = 'canceled';
+    }
+
+    if (autoBillingParam) {
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { autoBilling: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    }
 
     if (profileParam === 'true') {
       this.openEditProfileModal();
@@ -1416,10 +1437,16 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   openEditProfileModal(): void {
     showBillingModal(this.editProfileModal);
 
-    this.customerProfileFacade
-      .getCustomerProfile$()
-      .pipe(take(1))
-      .subscribe((profile) => {
+    combineLatest([
+      this.customerProfileFacade.getCustomerProfile$(),
+      this.customerProfileFacade.getCustomerProfileLoading$(),
+    ])
+      .pipe(
+        filter(([, loading]) => !loading),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(([profile]) => {
         this.profileForm = {
           firstName: profile?.firstName ?? undefined,
           lastName: profile?.lastName ?? undefined,
@@ -1433,11 +1460,52 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
           email: profile?.email ?? undefined,
           phone: profile?.phone ?? undefined,
         };
+        this.cdr.detectChanges();
       });
   }
 
   onSubmitProfile(): void {
     this.customerProfileFacade.updateCustomerProfile(this.profileForm);
+  }
+
+  onSetupAutoBilling(): void {
+    this.autoBillingSetupFeedback = null;
+    this.customerProfileFacade.setupAutoBilling();
+  }
+
+  onEnableAutoBilling(): void {
+    this.customerProfileFacade.enableAutoBilling();
+  }
+
+  onDisableAutoBilling(): void {
+    this.customerProfileFacade.disableAutoBilling();
+  }
+
+  private startAutoBillingConfirmationPoll(): void {
+    this.customerProfileFacade.loadCustomerProfile();
+
+    interval(3000)
+      .pipe(
+        take(20),
+        filter(() => this.autoBillingSetupFeedback === 'waiting'),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.customerProfileFacade.loadCustomerProfile();
+      });
+
+    this.customerProfile$
+      .pipe(
+        filter((profile) => Boolean(profile?.hasPaymentMethodOnFile)),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        if (this.autoBillingSetupFeedback === 'waiting') {
+          this.autoBillingSetupFeedback = 'confirmed';
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   private registerModalCloseWatchers(): void {

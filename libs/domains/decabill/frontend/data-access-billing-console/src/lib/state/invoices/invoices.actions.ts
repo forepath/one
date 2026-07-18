@@ -8,14 +8,16 @@ import type {
   InvoicesSummaryResponse,
 } from '../../types/billing.types';
 
-export const loadInvoicesSummary = createAction('[Invoices] Load Summary');
+export const loadInvoicesSummary = createAction('[Invoices] Load Summary', (silent = false) => ({ silent }));
 export const loadInvoicesSummarySuccess = createAction(
   '[Invoices] Load Summary Success',
   props<{ summary: InvoicesSummaryResponse }>(),
 );
 export const loadInvoicesSummaryFailure = createAction('[Invoices] Load Summary Failure', props<{ error: string }>());
 
-export const loadOpenOverdueInvoices = createAction('[Invoices] Load Open Overdue Invoices');
+export const loadOpenOverdueInvoices = createAction('[Invoices] Load Open Overdue Invoices', (silent = false) => ({
+  silent,
+}));
 export const loadOpenOverdueInvoicesSuccess = createAction(
   '[Invoices] Load Open Overdue Invoices Success',
   props<{ invoices: InvoiceResponse[] }>(),
@@ -25,7 +27,10 @@ export const loadOpenOverdueInvoicesFailure = createAction(
   props<{ error: string }>(),
 );
 
-export const loadInvoices = createAction('[Invoices] Load Invoices', props<{ subscriptionId: string }>());
+export const loadInvoices = createAction(
+  '[Invoices] Load Invoices',
+  props<{ subscriptionId: string; silent?: boolean }>(),
+);
 export const loadInvoicesSuccess = createAction(
   '[Invoices] Load Invoices Success',
   props<{ subscriptionId: string; invoices: InvoiceResponse[] }>(),
@@ -44,7 +49,7 @@ export const createInvoiceFailure = createAction('[Invoices] Create Invoice Fail
 
 export const loadInvoiceDetails = createAction(
   '[Invoices] Load Invoice Details',
-  props<{ subscriptionId?: string; invoiceRefId: string }>(),
+  props<{ subscriptionId?: string; invoiceRefId: string; silent?: boolean }>(),
 );
 export const loadInvoiceDetailsSuccess = createAction(
   '[Invoices] Load Invoice Details Success',

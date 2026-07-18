@@ -31,5 +31,41 @@ export const updateCustomerProfileFailure = createAction(
   props<{ error: string }>(),
 );
 
+export const setupAutoBilling = createAction('[Customer Profile] Setup Auto Billing');
+
+export const setupAutoBillingSuccess = createAction(
+  '[Customer Profile] Setup Auto Billing Success',
+  props<{ setupUrl: string }>(),
+);
+
+export const setupAutoBillingFailure = createAction(
+  '[Customer Profile] Setup Auto Billing Failure',
+  props<{ error: string }>(),
+);
+
+export const enableAutoBilling = createAction('[Customer Profile] Enable Auto Billing');
+
+export const enableAutoBillingSuccess = createAction(
+  '[Customer Profile] Enable Auto Billing Success',
+  props<{ profile: CustomerProfileResponse }>(),
+);
+
+export const enableAutoBillingFailure = createAction(
+  '[Customer Profile] Enable Auto Billing Failure',
+  props<{ error: string }>(),
+);
+
+export const disableAutoBilling = createAction('[Customer Profile] Disable Auto Billing');
+
+export const disableAutoBillingSuccess = createAction(
+  '[Customer Profile] Disable Auto Billing Success',
+  props<{ profile: CustomerProfileResponse }>(),
+);
+
+export const disableAutoBillingFailure = createAction(
+  '[Customer Profile] Disable Auto Billing Failure',
+  props<{ error: string }>(),
+);
+
 // Clear Customer Profile Actions
 export const clearCustomerProfile = createAction('[Customer Profile] Clear Customer Profile');

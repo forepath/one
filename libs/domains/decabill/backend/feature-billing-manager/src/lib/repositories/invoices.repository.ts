@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { AutoPaymentStatus } from '../constants/auto-payment-status.constants';
 import {
   BILLED_INVOICE_STATUSES,
   InvoiceStatus,
@@ -166,6 +167,91 @@ export class InvoicesRepository {
     applyUserTenantFilter(qb, 'user');
 
     return await qb.getMany();
+  }
+
+  async findIdsDueForAutoPayment(batchSize: number, offset: number): Promise<string[]> {
+    const now = new Date();
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .select('inv.id', 'id')
+      .where('inv.status IN (:...statuses)', { statuses: OPEN_OVERDUE_INVOICE_STATUSES })
+      .andWhere(
+        `(
+          (
+            inv.auto_payment_status IN (:...claimableStatuses)
+            AND (inv.auto_payment_next_retry_at IS NULL OR inv.auto_payment_next_retry_at <= :now)
+          )
+          OR (
+            inv.auto_payment_status = :inProgressStatus
+            AND inv.auto_payment_next_retry_at IS NOT NULL
+            AND inv.auto_payment_next_retry_at <= :now
+          )
+        )`,
+        {
+          claimableStatuses: [AutoPaymentStatus.SCHEDULED, AutoPaymentStatus.RETRYING],
+          inProgressStatus: AutoPaymentStatus.IN_PROGRESS,
+          now,
+        },
+      )
+      .orderBy('inv.auto_payment_next_retry_at', 'ASC', 'NULLS FIRST')
+      .addOrderBy('inv.createdAt', 'ASC')
+      .take(batchSize)
+      .skip(offset);
+
+    applyUserTenantFilter(qb, 'user');
+
+    const rows = await qb.getRawMany<{ id: string }>();
+
+    return rows.map((row) => row.id);
+  }
+
+  /**
+   * Atomically claims an invoice for an off-session charge attempt.
+   * Returns null when another worker already claimed it or status is no longer claimable.
+   */
+  async claimForAutoPayment(invoiceId: string, attemptNumber: number): Promise<InvoiceEntity | null> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .update(InvoiceEntity)
+      .set({
+        autoPaymentStatus: AutoPaymentStatus.IN_PROGRESS,
+        autoPaymentAttemptCount: attemptNumber,
+        autoPaymentNextRetryAt: null,
+      })
+      .where('id = :invoiceId', { invoiceId })
+      .andWhere('auto_payment_status IN (:...statuses)', {
+        statuses: [AutoPaymentStatus.SCHEDULED, AutoPaymentStatus.RETRYING],
+      })
+      .execute();
+
+    if (!result.affected) {
+      return null;
+    }
+
+    return await this.findById(invoiceId);
+  }
+
+  /**
+   * Transitions auto-payment state only while still IN_PROGRESS (sync/webhook race guard).
+   */
+  async transitionAutoPaymentFromInProgress(
+    invoiceId: string,
+    dto: {
+      autoPaymentStatus: AutoPaymentStatus;
+      autoPaymentNextRetryAt?: Date | null;
+      autoPaymentAttemptCount?: number;
+    },
+  ): Promise<boolean> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .update(InvoiceEntity)
+      .set(dto)
+      .where('id = :invoiceId', { invoiceId })
+      .andWhere('auto_payment_status = :status', { status: AutoPaymentStatus.IN_PROGRESS })
+      .execute();
+
+    return (result.affected ?? 0) > 0;
   }
 
   async findOpenOverdueByUserId(userId: string): Promise<InvoiceEntity[]> {

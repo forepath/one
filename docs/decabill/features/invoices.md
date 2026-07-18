@@ -4,7 +4,7 @@ Invoice issuance, ZUGFeRD PDF generation, open position accumulation, and paymen
 
 ## Overview
 
-Decabill stores invoices in PostgreSQL with immutable issued states. PDFs follow ZUGFeRD conventions with EN 16931 XML embedded. Customers pay via Stripe Checkout; admins can create manual invoices and adjust payment status.
+Decabill stores invoices in PostgreSQL with immutable issued states. PDFs follow ZUGFeRD conventions with EN 16931 XML embedded. Customers pay via Stripe Checkout or auto-billing when enabled; admins can create manual invoices and adjust payment status.
 
 ## Invoice Statuses
 
@@ -25,6 +25,8 @@ Recurring and final subscription charges are recorded as **open positions** inst
 
 A scheduler runs on each user's **billing day** (stored on the user record; default is registration day of month capped at 28). On that day, one accumulated invoice per user is created containing all unbilled open positions as line items.
 
+If the resulting payable amount (invoice total gross after promotions and tax) is greater than zero but below **`BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT`** (default `1.00`), the invoice is **not** created. Open positions stay unbilled and are reconsidered on the next billing day (or the next admin bill-now). Fully promotional zero-gross invoices are still issued.
+
 This is separate from the service plan's `billing_day_of_month`, which controls subscription period alignment.
 
 ```mermaid
@@ -36,8 +38,12 @@ sequenceDiagram
     Sched->>DB: Find users whose billing day is today
     loop Each user with open positions
         Sched->>API: Create accumulated invoice
-        API->>DB: Insert invoice + line items from open positions
-        API->>DB: Mark positions as billed
+        alt Payable amount below checkout minimum
+            API-->>Sched: Hold positions (no invoice)
+        else Amount meets minimum or is zero (promotional)
+            API->>DB: Insert invoice + line items from open positions
+            API->>DB: Mark positions as billed
+        end
     end
 ```
 
@@ -96,10 +102,12 @@ Usage records posted via `POST /admin/usage/record` (admin or API key only) appe
 Customer payment flow:
 
 1. `POST .../pay` creates a Stripe Checkout Session
-2. User completes checkout on Stripe
-3. Stripe webhook updates invoice to paid (idempotent)
+2. User completes checkout on Stripe and returns to `/invoices?payment=success` (UI shows waiting until confirmation)
+3. Stripe webhook updates invoice to paid (idempotent); the invoices page then shows payment confirmed
 
-See [Payment Processing](./payment-processing.md).
+Checkout and saved-payment-method charges require a balance due of at least **`BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT`** (default **1.00**). Below that, `canPay` is false, the pay button is disabled with an explanation, and the API rejects payment.
+
+See [Payment Processing](./payment-processing.md) and [Auto-Billing](./auto-billing.md). When auto-billing is **in progress** or **retrying** for an invoice, `canPay` is false until the attempt settles, retries are exhausted, or auto-billing is disabled (scheduled alone does not block).
 
 ## Project Time Billing
 

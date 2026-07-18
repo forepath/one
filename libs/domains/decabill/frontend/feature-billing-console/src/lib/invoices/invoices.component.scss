@@ -94,6 +94,11 @@
   }
 }
 
+/* Disabled pay buttons still need hover so the minimum-amount title is visible. */
+.btn-group > .btn:disabled {
+  pointer-events: auto;
+}
+
 .invoice-preview-modal {
   max-width: 56rem;
 

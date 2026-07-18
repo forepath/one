@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-17T20:41:32.744Z",
+  "generatedAt": "2026-07-18T08:41:27.696Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -2329,6 +2329,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-auto-billing.controller.ts",
+      "type": "file",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-auto-billing.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-profiles.controller.ts",
       "type": "file",
       "attrs": {
@@ -2387,6 +2396,15 @@
       "type": "file",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/cloud-init-configs.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-auto-billing.controller.ts",
+      "type": "file",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-auto-billing.controller.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -3871,6 +3889,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/features/authentication.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/features/auto-billing.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/auto-billing.md",
         "languageOrKind": "md"
       }
     },
@@ -6582,6 +6608,39 @@
       }
     },
     {
+      "id": "api:HTTP:POST:/customer-profile/auto-billing/setup",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/customer-profile/auto-billing/setup",
+        "operationId": "setupCustomerAutoBilling",
+        "summary": "Start auto-billing payment method setup",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/customer-profile/auto-billing/enable",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/customer-profile/auto-billing/enable",
+        "operationId": "enableCustomerAutoBilling",
+        "summary": "Enable auto-billing",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/customer-profile/auto-billing/disable",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/customer-profile/auto-billing/disable",
+        "operationId": "disableCustomerAutoBilling",
+        "summary": "Disable auto-billing",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/invoices/summary",
       "type": "endpoint",
       "attrs": {
@@ -7128,6 +7187,39 @@
         "pathOrChannel": "/admin/billing/customer-profiles/{id}",
         "operationId": "deleteAdminCustomerProfile",
         "summary": "Delete customer billing profile (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/setup",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/customer-profiles/{id}/auto-billing/setup",
+        "operationId": "adminSetupCustomerAutoBilling",
+        "summary": "Start auto-billing payment method setup for a customer (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/enable",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/customer-profiles/{id}/auto-billing/enable",
+        "operationId": "adminEnableCustomerAutoBilling",
+        "summary": "Enable auto-billing for a customer (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/disable",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/customer-profiles/{id}/auto-billing/disable",
+        "operationId": "adminDisableCustomerAutoBilling",
+        "summary": "Disable auto-billing for a customer (admin)",
         "specKind": "openapi"
       }
     },
@@ -13945,6 +14037,76 @@
       }
     },
     {
+      "id": "concept:decabill-auto-billing",
+      "type": "concept",
+      "attrs": {
+        "title": "Auto-Billing",
+        "docPath": "docs/decabill/features/auto-billing.md",
+        "sectionAnchor": "auto-billing",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-payment-processor-capability",
+      "type": "concept",
+      "attrs": {
+        "title": "Payment processor capability",
+        "docPath": "docs/decabill/features/auto-billing.md",
+        "sectionAnchor": "payment-processor-capability",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-customer-profile-fields",
+      "type": "concept",
+      "attrs": {
+        "title": "Customer profile fields",
+        "docPath": "docs/decabill/features/auto-billing.md",
+        "sectionAnchor": "customer-profile-fields",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-setup-and-enable-flow",
+      "type": "concept",
+      "attrs": {
+        "title": "Setup and enable flow",
+        "docPath": "docs/decabill/features/auto-billing.md",
+        "sectionAnchor": "setup-and-enable-flow",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-invoice-auto-payment-lifecycle",
+      "type": "concept",
+      "attrs": {
+        "title": "Invoice auto-payment lifecycle",
+        "docPath": "docs/decabill/features/auto-billing.md",
+        "sectionAnchor": "invoice-auto-payment-lifecycle",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-notifications",
+      "type": "concept",
+      "attrs": {
+        "title": "Notifications",
+        "docPath": "docs/decabill/features/auto-billing.md",
+        "sectionAnchor": "notifications",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-related",
+      "type": "concept",
+      "attrs": {
+        "title": "Related",
+        "docPath": "docs/decabill/features/auto-billing.md",
+        "sectionAnchor": "related",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-backorders",
       "type": "concept",
       "attrs": {
@@ -15091,16 +15253,6 @@
         "title": "Public API",
         "docPath": "docs/decabill/features/public-withdrawal.md",
         "sectionAnchor": "public-api",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-related",
-      "type": "concept",
-      "attrs": {
-        "title": "Related",
-        "docPath": "docs/decabill/features/public-withdrawal.md",
-        "sectionAnchor": "related",
         "domain": "decabill"
       }
     },
@@ -17643,6 +17795,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-auto-billing.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-profiles.controller.ts",
       "type": "contains"
     },
@@ -17674,6 +17831,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/cloud-init-configs.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-auto-billing.controller.ts",
       "type": "contains"
     },
     {
@@ -19383,6 +19545,21 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/setup",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/enable",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/disable",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/invoices/summary",
       "type": "contains"
     },
@@ -19629,6 +19806,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:DELETE:/admin/billing/customer-profiles/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/setup",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/enable",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/disable",
       "type": "contains"
     },
     {
@@ -24137,6 +24329,46 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/decabill/features/auto-billing.md",
+      "to": "concept:decabill-auto-billing",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/auto-billing.md",
+      "to": "concept:decabill-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/auto-billing.md",
+      "to": "concept:decabill-payment-processor-capability",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/auto-billing.md",
+      "to": "concept:decabill-customer-profile-fields",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/auto-billing.md",
+      "to": "concept:decabill-setup-and-enable-flow",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/auto-billing.md",
+      "to": "concept:decabill-invoice-auto-payment-lifecycle",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/auto-billing.md",
+      "to": "concept:decabill-notifications",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/auto-billing.md",
+      "to": "concept:decabill-related",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/decabill/features/backorders.md",
       "to": "concept:decabill-backorders",
       "type": "contains"
@@ -27173,6 +27405,36 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/setup",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/setup",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/enable",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/enable",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/disable",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/disable",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/void",
       "type": "implements"
     },
@@ -27467,6 +27729,21 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-profiles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/setup",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-profiles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/enable",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-profiles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/disable",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-datev-exports.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/datev-exports",
       "type": "implements"
@@ -27627,6 +27904,36 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-auto-billing.controller.ts",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/setup",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/setup",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-auto-billing.controller.ts",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/enable",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/enable",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-auto-billing.controller.ts",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/disable",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/disable",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-profiles.controller.ts",
       "to": "api:HTTP:GET:/customer-profile",
       "type": "implements"
@@ -27644,6 +27951,21 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:POST:/customer-profile",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-profiles.controller.ts",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/setup",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-profiles.controller.ts",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/enable",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-profiles.controller.ts",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/disable",
       "type": "implements"
     },
     {
@@ -33817,6 +34139,101 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-payment-processor-capability",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "api:HTTP:GET:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "api:HTTP:POST:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "api:HTTP:GET:/customer-profile",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "api:HTTP:POST:/customer-profile",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/setup",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/enable",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "api:HTTP:DELETE:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-invoice-auto-payment-lifecycle",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-notifications",
+      "to": "project:ai",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "api:HTTP:GET:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "api:HTTP:POST:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "api:HTTP:GET:/customer-profile",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "api:HTTP:POST:/customer-profile",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-backorders",
       "to": "project:ai",
       "type": "documents"
@@ -34434,6 +34851,21 @@
     {
       "from": "concept:decabill-self-service",
       "to": "api:HTTP:POST:/customer-profile",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-self-service",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/setup",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-self-service",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/enable",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-self-service",
+      "to": "api:HTTP:POST:/customer-profile/auto-billing/disable",
       "type": "documents"
     },
     {
@@ -35699,26 +36131,6 @@
     {
       "from": "concept:decabill-public-api",
       "to": "api:HTTP:POST:/public/withdrawal/confirm",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related",
-      "to": "api:HTTP:GET:/subscriptions",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related",
-      "to": "api:HTTP:POST:/subscriptions",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related",
-      "to": "api:HTTP:GET:/customer-profile",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related",
-      "to": "api:HTTP:POST:/customer-profile",
       "type": "documents"
     },
     {
@@ -38108,6 +38520,11 @@
     },
     {
       "from": "file:docs/decabill/features/authentication.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/auto-billing.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -41027,6 +41444,41 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-auto-billing",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-payment-processor-capability",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-customer-profile-fields",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-setup-and-enable-flow",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-invoice-auto-payment-lifecycle",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-notifications",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-backorders",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -41598,11 +42050,6 @@
     },
     {
       "from": "concept:decabill-public-api",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-related",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

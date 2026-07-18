@@ -1,4 +1,7 @@
-import { buildStripeCheckoutSessionCreateParams } from './stripe-checkout-session.utils';
+import {
+  buildStripeCheckoutSessionCreateParams,
+  buildStripeSetupSessionCreateParams,
+} from './stripe-checkout-session.utils';
 
 describe('buildStripeCheckoutSessionCreateParams', () => {
   const baseParams = {
@@ -34,20 +37,31 @@ describe('buildStripeCheckoutSessionCreateParams', () => {
     expect(params).not.toHaveProperty('payment_method_options');
   });
 
-  it('uses stripe customer id when present', () => {
-    expect(
-      buildStripeCheckoutSessionCreateParams(
-        { ...baseParams, stripeCustomerId: 'cus_123', customerEmail: undefined },
-        { fraudProtectionEnabled: true },
-      ),
-    ).toMatchObject({
-      customer: 'cus_123',
+  it('includes setup_future_usage on payment intents', () => {
+    expect(buildStripeCheckoutSessionCreateParams(baseParams, { fraudProtectionEnabled: false })).toMatchObject({
+      payment_intent_data: {
+        setup_future_usage: 'off_session',
+      },
     });
+  });
+
+  it('builds setup session params with customer and setup_intent metadata', () => {
     expect(
-      buildStripeCheckoutSessionCreateParams(
-        { ...baseParams, stripeCustomerId: 'cus_123', customerEmail: undefined },
-        { fraudProtectionEnabled: true },
-      ),
-    ).not.toHaveProperty('customer_email');
+      buildStripeSetupSessionCreateParams({
+        stripeCustomerId: 'cus_1',
+        currency: 'EUR',
+        successUrl: 'https://example.com/ok',
+        cancelUrl: 'https://example.com/cancel',
+        idempotencyKey: 'k',
+        metadata: { userId: 'u1', tenantId: 'default' },
+      }),
+    ).toMatchObject({
+      mode: 'setup',
+      currency: 'eur',
+      customer: 'cus_1',
+      setup_intent_data: {
+        metadata: { userId: 'u1', tenantId: 'default' },
+      },
+    });
   });
 });

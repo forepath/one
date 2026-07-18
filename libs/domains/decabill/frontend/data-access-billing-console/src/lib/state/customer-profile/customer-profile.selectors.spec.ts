@@ -20,6 +20,7 @@ describe('Customer Profile Selectors', () => {
     lastName: 'Doe',
     email: 'john@example.com',
     addressLine1: '123 Main St',
+    postalCode: '10115',
     city: 'Berlin',
     country: 'DE',
     createdAt: '2024-01-01T00:00:00Z',
@@ -114,6 +115,14 @@ describe('Customer Profile Selectors', () => {
     });
     it('should return false when required field is null', () => {
       const incomplete = { ...mockProfile, firstName: null };
+      const state = createState({ profile: incomplete });
+      const rootState = { customerProfile: state };
+
+      expect(selectIsCustomerProfileComplete(rootState as never)).toBe(false);
+    });
+
+    it('should return false when postal code is missing', () => {
+      const incomplete = { ...mockProfile, postalCode: null };
       const state = createState({ profile: incomplete });
       const rootState = { customerProfile: state };
 

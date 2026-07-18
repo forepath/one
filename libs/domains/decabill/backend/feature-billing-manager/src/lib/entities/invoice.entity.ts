@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
+import { AutoPaymentStatus } from '../constants/auto-payment-status.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 
 import { ProjectEntity } from '../projects/entities/project.entity';
@@ -70,6 +71,20 @@ export class InvoiceEntity {
 
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'external_payment_id' })
   externalPaymentId?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 32,
+    name: 'auto_payment_status',
+    default: AutoPaymentStatus.IDLE,
+  })
+  autoPaymentStatus!: AutoPaymentStatus;
+
+  @Column({ type: 'int', name: 'auto_payment_attempt_count', default: 0 })
+  autoPaymentAttemptCount!: number;
+
+  @Column({ type: 'timestamp', nullable: true, name: 'auto_payment_next_retry_at' })
+  autoPaymentNextRetryAt?: Date | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

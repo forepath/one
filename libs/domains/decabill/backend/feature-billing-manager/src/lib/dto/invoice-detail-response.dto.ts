@@ -39,4 +39,5 @@ export class InvoiceDetailResponseDto {
   canDownloadVoidDocument?: boolean;
   canDownloadTimeReport?: boolean;
   voidDocumentNumber?: string;
+  autoPaymentStatus?: string;
 }

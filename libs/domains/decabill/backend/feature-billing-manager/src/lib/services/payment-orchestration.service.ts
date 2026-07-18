@@ -3,7 +3,9 @@ import { createHash } from 'crypto';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { getTenantIdOrDefault, runWithTenantId } from '@forepath/shared/backend';
 
+import { AutoPaymentStatus, isAutoPaymentBlocking } from '../constants/auto-payment-status.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { PaymentAttemptStatus } from '../entities/payment-attempt.entity';
 import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
@@ -13,6 +15,7 @@ import { PaymentAttemptsRepository } from '../repositories/payment-attempts.repo
 import { PaymentWebhookEventsRepository } from '../repositories/payment-webhook-events.repository';
 import { buildStripeCheckoutReturnUrl } from '../utils/tenant-frontend-url.utils';
 
+import { AutoBillingService } from './auto-billing.service';
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
@@ -30,6 +33,7 @@ export class PaymentOrchestrationService {
     private readonly auditLog: BillingAuditLogService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingEmailPublisher: BillingEmailPublisher,
+    private readonly autoBillingService: AutoBillingService,
   ) {}
 
   async initiatePayment(invoiceId: string, subscriptionId: string, userId: string): Promise<{ checkoutUrl: string }> {
@@ -61,10 +65,22 @@ export class PaymentOrchestrationService {
       throw new BadRequestException('Invoice is not payable');
     }
 
+    if (isAutoPaymentBlocking(invoice.autoPaymentStatus)) {
+      throw new BadRequestException('Manual payment is blocked while auto-billing is in progress');
+    }
+
     const balance = Number(invoice.balanceDue);
 
     if (balance <= 0) {
       throw new BadRequestException('Nothing to pay');
+    }
+
+    const minCheckoutPaymentAmount = getMinCheckoutPaymentAmount();
+
+    if (balance < minCheckoutPaymentAmount) {
+      throw new BadRequestException(
+        `Payment is only available for amounts of ${minCheckoutPaymentAmount.toFixed(2)} or more`,
+      );
     }
 
     const processorType = invoice.paymentProcessor ?? process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR ?? 'stripe';
@@ -90,6 +106,7 @@ export class PaymentOrchestrationService {
         userId,
         invoiceNumber: invoice.invoiceNumber ?? '',
         tenantId,
+        mode: 'checkout',
       },
     });
 
@@ -101,7 +118,7 @@ export class PaymentOrchestrationService {
       amount: balance,
       currency: invoice.currency,
       idempotencyKey,
-      metadata: { checkoutUrl: session.checkoutUrl },
+      metadata: { checkoutUrl: session.checkoutUrl, kind: 'checkout' },
     });
 
     await this.invoicesRepository.update(invoice.id, { externalPaymentId: session.externalId });
@@ -118,6 +135,7 @@ export class PaymentOrchestrationService {
     this.billingNotificationPublisher.publishPayment('payment.initiated', invoice, {
       processor: processorType,
       externalId: session.externalId,
+      mode: 'checkout',
     });
 
     return { checkoutUrl: session.checkoutUrl };
@@ -141,32 +159,60 @@ export class PaymentOrchestrationService {
       return;
     }
 
-    const update = processor.mapWebhookToPaymentUpdate(event);
+    const paymentUpdate = await Promise.resolve(processor.mapWebhookToPaymentUpdate(event));
+    const setupUpdate = !paymentUpdate ? await Promise.resolve(processor.mapWebhookToSetupUpdate(event)) : null;
 
     await this.paymentWebhookEventsRepository.create({
       processor: processorType,
       eventId: event.eventId,
       payloadHash,
-      result: update ? 'processed' : 'ignored',
+      result: paymentUpdate || setupUpdate ? 'processed' : 'ignored',
     });
 
-    if (!update) {
+    if (setupUpdate) {
+      if (!setupUpdate.tenantId || !setupUpdate.userId || !setupUpdate.paymentMethodExternalId) {
+        this.logger.warn(`Setup webhook event ${event.eventId} missing tenantId/userId/payment method; ignoring`);
+
+        return;
+      }
+
+      await runWithTenantId(setupUpdate.tenantId, async () => {
+        await this.autoBillingService.attachPaymentMethod({
+          userId: setupUpdate.userId!,
+          paymentMethodExternalId: setupUpdate.paymentMethodExternalId!,
+          stripeCustomerId: setupUpdate.stripeCustomerId,
+        });
+      });
+
       return;
     }
 
-    if (!update.tenantId) {
+    if (!paymentUpdate) {
+      return;
+    }
+
+    if (!paymentUpdate.tenantId) {
       this.logger.warn(`Webhook event ${event.eventId} missing tenantId metadata; ignoring payment update`);
 
       return;
     }
 
-    await runWithTenantId(update.tenantId, async () => {
-      await this.applyPaymentUpdate(update, processorType);
+    await runWithTenantId(paymentUpdate.tenantId, async () => {
+      await this.applyPaymentUpdate(paymentUpdate, processorType);
     });
   }
 
   private async applyPaymentUpdate(
-    update: { invoiceId: string; externalId: string; status: string; amountPaid?: number },
+    update: {
+      invoiceId: string;
+      externalId: string;
+      status: string;
+      amountPaid?: number;
+      userId?: string;
+      mode?: 'auto' | 'checkout';
+      paymentMethodExternalId?: string;
+      stripeCustomerId?: string;
+    },
     processorType: string,
   ): Promise<void> {
     const invoice = await this.invoicesRepository.findById(update.invoiceId);
@@ -178,8 +224,32 @@ export class PaymentOrchestrationService {
     }
 
     const attempt = await this.paymentAttemptsRepository.findByExternalId(processorType, update.externalId);
+    const mode = update.mode ?? (attempt?.metadata?.['kind'] === 'auto' ? 'auto' : 'checkout');
 
     if (update.status === 'succeeded') {
+      if (invoice.status === InvoiceStatus.PAID) {
+        if (mode === 'auto') {
+          await this.autoBillingService.onAutoPaymentSucceeded(invoice, {
+            paymentMethodExternalId: update.paymentMethodExternalId,
+            stripeCustomerId: update.stripeCustomerId,
+          });
+        } else if (update.paymentMethodExternalId && (update.userId || invoice.userId)) {
+          await this.autoBillingService.onCheckoutPaymentMethodCaptured({
+            userId: update.userId ?? invoice.userId,
+            paymentMethodExternalId: update.paymentMethodExternalId,
+            stripeCustomerId: update.stripeCustomerId,
+          });
+        }
+
+        if (attempt && attempt.status !== PaymentAttemptStatus.SUCCEEDED) {
+          await this.paymentAttemptsRepository.update(attempt.id, { status: PaymentAttemptStatus.SUCCEEDED });
+        }
+
+        this.logger.log(`Skipping duplicate payment success for invoice ${invoice.id} (already paid)`);
+
+        return;
+      }
+
       const paid = await this.invoicesRepository.update(invoice.id, {
         status: InvoiceStatus.PAID,
         balanceDue: 0,
@@ -189,18 +259,32 @@ export class PaymentOrchestrationService {
         await this.paymentAttemptsRepository.update(attempt.id, { status: PaymentAttemptStatus.SUCCEEDED });
       }
 
+      if (mode === 'auto') {
+        await this.autoBillingService.onAutoPaymentSucceeded(paid, {
+          paymentMethodExternalId: update.paymentMethodExternalId,
+          stripeCustomerId: update.stripeCustomerId,
+        });
+      } else if (update.paymentMethodExternalId && (update.userId || invoice.userId)) {
+        await this.autoBillingService.onCheckoutPaymentMethodCaptured({
+          userId: update.userId ?? invoice.userId,
+          paymentMethodExternalId: update.paymentMethodExternalId,
+          stripeCustomerId: update.stripeCustomerId,
+        });
+      }
+
       await this.auditLog.log({
         process: 'payment.webhook',
         level: 'info',
         message: 'Invoice marked paid',
         invoiceId: invoice.id,
         userId: invoice.userId,
-        context: { externalId: update.externalId },
+        context: { externalId: update.externalId, mode },
       });
 
       this.billingNotificationPublisher.publishPayment('payment.succeeded', paid, {
         processor: processorType,
         externalId: update.externalId,
+        mode,
       });
       await this.billingEmailPublisher.publishPaymentSucceeded(paid, {
         processor: processorType,
@@ -212,20 +296,37 @@ export class PaymentOrchestrationService {
 
     if (update.status === 'canceled' && attempt) {
       await this.paymentAttemptsRepository.update(attempt.id, { status: PaymentAttemptStatus.CANCELED });
+
       return;
     }
 
     if (update.status === 'failed' && attempt) {
       await this.paymentAttemptsRepository.update(attempt.id, { status: PaymentAttemptStatus.FAILED });
 
-      this.billingNotificationPublisher.publishPayment('payment.failed', invoice, {
-        processor: processorType,
-        externalId: update.externalId,
-      });
-      await this.billingEmailPublisher.publishPaymentFailed(invoice, {
-        processor: processorType,
-        externalId: update.externalId,
-      });
+      if (mode === 'auto') {
+        if (invoice.autoPaymentStatus !== AutoPaymentStatus.IN_PROGRESS) {
+          this.logger.log(`Skipping duplicate auto-payment failure for invoice ${invoice.id}`);
+
+          return;
+        }
+
+        await this.autoBillingService.onAutoPaymentFailed(
+          invoice,
+          invoice.autoPaymentAttemptCount || 1,
+          processorType,
+          update.externalId,
+        );
+      } else {
+        this.billingNotificationPublisher.publishPayment('payment.failed', invoice, {
+          processor: processorType,
+          externalId: update.externalId,
+          mode: 'checkout',
+        });
+        await this.billingEmailPublisher.publishPaymentFailed(invoice, {
+          processor: processorType,
+          externalId: update.externalId,
+        });
+      }
     }
   }
 }

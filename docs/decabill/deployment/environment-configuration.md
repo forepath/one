@@ -104,18 +104,23 @@ Per-tenant exports are scoped to the request **`X-Tenant`**. Unified exports agg
 
 ### Stripe and Payment Processors
 
-| Variable                            | Description                                             |
-| ----------------------------------- | ------------------------------------------------------- |
-| `BILLING_DEFAULT_PAYMENT_PROCESSOR` | Default processor (default `stripe`)                    |
-| `STRIPE_SECRET_KEY`                 | Stripe secret API key                                   |
-| `STRIPE_WEBHOOK_SECRET`             | Stripe webhook signing secret                           |
-| `STRIPE_CHECKOUT_SUCCESS_URL`       | Redirect after successful checkout                      |
-| `STRIPE_CHECKOUT_CANCEL_URL`        | Redirect after cancelled checkout                       |
-| `DYNAMIC_PAYMENT_PROCESSORS`        | Comma-separated extra payment processor packages        |
-| `DYNAMIC_BILLING_PROVIDER_METADATA` | Extra billing provider metadata packages                |
-| `DYNAMIC_PROVIDERS_FAIL_FAST`       | Abort startup if critical dynamic provider fails        |
-| `DYNAMIC_PROVIDER_PLUGIN_PATH`      | Plugin root (e.g. `/var/lib/forepath/provider-plugins`) |
-| `DYNAMIC_PROVIDER_PLUGIN_INSTALL`   | `npm install` targets at container startup              |
+| Variable                                       | Description                                                                                                                                                             |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BILLING_DEFAULT_PAYMENT_PROCESSOR`            | Default processor (default `stripe`)                                                                                                                                    |
+| `BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT`          | Minimum invoice balance for Checkout / PM charges (default `1`). Billing-day and bill-now also hold open positions below this payable total until the next billing day. |
+| `STRIPE_SECRET_KEY`                            | Stripe secret API key                                                                                                                                                   |
+| `STRIPE_WEBHOOK_SECRET`                        | Stripe webhook signing secret                                                                                                                                           |
+| `STRIPE_CHECKOUT_SUCCESS_URL`                  | Redirect after successful checkout                                                                                                                                      |
+| `STRIPE_CHECKOUT_CANCEL_URL`                   | Redirect after cancelled checkout                                                                                                                                       |
+| `INVOICE_AUTO_PAYMENT_SCHEDULER_INTERVAL`      | Auto-pay coordinator interval ms (default 60000)                                                                                                                        |
+| `BILLING_AUTO_PAYMENT_RETRY_DELAY_1_MS`        | Delay after 1st auto-pay failure (default 1 day)                                                                                                                        |
+| `BILLING_AUTO_PAYMENT_RETRY_DELAY_2_MS`        | Delay after 2nd auto-pay failure (default 3 days)                                                                                                                       |
+| `BILLING_AUTO_PAYMENT_PENDING_SAFETY_DELAY_MS` | Safety delay for pending/SCA off-session charges and incomplete-profile deferral (default 15 minutes)                                                                   |
+| `DYNAMIC_PAYMENT_PROCESSORS`                   | Comma-separated extra payment processor packages                                                                                                                        |
+| `DYNAMIC_BILLING_PROVIDER_METADATA`            | Extra billing provider metadata packages                                                                                                                                |
+| `DYNAMIC_PROVIDERS_FAIL_FAST`                  | Abort startup if critical dynamic provider fails                                                                                                                        |
+| `DYNAMIC_PROVIDER_PLUGIN_PATH`                 | Plugin root (e.g. `/var/lib/forepath/provider-plugins`)                                                                                                                 |
+| `DYNAMIC_PROVIDER_PLUGIN_INSTALL`              | `npm install` targets at container startup                                                                                                                              |
 
 ### Email (SMTP)
 

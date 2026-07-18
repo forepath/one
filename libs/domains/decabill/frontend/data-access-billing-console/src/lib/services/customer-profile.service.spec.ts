@@ -74,4 +74,46 @@ describe('CustomerProfileService', () => {
       req.flush(updated);
     });
   });
+
+  describe('auto-billing', () => {
+    it('should post setup and return setup URL', (done) => {
+      service.setupAutoBilling().subscribe((response) => {
+        expect(response.setupUrl).toBe('https://checkout.stripe.test/setup');
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/customer-profile/auto-billing/setup`);
+
+      expect(req.request.method).toBe('POST');
+      req.flush({ setupUrl: 'https://checkout.stripe.test/setup' });
+    });
+
+    it('should enable auto-billing', (done) => {
+      const enabled = { ...mockProfile, autoBillingEnabled: true, hasPaymentMethodOnFile: true };
+
+      service.enableAutoBilling().subscribe((profile) => {
+        expect(profile.autoBillingEnabled).toBe(true);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/customer-profile/auto-billing/enable`);
+
+      expect(req.request.method).toBe('POST');
+      req.flush(enabled);
+    });
+
+    it('should disable auto-billing', (done) => {
+      const disabled = { ...mockProfile, autoBillingEnabled: false };
+
+      service.disableAutoBilling().subscribe((profile) => {
+        expect(profile.autoBillingEnabled).toBe(false);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/customer-profile/auto-billing/disable`);
+
+      expect(req.request.method).toBe('POST');
+      req.flush(disabled);
+    });
+  });
 });

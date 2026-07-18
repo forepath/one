@@ -113,6 +113,7 @@ describe('InvoicesController', () => {
         openOverdueTotal: 50,
         billingDayOfMonth: 12,
         unbilledTotal: 10,
+        minCheckoutPaymentAmount: 1,
       });
     });
 

@@ -138,4 +138,60 @@ describe('InvoicesRepository', () => {
     expect(result).toEqual(dto);
     expect(mockRepository.save).toHaveBeenCalled();
   });
+
+  it('claimForAutoPayment returns null when no row was updated', async () => {
+    const updateBuilder = {
+      update: jest.fn().mockReturnThis(),
+      set: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      execute: jest.fn().mockResolvedValue({ affected: 0 }),
+    };
+
+    mockRepository.createQueryBuilder.mockReturnValue(updateBuilder);
+
+    await expect(repository.claimForAutoPayment('inv-1', 1)).resolves.toBeNull();
+  });
+
+  it('claimForAutoPayment returns invoice after successful claim', async () => {
+    const invoice = { id: 'inv-1', autoPaymentStatus: 'in_progress' };
+    const updateBuilder = {
+      update: jest.fn().mockReturnThis(),
+      set: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      execute: jest.fn().mockResolvedValue({ affected: 1 }),
+    };
+
+    mockRepository.createQueryBuilder.mockReturnValueOnce(updateBuilder).mockReturnValueOnce({
+      ...createMockQueryBuilder(),
+      getOne: jest.fn().mockResolvedValue(invoice),
+    });
+
+    await expect(repository.claimForAutoPayment('inv-1', 2)).resolves.toEqual(invoice);
+    expect(updateBuilder.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        autoPaymentAttemptCount: 2,
+      }),
+    );
+  });
+
+  it('transitionAutoPaymentFromInProgress returns false when claim lost', async () => {
+    const updateBuilder = {
+      update: jest.fn().mockReturnThis(),
+      set: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      execute: jest.fn().mockResolvedValue({ affected: 0 }),
+    };
+
+    mockRepository.createQueryBuilder.mockReturnValue(updateBuilder);
+
+    await expect(
+      repository.transitionAutoPaymentFromInProgress('inv-1', {
+        autoPaymentStatus: 'retrying' as never,
+        autoPaymentNextRetryAt: new Date(),
+      }),
+    ).resolves.toBe(false);
+  });
 });

@@ -109,6 +109,21 @@ describe('ProjectBillingService', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
+  it('rejects project billing when payable gross is below checkout minimum', async () => {
+    projectsRepository.findByIdOrThrow.mockResolvedValue({
+      ...project,
+      hourlyRateNet: 0.5,
+    });
+    customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile' });
+    customerProfilesService.isProfileComplete.mockReturnValue(true);
+    timeEntriesRepository.findUnbilledByProjectInRangeForUpdate.mockResolvedValue([{ id: 'e1', durationMinutes: 60 }]);
+
+    await expect(service.billUnbilledTime('p1', 'admin-1', { from, to })).rejects.toThrow(
+      /below the minimum payment amount/,
+    );
+    expect(invoiceService.createDraft).not.toHaveBeenCalled();
+  });
+
   it('bills unbilled entries within range', async () => {
     projectsRepository.findByIdOrThrow.mockResolvedValue(project);
     customerProfilesService.getByUserId.mockResolvedValue({ id: 'profile' });

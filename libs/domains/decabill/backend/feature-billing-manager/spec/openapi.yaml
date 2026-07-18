@@ -1735,6 +1735,72 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /customer-profile/auto-billing/setup:
+    post:
+      summary: Start auto-billing payment method setup
+      operationId: setupCustomerAutoBilling
+      description: Creates a hosted setup session for the default payment processor (requires supportsAutoPayment).
+      responses:
+        '200':
+          description: Setup session URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutoBillingSetupResponse'
+        '400':
+          description: Processor does not support auto-billing or profile missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /customer-profile/auto-billing/enable:
+    post:
+      summary: Enable auto-billing
+      operationId: enableCustomerAutoBilling
+      description: Requires a payment method on file and a processor that supports auto-payment.
+      responses:
+        '200':
+          description: Updated customer profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileResponse'
+        '400':
+          description: Missing payment method or unsupported processor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /customer-profile/auto-billing/disable:
+    post:
+      summary: Disable auto-billing
+      operationId: disableCustomerAutoBilling
+      description: Disables auto-billing and immediately unlocks manual payment on open invoices.
+      responses:
+        '200':
+          description: Updated customer profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /invoices/summary:
     get:
       summary: Get open and overdue invoices summary
@@ -2848,6 +2914,69 @@ paths:
       responses:
         '204':
           description: Profile deleted
+  /admin/billing/customer-profiles/{id}/auto-billing/setup:
+    post:
+      tags: [Admin Billing]
+      summary: Start auto-billing payment method setup for a customer (admin)
+      operationId: adminSetupCustomerAutoBilling
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Setup session URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutoBillingSetupResponse'
+        '400':
+          description: Processor does not support auto-billing or profile missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/billing/customer-profiles/{id}/auto-billing/enable:
+    post:
+      tags: [Admin Billing]
+      summary: Enable auto-billing for a customer (admin)
+      operationId: adminEnableCustomerAutoBilling
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Updated customer profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileResponse'
+        '400':
+          description: Missing payment method or unsupported processor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/billing/customer-profiles/{id}/auto-billing/disable:
+    post:
+      tags: [Admin Billing]
+      summary: Disable auto-billing for a customer (admin)
+      operationId: adminDisableCustomerAutoBilling
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Updated customer profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileResponse'
   /admin/billing/invoices/{invoiceRefId}/void:
     post:
       tags: [Admin Billing]
@@ -4567,8 +4696,16 @@ components:
         email: { type: string, format: email, nullable: true }
         phone: { type: string, nullable: true }
         stripeCustomerId: { type: string, nullable: true }
+        autoBillingEnabled: { type: boolean }
+        hasPaymentMethodOnFile: { type: boolean }
+        supportsAutoPayment: { type: boolean }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+    AutoBillingSetupResponse:
+      type: object
+      required: [setupUrl]
+      properties:
+        setupUrl: { type: string, format: uri }
     CreateInvoiceDto:
       type: object
       properties:
@@ -4590,6 +4727,21 @@ components:
         canDownloadVoidDocument: { type: boolean, nullable: true }
         canDownloadTimeReport: { type: boolean, nullable: true }
         voidDocumentNumber: { type: string, nullable: true }
+        autoPaymentStatus:
+          {
+            type: string,
+            enum:
+              [
+                idle,
+                scheduled,
+                in_progress,
+                retrying,
+                succeeded,
+                exhausted,
+                canceled,
+              ],
+            nullable: true,
+          }
     InvoiceDetailResponse:
       type: object
       properties:
@@ -4619,6 +4771,21 @@ components:
         canDownloadVoidDocument: { type: boolean, nullable: true }
         canDownloadTimeReport: { type: boolean, nullable: true }
         voidDocumentNumber: { type: string, nullable: true }
+        autoPaymentStatus:
+          {
+            type: string,
+            enum:
+              [
+                idle,
+                scheduled,
+                in_progress,
+                retrying,
+                succeeded,
+                exhausted,
+                canceled,
+              ],
+            nullable: true,
+          }
     InvoiceLineItemResponse:
       type: object
       properties:
@@ -4666,6 +4833,16 @@ components:
           type: number
           minimum: 0
           description: Total amount of unbilled open positions (to be invoiced on the next billing day)
+        minCheckoutPaymentAmount:
+          type: number
+          exclusiveMinimum: 0
+          description: Minimum balance due required for Checkout or saved payment method charges
+      required:
+        - openOverdueCount
+        - openOverdueTotal
+        - billingDayOfMonth
+        - unbilledTotal
+        - minCheckoutPaymentAmount
     UsageSummary:
       type: object
       properties:

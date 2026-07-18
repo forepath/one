@@ -26,12 +26,14 @@ import { InvoiceService } from '../services/invoice.service';
 import { PaymentOrchestrationService } from '../services/payment-orchestration.service';
 import { SubscriptionService } from '../services/subscription.service';
 import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
+import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
 
 export class InvoicesSummaryResponseDto {
   openOverdueCount!: number;
   openOverdueTotal!: number;
   billingDayOfMonth!: number;
   unbilledTotal!: number;
+  minCheckoutPaymentAmount!: number;
 }
 
 @Controller('invoices')
@@ -65,6 +67,7 @@ export class InvoicesController {
       openOverdueTotal: summary.totalBalance,
       billingDayOfMonth,
       unbilledTotal,
+      minCheckoutPaymentAmount: getMinCheckoutPaymentAmount(),
     };
   }
 

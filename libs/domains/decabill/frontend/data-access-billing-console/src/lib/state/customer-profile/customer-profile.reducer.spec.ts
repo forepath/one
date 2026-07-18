@@ -2,6 +2,7 @@ import type { CustomerProfileResponse } from '../../types/billing.types';
 
 import {
   clearCustomerProfile,
+  enableAutoBillingSuccess,
   loadCustomerProfile,
   loadCustomerProfileFailure,
   loadCustomerProfileSuccess,
@@ -110,6 +111,17 @@ describe('customerProfileReducer', () => {
       const newState = customerProfileReducer(state, clearCustomerProfile());
 
       expect(newState).toEqual(initialCustomerProfileState);
+    });
+  });
+
+  describe('enableAutoBillingSuccess', () => {
+    it('should set profile and clear updating', () => {
+      const enabled = { ...mockProfile, autoBillingEnabled: true };
+      const state: CustomerProfileState = { ...initialCustomerProfileState, updating: true };
+      const newState = customerProfileReducer(state, enableAutoBillingSuccess({ profile: enabled }));
+
+      expect(newState.profile).toEqual(enabled);
+      expect(newState.updating).toBe(false);
     });
   });
 });

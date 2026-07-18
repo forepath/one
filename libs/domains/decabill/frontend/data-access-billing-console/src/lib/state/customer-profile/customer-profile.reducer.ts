@@ -4,9 +4,18 @@ import type { CustomerProfileResponse } from '../../types/billing.types';
 
 import {
   clearCustomerProfile,
+  disableAutoBilling,
+  disableAutoBillingFailure,
+  disableAutoBillingSuccess,
+  enableAutoBilling,
+  enableAutoBillingFailure,
+  enableAutoBillingSuccess,
   loadCustomerProfile,
   loadCustomerProfileFailure,
   loadCustomerProfileSuccess,
+  setupAutoBilling,
+  setupAutoBillingFailure,
+  setupAutoBillingSuccess,
   updateCustomerProfile,
   updateCustomerProfileFailure,
   updateCustomerProfileSuccess,
@@ -56,6 +65,27 @@ export const customerProfileReducer = createReducer(
     error: null,
   })),
   on(updateCustomerProfileFailure, (state, { error }) => ({
+    ...state,
+    updating: false,
+    error,
+  })),
+  on(setupAutoBilling, enableAutoBilling, disableAutoBilling, (state) => ({
+    ...state,
+    updating: true,
+    error: null,
+  })),
+  on(setupAutoBillingSuccess, (state) => ({
+    ...state,
+    updating: false,
+    error: null,
+  })),
+  on(enableAutoBillingSuccess, disableAutoBillingSuccess, (state, { profile }) => ({
+    ...state,
+    profile,
+    updating: false,
+    error: null,
+  })),
+  on(setupAutoBillingFailure, enableAutoBillingFailure, disableAutoBillingFailure, (state, { error }) => ({
     ...state,
     updating: false,
     error,

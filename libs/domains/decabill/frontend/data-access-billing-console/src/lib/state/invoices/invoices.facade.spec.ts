@@ -98,7 +98,7 @@ describe('InvoicesFacade', () => {
   describe('Action Methods', () => {
     it('should dispatch loadInvoices', () => {
       facade.loadInvoices(subscriptionId);
-      expect(store.dispatch).toHaveBeenCalledWith(loadInvoices({ subscriptionId }));
+      expect(store.dispatch).toHaveBeenCalledWith(loadInvoices({ subscriptionId, silent: false }));
     });
 
     it('should dispatch createInvoice', () => {
@@ -118,23 +118,35 @@ describe('InvoicesFacade', () => {
       expect(store.dispatch).toHaveBeenCalledWith(loadInvoicesSummaryAction());
     });
 
+    it('should dispatch silent loadInvoicesSummary', () => {
+      facade.loadInvoicesSummary({ silent: true });
+      expect(store.dispatch).toHaveBeenCalledWith(loadInvoicesSummaryAction(true));
+    });
+
     it('should dispatch loadInvoiceDetails', () => {
       const invoiceRefId = 'ref-1';
 
       facade.loadInvoiceDetails(subscriptionId, invoiceRefId);
-      expect(store.dispatch).toHaveBeenCalledWith(loadInvoiceDetails({ subscriptionId, invoiceRefId }));
+      expect(store.dispatch).toHaveBeenCalledWith(loadInvoiceDetails({ subscriptionId, invoiceRefId, silent: false }));
     });
 
     it('should dispatch loadInvoiceDetails without subscriptionId for manual invoices', () => {
       const invoiceRefId = 'ref-manual';
 
       facade.loadInvoiceDetails(undefined, invoiceRefId);
-      expect(store.dispatch).toHaveBeenCalledWith(loadInvoiceDetails({ subscriptionId: undefined, invoiceRefId }));
+      expect(store.dispatch).toHaveBeenCalledWith(
+        loadInvoiceDetails({ subscriptionId: undefined, invoiceRefId, silent: false }),
+      );
     });
 
     it('should dispatch loadOpenOverdueInvoices', () => {
       facade.loadOpenOverdueInvoices();
       expect(store.dispatch).toHaveBeenCalledWith(loadOpenOverdueInvoices());
+    });
+
+    it('should dispatch silent loadOpenOverdueInvoices', () => {
+      facade.loadOpenOverdueInvoices({ silent: true });
+      expect(store.dispatch).toHaveBeenCalledWith(loadOpenOverdueInvoices(true));
     });
 
     it('should dispatch initiatePayment', () => {

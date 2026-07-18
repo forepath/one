@@ -42,6 +42,7 @@ Registered by the scheduler from `getBillingRepeatableJobs()`:
 | `subscription-withdrawal.coordinator`   | `WITHDRAWAL_SCHEDULER_INTERVAL`            | 60s              |
 | `subscription-provisioning.coordinator` | `PROVISIONING_SCHEDULER_INTERVAL`          | 30s              |
 | `invoice-overdue.coordinator`           | `INVOICE_OVERDUE_SCHEDULER_INTERVAL`       | 24h              |
+| `invoice-auto-payment.coordinator`      | `INVOICE_AUTO_PAYMENT_SCHEDULER_INTERVAL`  | 60s              |
 | `open-position-invoice.coordinator`     | `OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL` | 24h              |
 | `renewal-reminder.coordinator`          | `REMINDER_SCHEDULER_INTERVAL`              | 1h               |
 | `subscription-item-update.coordinator`  | `SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL`   | 24h              |
@@ -61,6 +62,7 @@ Coordinators fan out unit jobs such as:
 - `subscription-withdrawal.unit`
 - `subscription-provisioning.unit`
 - `invoice-overdue.unit`
+- `invoice-auto-payment.unit`
 - `open-position-invoice.unit`
 - `renewal-reminder.unit`
 - `subscription-item-update.unit`

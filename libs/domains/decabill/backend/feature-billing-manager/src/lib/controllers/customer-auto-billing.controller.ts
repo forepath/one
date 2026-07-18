@@ -1,47 +1,54 @@
-import { BadRequestException, Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { BadRequestException, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 
 import { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';
-import { CustomerProfileDto } from '../dto/customer-profile.dto';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
+import { AutoBillingService } from '../services/auto-billing.service';
 import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
-import { CustomerProfilesService } from '../services/customer-profiles.service';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
-@Controller('customer-profile')
-export class CustomerProfilesController {
+@Controller('customer-profile/auto-billing')
+export class CustomerAutoBillingController {
   constructor(
-    private readonly customerProfilesService: CustomerProfilesService,
+    private readonly autoBillingService: AutoBillingService,
     private readonly paymentProcessorFactory: PaymentProcessorFactory,
   ) {}
 
-  @Get()
-  async get(@Req() req?: RequestWithUser): Promise<CustomerProfileResponseDto | null> {
-    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+  @Post('setup')
+  async setup(@Req() req?: RequestWithUser): Promise<{ setupUrl: string }> {
+    const userId = this.requireUserId(req);
 
-    if (!userInfo.userId) {
-      throw new BadRequestException('User not authenticated');
-    }
-
-    const profile = await this.customerProfilesService.getByUserId(userInfo.userId);
-
-    return profile ? this.mapToResponse(profile) : null;
+    return await this.autoBillingService.createSetupSessionForUser(userId);
   }
 
-  @Post()
-  async upsert(@Body() dto: CustomerProfileDto, @Req() req?: RequestWithUser): Promise<CustomerProfileResponseDto> {
-    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
-
-    if (!userInfo.userId) {
-      throw new BadRequestException('User not authenticated');
-    }
-
-    const profile = await this.customerProfilesService.upsert(userInfo.userId, dto);
+  @Post('enable')
+  async enable(@Req() req?: RequestWithUser): Promise<CustomerProfileResponseDto> {
+    const userId = this.requireUserId(req);
+    const profile = await this.autoBillingService.enableForUser(userId);
 
     return this.mapToResponse(profile);
   }
 
+  @Post('disable')
+  @HttpCode(HttpStatus.OK)
+  async disable(@Req() req?: RequestWithUser): Promise<CustomerProfileResponseDto> {
+    const userId = this.requireUserId(req);
+    const profile = await this.autoBillingService.disableForUser(userId);
+
+    return this.mapToResponse(profile);
+  }
+
+  private requireUserId(req?: RequestWithUser): string {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return userInfo.userId;
+  }
+
   private mapToResponse(row: CustomerProfileEntity): CustomerProfileResponseDto {
-    const processorType = process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR ?? 'stripe';
+    const processorType = this.autoBillingService.resolveDefaultProcessorType();
     let supportsAutoPayment = false;
 
     try {

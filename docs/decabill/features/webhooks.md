@@ -47,7 +47,12 @@ Events are published from the **billing** service after successful mutations.
 
 - `invoice.created`, `invoice.issued`, `invoice.voided`
 - `payment.initiated`, `payment.succeeded`, `payment.failed`
+- `payment.auto.initiated`, `payment.auto.retry_scheduled`, `payment.auto.exhausted`
+- `auto_billing.enabled`, `auto_billing.disabled`
+- `payment_method.attached`
 - `subscription.created`, `subscription.updated`, `subscription.canceled`
+
+Payment success/failure payloads may include `mode` (`checkout` | `auto`). Auto-billing events are documented in [Auto-Billing](./auto-billing.md).
 
 ### Projects
 

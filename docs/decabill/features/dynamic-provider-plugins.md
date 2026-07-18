@@ -93,8 +93,10 @@ Processors implement the `PaymentProcessor` interface:
 - Register with `PaymentProcessorFactory` at module bootstrap
 - Handle checkout session creation and webhook processing for their provider
 - Expose a unique `type` string matching `BILLING_DEFAULT_PAYMENT_PROCESSOR`
+- Implement `supportsAutoPayment()` (`false` unless off-session charging is supported)
+- When auto-payment is supported, implement `createSetupSession` and `chargeOffSession`
 
-Built-in: `stripe` via `StripePaymentProcessor`. See [Payment Processing](./payment-processing.md).
+Built-in: `stripe` via `StripePaymentProcessor`. See [Payment Processing](./payment-processing.md) and [Auto-Billing](./auto-billing.md).
 
 ## Billing Provider Metadata
 

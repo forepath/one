@@ -20,14 +20,23 @@ export const selectCustomerProfileLoadingAny = createSelector(
 
 export const selectHasCustomerProfile = createSelector(selectCustomerProfile, (profile) => profile !== null);
 
-export const selectIsCustomerProfileComplete = createSelector(
-  selectCustomerProfile,
-  (profile) =>
-    profile !== null &&
-    profile.firstName !== null &&
-    profile.lastName !== null &&
-    profile.email !== null &&
-    profile.addressLine1 !== null &&
-    profile.city !== null &&
-    profile.country !== null,
-);
+function isNonEmptyProfileField(value: string | null | undefined): boolean {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+/** Mirrors backend CustomerProfilesService.isProfileComplete required fields. */
+export const selectIsCustomerProfileComplete = createSelector(selectCustomerProfile, (profile) => {
+  if (profile === null) {
+    return false;
+  }
+
+  return (
+    isNonEmptyProfileField(profile.firstName) &&
+    isNonEmptyProfileField(profile.lastName) &&
+    isNonEmptyProfileField(profile.email) &&
+    isNonEmptyProfileField(profile.addressLine1) &&
+    isNonEmptyProfileField(profile.postalCode) &&
+    isNonEmptyProfileField(profile.city) &&
+    isNonEmptyProfileField(profile.country)
+  );
+});

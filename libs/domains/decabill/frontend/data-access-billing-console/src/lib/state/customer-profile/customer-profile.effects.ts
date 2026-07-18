@@ -1,14 +1,23 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { catchError, map, of, switchMap, tap } from 'rxjs';
 
 import { CustomerProfileService } from '../../services/customer-profile.service';
 
 import {
+  disableAutoBilling,
+  disableAutoBillingFailure,
+  disableAutoBillingSuccess,
+  enableAutoBilling,
+  enableAutoBillingFailure,
+  enableAutoBillingSuccess,
   loadCustomerProfile,
   loadCustomerProfileFailure,
   loadCustomerProfileSuccess,
+  setupAutoBilling,
+  setupAutoBillingFailure,
+  setupAutoBillingSuccess,
   updateCustomerProfile,
   updateCustomerProfileFailure,
   updateCustomerProfileSuccess,
@@ -55,6 +64,63 @@ export const updateCustomerProfile$ = createEffect(
         customerProfileService.updateCustomerProfile(profile).pipe(
           map((updatedProfile) => updateCustomerProfileSuccess({ profile: updatedProfile })),
           catchError((error) => of(updateCustomerProfileFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const setupAutoBilling$ = createEffect(
+  (actions$ = inject(Actions), customerProfileService = inject(CustomerProfileService)) => {
+    return actions$.pipe(
+      ofType(setupAutoBilling),
+      switchMap(() =>
+        customerProfileService.setupAutoBilling().pipe(
+          map((response) => setupAutoBillingSuccess({ setupUrl: response.setupUrl })),
+          catchError((error) => of(setupAutoBillingFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const setupAutoBillingRedirect$ = createEffect(
+  (actions$ = inject(Actions)) => {
+    return actions$.pipe(
+      ofType(setupAutoBillingSuccess),
+      tap(({ setupUrl }) => {
+        window.location.href = setupUrl;
+      }),
+    );
+  },
+  { functional: true, dispatch: false },
+);
+
+export const enableAutoBilling$ = createEffect(
+  (actions$ = inject(Actions), customerProfileService = inject(CustomerProfileService)) => {
+    return actions$.pipe(
+      ofType(enableAutoBilling),
+      switchMap(() =>
+        customerProfileService.enableAutoBilling().pipe(
+          map((profile) => enableAutoBillingSuccess({ profile })),
+          catchError((error) => of(enableAutoBillingFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const disableAutoBilling$ = createEffect(
+  (actions$ = inject(Actions), customerProfileService = inject(CustomerProfileService)) => {
+    return actions$.pipe(
+      ofType(disableAutoBilling),
+      switchMap(() =>
+        customerProfileService.disableAutoBilling().pipe(
+          map((profile) => disableAutoBillingSuccess({ profile })),
+          catchError((error) => of(disableAutoBillingFailure({ error: normalizeError(error) }))),
         ),
       ),
     );
