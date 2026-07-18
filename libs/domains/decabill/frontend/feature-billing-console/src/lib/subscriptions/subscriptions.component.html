@@ -1886,6 +1886,76 @@
               />
             </div>
           </div>
+          @if (customerProfile$ | async; as profile) {
+            @if (profile.supportsAutoPayment !== false && (isCustomerProfileComplete$ | async) === true) {
+              <div class="bg-body-tertiary border rounded p-4 mt-3">
+                <h3 class="h6" i18n="@@featureSubscriptions-autoBillingHeading">Auto-billing</h3>
+                <p class="text-body-secondary small mb-3" i18n="@@featureSubscriptions-autoBillingHint">
+                  When enabled, open invoices are charged automatically. Manual payment is blocked until auto-payment
+                  succeeds or retries are exhausted.
+                </p>
+                @if (autoBillingSetupFeedback === 'waiting') {
+                  <div class="alert alert-success py-2 small mb-3" role="status" aria-live="polite">
+                    <span i18n="@@featureSubscriptions-autoBillingSetupWaiting">
+                      Payment method submitted. Waiting for confirmation from the payment provider…
+                    </span>
+                  </div>
+                }
+                @if (autoBillingSetupFeedback === 'confirmed') {
+                  <div class="alert alert-success py-2 small mb-3" role="status" aria-live="polite">
+                    <span i18n="@@featureSubscriptions-autoBillingSetupConfirmed">
+                      Payment method confirmed and saved.
+                    </span>
+                  </div>
+                }
+                @if (autoBillingSetupFeedback === 'canceled') {
+                  <div class="alert alert-warning py-2 small mb-3" role="status" aria-live="polite">
+                    <span i18n="@@featureSubscriptions-autoBillingSetupCanceled">
+                      Payment method setup was canceled.
+                    </span>
+                  </div>
+                }
+                @if (profile.hasPaymentMethodOnFile) {
+                  <p class="small mb-3">
+                    <span i18n="@@featureSubscriptions-paymentMethodStatus">Payment method:</span>
+                    <span class="text-success" i18n="@@featureSubscriptions-paymentMethodOnFile">On file</span>
+                  </p>
+                }
+                <div class="d-flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm"
+                    [disabled]="(customerProfileUpdating$ | async) === true || autoBillingSetupFeedback === 'waiting'"
+                    (click)="onSetupAutoBilling()"
+                    i18n="@@featureSubscriptions-addPaymentMethod"
+                  >
+                    Add payment method
+                  </button>
+                  @if (!profile.autoBillingEnabled) {
+                    <button
+                      type="button"
+                      class="btn btn-outline-primary btn-sm"
+                      [disabled]="(customerProfileUpdating$ | async) === true || !profile.hasPaymentMethodOnFile"
+                      (click)="onEnableAutoBilling()"
+                      i18n="@@featureSubscriptions-enableAutoBilling"
+                    >
+                      Enable auto-billing
+                    </button>
+                  } @else {
+                    <button
+                      type="button"
+                      class="btn btn-outline-danger btn-sm"
+                      [disabled]="(customerProfileUpdating$ | async) === true"
+                      (click)="onDisableAutoBilling()"
+                      i18n="@@featureSubscriptions-disableAutoBilling"
+                    >
+                      Disable auto-billing
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          }
         </div>
         <div class="modal-footer">
           <button

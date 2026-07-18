@@ -22,6 +22,8 @@ export const BillingJobName = {
   INVOICE_OVERDUE_UNIT: 'invoice-overdue.unit',
   OPEN_POSITION_INVOICE_COORDINATOR: 'open-position-invoice.coordinator',
   OPEN_POSITION_INVOICE_UNIT: 'open-position-invoice.unit',
+  INVOICE_AUTO_PAYMENT_COORDINATOR: 'invoice-auto-payment.coordinator',
+  INVOICE_AUTO_PAYMENT_UNIT: 'invoice-auto-payment.unit',
   RENEWAL_REMINDER_COORDINATOR: 'renewal-reminder.coordinator',
   RENEWAL_REMINDER_UNIT: 'renewal-reminder.unit',
   SUBSCRIPTION_ITEM_UPDATE_COORDINATOR: 'subscription-item-update.coordinator',
@@ -103,6 +105,11 @@ export function getBillingRepeatableJobs(): BillingRepeatableJobDefinition[] {
       name: BillingJobName.OPEN_POSITION_INVOICE_COORDINATOR,
       coordinatorJobId: buildCoordinatorJobId('open-position-invoice'),
       everyMs: parseIntervalMs('OPEN_POSITION_INVOICE_SCHEDULER_INTERVAL', 86_400_000),
+    },
+    {
+      name: BillingJobName.INVOICE_AUTO_PAYMENT_COORDINATOR,
+      coordinatorJobId: buildCoordinatorJobId('invoice-auto-payment'),
+      everyMs: parseIntervalMs('INVOICE_AUTO_PAYMENT_SCHEDULER_INTERVAL', 60_000),
     },
     {
       name: BillingJobName.RENEWAL_REMINDER_COORDINATOR,

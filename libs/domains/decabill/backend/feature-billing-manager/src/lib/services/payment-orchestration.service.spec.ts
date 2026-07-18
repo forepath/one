@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { runWithTenantId } from '@forepath/shared/backend';
 
+import { AutoPaymentStatus } from '../constants/auto-payment-status.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
 import { PaymentAttemptStatus } from '../entities/payment-attempt.entity';
 import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
@@ -45,6 +46,12 @@ describe('PaymentOrchestrationService', () => {
   let processor: jest.Mocked<PaymentProcessor>;
   let factory: PaymentProcessorFactory;
   let service: PaymentOrchestrationService;
+  let autoBillingService: {
+    attachPaymentMethod: jest.Mock;
+    onAutoPaymentSucceeded: jest.Mock;
+    onAutoPaymentFailed: jest.Mock;
+    onCheckoutPaymentMethodCaptured: jest.Mock;
+  };
 
   beforeEach(() => {
     jest.resetAllMocks();
@@ -53,14 +60,24 @@ describe('PaymentOrchestrationService', () => {
     processor = {
       getType: jest.fn().mockReturnValue('stripe'),
       getDisplayName: jest.fn().mockReturnValue('Stripe'),
+      supportsAutoPayment: jest.fn().mockReturnValue(true),
       createCheckoutSession: jest.fn(),
+      createSetupSession: jest.fn(),
+      chargeOffSession: jest.fn(),
       verifyWebhookSignature: jest.fn(),
       parseWebhookEvent: jest.fn(),
       mapWebhookToPaymentUpdate: jest.fn(),
+      mapWebhookToSetupUpdate: jest.fn(),
       refundPayment: jest.fn(),
     };
     factory = new PaymentProcessorFactory();
     factory.registerProcessor(processor);
+    autoBillingService = {
+      attachPaymentMethod: jest.fn(),
+      onAutoPaymentSucceeded: jest.fn(),
+      onAutoPaymentFailed: jest.fn(),
+      onCheckoutPaymentMethodCaptured: jest.fn(),
+    };
     service = new PaymentOrchestrationService(
       invoicesRepository as never,
       paymentAttemptsRepository as never,
@@ -70,6 +87,7 @@ describe('PaymentOrchestrationService', () => {
       auditLog as never,
       billingNotificationPublisher as never,
       billingEmailPublisher as never,
+      autoBillingService as never,
     );
   });
 
@@ -88,6 +106,37 @@ describe('PaymentOrchestrationService', () => {
   });
 
   describe('initiatePayment', () => {
+    it('blocks manual payment while auto-billing is retrying', async () => {
+      invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue({
+        id: 'inv-1',
+        subscriptionId: 'sub-1',
+        userId: 'user-1',
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 99.5,
+        currency: 'EUR',
+        autoPaymentStatus: AutoPaymentStatus.RETRYING,
+      });
+
+      await expect(service.initiatePayment('inv-1', 'sub-1', 'user-1')).rejects.toBeInstanceOf(BadRequestException);
+      expect(processor.createCheckoutSession).not.toHaveBeenCalled();
+    });
+
+    it('rejects payment when balance is below the minimum checkout amount', async () => {
+      invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue({
+        id: 'inv-1',
+        subscriptionId: 'sub-1',
+        userId: 'user-1',
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 0.5,
+        currency: 'EUR',
+      });
+
+      await expect(service.initiatePayment('inv-1', 'sub-1', 'user-1')).rejects.toThrow(
+        /Payment is only available for amounts of 1.00 or more/,
+      );
+      expect(processor.createCheckoutSession).not.toHaveBeenCalled();
+    });
+
     it('creates checkout session and payment attempt', async () => {
       invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue({
         id: 'inv-1',
@@ -214,7 +263,7 @@ describe('PaymentOrchestrationService', () => {
         type: 'checkout.session.completed',
         data: {},
       });
-      processor.mapWebhookToPaymentUpdate.mockReturnValue({
+      processor.mapWebhookToPaymentUpdate.mockResolvedValue({
         invoiceId: 'inv-1',
         externalId: 'cs_1',
         status: 'succeeded',
@@ -261,7 +310,7 @@ describe('PaymentOrchestrationService', () => {
         type: 'checkout.session.expired',
         data: {},
       });
-      processor.mapWebhookToPaymentUpdate.mockReturnValue({
+      processor.mapWebhookToPaymentUpdate.mockResolvedValue({
         invoiceId: 'inv-1',
         externalId: 'cs_1',
         status: 'canceled',
@@ -288,7 +337,7 @@ describe('PaymentOrchestrationService', () => {
         type: 'checkout.session.async_payment_failed',
         data: {},
       });
-      processor.mapWebhookToPaymentUpdate.mockReturnValue({
+      processor.mapWebhookToPaymentUpdate.mockResolvedValue({
         invoiceId: 'inv-1',
         externalId: 'cs_1',
         status: 'failed',
@@ -315,7 +364,7 @@ describe('PaymentOrchestrationService', () => {
         type: 'checkout.session.completed',
         data: {},
       });
-      processor.mapWebhookToPaymentUpdate.mockReturnValue({
+      processor.mapWebhookToPaymentUpdate.mockResolvedValue({
         invoiceId: 'inv-1',
         externalId: 'cs_1',
         status: 'succeeded',
@@ -327,6 +376,73 @@ describe('PaymentOrchestrationService', () => {
 
       expect(invoicesRepository.update).not.toHaveBeenCalled();
       expect(paymentWebhookEventsRepository.create).toHaveBeenCalled();
+    });
+
+    it('skips duplicate success email when invoice is already paid', async () => {
+      processor.verifyWebhookSignature.mockReturnValue(true);
+      processor.parseWebhookEvent.mockReturnValue({
+        eventId: 'evt_dup',
+        type: 'checkout.session.completed',
+        data: {},
+      });
+      processor.mapWebhookToPaymentUpdate.mockResolvedValue({
+        invoiceId: 'inv-1',
+        externalId: 'cs_1',
+        status: 'succeeded',
+        tenantId: 'default',
+        mode: 'checkout',
+        paymentMethodExternalId: 'pm_1',
+      });
+      paymentWebhookEventsRepository.exists.mockResolvedValue(false);
+      paymentWebhookEventsRepository.create.mockResolvedValue({});
+      invoicesRepository.findById.mockResolvedValue({
+        id: 'inv-1',
+        userId: 'user-1',
+        status: InvoiceStatus.PAID,
+      });
+      paymentAttemptsRepository.findByExternalId.mockResolvedValue({
+        id: 'attempt-1',
+        status: PaymentAttemptStatus.SUCCEEDED,
+      });
+
+      await service.handleWebhook('stripe', Buffer.from('{}'), 'sig');
+
+      expect(invoicesRepository.update).not.toHaveBeenCalled();
+      expect(billingEmailPublisher.publishPaymentSucceeded).not.toHaveBeenCalled();
+      expect(billingNotificationPublisher.publishPayment).not.toHaveBeenCalled();
+    });
+
+    it('skips auto failure handling when invoice is no longer in progress', async () => {
+      processor.verifyWebhookSignature.mockReturnValue(true);
+      processor.parseWebhookEvent.mockReturnValue({
+        eventId: 'evt_fail_dup',
+        type: 'payment_intent.payment_failed',
+        data: {},
+      });
+      processor.mapWebhookToPaymentUpdate.mockResolvedValue({
+        invoiceId: 'inv-1',
+        externalId: 'pi_1',
+        status: 'failed',
+        tenantId: 'default',
+        mode: 'auto',
+      });
+      paymentWebhookEventsRepository.exists.mockResolvedValue(false);
+      paymentWebhookEventsRepository.create.mockResolvedValue({});
+      invoicesRepository.findById.mockResolvedValue({
+        id: 'inv-1',
+        userId: 'user-1',
+        autoPaymentStatus: AutoPaymentStatus.RETRYING,
+        autoPaymentAttemptCount: 1,
+      });
+      paymentAttemptsRepository.findByExternalId.mockResolvedValue({ id: 'attempt-1' });
+      paymentAttemptsRepository.update.mockResolvedValue({});
+
+      await service.handleWebhook('stripe', Buffer.from('{}'), 'sig');
+
+      expect(paymentAttemptsRepository.update).toHaveBeenCalledWith('attempt-1', {
+        status: PaymentAttemptStatus.FAILED,
+      });
+      expect(autoBillingService.onAutoPaymentFailed).not.toHaveBeenCalled();
     });
   });
 });

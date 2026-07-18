@@ -5,7 +5,7 @@ describe('BILLING_NOTIFICATION_EVENTS', () => {
     expect(new Set(BILLING_NOTIFICATION_EVENTS).size).toBe(BILLING_NOTIFICATION_EVENTS.length);
   });
 
-  it('includes project, milestone, time entry, and ticket lifecycle events', () => {
+  it('includes project, milestone, time entry, ticket, and auto-billing events', () => {
     expect(BILLING_NOTIFICATION_EVENTS).toEqual(
       expect.arrayContaining([
         'project.created',
@@ -24,6 +24,12 @@ describe('BILLING_NOTIFICATION_EVENTS', () => {
         'datev_export.started',
         'datev_export.completed',
         'datev_export.failed',
+        'auto_billing.enabled',
+        'auto_billing.disabled',
+        'payment_method.attached',
+        'payment.auto.initiated',
+        'payment.auto.retry_scheduled',
+        'payment.auto.exhausted',
       ]),
     );
   });

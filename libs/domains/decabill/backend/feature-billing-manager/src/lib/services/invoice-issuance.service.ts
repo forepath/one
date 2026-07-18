@@ -9,6 +9,7 @@ import { InvoicesRepository } from '../repositories/invoices.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 
+import { AutoBillingService } from './auto-billing.service';
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
@@ -35,6 +36,7 @@ export class InvoiceIssuanceService {
     private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly auditLog: BillingAuditLogService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
+    private readonly autoBillingService: AutoBillingService,
   ) {}
 
   async issueDraft(invoiceId: string, dueInDays = 14, options?: IssueDraftOptions): Promise<InvoiceEntity> {
@@ -111,6 +113,10 @@ export class InvoiceIssuanceService {
     }
 
     this.billingNotificationPublisher.publishInvoice('invoice.issued', issued);
+
+    if (!isPromotionalZeroBalance) {
+      await this.autoBillingService.scheduleIfEligible(issued);
+    }
 
     return issued;
   }

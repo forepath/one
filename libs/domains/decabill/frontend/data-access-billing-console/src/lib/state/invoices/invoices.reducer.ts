@@ -58,11 +58,15 @@ export const initialInvoicesState: InvoicesState = {
 
 export const invoicesReducer = createReducer(
   initialInvoicesState,
-  on(loadInvoicesSummary, (state) => ({
-    ...state,
-    summaryLoading: true,
-    summaryError: null,
-  })),
+  on(loadInvoicesSummary, (state, { silent }) =>
+    silent
+      ? state
+      : {
+          ...state,
+          summaryLoading: true,
+          summaryError: null,
+        },
+  ),
   on(loadInvoicesSummarySuccess, (state, { summary }) => ({
     ...state,
     summary,
@@ -74,11 +78,15 @@ export const invoicesReducer = createReducer(
     summaryLoading: false,
     summaryError: error,
   })),
-  on(loadOpenOverdueInvoices, (state) => ({
-    ...state,
-    openOverdueListLoading: true,
-    openOverdueListError: null,
-  })),
+  on(loadOpenOverdueInvoices, (state, { silent }) =>
+    silent
+      ? state
+      : {
+          ...state,
+          openOverdueListLoading: true,
+          openOverdueListError: null,
+        },
+  ),
   on(loadOpenOverdueInvoicesSuccess, (state, { invoices }) => ({
     ...state,
     openOverdueList: invoices,
@@ -90,11 +98,15 @@ export const invoicesReducer = createReducer(
     openOverdueListLoading: false,
     openOverdueListError: error,
   })),
-  on(loadInvoices, (state) => ({
-    ...state,
-    loading: true,
-    error: null,
-  })),
+  on(loadInvoices, (state, { silent }) =>
+    silent
+      ? state
+      : {
+          ...state,
+          loading: true,
+          error: null,
+        },
+  ),
   on(loadInvoicesSuccess, (state, { subscriptionId, invoices }) => ({
     ...state,
     entities: { ...state.entities, [subscriptionId]: invoices },
@@ -121,11 +133,15 @@ export const invoicesReducer = createReducer(
     creating: false,
     error,
   })),
-  on(loadInvoiceDetails, (state) => ({
-    ...state,
-    detailsLoading: true,
-    error: null,
-  })),
+  on(loadInvoiceDetails, (state, { silent }) =>
+    silent
+      ? state
+      : {
+          ...state,
+          detailsLoading: true,
+          error: null,
+        },
+  ),
   on(loadInvoiceDetailsSuccess, (state, { invoiceRefId, detail }) => ({
     ...state,
     invoiceDetails: { ...state.invoiceDetails, [invoiceRefId]: detail },

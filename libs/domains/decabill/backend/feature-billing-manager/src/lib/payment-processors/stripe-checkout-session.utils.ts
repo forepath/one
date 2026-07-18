@@ -1,4 +1,4 @@
-import { CreateCheckoutSessionParams } from './payment-processor.interface';
+import { CreateCheckoutSessionParams, CreateSetupSessionParams } from './payment-processor.interface';
 
 export interface StripeCheckoutSessionBuildOptions {
   fraudProtectionEnabled: boolean;
@@ -26,6 +26,10 @@ export function buildStripeCheckoutSessionCreateParams(
         quantity: 1,
       },
     ],
+    payment_intent_data: {
+      setup_future_usage: 'off_session' as const,
+      metadata: params.metadata,
+    },
     ...(params.stripeCustomerId
       ? { customer: params.stripeCustomerId }
       : params.customerEmail
@@ -40,5 +44,23 @@ export function buildStripeCheckoutSessionCreateParams(
           },
         }
       : {}),
+  };
+}
+
+export function buildStripeSetupSessionCreateParams(params: CreateSetupSessionParams) {
+  return {
+    mode: 'setup' as const,
+    currency: params.currency.toLowerCase(),
+    success_url: params.successUrl,
+    cancel_url: params.cancelUrl,
+    metadata: params.metadata,
+    setup_intent_data: {
+      metadata: params.metadata,
+    },
+    ...(params.stripeCustomerId
+      ? { customer: params.stripeCustomerId }
+      : params.customerEmail
+        ? { customer_email: params.customerEmail }
+        : {}),
   };
 }

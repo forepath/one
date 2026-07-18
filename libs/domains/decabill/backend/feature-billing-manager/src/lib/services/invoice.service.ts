@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { InvoiceStatus, OPEN_OVERDUE_INVOICE_STATUSES } from '../constants/invoice-status.constants';
+import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
+import { isAutoPaymentBlocking } from '../constants/auto-payment-status.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 import type { InvoiceDetailResponseDto } from '../dto/invoice-detail-response.dto';
 import type { InvoiceResponseDto } from '../dto/invoice-response.dto';
@@ -457,9 +459,18 @@ export class InvoiceService {
     invoice: InvoiceEntity,
   ): Pick<
     InvoiceResponseDto,
-    'canPay' | 'canDownload' | 'canPreview' | 'canDownloadVoidDocument' | 'canDownloadTimeReport' | 'voidDocumentNumber'
+    | 'canPay'
+    | 'canDownload'
+    | 'canPreview'
+    | 'canDownloadVoidDocument'
+    | 'canDownloadTimeReport'
+    | 'voidDocumentNumber'
+    | 'autoPaymentStatus'
   > {
-    const payable = OPEN_OVERDUE_INVOICE_STATUSES.includes(invoice.status) && Number(invoice.balanceDue) > 0;
+    const payable =
+      OPEN_OVERDUE_INVOICE_STATUSES.includes(invoice.status) &&
+      Number(invoice.balanceDue) >= getMinCheckoutPaymentAmount() &&
+      !isAutoPaymentBlocking(invoice.autoPaymentStatus);
     const previewable = invoice.status !== InvoiceStatus.DRAFT;
     const voided = invoice.status === InvoiceStatus.VOID;
 
@@ -470,6 +481,7 @@ export class InvoiceService {
       canDownloadVoidDocument: voided && Boolean(invoice.invoiceNumber),
       canDownloadTimeReport: previewable && Boolean(invoice.projectId),
       voidDocumentNumber: voided && invoice.invoiceNumber ? buildCreditNoteNumber(invoice.invoiceNumber) : undefined,
+      autoPaymentStatus: invoice.autoPaymentStatus,
     };
   }
 }

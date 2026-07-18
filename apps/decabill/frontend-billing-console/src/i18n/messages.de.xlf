@@ -958,6 +958,18 @@
         <source>Billing</source>
         <target>Abrechnung</target>
       </trans-unit>
+      <trans-unit id="featureInvoices-paymentWaiting" datatype="html">
+        <source>Payment submitted. Waiting for confirmation from the payment provider…</source>
+        <target>Zahlung übermittelt. Warte auf Bestätigung vom Zahlungsanbieter…</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-paymentConfirmed" datatype="html">
+        <source>Payment confirmed. Your invoice is marked as paid.</source>
+        <target>Zahlung bestätigt. Ihre Rechnung ist als bezahlt markiert.</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-paymentCanceled" datatype="html">
+        <source>Payment was canceled. You can try again from an open invoice.</source>
+        <target>Zahlung wurde abgebrochen. Sie können es erneut über eine offene Rechnung versuchen.</target>
+      </trans-unit>
       <trans-unit id="featureInvoices-openOverdueCount" datatype="html">
         <source> Open and overdue invoices </source>
         <target>Offene und überfällige Rechnungen</target>
@@ -1033,6 +1045,10 @@
       <trans-unit id="featureInvoices-payButtonTitle" datatype="html">
         <source>Pay invoice</source>
         <target>Rechnung bezahlen</target>
+      </trans-unit>
+      <trans-unit id="featureInvoices-payBelowMinimumTitle" datatype="html">
+        <source>Payment is only available for amounts of <x id="min" equiv-text="min"/> or more.</source>
+        <target>Zahlung ist nur für Beträge ab <x id="min" equiv-text="min"/> möglich.</target>
       </trans-unit>
       <trans-unit id="featureInvoices-downloadButtonTitle" datatype="html">
         <source>Download PDF</source>
@@ -1969,7 +1985,51 @@
       <trans-unit id="featureSubscriptions-phone" datatype="html">
         <source>Phone</source>
         <target>Telefon</target>
-      </trans-unit>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-autoBillingHeading" datatype="html">
+        <source>Auto-billing</source>
+        <target>Automatische Abrechnung</target>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-autoBillingHint" datatype="html">
+        <source>When enabled, open invoices are charged automatically. Manual payment is blocked until auto-payment succeeds or retries are exhausted.</source>
+        <target>Wenn aktiviert, werden offene Rechnungen automatisch belastet. Manuelle Zahlung ist gesperrt, bis die automatische Zahlung erfolgreich ist oder keine Wiederholungen mehr erfolgen.</target>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-autoBillingSetupWaiting" datatype="html">
+        <source>Payment method submitted. Waiting for confirmation from the payment provider…</source>
+        <target>Zahlungsmethode übermittelt. Warte auf Bestätigung vom Zahlungsanbieter…</target>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-autoBillingSetupConfirmed" datatype="html">
+        <source>Payment method confirmed and saved.</source>
+        <target>Zahlungsmethode bestätigt und gespeichert.</target>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-autoBillingSetupCanceled" datatype="html">
+        <source>Payment method setup was canceled.</source>
+        <target>Einrichtung der Zahlungsmethode wurde abgebrochen.</target>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-paymentMethodStatus" datatype="html">
+        <source>Payment method:</source>
+        <target>Zahlungsmethode:</target>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-paymentMethodOnFile" datatype="html">
+        <source>On file</source>
+        <target>Hinterlegt</target>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-paymentMethodMissing" datatype="html">
+        <source>Not on file</source>
+        <target>Nicht hinterlegt</target>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-addPaymentMethod" datatype="html">
+        <source>Add payment method</source>
+        <target>Zahlungsmethode hinzufügen</target>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-enableAutoBilling" datatype="html">
+        <source>Enable auto-billing</source>
+        <target>Automatische Abrechnung aktivieren</target>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-disableAutoBilling" datatype="html">
+        <source>Disable auto-billing</source>
+        <target>Automatische Abrechnung deaktivieren</target>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-save" datatype="html">
         <source>Save</source>
         <target>Speichern</target>

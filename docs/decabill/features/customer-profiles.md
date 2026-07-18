@@ -23,16 +23,19 @@ Optional fields may include company name, VAT ID, postal code, and phone dependi
 
 ## Self-Service
 
-| Method | Path                | Purpose                         |
-| ------ | ------------------- | ------------------------------- |
-| GET    | `/customer-profile` | Retrieve current user's profile |
-| POST   | `/customer-profile` | Create or update profile        |
+| Method | Path                                     | Purpose                         |
+| ------ | ---------------------------------------- | ------------------------------- |
+| GET    | `/customer-profile`                      | Retrieve current user's profile |
+| POST   | `/customer-profile`                      | Create or update profile        |
+| POST   | `/customer-profile/auto-billing/setup`   | Start payment-method setup      |
+| POST   | `/customer-profile/auto-billing/enable`  | Enable auto-billing             |
+| POST   | `/customer-profile/auto-billing/disable` | Disable auto-billing            |
 
-The billing console exposes a customer profile page for authenticated users to complete or update billing details before ordering.
+The billing console exposes a customer profile page for authenticated users to complete or update billing details before ordering. Auto-billing controls live in the profile modal; see [Auto-Billing](./auto-billing.md).
 
 ### Stripe Integration
 
-When the user initiates payment, the billing manager creates or updates a Stripe Customer and stores the Stripe customer id on the profile for subsequent checkout sessions.
+When the user initiates payment, the billing manager creates or updates a Stripe Customer and stores the Stripe customer id on the profile for subsequent checkout sessions. Setup sessions and successful Checkout payments can also store a default payment method for auto-billing.
 
 ## Admin Management
 

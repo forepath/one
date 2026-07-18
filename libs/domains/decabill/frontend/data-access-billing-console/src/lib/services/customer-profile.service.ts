@@ -6,6 +6,10 @@ import { Observable } from 'rxjs';
 
 import type { CustomerProfileDto, CustomerProfileResponse } from '../types/billing.types';
 
+export interface AutoBillingSetupResponse {
+  setupUrl: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -32,5 +36,17 @@ export class CustomerProfileService {
    */
   updateCustomerProfile(profile: CustomerProfileDto): Observable<CustomerProfileResponse> {
     return this.http.post<CustomerProfileResponse>(`${this.apiUrl}/customer-profile`, profile);
+  }
+
+  setupAutoBilling(): Observable<AutoBillingSetupResponse> {
+    return this.http.post<AutoBillingSetupResponse>(`${this.apiUrl}/customer-profile/auto-billing/setup`, {});
+  }
+
+  enableAutoBilling(): Observable<CustomerProfileResponse> {
+    return this.http.post<CustomerProfileResponse>(`${this.apiUrl}/customer-profile/auto-billing/enable`, {});
+  }
+
+  disableAutoBilling(): Observable<CustomerProfileResponse> {
+    return this.http.post<CustomerProfileResponse>(`${this.apiUrl}/customer-profile/auto-billing/disable`, {});
   }
 }

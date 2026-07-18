@@ -61,6 +61,9 @@ describe('InvoiceIssuanceService', () => {
       publishSubscription: jest.fn(),
       publish: jest.fn(),
     } as never,
+    {
+      scheduleIfEligible: jest.fn(),
+    } as never,
   );
   const draftInvoice = {
     id: 'inv-1',

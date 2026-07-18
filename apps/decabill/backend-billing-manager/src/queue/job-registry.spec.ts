@@ -11,6 +11,7 @@ describe('billing job-registry', () => {
 
     expect(jobs.length).toBeGreaterThanOrEqual(7);
     expect(jobs.map((job) => job.name)).toContain(BillingJobName.WEBHOOK_DELIVERY_RETENTION_COORDINATOR);
+    expect(jobs.map((job) => job.name)).toContain(BillingJobName.INVOICE_AUTO_PAYMENT_COORDINATOR);
 
     delete process.env.BILLING_DATEV_EXPORT_ENABLED;
     const withDatev = getBillingRepeatableJobs();

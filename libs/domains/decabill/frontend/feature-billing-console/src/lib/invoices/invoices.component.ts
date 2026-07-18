@@ -1,7 +1,18 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  ChangeDetectorRef,
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  OnInit,
+  signal,
+  ViewChild,
+} from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthenticationFacade } from '@forepath/identity/frontend';
 import {
   InvoicesFacade,
@@ -10,9 +21,10 @@ import {
   type CreateInvoiceDto,
   type InvoiceDetailResponse,
   type InvoiceResponse,
+  type InvoicesSummaryResponse,
   type ServicePlanResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { BehaviorSubject, combineLatest, map, Observable, of, switchMap } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, interval, map, Observable, of, switchMap, take } from 'rxjs';
 
 import {
   getInvoiceStatusBadgeClass,
@@ -24,6 +36,8 @@ import { showBillingModal, watchBillingMutationModalClose } from '../billing-mod
 import { NextBillingDayPipe } from '../pipes/next-billing-day.pipe';
 
 type CustomerBillingMobilePanel = 'openOverdue' | 'subscription';
+
+type PaymentReturnFeedback = 'waiting' | 'confirmed' | 'canceled';
 
 @Component({
   selector: 'framework-billing-invoices',
@@ -38,6 +52,9 @@ export class InvoicesComponent implements OnInit {
   @ViewChild('previewInvoiceModal', { static: false }) private previewInvoiceModal!: ElementRef<HTMLDivElement>;
 
   private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly invoicesFacade = inject(InvoicesFacade);
   private readonly subscriptionsFacade = inject(SubscriptionsFacade);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
@@ -48,6 +65,7 @@ export class InvoicesComponent implements OnInit {
   readonly mobilePanel = signal<CustomerBillingMobilePanel>('openOverdue');
   readonly openOverdueSearch = signal('');
   readonly subscriptionInvoicesSearch = signal('');
+  paymentReturnFeedback: PaymentReturnFeedback | null = null;
 
   readonly isAdmin$ = this.authFacade.canAccessBillingAdministration$;
 
@@ -93,6 +111,9 @@ export class InvoicesComponent implements OnInit {
   readonly payingInvoiceRefId$ = this.invoicesFacade.getPayingInvoiceRefId$();
   readonly invoiceDetailsLoading$ = this.invoicesFacade.getInvoiceDetailsLoading$();
   readonly invoicesSummary$ = this.invoicesFacade.getInvoicesSummary$();
+  readonly invoicesSummary = toSignal(this.invoicesFacade.getInvoicesSummary$(), {
+    initialValue: null as InvoicesSummaryResponse | null,
+  });
   readonly invoicesSummaryLoading$ = this.invoicesFacade.getInvoicesSummaryLoading$();
   readonly openOverdueList$ = this.invoicesFacade.getOpenOverdueList$();
   readonly openOverdueListLoading$ = this.invoicesFacade.getOpenOverdueListLoading$();
@@ -109,6 +130,8 @@ export class InvoicesComponent implements OnInit {
   createInvoiceDescription = '';
 
   readonly createInvoiceDisabledTitle = $localize`:@@featureInvoices-createInvoiceDisabledFinalized:Subscription is finalized; no further invoices can be created.`;
+  readonly payInvoiceTitle = $localize`:@@featureInvoices-payButtonTitle:Pay invoice`;
+  private readonly defaultMinCheckoutPaymentAmount = 1;
 
   planNameByPlanId(planId: string, plans: ServicePlanResponse[] | null): string {
     if (!plans) return planId;
@@ -127,6 +150,7 @@ export class InvoicesComponent implements OnInit {
     this.servicePlansFacade.loadServicePlans();
     this.invoicesFacade.loadInvoicesSummary();
     this.invoicesFacade.loadOpenOverdueInvoices();
+    this.handlePaymentReturnQueryParams();
     watchBillingMutationModalClose({
       loading$: this.invoicesCreating$,
       error$: this.invoicesError$,
@@ -136,6 +160,85 @@ export class InvoicesComponent implements OnInit {
         this.createInvoiceDescription = '';
       },
     });
+  }
+
+  private handlePaymentReturnQueryParams(): void {
+    const queryParamMap = this.route.snapshot.queryParamMap;
+    const paymentParam = queryParamMap.get('payment');
+    const invoiceRefId = queryParamMap.get('invoiceRefId')?.trim() || null;
+    const subscriptionId = queryParamMap.get('subscriptionId')?.trim() || undefined;
+
+    if (paymentParam === 'success') {
+      this.paymentReturnFeedback = 'waiting';
+      this.startPaymentConfirmationPoll(subscriptionId, invoiceRefId);
+    } else if (paymentParam === 'cancel') {
+      this.paymentReturnFeedback = 'canceled';
+    }
+
+    if (paymentParam) {
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { payment: null, subscriptionId: null, invoiceRefId: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    }
+  }
+
+  private startPaymentConfirmationPoll(subscriptionId: string | undefined, invoiceRefId: string | null): void {
+    this.refreshPaymentReturnData(subscriptionId, invoiceRefId);
+
+    interval(3000)
+      .pipe(
+        take(20),
+        filter(() => this.paymentReturnFeedback === 'waiting'),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.refreshPaymentReturnData(subscriptionId, invoiceRefId);
+      });
+
+    if (!invoiceRefId) {
+      return;
+    }
+
+    this.invoicesFacade
+      .getInvoiceDetail$(invoiceRefId)
+      .pipe(
+        filter((detail) => this.isInvoicePaymentConfirmed(detail)),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        if (this.paymentReturnFeedback === 'waiting') {
+          this.paymentReturnFeedback = 'confirmed';
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  private refreshPaymentReturnData(subscriptionId: string | undefined, invoiceRefId: string | null): void {
+    const silent = { silent: true } as const;
+
+    this.invoicesFacade.loadInvoicesSummary(silent);
+    this.invoicesFacade.loadOpenOverdueInvoices(silent);
+
+    if (invoiceRefId) {
+      this.invoicesFacade.loadInvoiceDetails(subscriptionId, invoiceRefId, silent);
+    }
+
+    if (subscriptionId) {
+      this.selectedSubscriptionId$.next(subscriptionId);
+      this.invoicesFacade.loadInvoices(subscriptionId, silent);
+    }
+  }
+
+  private isInvoicePaymentConfirmed(detail: InvoiceDetailResponse | null): boolean {
+    if (!detail) {
+      return false;
+    }
+
+    return detail.status === 'paid' || Number(detail.balanceDue) <= 0;
   }
 
   onSelectSubscription(subscriptionId: string): void {
@@ -191,11 +294,45 @@ export class InvoicesComponent implements OnInit {
   }
 
   payInvoice(subscriptionId: string | undefined, inv: InvoiceResponse): void {
-    if (!inv.canPay) return;
+    if (!inv.canPay || this.isBelowMinimumPaymentAmount(inv)) return;
 
     const resolvedSubscriptionId = subscriptionId ?? inv.subscriptionId ?? undefined;
 
     this.invoicesFacade.initiatePayment(resolvedSubscriptionId, inv.id);
+  }
+
+  shouldShowPayButton(inv: InvoiceResponse): boolean {
+    return inv.canPay || this.isBelowMinimumPaymentAmount(inv);
+  }
+
+  isPayButtonDisabled(inv: InvoiceResponse, payingInvoiceRefId: string | null): boolean {
+    return !inv.canPay || payingInvoiceRefId === inv.id || this.isBelowMinimumPaymentAmount(inv);
+  }
+
+  isBelowMinimumPaymentAmount(inv: InvoiceResponse): boolean {
+    const balance = Number(inv.balance ?? 0);
+
+    return balance > 0 && balance < this.resolveMinCheckoutPaymentAmount();
+  }
+
+  payButtonTitle(inv: InvoiceResponse): string {
+    if (this.isBelowMinimumPaymentAmount(inv)) {
+      const min = this.resolveMinCheckoutPaymentAmount().toFixed(2);
+
+      return $localize`:@@featureInvoices-payBelowMinimumTitle:Payment is only available for amounts of ${min}:min: or more.`;
+    }
+
+    return this.payInvoiceTitle;
+  }
+
+  private resolveMinCheckoutPaymentAmount(): number {
+    const fromSummary = this.invoicesSummary()?.minCheckoutPaymentAmount;
+
+    if (typeof fromSummary === 'number' && Number.isFinite(fromSummary) && fromSummary > 0) {
+      return fromSummary;
+    }
+
+    return this.defaultMinCheckoutPaymentAmount;
   }
 
   downloadInvoice(subscriptionId: string | undefined, inv: InvoiceResponse): void {

@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
+import { getMinCheckoutPaymentAmount } from '../../constants/payment-amount.constants';
 import { TaxCategory } from '../../constants/tax-category.constants';
 import { BillingAuditLogService } from '../../services/billing-audit-log.service';
 import { CustomerProfilesService } from '../../services/customer-profiles.service';
@@ -108,9 +109,16 @@ export class ProjectBillingService {
       ...customLineInputs,
     ];
     const totals = this.taxCalculationService.computeLines(lineInputs);
+    const minCheckoutPaymentAmount = getMinCheckoutPaymentAmount();
 
     if (totals.subtotalNet < MIN_BILLABLE_AMOUNT) {
       throw new BadRequestException('Billable amount below minimum');
+    }
+
+    if (totals.totalGross > 0 && totals.totalGross < minCheckoutPaymentAmount) {
+      throw new BadRequestException(
+        `Billable amount is below the minimum payment amount of ${minCheckoutPaymentAmount.toFixed(2)}`,
+      );
     }
 
     const draft = await this.invoiceService.createDraft({

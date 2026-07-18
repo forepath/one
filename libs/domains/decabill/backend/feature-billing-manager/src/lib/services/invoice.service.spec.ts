@@ -1,6 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import { AutoPaymentStatus } from '../constants/auto-payment-status.constants';
 import { TaxCategory } from '../constants/tax-category.constants';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 
@@ -288,6 +289,47 @@ describe('InvoiceService', () => {
       expect(response.canDownload).toBe(true);
       expect(response.canPreview).toBe(true);
       expect(response.canDownloadVoidDocument).toBe(false);
+    });
+
+    it('blocks canPay when balance is below the minimum checkout amount', () => {
+      const response = service.mapToResponse({
+        id: 'inv-1',
+        subscriptionId,
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 0.99,
+        createdAt: new Date(),
+      } as InvoiceEntity);
+
+      expect(response.canPay).toBe(false);
+      expect(response.balance).toBe(0.99);
+    });
+
+    it('blocks canPay while auto-payment is in progress', () => {
+      const response = service.mapToResponse({
+        id: 'inv-1',
+        subscriptionId,
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 50,
+        autoPaymentStatus: AutoPaymentStatus.RETRYING,
+        createdAt: new Date(),
+      } as InvoiceEntity);
+
+      expect(response.canPay).toBe(false);
+      expect(response.autoPaymentStatus).toBe(AutoPaymentStatus.RETRYING);
+    });
+
+    it('allows canPay while auto-payment is only scheduled', () => {
+      const response = service.mapToResponse({
+        id: 'inv-1',
+        subscriptionId,
+        status: InvoiceStatus.ISSUED,
+        balanceDue: 50,
+        autoPaymentStatus: AutoPaymentStatus.SCHEDULED,
+        createdAt: new Date(),
+      } as InvoiceEntity);
+
+      expect(response.canPay).toBe(true);
+      expect(response.autoPaymentStatus).toBe(AutoPaymentStatus.SCHEDULED);
     });
 
     it('exposes void document capability for voided invoices', () => {

@@ -489,6 +489,9 @@ export interface CustomerProfileResponse {
   email?: string | null;
   phone?: string | null;
   stripeCustomerId?: string | null;
+  autoBillingEnabled?: boolean;
+  hasPaymentMethodOnFile?: boolean;
+  supportsAutoPayment?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -527,6 +530,7 @@ export interface InvoiceResponse {
   canDownloadVoidDocument?: boolean;
   canDownloadTimeReport?: boolean;
   voidDocumentNumber?: string | null;
+  autoPaymentStatus?: string | null;
 }
 
 export interface InvoiceLineItemResponse {
@@ -589,6 +593,8 @@ export interface InvoicesSummaryResponse {
   billingDayOfMonth: number;
   /** Total amount of unbilled open positions (to be invoiced on the next billing day). */
   unbilledTotal: number;
+  /** Minimum balance due required for Checkout / payment-method charges. */
+  minCheckoutPaymentAmount?: number;
 }
 
 // Usage

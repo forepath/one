@@ -13,6 +13,9 @@ export class CustomerProfileResponseDto {
   email?: string;
   phone?: string;
   stripeCustomerId?: string;
+  autoBillingEnabled?: boolean;
+  hasPaymentMethodOnFile?: boolean;
+  supportsAutoPayment?: boolean;
   createdAt!: Date;
   updatedAt!: Date;
 }

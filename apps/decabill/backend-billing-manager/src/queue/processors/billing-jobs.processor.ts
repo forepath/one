@@ -6,6 +6,7 @@ import {
   DatevExportConfigService,
   DatevExportJobHandler,
   DatevExportScope,
+  InvoiceAutoPaymentJobHandler,
   InvoiceOverdueJobHandler,
   OpenPositionInvoiceJobHandler,
   SubscriptionBillingJobHandler,
@@ -55,6 +56,7 @@ export class BillingJobsProcessor extends WorkerHost {
     private readonly subscriptionWithdrawal: SubscriptionWithdrawalJobHandler,
     private readonly subscriptionProvisioning: SubscriptionProvisioningJobHandler,
     private readonly invoiceOverdue: InvoiceOverdueJobHandler,
+    private readonly invoiceAutoPayment: InvoiceAutoPaymentJobHandler,
     private readonly openPositionInvoice: OpenPositionInvoiceJobHandler,
     private readonly renewalReminder: SubscriptionRenewalReminderJobHandler,
     private readonly subscriptionItemUpdate: SubscriptionItemUpdateJobHandler,
@@ -94,6 +96,9 @@ export class BillingJobsProcessor extends WorkerHost {
         break;
       case BillingJobName.INVOICE_OVERDUE_COORDINATOR:
         await this.runInvoiceOverdueCoordinator();
+        break;
+      case BillingJobName.INVOICE_AUTO_PAYMENT_COORDINATOR:
+        await this.runInvoiceAutoPaymentCoordinator();
         break;
       case BillingJobName.OPEN_POSITION_INVOICE_COORDINATOR:
         await this.runOpenPositionInvoiceCoordinator();
@@ -152,6 +157,9 @@ export class BillingJobsProcessor extends WorkerHost {
               break;
             case BillingJobName.INVOICE_OVERDUE_UNIT:
               await this.invoiceOverdue.markOverdueIfNeeded((job.data as { invoiceRefId: string }).invoiceRefId);
+              break;
+            case BillingJobName.INVOICE_AUTO_PAYMENT_UNIT:
+              await this.invoiceAutoPayment.attemptAutoPayment((job.data as { invoiceRefId: string }).invoiceRefId);
               break;
             case BillingJobName.OPEN_POSITION_INVOICE_UNIT:
               await this.runOpenPositionInvoiceUnit(
@@ -310,6 +318,37 @@ export class BillingJobsProcessor extends WorkerHost {
         offset += ids.length;
 
         if (ids.length < this.invoiceOverdue.batchSizeLimit) {
+          break;
+        }
+      }
+    });
+  }
+
+  private async runInvoiceAutoPaymentCoordinator(): Promise<void> {
+    await this.forEachConfiguredTenant(async (tenantId) => {
+      let offset = 0;
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const ids = await this.invoiceAutoPayment.findInvoiceIdsPage(offset);
+
+        if (ids.length === 0) {
+          break;
+        }
+
+        for (const invoiceRefId of ids) {
+          await this.enqueueBillingUnitJob({
+            queue: this.billingQueue,
+            jobName: BillingJobName.INVOICE_AUTO_PAYMENT_UNIT,
+            payload: { invoiceRefId, tenantId },
+            jobIdNamespace: 'invoice-auto-payment:ref',
+            jobIdParts: [tenantId, invoiceRefId],
+          });
+        }
+
+        offset += ids.length;
+
+        if (ids.length < this.invoiceAutoPayment.batchSizeLimit) {
           break;
         }
       }

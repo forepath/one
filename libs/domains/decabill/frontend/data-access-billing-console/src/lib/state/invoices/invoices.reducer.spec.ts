@@ -219,6 +219,18 @@ describe('invoicesReducer', () => {
       expect(newState.summaryLoading).toBe(true);
       expect(newState.summaryError).toBeNull();
     });
+
+    it('should leave loading flags unchanged when silent', () => {
+      const state: InvoicesState = {
+        ...initialInvoicesState,
+        summaryLoading: false,
+        summaryError: 'Previous error',
+      };
+      const newState = invoicesReducer(state, loadInvoicesSummary(true));
+
+      expect(newState.summaryLoading).toBe(false);
+      expect(newState.summaryError).toBe('Previous error');
+    });
   });
 
   describe('loadInvoicesSummarySuccess', () => {
@@ -250,6 +262,18 @@ describe('invoicesReducer', () => {
 
       expect(newState.openOverdueListLoading).toBe(true);
       expect(newState.openOverdueListError).toBeNull();
+    });
+
+    it('should leave loading flags unchanged when silent', () => {
+      const state: InvoicesState = {
+        ...initialInvoicesState,
+        openOverdueListLoading: false,
+        openOverdueListError: 'Previous error',
+      };
+      const newState = invoicesReducer(state, loadOpenOverdueInvoices(true));
+
+      expect(newState.openOverdueListLoading).toBe(false);
+      expect(newState.openOverdueListError).toBe('Previous error');
     });
   });
 

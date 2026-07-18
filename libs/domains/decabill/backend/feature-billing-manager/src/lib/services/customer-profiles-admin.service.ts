@@ -144,6 +144,8 @@ export class CustomerProfilesAdminService {
       email: row.email,
       phone: row.phone,
       stripeCustomerId: row.stripeCustomerId,
+      autoBillingEnabled: row.autoBillingEnabled ?? false,
+      hasPaymentMethodOnFile: Boolean(row.defaultPaymentMethodExternalId),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

@@ -36,10 +36,12 @@ import { AdminBillingController } from './controllers/admin-billing.controller';
 import { AdminPromotionsController } from './controllers/admin-promotions.controller';
 import { PromotionsController } from './controllers/promotions.controller';
 import { AdminCustomerProfilesController } from './controllers/admin-customer-profiles.controller';
+import { AdminCustomerAutoBillingController } from './controllers/admin-customer-auto-billing.controller';
 import { AdminDatevExportsController } from './controllers/admin-datev-exports.controller';
 import { AvailabilityController } from './controllers/availability.controller';
 import { BackordersController } from './controllers/backorders.controller';
 import { CustomerProfilesController } from './controllers/customer-profiles.controller';
+import { CustomerAutoBillingController } from './controllers/customer-auto-billing.controller';
 import { AdminProjectsController } from './projects/controllers/admin-projects.controller';
 import { ProjectMilestonesController } from './projects/controllers/project-milestones.controller';
 import { ProjectTicketsController } from './projects/controllers/project-tickets.controller';
@@ -184,6 +186,8 @@ import { InvoiceCreationService } from './services/invoice-creation.service';
 import { ManualInvoiceService } from './services/manual-invoice.service';
 import { InvoiceIssuanceService } from './services/invoice-issuance.service';
 import { InvoiceOverdueJobHandler } from './services/invoice-overdue.job-handler';
+import { InvoiceAutoPaymentJobHandler } from './services/invoice-auto-payment.job-handler';
+import { AutoBillingService } from './services/auto-billing.service';
 import { InvoicePdfHtmlRendererService } from './services/invoice-pdf-html-renderer.service';
 import { InvoicePdfTemplateService } from './services/invoice-pdf-template.service';
 import { InvoicePdfService } from './services/invoice-pdf.service';
@@ -463,11 +467,13 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     AdminPromotionsController,
     AdminBillingController,
     AdminCustomerProfilesController,
+    AdminCustomerAutoBillingController,
     AdminDatevExportsController,
     PaymentsWebhookController,
     AdminUsageController,
     UsageController,
     CustomerProfilesController,
+    CustomerAutoBillingController,
     ProjectsController,
     AdminProjectsController,
     ProjectMilestonesController,
@@ -552,6 +558,8 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     StripePaymentProcessor,
     DynamicProviderLoaderService,
     PaymentOrchestrationService,
+    AutoBillingService,
+    InvoiceAutoPaymentJobHandler,
     {
       provide: PAYMENT_PROCESSOR_INIT,
       useFactory: async (
@@ -678,6 +686,8 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     InvoiceCreationService,
     InvoiceService,
     InvoiceOverdueJobHandler,
+    InvoiceAutoPaymentJobHandler,
+    AutoBillingService,
     PaymentOrchestrationService,
     ProvisioningService,
     SubscriptionItemServerService,

@@ -20,12 +20,13 @@ The `PaymentProcessorFactory` resolves processors by type string at runtime.
 
 ## Stripe Configuration
 
-| Variable                      | Purpose                                                |
-| ----------------------------- | ------------------------------------------------------ |
-| `STRIPE_SECRET_KEY`           | Stripe API secret key                                  |
-| `STRIPE_WEBHOOK_SECRET`       | Webhook signing secret                                 |
-| `STRIPE_CHECKOUT_SUCCESS_URL` | Legacy full URL or path used with tenant frontend base |
-| `STRIPE_CHECKOUT_CANCEL_URL`  | Cancel redirect path                                   |
+| Variable                              | Purpose                                                 |
+| ------------------------------------- | ------------------------------------------------------- |
+| `STRIPE_SECRET_KEY`                   | Stripe API secret key                                   |
+| `STRIPE_WEBHOOK_SECRET`               | Webhook signing secret                                  |
+| `STRIPE_CHECKOUT_SUCCESS_URL`         | Legacy full URL or path used with tenant frontend base  |
+| `STRIPE_CHECKOUT_CANCEL_URL`          | Cancel redirect path                                    |
+| `BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT` | Minimum balance for Checkout / PM charges (default `1`) |
 
 Per-tenant redirect bases come from [Multi-tenancy](./multi-tenancy.md):
 
@@ -89,8 +90,11 @@ Built-in and dynamic processors implement:
 - Checkout session creation with amount, currency, and metadata
 - Webhook route registration (Stripe uses fixed path)
 - Customer create or update helpers
+- **Auto-payment capability:** `supportsAutoPayment()`, `createSetupSession`, `chargeOffSession`
 
 Stripe implementation: `StripePaymentProcessor` in the billing manager feature module.
+
+See [Auto-Billing](./auto-billing.md) for off-session charging, retries, and manual-pay blocking.
 
 ## Security
 

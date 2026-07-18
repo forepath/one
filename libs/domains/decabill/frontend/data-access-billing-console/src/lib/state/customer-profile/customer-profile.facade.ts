@@ -4,7 +4,14 @@ import { Observable } from 'rxjs';
 
 import type { CustomerProfileDto, CustomerProfileResponse } from '../../types/billing.types';
 
-import { clearCustomerProfile, loadCustomerProfile, updateCustomerProfile } from './customer-profile.actions';
+import {
+  clearCustomerProfile,
+  disableAutoBilling,
+  enableAutoBilling,
+  loadCustomerProfile,
+  setupAutoBilling,
+  updateCustomerProfile,
+} from './customer-profile.actions';
 import {
   selectCustomerProfile,
   selectCustomerProfileError,
@@ -55,6 +62,18 @@ export class CustomerProfileFacade {
 
   updateCustomerProfile(profile: CustomerProfileDto): void {
     this.store.dispatch(updateCustomerProfile({ profile }));
+  }
+
+  setupAutoBilling(): void {
+    this.store.dispatch(setupAutoBilling());
+  }
+
+  enableAutoBilling(): void {
+    this.store.dispatch(enableAutoBilling());
+  }
+
+  disableAutoBilling(): void {
+    this.store.dispatch(disableAutoBilling());
   }
 
   clearCustomerProfile(): void {

@@ -38,11 +38,28 @@ describe('InvoiceCreationService', () => {
       invoicesRepository?: any;
       promotionApplicationService?: any;
       subscriptionChargePeriodService?: SubscriptionChargePeriodService;
+      taxCalculationService?: any;
     } = {},
   ) {
     const invoicesRepository =
       deps.invoicesRepository ?? ({ findLatestBySubscription: jest.fn().mockResolvedValue(null) } as any);
     const itemsRepository = deps.itemsRepository ?? subscriptionItemsRepository;
+    const taxCalculationService =
+      deps.taxCalculationService ??
+      ({
+        computeLines: jest.fn().mockImplementation((lineInputs: { quantity: number; unitPriceNet: number }[]) => {
+          const subtotalNet = lineInputs.reduce((sum, line) => sum + line.quantity * line.unitPriceNet, 0);
+          const rounded = Math.round(subtotalNet * 100) / 100;
+
+          return {
+            subtotalNet: rounded,
+            taxTotal: 0,
+            totalGross: rounded,
+            lines: [],
+            taxBreakdown: [],
+          };
+        }),
+      } as any);
 
     return new InvoiceCreationService(
       deps.subscriptionsRepository ?? ({} as any),
@@ -55,6 +72,7 @@ describe('InvoiceCreationService', () => {
       providerServerTypesService,
       deps.promotionApplicationService ?? defaultPromotionApplicationService,
       deps.subscriptionChargePeriodService ?? createChargePeriodService(invoicesRepository, itemsRepository),
+      taxCalculationService,
     );
   }
 
@@ -304,6 +322,106 @@ describe('InvoiceCreationService', () => {
     expect(invoiceService.createAndIssue).not.toHaveBeenCalled();
   });
 
+  it('throws when createInvoice payable gross is below checkout minimum', async () => {
+    const subscriptionsRepository = {
+      findByIdOrThrow: jest.fn().mockResolvedValue({
+        id: 'sub-1',
+        userId: 'user-1',
+        planId: 'plan-1',
+        createdAt: new Date('2024-01-01T00:00:00Z'),
+      }),
+    } as any;
+    const plansRepository = {
+      findByIdOrThrow: jest.fn().mockResolvedValue({
+        id: 'plan-1',
+        basePrice: '10',
+        marginPercent: '0',
+        marginFixed: '0',
+        billingIntervalType: 'day',
+        billingIntervalValue: 1,
+        billingDayOfMonth: undefined,
+      }),
+    } as any;
+    const pricingService = { calculate: jest.fn().mockReturnValue({ totalPrice: 10 }) } as any;
+    const invoiceService = { createAndIssue: jest.fn().mockResolvedValue({}) } as any;
+    const usageRecordsRepository = { findLatestForSubscription: jest.fn().mockResolvedValue(null) } as any;
+    const openPositionsRepository = { markBilled: jest.fn().mockResolvedValue({}) } as any;
+    const subscriptionChargePeriodService = {
+      resolveChargePeriod: jest.fn().mockResolvedValue({
+        baseAmount: 0.5,
+        periodStart: new Date('2024-01-01T00:00:00Z'),
+        periodEnd: new Date('2024-01-01T00:02:00Z'),
+      }),
+    } as unknown as SubscriptionChargePeriodService;
+    const service = createService({
+      subscriptionsRepository,
+      plansRepository,
+      pricingService,
+      invoiceService,
+      usageRecordsRepository,
+      openPositionsRepository,
+      subscriptionChargePeriodService,
+    });
+
+    await expect(
+      service.createInvoice('sub-1', 'user-1', 'Below min', {
+        billUntil: new Date('2024-01-01T00:02:00Z'),
+      }),
+    ).rejects.toThrow(/below the minimum payment amount/);
+
+    expect(invoiceService.createAndIssue).not.toHaveBeenCalled();
+  });
+
+  it('skips createInvoice when below checkout minimum and skipIfNoBillableAmount is true', async () => {
+    const subscriptionsRepository = {
+      findByIdOrThrow: jest.fn().mockResolvedValue({
+        id: 'sub-1',
+        userId: 'user-1',
+        planId: 'plan-1',
+        createdAt: new Date('2024-01-01T00:00:00Z'),
+      }),
+    } as any;
+    const plansRepository = {
+      findByIdOrThrow: jest.fn().mockResolvedValue({
+        id: 'plan-1',
+        basePrice: '10',
+        marginPercent: '0',
+        marginFixed: '0',
+        billingIntervalType: 'day',
+        billingIntervalValue: 1,
+        billingDayOfMonth: undefined,
+      }),
+    } as any;
+    const pricingService = { calculate: jest.fn().mockReturnValue({ totalPrice: 10 }) } as any;
+    const invoiceService = { createAndIssue: jest.fn().mockResolvedValue({}) } as any;
+    const usageRecordsRepository = { findLatestForSubscription: jest.fn().mockResolvedValue(null) } as any;
+    const openPositionsRepository = { markBilled: jest.fn().mockResolvedValue({}) } as any;
+    const subscriptionChargePeriodService = {
+      resolveChargePeriod: jest.fn().mockResolvedValue({
+        baseAmount: 0.5,
+        periodStart: new Date('2024-01-01T00:00:00Z'),
+        periodEnd: new Date('2024-01-01T00:02:00Z'),
+      }),
+    } as unknown as SubscriptionChargePeriodService;
+    const service = createService({
+      subscriptionsRepository,
+      plansRepository,
+      pricingService,
+      invoiceService,
+      usageRecordsRepository,
+      openPositionsRepository,
+      subscriptionChargePeriodService,
+    });
+
+    const result = await service.createInvoice('sub-1', 'user-1', 'Below min', {
+      billUntil: new Date('2024-01-01T00:02:00Z'),
+      skipIfNoBillableAmount: true,
+    });
+
+    expect(result).toBeUndefined();
+    expect(invoiceService.createAndIssue).not.toHaveBeenCalled();
+  });
+
   describe('createAccumulatedInvoice', () => {
     const subscriptionBase = {
       id: 'sub-1',
@@ -478,6 +596,206 @@ describe('InvoiceCreationService', () => {
       expect(result).toBeUndefined();
       expect(invoiceService.createAndIssue).not.toHaveBeenCalled();
       expect(openPositionsRepository.markManyBilled).not.toHaveBeenCalled();
+    });
+
+    it('holds open positions when payable gross is below checkout minimum', async () => {
+      const previousEnv = process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT;
+      process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT = '1';
+
+      try {
+        const positions = [
+          {
+            id: 'pos-1',
+            subscriptionId: 'sub-1',
+            userId: 'user-1',
+            description: 'Tiny charge',
+            billUntil: new Date('2024-02-01'),
+            skipIfNoBillableAmount: true,
+          },
+        ] as any;
+        const subscriptionsRepository = {
+          findByIdOrThrow: jest.fn().mockResolvedValue({ ...subscriptionBase, id: 'sub-1' }),
+        } as any;
+        const plansRepository = { findByIdOrThrow: jest.fn().mockResolvedValue(planBase) } as any;
+        const pricingService = { calculate: jest.fn().mockReturnValue({ totalPrice: 0.5 }) } as any;
+        const invoiceService = { createAndIssue: jest.fn() } as any;
+        const usageRecordsRepository = { findLatestForSubscription: jest.fn().mockResolvedValue(null) } as any;
+        const openPositionsRepository = { markManyBilled: jest.fn() } as any;
+        const taxCalculationService = {
+          computeLines: jest.fn().mockReturnValue({
+            subtotalNet: 0.5,
+            taxTotal: 0.1,
+            totalGross: 0.6,
+            lines: [],
+            taxBreakdown: [],
+          }),
+        } as any;
+        const service = createService({
+          subscriptionsRepository,
+          plansRepository,
+          pricingService,
+          invoiceService,
+          usageRecordsRepository,
+          openPositionsRepository,
+          taxCalculationService,
+        });
+
+        (service as any).getBillableChargeForPosition = jest.fn().mockResolvedValue({
+          amount: 0.5,
+          chargePeriod: {
+            baseAmount: 0.5,
+            periodStart: new Date('2024-01-01'),
+            periodEnd: new Date('2024-02-01'),
+          },
+        });
+
+        const result = await service.createAccumulatedInvoice('user-1', positions);
+
+        expect(result).toBeUndefined();
+        expect(taxCalculationService.computeLines).toHaveBeenCalled();
+        expect(invoiceService.createAndIssue).not.toHaveBeenCalled();
+        expect(openPositionsRepository.markManyBilled).not.toHaveBeenCalled();
+      } finally {
+        if (previousEnv === undefined) {
+          delete process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT;
+        } else {
+          process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT = previousEnv;
+        }
+      }
+    });
+
+    it('issues invoice when payable gross meets checkout minimum', async () => {
+      const previousEnv = process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT;
+      process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT = '1';
+
+      try {
+        const positions = [
+          {
+            id: 'pos-1',
+            subscriptionId: 'sub-1',
+            userId: 'user-1',
+            description: 'Charge',
+            billUntil: new Date('2024-02-01'),
+            skipIfNoBillableAmount: true,
+          },
+        ] as any;
+        const subscriptionsRepository = {
+          findByIdOrThrow: jest.fn().mockResolvedValue({ ...subscriptionBase, id: 'sub-1' }),
+        } as any;
+        const plansRepository = { findByIdOrThrow: jest.fn().mockResolvedValue(planBase) } as any;
+        const pricingService = { calculate: jest.fn().mockReturnValue({ totalPrice: 10 }) } as any;
+        const invoiceService = {
+          createAndIssue: jest.fn().mockResolvedValue({ invoiceRefId: 'ref-1' }),
+        } as any;
+        const usageRecordsRepository = { findLatestForSubscription: jest.fn().mockResolvedValue(null) } as any;
+        const openPositionsRepository = { markManyBilled: jest.fn().mockResolvedValue(undefined) } as any;
+        const taxCalculationService = {
+          computeLines: jest.fn().mockReturnValue({
+            subtotalNet: 10,
+            taxTotal: 1.9,
+            totalGross: 11.9,
+            lines: [],
+            taxBreakdown: [],
+          }),
+        } as any;
+        const service = createService({
+          subscriptionsRepository,
+          plansRepository,
+          pricingService,
+          invoiceService,
+          usageRecordsRepository,
+          openPositionsRepository,
+          taxCalculationService,
+        });
+
+        (service as any).getBillableChargeForPosition = jest.fn().mockResolvedValue({
+          amount: 10,
+          chargePeriod: {
+            baseAmount: 10,
+            periodStart: new Date('2024-01-01'),
+            periodEnd: new Date('2024-02-01'),
+          },
+        });
+
+        const result = await service.createAccumulatedInvoice('user-1', positions);
+
+        expect(result).toEqual({ invoiceRefId: 'ref-1' });
+        expect(invoiceService.createAndIssue).toHaveBeenCalled();
+        expect(openPositionsRepository.markManyBilled).toHaveBeenCalledWith(['pos-1'], 'ref-1');
+      } finally {
+        if (previousEnv === undefined) {
+          delete process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT;
+        } else {
+          process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT = previousEnv;
+        }
+      }
+    });
+
+    it('still issues zero-gross promotional invoices below checkout minimum', async () => {
+      const previousEnv = process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT;
+      process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT = '1';
+
+      try {
+        const positions = [
+          {
+            id: 'pos-1',
+            subscriptionId: 'sub-1',
+            userId: 'user-1',
+            description: 'Promotional',
+            billUntil: new Date('2024-02-01'),
+            skipIfNoBillableAmount: true,
+          },
+        ] as any;
+        const subscriptionsRepository = {
+          findByIdOrThrow: jest.fn().mockResolvedValue({ ...subscriptionBase, id: 'sub-1' }),
+        } as any;
+        const plansRepository = { findByIdOrThrow: jest.fn().mockResolvedValue(planBase) } as any;
+        const pricingService = { calculate: jest.fn().mockReturnValue({ totalPrice: 10 }) } as any;
+        const invoiceService = {
+          createAndIssue: jest.fn().mockResolvedValue({ invoiceRefId: 'ref-promo' }),
+        } as any;
+        const usageRecordsRepository = { findLatestForSubscription: jest.fn().mockResolvedValue(null) } as any;
+        const openPositionsRepository = { markManyBilled: jest.fn().mockResolvedValue(undefined) } as any;
+        const taxCalculationService = {
+          computeLines: jest.fn().mockReturnValue({
+            subtotalNet: 0,
+            taxTotal: 0,
+            totalGross: 0,
+            lines: [],
+            taxBreakdown: [],
+          }),
+        } as any;
+        const service = createService({
+          subscriptionsRepository,
+          plansRepository,
+          pricingService,
+          invoiceService,
+          usageRecordsRepository,
+          openPositionsRepository,
+          taxCalculationService,
+        });
+
+        (service as any).getBillableChargeForPosition = jest.fn().mockResolvedValue({
+          amount: 10,
+          chargePeriod: {
+            baseAmount: 10,
+            periodStart: new Date('2024-01-01'),
+            periodEnd: new Date('2024-02-01'),
+          },
+        });
+
+        const result = await service.createAccumulatedInvoice('user-1', positions);
+
+        expect(result).toEqual({ invoiceRefId: 'ref-promo' });
+        expect(invoiceService.createAndIssue).toHaveBeenCalled();
+        expect(openPositionsRepository.markManyBilled).toHaveBeenCalledWith(['pos-1'], 'ref-promo');
+      } finally {
+        if (previousEnv === undefined) {
+          delete process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT;
+        } else {
+          process.env.BILLING_MIN_CHECKOUT_PAYMENT_AMOUNT = previousEnv;
+        }
+      }
     });
   });
 

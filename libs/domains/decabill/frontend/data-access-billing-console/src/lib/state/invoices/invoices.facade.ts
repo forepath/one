@@ -89,8 +89,8 @@ export class InvoicesFacade {
     return this.store.select(selectInvoicesSummaryError);
   }
 
-  loadInvoicesSummary(): void {
-    this.store.dispatch(loadInvoicesSummaryAction());
+  loadInvoicesSummary(options?: { silent?: boolean }): void {
+    this.store.dispatch(loadInvoicesSummaryAction(options?.silent === true));
   }
 
   getOpenOverdueList$(): Observable<InvoiceResponse[]> {
@@ -105,8 +105,8 @@ export class InvoicesFacade {
     return this.store.select(selectOpenOverdueListError);
   }
 
-  loadOpenOverdueInvoices(): void {
-    this.store.dispatch(loadOpenOverdueInvoices());
+  loadOpenOverdueInvoices(options?: { silent?: boolean }): void {
+    this.store.dispatch(loadOpenOverdueInvoices(options?.silent === true));
   }
 
   getInvoicesCountBySubscriptionId$(subscriptionId: string): Observable<number> {
@@ -117,16 +117,16 @@ export class InvoicesFacade {
     return this.store.select(selectHasInvoicesBySubscriptionId(subscriptionId));
   }
 
-  loadInvoices(subscriptionId: string): void {
-    this.store.dispatch(loadInvoices({ subscriptionId }));
+  loadInvoices(subscriptionId: string, options?: { silent?: boolean }): void {
+    this.store.dispatch(loadInvoices({ subscriptionId, silent: options?.silent === true }));
   }
 
   createInvoice(subscriptionId: string, dto?: CreateInvoiceDto): void {
     this.store.dispatch(createInvoice({ subscriptionId, dto }));
   }
 
-  loadInvoiceDetails(subscriptionId: string | undefined, invoiceRefId: string): void {
-    this.store.dispatch(loadInvoiceDetails({ subscriptionId, invoiceRefId }));
+  loadInvoiceDetails(subscriptionId: string | undefined, invoiceRefId: string, options?: { silent?: boolean }): void {
+    this.store.dispatch(loadInvoiceDetails({ subscriptionId, invoiceRefId, silent: options?.silent === true }));
   }
 
   initiatePayment(subscriptionId: string | undefined, invoiceRefId: string): void {
