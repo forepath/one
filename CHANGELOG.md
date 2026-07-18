@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.17.1](https://github.com/forepath/one/compare/v2.17.0...v2.17.1) (2026-07-18)
+
+
+### Bug Fixes
+
+* shared user webhook events ([#498](https://github.com/forepath/one/issues/498)) ([7129e77](https://github.com/forepath/one/commit/7129e77bc09600330b9a0f65d0a6f35d87d46ab3))
+
+
+### Chores
+
+* improved ai context graph node groups ([#497](https://github.com/forepath/one/issues/497)) ([f56dd17](https://github.com/forepath/one/commit/f56dd174b58ed1cd2f247493ffaec5378a49cacd))
+
 ## [2.17.0](https://github.com/forepath/one/compare/v2.16.0...v2.17.0) (2026-07-18)
 
 
