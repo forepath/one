@@ -5,9 +5,12 @@ describe('BILLING_NOTIFICATION_EVENTS', () => {
     expect(new Set(BILLING_NOTIFICATION_EVENTS).size).toBe(BILLING_NOTIFICATION_EVENTS.length);
   });
 
-  it('includes project, milestone, time entry, ticket, and auto-billing events', () => {
+  it('includes identity, project, milestone, time entry, ticket, and auto-billing events', () => {
     expect(BILLING_NOTIFICATION_EVENTS).toEqual(
       expect.arrayContaining([
+        'user.created',
+        'user.updated',
+        'user.deleted',
         'project.created',
         'project.updated',
         'project.deleted',

@@ -8,6 +8,7 @@ export const IDENTITY_NOTIFICATION_PUBLISHER = Symbol('IDENTITY_NOTIFICATION_PUB
 /**
  * Minimal interface for publishing identity lifecycle events to webhooks.
  * Implementations should be fire-and-forget (errors logged, not thrown).
+ * Event type strings live in IDENTITY_NOTIFICATION_EVENTS.
  */
 export interface IIdentityNotificationPublisher {
   publishUserCreated(data: Record<string, unknown>): void;

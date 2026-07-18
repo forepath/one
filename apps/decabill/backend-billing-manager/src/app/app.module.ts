@@ -1,4 +1,9 @@
-import { BillingKeycloakUserSyncModule, BillingModule, BillingUsersAuthModule } from '@forepath/decabill/backend';
+import {
+  BillingIdentityNotificationBridgeModule,
+  BillingKeycloakUserSyncModule,
+  BillingModule,
+  BillingUsersAuthModule,
+} from '@forepath/decabill/backend';
 import {
   BullBoardSkippingThrottlerGuard,
   getAuthenticationMethod,
@@ -25,6 +30,7 @@ const authMethod = getAuthenticationMethod();
     BillingQueueModule,
     ThrottlerModule.forRoot(getRateLimitConfig()),
     BillingModule,
+    BillingIdentityNotificationBridgeModule,
     ...(authMethod === 'keycloak'
       ? [
           KeycloakModule,

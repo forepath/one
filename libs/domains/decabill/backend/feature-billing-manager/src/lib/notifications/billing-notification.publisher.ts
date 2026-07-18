@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { IIdentityNotificationPublisher } from '@forepath/identity/backend';
 import { getTenantIdOrDefault, NotificationDispatcherService } from '@forepath/shared/backend';
+import { Injectable } from '@nestjs/common';
 
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
@@ -67,7 +68,7 @@ export type TicketCommentNotificationPayload = {
 };
 
 @Injectable()
-export class BillingNotificationPublisher {
+export class BillingNotificationPublisher implements IIdentityNotificationPublisher {
   constructor(private readonly dispatcher: NotificationDispatcherService) {}
 
   publish(type: BillingNotificationEventType, data: Record<string, unknown>, clientId?: string): void {
@@ -77,6 +78,26 @@ export class BillingNotificationPublisher {
       clientId,
       data,
     });
+  }
+
+  publishUserCreated(data: Record<string, unknown>): void {
+    this.publish('user.created', data);
+  }
+
+  publishUserUpdated(data: Record<string, unknown>): void {
+    this.publish('user.updated', data);
+  }
+
+  publishUserDeleted(data: Record<string, unknown>): void {
+    this.publish('user.deleted', data);
+  }
+
+  publishClientUserCreated(_data: Record<string, unknown>, _clientId: string): void {
+    // Decabill does not use client-user membership webhooks.
+  }
+
+  publishClientUserDeleted(_data: Record<string, unknown>, _clientId: string): void {
+    // Decabill does not use client-user membership webhooks.
   }
 
   publishInvoice(type: 'invoice.created' | 'invoice.issued' | 'invoice.voided', invoice: InvoiceEntity): void {

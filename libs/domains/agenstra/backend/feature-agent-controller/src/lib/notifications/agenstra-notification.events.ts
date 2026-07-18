@@ -1,4 +1,7 @@
+import { IDENTITY_NOTIFICATION_EVENTS } from '@forepath/identity/backend';
+
 export const AGENSTRA_NOTIFICATION_EVENTS = [
+  ...IDENTITY_NOTIFICATION_EVENTS,
   'client.created',
   'client.updated',
   'client.deleted',
@@ -14,9 +17,6 @@ export const AGENSTRA_NOTIFICATION_EVENTS = [
   'environment.created',
   'environment.updated',
   'environment.deleted',
-  'user.created',
-  'user.updated',
-  'user.deleted',
   'client_user.created',
   'client_user.deleted',
 ] as const;
