@@ -145,11 +145,11 @@ export const authenticationReducer = createReducer(
     registering: true,
     error: null,
   })),
-  on(registerSuccess, (state) => ({
+  on(registerSuccess, (state, { message }) => ({
     ...state,
     registering: false,
     error: null,
-    successMessage: 'Registration successful. Please check your email to confirm your account.',
+    successMessage: message,
   })),
   on(registerFailure, (state, { error }) => ({
     ...state,

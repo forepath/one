@@ -56,7 +56,7 @@ export const register = createAction('[Authentication] Register', props<{ email:
 
 export const registerSuccess = createAction(
   '[Authentication] Register Success',
-  props<{ user: { id: string; email: string; role: string }; message: string }>(),
+  props<{ user: { id: string; email: string; role: string }; message: string; emailConfirmed: boolean }>(),
 );
 
 export const registerFailure = createAction('[Authentication] Register Failure', props<{ error: string }>());

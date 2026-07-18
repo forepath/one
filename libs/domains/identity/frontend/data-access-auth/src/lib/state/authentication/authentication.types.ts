@@ -20,6 +20,8 @@ export interface LoginResponse {
 export interface RegisterResponse {
   user: UserInfo;
   message: string;
+  /** True when the account is already confirmed (e.g. first user bootstrap). */
+  emailConfirmed: boolean;
 }
 
 export interface UserResponseDto {

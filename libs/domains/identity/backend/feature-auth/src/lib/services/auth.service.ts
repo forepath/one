@@ -47,6 +47,8 @@ export interface ChangePasswordResponse {
 export interface RegisterResponse {
   user: { id: string; email: string; role: UserRole };
   message: string;
+  /** True when the account is already confirmed (e.g. first user bootstrap). */
+  emailConfirmed: boolean;
 }
 
 @Injectable()
@@ -107,11 +109,13 @@ export class AuthService {
       { email, password, role: isFirstUser ? UserRole.ADMIN : UserRole.USER },
       isFirstUser,
     );
+    const emailConfirmed = Boolean(created.emailConfirmedAt);
 
-    if (isFirstUser) {
+    if (emailConfirmed) {
       return {
         user: { id: created.id, email: created.email, role: created.role },
         message: 'Account created successfully. You can log in immediately.',
+        emailConfirmed: true,
       };
     }
 
@@ -119,6 +123,7 @@ export class AuthService {
       user: { id: created.id, email: created.email, role: created.role },
       message:
         'Account created. Please confirm your email before logging in. Check your inbox for the confirmation code.',
+      emailConfirmed: false,
     };
   }
 
