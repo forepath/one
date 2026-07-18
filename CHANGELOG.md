@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.17.0](https://github.com/forepath/one/compare/v2.16.0...v2.17.0) (2026-07-18)
+
+
+### Features
+
+* ai knowledge graph generation ([#490](https://github.com/forepath/one/issues/490)) ([baf19ab](https://github.com/forepath/one/commit/baf19ab3ce2f1ab5edf07e97ab2a0fdba445848b))
+* autopayment support ([#495](https://github.com/forepath/one/issues/495)) ([03a1823](https://github.com/forepath/one/commit/03a18232d058fb853867e060eaeb7a531a7edf8b))
+
+
+### Bug Fixes
+
+* skip confirmation on first registration ([#492](https://github.com/forepath/one/issues/492)) ([34f5127](https://github.com/forepath/one/commit/34f512700ed3382058362ddacc28465cce55b9e6))
+
+
+### Chores
+
+* display customer invoices without subscription filter ([#496](https://github.com/forepath/one/issues/496)) ([27b4c0b](https://github.com/forepath/one/commit/27b4c0b79eac088de37d1385c0d1b0d31f0dd68d))
+
+
+### Code Refactoring
+
+* email sending logic through job queue ([#491](https://github.com/forepath/one/issues/491)) ([d46300e](https://github.com/forepath/one/commit/d46300ed443100a0e2bf499007bbb3d3a39a38dd))
+
 ## [2.16.0](https://github.com/forepath/one/compare/v2.15.5...v2.16.0) (2026-07-17)
 
 
