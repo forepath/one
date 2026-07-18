@@ -6,10 +6,13 @@ The monorepo knowledge graph helps humans and AI agents understand structure wit
 
 Large Nx workspaces span many apps and libs. The graph unifies:
 
-- Nx **project** dependencies
+- Nx **project** dependencies (`app` / `lib` / `tool`)
+- Production **npm packages** attributed per app via Nx `createPackageJson` (SBOM-equivalent)
+- **patch-package** files under `patches/` when they target an attributed package
 - **OpenAPI** / **AsyncAPI** operations and channels
 - **Markdown** concepts under `docs/<domain>/`
-- Heuristic **implements** links from Nest controllers to OpenAPI paths
+- Heuristic **implements** links from Nest controllers to OpenAPI paths and gateways to AsyncAPI channels
+- Architectural sources: controllers, gateways, jobs, services, repositories, entities, DTOs, guards, modules, domain providers, accumulated NgRx `state` slices, email templates, and webhook events
 
 Artifacts live at:
 
@@ -55,7 +58,7 @@ Committed graph files are therefore kept current without a separate manual step.
 
 ## Schema overview
 
-- **Nodes:** `app`, `lib`, `domain`, `context`, `feature-group`, `file`, `doc`, `readme`, `openapi`, `asyncapi`, `diagram`, `endpoint`, `concept`
+- **Nodes:** `app`, `lib`, `tool`, `package`, `patch`, `domain`, `context`, `feature-group`, `controller`, `gateway`, `job`, `service`, `repository`, `entity`, `dto`, `guard`, `module`, `state`, `provider`, `email`, `webhook-event`, `doc`, `readme`, `openapi`, `asyncapi`, `diagram`, `endpoint`, `concept`
 - **Edges:** `depends_on`, `contains`, `implements`, `documents`, `belongs_to`
 
 See the **Knowledge Graph Skill** for id patterns and traversal recipes.

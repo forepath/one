@@ -3,6 +3,7 @@ export type {
   ClusterKind,
   ClusterNodeAttrs,
   ConceptNodeAttrs,
+  FileDerivedNodeType,
   FileLanguageOrKind,
   FileNodeAttrs,
   KnowledgeEdge,
@@ -11,30 +12,69 @@ export type {
   KnowledgeNode,
   KnowledgeNodeAttrs,
   KnowledgeNodeType,
+  PackageNodeAttrs,
+  PatchNodeAttrs,
   ProjectNodeAttrs,
   ProjectNodeKind,
+  WebhookEventNodeAttrs,
 } from './lib/schema';
 
 export {
   channelApiNodeId,
+  classifyTsSourceType,
+  classifyTsSourceTypeFromPath,
   conceptNodeId,
   contextNodeId,
   domainNodeId,
+  emailTemplateStem,
   featureGroupNodeId,
   fileNodeId,
   fileNodeTypeFromKind,
+  fileNodeTypeFromPath,
   httpApiNodeId,
+  isDomainProviderSource,
+  isEmailTemplateFile,
+  isIndexedTsSourceFile,
   isNxProjectNodeType,
+  isToolsProjectRoot,
+  isWebhookEventsCatalogFile,
+  packageNodeId,
+  patchNodeId,
   projectNodeId,
   slugify,
+  toolNodeId,
+  webhookEventNodeId,
 } from './lib/schema';
 
 export { buildKnowledgeGraph, writeKnowledgeGraphArtifacts } from './lib/build-knowledge-graph';
 export { buildClusterSlice, inferDomainFromPath } from './lib/build-clusters';
 export { fromProjectGraph } from './lib/from-project-graph';
-export { discoverFiles, isSensitivePath } from './lib/discover-files';
+export { discoverFiles, isNgrxStateSliceDir, isSensitivePath } from './lib/discover-files';
+export { discoverToolDirectories } from './lib/discover-tools';
+export { discoverPatches, parsePatchFileName } from './lib/discover-patches';
+export { linkPackages } from './lib/link-packages';
 export { parseOpenApi, parseOpenApiFile } from './lib/parse-openapi';
 export { parseAsyncApi, parseAsyncApiFile } from './lib/parse-asyncapi';
 export { parseMarkdown, parseMarkdownFile } from './lib/parse-markdown';
-export { extractControllerPaths, linkImplements, normalizeApiPath, pathMatchesPrefix } from './lib/link-implements';
+export {
+  extractWebhookEventNames,
+  parseWebhookEventsCatalog,
+  parseWebhookEventsCatalogFile,
+} from './lib/parse-webhook-events';
+export {
+  channelMatchesHint,
+  extractControllerPaths,
+  extractGatewayChannelHints,
+  linkImplements,
+  normalizeApiPath,
+  normalizeChannelToken,
+  pathMatchesPrefix,
+} from './lib/link-implements';
+export { linkStateServices } from './lib/link-state-services';
+export {
+  collectToolIdentifiers,
+  linkToolUsage,
+  projectJsonReferencesIdentifier,
+  resolveToolIdentities,
+} from './lib/link-tool-usage';
 export { linkDocuments } from './lib/link-documents';

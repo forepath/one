@@ -2,7 +2,13 @@ import { isSensitivePath } from './discover-files';
 import { parseOpenApi } from './parse-openapi';
 import { parseAsyncApi } from './parse-asyncapi';
 import { parseMarkdown } from './parse-markdown';
-import { extractControllerPaths, linkImplements, pathMatchesPrefix } from './link-implements';
+import {
+  extractControllerPaths,
+  extractGatewayChannelHints,
+  channelMatchesHint,
+  linkImplements,
+  pathMatchesPrefix,
+} from './link-implements';
 import { linkDocuments } from './link-documents';
 import { httpApiNodeId, channelApiNodeId, conceptNodeId, projectNodeId } from './schema';
 
@@ -183,6 +189,55 @@ describe('linkImplements', () => {
       ]),
     );
     expect(edges.find((e) => e.to === httpApiNodeId('GET', '/health'))).toBeUndefined();
+  });
+
+  it('should build implements edges from gateway to AsyncAPI channels', () => {
+    const fs = require('fs') as typeof import('fs');
+    const os = require('os') as typeof import('os');
+    const path = require('path') as typeof import('path');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kg-gw-'));
+    const filePath = path.join(dir, 'status.gateway.ts');
+    fs.writeFileSync(filePath, `@WebSocketGateway({ namespace: 'demo/status' })\nexport class StatusGateway {}\n`);
+
+    expect(extractGatewayChannelHints(`@WebSocketGateway({ namespace: 'demo/status' })`)).toEqual(['demo/status']);
+    expect(channelMatchesHint('demo/status', 'demo/status')).toBe(true);
+    expect(channelMatchesHint('demo/status', 'status')).toBe(true);
+
+    const edges = linkImplements({
+      controllerFiles: [],
+      gatewayFiles: [
+        {
+          relativePath: 'apps/demo-api/src/gateways/status.gateway.ts',
+          absolutePath: filePath,
+          projectName: 'demo-api',
+        },
+      ],
+      apiNodes: [
+        {
+          id: channelApiNodeId('demo/status'),
+          type: 'endpoint',
+          attrs: {
+            pathOrChannel: 'demo/status',
+            specKind: 'asyncapi',
+          },
+        },
+      ],
+    });
+
+    expect(edges).toEqual(
+      expect.arrayContaining([
+        {
+          from: 'file:apps/demo-api/src/gateways/status.gateway.ts',
+          to: channelApiNodeId('demo/status'),
+          type: 'implements',
+        },
+        {
+          from: projectNodeId('demo-api'),
+          to: channelApiNodeId('demo/status'),
+          type: 'implements',
+        },
+      ]),
+    );
   });
 });
 

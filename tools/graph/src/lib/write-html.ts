@@ -30,17 +30,32 @@ const GRAPH_HTML = `<!DOCTYPE html>
       --border: #243044;
       --app: #7dd3fc;
       --lib: #c4b5fd;
+      --tool: #5eead4;
+      --package: #86efac;
+      --patch: #fca5a5;
       --domain: #f87171;
       --context: #a3e635;
       --feature-group: #fcd34d;
-      --file: #94a3b8;
+      --controller: #67e8f9;
+      --gateway: #22d3ee;
+      --job: #f97316;
+      --service: #a78bfa;
+      --repository: #818cf8;
+      --entity: #c084fc;
+      --dto: #ddd6fe;
+      --guard: #fb7185;
+      --module: #94a3b8;
+      --state: #e879f9;
+      --provider: #fbbf24;
+      --email: #f9a8d4;
+      --webhook-event: #fdba74;
       --doc: #f472b6;
-      --readme: #e879f9;
+      --readme: #d946ef;
       --openapi: #2dd4bf;
       --asyncapi: #38bdf8;
       --diagram: #fb923c;
       --endpoint: #34d399;
-      --concept: #fbbf24;
+      --concept: #fde68a;
       --scrollbar-thumb: rgba(231, 236, 243, 0.28);
       --scrollbar-thumb-hover: rgba(231, 236, 243, 0.45);
       --scrollbar-thumb-active: rgba(231, 236, 243, 0.55);
@@ -143,11 +158,91 @@ const GRAPH_HTML = `<!DOCTYPE html>
       align-self: end;
     }
     .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .type-filter {
+      position: relative;
+      align-self: end;
+    }
+    .type-filter-btn {
+      min-width: 9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .type-filter-btn .caret {
+      font-size: 0.65rem;
+      opacity: 0.7;
+    }
+    .type-filter-summary {
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .type-filter-panel {
+      position: absolute;
+      top: calc(100% + 0.35rem);
+      right: 0;
+      z-index: 40;
+      width: min(22rem, calc(100vw - 1.5rem));
+      max-height: min(22rem, calc(100vh - 6rem));
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.55rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    }
+    .type-filter.open .type-filter-panel {
+      display: flex;
+    }
+    .type-filter-panel input[type="search"] {
+      flex: 0 0 auto;
+      width: 100%;
+      min-width: 0;
+    }
+    .type-filter-list {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      padding-right: 0.15rem;
+    }
+    .type-filter-list label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.28rem 0.35rem;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .type-filter-list label:hover {
+      background: var(--panel-2);
+      color: var(--text);
+    }
+    .type-filter-list label.hidden {
+      display: none;
+    }
+    .type-filter-empty {
+      display: none;
+      padding: 0.5rem 0.35rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .type-filter-empty.visible {
+      display: block;
+    }
     .toggles {
       display: flex;
       flex-wrap: wrap;
       gap: 0.55rem;
       align-items: center;
+      align-self: end;
       font-size: 0.78rem;
       color: var(--muted);
     }
@@ -166,10 +261,25 @@ const GRAPH_HTML = `<!DOCTYPE html>
     }
     .swatch.app { background: var(--app); }
     .swatch.lib { background: var(--lib); }
+    .swatch.tool { background: var(--tool); }
+    .swatch.package { background: var(--package); }
+    .swatch.patch { background: var(--patch); }
     .swatch.domain { background: var(--domain); }
     .swatch.context { background: var(--context); }
     .swatch.feature-group { background: var(--feature-group); }
-    .swatch.file { background: var(--file); }
+    .swatch.controller { background: var(--controller); }
+    .swatch.gateway { background: var(--gateway); }
+    .swatch.job { background: var(--job); }
+    .swatch.service { background: var(--service); }
+    .swatch.repository { background: var(--repository); }
+    .swatch.entity { background: var(--entity); }
+    .swatch.dto { background: var(--dto); }
+    .swatch.guard { background: var(--guard); }
+    .swatch.module { background: var(--module); }
+    .swatch.state { background: var(--state); }
+    .swatch.provider { background: var(--provider); }
+    .swatch.email { background: var(--email); }
+    .swatch.webhook-event { background: var(--webhook-event); }
     .swatch.doc { background: var(--doc); }
     .swatch.readme { background: var(--readme); }
     .swatch.openapi { background: var(--openapi); }
@@ -241,7 +351,7 @@ const GRAPH_HTML = `<!DOCTYPE html>
     .popover .pop-type.domain { color: var(--domain); }
     .popover .pop-type.context { color: var(--context); }
     .popover .pop-type.feature-group { color: var(--feature-group); }
-    .popover .pop-type.file { color: var(--file); }
+    .popover .pop-type.controller { color: var(--controller); }
     .popover .pop-type.doc { color: var(--doc); }
     .popover .pop-type.readme { color: var(--readme); }
     .popover .pop-type.openapi { color: var(--openapi); }
@@ -331,10 +441,25 @@ const GRAPH_HTML = `<!DOCTYPE html>
     }
     .detail-type.app { color: var(--app); }
     .detail-type.lib { color: var(--lib); }
+    .detail-type.tool { color: var(--tool); }
+    .detail-type.package { color: var(--package); }
+    .detail-type.patch { color: var(--patch); }
     .detail-type.domain { color: var(--domain); }
     .detail-type.context { color: var(--context); }
     .detail-type.feature-group { color: var(--feature-group); }
-    .detail-type.file { color: var(--file); }
+    .detail-type.controller { color: var(--controller); }
+    .detail-type.gateway { color: var(--gateway); }
+    .detail-type.job { color: var(--job); }
+    .detail-type.service { color: var(--service); }
+    .detail-type.repository { color: var(--repository); }
+    .detail-type.entity { color: var(--entity); }
+    .detail-type.dto { color: var(--dto); }
+    .detail-type.guard { color: var(--guard); }
+    .detail-type.module { color: var(--module); }
+    .detail-type.state { color: var(--state); }
+    .detail-type.provider { color: var(--provider); }
+    .detail-type.email { color: var(--email); }
+    .detail-type.webhook-event { color: var(--webhook-event); }
     .detail-type.doc { color: var(--doc); }
     .detail-type.readme { color: var(--readme); }
     .detail-type.openapi { color: var(--openapi); }
@@ -404,10 +529,25 @@ const GRAPH_HTML = `<!DOCTYPE html>
     .type-tag { font-size: 0.7rem; margin-right: 0.35rem; opacity: 0.9; }
     .type-tag.app { color: var(--app); }
     .type-tag.lib { color: var(--lib); }
+    .type-tag.tool { color: var(--tool); }
+    .type-tag.package { color: var(--package); }
+    .type-tag.patch { color: var(--patch); }
     .type-tag.domain { color: var(--domain); }
     .type-tag.context { color: var(--context); }
     .type-tag.feature-group { color: var(--feature-group); }
-    .type-tag.file { color: var(--file); }
+    .type-tag.controller { color: var(--controller); }
+    .type-tag.gateway { color: var(--gateway); }
+    .type-tag.job { color: var(--job); }
+    .type-tag.service { color: var(--service); }
+    .type-tag.repository { color: var(--repository); }
+    .type-tag.entity { color: var(--entity); }
+    .type-tag.dto { color: var(--dto); }
+    .type-tag.guard { color: var(--guard); }
+    .type-tag.module { color: var(--module); }
+    .type-tag.state { color: var(--state); }
+    .type-tag.provider { color: var(--provider); }
+    .type-tag.email { color: var(--email); }
+    .type-tag.webhook-event { color: var(--webhook-event); }
     .type-tag.doc { color: var(--doc); }
     .type-tag.readme { color: var(--readme); }
     .type-tag.openapi { color: var(--openapi); }
@@ -431,20 +571,47 @@ const GRAPH_HTML = `<!DOCTYPE html>
         <input id="hops" type="number" min="1" max="4" value="2" title="Neighborhood depth when a node is selected" />
       </label>
       <button type="button" id="fitBtn" class="btn">Fit</button>
-      <div class="toggles" id="typeToggles">
-        <label><input type="checkbox" data-type="app" checked /><span class="swatch app"></span>app</label>
-        <label><input type="checkbox" data-type="lib" checked /><span class="swatch lib"></span>lib</label>
-        <label><input type="checkbox" data-type="domain" checked /><span class="swatch domain"></span>domain</label>
-        <label><input type="checkbox" data-type="context" checked /><span class="swatch context"></span>context</label>
-        <label><input type="checkbox" data-type="feature-group" checked /><span class="swatch feature-group"></span>feature-group</label>
-        <label><input type="checkbox" data-type="file" checked /><span class="swatch file"></span>file</label>
-        <label><input type="checkbox" data-type="doc" checked /><span class="swatch doc"></span>doc</label>
-        <label><input type="checkbox" data-type="readme" checked /><span class="swatch readme"></span>readme</label>
-        <label><input type="checkbox" data-type="openapi" checked /><span class="swatch openapi"></span>openapi</label>
-        <label><input type="checkbox" data-type="asyncapi" checked /><span class="swatch asyncapi"></span>asyncapi</label>
-        <label><input type="checkbox" data-type="diagram" checked /><span class="swatch diagram"></span>diagram</label>
-        <label><input type="checkbox" data-type="endpoint" checked /><span class="swatch endpoint"></span>endpoint</label>
-        <label><input type="checkbox" data-type="concept" checked /><span class="swatch concept"></span>concept</label>
+      <div class="type-filter" id="typeFilter">
+        <button type="button" class="btn type-filter-btn" id="typeFilterBtn" aria-expanded="false" aria-haspopup="listbox" aria-controls="typeFilterPanel">
+          <span>Types <span class="type-filter-summary" id="typeFilterSummary">all</span></span>
+          <span class="caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="type-filter-panel" id="typeFilterPanel" role="listbox" aria-label="Node types">
+          <input id="typeFilterSearch" type="search" placeholder="Search types…" autocomplete="off" />
+          <div class="type-filter-list" id="typeToggles">
+            <label><input type="checkbox" data-type="app" checked /><span class="swatch app"></span>app</label>
+            <label><input type="checkbox" data-type="lib" checked /><span class="swatch lib"></span>lib</label>
+            <label><input type="checkbox" data-type="tool" checked /><span class="swatch tool"></span>tool</label>
+            <label><input type="checkbox" data-type="package" checked /><span class="swatch package"></span>package</label>
+            <label><input type="checkbox" data-type="patch" checked /><span class="swatch patch"></span>patch</label>
+            <label><input type="checkbox" data-type="domain" checked /><span class="swatch domain"></span>domain</label>
+            <label><input type="checkbox" data-type="context" checked /><span class="swatch context"></span>context</label>
+            <label><input type="checkbox" data-type="feature-group" checked /><span class="swatch feature-group"></span>feature-group</label>
+            <label><input type="checkbox" data-type="controller" checked /><span class="swatch controller"></span>controller</label>
+            <label><input type="checkbox" data-type="gateway" checked /><span class="swatch gateway"></span>gateway</label>
+            <label><input type="checkbox" data-type="job" checked /><span class="swatch job"></span>job</label>
+            <label><input type="checkbox" data-type="service" checked /><span class="swatch service"></span>service</label>
+            <label><input type="checkbox" data-type="repository" checked /><span class="swatch repository"></span>repository</label>
+            <label><input type="checkbox" data-type="entity" checked /><span class="swatch entity"></span>entity</label>
+            <label><input type="checkbox" data-type="dto" checked /><span class="swatch dto"></span>dto</label>
+            <label><input type="checkbox" data-type="guard" checked /><span class="swatch guard"></span>guard</label>
+            <label><input type="checkbox" data-type="module" checked /><span class="swatch module"></span>module</label>
+            <label><input type="checkbox" data-type="state" checked /><span class="swatch state"></span>state</label>
+            <label><input type="checkbox" data-type="provider" checked /><span class="swatch provider"></span>provider</label>
+            <label><input type="checkbox" data-type="email" checked /><span class="swatch email"></span>email</label>
+            <label><input type="checkbox" data-type="webhook-event" checked /><span class="swatch webhook-event"></span>webhook-event</label>
+            <label><input type="checkbox" data-type="doc" checked /><span class="swatch doc"></span>doc</label>
+            <label><input type="checkbox" data-type="readme" checked /><span class="swatch readme"></span>readme</label>
+            <label><input type="checkbox" data-type="openapi" checked /><span class="swatch openapi"></span>openapi</label>
+            <label><input type="checkbox" data-type="asyncapi" checked /><span class="swatch asyncapi"></span>asyncapi</label>
+            <label><input type="checkbox" data-type="diagram" checked /><span class="swatch diagram"></span>diagram</label>
+            <label><input type="checkbox" data-type="endpoint" checked /><span class="swatch endpoint"></span>endpoint</label>
+            <label><input type="checkbox" data-type="concept" checked /><span class="swatch concept"></span>concept</label>
+          </div>
+          <div class="type-filter-empty" id="typeFilterEmpty">No types match.</div>
+        </div>
+      </div>
+      <div class="toggles">
         <label><input type="checkbox" id="showLabels" />labels</label>
       </div>
     </div>
@@ -473,25 +640,55 @@ const GRAPH_HTML = `<!DOCTYPE html>
   var COLORS = {
     app: '#7dd3fc',
     lib: '#c4b5fd',
+    tool: '#5eead4',
+    package: '#86efac',
+    patch: '#fca5a5',
     domain: '#f87171',
     context: '#a3e635',
     'feature-group': '#fcd34d',
-    file: '#94a3b8',
+    controller: '#67e8f9',
+    gateway: '#22d3ee',
+    job: '#f97316',
+    service: '#a78bfa',
+    repository: '#818cf8',
+    entity: '#c084fc',
+    dto: '#ddd6fe',
+    guard: '#fb7185',
+    module: '#94a3b8',
+    state: '#e879f9',
+    provider: '#fbbf24',
+    email: '#f9a8d4',
+    'webhook-event': '#fdba74',
     doc: '#f472b6',
-    readme: '#e879f9',
+    readme: '#d946ef',
     openapi: '#2dd4bf',
     asyncapi: '#38bdf8',
     diagram: '#fb923c',
     endpoint: '#34d399',
-    concept: '#fbbf24'
+    concept: '#fde68a'
   };
   var RADIUS = {
     app: 7.5,
     lib: 6.5,
+    tool: 6.5,
+    package: 4,
+    patch: 4,
     domain: 10,
     context: 8,
     'feature-group': 7.5,
-    file: 4.5,
+    controller: 5,
+    gateway: 5,
+    job: 4.5,
+    service: 4.5,
+    repository: 4.5,
+    entity: 4.5,
+    dto: 4,
+    guard: 4.5,
+    module: 4.5,
+    state: 5.5,
+    provider: 5,
+    email: 4.5,
+    'webhook-event': 4.5,
     doc: 4.5,
     readme: 4.5,
     openapi: 5.5,
@@ -728,10 +925,25 @@ const GRAPH_HTML = `<!DOCTYPE html>
     var byType = {
       app: [],
       lib: [],
+      tool: [],
+      package: [],
+      patch: [],
       domain: [],
       context: [],
       'feature-group': [],
-      file: [],
+      controller: [],
+      gateway: [],
+      job: [],
+      service: [],
+      repository: [],
+      entity: [],
+      dto: [],
+      guard: [],
+      module: [],
+      state: [],
+      provider: [],
+      email: [],
+      'webhook-event': [],
       doc: [],
       readme: [],
       openapi: [],
@@ -747,18 +959,34 @@ const GRAPH_HTML = `<!DOCTYPE html>
       else byType.other.push(n);
     });
 
+    var sourceRing = byType.controller
+      .concat(byType.gateway)
+      .concat(byType.job)
+      .concat(byType.service)
+      .concat(byType.repository)
+      .concat(byType.entity)
+      .concat(byType.dto)
+      .concat(byType.guard)
+      .concat(byType.module)
+      .concat(byType.provider);
     var rings = [
-      { nodes: byType.file, radius: 85 },
-      { nodes: byType.diagram, radius: 115 },
-      { nodes: byType.openapi.concat(byType.asyncapi), radius: 145 },
-      { nodes: byType.endpoint, radius: 175 },
-      { nodes: byType.doc.concat(byType.readme), radius: 210 },
-      { nodes: byType.lib, radius: 245 },
-      { nodes: byType.app, radius: 275 },
-      { nodes: byType.context.concat(byType['feature-group']), radius: 305 },
-      { nodes: byType.domain, radius: 335 },
-      { nodes: byType.concept, radius: 365 },
-      { nodes: byType.other, radius: 400 }
+      { nodes: byType.state, radius: 75 },
+      { nodes: sourceRing, radius: 105 },
+      { nodes: byType.email, radius: 125 },
+      { nodes: byType['webhook-event'], radius: 145 },
+      { nodes: byType.diagram, radius: 165 },
+      { nodes: byType.openapi.concat(byType.asyncapi), radius: 185 },
+      { nodes: byType.endpoint, radius: 215 },
+      { nodes: byType.doc.concat(byType.readme), radius: 250 },
+      { nodes: byType.lib, radius: 285 },
+      { nodes: byType.tool, radius: 300 },
+      { nodes: byType.package, radius: 320 },
+      { nodes: byType.patch, radius: 335 },
+      { nodes: byType.app, radius: 350 },
+      { nodes: byType.context.concat(byType['feature-group']), radius: 380 },
+      { nodes: byType.domain, radius: 410 },
+      { nodes: byType.concept, radius: 440 },
+      { nodes: byType.other, radius: 475 }
     ];
 
     rings.forEach(function (ring) {
@@ -812,7 +1040,7 @@ const GRAPH_HTML = `<!DOCTYPE html>
     });
     if (!hubs.length) {
       simNodes.forEach(function (n) {
-        if (n.type === 'app' || n.type === 'lib') {
+        if (n.type === 'app' || n.type === 'lib' || n.type === 'tool') {
           hubs.push(n);
           hubSet.add(n.id);
         }
@@ -1083,7 +1311,7 @@ const GRAPH_HTML = `<!DOCTYPE html>
     var attrs = node.attrs || {};
     var rows = [];
     var tags = [];
-    if (node.type === 'app' || node.type === 'lib') {
+    if (node.type === 'app' || node.type === 'lib' || node.type === 'tool') {
       if (attrs.root) rows.push(['root', attrs.root]);
       if (attrs.type) rows.push(['kind', attrs.type]);
       if (attrs.domain) rows.push(['domain', attrs.domain]);
@@ -1093,13 +1321,31 @@ const GRAPH_HTML = `<!DOCTYPE html>
       if (Array.isArray(attrs.targets) && attrs.targets.length) {
         rows.push(['targets', attrs.targets.slice(0, 8).join(', ')]);
       }
+    } else if (node.type === 'package') {
+      if (attrs.name) rows.push(['name', attrs.name]);
+      if (attrs.version) rows.push(['version', attrs.version]);
+    } else if (node.type === 'patch') {
+      if (attrs.path) rows.push(['path', attrs.path]);
+      if (attrs.packageName) rows.push(['package', attrs.packageName]);
+      if (attrs.packageVersion) rows.push(['patched version', attrs.packageVersion]);
     } else if (node.type === 'domain' || node.type === 'context' || node.type === 'feature-group') {
       if (attrs.name) rows.push(['name', attrs.name]);
       if (attrs.label) rows.push(['label', attrs.label]);
       if (attrs.kind) rows.push(['kind', attrs.kind]);
       if (attrs.source) rows.push(['source', attrs.source]);
     } else if (
-      node.type === 'file' ||
+      node.type === 'controller' ||
+      node.type === 'gateway' ||
+      node.type === 'job' ||
+      node.type === 'service' ||
+      node.type === 'repository' ||
+      node.type === 'entity' ||
+      node.type === 'dto' ||
+      node.type === 'guard' ||
+      node.type === 'module' ||
+      node.type === 'state' ||
+      node.type === 'provider' ||
+      node.type === 'email' ||
       node.type === 'doc' ||
       node.type === 'readme' ||
       node.type === 'openapi' ||
@@ -1109,6 +1355,15 @@ const GRAPH_HTML = `<!DOCTYPE html>
       if (attrs.path) rows.push(['path', attrs.path]);
       if (attrs.languageOrKind) rows.push(['kind', attrs.languageOrKind]);
       if (attrs.projectName) rows.push(['project', attrs.projectName]);
+      if (attrs.sliceName) rows.push(['slice', attrs.sliceName]);
+      if (attrs.templateName) rows.push(['template', attrs.templateName]);
+      if (Array.isArray(attrs.memberFiles) && attrs.memberFiles.length) {
+        rows.push(['members', attrs.memberFiles.join(', ')]);
+      }
+    } else if (node.type === 'webhook-event') {
+      if (attrs.eventName) rows.push(['event', attrs.eventName]);
+      if (attrs.projectName) rows.push(['project', attrs.projectName]);
+      if (attrs.catalogPath) rows.push(['catalog', attrs.catalogPath]);
     } else if (node.type === 'endpoint') {
       if (attrs.specKind) rows.push(['spec', attrs.specKind]);
       if (attrs.method) rows.push(['method', attrs.method]);
@@ -1385,12 +1640,70 @@ const GRAPH_HTML = `<!DOCTYPE html>
   });
 
   function onFilterChange() {
+    updateTypeFilterSummary();
     rebuildSimulation();
+  }
+
+  function updateTypeFilterSummary() {
+    var inputs = document.querySelectorAll('#typeToggles input[data-type]');
+    var checked = 0;
+    inputs.forEach(function (el) { if (el.checked) checked += 1; });
+    var summary = document.getElementById('typeFilterSummary');
+    if (!summary) return;
+    if (checked === 0) summary.textContent = 'none';
+    else if (checked === inputs.length) summary.textContent = 'all';
+    else summary.textContent = checked + '/' + inputs.length;
+  }
+
+  function setTypeFilterOpen(open) {
+    var root = document.getElementById('typeFilter');
+    var btn = document.getElementById('typeFilterBtn');
+    if (!root || !btn) return;
+    root.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      var search = document.getElementById('typeFilterSearch');
+      if (search) {
+        search.focus();
+        search.select();
+      }
+    }
+  }
+
+  function filterTypeOptions() {
+    var q = (document.getElementById('typeFilterSearch').value || '').trim().toLowerCase();
+    var visible = 0;
+    document.querySelectorAll('#typeToggles label').forEach(function (label) {
+      var input = label.querySelector('input[data-type]');
+      var type = input ? input.getAttribute('data-type') || '' : '';
+      var match = !q || type.toLowerCase().indexOf(q) !== -1;
+      label.classList.toggle('hidden', !match);
+      if (match) visible += 1;
+    });
+    document.getElementById('typeFilterEmpty').classList.toggle('visible', visible === 0);
   }
 
   document.querySelectorAll('#typeToggles input[data-type]').forEach(function (el) {
     el.addEventListener('change', onFilterChange);
   });
+  updateTypeFilterSummary();
+
+  document.getElementById('typeFilterBtn').addEventListener('click', function (ev) {
+    ev.stopPropagation();
+    var root = document.getElementById('typeFilter');
+    setTypeFilterOpen(!root.classList.contains('open'));
+  });
+  document.getElementById('typeFilterPanel').addEventListener('click', function (ev) {
+    ev.stopPropagation();
+  });
+  document.getElementById('typeFilterSearch').addEventListener('input', filterTypeOptions);
+  document.addEventListener('click', function () {
+    setTypeFilterOpen(false);
+  });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') setTypeFilterOpen(false);
+  });
+
   document.getElementById('showLabels').addEventListener('change', function () {
     requestDraw();
   });
