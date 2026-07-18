@@ -1,4 +1,7 @@
+import { IDENTITY_NOTIFICATION_EVENTS } from '@forepath/identity/backend';
+
 export const BILLING_NOTIFICATION_EVENTS = [
+  ...IDENTITY_NOTIFICATION_EVENTS,
   'invoice.created',
   'invoice.issued',
   'invoice.voided',

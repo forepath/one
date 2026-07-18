@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-18T12:16:06.388Z",
+  "generatedAt": "2026-07-18T15:32:33.646Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -6219,6 +6219,15 @@
       "type": "module",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-identity-email-bridge.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-identity-notification-bridge.module.ts",
+      "type": "module",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-identity-notification-bridge.module.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -12846,33 +12855,6 @@
       }
     },
     {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:user.created",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "user.created",
-        "projectName": "agenstra-backend-feature-agent-controller",
-        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:user.deleted",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "user.deleted",
-        "projectName": "agenstra-backend-feature-agent-controller",
-        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:user.updated",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "user.updated",
-        "projectName": "agenstra-backend-feature-agent-controller",
-        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
-      }
-    },
-    {
       "id": "api:channel:billing/subscribeDashboardStatus",
       "type": "endpoint",
       "attrs": {
@@ -15616,6 +15598,33 @@
         "operationId": "cancelDeploymentRun",
         "summary": "Cancel a running pipeline",
         "specKind": "openapi"
+      }
+    },
+    {
+      "id": "webhook-event:identity-backend-util-auth:user.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "user.created",
+        "projectName": "identity-backend-util-auth",
+        "catalogPath": "libs/domains/identity/backend/util-auth/src/lib/identity-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:identity-backend-util-auth:user.deleted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "user.deleted",
+        "projectName": "identity-backend-util-auth",
+        "catalogPath": "libs/domains/identity/backend/util-auth/src/lib/identity-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:identity-backend-util-auth:user.updated",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "user.updated",
+        "projectName": "identity-backend-util-auth",
+        "catalogPath": "libs/domains/identity/backend/util-auth/src/lib/identity-notification.events.ts"
       }
     },
     {
@@ -28355,6 +28364,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/billing-identity-notification-bridge.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/payment-processors/processors/stripe-payment.processor.ts",
       "type": "contains"
     },
@@ -31339,21 +31353,6 @@
       "type": "contains"
     },
     {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:user.created",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:user.deleted",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:user.updated",
-      "type": "contains"
-    },
-    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/asyncapi.yaml",
       "to": "api:channel:billing/subscribeDashboardStatus",
       "type": "contains"
@@ -32726,6 +32725,21 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/agents/{agentId}/deployments/runs/{runId}/cancel",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-util-auth",
+      "to": "webhook-event:identity-backend-util-auth:user.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-util-auth",
+      "to": "webhook-event:identity-backend-util-auth:user.deleted",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-util-auth",
+      "to": "webhook-event:identity-backend-util-auth:user.updated",
       "type": "contains"
     },
     {

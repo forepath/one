@@ -244,4 +244,39 @@ describe('BillingNotificationPublisher', () => {
       }),
     });
   });
+
+  it('publishes identity user lifecycle events with tenant scope', () => {
+    const dispatcher = {
+      publishFireAndForget: jest.fn(),
+    } as unknown as NotificationDispatcherService;
+    const publisher = new BillingNotificationPublisher(dispatcher);
+    const payload = {
+      id: 'user-1',
+      email: 'user@example.com',
+      role: 'user',
+    };
+
+    publisher.publishUserCreated(payload);
+    publisher.publishUserUpdated(payload);
+    publisher.publishUserDeleted(payload);
+
+    expect(dispatcher.publishFireAndForget).toHaveBeenNthCalledWith(1, {
+      type: 'user.created',
+      scopeKey: 'tenant-a',
+      clientId: undefined,
+      data: payload,
+    });
+    expect(dispatcher.publishFireAndForget).toHaveBeenNthCalledWith(2, {
+      type: 'user.updated',
+      scopeKey: 'tenant-a',
+      clientId: undefined,
+      data: payload,
+    });
+    expect(dispatcher.publishFireAndForget).toHaveBeenNthCalledWith(3, {
+      type: 'user.deleted',
+      scopeKey: 'tenant-a',
+      clientId: undefined,
+      data: payload,
+    });
+  });
 });

@@ -31,7 +31,7 @@ import { PAYMENT_PROCESSOR_INIT } from './constants/payment-processor-init.token
 import { BillingEmailAttachmentResolver } from './email/billing-email-attachment.resolver';
 import { BillingEmailPublisher } from './email/billing-email.publisher';
 import { BillingIdentityEmailBridgeModule } from './modules/billing-identity-email-bridge.module';
-import { BillingNotificationPublisher } from './notifications/billing-notification.publisher';
+import { BillingIdentityNotificationBridgeModule } from './modules/billing-identity-notification-bridge.module';
 import { AdminBillingController } from './controllers/admin-billing.controller';
 import { AdminPromotionsController } from './controllers/admin-promotions.controller';
 import { PromotionsController } from './controllers/promotions.controller';
@@ -410,6 +410,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
 @Module({
   imports: [
     BillingIdentityEmailBridgeModule,
+    BillingIdentityNotificationBridgeModule,
     TypeOrmModule.forFeature([
       ServiceTypeEntity,
       ServicePlanEntity,
@@ -513,7 +514,6 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     AdminBillNowService,
     BillingAdminService,
     BillingAuditLogService,
-    BillingNotificationPublisher,
     BillingTenantService,
     BillingStatisticsQueryService,
     InvoiceAdminService,
@@ -673,7 +673,6 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     BackorderService,
     BackorderRetryJobHandler,
     BillingScheduleService,
-    BillingNotificationPublisher,
     BillingTenantService,
     BillingEmailAttachmentResolver,
     EMAIL_ATTACHMENT_RESOLVER,
@@ -725,6 +724,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     DatevExportConfigService,
     ProviderRegistryService,
     BillingIdentityEmailBridgeModule,
+    BillingIdentityNotificationBridgeModule,
   ],
 })
 export class BillingModule implements OnModuleInit {
