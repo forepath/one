@@ -42,6 +42,8 @@ RUN apt-get update && \
 
 RUN HOME=/home/agenstra OPENCLAW_HOME=/openclaw \
     curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard && \
+    npm install -g npm@11.18.0 && \
+    npm cache clean --force && \
     chown -R agenstra:agenstra /openclaw /home/agenstra
 
 RUN printf '%s\n' \

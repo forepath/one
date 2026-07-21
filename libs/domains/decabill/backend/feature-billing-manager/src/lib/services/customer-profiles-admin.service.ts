@@ -2,16 +2,19 @@ import { UsersRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import type {
+  AdminCustomerProfileDetailDto,
   AdminCustomerProfileListItemDto,
   CreateAdminCustomerProfileDto,
   PaginatedAdminCustomerProfilesResponseDto,
 } from '../dto/admin-customer-profile.dto';
 import type { CustomerProfileDto } from '../dto/customer-profile.dto';
 import type { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';
+import type { CustomerTrustScoreResponseDto } from '../dto/customer-trust-score.dto';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
+import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 
 import { CustomerProfilesService } from './customer-profiles.service';
 
@@ -23,10 +26,14 @@ export class CustomerProfilesAdminService {
     private readonly usersRepository: UsersRepository,
     private readonly invoicesRepository: InvoicesRepository,
     private readonly subscriptionsRepository: SubscriptionsRepository,
+    private readonly customerTrustScoreService: CustomerTrustScoreService,
   ) {}
 
   async list(limit: number, offset: number): Promise<PaginatedAdminCustomerProfilesResponseDto> {
     const { items, total } = await this.customerProfilesRepository.findAll(limit, offset);
+    const profiles = await Promise.all(
+      items.map((profile) => this.customerTrustScoreService.ensureFreshSnapshot(profile)),
+    );
     const userIds = [...new Set(items.map((item) => item.userId))];
     const userEmailById = new Map<string, string>();
 
@@ -41,21 +48,58 @@ export class CustomerProfilesAdminService {
     );
 
     return {
-      items: items.map((profile) => this.mapListItem(profile, userEmailById.get(profile.userId))),
+      items: profiles.map((profile) => this.mapListItem(profile, userEmailById.get(profile.userId))),
       total,
       limit,
       offset,
     };
   }
 
-  async getById(id: string): Promise<CustomerProfileResponseDto & { userEmail?: string; isComplete: boolean }> {
-    const profile = await this.customerProfilesRepository.findByIdOrThrow(id);
+  async getById(id: string): Promise<AdminCustomerProfileDetailDto> {
+    const profile = await this.customerTrustScoreService.ensureFreshSnapshot(
+      await this.customerProfilesRepository.findByIdOrThrow(id),
+    );
     const user = await this.usersRepository.findByIdForTenant(profile.userId);
 
     return {
       ...this.mapResponse(profile),
       userEmail: user?.email,
       isComplete: this.customerProfilesService.isProfileComplete(profile),
+      trustScore: profile.trustScore,
+      trustLevel: profile.trustLevel,
+      trustScoreUpdatedAt: profile.trustScoreUpdatedAt,
+    };
+  }
+
+  async getTrustScore(id: string): Promise<CustomerTrustScoreResponseDto> {
+    const profile = await this.customerProfilesRepository.findByIdOrThrow(id);
+    const summary = await this.customerTrustScoreService.getSummaryForProfileId(id);
+
+    return {
+      profileId: profile.id,
+      userId: profile.userId,
+      score: summary.score,
+      level: summary.level,
+      baseScore: summary.baseScore,
+      factors: summary.factors,
+      computedAt: summary.computedAt,
+      sources: summary.sources,
+    };
+  }
+
+  async recomputeTrustScore(id: string): Promise<CustomerTrustScoreResponseDto> {
+    const profile = await this.customerProfilesRepository.findByIdOrThrow(id);
+    const summary = await this.customerTrustScoreService.recomputeForProfileId(id);
+
+    return {
+      profileId: profile.id,
+      userId: profile.userId,
+      score: summary.score,
+      level: summary.level,
+      baseScore: summary.baseScore,
+      factors: summary.factors,
+      computedAt: summary.computedAt,
+      sources: summary.sources,
     };
   }
 
@@ -123,6 +167,9 @@ export class CustomerProfilesAdminService {
       country: profile.country,
       isComplete: this.customerProfilesService.isProfileComplete(profile),
       stripeCustomerId: profile.stripeCustomerId,
+      trustScore: profile.trustScore,
+      trustLevel: profile.trustLevel,
+      trustScoreUpdatedAt: profile.trustScoreUpdatedAt,
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
     };

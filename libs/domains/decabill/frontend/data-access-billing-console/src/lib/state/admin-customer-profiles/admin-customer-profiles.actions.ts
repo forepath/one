@@ -2,6 +2,7 @@ import { createAction, props } from '@ngrx/store';
 
 import type {
   AdminCustomerProfileListItem,
+  CustomerTrustScoreDetail,
   CreateAdminCustomerProfileDto,
   CustomerProfileDto,
   CustomerProfileResponse,
@@ -57,5 +58,31 @@ export const deleteAdminCustomerProfileSuccess = createAction(
 );
 export const deleteAdminCustomerProfileFailure = createAction(
   '[AdminCustomerProfiles] Delete Profile Failure',
+  props<{ error: string }>(),
+);
+
+export const loadAdminCustomerProfileTrustScore = createAction(
+  '[AdminCustomerProfiles] Load Trust Score',
+  props<{ id: string }>(),
+);
+export const loadAdminCustomerProfileTrustScoreSuccess = createAction(
+  '[AdminCustomerProfiles] Load Trust Score Success',
+  props<{ detail: CustomerTrustScoreDetail }>(),
+);
+export const loadAdminCustomerProfileTrustScoreFailure = createAction(
+  '[AdminCustomerProfiles] Load Trust Score Failure',
+  props<{ error: string }>(),
+);
+
+export const recomputeAdminCustomerProfileTrustScore = createAction(
+  '[AdminCustomerProfiles] Recompute Trust Score',
+  props<{ id: string }>(),
+);
+export const recomputeAdminCustomerProfileTrustScoreSuccess = createAction(
+  '[AdminCustomerProfiles] Recompute Trust Score Success',
+  props<{ detail: CustomerTrustScoreDetail }>(),
+);
+export const recomputeAdminCustomerProfileTrustScoreFailure = createAction(
+  '[AdminCustomerProfiles] Recompute Trust Score Failure',
   props<{ error: string }>(),
 );

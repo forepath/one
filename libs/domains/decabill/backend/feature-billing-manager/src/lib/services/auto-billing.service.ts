@@ -22,6 +22,7 @@ import { resolveTenantFrontendBaseUrl } from '../utils/tenant-frontend-url.utils
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { CustomerProfilesService } from './customer-profiles.service';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
+import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 
 export interface AutoBillingSetupResult {
   setupUrl: string;
@@ -41,6 +42,7 @@ export class AutoBillingService {
     private readonly auditLog: BillingAuditLogService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingEmailPublisher: BillingEmailPublisher,
+    private readonly customerTrustScoreService: CustomerTrustScoreService,
   ) {}
 
   get batchSizeLimit(): number {
@@ -126,6 +128,7 @@ export class AutoBillingService {
     this.billingNotificationPublisher.publish('auto_billing.enabled', { userId, profileId: updated.id }, userId);
 
     await this.rescheduleOpenInvoicesForUser(userId);
+    this.customerTrustScoreService.triggerRecomputeForUser(userId);
 
     return updated;
   }
@@ -146,6 +149,7 @@ export class AutoBillingService {
     });
 
     this.billingNotificationPublisher.publish('auto_billing.disabled', { userId, profileId: updated.id }, userId);
+    this.customerTrustScoreService.triggerRecomputeForUser(userId);
 
     return updated;
   }
@@ -174,6 +178,7 @@ export class AutoBillingService {
       },
       params.userId,
     );
+    this.customerTrustScoreService.triggerRecomputeForUser(params.userId);
   }
 
   async scheduleIfEligible(invoice: InvoiceEntity): Promise<void> {
@@ -463,6 +468,7 @@ export class AutoBillingService {
       attempt: attemptNumber,
       willRetry,
     });
+    this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
 
     if (willRetry && nextRetryAt) {
       this.billingNotificationPublisher.publish(
@@ -548,6 +554,7 @@ export class AutoBillingService {
       externalId,
       mode: 'auto',
     });
+    this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
     await this.billingEmailPublisher.publishPaymentSucceeded(paid, {
       processor: processorType,
       externalId,

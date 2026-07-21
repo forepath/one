@@ -20,6 +20,9 @@ WORKDIR /app
 
 EXPOSE ${PORT}
 
+# CVE-2026-59873: upgrade npm so nested tar is >= 7.5.19
+RUN npm install -g npm@11.18.0 && npm cache clean --force
+
 COPY --chown=${APP_UID}:${APP_GID} . /app
 
 USER ${APP_UID}:${APP_GID}

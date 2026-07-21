@@ -48,6 +48,29 @@ describe('AdminCustomerProfilesService', () => {
     req.flush({ id: 'profile-1', userId: 'user-1', isComplete: true, createdAt: '', updatedAt: '' });
   });
 
+  it('gets trust score by profile id', (done) => {
+    service.getTrustScore('profile-1').subscribe((res) => {
+      expect(res.profileId).toBe('profile-1');
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/customer-profiles/profile-1/trust-score`);
+
+    expect(req.request.method).toBe('GET');
+    req.flush({ profileId: 'profile-1', userId: 'user-1', score: 120, level: 'green', baseScore: 100, factors: [] });
+  });
+
+  it('recomputes trust score by profile id', (done) => {
+    service.recomputeTrustScore('profile-1').subscribe((res) => {
+      expect(res.score).toBe(95);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/customer-profiles/profile-1/trust-score/recompute`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({});
+    req.flush({ profileId: 'profile-1', userId: 'user-1', score: 95, level: 'yellow', baseScore: 100, factors: [] });
+  });
+
   it('creates profile', (done) => {
     const dto = { userId: 'user-1', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.com' };
 

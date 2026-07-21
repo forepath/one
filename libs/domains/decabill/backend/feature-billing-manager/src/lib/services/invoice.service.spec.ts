@@ -76,6 +76,9 @@ describe('InvoiceService', () => {
     publishSubscription: jest.fn(),
     publish: jest.fn(),
   };
+  const customerTrustScoreService = {
+    triggerRecomputeForUser: jest.fn(),
+  };
   const service = new InvoiceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -93,6 +96,7 @@ describe('InvoiceService', () => {
     invoicePromotionApplicationsRepository as never,
     promotionApplicationService as never,
     billingNotificationPublisher as never,
+    customerTrustScoreService as never,
   );
   const subscriptionId = 'sub-1';
   const userId = 'user-1';

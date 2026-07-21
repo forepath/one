@@ -7,8 +7,14 @@ import {
   deleteAdminCustomerProfileSuccess,
   loadAdminCustomerProfiles,
   loadAdminCustomerProfilesBatch,
+  loadAdminCustomerProfileTrustScore,
+  loadAdminCustomerProfileTrustScoreFailure,
+  loadAdminCustomerProfileTrustScoreSuccess,
   loadAdminCustomerProfilesFailure,
   loadAdminCustomerProfilesSuccess,
+  recomputeAdminCustomerProfileTrustScore,
+  recomputeAdminCustomerProfileTrustScoreFailure,
+  recomputeAdminCustomerProfileTrustScoreSuccess,
   updateAdminCustomerProfile,
   updateAdminCustomerProfileFailure,
   updateAdminCustomerProfileSuccess,
@@ -22,6 +28,16 @@ describe('adminCustomerProfilesReducer', () => {
     isComplete: false,
     createdAt: '2024-01-01',
     updatedAt: '2024-01-01',
+  };
+  const trustDetail = {
+    profileId: 'p-1',
+    userId: 'u-1',
+    score: 120,
+    level: 'green' as const,
+    baseScore: 100,
+    computedAt: '2024-01-03',
+    factors: [],
+    sources: ['internal_billing'],
   };
   const profileResponse = {
     id: 'p-1',
@@ -143,5 +159,48 @@ describe('adminCustomerProfilesReducer', () => {
 
     expect(state.deleting).toBe(false);
     expect(state.error).toBe('Delete failed');
+  });
+
+  it('stores trust detail on load success', () => {
+    const loadingState = adminCustomerProfilesReducer(
+      { ...initialAdminCustomerProfilesState, profiles: [listItem] },
+      loadAdminCustomerProfileTrustScore({ id: 'p-1' }),
+    );
+    const state = adminCustomerProfilesReducer(
+      loadingState,
+      loadAdminCustomerProfileTrustScoreSuccess({ detail: trustDetail }),
+    );
+
+    expect(state.trustScoreLoading).toBe(false);
+    expect(state.trustScoreDetail?.score).toBe(120);
+    expect(state.profiles[0].trustLevel).toBe('green');
+  });
+
+  it('stores trust detail on recompute success', () => {
+    const refreshingState = adminCustomerProfilesReducer(
+      { ...initialAdminCustomerProfilesState, profiles: [listItem] },
+      recomputeAdminCustomerProfileTrustScore({ id: 'p-1' }),
+    );
+    const state = adminCustomerProfilesReducer(
+      refreshingState,
+      recomputeAdminCustomerProfileTrustScoreSuccess({ detail: trustDetail }),
+    );
+
+    expect(state.trustScoreRefreshing).toBe(false);
+    expect(state.trustScoreDetail?.level).toBe('green');
+  });
+
+  it('stores trust errors', () => {
+    const loadErrorState = adminCustomerProfilesReducer(
+      { ...initialAdminCustomerProfilesState, trustScoreLoading: true },
+      loadAdminCustomerProfileTrustScoreFailure({ error: 'Trust load failed' }),
+    );
+    const recomputeErrorState = adminCustomerProfilesReducer(
+      { ...initialAdminCustomerProfilesState, trustScoreRefreshing: true },
+      recomputeAdminCustomerProfileTrustScoreFailure({ error: 'Trust recompute failed' }),
+    );
+
+    expect(loadErrorState.error).toBe('Trust load failed');
+    expect(recomputeErrorState.error).toBe('Trust recompute failed');
   });
 });

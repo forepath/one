@@ -7,11 +7,16 @@ import {
   createAdminCustomerProfile,
   deleteAdminCustomerProfile,
   loadAdminCustomerProfiles,
+  loadAdminCustomerProfileTrustScore,
+  recomputeAdminCustomerProfileTrustScore,
   updateAdminCustomerProfile,
 } from './admin-customer-profiles.actions';
 import {
   selectAdminCustomerProfiles,
   selectAdminCustomerProfilesCreating,
+  selectAdminCustomerProfileTrustScoreDetail,
+  selectAdminCustomerProfileTrustScoreLoading,
+  selectAdminCustomerProfileTrustScoreRefreshing,
   selectAdminCustomerProfilesDeleting,
   selectAdminCustomerProfilesError,
   selectAdminCustomerProfilesLoading,
@@ -28,6 +33,9 @@ export class AdminCustomerProfilesFacade {
   readonly updating$ = this.store.select(selectAdminCustomerProfilesUpdating);
   readonly deleting$ = this.store.select(selectAdminCustomerProfilesDeleting);
   readonly error$ = this.store.select(selectAdminCustomerProfilesError);
+  readonly trustScoreDetail$ = this.store.select(selectAdminCustomerProfileTrustScoreDetail);
+  readonly trustScoreLoading$ = this.store.select(selectAdminCustomerProfileTrustScoreLoading);
+  readonly trustScoreRefreshing$ = this.store.select(selectAdminCustomerProfileTrustScoreRefreshing);
 
   loadProfiles(): void {
     this.store.dispatch(loadAdminCustomerProfiles());
@@ -43,5 +51,13 @@ export class AdminCustomerProfilesFacade {
 
   deleteProfile(id: string): void {
     this.store.dispatch(deleteAdminCustomerProfile({ id }));
+  }
+
+  loadTrustScore(id: string): void {
+    this.store.dispatch(loadAdminCustomerProfileTrustScore({ id }));
+  }
+
+  recomputeTrustScore(id: string): void {
+    this.store.dispatch(recomputeAdminCustomerProfileTrustScore({ id }));
   }
 }

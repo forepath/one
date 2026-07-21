@@ -17,6 +17,7 @@ import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
+import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 
 export interface IssueDraftOptions {
   skipNotification?: boolean;
@@ -37,6 +38,7 @@ export class InvoiceIssuanceService {
     private readonly auditLog: BillingAuditLogService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly autoBillingService: AutoBillingService,
+    private readonly customerTrustScoreService: CustomerTrustScoreService,
   ) {}
 
   async issueDraft(invoiceId: string, dueInDays = 14, options?: IssueDraftOptions): Promise<InvoiceEntity> {
@@ -117,6 +119,8 @@ export class InvoiceIssuanceService {
     if (!isPromotionalZeroBalance) {
       await this.autoBillingService.scheduleIfEligible(issued);
     }
+
+    this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
 
     return issued;
   }

@@ -3133,6 +3133,40 @@ paths:
       responses:
         '204':
           description: Profile deleted
+  /admin/billing/customer-profiles/{id}/trust-score:
+    get:
+      tags: [Admin Billing]
+      summary: Get customer trust score detail (admin only)
+      operationId: getAdminCustomerProfileTrustScore
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Trust score detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerTrustScoreResponse'
+  /admin/billing/customer-profiles/{id}/trust-score/recompute:
+    post:
+      tags: [Admin Billing]
+      summary: Recompute customer trust score (admin only)
+      operationId: recomputeAdminCustomerProfileTrustScore
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Recomputed trust score detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerTrustScoreResponse'
   /admin/billing/customer-profiles/{id}/auto-billing/setup:
     post:
       tags: [Admin Billing]
@@ -5407,6 +5441,9 @@ components:
         country: { type: string, nullable: true }
         isComplete: { type: boolean }
         stripeCustomerId: { type: string, nullable: true }
+        trustScore: { type: integer, nullable: true }
+        trustLevel: { type: string, enum: [green, yellow, red], nullable: true }
+        trustScoreUpdatedAt: { type: string, format: date-time, nullable: true }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     PaginatedAdminCustomerProfilesResponse:
@@ -5433,6 +5470,39 @@ components:
           properties:
             userEmail: { type: string, format: email, nullable: true }
             isComplete: { type: boolean }
+            trustScore: { type: integer, nullable: true }
+            trustLevel:
+              { type: string, enum: [green, yellow, red], nullable: true }
+            trustScoreUpdatedAt:
+              { type: string, format: date-time, nullable: true }
+    CustomerTrustScoreFactor:
+      type: object
+      properties:
+        id: { type: string }
+        label: { type: string }
+        description: { type: string }
+        points: { type: integer }
+        source: { type: string }
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+    CustomerTrustScoreResponse:
+      type: object
+      properties:
+        profileId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        score: { type: integer }
+        level: { type: string, enum: [green, yellow, red] }
+        baseScore: { type: integer }
+        factors:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerTrustScoreFactor'
+        computedAt: { type: string, format: date-time }
+        sources:
+          type: array
+          items: { type: string }
     CloudInitConfigEnvVariableDefinition:
       type: object
       required: [key, label, showInOrderForm, hasDefault]

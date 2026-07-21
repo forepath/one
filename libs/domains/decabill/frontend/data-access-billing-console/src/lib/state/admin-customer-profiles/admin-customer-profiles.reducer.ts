@@ -1,6 +1,10 @@
 import { createReducer, on } from '@ngrx/store';
 
-import type { AdminCustomerProfileListItem, CustomerProfileResponse } from '../../types/billing.types';
+import type {
+  AdminCustomerProfileListItem,
+  CustomerProfileResponse,
+  CustomerTrustScoreDetail,
+} from '../../types/billing.types';
 
 import {
   createAdminCustomerProfile,
@@ -11,8 +15,14 @@ import {
   deleteAdminCustomerProfileSuccess,
   loadAdminCustomerProfiles,
   loadAdminCustomerProfilesBatch,
+  loadAdminCustomerProfileTrustScore,
+  loadAdminCustomerProfileTrustScoreFailure,
+  loadAdminCustomerProfileTrustScoreSuccess,
   loadAdminCustomerProfilesFailure,
   loadAdminCustomerProfilesSuccess,
+  recomputeAdminCustomerProfileTrustScore,
+  recomputeAdminCustomerProfileTrustScoreFailure,
+  recomputeAdminCustomerProfileTrustScoreSuccess,
   updateAdminCustomerProfile,
   updateAdminCustomerProfileFailure,
   updateAdminCustomerProfileSuccess,
@@ -24,6 +34,9 @@ export interface AdminCustomerProfilesState {
   creating: boolean;
   updating: boolean;
   deleting: boolean;
+  trustScoreDetail: CustomerTrustScoreDetail | null;
+  trustScoreLoading: boolean;
+  trustScoreRefreshing: boolean;
   error: string | null;
 }
 
@@ -33,6 +46,9 @@ export const initialAdminCustomerProfilesState: AdminCustomerProfilesState = {
   creating: false,
   updating: false,
   deleting: false,
+  trustScoreDetail: null,
+  trustScoreLoading: false,
+  trustScoreRefreshing: false,
   error: null,
 };
 
@@ -56,12 +72,29 @@ function mapResponseToListItem(profile: CustomerProfileResponse): AdminCustomerP
   };
 }
 
+function applyTrustDetail(
+  profile: AdminCustomerProfileListItem,
+  detail: Pick<CustomerTrustScoreDetail, 'profileId' | 'score' | 'level' | 'computedAt'>,
+): AdminCustomerProfileListItem {
+  if (profile.id !== detail.profileId) {
+    return profile;
+  }
+
+  return {
+    ...profile,
+    trustScore: detail.score,
+    trustLevel: detail.level,
+    trustScoreUpdatedAt: detail.computedAt,
+  };
+}
+
 export const adminCustomerProfilesReducer = createReducer(
   initialAdminCustomerProfilesState,
   on(loadAdminCustomerProfiles, (state) => ({
     ...state,
     profiles: [],
     loading: true,
+    trustScoreDetail: null,
     error: null,
   })),
   on(loadAdminCustomerProfilesBatch, (state, { accumulatedProfiles }) => ({
@@ -113,4 +146,39 @@ export const adminCustomerProfilesReducer = createReducer(
     profiles: state.profiles.filter((profile) => profile.id !== id),
   })),
   on(deleteAdminCustomerProfileFailure, (state, { error }) => ({ ...state, deleting: false, error })),
+  on(loadAdminCustomerProfileTrustScore, (state) => ({
+    ...state,
+    trustScoreLoading: true,
+    trustScoreDetail: null,
+    error: null,
+  })),
+  on(loadAdminCustomerProfileTrustScoreSuccess, (state, { detail }) => ({
+    ...state,
+    trustScoreLoading: false,
+    trustScoreDetail: detail,
+    profiles: state.profiles.map((profile) => applyTrustDetail(profile, detail)),
+    error: null,
+  })),
+  on(loadAdminCustomerProfileTrustScoreFailure, (state, { error }) => ({
+    ...state,
+    trustScoreLoading: false,
+    error,
+  })),
+  on(recomputeAdminCustomerProfileTrustScore, (state) => ({
+    ...state,
+    trustScoreRefreshing: true,
+    error: null,
+  })),
+  on(recomputeAdminCustomerProfileTrustScoreSuccess, (state, { detail }) => ({
+    ...state,
+    trustScoreRefreshing: false,
+    trustScoreDetail: detail,
+    profiles: state.profiles.map((profile) => applyTrustDetail(profile, detail)),
+    error: null,
+  })),
+  on(recomputeAdminCustomerProfileTrustScoreFailure, (state, { error }) => ({
+    ...state,
+    trustScoreRefreshing: false,
+    error,
+  })),
 );

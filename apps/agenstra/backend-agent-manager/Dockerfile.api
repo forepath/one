@@ -59,6 +59,8 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | P
     . "${NVM_DIR}/nvm.sh" && \
     nvm install "${NODE_VERSION}" && \
     nvm alias default "${NODE_VERSION}" && \
+    npm install -g npm@11.18.0 && \
+    npm cache clean --force && \
     chown -R agenstra:agenstra /home/agenstra
 
 COPY --chown=agenstra:agenstra package*.json ./

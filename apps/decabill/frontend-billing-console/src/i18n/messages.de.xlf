@@ -338,9 +338,37 @@
         <source>Edit profile</source>
         <target>Profil bearbeiten</target>
       </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustButtonTitle" datatype="html">
+        <source>View trust score</source>
+        <target>Vertrauensscore anzeigen</target>
+      </trans-unit>
       <trans-unit id="featureAdminProfiles-deleteButtonTitle" datatype="html">
         <source>Delete profile</source>
         <target>Profil löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustModalTitle" datatype="html">
+        <source>Customer trust score</source>
+        <target>Kunden-Vertrauensscore</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustFor" datatype="html">
+        <source>Trust score for</source>
+        <target>Vertrauensscore für</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustBaseScore" datatype="html">
+        <source>Base score:</source>
+        <target>Basisscore:</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustComputedAt" datatype="html">
+        <source>Computed:</source>
+        <target>Berechnet:</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustUnavailable" datatype="html">
+        <source>Trust details are currently unavailable.</source>
+        <target>Vertrauensdetails sind derzeit nicht verfügbar.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustRecompute" datatype="html">
+        <source>Recompute</source>
+        <target>Neu berechnen</target>
       </trans-unit>
       <trans-unit id="featureAdminProfiles-createTitle" datatype="html">
         <source>Create billing profile</source>
@@ -361,6 +389,22 @@
       <trans-unit id="featureAdminProfiles-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-customerTrustGreen" datatype="html">
+        <source>High trust</source>
+        <target>Hohes Vertrauen</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-customerTrustYellow" datatype="html">
+        <source>Needs attention</source>
+        <target>Aufmerksamkeitsbedarf</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-customerTrustRed" datatype="html">
+        <source>High risk</source>
+        <target>Hohes Risiko</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-customerTrustUnknown" datatype="html">
+        <source>Not scored</source>
+        <target>Nicht bewertet</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-title" datatype="html">
         <source>Contracts</source>

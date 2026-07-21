@@ -1,5 +1,7 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
+import { CustomerTrustLevel } from '../trust-score/trust-score.types';
+
 @Entity('billing_customer_profiles')
 export class CustomerProfileEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
@@ -49,6 +51,15 @@ export class CustomerProfileEntity {
 
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'default_payment_method_external_id' })
   defaultPaymentMethodExternalId?: string;
+
+  @Column({ type: 'integer', nullable: true, name: 'trust_score' })
+  trustScore?: number | null;
+
+  @Column({ type: 'varchar', length: 16, nullable: true, name: 'trust_level' })
+  trustLevel?: CustomerTrustLevel | null;
+
+  @Column({ type: 'timestamp', nullable: true, name: 'trust_score_updated_at' })
+  trustScoreUpdatedAt?: Date | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

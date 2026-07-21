@@ -30,6 +30,7 @@ describe('BILLING_NOTIFICATION_EVENTS', () => {
         'auto_billing.enabled',
         'auto_billing.disabled',
         'payment_method.attached',
+        'customer_trust.level_changed',
         'payment.auto.initiated',
         'payment.auto.retry_scheduled',
         'payment.auto.exhausted',

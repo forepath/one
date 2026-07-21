@@ -9,6 +9,7 @@ import type {
 } from '../dto/admin-billing.dto';
 import type { InvoiceEntity } from '../entities/invoice.entity';
 import { InvoicesRepository } from '../repositories/invoices.repository';
+import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { InvoiceService } from './invoice.service';
@@ -22,6 +23,7 @@ export class InvoiceAdminService {
     private readonly invoiceService: InvoiceService,
     private readonly auditLog: BillingAuditLogService,
     private readonly usersRepository: UsersRepository,
+    private readonly customerTrustScoreService: CustomerTrustScoreService,
   ) {}
 
   async listInvoices(params: {
@@ -97,6 +99,8 @@ export class InvoiceAdminService {
       },
     });
 
+    this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
+
     return this.mapAdminItem(updated);
   }
 
@@ -139,6 +143,8 @@ export class InvoiceAdminService {
         adminUserId,
       },
     });
+
+    this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
 
     return this.mapAdminItem(updated);
   }

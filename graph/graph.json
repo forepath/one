@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-19T12:33:17.315Z",
+  "generatedAt": "2026-07-21T21:11:29.136Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -5711,6 +5711,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/customer-trust-score.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/customer-trust-score.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/invoice-detail-response.dto.ts",
       "type": "dto",
       "attrs": {
@@ -7434,6 +7443,24 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/withdrawal-refund.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/trust-score/customer-trust-score.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/trust-score/customer-trust-score.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/trust-score/internal-billing-trust-score.provider.ts",
+      "type": "provider",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/trust-score/internal-billing-trust-score.provider.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -10736,6 +10763,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/features/customer-profiles.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/features/customer-trust-score.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/customer-trust-score.md",
         "languageOrKind": "md"
       }
     },
@@ -14250,6 +14285,28 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/admin/billing/customer-profiles/{id}/trust-score",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/customer-profiles/{id}/trust-score",
+        "operationId": "getAdminCustomerProfileTrustScore",
+        "summary": "Get customer trust score detail (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/trust-score/recompute",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/customer-profiles/{id}/trust-score/recompute",
+        "operationId": "recomputeAdminCustomerProfileTrustScore",
+        "summary": "Recompute customer trust score (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/setup",
       "type": "endpoint",
       "attrs": {
@@ -14681,6 +14738,15 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "auto_billing.enabled",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:customer_trust.level_changed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "customer_trust.level_changed",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -21809,6 +21875,86 @@
       }
     },
     {
+      "id": "concept:decabill-customer-trust-score",
+      "type": "concept",
+      "attrs": {
+        "title": "Customer Trust Score",
+        "docPath": "docs/decabill/features/customer-trust-score.md",
+        "sectionAnchor": "customer-trust-score",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-scope",
+      "type": "concept",
+      "attrs": {
+        "title": "Scope",
+        "docPath": "docs/decabill/features/customer-trust-score.md",
+        "sectionAnchor": "scope",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-how-scoring-works",
+      "type": "concept",
+      "attrs": {
+        "title": "How scoring works",
+        "docPath": "docs/decabill/features/customer-trust-score.md",
+        "sectionAnchor": "how-scoring-works",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-implemented-factors",
+      "type": "concept",
+      "attrs": {
+        "title": "Implemented factors",
+        "docPath": "docs/decabill/features/customer-trust-score.md",
+        "sectionAnchor": "implemented-factors",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-persistence-model",
+      "type": "concept",
+      "attrs": {
+        "title": "Persistence model",
+        "docPath": "docs/decabill/features/customer-trust-score.md",
+        "sectionAnchor": "persistence-model",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-recompute-triggers",
+      "type": "concept",
+      "attrs": {
+        "title": "Recompute triggers",
+        "docPath": "docs/decabill/features/customer-trust-score.md",
+        "sectionAnchor": "recompute-triggers",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-webhooks",
+      "type": "concept",
+      "attrs": {
+        "title": "Webhooks",
+        "docPath": "docs/decabill/features/customer-trust-score.md",
+        "sectionAnchor": "webhooks",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-extensibility",
+      "type": "concept",
+      "attrs": {
+        "title": "Extensibility",
+        "docPath": "docs/decabill/features/customer-trust-score.md",
+        "sectionAnchor": "extensibility",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-dashboard-and-server-control",
       "type": "concept",
       "attrs": {
@@ -28297,6 +28443,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/customer-trust-score.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/invoice-detail-response.dto.ts",
       "type": "contains"
     },
@@ -29253,6 +29404,16 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/withdrawal-refund.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/trust-score/customer-trust-score.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/trust-score/internal-billing-trust-score.provider.ts",
       "type": "contains"
     },
     {
@@ -32332,6 +32493,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}/trust-score",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/trust-score/recompute",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/setup",
       "type": "contains"
     },
@@ -32528,6 +32699,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:auto_billing.enabled",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:customer_trust.level_changed",
       "type": "contains"
     },
     {
@@ -37271,6 +37447,51 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/decabill/features/customer-trust-score.md",
+      "to": "concept:decabill-customer-trust-score",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/customer-trust-score.md",
+      "to": "concept:decabill-scope",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/customer-trust-score.md",
+      "to": "concept:decabill-how-scoring-works",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/customer-trust-score.md",
+      "to": "concept:decabill-implemented-factors",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/customer-trust-score.md",
+      "to": "concept:decabill-persistence-model",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/customer-trust-score.md",
+      "to": "concept:decabill-recompute-triggers",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/customer-trust-score.md",
+      "to": "concept:decabill-admin-api",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/customer-trust-score.md",
+      "to": "concept:decabill-webhooks",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/customer-trust-score.md",
+      "to": "concept:decabill-extensibility",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/decabill/features/dashboard-and-server-control.md",
       "to": "concept:decabill-dashboard-and-server-control",
       "type": "contains"
@@ -40112,6 +40333,26 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}/trust-score",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}/trust-score",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/trust-score/recompute",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/trust-score/recompute",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/auto-billing/setup",
       "type": "implements"
     },
@@ -40433,6 +40674,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-profiles.controller.ts",
       "to": "api:HTTP:DELETE:/admin/billing/customer-profiles/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-profiles.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}/trust-score",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-customer-profiles.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/trust-score/recompute",
       "type": "implements"
     },
     {
@@ -46221,6 +46472,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-customer-billing-profiles-admin",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}/trust-score",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-customer-billing-profiles-admin",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/trust-score/recompute",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-admin-projects",
       "to": "api:HTTP:GET:/projects",
       "type": "documents"
@@ -46372,16 +46633,6 @@
     },
     {
       "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:GET:/service-plans",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:POST:/service-plans",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-api",
       "to": "api:HTTP:GET:/cloud-init-configs",
       "type": "documents"
     },
@@ -46392,17 +46643,47 @@
     },
     {
       "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:GET:/cloud-init-configs/{id}",
+      "to": "api:HTTP:GET:/customer-profile",
       "type": "documents"
     },
     {
       "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:POST:/cloud-init-configs/{id}",
+      "to": "api:HTTP:POST:/customer-profile",
       "type": "documents"
     },
     {
       "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:DELETE:/cloud-init-configs/{id}",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-api",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-api",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-api",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-api",
+      "to": "api:HTTP:DELETE:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-api",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}/trust-score",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-admin-api",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/trust-score/recompute",
       "type": "documents"
     },
     {
@@ -46678,6 +46959,51 @@
     {
       "from": "concept:decabill-user-billing-day",
       "to": "api:HTTP:POST:/invoices",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-scope",
+      "to": "api:HTTP:GET:/customer-profile",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-scope",
+      "to": "api:HTTP:POST:/customer-profile",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-scope",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-scope",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-scope",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-scope",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-scope",
+      "to": "api:HTTP:DELETE:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-scope",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}/trust-score",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-extensibility",
+      "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
     },
     {
@@ -49502,6 +49828,11 @@
     },
     {
       "from": "file:docs/decabill/features/customer-profiles.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/customer-trust-score.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -52587,6 +52918,46 @@
     },
     {
       "from": "concept:decabill-user-billing-day",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-customer-trust-score",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-scope",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-how-scoring-works",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-implemented-factors",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-persistence-model",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-recompute-triggers",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-webhooks",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-extensibility",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

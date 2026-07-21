@@ -31,3 +31,18 @@ export const selectAdminCustomerProfilesError = createSelector(
   selectAdminCustomerProfilesState,
   (state) => state.error,
 );
+
+export const selectAdminCustomerProfileTrustScoreDetail = createSelector(
+  selectAdminCustomerProfilesState,
+  (state) => state.trustScoreDetail,
+);
+
+export const selectAdminCustomerProfileTrustScoreLoading = createSelector(
+  selectAdminCustomerProfilesState,
+  (state) => state.trustScoreLoading,
+);
+
+export const selectAdminCustomerProfileTrustScoreRefreshing = createSelector(
+  selectAdminCustomerProfilesState,
+  (state) => state.trustScoreRefreshing,
+);

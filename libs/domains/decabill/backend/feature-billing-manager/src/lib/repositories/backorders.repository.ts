@@ -36,6 +36,18 @@ export class BackordersRepository {
     });
   }
 
+  async countFailedByUserId(userId: string): Promise<number> {
+    const qb = this.repository
+      .createQueryBuilder('backorder')
+      .innerJoin('users', 'user', 'user.id = backorder.user_id')
+      .where('backorder.user_id = :userId', { userId })
+      .andWhere('backorder.status = :status', { status: BackorderStatus.FAILED });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getCount();
+  }
+
   async findAllPending(limit = 100, offset = 0): Promise<BackorderEntity[]> {
     const qb = this.repository
       .createQueryBuilder('backorder')

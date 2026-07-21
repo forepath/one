@@ -20,6 +20,7 @@ Backend billing module providing subscription management, backorders, availabili
 - Customer profile management for invoicing metadata.
 - **Admin manual invoices:** Draft → edit → issue workflow via `/admin/billing/invoices/manual` (see `docs/agenstra/features/billing-administration.md`).
 - **Admin customer profiles:** CRUD via `/admin/billing/customer-profiles` (admin only).
+- **Admin customer trust score:** Traffic-light ranking and factor detail under `/admin/billing/customer-profiles/{id}/trust-score`.
 - Usage-based pricing supported via usage records.
 
 ## Auth

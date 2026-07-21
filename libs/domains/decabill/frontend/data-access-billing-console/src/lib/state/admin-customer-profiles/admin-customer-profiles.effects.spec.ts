@@ -14,8 +14,14 @@ import {
   deleteAdminCustomerProfileSuccess,
   loadAdminCustomerProfiles,
   loadAdminCustomerProfilesBatch,
+  loadAdminCustomerProfileTrustScore,
+  loadAdminCustomerProfileTrustScoreFailure,
+  loadAdminCustomerProfileTrustScoreSuccess,
   loadAdminCustomerProfilesFailure,
   loadAdminCustomerProfilesSuccess,
+  recomputeAdminCustomerProfileTrustScore,
+  recomputeAdminCustomerProfileTrustScoreFailure,
+  recomputeAdminCustomerProfileTrustScoreSuccess,
   updateAdminCustomerProfile,
   updateAdminCustomerProfileFailure,
   updateAdminCustomerProfileSuccess,
@@ -25,6 +31,8 @@ import {
   deleteAdminCustomerProfile$,
   loadAdminCustomerProfiles$,
   loadAdminCustomerProfilesBatch$,
+  loadAdminCustomerProfileTrustScore$,
+  recomputeAdminCustomerProfileTrustScore$,
   updateAdminCustomerProfile$,
 } from './admin-customer-profiles.effects';
 
@@ -42,6 +50,8 @@ describe('AdminCustomerProfilesEffects', () => {
   beforeEach(() => {
     service = {
       list: jest.fn(),
+      getTrustScore: jest.fn(),
+      recomputeTrustScore: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -210,6 +220,54 @@ describe('AdminCustomerProfilesEffects', () => {
 
       deleteAdminCustomerProfile$(actions$, service).subscribe((result) => {
         expect(result).toEqual(deleteAdminCustomerProfileFailure({ error: 'Delete failed' }));
+        done();
+      });
+    });
+  });
+
+  describe('loadAdminCustomerProfileTrustScore$', () => {
+    it('returns success', (done) => {
+      const detail = { profileId: 'p-1', userId: 'u-1', score: 120, level: 'green', baseScore: 100, factors: [] };
+
+      actions$ = of(loadAdminCustomerProfileTrustScore({ id: 'p-1' }));
+      service.getTrustScore.mockReturnValue(of(detail as never));
+
+      loadAdminCustomerProfileTrustScore$(actions$, service).subscribe((result) => {
+        expect(result).toEqual(loadAdminCustomerProfileTrustScoreSuccess({ detail: detail as never }));
+        done();
+      });
+    });
+
+    it('returns failure on error', (done) => {
+      actions$ = of(loadAdminCustomerProfileTrustScore({ id: 'p-1' }));
+      service.getTrustScore.mockReturnValue(throwError(() => new Error('Trust load failed')));
+
+      loadAdminCustomerProfileTrustScore$(actions$, service).subscribe((result) => {
+        expect(result).toEqual(loadAdminCustomerProfileTrustScoreFailure({ error: 'Trust load failed' }));
+        done();
+      });
+    });
+  });
+
+  describe('recomputeAdminCustomerProfileTrustScore$', () => {
+    it('returns success', (done) => {
+      const detail = { profileId: 'p-1', userId: 'u-1', score: 95, level: 'yellow', baseScore: 100, factors: [] };
+
+      actions$ = of(recomputeAdminCustomerProfileTrustScore({ id: 'p-1' }));
+      service.recomputeTrustScore.mockReturnValue(of(detail as never));
+
+      recomputeAdminCustomerProfileTrustScore$(actions$, service).subscribe((result) => {
+        expect(result).toEqual(recomputeAdminCustomerProfileTrustScoreSuccess({ detail: detail as never }));
+        done();
+      });
+    });
+
+    it('returns failure on error', (done) => {
+      actions$ = of(recomputeAdminCustomerProfileTrustScore({ id: 'p-1' }));
+      service.recomputeTrustScore.mockReturnValue(throwError(() => new Error('Trust recompute failed')));
+
+      recomputeAdminCustomerProfileTrustScore$(actions$, service).subscribe((result) => {
+        expect(result).toEqual(recomputeAdminCustomerProfileTrustScoreFailure({ error: 'Trust recompute failed' }));
         done();
       });
     });

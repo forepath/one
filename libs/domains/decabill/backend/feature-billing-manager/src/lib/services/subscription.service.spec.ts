@@ -134,6 +134,9 @@ describe('SubscriptionService', () => {
     publishPaymentFailed: jest.fn(),
     publishSubscriptionCanceled: jest.fn(),
   };
+  const customerTrustScoreService = {
+    triggerRecomputeForUser: jest.fn(),
+  };
   const service = new SubscriptionService(
     plansRepository,
     typesRepository,
@@ -157,6 +160,7 @@ describe('SubscriptionService', () => {
     promotionRedemptionService as never,
     billingNotificationPublisher as never,
     billingEmailPublisher as never,
+    customerTrustScoreService as never,
   );
 
   beforeEach(() => {

@@ -6,6 +6,8 @@ import {
   AdminCustomerProfilesFacade,
   AdminCustomerProfilesService,
   type AdminCustomerProfileListItem,
+  type CustomerTrustLevel,
+  type CustomerTrustScoreDetail,
   type CustomerProfileDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade, type UserResponseDto } from '@forepath/identity/frontend';
@@ -15,6 +17,9 @@ import { BILLING_COUNTRY_OPTIONS, DEFAULT_BILLING_COUNTRY_CODE } from '../billin
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
 import {
+  getCustomerTrustLevelIconClass,
+  getCustomerTrustLevelLabel,
+  getCustomerTrustLevelTextClass,
   getCountryDisplayName,
   getProfileCompleteLabel,
   getProfileCompleteTextClass,
@@ -33,6 +38,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
   @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
   @ViewChild('deleteModal', { static: false }) private deleteModal!: ElementRef<HTMLDivElement>;
+  @ViewChild('trustScoreModal', { static: false }) private trustScoreModal!: ElementRef<HTMLDivElement>;
   @ViewChild('createUserSelect') private createUserSelect?: BillingAdminUserSelectComponent;
 
   private readonly facade = inject(AdminCustomerProfilesFacade);
@@ -60,9 +66,17 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   readonly updating$ = this.facade.updating$;
   readonly deleting$ = this.facade.deleting$;
   readonly error$ = this.facade.error$;
+  readonly trustScoreDetail$ = this.facade.trustScoreDetail$;
+  readonly trustScoreLoading$ = this.facade.trustScoreLoading$;
+  readonly trustScoreRefreshing$ = this.facade.trustScoreRefreshing$;
 
   readonly profiles = toSignal(this.profiles$, { initialValue: [] as AdminCustomerProfileListItem[] });
   readonly users = toSignal(this.authFacade.users$, { initialValue: [] as UserResponseDto[] });
+  readonly trustScoreDetail = toSignal(this.trustScoreDetail$, {
+    initialValue: null as CustomerTrustScoreDetail | null,
+  });
+  readonly trustScoreLoading = toSignal(this.trustScoreLoading$, { initialValue: false });
+  readonly trustScoreRefreshing = toSignal(this.trustScoreRefreshing$, { initialValue: false });
 
   readonly usersWithoutProfile = computed(() => {
     const profileUserIds = new Set(this.profiles().map((profile) => profile.userId));
@@ -73,6 +87,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   createForm: CustomerProfileDto & { userId: string } = this.emptyCreateForm();
   editForm: CustomerProfileDto & { id: string } = this.emptyEditForm();
   profileToDelete: AdminCustomerProfileListItem | null = null;
+  trustScoreProfile: AdminCustomerProfileListItem | null = null;
 
   ngOnInit(): void {
     this.facade.loadProfiles();
@@ -113,6 +128,12 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
     showBillingModal(this.deleteModal);
   }
 
+  openTrustScoreModal(profile: AdminCustomerProfileListItem): void {
+    this.trustScoreProfile = profile;
+    this.facade.loadTrustScore(profile.id);
+    showBillingModal(this.trustScoreModal);
+  }
+
   submitCreate(): void {
     if (!this.createForm.userId) return;
 
@@ -133,6 +154,12 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
     if (!this.profileToDelete) return;
 
     this.facade.deleteProfile(this.profileToDelete.id);
+  }
+
+  recomputeTrustScore(): void {
+    if (!this.trustScoreProfile) return;
+
+    this.facade.recomputeTrustScore(this.trustScoreProfile.id);
   }
 
   formatDate(value?: string): string {
@@ -175,6 +202,30 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
 
   profileCompleteTextClass(isComplete: boolean): string {
     return getProfileCompleteTextClass(isComplete);
+  }
+
+  profileTrustLabel(level: CustomerTrustLevel | null | undefined): string {
+    return getCustomerTrustLevelLabel(level);
+  }
+
+  profileTrustTextClass(level: CustomerTrustLevel | null | undefined): string {
+    return getCustomerTrustLevelTextClass(level);
+  }
+
+  profileTrustIconClass(level: CustomerTrustLevel | null | undefined): string {
+    return getCustomerTrustLevelIconClass(level);
+  }
+
+  isTrustLightActive(level: CustomerTrustLevel | null | undefined, color: CustomerTrustLevel): boolean {
+    return level === color;
+  }
+
+  trustScorePointsClass(points: number): string {
+    if (points > 0) return 'text-success';
+
+    if (points < 0) return 'text-danger';
+
+    return 'text-secondary';
   }
 
   private profilePersonName(profile: AdminCustomerProfileListItem): string {

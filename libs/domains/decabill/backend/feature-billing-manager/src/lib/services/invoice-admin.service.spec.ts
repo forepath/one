@@ -13,11 +13,13 @@ describe('InvoiceAdminService', () => {
   const invoiceService = { mapToResponse: jest.fn(), voidInvoice: jest.fn() };
   const auditLog = { log: jest.fn() };
   const usersRepository = { findByIdForTenant: jest.fn() };
+  const customerTrustScoreService = { triggerRecomputeForUser: jest.fn() };
   const service = new InvoiceAdminService(
     invoicesRepository as never,
     invoiceService as never,
     auditLog as never,
     usersRepository as never,
+    customerTrustScoreService as never,
   );
   const baseInvoice = {
     id: 'inv-1',
@@ -59,6 +61,7 @@ describe('InvoiceAdminService', () => {
         context: expect.objectContaining({ adminUserId: 'admin-1' }),
       }),
     );
+    expect(customerTrustScoreService.triggerRecomputeForUser).toHaveBeenCalledWith('user-1');
   });
 
   it('markPaidManual rejects invalid status', async () => {
@@ -82,6 +85,7 @@ describe('InvoiceAdminService', () => {
       status: InvoiceStatus.ISSUED,
       balanceDue: 50,
     });
+    expect(customerTrustScoreService.triggerRecomputeForUser).toHaveBeenCalledWith('user-1');
   });
 
   it('voidInvoice delegates to invoice service', async () => {

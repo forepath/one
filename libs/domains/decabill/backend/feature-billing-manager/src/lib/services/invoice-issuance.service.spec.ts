@@ -44,6 +44,9 @@ describe('InvoiceIssuanceService', () => {
   const auditLog = {
     log: jest.fn(),
   };
+  const customerTrustScoreService = {
+    triggerRecomputeForUser: jest.fn(),
+  };
   const service = new InvoiceIssuanceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -64,6 +67,7 @@ describe('InvoiceIssuanceService', () => {
     {
       scheduleIfEligible: jest.fn(),
     } as never,
+    customerTrustScoreService as never,
   );
   const draftInvoice = {
     id: 'inv-1',
