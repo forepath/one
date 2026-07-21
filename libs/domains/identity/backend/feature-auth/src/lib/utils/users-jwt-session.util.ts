@@ -7,6 +7,12 @@ export interface UsersJwtSessionPayload {
   sub: string;
   email: string;
   roles: string[];
+  /** Authentication method reference: `pwd` (console) or `pat` (machine). */
+  amr?: string[];
+  /** Capability scopes present only for PAT-issued JWTs. */
+  scopes?: string[];
+  /** Personal access token id for live revoke/scope checks (`amr: pat` only). */
+  patId?: string;
   tv?: number;
   jti?: string;
   exp?: number;

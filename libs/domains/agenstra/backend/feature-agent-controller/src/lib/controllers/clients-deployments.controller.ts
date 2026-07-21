@@ -1,4 +1,9 @@
-import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
+import {
+  ClientUsersRepository,
+  ensureClientAccess,
+  RequireScopes,
+  type RequestWithUser,
+} from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -22,6 +27,7 @@ import { ClientAgentDeploymentsProxyService } from '../services/client-agent-dep
  * Proxies requests to remote agent-manager services for deployment operations.
  */
 @Controller('clients/:id/agents/:agentId/deployments')
+@RequireScopes('agents:deployments')
 export class ClientsDeploymentsController {
   constructor(
     private readonly proxyService: ClientAgentDeploymentsProxyService,

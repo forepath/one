@@ -42,7 +42,15 @@ export class KeycloakAuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<{
+      patAuthenticated?: boolean;
+      user?: KeycloakTokenPayload | { id: string; username: string; roles: UserRole[] };
+    }>();
+
+    if (request.patAuthenticated) {
+      return true;
+    }
+
     const tokenPayload = request.user as KeycloakTokenPayload | undefined;
 
     if (!tokenPayload?.sub) {

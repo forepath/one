@@ -1,4 +1,4 @@
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -41,6 +41,7 @@ import { ProjectsAdminService } from '../services/projects-admin.service';
 export class AdminProjectsController {
   constructor(private readonly projectsAdminService: ProjectsAdminService) {}
 
+  @RequireScopes('billing_admin:read')
   @Get()
   async list(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -51,21 +52,25 @@ export class AdminProjectsController {
     return await this.projectsAdminService.list(limit ?? 10, offset ?? 0, { search, userId });
   }
 
+  @RequireScopes('billing_admin:read')
   @Get(':id/summary')
   async summary(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<ProjectSummaryResponseDto> {
     return await this.projectsAdminService.getSummary(id);
   }
 
+  @RequireScopes('billing_admin:read')
   @Get(':id')
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return await this.projectsAdminService.getById(id);
   }
 
+  @RequireScopes('billing_admin:write')
   @Post()
   async create(@Body() dto: CreateAdminProjectDto): Promise<ProjectResponseDto> {
     return await this.projectsAdminService.create(dto);
   }
 
+  @RequireScopes('billing_admin:write')
   @Post(':id')
   async update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -74,6 +79,7 @@ export class AdminProjectsController {
     return await this.projectsAdminService.update(id, dto);
   }
 
+  @RequireScopes('billing_admin:read')
   @Get(':id/unbilled-time-bounds')
   async unbilledTimeBounds(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -81,6 +87,7 @@ export class AdminProjectsController {
     return await this.projectsAdminService.getUnbilledTimeBounds(id);
   }
 
+  @RequireScopes('billing_admin:read')
   @Post(':id/time-report')
   @Header('Content-Type', 'application/pdf')
   async generateTimeReport(
@@ -95,6 +102,7 @@ export class AdminProjectsController {
     return new StreamableFile(buffer);
   }
 
+  @RequireScopes('billing_admin:write')
   @Post(':id/bill-time')
   async billTime(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -110,6 +118,7 @@ export class AdminProjectsController {
     return await this.projectsAdminService.billTime(id, userInfo.userId, dto);
   }
 
+  @RequireScopes('billing_admin:write')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {

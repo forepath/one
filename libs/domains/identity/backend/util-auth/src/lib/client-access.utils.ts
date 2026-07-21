@@ -17,8 +17,17 @@ export interface ClientAccessClientUsersRepository {
 }
 
 export interface RequestWithUser extends Request {
-  user?: { id: string; email?: string; roles?: string[]; username?: string };
+  user?: {
+    id: string;
+    email?: string;
+    roles?: string[];
+    username?: string;
+    amr?: string[];
+    scopes?: string[];
+  };
   apiKeyAuthenticated?: boolean;
+  /** Set when Keycloak-mode accepts an app-signed PAT JWT instead of an OIDC token. */
+  patAuthenticated?: boolean;
 }
 
 /** User info from socket auth (stored in socket.data) */
@@ -26,15 +35,26 @@ export interface SocketUserInfo {
   userId?: string;
   userRole?: UserRole;
   isApiKeyAuth: boolean;
-  user?: { id: string; email?: string; roles?: string[] };
+  /** Present for users-mode JWT sockets (`pwd`; PAT sessions are rejected). */
+  amr?: string[];
+  user?: { id: string; email?: string; roles?: string[]; amr?: string[] };
 }
 
 /**
  * Build a RequestWithUser-like object from socket auth data for use with ensureClientAccess.
  */
 export function buildRequestFromSocketUser(socketUser: SocketUserInfo): RequestWithUser {
+  const user =
+    socketUser.user ??
+    (socketUser.userId ? { id: socketUser.userId, roles: [] as string[], amr: socketUser.amr } : undefined);
+
   return {
-    user: socketUser.user ?? (socketUser.userId ? { id: socketUser.userId, roles: [] } : undefined),
+    user: user
+      ? {
+          ...user,
+          amr: user.amr ?? socketUser.amr,
+        }
+      : undefined,
     apiKeyAuthenticated: socketUser.isApiKeyAuth,
   } as RequestWithUser;
 }
@@ -43,6 +63,8 @@ export interface UserInfoFromRequest {
   userId?: string;
   userRole?: UserRole;
   isApiKeyAuth: boolean;
+  amr?: string[];
+  scopes?: string[];
 }
 
 export interface ClientAccessResult {
@@ -63,7 +85,8 @@ export function canManageWorkspaceConfiguration(userInfo: UserInfoFromRequest, a
     return true;
   }
 
-  if (userInfo.userRole === UserRole.ADMIN) {
+  // PAT sessions must not inherit console admin powers from the JWT role claim alone.
+  if (userInfo.userRole === UserRole.ADMIN && !(userInfo.amr ?? []).includes('pat')) {
     return true;
   }
 
@@ -99,6 +122,7 @@ export async function ensureWorkspaceManagementAccess(
     userInfo.userId,
     userInfo.userRole,
     userInfo.isApiKeyAuth,
+    { amr: userInfo.amr },
   );
 
   if (!access.hasAccess) {
@@ -120,6 +144,7 @@ export async function assertWorkspaceManagementAccessForUser(
   userId: string | undefined,
   userRole: UserRole | undefined,
   isApiKeyAuth: boolean,
+  options?: { amr?: string[] },
 ): Promise<void> {
   const access = await checkClientAccess(
     clientsRepository,
@@ -128,6 +153,7 @@ export async function assertWorkspaceManagementAccessForUser(
     userId,
     userRole,
     isApiKeyAuth,
+    options,
   );
 
   if (!access.hasAccess) {
@@ -136,7 +162,7 @@ export async function assertWorkspaceManagementAccessForUser(
 
   const userInfo: UserInfoFromRequest = isApiKeyAuth
     ? { isApiKeyAuth: true }
-    : { userId, userRole, isApiKeyAuth: false };
+    : { userId, userRole, isApiKeyAuth: false, amr: options?.amr };
 
   if (!canManageWorkspaceConfiguration(userInfo, access)) {
     throw new ForbiddenException(WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE);
@@ -171,7 +197,25 @@ export function getUserFromRequest(req: RequestWithUser): UserInfoFromRequest {
     userId: user.id,
     userRole,
     isApiKeyAuth: false,
+    amr: user.amr,
+    scopes: user.scopes,
   };
+}
+
+/**
+ * When the caller authenticated via PAT, require all listed scopes (no-op for password/API-key).
+ */
+export function assertPatScopes(userInfo: UserInfoFromRequest, ...requiredScopes: string[]): void {
+  if (userInfo.isApiKeyAuth || !(userInfo.amr ?? []).includes('pat')) {
+    return;
+  }
+
+  const tokenScopes = new Set(userInfo.scopes ?? []);
+  const missing = requiredScopes.filter((scope) => !tokenScopes.has(scope));
+
+  if (missing.length > 0) {
+    throw new ForbiddenException(`Insufficient token scope. Missing: ${missing.join(', ')}`);
+  }
 }
 
 /**
@@ -191,6 +235,7 @@ export async function checkClientAccess(
   userId: string | undefined,
   userRole: UserRole | undefined,
   isApiKeyAuth: boolean,
+  options?: { amr?: string[] },
 ): Promise<ClientAccessResult> {
   if (isApiKeyAuth) {
     return { hasAccess: true, isClientCreator: false };
@@ -200,7 +245,8 @@ export async function checkClientAccess(
     return { hasAccess: false, isClientCreator: false };
   }
 
-  if (userRole === UserRole.ADMIN) {
+  // Console admins bypass membership; PAT JWTs must not inherit that via role alone.
+  if (userRole === UserRole.ADMIN && !(options?.amr ?? []).includes('pat')) {
     return { hasAccess: true, isClientCreator: false };
   }
 
@@ -246,6 +292,7 @@ export async function ensureClientAccess(
     userInfo.userId,
     userInfo.userRole,
     userInfo.isApiKeyAuth,
+    { amr: userInfo.amr },
   );
 
   if (!access.hasAccess) {

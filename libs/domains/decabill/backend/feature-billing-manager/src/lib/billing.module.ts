@@ -4,6 +4,7 @@ import {
   RevokedUserTokenEntity,
   SocketAuthService,
   UserEntity,
+  UserPersonalAccessTokenEntity,
   UsersRepository,
   RevokedUserTokensRepository,
 } from '@forepath/identity/backend';
@@ -438,6 +439,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       CustomerProfileEntity,
       UserEntity,
       RevokedUserTokenEntity,
+      UserPersonalAccessTokenEntity,
       DatevExportEntity,
       DatevDebtorAccountEntity,
       ProjectEntity,

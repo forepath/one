@@ -1,4 +1,4 @@
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -24,6 +24,7 @@ import { CustomerProfilesAdminService } from '../services/customer-profiles-admi
 @Controller('admin/billing/customer-profiles')
 @KeycloakRoles(UserRole.ADMIN)
 @UsersRoles(UserRole.ADMIN)
+@RequireScopes('customer_profile:admin')
 export class AdminCustomerProfilesController {
   constructor(private readonly customerProfilesAdminService: CustomerProfilesAdminService) {}
 

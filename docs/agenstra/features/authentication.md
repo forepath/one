@@ -75,6 +75,23 @@ DISABLE_SIGNUP=false  # Set to true to disable self-registration
 - First registered user gets admin role
 - Admin user management (CRUD operations)
 - Optional signup disable for controlled onboarding
+- **Personal access tokens (PATs)** for machine/API automation (see below)
+
+### Personal access tokens (users and keycloak modes)
+
+User-bound tokens for scripts and CI. They are **not** a console login password. **Not available** when `AUTHENTICATION_METHOD=api-key`.
+
+| Concern                  | Behavior                                                                                                                                           |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Create / update / revoke | Console **Personal Access Tokens** page (`/settings/tokens`); interactive console session only (password JWT or Keycloak OIDC)                     |
+| Exchange                 | `POST /auth/token` with `{ "token": "fp_pat_…" }` only (no email) → JWT with `amr: ["pat"]` and `scopes`                                           |
+| Console                  | Login rejects `fp_pat_` secrets; SPA rejects JWTs whose `amr` includes `pat`; WebSockets reject PAT JWTs                                           |
+| Keycloak                 | Local `users` row is synced on first authenticated request (`keycloakSub`); PAT CRUD and exchange require `JWT_SECRET`                             |
+| Scopes                   | `AGENSTRA_PAT_SCOPES` — clients/tickets/knowledge/agents/imports/statistics + `users:admin` / `webhooks:admin`; each enforced via `@RequireScopes` |
+
+Compared to `STATIC_API_KEY`, PATs are per-user, scoped, rotatable, and do not grant cross-tenant admin by default.
+
+Updating a token changes **name** and **scopes** only; the secret is never rotated by update. Exchanged PAT JWTs embed `patId`; each request re-checks the PAT row so **revoke**, **expiry**, and **scope updates** take effect immediately. **Role demotion** also takes effect immediately: request roles come from the live DB user (not the JWT claim), admin-only scopes are stripped from the effective grant set, and changing a user’s role bumps `tokenVersion` so outstanding JWTs are rejected.
 
 ## Users Authentication Flow
 
@@ -232,13 +249,24 @@ Admins can manage users via the user management interface or API:
 
 ### Authentication Endpoints (Public)
 
-- `POST /api/auth/login` - Login with email/password
+- `POST /api/auth/login` - Login with email/password (console; PATs rejected)
+- `POST /api/auth/token` - Exchange personal access token for machine JWT (`amr: pat`)
 - `POST /api/auth/register` - Register new user (returns 503 when `DISABLE_SIGNUP=true`)
 - `POST /api/auth/confirm-email` - Confirm email with 6-character code
 - `POST /api/auth/request-password-reset` - Request password reset
 - `POST /api/auth/reset-password` - Reset password with code
 - `POST /api/auth/change-password` - Change password (authenticated; returns new JWT)
 - `POST /api/auth/logout` - Log out and invalidate all JWT sessions (users auth only)
+
+### Personal Access Token Endpoints (Password session)
+
+- `GET /api/auth/token-scopes` - Grantable scopes for the current user
+- `GET /api/auth/tokens` - List own tokens
+- `POST /api/auth/tokens` - Create token (plaintext returned once)
+- `PATCH /api/auth/tokens/:id` - Update own token name and scopes (secret unchanged)
+- `DELETE /api/auth/tokens/:id` - Revoke own token
+- `GET /api/users/:userId/tokens` - List tokens for a user (admin)
+- `DELETE /api/users/:userId/tokens/:tokenId` - Revoke a user's token (admin)
 
 ### User Management Endpoints (Admin Only)
 

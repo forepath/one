@@ -1,3 +1,4 @@
+import { RequireScopes } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -33,6 +34,7 @@ const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}
 export class ProjectTicketsController {
   constructor(private readonly ticketsService: ProjectTicketsService) {}
 
+  @RequireScopes('tickets:read')
   @Get()
   async list(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -58,6 +60,7 @@ export class ProjectTicketsController {
     });
   }
 
+  @RequireScopes('tickets:read')
   @Get(':id/activity')
   async activity(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -75,6 +78,7 @@ export class ProjectTicketsController {
     );
   }
 
+  @RequireScopes('tickets:read')
   @Get(':id/comments')
   async comments(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -84,6 +88,7 @@ export class ProjectTicketsController {
     return await this.ticketsService.listComments(projectId, id, getAuthenticatedUserFromRequest(req));
   }
 
+  @RequireScopes('tickets:read')
   @Get(':id')
   async get(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -99,6 +104,7 @@ export class ProjectTicketsController {
     );
   }
 
+  @RequireScopes('tickets:write')
   @Post()
   async create(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -108,6 +114,7 @@ export class ProjectTicketsController {
     return await this.ticketsService.create(projectId, dto, req);
   }
 
+  @RequireScopes('tickets:write')
   @Post(':id/comments')
   async addComment(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -118,6 +125,7 @@ export class ProjectTicketsController {
     return await this.ticketsService.addComment(projectId, id, dto, req);
   }
 
+  @RequireScopes('tickets:write')
   @Post(':id')
   async update(
     @Param('projectId', new ParseUUIDPipe({ version: '4' })) projectId: string,
@@ -128,6 +136,7 @@ export class ProjectTicketsController {
     return await this.ticketsService.update(projectId, id, dto, req);
   }
 
+  @RequireScopes('tickets:write')
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(

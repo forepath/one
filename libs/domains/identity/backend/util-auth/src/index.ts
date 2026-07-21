@@ -20,11 +20,13 @@ export * from './lib/entities/authentication-type.enum';
 export * from './lib/entities/client-user.entity';
 export * from './lib/entities/client.entity.types';
 export * from './lib/entities/revoked-user-token.entity';
+export * from './lib/entities/user-personal-access-token.entity';
 export * from './lib/entities/user.entity';
 export * from './lib/password.service';
 export * from './lib/statistics.interface';
 export * from './lib/notification.interface';
 export * from './lib/identity-notification.events';
+export * from './lib/identity-pat.scopes';
 export * from './lib/email-dispatcher.interface';
 
 export * from './lib/token.utils';
@@ -34,3 +36,4 @@ export * from './lib/migrations/1765000000000_CreateUsersTable';
 export * from './lib/migrations/1770550000000_AddTenantIdToUsers';
 export * from './lib/migrations/1775000000000_AddUserTokenVersion';
 export * from './lib/migrations/1775000000001_CreateRevokedUserTokensTable';
+export * from './lib/migrations/1776100000000_CreateUserPersonalAccessTokensTable';

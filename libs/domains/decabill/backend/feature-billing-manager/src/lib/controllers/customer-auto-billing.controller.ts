@@ -1,3 +1,4 @@
+import { RequireScopes } from '@forepath/identity/backend';
 import { BadRequestException, Controller, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
 
 import { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';
@@ -7,6 +8,7 @@ import { PaymentProcessorFactory } from '../payment-processors/payment-processor
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
 @Controller('customer-profile/auto-billing')
+@RequireScopes('customer_profile:write')
 export class CustomerAutoBillingController {
   constructor(
     private readonly autoBillingService: AutoBillingService,

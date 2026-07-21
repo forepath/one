@@ -221,7 +221,7 @@ See the [library documentation](../../libs/domains/agenstra/backend/feature-agen
 
 - `AUTHENTICATION_METHOD` - `api-key`, `keycloak`, or `users` (default: api-key when STATIC_API_KEY set, else keycloak)
 - `STATIC_API_KEY` - Static API key (required when AUTHENTICATION_METHOD=api-key)
-- `JWT_SECRET` - JWT signing secret (required when AUTHENTICATION_METHOD=users)
+- `JWT_SECRET` - JWT signing secret (required when `AUTHENTICATION_METHOD=users` or `keycloak`; used for users sessions and PAT exchange)
 - `KEYCLOAK_SERVER_URL` - Keycloak server URL (optional, used for server URL if different from auth server URL)
 - `KEYCLOAK_AUTH_SERVER_URL` - Keycloak authentication server URL (required for Keycloak auth)
 - `KEYCLOAK_REALM` - Keycloak realm name (required for Keycloak auth)

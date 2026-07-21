@@ -1,4 +1,4 @@
-import { type RequestWithUser } from '@forepath/identity/backend';
+import { RequireScopes, type RequestWithUser } from '@forepath/identity/backend';
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Req } from '@nestjs/common';
 
 import { UpdateTicketAutomationDto } from '../dto/ticket-automation';
@@ -9,11 +9,13 @@ export class TicketAutomationController {
   constructor(private readonly ticketAutomationService: TicketAutomationService) {}
 
   @Get()
+  @RequireScopes('tickets:read')
   async get(@Param('ticketId', ParseUUIDPipe) ticketId: string, @Req() req?: RequestWithUser) {
     return await this.ticketAutomationService.getAutomation(ticketId, req);
   }
 
   @Patch()
+  @RequireScopes('tickets:write')
   async patch(
     @Param('ticketId', ParseUUIDPipe) ticketId: string,
     @Body() dto: UpdateTicketAutomationDto,
@@ -24,22 +26,26 @@ export class TicketAutomationController {
 
   @Post('approve')
   @HttpCode(HttpStatus.OK)
+  @RequireScopes('tickets:write')
   async approve(@Param('ticketId', ParseUUIDPipe) ticketId: string, @Req() req?: RequestWithUser) {
     return await this.ticketAutomationService.approve(ticketId, req);
   }
 
   @Post('unapprove')
   @HttpCode(HttpStatus.OK)
+  @RequireScopes('tickets:write')
   async unapprove(@Param('ticketId', ParseUUIDPipe) ticketId: string, @Req() req?: RequestWithUser) {
     return await this.ticketAutomationService.unapprove(ticketId, req);
   }
 
   @Get('runs')
+  @RequireScopes('tickets:read')
   async listRuns(@Param('ticketId', ParseUUIDPipe) ticketId: string, @Req() req?: RequestWithUser) {
     return await this.ticketAutomationService.listRuns(ticketId, req);
   }
 
   @Get('runs/:runId')
+  @RequireScopes('tickets:read')
   async getRun(
     @Param('ticketId', ParseUUIDPipe) ticketId: string,
     @Param('runId', ParseUUIDPipe) runId: string,
@@ -50,6 +56,7 @@ export class TicketAutomationController {
 
   @Post('runs/:runId/cancel')
   @HttpCode(HttpStatus.OK)
+  @RequireScopes('tickets:write')
   async cancelRun(
     @Param('ticketId', ParseUUIDPipe) ticketId: string,
     @Param('runId', ParseUUIDPipe) runId: string,

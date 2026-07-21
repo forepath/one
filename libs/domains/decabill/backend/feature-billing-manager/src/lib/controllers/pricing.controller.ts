@@ -1,3 +1,4 @@
+import { RequireScopes } from '@forepath/identity/backend';
 import { Body, Controller, Post } from '@nestjs/common';
 
 import { PricingPreviewDto } from '../dto/pricing-preview.dto';
@@ -12,6 +13,7 @@ import { resolvePlanTaxCategory } from '../utils/plan-tax.utils';
 import { resolveServerTypePriceMonthly } from '../utils/server-type-billing.utils';
 
 @Controller('pricing')
+@RequireScopes('subscriptions:read')
 export class PricingController {
   constructor(
     private readonly pricingService: PricingService,

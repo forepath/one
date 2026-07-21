@@ -49,6 +49,7 @@ export class ClientUsersService {
     requestingUserRole: UserRole,
     isClientCreator: boolean,
     requestingClientUserRole?: ClientUserRole,
+    options?: { amr?: string[] },
   ): Promise<ClientUserResponseDto> {
     // Find user by email
     const user = await this.usersRepository.findByEmail(addClientUserDto.email);
@@ -65,11 +66,13 @@ export class ClientUsersService {
     }
 
     // Permission checks:
-    // - Global admins can add any role
+    // - Console global admins can add any role (PAT must not inherit this via role alone)
     // - Client creators can add any role
     // - Client admins can only add 'user' role
     // - Client users cannot add anyone
-    if (requestingUserRole === UserRole.ADMIN || isClientCreator) {
+    const isConsoleAdmin = requestingUserRole === UserRole.ADMIN && !(options?.amr ?? []).includes('pat');
+
+    if (isConsoleAdmin || isClientCreator) {
       // Global admin or creator: can add any role
     } else if (requestingClientUserRole === ClientUserRole.ADMIN) {
       // Client admin: can only add 'user' role
@@ -133,6 +136,7 @@ export class ClientUsersService {
     requestingUserRole: UserRole,
     isClientCreator: boolean,
     requestingClientUserRole?: ClientUserRole,
+    options?: { amr?: string[] },
   ): Promise<void> {
     // Find the relationship
     const relationship = await this.clientUsersRepository.findByIdOrThrow(relationshipId);
@@ -143,11 +147,13 @@ export class ClientUsersService {
     }
 
     // Permission checks:
-    // - Global admins can remove anyone
+    // - Console global admins can remove anyone (PAT must not inherit this via role alone)
     // - Client creators can remove anyone
     // - Client admins can remove users (but not other admins)
     // - Client users cannot remove anyone
-    if (requestingUserRole === UserRole.ADMIN || isClientCreator) {
+    const isConsoleAdmin = requestingUserRole === UserRole.ADMIN && !(options?.amr ?? []).includes('pat');
+
+    if (isConsoleAdmin || isClientCreator) {
       // Global admin or creator: can remove anyone
     } else if (requestingClientUserRole === ClientUserRole.ADMIN) {
       // Client admin: can only remove users (not other admins)

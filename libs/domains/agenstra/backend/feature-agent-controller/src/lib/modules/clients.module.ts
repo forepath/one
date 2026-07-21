@@ -18,6 +18,7 @@ import {
   RevokedUserTokensRepository,
   SocketAuthService,
   UserEntity,
+  UserPersonalAccessTokenEntity,
   UsersRepository,
 } from '@forepath/identity/backend';
 import { forwardRef, Module } from '@nestjs/common';
@@ -109,6 +110,7 @@ const authMethod = getAuthenticationMethod();
       ClientUserEntity,
       UserEntity,
       RevokedUserTokenEntity,
+      UserPersonalAccessTokenEntity,
       TicketEntity,
       TicketCommentEntity,
       TicketActivityEntity,

@@ -12,7 +12,8 @@ export function ensureProjectReadable(userInfo: UserInfoFromRequest, project: Pr
     throw new ForbiddenException('User not authenticated');
   }
 
-  if (userInfo.userRole === UserRole.ADMIN) {
+  // PAT sessions must not inherit console admin cross-project access from the role claim alone.
+  if (userInfo.userRole === UserRole.ADMIN && !(userInfo.amr ?? []).includes('pat')) {
     return;
   }
 

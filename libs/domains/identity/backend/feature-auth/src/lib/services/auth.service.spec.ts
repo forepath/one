@@ -22,6 +22,9 @@ describe('AuthService', () => {
   const mockJwtService = {
     sign: jest.fn().mockReturnValue('jwt-token'),
   };
+  const mockPersonalAccessTokenService = {
+    verifyToken: jest.fn(),
+  };
   const mockEmailDispatcher = {
     publishEmail: jest.fn(),
   };
@@ -35,6 +38,7 @@ describe('AuthService', () => {
       mockRevokedUserTokensRepository as any,
       mockUsersService as any,
       mockJwtService as any,
+      mockPersonalAccessTokenService as any,
       mockEmailDispatcher as any,
     );
   });
@@ -63,16 +67,57 @@ describe('AuthService', () => {
       emailConfirmedAt: new Date('2026-01-01T00:00:00.000Z'),
       lockedAt: null,
       passwordHash: '$2b$12$hash',
+      tokenVersion: 0,
     });
     mockUsersService.validatePassword.mockResolvedValue(true);
 
     const result = await service.login('active@example.com', 'password123');
 
     expect(mockUsersService.validatePassword).toHaveBeenCalledWith('password123', '$2b$12$hash');
-    expect(mockJwtService.sign).toHaveBeenCalled();
+    expect(mockJwtService.sign).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sub: 'user-2',
+        amr: ['pwd'],
+      }),
+      expect.any(Object),
+    );
     expect(result).toEqual({
       access_token: 'jwt-token',
       user: { id: 'user-2', email: 'active@example.com', role: UserRole.ADMIN },
+    });
+  });
+
+  it('rejects personal access token secrets on interactive login', async () => {
+    await expect(service.login('user@example.com', 'fp_pat_abcdefghijklmnop')).rejects.toThrow(UnauthorizedException);
+    expect(mockUsersRepository.findByEmail).not.toHaveBeenCalled();
+  });
+
+  it('exchanges a personal access token for a machine JWT', async () => {
+    mockPersonalAccessTokenService.verifyToken.mockResolvedValue({
+      user: {
+        id: 'user-3',
+        email: 'pat@example.com',
+        role: UserRole.ADMIN,
+        tokenVersion: 0,
+      },
+      scopes: ['usage:write'],
+      patId: 'pat-1',
+    });
+
+    const result = await service.exchangePat('fp_pat_secret');
+
+    expect(mockJwtService.sign).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sub: 'user-3',
+        amr: ['pat'],
+        scopes: ['usage:write'],
+      }),
+      expect.any(Object),
+    );
+    expect(result).toEqual({
+      access_token: 'jwt-token',
+      user: { id: 'user-3', email: 'pat@example.com', role: UserRole.ADMIN },
+      scopes: ['usage:write'],
     });
   });
 

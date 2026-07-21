@@ -141,5 +141,6 @@ export * from './lib/services/clients.service';
 export * from './lib/services/tickets.service';
 export * from './lib/services/statistics.service';
 export * from './lib/notifications/agenstra-notification.events';
+export * from './lib/auth/agenstra-pat.scopes';
 export * from './lib/notifications/agenstra-notification.publisher';
 export * from './lib/utils/client-endpoint-security';

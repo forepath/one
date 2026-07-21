@@ -1,5 +1,5 @@
 import { getTenantIdOrDefault } from '@forepath/shared/backend';
-import { KeycloakRoles, UserRole, UsersRoles } from '@forepath/identity/backend';
+import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
 import {
   BadRequestException,
   Body,
@@ -73,6 +73,7 @@ export class AdminBillingController {
     private readonly datevExportConfigService: DatevExportConfigService,
   ) {}
 
+  @RequireScopes('billing_admin:read')
   @Get('capabilities')
   getCapabilities(): BillingCapabilitiesResponseDto {
     const tenantId = getTenantIdOrDefault();
@@ -83,11 +84,13 @@ export class AdminBillingController {
     };
   }
 
+  @RequireScopes('billing_admin:read')
   @Get('summary')
   async getSummary(): Promise<AdminBillingSummaryResponseDto> {
     return await this.billingAdminService.getGlobalSummary();
   }
 
+  @RequireScopes('billing_admin:write')
   @Post('bill-now')
   async billNow(@Body() dto: AdminBillNowDto, @Req() req?: RequestWithUser): Promise<AdminBillNowResponseDto> {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
@@ -99,6 +102,7 @@ export class AdminBillingController {
     return await this.adminBillNowService.queueBillNow(userInfo.userId, dto);
   }
 
+  @RequireScopes('billing_admin:read')
   @Get('users/:userId/subscriptions')
   async listUserSubscriptions(
     @Param('userId', new ParseUUIDPipe({ version: '4' })) userId: string,
@@ -110,6 +114,7 @@ export class AdminBillingController {
     return rows.map((row) => this.mapSubscriptionToResponse(row));
   }
 
+  @RequireScopes('billing_admin:read')
   @Get('subscriptions')
   async listSubscriptions(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -125,6 +130,7 @@ export class AdminBillingController {
     });
   }
 
+  @RequireScopes('billing_admin:write')
   @Post('subscriptions/:id/cancel')
   async cancelSubscription(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -133,6 +139,7 @@ export class AdminBillingController {
     return await this.billingAdminService.cancelSubscriptionForAdmin(id);
   }
 
+  @RequireScopes('billing_admin:write')
   @Post('subscriptions/:id/withdraw')
   async withdrawSubscription(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -141,6 +148,7 @@ export class AdminBillingController {
     return await this.billingAdminService.withdrawSubscriptionForAdmin(id);
   }
 
+  @RequireScopes('billing_admin:write')
   @Post('subscriptions/:id/resume')
   async resumeSubscription(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
@@ -149,6 +157,7 @@ export class AdminBillingController {
     return await this.billingAdminService.resumeSubscriptionForAdmin(id);
   }
 
+  @RequireScopes('billing_admin:read')
   @Get('invoices')
   async listInvoices(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -165,6 +174,7 @@ export class AdminBillingController {
   }
 
   /** @deprecated Use GET /admin/billing/invoices */
+  @RequireScopes('billing_admin:read')
   @Get('invoices/open-overdue')
   async listOpenOverdue(
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
@@ -175,6 +185,7 @@ export class AdminBillingController {
     return await this.listInvoices(limit, offset, search, userId);
   }
 
+  @RequireScopes('billing_admin:write')
   @Post('invoices/manual')
   async createManualInvoice(
     @Body() dto: CreateManualInvoiceDto,
@@ -189,6 +200,7 @@ export class AdminBillingController {
     return await this.manualInvoiceService.createDraft(dto, userInfo.userId);
   }
 
+  @RequireScopes('billing_admin:read')
   @Get('invoices/:invoiceRefId')
   async getInvoiceDetail(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
@@ -196,6 +208,7 @@ export class AdminBillingController {
     return await this.manualInvoiceService.getDetail(invoiceRefId);
   }
 
+  @RequireScopes('billing_admin:write')
   @Post('invoices/:invoiceRefId/issue')
   async issueManualInvoice(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
@@ -211,6 +224,7 @@ export class AdminBillingController {
     return await this.manualInvoiceService.issueDraft(invoiceRefId, userInfo.userId, dto);
   }
 
+  @RequireScopes('billing_admin:write')
   @Post('invoices/:invoiceRefId')
   async updateManualInvoice(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
@@ -226,6 +240,7 @@ export class AdminBillingController {
     return await this.manualInvoiceService.updateDraft(invoiceRefId, dto, userInfo.userId);
   }
 
+  @RequireScopes('billing_admin:write')
   @Delete('invoices/:invoiceRefId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteManualInvoice(
@@ -241,6 +256,7 @@ export class AdminBillingController {
     await this.manualInvoiceService.deleteDraft(invoiceRefId, userInfo.userId);
   }
 
+  @RequireScopes('billing_admin:write')
   @Post('invoices/:invoiceRefId/void')
   async voidInvoice(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
@@ -255,6 +271,7 @@ export class AdminBillingController {
     return await this.invoiceAdminService.voidInvoice(invoiceRefId, userInfo.userId);
   }
 
+  @RequireScopes('billing_admin:write')
   @Post('invoices/:invoiceRefId/mark-paid')
   async markPaid(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
@@ -270,6 +287,7 @@ export class AdminBillingController {
     return await this.invoiceAdminService.markPaidManual(invoiceRefId, userInfo.userId, dto);
   }
 
+  @RequireScopes('billing_admin:write')
   @Post('invoices/:invoiceRefId/mark-unpaid')
   async markUnpaid(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
@@ -285,6 +303,7 @@ export class AdminBillingController {
     return await this.invoiceAdminService.markUnpaidManual(invoiceRefId, userInfo.userId, dto);
   }
 
+  @RequireScopes('billing_admin:read')
   @Get('invoices/:invoiceRefId/pdf')
   @Header('Content-Type', 'application/pdf')
   async downloadInvoicePdf(
@@ -305,6 +324,7 @@ export class AdminBillingController {
     return new StreamableFile(buffer);
   }
 
+  @RequireScopes('billing_admin:read')
   @Get('invoices/:invoiceRefId/void-document/pdf')
   @Header('Content-Type', 'application/pdf')
   async downloadVoidDocumentPdf(
@@ -325,6 +345,7 @@ export class AdminBillingController {
     return new StreamableFile(buffer);
   }
 
+  @RequireScopes('billing_admin:read')
   @Get('invoices/:invoiceRefId/time-report/pdf')
   @Header('Content-Type', 'application/pdf')
   async downloadTimeReportPdf(
@@ -345,6 +366,7 @@ export class AdminBillingController {
     return new StreamableFile(buffer);
   }
 
+  @RequireScopes('billing_admin:read')
   @Get('invoices/:invoiceRefId/audit-logs')
   async listAuditLogs(
     @Param('invoiceRefId', new ParseUUIDPipe({ version: '4' })) invoiceRefId: string,
@@ -361,6 +383,7 @@ export class AdminBillingController {
     };
   }
 
+  @RequireScopes('billing_admin:read')
   @Get('statistics/summary')
   async getStatisticsSummary(
     @Query('from') from?: string,
@@ -378,6 +401,7 @@ export class AdminBillingController {
     });
   }
 
+  @RequireScopes('billing_admin:read')
   @Get('statistics/by-product')
   async getStatisticsByProduct(
     @Query('from') from?: string,

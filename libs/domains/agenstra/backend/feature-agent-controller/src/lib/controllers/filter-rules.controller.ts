@@ -1,4 +1,4 @@
-import { UserRole, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
+import { RequireScopes, UserRole, getUserFromRequest, type RequestWithUser } from '@forepath/identity/backend';
 import {
   Body,
   Controller,
@@ -22,13 +22,18 @@ import { UpdateFilterRuleDto } from '../dto/filter-rules/update-filter-rule.dto'
 import { FilterRulesService } from '../services/filter-rules.service';
 
 @Controller('filter-rules')
+@RequireScopes('filter_rules:write')
 export class FilterRulesController {
   constructor(private readonly filterRulesService: FilterRulesService) {}
 
   private assertAdmin(req?: RequestWithUser): void {
     const u = getUserFromRequest(req || ({} as RequestWithUser));
 
-    if (!u.isApiKeyAuth && u.userRole !== UserRole.ADMIN) {
+    if (u.isApiKeyAuth) {
+      return;
+    }
+
+    if (u.userRole !== UserRole.ADMIN) {
       throw new ForbiddenException('Admin only');
     }
   }

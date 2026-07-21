@@ -2,7 +2,12 @@ import {
   RunVerifierCommandsDto,
   RunVerifierCommandsResponseDto,
 } from '@forepath/agenstra/backend/feature-agent-manager';
-import { ClientUsersRepository, ensureClientAccess, type RequestWithUser } from '@forepath/identity/backend';
+import {
+  ClientUsersRepository,
+  ensureClientAccess,
+  RequireScopes,
+  type RequestWithUser,
+} from '@forepath/identity/backend';
 import { Body, Controller, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
 
 import { ClientsRepository } from '../repositories/clients.repository';
@@ -20,6 +25,7 @@ export class ClientsAgentAutomationProxyController {
   ) {}
 
   @Post('verify-commands')
+  @RequireScopes('agents:vcs')
   async verifyCommands(
     @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,

@@ -722,6 +722,74 @@ describe('AuthenticationEffects', () => {
         });
       });
     });
+
+    describe('when authentication type is users', () => {
+      const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
+
+      beforeEach(() => {
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({
+          authentication: {
+            type: 'users',
+          },
+        });
+      });
+
+      it('returns authenticated for a valid password JWT', (done) => {
+        const exp = Math.floor((Date.now() + 3600000) / 1000);
+        const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'a@b.c', exp, roles: ['admin'], amr: ['pwd'] }));
+        const jwt = `header.${payload}.signature`;
+
+        actions$ = of(checkAuthentication());
+        (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+          key === USERS_JWT_STORAGE_KEY ? jwt : null,
+        );
+
+        checkAuthentication$(actions$, mockAuthEnvironment, null).subscribe((result) => {
+          expect(result).toEqual(
+            checkAuthenticationSuccess({
+              isAuthenticated: true,
+              authenticationType: 'users',
+              user: { id: 'user-1', email: 'a@b.c', role: 'admin' },
+            }),
+          );
+          done();
+        });
+      });
+
+      it('clears PAT JWTs and reports unauthenticated', (done) => {
+        const exp = Math.floor((Date.now() + 3600000) / 1000);
+        const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'a@b.c', exp, amr: ['pat'] }));
+        const jwt = `header.${payload}.signature`;
+
+        actions$ = of(checkAuthentication());
+        (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+          key === USERS_JWT_STORAGE_KEY ? jwt : null,
+        );
+
+        checkAuthentication$(actions$, mockAuthEnvironment, null).subscribe((result) => {
+          expect(result).toEqual(checkAuthenticationSuccess({ isAuthenticated: false }));
+          expect(window.localStorage.removeItem).toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);
+          done();
+        });
+      });
+
+      it('clears expired JWTs and reports unauthenticated', (done) => {
+        const exp = Math.floor((Date.now() - 3600000) / 1000);
+        const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'a@b.c', exp, amr: ['pwd'] }));
+        const jwt = `header.${payload}.signature`;
+
+        actions$ = of(checkAuthentication());
+        (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+          key === USERS_JWT_STORAGE_KEY ? jwt : null,
+        );
+
+        checkAuthentication$(actions$, mockAuthEnvironment, null).subscribe((result) => {
+          expect(result).toEqual(checkAuthenticationSuccess({ isAuthenticated: false }));
+          expect(window.localStorage.removeItem).toHaveBeenCalledWith(USERS_JWT_STORAGE_KEY);
+          done();
+        });
+      });
+    });
   });
 
   describe('loginSuccessRedirect$', () => {

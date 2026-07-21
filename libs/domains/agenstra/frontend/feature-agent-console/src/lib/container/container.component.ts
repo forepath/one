@@ -7,7 +7,7 @@ import {
   ClientsFacade,
   NotificationsFacade,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
-import { IdentityLogoutConfirmModalComponent } from '@forepath/identity/frontend';
+import { IdentityLogoutConfirmModalComponent, IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { LocaleService } from '@forepath/shared/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { combineLatest, filter, map, startWith } from 'rxjs';
@@ -53,6 +53,14 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
   private readonly standaloneLoadingService = inject(StandaloneLoadingService);
   protected readonly themeService = inject(ThemeService);
   protected readonly localeService = inject(LocaleService);
+  private readonly authEnvironment = inject(IDENTITY_AUTH_ENVIRONMENT);
+
+  /** True when console uses users (email/password) authentication. */
+  readonly isUsersAuth = this.authEnvironment.authentication.type === 'users';
+
+  /** True when Personal Access Tokens UI is available (users or keycloak; not api-key). */
+  readonly isPatUiEnabled =
+    this.authEnvironment.authentication.type === 'users' || this.authEnvironment.authentication.type === 'keycloak';
 
   /**
    * True when on the main clients mask (not editor, deployments, etc.)
@@ -74,7 +82,8 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
               url.includes('/audit') ||
               url.includes('/tickets') ||
               url.includes('/imports') ||
-              url.includes('/knowledge')) &&
+              url.includes('/knowledge') ||
+              url.includes('/settings/tokens')) &&
             !url.includes('/editor') &&
             !url.includes('/config') &&
             !url.includes('/deployments'),
@@ -88,7 +97,8 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
           this.router.url.includes('/audit') ||
           this.router.url.includes('/tickets') ||
           this.router.url.includes('/imports') ||
-          this.router.url.includes('/knowledge')) &&
+          this.router.url.includes('/knowledge') ||
+          this.router.url.includes('/settings/tokens')) &&
         !this.router.url.includes('/editor') &&
         !this.router.url.includes('/config') &&
         !this.router.url.includes('/deployments'),

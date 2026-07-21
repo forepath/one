@@ -1,3 +1,4 @@
+import { RequireScopes } from '@forepath/identity/backend';
 import { BadRequestException, Body, Controller, Get, Post, Req } from '@nestjs/common';
 
 import { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';
@@ -8,6 +9,7 @@ import { CustomerProfilesService } from '../services/customer-profiles.service';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 
 @Controller('customer-profile')
+@RequireScopes('customer_profile:write')
 export class CustomerProfilesController {
   constructor(
     private readonly customerProfilesService: CustomerProfilesService,

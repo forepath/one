@@ -279,6 +279,30 @@ describe('authGuard', () => {
       expect(result).toBe(mockUrlTree);
       expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/login']);
     });
+
+    it('should clear PAT JWT and redirect to login when amr includes pat', () => {
+      const injector = setupTestBed({
+        authentication: {
+          type: 'users',
+        },
+      });
+      const exp = Math.floor((Date.now() + 3600000) / 1000);
+      const payload = btoa(JSON.stringify({ sub: 'user-1', email: 'test@example.com', exp, amr: ['pat'] }));
+      const jwt = `header.${payload}.signature`;
+
+      (window.localStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+        key === 'agent-controller-users-jwt' ? jwt : null,
+      );
+      const mockUrlTree = {} as UrlTree;
+
+      mockRouter.createUrlTree = jest.fn().mockReturnValue(mockUrlTree);
+
+      const result = runInInjectionContext(injector, () => authGuard(mockRoute, mockState));
+
+      expect(result).toBe(mockUrlTree);
+      expect(window.localStorage.removeItem).toHaveBeenCalledWith('agent-controller-users-jwt');
+      expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['/login']);
+    });
   });
 
   describe('when authentication type is unknown', () => {

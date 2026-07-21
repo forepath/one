@@ -91,7 +91,7 @@
               <div class="min-w-0">
                 <div class="fw-semibold mb-1">{{ endpoint.name }}</div>
                 <div class="small text-muted text-break mb-2">{{ endpoint.url }}</div>
-                <div class="small text-muted d-flex align-items-center gap-2 flex-wrap">
+                <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
                   <span class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded">{{
                     endpoint.httpMethod
                   }}</span>
@@ -108,18 +108,20 @@
                       clientLabel(endpoint.clientId)
                     }}</span>
                   }
-                  <span
-                    >{{ endpoint.subscribedEvents.length }}
-                    <ng-container i18n="@@featureNotifications-events">events</ng-container></span
-                  >
+                  <span>
+                    <i class="bi bi-broadcast me-1" aria-hidden="true"></i>{{ endpoint.subscribedEvents.length }}
+                    <ng-container i18n="@@featureNotifications-events">events</ng-container>
+                  </span>
                   @if (endpoint.consecutiveFailures > 0) {
                     <span class="text-danger">
-                      <i class="bi bi-exclamation-circle me-1"></i>
+                      <i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>
                       {{ endpoint.consecutiveFailures }}
                       <ng-container i18n="@@featureNotifications-failures">failures</ng-container>
                     </span>
                   }
-                  <span>{{ formatDate(endpoint.updatedAt) }}</span>
+                  <span>
+                    <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(endpoint.updatedAt) }}
+                  </span>
                 </div>
               </div>
               <div class="btn-group btn-group-sm flex-shrink-0">

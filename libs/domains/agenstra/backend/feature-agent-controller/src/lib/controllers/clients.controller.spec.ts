@@ -212,7 +212,7 @@ describe('ClientsController', () => {
       const result = await controller.getClients(10, 0, mockReq);
 
       expect(result).toEqual(clients);
-      expect(service.findAll).toHaveBeenCalledWith(10, 0, undefined, undefined, true);
+      expect(service.findAll).toHaveBeenCalledWith(10, 0, undefined, undefined, true, { amr: undefined });
     });
 
     it('should use default pagination values', async () => {
@@ -224,7 +224,7 @@ describe('ClientsController', () => {
       const result = await controller.getClients(undefined, undefined, mockReq);
 
       expect(result).toEqual(clients);
-      expect(service.findAll).toHaveBeenCalledWith(10, 0, undefined, undefined, true);
+      expect(service.findAll).toHaveBeenCalledWith(10, 0, undefined, undefined, true, { amr: undefined });
     });
   });
 
@@ -237,7 +237,7 @@ describe('ClientsController', () => {
       const result = await controller.getClient('test-uuid', mockReq);
 
       expect(result).toEqual(mockClientResponse);
-      expect(service.findOne).toHaveBeenCalledWith('test-uuid', undefined, undefined, true);
+      expect(service.findOne).toHaveBeenCalledWith('test-uuid', undefined, undefined, true, { amr: undefined });
     });
   });
 
@@ -300,7 +300,9 @@ describe('ClientsController', () => {
       const result = await controller.updateClient('test-uuid', updateDto, mockReq);
 
       expect(result).toEqual(mockClientResponse);
-      expect(service.update).toHaveBeenCalledWith('test-uuid', updateDto, undefined, undefined, true);
+      expect(service.update).toHaveBeenCalledWith('test-uuid', updateDto, undefined, undefined, true, {
+        amr: undefined,
+      });
     });
   });
 
@@ -1226,6 +1228,7 @@ describe('ClientsController', () => {
           UserRole.USER,
           false,
           undefined,
+          { amr: undefined },
         );
       });
 
@@ -1262,6 +1265,7 @@ describe('ClientsController', () => {
           UserRole.USER,
           false,
           undefined,
+          { amr: undefined },
         );
       });
 

@@ -52,4 +52,38 @@ describe('UsersRolesGuard', () => {
       ),
     ).toBe(true);
   });
+
+  it('under keycloak defers when interactive token has no roles array', () => {
+    process.env.AUTHENTICATION_METHOD = 'keycloak';
+
+    expect(
+      guard.canActivate(
+        createExecutionContext({
+          user: { sub: 'kc-sub', realm_access: { roles: ['admin'] } },
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it('under keycloak enforces roles for PAT JWTs', () => {
+    process.env.AUTHENTICATION_METHOD = 'keycloak';
+
+    expect(
+      guard.canActivate(
+        createExecutionContext({
+          patAuthenticated: true,
+          user: { id: 'u1', roles: [UserRole.USER] },
+        }),
+      ),
+    ).toBe(false);
+
+    expect(
+      guard.canActivate(
+        createExecutionContext({
+          patAuthenticated: true,
+          user: { id: 'u1', roles: [UserRole.ADMIN] },
+        }),
+      ),
+    ).toBe(true);
+  });
 });

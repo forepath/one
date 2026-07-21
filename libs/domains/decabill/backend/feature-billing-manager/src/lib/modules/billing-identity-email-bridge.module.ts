@@ -1,4 +1,4 @@
-import { IDENTITY_EMAIL_DISPATCHER, type IdentityEmailPublishInput } from '@forepath/identity/backend';
+import { IDENTITY_EMAIL_DISPATCHER, assertPatScopes, type IdentityEmailPublishInput } from '@forepath/identity/backend';
 import {
   EmailNotificationDispatcherService,
   getTenantIdOrDefault,
@@ -24,7 +24,12 @@ export const billingNotificationsModule = NotificationsModule.register({
   queueName: BILLING_QUEUE_NAME,
   eventCatalog: BILLING_NOTIFICATION_EVENTS,
   resolveScopeKey: () => getTenantIdOrDefault(),
-  assertAdmin: (req) => ensureAdmin(getUserFromRequest(req as RequestWithUser)),
+  assertAdmin: (req) => {
+    const userInfo = getUserFromRequest(req as RequestWithUser);
+
+    ensureAdmin(userInfo);
+    assertPatScopes(userInfo, 'webhooks:admin');
+  },
   email: {
     templateRoots: [...resolveBillingEmailTemplateRoots(), ...resolveIdentityEmailTemplateRoots()],
     emailEventCatalog: [...BILLING_EMAIL_EVENTS, ...IDENTITY_EMAIL_EVENTS],

@@ -147,11 +147,12 @@ export class ClientsService {
     userId?: string,
     userRole?: UserRole,
     isApiKeyAuth = false,
+    options?: { amr?: string[] },
   ): Promise<ClientResponseDto[]> {
     // In api-key mode, return all clients
     if (isApiKeyAuth || this.isApiKeyMode()) {
       const clients = await this.clientsRepository.findAll(limit, offset);
-      const viewer = { userId, userRole, isApiKeyAuth: true };
+      const viewer = { userId, userRole, isApiKeyAuth: true, amr: options?.amr };
 
       return Promise.all(
         clients.map(async (client) => {
@@ -173,10 +174,10 @@ export class ClientsService {
       return [];
     }
 
-    // Global admin: return all clients
-    if (userRole === UserRole.ADMIN) {
+    // Global console admin: return all clients (PAT must not inherit this via role alone).
+    if (userRole === UserRole.ADMIN && !(options?.amr ?? []).includes('pat')) {
       const clients = await this.clientsRepository.findAll(limit, offset);
-      const viewer = { userId, userRole, isApiKeyAuth: false };
+      const viewer = { userId, userRole, isApiKeyAuth: false, amr: options?.amr };
 
       return Promise.all(
         clients.map(async (client) => {
@@ -206,7 +207,7 @@ export class ClientsService {
     const accessibleClients = allClients.filter((client) => client.userId === userId || clientIds.has(client.id));
     // Apply pagination
     const paginatedClients = accessibleClients.slice(offset, offset + limit);
-    const viewer = { userId, userRole, isApiKeyAuth: false };
+    const viewer = { userId, userRole, isApiKeyAuth: false, amr: options?.amr };
 
     return Promise.all(
       paginatedClients.map(async (client) => {
@@ -233,7 +234,13 @@ export class ClientsService {
    * @throws NotFoundException if client is not found
    * @throws ForbiddenException if user does not have access to the client
    */
-  async findOne(id: string, userId?: string, userRole?: UserRole, isApiKeyAuth = false): Promise<ClientResponseDto> {
+  async findOne(
+    id: string,
+    userId?: string,
+    userRole?: UserRole,
+    isApiKeyAuth = false,
+    options?: { amr?: string[] },
+  ): Promise<ClientResponseDto> {
     const client = await this.clientsRepository.findByIdOrThrow(id);
 
     // Check access permissions
@@ -245,6 +252,7 @@ export class ClientsService {
         userId,
         userRole,
         isApiKeyAuth,
+        options,
       );
 
       if (!access.hasAccess) {
@@ -252,7 +260,7 @@ export class ClientsService {
       }
     }
 
-    const dto = await this.mapToResponseDto(client, { userId, userRole, isApiKeyAuth });
+    const dto = await this.mapToResponseDto(client, { userId, userRole, isApiKeyAuth, amr: options?.amr });
 
     // Fetch config from agent-manager, but don't fail if request fails
     try {
@@ -283,6 +291,7 @@ export class ClientsService {
     userId?: string,
     userRole?: UserRole,
     isApiKeyAuth = false,
+    options?: { amr?: string[] },
   ): Promise<ClientResponseDto> {
     // Check access permissions (workspace managers only)
     if (!isApiKeyAuth && !this.isApiKeyMode() && userId && userRole) {
@@ -293,6 +302,7 @@ export class ClientsService {
         userId,
         userRole,
         isApiKeyAuth,
+        options,
       );
     }
 
@@ -369,7 +379,7 @@ export class ClientsService {
       .recordEntityUpdated(StatisticsEntityType.CLIENT, id, {}, userId ?? undefined)
       .catch(() => undefined);
     this.notificationPublisher.publishClient('client.updated', updatedClient);
-    const dto = await this.mapToResponseDto(updatedClient, { userId, userRole, isApiKeyAuth });
+    const dto = await this.mapToResponseDto(updatedClient, { userId, userRole, isApiKeyAuth, amr: options?.amr });
 
     // Fetch config from agent-manager, but don't fail if request fails
     try {
@@ -429,12 +439,17 @@ export class ClientsService {
    * @param isApiKeyAuth - Whether the request is authenticated via API key
    * @returns Array of client UUIDs
    */
-  async getAccessibleClientIds(userId?: string, userRole?: UserRole, isApiKeyAuth = false): Promise<string[]> {
+  async getAccessibleClientIds(
+    userId?: string,
+    userRole?: UserRole,
+    isApiKeyAuth = false,
+    options?: { amr?: string[] },
+  ): Promise<string[]> {
     if (isApiKeyAuth || this.isApiKeyMode()) {
       return await this.clientsRepository.findAllIds();
     }
 
-    if (userRole === UserRole.ADMIN) {
+    if (userRole === UserRole.ADMIN && !(options?.amr ?? []).includes('pat')) {
       return await this.clientsRepository.findAllIds();
     }
 
@@ -500,7 +515,7 @@ export class ClientsService {
    */
   private async mapToResponseDto(
     client: ClientEntity,
-    viewer: { userId?: string; userRole?: UserRole; isApiKeyAuth: boolean } = {
+    viewer: { userId?: string; userRole?: UserRole; isApiKeyAuth: boolean; amr?: string[] } = {
       userId: undefined,
       userRole: undefined,
       isApiKeyAuth: false,
@@ -526,7 +541,7 @@ export class ClientsService {
 
   private async computeCanManageWorkspaceConfiguration(
     clientId: string,
-    viewer: { userId?: string; userRole?: UserRole; isApiKeyAuth: boolean },
+    viewer: { userId?: string; userRole?: UserRole; isApiKeyAuth: boolean; amr?: string[] },
   ): Promise<boolean> {
     if (viewer.isApiKeyAuth || this.isApiKeyMode()) {
       return true;
@@ -543,10 +558,11 @@ export class ClientsService {
       viewer.userId,
       viewer.userRole,
       false,
+      { amr: viewer.amr },
     );
 
     return canManageWorkspaceConfiguration(
-      { userId: viewer.userId, userRole: viewer.userRole, isApiKeyAuth: false },
+      { userId: viewer.userId, userRole: viewer.userRole, isApiKeyAuth: false, amr: viewer.amr },
       access,
     );
   }

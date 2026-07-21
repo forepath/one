@@ -3,7 +3,11 @@ import { Component, DestroyRef, ElementRef, inject, OnDestroy, OnInit, ViewChild
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { BillingCapabilitiesFacade } from '@forepath/decabill/frontend/data-access-billing-console';
-import { AuthenticationFacade, IdentityLogoutConfirmModalComponent } from '@forepath/identity/frontend';
+import {
+  AuthenticationFacade,
+  IdentityLogoutConfirmModalComponent,
+  IDENTITY_AUTH_ENVIRONMENT,
+} from '@forepath/identity/frontend';
 import { ENVIRONMENT, LocaleService } from '@forepath/shared/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { combineLatest, filter, map, startWith } from 'rxjs';
@@ -49,6 +53,14 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
   protected readonly themeService = inject(ThemeService);
   protected readonly localeService = inject(LocaleService);
   protected readonly productName = inject(ENVIRONMENT).productName;
+  private readonly authEnvironment = inject(IDENTITY_AUTH_ENVIRONMENT);
+
+  /** True when console uses users (email/password) authentication. */
+  readonly isUsersAuth = this.authEnvironment.authentication.type === 'users';
+
+  /** True when Personal Access Tokens UI is available (users or keycloak; not api-key). */
+  readonly isPatUiEnabled =
+    this.authEnvironment.authentication.type === 'users' || this.authEnvironment.authentication.type === 'keycloak';
 
   /**
    * True when on the main clients mask (not editor, deployments, etc.)
@@ -70,7 +82,8 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
             url.includes('/projects') ||
             url.includes('/administration') ||
             url.includes('/users') ||
-            url.includes('/webhooks'),
+            url.includes('/webhooks') ||
+            url.includes('/settings/tokens'),
         ),
       ),
     {
@@ -82,7 +95,8 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
         this.router.url.includes('/projects') ||
         this.router.url.includes('/administration') ||
         this.router.url.includes('/users') ||
-        this.router.url.includes('/webhooks'),
+        this.router.url.includes('/webhooks') ||
+        this.router.url.includes('/settings/tokens'),
     },
   );
 

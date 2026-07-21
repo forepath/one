@@ -189,7 +189,9 @@ export class TicketsService {
   private async getAccessibleClientIds(req?: RequestWithUser): Promise<string[] | null> {
     const info = getUserFromRequest(req || ({} as RequestWithUser));
 
-    return await this.clientsService.getAccessibleClientIds(info.userId, info.userRole, info.isApiKeyAuth);
+    return await this.clientsService.getAccessibleClientIds(info.userId, info.userRole, info.isApiKeyAuth, {
+      amr: info.amr,
+    });
   }
 
   private async assertClientAccess(clientId: string, req?: RequestWithUser): Promise<void> {

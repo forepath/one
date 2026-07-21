@@ -87,6 +87,19 @@ describe('ContextImportController', () => {
 
       expect(connections.findAll).toHaveBeenCalledWith(10, 0);
     });
+
+    it('allows PAT admin sessions through assertAdmin and relies on RequireScopes for PAT scope enforcement', async () => {
+      getUserFromRequestMock.mockReturnValueOnce({
+        userId: 'user-1',
+        userRole: identity.UserRole.ADMIN,
+        isApiKeyAuth: false,
+        amr: ['pat'],
+      } as identity.UserInfoFromRequest);
+      (connections.findAll as jest.Mock).mockResolvedValue([]);
+
+      await controller.listConnections(adminReq);
+      expect(connections.findAll).toHaveBeenCalledWith(10, 0);
+    });
   });
 
   describe('listConnections pagination', () => {

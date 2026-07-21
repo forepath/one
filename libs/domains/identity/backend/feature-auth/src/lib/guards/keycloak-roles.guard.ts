@@ -27,6 +27,12 @@ export class KeycloakRolesGuard implements CanActivate {
       return true;
     }
 
+    const request = context.switchToHttp().getRequest<{ patAuthenticated?: boolean; user?: unknown }>();
+
+    if (request.patAuthenticated) {
+      return true;
+    }
+
     const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(KEYCLOAK_ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -36,7 +42,7 @@ export class KeycloakRolesGuard implements CanActivate {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
+    const { user } = request;
     const roles = this.getRolesFromKeycloakToken(user);
 
     if (roles.length === 0) {

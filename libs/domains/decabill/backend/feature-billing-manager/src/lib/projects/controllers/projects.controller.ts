@@ -1,3 +1,4 @@
+import { RequireScopes } from '@forepath/identity/backend';
 import { BadRequestException, Controller, Get, Param, ParseIntPipe, ParseUUIDPipe, Query, Req } from '@nestjs/common';
 
 import type { PaginatedProjectsResponseDto, ProjectResponseDto, ProjectSummaryResponseDto } from '../dto/project.dto';
@@ -5,6 +6,7 @@ import { ProjectsService } from '../services/projects.service';
 import { getUserFromRequest, type RequestWithUser } from '../../utils/billing-access.utils';
 
 @Controller('projects')
+@RequireScopes('projects:read')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 

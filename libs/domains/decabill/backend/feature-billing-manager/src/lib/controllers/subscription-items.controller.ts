@@ -1,3 +1,4 @@
+import { RequireScopes } from '@forepath/identity/backend';
 import { BadRequestException, Controller, Get, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
 
 import { ServerInfoResponseDto } from '../dto/server-info-response.dto';
@@ -8,6 +9,7 @@ import { getUserFromRequest, type RequestWithUser } from '../utils/billing-acces
 export class SubscriptionItemsController {
   constructor(private readonly subscriptionItemServerService: SubscriptionItemServerService) {}
 
+  @RequireScopes('subscriptions:read')
   @Get()
   async listItems(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
@@ -22,6 +24,7 @@ export class SubscriptionItemsController {
     return await this.subscriptionItemServerService.listItems(subscriptionId, userInfo.userId);
   }
 
+  @RequireScopes('subscriptions:read')
   @Get(':itemId/server-info')
   async getServerInfo(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
@@ -39,6 +42,7 @@ export class SubscriptionItemsController {
     return toServerInfoResponse(info);
   }
 
+  @RequireScopes('subscriptions:write')
   @Post(':itemId/actions/start')
   async startServer(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
@@ -56,6 +60,7 @@ export class SubscriptionItemsController {
     return { success: true };
   }
 
+  @RequireScopes('subscriptions:write')
   @Post(':itemId/actions/stop')
   async stopServer(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,
@@ -73,6 +78,7 @@ export class SubscriptionItemsController {
     return { success: true };
   }
 
+  @RequireScopes('subscriptions:write')
   @Post(':itemId/actions/restart')
   async restartServer(
     @Param('subscriptionId', new ParseUUIDPipe({ version: '4' })) subscriptionId: string,

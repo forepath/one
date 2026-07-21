@@ -129,6 +129,28 @@ describe('UsersService', () => {
     expect(mockUsersRepository.incrementTokenVersion).toHaveBeenCalledWith('user-1');
   });
 
+  it('increments token version when role changes', async () => {
+    mockUsersRepository.findByIdForTenant.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      role: UserRole.ADMIN,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    mockUsersRepository.update.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      role: UserRole.USER,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+    });
+    mockUsersRepository.incrementTokenVersion.mockResolvedValue(1);
+
+    await service.update('user-1', { role: UserRole.USER });
+
+    expect(mockUsersRepository.incrementTokenVersion).toHaveBeenCalledWith('user-1');
+  });
+
   it('publishes confirmation email when creating a non-first user', async () => {
     mockUsersRepository.findByEmail.mockResolvedValue(null);
     mockUsersRepository.create.mockResolvedValue({

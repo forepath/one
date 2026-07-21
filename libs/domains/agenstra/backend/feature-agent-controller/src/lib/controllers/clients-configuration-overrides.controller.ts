@@ -4,6 +4,7 @@ import {
 } from '@forepath/agenstra/backend/feature-agent-manager';
 import {
   ClientUsersRepository,
+  RequireScopes,
   ensureWorkspaceManagementAccess,
   type RequestWithUser,
 } from '@forepath/identity/backend';
@@ -21,6 +22,7 @@ export class ClientsConfigurationOverridesController {
   ) {}
 
   @Get()
+  @RequireScopes('clients:read')
   async getConfigurationOverrides(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Req() req?: RequestWithUser,
@@ -31,6 +33,7 @@ export class ClientsConfigurationOverridesController {
   }
 
   @Put(':settingKey')
+  @RequireScopes('clients:write')
   async upsertConfigurationOverride(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('settingKey') settingKey: string,
@@ -44,6 +47,7 @@ export class ClientsConfigurationOverridesController {
 
   @Delete(':settingKey')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('clients:write')
   async deleteConfigurationOverride(
     @Param('id', new ParseUUIDPipe({ version: '4' })) clientId: string,
     @Param('settingKey') settingKey: string,

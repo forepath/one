@@ -1,6 +1,5 @@
 import { UserEntity } from '@forepath/identity/backend';
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -13,16 +12,11 @@ import { UsersService } from '../services/users.service';
 import { resolveJwtModuleSecret } from '../utils/resolve-jwt-module-secret';
 
 /**
- * Module that syncs Keycloak-authenticated users to the users table.
- * Provides UsersController for user management when Keycloak is active.
+ * Syncs Keycloak-authenticated users to the users table and provides UsersController.
  * Only load when AUTHENTICATION_METHOD=keycloak.
  *
- * Transactional email (if any) is enqueued via IDENTITY_EMAIL_DISPATCHER from the host app.
- *
- * To enable statistics tracking, the consuming module should provide:
- * ```ts
- * { provide: IDENTITY_STATISTICS_SERVICE, useExisting: YourStatisticsService }
- * ```
+ * Do NOT register KeycloakAuthGuard / KeycloakRolesGuard as APP_GUARD here —
+ * host apps must use `getKeycloakPatAuthGuards()` so PatBearer runs first.
  */
 @Module({
   imports: [
@@ -34,14 +28,7 @@ import { resolveJwtModuleSecret } from '../utils/resolve-jwt-module-secret';
     }),
   ],
   controllers: [UsersController],
-  providers: [
-    UsersRepository,
-    UsersService,
-    UsersAuthGuard,
-    KeycloakRolesGuard,
-    { provide: APP_GUARD, useClass: KeycloakAuthGuard },
-    { provide: APP_GUARD, useClass: KeycloakRolesGuard },
-  ],
-  exports: [UsersRepository],
+  providers: [UsersRepository, UsersService, UsersAuthGuard, KeycloakAuthGuard, KeycloakRolesGuard],
+  exports: [UsersRepository, UsersService, KeycloakAuthGuard, KeycloakRolesGuard],
 })
 export class KeycloakUserSyncModule {}

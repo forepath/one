@@ -3,16 +3,19 @@ import {
   IdentityEmailBridgeModule,
   IdentityNotificationBridgeModule,
   IdentityStatisticsBridgeModule,
+  AGENSTRA_PAT_SCOPES,
 } from '@forepath/agenstra/backend/feature-agent-controller';
 import { MonitoringModule } from '@forepath/shared/backend';
 import {
   BullBoardSkippingThrottlerGuard,
   getAuthenticationMethod,
   getHybridAuthGuards,
+  getKeycloakPatAuthGuards,
   getRateLimitConfig,
   KeycloakModule,
   KeycloakService,
   KeycloakUserSyncModule,
+  PatAuthModule,
   UsersAuthModule,
 } from '@forepath/identity/backend';
 import { getTypeOrmOptionsForQueueRole } from '@forepath/shared/backend';
@@ -33,19 +36,22 @@ const authMethod = getAuthenticationMethod();
     ControllerQueueModule,
     ThrottlerModule.forRoot(getRateLimitConfig()),
     ...(authMethod === 'keycloak'
-      ? [KeycloakModule, KeycloakConnectModule.registerAsync({ useExisting: KeycloakService }), KeycloakUserSyncModule]
+      ? [
+          KeycloakModule,
+          KeycloakConnectModule.registerAsync({ useExisting: KeycloakService }),
+          KeycloakUserSyncModule,
+          PatAuthModule.register({ patScopeCatalog: AGENSTRA_PAT_SCOPES }),
+        ]
       : []),
-    ...(authMethod === 'users' ? [UsersAuthModule] : []),
+    ...(authMethod === 'users' ? [UsersAuthModule.register({ patScopeCatalog: AGENSTRA_PAT_SCOPES })] : []),
     ClientsModule,
     IdentityStatisticsBridgeModule,
     IdentityNotificationBridgeModule,
     IdentityEmailBridgeModule,
     MonitoringModule,
   ],
-  // Use hybrid guards (checks STATIC_API_KEY to determine authentication method)
   providers: [
-    ...getHybridAuthGuards(),
-    // Apply rate limiting globally to all routes
+    ...(authMethod === 'keycloak' ? getKeycloakPatAuthGuards() : getHybridAuthGuards()),
     {
       provide: APP_GUARD,
       useClass: BullBoardSkippingThrottlerGuard,

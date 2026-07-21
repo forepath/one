@@ -1,7 +1,12 @@
 import { inject } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
-import { IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
+import {
+  IDENTITY_AUTH_ENVIRONMENT,
+  isUsersConsoleJwtValid,
+  jwtPayloadHasPatAmr,
+  parseJwtPayload,
+} from '@forepath/identity/frontend';
 import { KeycloakService } from 'keycloak-angular';
 
 /**
@@ -17,7 +22,8 @@ const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
  * Guard that prevents authenticated users from accessing the login route.
  * - If authentication type is 'keycloak', checks if user is authenticated and redirects to /clients if so
  * - If authentication type is 'api-key', checks if API key exists in environment or localStorage and redirects to /clients if so
- * - If authentication type is 'users', checks if valid JWT exists in localStorage and redirects to /clients if so
+ * - If authentication type is 'users', checks if valid password-session JWT exists in localStorage and redirects to /clients if so
+ * - Personal access token JWTs are cleared so the login form remains reachable
  * - Otherwise, allows access to login route
  */
 export const loginGuard: CanActivateFn = (_route, _state) => {
@@ -69,15 +75,16 @@ export const loginGuard: CanActivateFn = (_route, _state) => {
     const jwt = localStorage.getItem(USERS_JWT_STORAGE_KEY);
 
     if (jwt) {
-      try {
-        const payload = JSON.parse(atob(jwt.split('.')[1] ?? '{}'));
-        const exp = payload.exp ? payload.exp * 1000 : 0;
+      const payload = parseJwtPayload(jwt);
 
-        if (exp > Date.now()) {
-          return router.createUrlTree(['/clients']);
-        }
-      } catch {
-        // Invalid JWT, allow access to login
+      if (jwtPayloadHasPatAmr(payload)) {
+        localStorage.removeItem(USERS_JWT_STORAGE_KEY);
+
+        return true;
+      }
+
+      if (isUsersConsoleJwtValid(jwt)) {
+        return router.createUrlTree(['/clients']);
       }
     }
 

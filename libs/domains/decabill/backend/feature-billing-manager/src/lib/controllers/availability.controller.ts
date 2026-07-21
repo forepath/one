@@ -1,3 +1,4 @@
+import { RequireScopes } from '@forepath/identity/backend';
 import { Body, Controller, Post } from '@nestjs/common';
 
 import { AvailabilityCheckDto } from '../dto/availability-check.dto';
@@ -5,6 +6,7 @@ import { AvailabilityResponseDto } from '../dto/availability-response.dto';
 import { AvailabilityService } from '../services/availability.service';
 
 @Controller('availability')
+@RequireScopes('subscriptions:write')
 export class AvailabilityController {
   constructor(private readonly availabilityService: AvailabilityService) {}
 

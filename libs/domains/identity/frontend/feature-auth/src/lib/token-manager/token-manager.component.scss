@@ -1,0 +1,66 @@
+.token-manager-container {
+  min-height: 0;
+}
+
+.search-input {
+  border-radius: 0;
+  position: relative;
+  padding-left: 0;
+  box-shadow: none;
+}
+
+.search-input-container {
+  position: relative;
+
+  i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
+
+.info-badge {
+  font-size: 0.75rem;
+}
+
+.scopes-badge {
+  position: relative;
+  cursor: default;
+
+  .scopes-tooltip {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: calc(100% + 0.35rem);
+    z-index: 2;
+    min-width: 12rem;
+    max-width: 24rem;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.75rem;
+    line-height: 1.35;
+    white-space: pre-line;
+    word-break: break-word;
+    color: var(--bs-body-color);
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+  }
+
+  &:hover .scopes-tooltip,
+  &:focus .scopes-tooltip,
+  &:focus-within .scopes-tooltip {
+    display: block;
+  }
+}
+
+.scope-list {
+  max-height: 12rem;
+  overflow: auto;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
