@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.18.1](https://github.com/forepath/one/compare/v2.18.0...v2.18.1) (2026-07-22)
+
+
+### Bug Fixes
+
+* redirect after login without email confirmation ([#508](https://github.com/forepath/one/issues/508)) ([fd1bdaf](https://github.com/forepath/one/commit/fd1bdaf3cad92035980ef4fc68eb380a2281dfa8))
+
 ## [2.18.0](https://github.com/forepath/one/compare/v2.17.1...v2.18.0) (2026-07-22)
 
 
