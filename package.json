@@ -164,7 +164,7 @@
     "keycloak-js": "26.2.1",
     "keycloakify": "11.15.3",
     "marked": "15.0.12",
-    "mermaid": "11.12.2",
+    "mermaid": "11.15.0",
     "monaco-editor": "0.55.1",
     "nest-cloudflare-turnstile": "0.0.17",
     "nest-keycloak-connect": "2.0.0-alpha.2",
