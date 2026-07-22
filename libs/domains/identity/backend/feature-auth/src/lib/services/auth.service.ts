@@ -20,6 +20,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
+import { EMAIL_NOT_CONFIRMED_CODE, EMAIL_NOT_CONFIRMED_MESSAGE } from '../constants/auth-error.constants';
 import { DUMMY_PAT_BCRYPT_HASH, PAT_TOKEN_PREFIX } from '../constants/pat.constants';
 import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
@@ -88,10 +89,6 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    if (!user.emailConfirmedAt) {
-      throw new UnauthorizedException('Email not confirmed. Please confirm your email before logging in.');
-    }
-
     if (user.lockedAt) {
       throw new UnauthorizedException('This account is locked. Please contact an administrator.');
     }
@@ -104,6 +101,13 @@ export class AuthService {
 
     if (!valid) {
       throw new UnauthorizedException('Invalid email or password');
+    }
+
+    if (!user.emailConfirmedAt) {
+      throw new UnauthorizedException({
+        message: EMAIL_NOT_CONFIRMED_MESSAGE,
+        code: EMAIL_NOT_CONFIRMED_CODE,
+      });
     }
 
     const accessToken = this.generateToken(user, { amr: 'pwd' });

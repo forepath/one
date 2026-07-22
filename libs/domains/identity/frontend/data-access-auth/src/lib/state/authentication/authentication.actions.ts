@@ -18,7 +18,10 @@ export const loginSuccess = createAction(
   props<{ authenticationType: 'api-key' | 'keycloak' | 'users'; user?: { id: string; email: string; role: string } }>(),
 );
 
-export const loginFailure = createAction('[Authentication] Login Failure', props<{ error: string }>());
+export const loginFailure = createAction(
+  '[Authentication] Login Failure',
+  props<{ error: string; confirmEmail?: string }>(),
+);
 
 export const clearError = createAction('[Authentication] Clear Error');
 

@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
@@ -45,6 +46,7 @@ import {
   loadUsersBatch$,
   lockUser$,
   login$,
+  loginEmailNotConfirmedRedirect$,
   loginSuccessRedirect$,
   logout$,
   logoutSuccessRedirect$,
@@ -266,6 +268,48 @@ describe('AuthenticationEffects', () => {
         actions$ = of(action);
 
         login$(actions$, mockAuthEnvironment, null, null).subscribe((result) => {
+          expect(result).toEqual(outcome);
+          done();
+        });
+      });
+    });
+
+    describe('when authentication type is users', () => {
+      let mockAuthService: { login: jest.Mock };
+
+      beforeEach(() => {
+        mockAuthEnvironment = createMockIdentityAuthEnvironment({
+          authentication: {
+            type: 'users',
+          },
+        });
+        mockAuthService = {
+          login: jest.fn(),
+        };
+      });
+
+      it('should include confirmEmail on loginFailure when email is not confirmed', (done) => {
+        const action = login({ email: 'pending@example.com', password: 'password123' });
+        const outcome = loginFailure({
+          error: 'Email not confirmed. Please confirm your email before logging in.',
+          confirmEmail: 'pending@example.com',
+        });
+
+        actions$ = of(action);
+        mockAuthService.login.mockReturnValue(
+          throwError(
+            () =>
+              new HttpErrorResponse({
+                status: 401,
+                error: {
+                  message: 'Email not confirmed. Please confirm your email before logging in.',
+                  code: 'EMAIL_NOT_CONFIRMED',
+                },
+              }),
+          ),
+        );
+
+        login$(actions$, mockAuthEnvironment, null, mockAuthService as any).subscribe((result) => {
           expect(result).toEqual(outcome);
           done();
         });
@@ -821,6 +865,45 @@ describe('AuthenticationEffects', () => {
           complete: () => {
             expect(mockRouter.navigate).toHaveBeenCalledWith(['/clients']);
             expect(mockRouter.navigate).toHaveBeenCalledTimes(1);
+            done();
+          },
+        });
+      });
+    });
+  });
+
+  describe('loginEmailNotConfirmedRedirect$', () => {
+    it('should navigate to /confirm-email when loginFailure includes confirmEmail', (done) => {
+      const action = loginFailure({
+        error: 'Email not confirmed. Please confirm your email before logging in.',
+        confirmEmail: 'test@example.com',
+      });
+
+      actions$ = of(action);
+      mockRouter.navigate = jest.fn().mockResolvedValue(true);
+
+      TestBed.runInInjectionContext(() => {
+        loginEmailNotConfirmedRedirect$(actions$, mockRouter as any).subscribe({
+          complete: () => {
+            expect(mockRouter.navigate).toHaveBeenCalledWith(['/confirm-email'], {
+              queryParams: { email: 'test@example.com' },
+            });
+            done();
+          },
+        });
+      });
+    });
+
+    it('should not navigate when loginFailure has no confirmEmail', (done) => {
+      const action = loginFailure({ error: 'Invalid email or password' });
+
+      actions$ = of(action);
+      mockRouter.navigate = jest.fn().mockResolvedValue(true);
+
+      TestBed.runInInjectionContext(() => {
+        loginEmailNotConfirmedRedirect$(actions$, mockRouter as any).subscribe({
+          complete: () => {
+            expect(mockRouter.navigate).not.toHaveBeenCalled();
             done();
           },
         });

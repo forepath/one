@@ -5,3 +5,5 @@ Please confirm your email using the following code:
 {{code}}
 
 Enter this code on the confirmation page. The code will expire when you confirm.
+
+Closed that page already? Sign in again with this email address — we will take you back to the confirmation page so you can enter the code. You can also open the confirmation page yourself and enter your email address together with this code.
