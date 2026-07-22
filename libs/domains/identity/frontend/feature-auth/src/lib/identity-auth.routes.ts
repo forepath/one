@@ -15,6 +15,7 @@ import {
   loadUsersBatch$,
   lockUser$,
   login$,
+  loginEmailNotConfirmedRedirect$,
   loginSuccessRedirect$,
   logout$,
   logoutSuccessRedirect$,
@@ -156,6 +157,7 @@ export const identityAuthProviders = [
   provideEffects({
     login$,
     loginSuccessRedirect$,
+    loginEmailNotConfirmedRedirect$,
     register$,
     registerSuccessRedirect$,
     confirmEmail$,

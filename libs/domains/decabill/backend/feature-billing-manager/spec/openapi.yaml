@@ -884,7 +884,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Unauthorized
+          description: |
+            Unauthorized. When the password is valid but the email is not confirmed, the body includes
+            `code: EMAIL_NOT_CONFIRMED` so the client can resume confirmation.
           content:
             application/json:
               schema:
@@ -4077,6 +4079,9 @@ components:
           type: string
         error:
           type: string
+        code:
+          type: string
+          description: Optional machine-readable error code (e.g. EMAIL_NOT_CONFIRMED on login)
     MessageResponse:
       type: object
       properties:

@@ -121,6 +121,24 @@ describe('AuthService', () => {
     });
   });
 
+  it('rejects login when email is not confirmed after valid password', async () => {
+    mockUsersRepository.findByEmail.mockResolvedValue({
+      id: 'user-unconfirmed',
+      email: 'pending@example.com',
+      role: UserRole.USER,
+      emailConfirmedAt: null,
+      lockedAt: null,
+      passwordHash: '$2b$12$hash',
+    });
+    mockUsersService.validatePassword.mockResolvedValue(true);
+
+    await expect(service.login('pending@example.com', 'password123')).rejects.toThrow(UnauthorizedException);
+    await expect(service.login('pending@example.com', 'password123')).rejects.toThrow(
+      'Email not confirmed. Please confirm your email before logging in.',
+    );
+    expect(mockJwtService.sign).not.toHaveBeenCalled();
+  });
+
   it('keeps invalid credentials response for non-existing user', async () => {
     mockUsersRepository.findByEmail.mockResolvedValue(null);
 

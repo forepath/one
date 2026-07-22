@@ -7,6 +7,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { KeycloakService } from 'keycloak-angular';
 import { catchError, from, map, of, switchMap, tap } from 'rxjs';
 
+import { EMAIL_NOT_CONFIRMED_CODE } from '../../constants/auth-error.constants';
 import { AuthService, LOGIN_SUCCESS_REDIRECT_TARGET } from '../../services/auth.service';
 
 import {
@@ -138,6 +139,14 @@ function normalizeError(error: unknown): string {
   return 'An unexpected authentication error occurred';
 }
 
+function isEmailNotConfirmedError(error: unknown): boolean {
+  if (!(error instanceof HttpErrorResponse) || !error.error || typeof error.error !== 'object') {
+    return false;
+  }
+
+  return (error.error as { code?: unknown }).code === EMAIL_NOT_CONFIRMED_CODE;
+}
+
 export const login$ = createEffect(
   (
     actions$ = inject(Actions),
@@ -177,7 +186,14 @@ export const login$ = createEffect(
                 user: res.user,
               });
             }),
-            catchError((error) => of(loginFailure({ error: normalizeError(error) }))),
+            catchError((error) =>
+              of(
+                loginFailure({
+                  error: normalizeError(error),
+                  confirmEmail: isEmailNotConfirmedError(error) ? email : undefined,
+                }),
+              ),
+            ),
           );
         }
 
@@ -194,6 +210,24 @@ export const loginSuccessRedirect$ = createEffect(
       ofType(loginSuccess),
       tap(() => {
         router.navigate(redirectTarget);
+      }),
+    );
+  },
+  { functional: true, dispatch: false },
+);
+
+export const loginEmailNotConfirmedRedirect$ = createEffect(
+  (actions$ = inject(Actions), router = inject(Router)) => {
+    return actions$.pipe(
+      ofType(loginFailure),
+      tap(({ confirmEmail }) => {
+        if (!confirmEmail) {
+          return;
+        }
+
+        router.navigate(['/confirm-email'], {
+          queryParams: { email: confirmEmail },
+        });
       }),
     );
   },

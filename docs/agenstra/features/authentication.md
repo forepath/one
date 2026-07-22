@@ -111,6 +111,8 @@ Updating a token changes **name** and **scopes** only; the secret is never rotat
 3. System validates code and confirms email
 4. User can now log in
 
+If the confirmation page was closed before the code was entered, the confirmation email explains how to continue: sign in again with the same email address (the app returns to the confirmation page), or open `/confirm-email` and enter the email address with the code manually.
+
 ### Login
 
 1. User enters email and password
@@ -119,6 +121,8 @@ Updating a token changes **name** and **scopes** only; the secret is never rotat
 4. System checks if the account is locked (`locked_at` must be null)
 5. If valid, JWT token is issued
 6. Token is stored in localStorage and included in subsequent requests
+
+When credentials are valid but the email is not confirmed yet, login returns `401` with code `EMAIL_NOT_CONFIRMED` and the frontend redirects to `/confirm-email` with the email pre-filled.
 
 ### Password Reset
 
