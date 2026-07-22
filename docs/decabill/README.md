@@ -42,6 +42,7 @@ Product capabilities including subscriptions, invoices, administration, projects
 - [System Requirements](./deployment/system-requirements.md)
 - [Environment Configuration](./deployment/environment-configuration.md)
 - [Production Checklist](./deployment/production-checklist.md)
+- [Operator Runbook](./deployment/operator-runbook.md)
 - [Background Jobs](./deployment/background-jobs.md)
 
 ### [Security](./security/README.md)

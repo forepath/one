@@ -36,13 +36,14 @@ Automated **Trivy** scans on pull requests (filesystem, IaC/config, container im
 
 ## Configuration reference
 
-For variable-by-variable deployment settings, including **`CLIENT_ENDPOINT_*`**, **`CONFIG_*`**, **`CSP_ENFORCE`**, and authentication variables, see **[Environment configuration](../deployment/environment-configuration.md)** and **[Production checklist](../deployment/production-checklist.md)**.
+For variable-by-variable deployment settings, including **`CLIENT_ENDPOINT_*`**, **`CONFIG_*`**, **`CSP_ENFORCE`**, and authentication variables, see **[Environment configuration](../deployment/environment-configuration.md)**, **[Production checklist](../deployment/production-checklist.md)**, and **[Operator runbook](../deployment/operator-runbook.md)** (capacity, day-2, and disclosure checklists).
 
 ## Related documentation
 
 - **[Architecture](../architecture/README.md)** — Trust boundaries and component roles
 - **[Authentication feature](../features/authentication.md)** — User-facing authentication flows
 - **[Deployment](../deployment/README.md)** — Docker and production guides
+- **[Operator runbook](../deployment/operator-runbook.md)** — Install/ops and disclosure checklists
 
 ---
 

@@ -57,6 +57,15 @@ Production deployment guide:
 - Performance optimization
 - Monitoring and backup strategies
 
+### [Operator Runbook](./operator-runbook.md)
+
+Install and day-2 ops checklists:
+
+- Capacity verification against system requirements
+- Install verification and smoke checks
+- Ongoing operations (queues, backups, logging)
+- Disclosure, SBOM, and supported-version obligations
+
 ### [Background Jobs](./background-jobs.md)
 
 BullMQ background processing for the billing manager:

@@ -189,6 +189,8 @@ Comprehensive checklist for deploying Decabill to production.
 
 ## Related Documentation
 
+- **[Operator Runbook](./operator-runbook.md)** - Capacity, install verification, day-2, and disclosure checklists
+- **[System Requirements](./system-requirements.md)** - CPU, memory, and disk baselines
 - **[Docker Deployment](./docker-deployment.md)** - Containerized deployment
 - **[Environment Configuration](./environment-configuration.md)** - Environment variables
 - **[Background Jobs](./background-jobs.md)** - Queue startup order

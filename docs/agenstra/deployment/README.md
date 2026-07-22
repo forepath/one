@@ -51,6 +51,15 @@ Production deployment guide:
 - Monitoring setup
 - Backup strategies
 
+### [Operator Runbook](./operator-runbook.md)
+
+Install and day-2 ops checklists:
+
+- Capacity verification against system requirements
+- Install verification and smoke checks
+- Ongoing operations (queues, backups, logging)
+- Disclosure, SBOM, and supported-version obligations
+
 ### [Environment Configuration](./environment-configuration.md)
 
 Complete environment variables reference:

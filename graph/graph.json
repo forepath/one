@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-22T15:23:00.376Z",
+  "generatedAt": "2026-07-22T17:54:27.679Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -10400,6 +10400,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/deployment/operator-runbook.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/deployment/operator-runbook.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/deployment/production-checklist.md",
       "type": "doc",
       "attrs": {
@@ -10772,6 +10780,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/deployment/local-development.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/deployment/operator-runbook.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/deployment/operator-runbook.md",
         "languageOrKind": "md"
       }
     },
@@ -17952,6 +17968,66 @@
       }
     },
     {
+      "id": "concept:agenstra-operator-runbook",
+      "type": "concept",
+      "attrs": {
+        "title": "Operator Runbook",
+        "docPath": "docs/agenstra/deployment/operator-runbook.md",
+        "sectionAnchor": "operator-runbook",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-when-to-use-this-runbook",
+      "type": "concept",
+      "attrs": {
+        "title": "When to use this runbook",
+        "docPath": "docs/agenstra/deployment/operator-runbook.md",
+        "sectionAnchor": "when-to-use-this-runbook",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-install-capacity-checklist",
+      "type": "concept",
+      "attrs": {
+        "title": "Install capacity checklist",
+        "docPath": "docs/agenstra/deployment/operator-runbook.md",
+        "sectionAnchor": "install-capacity-checklist",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-install-verification-checklist",
+      "type": "concept",
+      "attrs": {
+        "title": "Install verification checklist",
+        "docPath": "docs/agenstra/deployment/operator-runbook.md",
+        "sectionAnchor": "install-verification-checklist",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-day-2-operations-checklist",
+      "type": "concept",
+      "attrs": {
+        "title": "Day-2 operations checklist",
+        "docPath": "docs/agenstra/deployment/operator-runbook.md",
+        "sectionAnchor": "day-2-operations-checklist",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-disclosure-and-artifact-checklist",
+      "type": "concept",
+      "attrs": {
+        "title": "Disclosure and artifact checklist",
+        "docPath": "docs/agenstra/deployment/operator-runbook.md",
+        "sectionAnchor": "disclosure-and-artifact-checklist",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-pre-deployment-checklist",
       "type": "concept",
       "attrs": {
@@ -21428,6 +21504,66 @@
         "title": "Troubleshooting",
         "docPath": "docs/decabill/deployment/local-development.md",
         "sectionAnchor": "troubleshooting",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-operator-runbook",
+      "type": "concept",
+      "attrs": {
+        "title": "Operator Runbook",
+        "docPath": "docs/decabill/deployment/operator-runbook.md",
+        "sectionAnchor": "operator-runbook",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-when-to-use-this-runbook",
+      "type": "concept",
+      "attrs": {
+        "title": "When to use this runbook",
+        "docPath": "docs/decabill/deployment/operator-runbook.md",
+        "sectionAnchor": "when-to-use-this-runbook",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-install-capacity-checklist",
+      "type": "concept",
+      "attrs": {
+        "title": "Install capacity checklist",
+        "docPath": "docs/decabill/deployment/operator-runbook.md",
+        "sectionAnchor": "install-capacity-checklist",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-install-verification-checklist",
+      "type": "concept",
+      "attrs": {
+        "title": "Install verification checklist",
+        "docPath": "docs/decabill/deployment/operator-runbook.md",
+        "sectionAnchor": "install-verification-checklist",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-day-2-operations-checklist",
+      "type": "concept",
+      "attrs": {
+        "title": "Day-2 operations checklist",
+        "docPath": "docs/decabill/deployment/operator-runbook.md",
+        "sectionAnchor": "day-2-operations-checklist",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-disclosure-and-artifact-checklist",
+      "type": "concept",
+      "attrs": {
+        "title": "Disclosure and artifact checklist",
+        "docPath": "docs/decabill/deployment/operator-runbook.md",
+        "sectionAnchor": "disclosure-and-artifact-checklist",
         "domain": "decabill"
       }
     },
@@ -34954,6 +35090,41 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/agenstra/deployment/operator-runbook.md",
+      "to": "concept:agenstra-operator-runbook",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/operator-runbook.md",
+      "to": "concept:agenstra-when-to-use-this-runbook",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/operator-runbook.md",
+      "to": "concept:agenstra-install-capacity-checklist",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/operator-runbook.md",
+      "to": "concept:agenstra-install-verification-checklist",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/operator-runbook.md",
+      "to": "concept:agenstra-day-2-operations-checklist",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/operator-runbook.md",
+      "to": "concept:agenstra-disclosure-and-artifact-checklist",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/operator-runbook.md",
+      "to": "concept:agenstra-related-documentation",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/agenstra/deployment/production-checklist.md",
       "to": "concept:agenstra-production-deployment-checklist",
       "type": "contains"
@@ -37385,6 +37556,41 @@
     },
     {
       "from": "file:docs/decabill/deployment/local-development.md",
+      "to": "concept:decabill-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/deployment/operator-runbook.md",
+      "to": "concept:decabill-operator-runbook",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/deployment/operator-runbook.md",
+      "to": "concept:decabill-when-to-use-this-runbook",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/deployment/operator-runbook.md",
+      "to": "concept:decabill-install-capacity-checklist",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/deployment/operator-runbook.md",
+      "to": "concept:decabill-install-verification-checklist",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/deployment/operator-runbook.md",
+      "to": "concept:decabill-day-2-operations-checklist",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/deployment/operator-runbook.md",
+      "to": "concept:decabill-disclosure-and-artifact-checklist",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/deployment/operator-runbook.md",
       "to": "concept:decabill-related-documentation",
       "type": "contains"
     },
@@ -44814,6 +45020,36 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-install-capacity-checklist",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-install-capacity-checklist",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-install-verification-checklist",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-install-verification-checklist",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-day-2-operations-checklist",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-day-2-operations-checklist",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-pre-deployment-checklist",
       "to": "api:HTTP:GET:/agents",
       "type": "documents"
@@ -46421,6 +46657,16 @@
     {
       "from": "concept:decabill-run-with-coverage",
       "to": "project:decabill-frontend-docs",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-install-verification-checklist",
+      "to": "api:HTTP:GET:/health",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-install-verification-checklist",
+      "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
     },
     {
@@ -50039,6 +50285,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/deployment/operator-runbook.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/deployment/production-checklist.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -50270,6 +50521,11 @@
     },
     {
       "from": "file:docs/decabill/deployment/local-development.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/deployment/operator-runbook.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -51355,6 +51611,36 @@
     },
     {
       "from": "concept:agenstra-troubleshooting",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-operator-runbook",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-when-to-use-this-runbook",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-install-capacity-checklist",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-install-verification-checklist",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-day-2-operations-checklist",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-disclosure-and-artifact-checklist",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -53095,6 +53381,36 @@
     },
     {
       "from": "concept:decabill-troubleshooting",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-operator-runbook",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-when-to-use-this-runbook",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-install-capacity-checklist",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-install-verification-checklist",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-day-2-operations-checklist",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-disclosure-and-artifact-checklist",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

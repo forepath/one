@@ -12,7 +12,7 @@ Before you begin, ensure you have:
 - **Git** (optional, for repository checkout)
 - **Keycloak** (optional; API key or users authentication work for local dev)
 
-For CPU, memory, and disk baselines by component, see **[System Requirements](./system-requirements.md)**.
+For CPU, memory, and disk baselines by component, see **[System Requirements](./system-requirements.md)**. For install capacity and verification checklists, see **[Operator Runbook](./operator-runbook.md)**.
 
 ## Installation
 

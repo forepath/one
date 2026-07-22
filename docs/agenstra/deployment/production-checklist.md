@@ -163,6 +163,8 @@ Comprehensive checklist for deploying Agenstra to production.
 
 ## Related Documentation
 
+- **[Operator Runbook](./operator-runbook.md)** - Capacity, install verification, day-2, and disclosure checklists
+- **[System Requirements](./system-requirements.md)** - CPU, memory, and disk baselines
 - **[Docker Deployment](./docker-deployment.md)** - Containerized deployment
 - **[Environment Configuration](./environment-configuration.md)** - Environment variables
 - **[Troubleshooting](../troubleshooting/README.md)** - Problem-solving guides
