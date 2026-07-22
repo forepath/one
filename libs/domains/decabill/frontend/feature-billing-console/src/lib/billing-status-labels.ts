@@ -176,6 +176,45 @@ export function getActiveStatusTextClass(isActive: boolean): string {
   return isActive ? 'text-success' : 'text-secondary';
 }
 
+export function getCustomerTrustLevelLabel(level: string | null | undefined): string {
+  switch (level) {
+    case 'green':
+      return $localize`:@@featureBilling-customerTrustGreen:High trust`;
+    case 'yellow':
+      return $localize`:@@featureBilling-customerTrustYellow:Needs attention`;
+    case 'red':
+      return $localize`:@@featureBilling-customerTrustRed:High risk`;
+    default:
+      return $localize`:@@featureBilling-customerTrustUnknown:Not scored`;
+  }
+}
+
+export function getCustomerTrustLevelTextClass(level: string | null | undefined): string {
+  switch (level) {
+    case 'green':
+      return 'text-success';
+    case 'yellow':
+      return 'text-warning';
+    case 'red':
+      return 'text-danger';
+    default:
+      return 'text-secondary';
+  }
+}
+
+export function getCustomerTrustLevelIconClass(level: string | null | undefined): string {
+  switch (level) {
+    case 'green':
+      return 'bi-shield-check';
+    case 'yellow':
+      return 'bi-shield-exclamation';
+    case 'red':
+      return 'bi-shield-fill-exclamation';
+    default:
+      return 'bi-shield';
+  }
+}
+
 export function isProjectTimeEntryBilled(entry: { billedAt?: string | null; invoiceId?: string | null }): boolean {
   return !!(entry.billedAt || entry.invoiceId);
 }

@@ -75,15 +75,18 @@ sequenceDiagram
 
 Customer billing data is stored in `billing_customer_profiles` (one profile per user).
 
-| Method | Path                                    | Purpose                                                |
-| ------ | --------------------------------------- | ------------------------------------------------------ |
-| GET    | `/admin/billing/customer-profiles`      | Paginated list                                         |
-| GET    | `/admin/billing/customer-profiles/{id}` | Full profile detail                                    |
-| POST   | `/admin/billing/customer-profiles`      | Create for user                                        |
-| POST   | `/admin/billing/customer-profiles/{id}` | Update                                                 |
-| DELETE | `/admin/billing/customer-profiles/{id}` | Delete (blocked if user has invoices or subscriptions) |
+| Method | Path                                                          | Purpose                                                |
+| ------ | ------------------------------------------------------------- | ------------------------------------------------------ |
+| GET    | `/admin/billing/customer-profiles`                            | Paginated list                                         |
+| GET    | `/admin/billing/customer-profiles/{id}`                       | Full profile detail                                    |
+| GET    | `/admin/billing/customer-profiles/{id}/trust-score`           | Recomputed trust score detail                          |
+| POST   | `/admin/billing/customer-profiles/{id}/trust-score/recompute` | Force trust recompute                                  |
+| POST   | `/admin/billing/customer-profiles`                            | Create for user                                        |
+| POST   | `/admin/billing/customer-profiles/{id}`                       | Update                                                 |
+| DELETE | `/admin/billing/customer-profiles/{id}`                       | Delete (blocked if user has invoices or subscriptions) |
 
 Self-service `GET/POST /customer-profile` remains for end users. See [Customer Profiles](./customer-profiles.md).
+Trust ranking remains admin-only. See [Customer Trust Score](./customer-trust-score.md).
 
 **Frontend:** `/administration/customer-profiles` in the billing console.
 
@@ -108,6 +111,7 @@ See **[Projects](./projects.md)** for assignment rules, KPIs, and bill-time prec
 
 - **Billing dashboard** (`/administration/billing`) - KPIs, charts, bill-now
 - **Customer profiles** (`/administration/customer-profiles`) - Admin CRUD
+- **Customer trust score** - Admin-only traffic-light ranking inside customer profiles
 - **Projects** (`/administration/projects`) - Project CRUD and bill-time
 - **Webhooks** (`/webhooks`) - Tenant-scoped outbound notification endpoints; see [Webhooks](./webhooks.md)
 - **Service types and plans** - Catalog administration in the billing console
@@ -136,6 +140,7 @@ See **[Webhooks](./webhooks.md)** for payload envelope, signing, and event types
 
 - **[Invoices](./invoices.md)** - Status model and open positions
 - **[Customer Profiles](./customer-profiles.md)** - Profile fields and validation
+- **[Customer Trust Score](./customer-trust-score.md)** - Trust ranking thresholds, factors, and webhooks
 - **[Projects](./projects.md)** - Admin project CRUD and bill-time
 - **[Multi-tenancy](./multi-tenancy.md)** - Tenant scope and DR-002
 - **[Authentication](./authentication.md)** - Admin role requirements

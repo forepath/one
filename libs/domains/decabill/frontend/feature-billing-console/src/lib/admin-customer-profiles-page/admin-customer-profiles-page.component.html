@@ -52,6 +52,29 @@
                 }
                 <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
                   <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                    <span
+                      class="me-2 d-inline-flex align-items-center gap-2"
+                      [attr.aria-label]="profileTrustLabel(profile.trustLevel)"
+                    >
+                      <span class="trust-traffic-light" aria-hidden="true">
+                        <span
+                          class="trust-traffic-light__light trust-traffic-light__light--green"
+                          [class.is-active]="isTrustLightActive(profile.trustLevel, 'green')"
+                        ></span>
+                        <span
+                          class="trust-traffic-light__light trust-traffic-light__light--yellow"
+                          [class.is-active]="isTrustLightActive(profile.trustLevel, 'yellow')"
+                        ></span>
+                        <span
+                          class="trust-traffic-light__light trust-traffic-light__light--red"
+                          [class.is-active]="isTrustLightActive(profile.trustLevel, 'red')"
+                        ></span>
+                      </span>
+                      <span [ngClass]="profileTrustTextClass(profile.trustLevel)">
+                        <i class="bi me-1" [ngClass]="profileTrustIconClass(profile.trustLevel)" aria-hidden="true"></i>
+                        {{ profileTrustLabel(profile.trustLevel) }}
+                      </span>
+                    </span>
                     <span class="me-2" [ngClass]="profileCompleteTextClass(profile.isComplete)">
                       @if (profile.isComplete) {
                         <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
@@ -80,6 +103,15 @@
               >
                 <button
                   type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="openTrustScoreModal(profile)"
+                  title="View trust score"
+                  i18n-title="@@featureAdminProfiles-trustButtonTitle"
+                >
+                  <i class="bi bi-shield-check" aria-hidden="true"></i>
+                </button>
+                <button
+                  type="button"
                   class="btn btn-outline-primary"
                   (click)="openEditModal(profile)"
                   title="Edit profile"
@@ -102,6 +134,97 @@
         </div>
       }
     }
+  </div>
+</div>
+
+<div #trustScoreModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminProfiles-trustModalTitle">Customer trust score</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (trustScoreLoading()) {
+          <div class="d-flex justify-content-center align-items-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+          </div>
+        } @else if (trustScoreDetail(); as trustDetail) {
+          <div class="trust-score-summary border rounded p-3 mb-3">
+            <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start">
+              <div>
+                <div class="text-muted small" i18n="@@featureAdminProfiles-trustFor">Trust score for</div>
+                <div class="fw-semibold">{{ trustScoreProfile ? profilePrimaryTitle(trustScoreProfile) : '—' }}</div>
+              </div>
+              <div class="text-end">
+                <div class="display-6 mb-1">{{ trustDetail.score }}</div>
+                <div
+                  class="d-inline-flex align-items-center gap-2"
+                  [ngClass]="profileTrustTextClass(trustDetail.level)"
+                >
+                  <span class="trust-traffic-light" aria-hidden="true">
+                    <span
+                      class="trust-traffic-light__light trust-traffic-light__light--green"
+                      [class.is-active]="isTrustLightActive(trustDetail.level, 'green')"
+                    ></span>
+                    <span
+                      class="trust-traffic-light__light trust-traffic-light__light--yellow"
+                      [class.is-active]="isTrustLightActive(trustDetail.level, 'yellow')"
+                    ></span>
+                    <span
+                      class="trust-traffic-light__light trust-traffic-light__light--red"
+                      [class.is-active]="isTrustLightActive(trustDetail.level, 'red')"
+                    ></span>
+                  </span>
+                  <span>
+                    <i class="bi me-1" [ngClass]="profileTrustIconClass(trustDetail.level)" aria-hidden="true"></i>
+                    {{ profileTrustLabel(trustDetail.level) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="small text-muted mt-3 d-flex flex-wrap gap-3">
+              <span>
+                <strong i18n="@@featureAdminProfiles-trustBaseScore">Base score:</strong> {{ trustDetail.baseScore }}
+              </span>
+              <span>
+                <strong i18n="@@featureAdminProfiles-trustComputedAt">Computed:</strong>
+                {{ formatDate(trustDetail.computedAt) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="list-group list-group-flush border rounded">
+            @for (factor of trustDetail.factors; track factor.id) {
+              <div class="list-group-item d-flex justify-content-between align-items-start gap-3">
+                <div>
+                  <div class="fw-semibold">{{ factor.label }}</div>
+                  <div class="small text-muted">{{ factor.description }}</div>
+                </div>
+                <div class="fw-semibold text-nowrap" [ngClass]="trustScorePointsClass(factor.points)">
+                  {{ factor.points > 0 ? '+' : '' }}{{ factor.points }}
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="alert alert-secondary mb-0" role="alert" i18n="@@featureAdminProfiles-trustUnavailable">
+            Trust details are currently unavailable.
+          </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-outline-primary"
+          (click)="recomputeTrustScore()"
+          [disabled]="trustScoreRefreshing()"
+          i18n="@@featureAdminProfiles-trustRecompute"
+        >
+          Recompute
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 

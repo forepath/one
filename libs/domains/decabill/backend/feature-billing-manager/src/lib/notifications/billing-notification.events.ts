@@ -14,6 +14,7 @@ export const BILLING_NOTIFICATION_EVENTS = [
   'auto_billing.enabled',
   'auto_billing.disabled',
   'payment_method.attached',
+  'customer_trust.level_changed',
   'subscription.created',
   'subscription.updated',
   'subscription.canceled',

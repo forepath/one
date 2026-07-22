@@ -13,8 +13,14 @@ import {
   deleteAdminCustomerProfileSuccess,
   loadAdminCustomerProfiles,
   loadAdminCustomerProfilesBatch,
+  loadAdminCustomerProfileTrustScore,
+  loadAdminCustomerProfileTrustScoreFailure,
+  loadAdminCustomerProfileTrustScoreSuccess,
   loadAdminCustomerProfilesFailure,
   loadAdminCustomerProfilesSuccess,
+  recomputeAdminCustomerProfileTrustScore,
+  recomputeAdminCustomerProfileTrustScoreFailure,
+  recomputeAdminCustomerProfileTrustScoreSuccess,
   updateAdminCustomerProfile,
   updateAdminCustomerProfileFailure,
   updateAdminCustomerProfileSuccess,
@@ -119,6 +125,34 @@ export const deleteAdminCustomerProfile$ = createEffect(
         service.delete(id).pipe(
           map(() => deleteAdminCustomerProfileSuccess({ id })),
           catchError((error) => of(deleteAdminCustomerProfileFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const loadAdminCustomerProfileTrustScore$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminCustomerProfilesService)) =>
+    actions$.pipe(
+      ofType(loadAdminCustomerProfileTrustScore),
+      switchMap(({ id }) =>
+        service.getTrustScore(id).pipe(
+          map((detail) => loadAdminCustomerProfileTrustScoreSuccess({ detail })),
+          catchError((error) => of(loadAdminCustomerProfileTrustScoreFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const recomputeAdminCustomerProfileTrustScore$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminCustomerProfilesService)) =>
+    actions$.pipe(
+      ofType(recomputeAdminCustomerProfileTrustScore),
+      switchMap(({ id }) =>
+        service.recomputeTrustScore(id).pipe(
+          map((detail) => recomputeAdminCustomerProfileTrustScoreSuccess({ detail })),
+          catchError((error) => of(recomputeAdminCustomerProfileTrustScoreFailure({ error: normalizeError(error) }))),
         ),
       ),
     ),

@@ -221,6 +221,9 @@ import { TaxRateConfigService } from './services/tax-rate-config.service';
 import { UsageService } from './services/usage.service';
 import { applyProviderConfigFieldScopes } from './utils/provider-config-schema.utils';
 import { DIGITALOCEAN_ENV_DEFAULT_FIELDS, HETZNER_ENV_DEFAULT_FIELDS } from './utils/provider-env-defaults.utils';
+import { CustomerTrustScoreService } from './trust-score/customer-trust-score.service';
+import { InternalBillingTrustScoreProvider } from './trust-score/internal-billing-trust-score.provider';
+import { TrustScoreProviderRegistry } from './trust-score/trust-score-provider.registry';
 
 const authMethod = getAuthenticationMethod();
 /**
@@ -561,6 +564,9 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     DynamicProviderLoaderService,
     PaymentOrchestrationService,
     AutoBillingService,
+    CustomerTrustScoreService,
+    TrustScoreProviderRegistry,
+    InternalBillingTrustScoreProvider,
     InvoiceAutoPaymentJobHandler,
     {
       provide: PAYMENT_PROCESSOR_INIT,
@@ -698,6 +704,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     PublicWithdrawalService,
     UsageService,
     CustomerProfilesService,
+    CustomerTrustScoreService,
     SubscriptionBillingJobHandler,
     SubscriptionExpirationJobHandler,
     SubscriptionWithdrawalJobHandler,
@@ -733,6 +740,8 @@ export class BillingModule implements OnModuleInit {
   constructor(
     private readonly providerRegistry: ProviderRegistryService,
     private readonly dynamicLoader: DynamicProviderLoaderService,
+    private readonly trustScoreProviderRegistry: TrustScoreProviderRegistry,
+    private readonly internalBillingTrustScoreProvider: InternalBillingTrustScoreProvider,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -756,5 +765,7 @@ export class BillingModule implements OnModuleInit {
       dynamicLoader: this.dynamicLoader,
       loggerContext: 'ProviderRegistryService',
     });
+
+    this.trustScoreProviderRegistry.register(this.internalBillingTrustScoreProvider);
   }
 }

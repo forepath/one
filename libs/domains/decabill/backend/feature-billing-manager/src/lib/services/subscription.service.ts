@@ -53,6 +53,7 @@ import { PromotionRedemptionService } from './promotion-redemption.service';
 import { TaxCalculationService } from './tax-calculation.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
+import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 
 @Injectable()
 export class SubscriptionService {
@@ -81,6 +82,7 @@ export class SubscriptionService {
     private readonly promotionRedemptionService: PromotionRedemptionService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingEmailPublisher: BillingEmailPublisher,
+    private readonly customerTrustScoreService: CustomerTrustScoreService,
   ) {}
 
   async createSubscription(
@@ -266,6 +268,7 @@ export class SubscriptionService {
     const created = await this.subscriptionsRepository.findByIdOrThrow(subscription.id);
 
     this.billingNotificationPublisher.publishSubscription('subscription.created', created);
+    this.customerTrustScoreService.triggerRecomputeForUser(created.userId);
 
     return created;
   }
@@ -467,6 +470,7 @@ export class SubscriptionService {
     });
 
     this.billingNotificationPublisher.publishSubscription('subscription.canceled', canceled);
+    this.customerTrustScoreService.triggerRecomputeForUser(canceled.userId);
     await this.billingEmailPublisher.publishSubscriptionCanceled(canceled, plan.name);
 
     return canceled;
@@ -487,6 +491,7 @@ export class SubscriptionService {
     });
 
     this.billingNotificationPublisher.publishSubscription('subscription.updated', resumed);
+    this.customerTrustScoreService.triggerRecomputeForUser(resumed.userId);
 
     return resumed;
   }
@@ -539,6 +544,7 @@ export class SubscriptionService {
     const updated = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
 
     this.billingNotificationPublisher.publishSubscription('subscription.updated', updated);
+    this.customerTrustScoreService.triggerRecomputeForUser(updated.userId);
 
     const withdrawalResult: WithdrawalResultDto = {
       refundGross: estimatedRefundGross,

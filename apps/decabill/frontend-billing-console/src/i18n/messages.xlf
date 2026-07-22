@@ -233,8 +233,29 @@
       <trans-unit id="featureAdminProfiles-editButtonTitle" datatype="html">
         <source>Edit profile</source>
         </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustButtonTitle" datatype="html">
+        <source>View trust score</source>
+        </trans-unit>
       <trans-unit id="featureAdminProfiles-deleteButtonTitle" datatype="html">
         <source>Delete profile</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustModalTitle" datatype="html">
+        <source>Customer trust score</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustFor" datatype="html">
+        <source>Trust score for</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustBaseScore" datatype="html">
+        <source>Base score:</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustComputedAt" datatype="html">
+        <source>Computed:</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustUnavailable" datatype="html">
+        <source>Trust details are currently unavailable.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-trustRecompute" datatype="html">
+        <source>Recompute</source>
         </trans-unit>
       <trans-unit id="featureAdminProfiles-createTitle" datatype="html">
         <source>Create billing profile</source>
@@ -259,6 +280,18 @@
         </trans-unit>
       <trans-unit id="featureAdminProfiles-delete" datatype="html">
         <source> Delete </source>
+        </trans-unit>
+      <trans-unit id="featureBilling-customerTrustGreen" datatype="html">
+        <source>High trust</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-customerTrustYellow" datatype="html">
+        <source>Needs attention</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-customerTrustRed" datatype="html">
+        <source>High risk</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-customerTrustUnknown" datatype="html">
+        <source>Not scored</source>
         </trans-unit>
       <trans-unit id="featureAdminDatevExports-title" datatype="html">
         <source>DATEV exports</source>

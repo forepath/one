@@ -12,6 +12,9 @@ ENV PORT=4000
 
 WORKDIR /app
 
+# CVE-2026-59873: upgrade npm so nested tar is >= 7.5.19
+RUN npm install -g npm@11.18.0 && npm cache clean --force
+
 COPY . /app
 
 

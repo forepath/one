@@ -192,6 +192,7 @@
   "overrides": {
     "dockerode": {
       "protobufjs": "7.5.5"
-    }
+    },
+    "tar": "7.5.19"
   }
 }

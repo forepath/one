@@ -15,6 +15,11 @@ describe('CustomerProfilesAdminService', () => {
   const usersRepository = { findByIdForTenant: jest.fn() };
   const invoicesRepository = { countByUserId: jest.fn() };
   const subscriptionsRepository = { findAllByUser: jest.fn() };
+  const customerTrustScoreService = {
+    ensureFreshSnapshot: jest.fn(),
+    getSummaryForProfileId: jest.fn(),
+    recomputeForProfileId: jest.fn(),
+  };
 
   const service = new CustomerProfilesAdminService(
     customerProfilesRepository as never,
@@ -22,6 +27,7 @@ describe('CustomerProfilesAdminService', () => {
     usersRepository as never,
     invoicesRepository as never,
     subscriptionsRepository as never,
+    customerTrustScoreService as never,
   );
 
   const profile = {
@@ -38,6 +44,7 @@ describe('CustomerProfilesAdminService', () => {
     jest.resetAllMocks();
     usersRepository.findByIdForTenant.mockResolvedValue({ id: 'user-1', email: 'user@example.com' });
     customerProfilesService.isProfileComplete.mockReturnValue(true);
+    customerTrustScoreService.ensureFreshSnapshot.mockImplementation(async (value: unknown) => value);
   });
 
   it('create rejects duplicate profile for user', async () => {
@@ -128,5 +135,41 @@ describe('CustomerProfilesAdminService', () => {
     });
 
     expect(result.country).toBe('DE');
+  });
+
+  it('getTrustScore returns recomputed trust detail', async () => {
+    customerProfilesRepository.findByIdOrThrow.mockResolvedValue(profile);
+    customerTrustScoreService.getSummaryForProfileId.mockResolvedValue({
+      score: 125,
+      level: 'green',
+      baseScore: 100,
+      factors: [],
+      computedAt: new Date(),
+      sources: ['internal_billing'],
+    });
+
+    const result = await service.getTrustScore('profile-1');
+
+    expect(result.profileId).toBe('profile-1');
+    expect(result.score).toBe(125);
+    expect(customerTrustScoreService.getSummaryForProfileId).toHaveBeenCalledWith('profile-1');
+  });
+
+  it('recomputeTrustScore forces a fresh trust snapshot', async () => {
+    customerProfilesRepository.findByIdOrThrow.mockResolvedValue(profile);
+    customerTrustScoreService.recomputeForProfileId.mockResolvedValue({
+      score: 118,
+      level: 'yellow',
+      baseScore: 100,
+      factors: [],
+      computedAt: new Date(),
+      sources: ['internal_billing'],
+    });
+
+    const result = await service.recomputeTrustScore('profile-1');
+
+    expect(result.profileId).toBe('profile-1');
+    expect(result.score).toBe(118);
+    expect(customerTrustScoreService.recomputeForProfileId).toHaveBeenCalledWith('profile-1');
   });
 });

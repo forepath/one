@@ -5,6 +5,8 @@ import {
   createAdminCustomerProfile,
   deleteAdminCustomerProfile,
   loadAdminCustomerProfiles,
+  loadAdminCustomerProfileTrustScore,
+  recomputeAdminCustomerProfileTrustScore,
   updateAdminCustomerProfile,
 } from './admin-customer-profiles.actions';
 import { AdminCustomerProfilesFacade } from './admin-customer-profiles.facade';
@@ -48,5 +50,17 @@ describe('AdminCustomerProfilesFacade', () => {
     facade.deleteProfile('p-1');
 
     expect(store.dispatch).toHaveBeenCalledWith(deleteAdminCustomerProfile({ id: 'p-1' }));
+  });
+
+  it('loadTrustScore dispatches loadAdminCustomerProfileTrustScore', () => {
+    facade.loadTrustScore('p-1');
+
+    expect(store.dispatch).toHaveBeenCalledWith(loadAdminCustomerProfileTrustScore({ id: 'p-1' }));
+  });
+
+  it('recomputeTrustScore dispatches recomputeAdminCustomerProfileTrustScore', () => {
+    facade.recomputeTrustScore('p-1');
+
+    expect(store.dispatch).toHaveBeenCalledWith(recomputeAdminCustomerProfileTrustScore({ id: 'p-1' }));
   });
 });

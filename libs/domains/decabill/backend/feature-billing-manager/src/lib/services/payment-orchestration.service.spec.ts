@@ -52,6 +52,9 @@ describe('PaymentOrchestrationService', () => {
     onAutoPaymentFailed: jest.Mock;
     onCheckoutPaymentMethodCaptured: jest.Mock;
   };
+  const customerTrustScoreService = {
+    triggerRecomputeForUser: jest.fn(),
+  };
 
   beforeEach(() => {
     jest.resetAllMocks();
@@ -88,6 +91,7 @@ describe('PaymentOrchestrationService', () => {
       billingNotificationPublisher as never,
       billingEmailPublisher as never,
       autoBillingService as never,
+      customerTrustScoreService as never,
     );
   });
 

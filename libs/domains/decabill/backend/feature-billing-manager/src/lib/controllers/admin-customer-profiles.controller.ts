@@ -14,11 +14,13 @@ import {
 } from '@nestjs/common';
 
 import type {
+  AdminCustomerProfileDetailDto,
   CreateAdminCustomerProfileDto,
   PaginatedAdminCustomerProfilesResponseDto,
 } from '../dto/admin-customer-profile.dto';
 import { CustomerProfileDto } from '../dto/customer-profile.dto';
 import type { CustomerProfileResponseDto } from '../dto/customer-profile-response.dto';
+import type { CustomerTrustScoreResponseDto } from '../dto/customer-trust-score.dto';
 import { CustomerProfilesAdminService } from '../services/customer-profiles-admin.service';
 
 @Controller('admin/billing/customer-profiles')
@@ -37,8 +39,15 @@ export class AdminCustomerProfilesController {
   }
 
   @Get(':id')
-  async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+  async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AdminCustomerProfileDetailDto> {
     return await this.customerProfilesAdminService.getById(id);
+  }
+
+  @Get(':id/trust-score')
+  async getTrustScore(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<CustomerTrustScoreResponseDto> {
+    return await this.customerProfilesAdminService.getTrustScore(id);
   }
 
   @Post()
@@ -52,6 +61,13 @@ export class AdminCustomerProfilesController {
     @Body() dto: CustomerProfileDto,
   ): Promise<CustomerProfileResponseDto> {
     return await this.customerProfilesAdminService.update(id, dto);
+  }
+
+  @Post(':id/trust-score/recompute')
+  async recomputeTrustScore(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<CustomerTrustScoreResponseDto> {
+    return await this.customerProfilesAdminService.recomputeTrustScore(id);
   }
 
   @Delete(':id')

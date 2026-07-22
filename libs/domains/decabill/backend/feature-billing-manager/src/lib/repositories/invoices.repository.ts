@@ -473,6 +473,31 @@ export class InvoicesRepository {
     return await qb.getCount();
   }
 
+  async countBilledSubscriptionInvoicesByUserId(userId: string): Promise<number> {
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.user_id = :userId', { userId })
+      .andWhere('inv.subscription_id IS NOT NULL')
+      .andWhere('inv.status IN (:...statuses)', { statuses: BILLED_INVOICE_STATUSES });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getCount();
+  }
+
+  async hasAutoPaymentExhaustedByUserId(userId: string): Promise<boolean> {
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.user_id = :userId', { userId })
+      .andWhere('inv.auto_payment_status = :status', { status: AutoPaymentStatus.EXHAUSTED });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return (await qb.getCount()) > 0;
+  }
+
   async delete(id: string): Promise<void> {
     await this.findByIdOrThrow(id);
     await this.repository.delete(id);

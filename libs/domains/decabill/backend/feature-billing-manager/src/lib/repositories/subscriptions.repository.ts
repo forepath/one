@@ -85,6 +85,18 @@ export class SubscriptionsRepository {
     });
   }
 
+  async findAllForUserInTenant(userId: string): Promise<SubscriptionEntity[]> {
+    const qb = this.repository
+      .createQueryBuilder('subscription')
+      .innerJoin('users', 'user', 'user.id = subscription.user_id')
+      .where('subscription.user_id = :userId', { userId })
+      .orderBy('subscription.createdAt', 'DESC');
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
+  }
+
   async findAllForAdmin(params: AdminSubscriptionListParams): Promise<{ items: SubscriptionEntity[]; total: number }> {
     const qb = this.repository
       .createQueryBuilder('subscription')

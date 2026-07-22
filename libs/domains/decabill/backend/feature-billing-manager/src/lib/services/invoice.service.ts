@@ -29,6 +29,7 @@ import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
 import type { LineItemInput } from './tax-calculation.service';
 import { TaxCalculationService } from './tax-calculation.service';
+import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 
 export interface CreateInvoiceDraftParams {
   subscriptionId?: string;
@@ -58,6 +59,7 @@ export class InvoiceService {
     private readonly invoicePromotionApplicationsRepository: InvoicePromotionApplicationsRepository,
     private readonly promotionApplicationService: PromotionApplicationService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
+    private readonly customerTrustScoreService: CustomerTrustScoreService,
   ) {}
 
   async createAndIssue(params: CreateInvoiceDraftParams): Promise<{ invoiceRefId: string; invoiceNumber?: string }> {
@@ -186,6 +188,7 @@ export class InvoiceService {
     });
 
     this.billingNotificationPublisher.publishInvoice('invoice.voided', voided);
+    this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
 
     return voided;
   }

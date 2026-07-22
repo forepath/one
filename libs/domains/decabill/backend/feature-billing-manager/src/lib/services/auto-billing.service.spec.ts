@@ -33,6 +33,9 @@ describe('AutoBillingService', () => {
   const billingEmailPublisher = {
     publishPaymentSucceeded: jest.fn(),
   };
+  const customerTrustScoreService = {
+    triggerRecomputeForUser: jest.fn(),
+  };
   const customerProfilesService = {
     isProfileComplete: jest.fn().mockReturnValue(true),
   };
@@ -81,6 +84,7 @@ describe('AutoBillingService', () => {
       auditLog as never,
       billingNotificationPublisher as never,
       billingEmailPublisher as never,
+      customerTrustScoreService as never,
     );
   });
 

@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import type {
   AdminCustomerProfileDetail,
   AdminCustomerProfileListItem,
+  CustomerTrustScoreDetail,
   CreateAdminCustomerProfileDto,
   CustomerProfileDto,
   CustomerProfileResponse,
@@ -39,6 +40,17 @@ export class AdminCustomerProfilesService {
 
   getById(id: string): Observable<AdminCustomerProfileDetail> {
     return this.http.get<AdminCustomerProfileDetail>(`${this.apiUrl}/admin/billing/customer-profiles/${id}`);
+  }
+
+  getTrustScore(id: string): Observable<CustomerTrustScoreDetail> {
+    return this.http.get<CustomerTrustScoreDetail>(`${this.apiUrl}/admin/billing/customer-profiles/${id}/trust-score`);
+  }
+
+  recomputeTrustScore(id: string): Observable<CustomerTrustScoreDetail> {
+    return this.http.post<CustomerTrustScoreDetail>(
+      `${this.apiUrl}/admin/billing/customer-profiles/${id}/trust-score/recompute`,
+      {},
+    );
   }
 
   create(dto: CreateAdminCustomerProfileDto): Observable<CustomerProfileResponse> {

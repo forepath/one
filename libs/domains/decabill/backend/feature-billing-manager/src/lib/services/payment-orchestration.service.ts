@@ -19,6 +19,7 @@ import { AutoBillingService } from './auto-billing.service';
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
+import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 
 @Injectable()
 export class PaymentOrchestrationService {
@@ -34,6 +35,7 @@ export class PaymentOrchestrationService {
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly autoBillingService: AutoBillingService,
+    private readonly customerTrustScoreService: CustomerTrustScoreService,
   ) {}
 
   async initiatePayment(invoiceId: string, subscriptionId: string, userId: string): Promise<{ checkoutUrl: string }> {
@@ -290,6 +292,7 @@ export class PaymentOrchestrationService {
         processor: processorType,
         externalId: update.externalId,
       });
+      this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
 
       return;
     }
@@ -326,6 +329,7 @@ export class PaymentOrchestrationService {
           processor: processorType,
           externalId: update.externalId,
         });
+        this.customerTrustScoreService.triggerRecomputeForUser(invoice.userId);
       }
     }
   }

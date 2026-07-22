@@ -81,6 +81,34 @@ export class PaymentAttemptsRepository {
     return await qb.getOne();
   }
 
+  async countFailedByUserId(userId: string): Promise<number> {
+    const qb = this.repository
+      .createQueryBuilder('attempt')
+      .innerJoin('attempt.invoice', 'inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.user_id = :userId', { userId })
+      .andWhere('attempt.status = :status', { status: PaymentAttemptStatus.FAILED });
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getCount();
+  }
+
+  async countSucceededOnTimeByUserId(userId: string): Promise<number> {
+    const qb = this.repository
+      .createQueryBuilder('attempt')
+      .innerJoin('attempt.invoice', 'inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.user_id = :userId', { userId })
+      .andWhere('attempt.status = :status', { status: PaymentAttemptStatus.SUCCEEDED })
+      .andWhere('inv.due_date IS NOT NULL')
+      .andWhere(`attempt.updated_at < (inv.due_date::timestamp + INTERVAL '1 day')`);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getCount();
+  }
+
   private async findByIdInTenant(id: string): Promise<PaymentAttemptEntity> {
     const entity = await this.repository
       .createQueryBuilder('attempt')

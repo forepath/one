@@ -854,6 +854,9 @@ export interface AdminCustomerProfileListItem {
   country?: string;
   isComplete: boolean;
   stripeCustomerId?: string;
+  trustScore?: number;
+  trustLevel?: CustomerTrustLevel;
+  trustScoreUpdatedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -872,6 +875,31 @@ export interface CreateAdminCustomerProfileDto extends CustomerProfileDto {
 export interface AdminCustomerProfileDetail extends CustomerProfileResponse {
   userEmail?: string;
   isComplete: boolean;
+  trustScore?: number;
+  trustLevel?: CustomerTrustLevel;
+  trustScoreUpdatedAt?: string;
+}
+
+export type CustomerTrustLevel = 'green' | 'yellow' | 'red';
+
+export interface CustomerTrustScoreFactor {
+  id: string;
+  label: string;
+  description: string;
+  points: number;
+  source: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface CustomerTrustScoreDetail {
+  profileId: string;
+  userId: string;
+  score: number;
+  level: CustomerTrustLevel;
+  baseScore: number;
+  factors: CustomerTrustScoreFactor[];
+  computedAt: string;
+  sources: string[];
 }
 
 export type DatevExportScope = 'tenant' | 'unified';

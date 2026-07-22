@@ -50,9 +50,11 @@ Events are published from the **billing** service after successful mutations.
 - `payment.auto.initiated`, `payment.auto.retry_scheduled`, `payment.auto.exhausted`
 - `auto_billing.enabled`, `auto_billing.disabled`
 - `payment_method.attached`
+- `customer_trust.level_changed`
 - `subscription.created`, `subscription.updated`, `subscription.canceled`
 
 Payment success/failure payloads may include `mode` (`checkout` | `auto`). Auto-billing events are documented in [Auto-Billing](./auto-billing.md).
+`customer_trust.level_changed` only includes identifiers plus level and score metadata; it never includes billing-profile address fields or other PII.
 
 ### Projects
 
