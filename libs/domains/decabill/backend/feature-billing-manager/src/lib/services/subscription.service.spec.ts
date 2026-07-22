@@ -139,9 +139,17 @@ describe('SubscriptionService', () => {
     publishPaymentSucceeded: jest.fn(),
     publishPaymentFailed: jest.fn(),
     publishSubscriptionCanceled: jest.fn(),
+    publishSubscriptionCancelScheduled: jest.fn(),
+    publishSubscriptionResumed: jest.fn(),
+    publishSubscriptionCreated: jest.fn(),
+    publishSubscriptionWithdrawn: jest.fn(),
   };
   const customerTrustScoreService = {
     triggerRecomputeForUser: jest.fn(),
+  };
+  const subscriptionPeriodChargeService = {
+    recordOpenPositionForPeriod: jest.fn(),
+    processDueBilling: jest.fn(),
   };
   const service = new SubscriptionService(
     plansRepository,
@@ -168,6 +176,7 @@ describe('SubscriptionService', () => {
     billingNotificationPublisher as never,
     billingEmailPublisher as never,
     customerTrustScoreService as never,
+    subscriptionPeriodChargeService as never,
   );
 
   beforeEach(() => {
@@ -916,6 +925,7 @@ describe('SubscriptionService', () => {
     plansRepository.findByIdOrThrow = jest.fn().mockResolvedValue({
       id: 'plan-1',
       cancelAtPeriodEnd: true,
+      billInAdvance: false,
       minCommitmentDays: 10,
       noticeDays: 0,
     });

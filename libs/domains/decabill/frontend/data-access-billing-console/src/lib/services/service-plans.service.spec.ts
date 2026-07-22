@@ -17,6 +17,7 @@ describe('ServicePlansService', () => {
     billingIntervalType: 'month',
     billingIntervalValue: 1,
     cancelAtPeriodEnd: false,
+    billInAdvance: false,
     minCommitmentDays: 0,
     noticeDays: 0,
     providerConfigDefaults: {},

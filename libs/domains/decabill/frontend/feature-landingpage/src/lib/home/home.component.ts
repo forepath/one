@@ -160,6 +160,10 @@ export class PortalHomeComponent implements OnInit {
       return $localize`:@@featureDecabillHome-planPriceMonth:/month`;
     }
 
+    if (plan.billingIntervalType === 'year' && plan.billingIntervalValue === 1) {
+      return $localize`:@@featureDecabillHome-planPriceYear:/year`;
+    }
+
     if (plan.billingIntervalType === 'hour') {
       return $localize`:@@featureDecabillHome-planPriceHour:/hour`;
     }

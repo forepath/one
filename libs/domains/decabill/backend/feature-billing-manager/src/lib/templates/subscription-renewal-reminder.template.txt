@@ -1,7 +1,10 @@
-Upcoming subscription renewal
+Upcoming subscription {{#if billInAdvance}}charge{{else}}renewal{{/if}}
 
 Dear {{recipientName}},
 
-Your subscription "{{planName}}" is scheduled for renewal on {{renewalDate}}.
+Your subscription "{{planName}}" is scheduled for {{#if billInAdvance}}its next charge{{else}}renewal{{/if}} on {{renewalDate}}.
+{{#if periodEndDate}}
+{{#if billInAdvance}}This charge covers the period through {{periodEndDate}}.{{/if}}
+{{/if}}
 
-If you wish to cancel, please log in to your account before the renewal date.
+If you wish to cancel, please log in to your account before that date.

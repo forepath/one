@@ -161,6 +161,7 @@ describe('InvoiceIssuanceService', () => {
     servicePlansRepository.findByIdOrThrow.mockResolvedValue({
       id: 'plan-1',
       billingIntervalType: 'month',
+      billInAdvance: false,
       billingIntervalValue: 1,
       billingDayOfMonth: 1,
     });

@@ -10,11 +10,16 @@ describe('SubscriptionTeardownService', () => {
   const subscriptionItemsRepository = {
     findBySubscription: jest.fn(),
   };
+  const servicePlansRepository = {
+    findByIdOrThrow: jest.fn(),
+  };
   const provisioningService = {
     deprovision: jest.fn(),
   };
   const openPositionsRepository = {
     create: jest.fn(),
+    updateUnbilledBillUntil: jest.fn(),
+    findUnbilledBySubscription: jest.fn(),
   };
   const hostnameReservationService = {
     releaseHostname: jest.fn(),
@@ -29,25 +34,39 @@ describe('SubscriptionTeardownService', () => {
   const billingNotificationPublisher = {
     publishSubscription: jest.fn(),
   };
+  const billingEmailPublisher = {
+    publishSubscriptionCanceled: jest.fn(),
+    publishSubscriptionWithdrawn: jest.fn(),
+  };
 
   const service = new SubscriptionTeardownService(
     subscriptionsRepository as never,
     subscriptionItemsRepository as never,
+    servicePlansRepository as never,
     provisioningService as never,
     openPositionsRepository as never,
     hostnameReservationService as never,
     cloudflareDnsService as never,
     withdrawalRefundService as never,
     billingNotificationPublisher as never,
+    billingEmailPublisher as never,
   );
 
   beforeEach(() => {
     jest.clearAllMocks();
+    openPositionsRepository.findUnbilledBySubscription.mockResolvedValue([]);
     subscriptionsRepository.findByIdOrThrow.mockResolvedValue({
       id: 'sub-1',
       number: 'SUB-001',
       userId: 'user-1',
+      planId: 'plan-1',
       status: SubscriptionStatus.ACTIVE,
+    });
+    servicePlansRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'plan-1',
+      name: 'Plan',
+      billInAdvance: false,
+      billingIntervalType: 'month',
     });
     subscriptionItemsRepository.findBySubscription.mockResolvedValue([
       {
@@ -84,7 +103,9 @@ describe('SubscriptionTeardownService', () => {
     expect(billingNotificationPublisher.publishSubscription).toHaveBeenCalledWith(
       'subscription.canceled',
       expect.objectContaining({ id: 'sub-1' }),
+      expect.objectContaining({ id: 'plan-1' }),
     );
+    expect(billingEmailPublisher.publishSubscriptionCanceled).toHaveBeenCalled();
   });
 
   it('marks withdrawnAt when withdrawn option is set', async () => {
@@ -102,6 +123,11 @@ describe('SubscriptionTeardownService', () => {
       status: SubscriptionStatus.CANCELED,
       withdrawnAt: billUntil,
     });
+    expect(billingEmailPublisher.publishSubscriptionCanceled).not.toHaveBeenCalled();
+    expect(billingEmailPublisher.publishSubscriptionWithdrawn).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'sub-1' }),
+      'Plan',
+    );
   });
 
   it('skips open position when skipOpenPosition is true', async () => {
@@ -118,9 +144,13 @@ describe('SubscriptionTeardownService', () => {
         id: 'sub-1',
         number: 'SUB-001',
         userId: 'user-1',
+        planId: 'plan-1',
         status: SubscriptionStatus.PENDING_WITHDRAWAL,
         withdrawnAt,
         withdrawPhase: 'withdrawal_period',
+      });
+      withdrawalRefundService.applyProvisionedWithdrawalRefund.mockResolvedValue({
+        paymentRefundStatus: 'not_applicable',
       });
 
       await service.processWithdrawal('sub-1');
@@ -138,6 +168,63 @@ describe('SubscriptionTeardownService', () => {
       });
     });
 
+    it('shrinks unbilled advance debt and skips teardown open position', async () => {
+      const withdrawnAt = new Date('2024-06-01T12:00:00Z');
+
+      subscriptionsRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'sub-1',
+        number: 'SUB-001',
+        userId: 'user-1',
+        planId: 'plan-1',
+        status: SubscriptionStatus.PENDING_WITHDRAWAL,
+        withdrawnAt,
+        withdrawPhase: 'withdrawal_period',
+      });
+      servicePlansRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'plan-1',
+        name: 'Advance Plan',
+        billInAdvance: true,
+        billingIntervalType: 'year',
+      });
+      openPositionsRepository.findUnbilledBySubscription.mockResolvedValue([{ id: 'pos-1' }]);
+
+      await service.processWithdrawal('sub-1');
+
+      expect(withdrawalRefundService.applyProvisionedWithdrawalRefund).not.toHaveBeenCalled();
+      expect(openPositionsRepository.updateUnbilledBillUntil).toHaveBeenCalledWith('sub-1', withdrawnAt);
+      expect(openPositionsRepository.create).not.toHaveBeenCalled();
+    });
+
+    it('credits billable invoice for advance when no unbilled open position remains', async () => {
+      const withdrawnAt = new Date('2024-06-01T12:00:00Z');
+
+      subscriptionsRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'sub-1',
+        number: 'SUB-001',
+        userId: 'user-1',
+        planId: 'plan-1',
+        status: SubscriptionStatus.PENDING_WITHDRAWAL,
+        withdrawnAt,
+        withdrawPhase: 'withdrawal_period',
+      });
+      servicePlansRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'plan-1',
+        name: 'Advance Plan',
+        billInAdvance: true,
+        billingIntervalType: 'year',
+      });
+      openPositionsRepository.findUnbilledBySubscription.mockResolvedValue([]);
+
+      await service.processWithdrawal('sub-1');
+
+      expect(withdrawalRefundService.applyProvisionedWithdrawalRefund).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'sub-1' }),
+        withdrawnAt,
+      );
+      expect(openPositionsRepository.updateUnbilledBillUntil).not.toHaveBeenCalled();
+      expect(openPositionsRepository.create).not.toHaveBeenCalled();
+    });
+
     it('skips refund and open position when phase is unprovisioned', async () => {
       const withdrawnAt = new Date('2024-06-02T12:00:00Z');
 
@@ -145,6 +232,7 @@ describe('SubscriptionTeardownService', () => {
         id: 'sub-1',
         number: 'SUB-001',
         userId: 'user-1',
+        planId: 'plan-1',
         status: SubscriptionStatus.PENDING_WITHDRAWAL,
         withdrawnAt,
         withdrawPhase: 'unprovisioned',
@@ -158,6 +246,33 @@ describe('SubscriptionTeardownService', () => {
         status: SubscriptionStatus.CANCELED,
         withdrawnAt,
       });
+    });
+
+    it('shrinks unbilled advance debt even when phase is unprovisioned', async () => {
+      const withdrawnAt = new Date('2024-06-02T12:00:00Z');
+
+      subscriptionsRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'sub-1',
+        number: 'SUB-001',
+        userId: 'user-1',
+        planId: 'plan-1',
+        status: SubscriptionStatus.PENDING_WITHDRAWAL,
+        withdrawnAt,
+        withdrawPhase: 'unprovisioned',
+      });
+      servicePlansRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'plan-1',
+        name: 'Advance Plan',
+        billInAdvance: true,
+        billingIntervalType: 'year',
+      });
+      openPositionsRepository.findUnbilledBySubscription.mockResolvedValue([{ id: 'pos-1' }]);
+
+      await service.processWithdrawal('sub-1');
+
+      expect(openPositionsRepository.updateUnbilledBillUntil).toHaveBeenCalledWith('sub-1', withdrawnAt);
+      expect(withdrawalRefundService.applyProvisionedWithdrawalRefund).not.toHaveBeenCalled();
+      expect(openPositionsRepository.create).not.toHaveBeenCalled();
     });
   });
 });

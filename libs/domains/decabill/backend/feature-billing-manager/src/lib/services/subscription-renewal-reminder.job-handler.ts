@@ -57,6 +57,7 @@ export class SubscriptionRenewalReminderJobHandler {
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const renewalDate = subscription.nextBillingAt?.toLocaleDateString() ?? 'soon';
+    const periodEndDate = subscription.currentPeriodEnd?.toLocaleDateString();
 
     await this.billingEmailPublisher.publishRenewalReminder(
       subscription,
@@ -64,6 +65,10 @@ export class SubscriptionRenewalReminderJobHandler {
       email,
       profile.firstName?.trim() || 'Customer',
       renewalDate,
+      {
+        billInAdvance: plan.billInAdvance === true,
+        ...(periodEndDate ? { periodEndDate } : {}),
+      },
     );
 
     this.logger.log(`Enqueued renewal reminder for subscription ${subscription.id} to ${email}`);

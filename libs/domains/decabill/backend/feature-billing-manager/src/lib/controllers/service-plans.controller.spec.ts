@@ -23,6 +23,7 @@ describe('ServicePlansController', () => {
     billingIntervalValue: 1,
     billingDayOfMonth: undefined,
     cancelAtPeriodEnd: true,
+    billInAdvance: false,
     minCommitmentDays: 0,
     noticeDays: 0,
     basePrice: '10',

@@ -4565,6 +4565,7 @@ components:
         - serviceTypeName
         - billingIntervalType
         - billingIntervalValue
+        - billInAdvance
         - totalPrice
         - totalGross
         - taxRate
@@ -4588,10 +4589,13 @@ components:
           description: Display name of the service type (no config schema)
         billingIntervalType:
           type: string
-          enum: [hour, day, month]
+          enum: [hour, day, month, year]
         billingIntervalValue:
           type: integer
           minimum: 1
+        billInAdvance:
+          type: boolean
+          description: When true, the billing period is charged at period start (prepaid). When false, debt is created at period end (arrear). Usage-based metering is not available for advance-billed plans.
         totalPrice:
           type: number
           description: Customer-facing net total price (same formula as internal pricing preview; margin breakdown not exposed)
@@ -4633,7 +4637,7 @@ components:
           type: string
         billingIntervalType:
           type: string
-          enum: [hour, day, month]
+          enum: [hour, day, month, year]
         billingIntervalValue:
           type: integer
           minimum: 1
@@ -4643,6 +4647,9 @@ components:
           maximum: 31
         cancelAtPeriodEnd:
           type: boolean
+        billInAdvance:
+          type: boolean
+          description: When true, debt is created at period start. Default false (arrear). Incompatible with usage-based metering.
         minCommitmentDays:
           type: integer
         noticeDays:
@@ -4690,10 +4697,13 @@ components:
       properties:
         name: { type: string }
         description: { type: string }
-        billingIntervalType: { type: string, enum: [hour, day, month] }
+        billingIntervalType: { type: string, enum: [hour, day, month, year] }
         billingIntervalValue: { type: integer, minimum: 1 }
         billingDayOfMonth: { type: integer, minimum: 1, maximum: 31 }
         cancelAtPeriodEnd: { type: boolean }
+        billInAdvance:
+          type: boolean
+          description: When true, debt is created at period start. Default false (arrear). Incompatible with usage-based metering.
         minCommitmentDays: { type: integer }
         noticeDays: { type: integer }
         basePrice: { type: string }
@@ -4721,10 +4731,13 @@ components:
         serviceTypeId: { type: string, format: uuid }
         name: { type: string }
         description: { type: string, nullable: true }
-        billingIntervalType: { type: string, enum: [hour, day, month] }
+        billingIntervalType: { type: string, enum: [hour, day, month, year] }
         billingIntervalValue: { type: integer }
         billingDayOfMonth: { type: integer, nullable: true }
         cancelAtPeriodEnd: { type: boolean }
+        billInAdvance:
+          type: boolean
+          description: When true, the period is billed at start (prepaid). Usage-based metering is not available.
         minCommitmentDays: { type: integer }
         noticeDays: { type: integer }
         basePrice: { type: string, nullable: true }

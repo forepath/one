@@ -3,6 +3,7 @@ import { getTenantIdOrDefault, NotificationDispatcherService } from '@forepath/s
 import { Injectable } from '@nestjs/common';
 
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
 import type { DatevExportEntity } from '../entities/datev-export.entity';
 import type { ProjectMilestoneResponseDto } from '../projects/dto/project-milestone.dto';
@@ -17,6 +18,15 @@ import type { ProjectEntity } from '../projects/entities/project.entity';
 import { BILLING_NOTIFICATION_EVENTS, type BillingNotificationEventType } from './billing-notification.events';
 
 export { BILLING_NOTIFICATION_EVENTS, type BillingNotificationEventType };
+
+export type SubscriptionPlanBillingFields = Pick<ServicePlanEntity, 'billInAdvance' | 'billingIntervalType'>;
+
+export type SubscriptionWebhookEventType =
+  | 'subscription.created'
+  | 'subscription.updated'
+  | 'subscription.cancel_scheduled'
+  | 'subscription.canceled'
+  | 'subscription.resumed';
 
 export type MilestoneNotificationPayload = {
   id: string;
@@ -113,10 +123,30 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
   }
 
   publishSubscription(
-    type: 'subscription.created' | 'subscription.updated' | 'subscription.canceled',
+    type: SubscriptionWebhookEventType,
     subscription: SubscriptionEntity,
+    plan?: SubscriptionPlanBillingFields,
   ): void {
-    this.publish(type, this.toSubscriptionPayload(subscription), subscription.userId);
+    this.publish(type, this.toSubscriptionPayload(subscription, plan), subscription.userId);
+  }
+
+  publishPeriodCharged(
+    subscription: SubscriptionEntity,
+    plan: SubscriptionPlanBillingFields,
+    billUntil: Date,
+    periodStart: Date,
+    periodEnd: Date,
+  ): void {
+    this.publish(
+      'subscription.period_charged',
+      {
+        ...this.toSubscriptionPayload(subscription, plan),
+        billUntil: billUntil.toISOString(),
+        chargedPeriodStart: periodStart.toISOString(),
+        chargedPeriodEnd: periodEnd.toISOString(),
+      },
+      subscription.userId,
+    );
   }
 
   publishProject(
@@ -182,7 +212,10 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
     };
   }
 
-  private toSubscriptionPayload(subscription: SubscriptionEntity): Record<string, unknown> {
+  private toSubscriptionPayload(
+    subscription: SubscriptionEntity,
+    plan?: SubscriptionPlanBillingFields,
+  ): Record<string, unknown> {
     return {
       id: subscription.id,
       number: subscription.number,
@@ -194,6 +227,8 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
       nextBillingAt: subscription.nextBillingAt?.toISOString() ?? null,
       cancelRequestedAt: subscription.cancelRequestedAt?.toISOString() ?? null,
       cancelEffectiveAt: subscription.cancelEffectiveAt?.toISOString() ?? null,
+      billInAdvance: plan?.billInAdvance === true,
+      billingIntervalType: plan?.billingIntervalType ?? null,
       createdAt: subscription.createdAt.toISOString(),
       updatedAt: subscription.updatedAt.toISOString(),
     };

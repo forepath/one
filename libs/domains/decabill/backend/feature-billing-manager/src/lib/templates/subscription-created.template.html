@@ -1,0 +1,19 @@
+{{#> email-layout}}
+<h1 class="email-title">Order confirmation</h1>
+<p>Dear {{recipientName}},</p>
+<p>
+  Thank you for your order. Your subscription "<strong>{{planName}}</strong>" {{#if
+  subscriptionNumber}}(<strong>{{subscriptionNumber}}</strong>){{/if}} is confirmed.
+</p>
+{{#if periodEndDate}}
+<p>Current period ends on <strong>{{periodEndDate}}</strong>.</p>
+{{/if}} {{#if billInAdvance}}
+<p>
+  This plan is billed in advance. The charge for the current period has been recorded and will appear on your next
+  invoice.
+</p>
+{{else}}
+<p>This plan is billed in arrears. Usage for the current period will appear on your invoice after the period ends.</p>
+{{/if}}
+<p>You can manage your subscription from your billing account.</p>
+{{/email-layout}}

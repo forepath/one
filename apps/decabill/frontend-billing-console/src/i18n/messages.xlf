@@ -866,11 +866,17 @@
       <trans-unit id="featureBilling-intervalHourly" datatype="html">
         <source>Hourly</source>
         </trans-unit>
+      <trans-unit id="featureBilling-intervalYearly" datatype="html">
+        <source>Yearly</source>
+        </trans-unit>
       <trans-unit id="featureBilling-intervalEveryHours" datatype="html">
         <source>Every <x id="PH" equiv-text="value"/> hours</source>
         </trans-unit>
       <trans-unit id="featureBilling-intervalEveryDays" datatype="html">
         <source>Every <x id="PH" equiv-text="value"/> days</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-intervalEveryYears" datatype="html">
+        <source>Every <x id="PH" equiv-text="value"/> years</source>
         </trans-unit>
       <trans-unit id="featureBilling-intervalEveryMonths" datatype="html">
         <source>Every <x id="PH" equiv-text="value"/> months</source>
@@ -2126,6 +2132,12 @@
         </trans-unit>
       <trans-unit id="featureServicePlans-cancelAtPeriodEndHelp" datatype="html">
         <source>Cancellation will be scheduled for the end of the current billing period. Unchecking this allows immediate cancellation mid-period.</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-billInAdvance" datatype="html">
+        <source>Bill in advance</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-billInAdvanceHelp" datatype="html">
+        <source>Charge the full period at its start (prepaid). Usage-based metering cannot be used with advance billing. Cancellation always takes effect at the end of the already-billed period.</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-active" datatype="html">
         <source>Active</source>

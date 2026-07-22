@@ -22,6 +22,7 @@ export enum BillingIntervalType {
   HOUR = 'hour',
   DAY = 'day',
   MONTH = 'month',
+  YEAR = 'year',
 }
 
 @Entity('billing_service_plans')
@@ -53,6 +54,10 @@ export class ServicePlanEntity {
 
   @Column({ type: 'boolean', name: 'cancel_at_period_end', default: true })
   cancelAtPeriodEnd!: boolean;
+
+  /** When true, debt is created at period start (prepaid). Default false preserves arrear billing. */
+  @Column({ type: 'boolean', name: 'bill_in_advance', default: false })
+  billInAdvance!: boolean;
 
   @Column({ type: 'int', name: 'min_commitment_days', default: 0 })
   minCommitmentDays!: number;

@@ -1,0 +1,14 @@
+{{#> email-layout}}
+<h1 class="email-title">Cancellation scheduled</h1>
+<p>Dear {{recipientName}},</p>
+<p>Your cancellation of subscription "<strong>{{planName}}</strong>" has been scheduled.</p>
+{{#if effectiveDate}}
+<p>
+  Your service remains available until <strong>{{effectiveDate}}</strong>. You can resume the subscription before that
+  date.
+</p>
+{{else}}
+<p>Your service will end shortly.</p>
+{{/if}}
+<p>If this was unexpected, please log in to your billing account and resume the subscription.</p>
+{{/email-layout}}

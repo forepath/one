@@ -1236,6 +1236,10 @@
         <source>/day</source>
         <target state="translated">/day</target>
       </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceYear" datatype="html">
+        <source>/year</source>
+        <target state="translated">/Jahr</target>
+      </trans-unit>
       <trans-unit id="featureDecabillLegalDisclosure-title" datatype="html">
         <source> Legal Disclosure </source>
         <target state="translated">Impressum</target>

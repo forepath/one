@@ -52,6 +52,12 @@ function subtractBillingInterval(
     return start;
   }
 
+  if (plan.billingIntervalType === BillingIntervalType.YEAR) {
+    start.setFullYear(start.getFullYear() - plan.billingIntervalValue);
+
+    return start;
+  }
+
   start.setMonth(start.getMonth() - plan.billingIntervalValue);
 
   return start;

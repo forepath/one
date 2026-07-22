@@ -34,6 +34,15 @@ describe('billing-period.util', () => {
     expect(end.getMonth()).toBe(1);
   });
 
+  it('computes yearly billing period end', () => {
+    const start = new Date('2026-03-15T10:30:00Z');
+    const end = getBillingPeriodEnd({ billingIntervalType: 'year', billingIntervalValue: 1 }, start);
+
+    expect(end.getFullYear()).toBe(2027);
+    expect(end.getMonth()).toBe(2);
+    expect(end.getDate()).toBe(15);
+  });
+
   it('returns zero overlap when benefit window is outside charge period', () => {
     const periodStart = new Date('2026-02-01T00:00:00Z');
     const periodEnd = new Date('2026-03-01T00:00:00Z');

@@ -492,12 +492,20 @@ export function getBillingIntervalLabel(value: number, type: BillingIntervalType
     return $localize`:@@featureBilling-intervalHourly:Hourly`;
   }
 
+  if (value === 1 && type === 'year') {
+    return $localize`:@@featureBilling-intervalYearly:Yearly`;
+  }
+
   if (type === 'hour') {
     return $localize`:@@featureBilling-intervalEveryHours:Every ${value} hours`;
   }
 
   if (type === 'day') {
     return $localize`:@@featureBilling-intervalEveryDays:Every ${value} days`;
+  }
+
+  if (type === 'year') {
+    return $localize`:@@featureBilling-intervalEveryYears:Every ${value} years`;
   }
 
   return $localize`:@@featureBilling-intervalEveryMonths:Every ${value} months`;

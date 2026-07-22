@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-22T19:55:45.307Z",
+  "generatedAt": "2026-07-22T21:20:35.867Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -7403,6 +7403,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription-period-charge.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription-period-charge.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription-provisioning.job-handler.ts",
       "type": "job",
       "attrs": {
@@ -10132,6 +10141,20 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-cancel-scheduled",
+      "type": "email",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-cancel-scheduled",
+        "languageOrKind": "template",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "templateName": "subscription-cancel-scheduled",
+        "memberFiles": [
+          "subscription-cancel-scheduled.template.html",
+          "subscription-cancel-scheduled.template.txt"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-canceled",
       "type": "email",
       "attrs": {
@@ -10146,6 +10169,20 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-created",
+      "type": "email",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-created",
+        "languageOrKind": "template",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "templateName": "subscription-created",
+        "memberFiles": [
+          "subscription-created.template.html",
+          "subscription-created.template.txt"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-renewal-reminder",
       "type": "email",
       "attrs": {
@@ -10156,6 +10193,34 @@
         "memberFiles": [
           "subscription-renewal-reminder.template.html",
           "subscription-renewal-reminder.template.txt"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-resumed",
+      "type": "email",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-resumed",
+        "languageOrKind": "template",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "templateName": "subscription-resumed",
+        "memberFiles": [
+          "subscription-resumed.template.html",
+          "subscription-resumed.template.txt"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-withdrawn",
+      "type": "email",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-withdrawn",
+        "languageOrKind": "template",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "templateName": "subscription-withdrawn",
+        "memberFiles": [
+          "subscription-withdrawn.template.html",
+          "subscription-withdrawn.template.txt"
         ]
       }
     },
@@ -10812,6 +10877,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/features/README.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/features/advance-billing-and-yearly-interval.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/advance-billing-and-yearly-interval.md",
         "languageOrKind": "md"
       }
     },
@@ -15090,6 +15163,15 @@
       }
     },
     {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:subscription.cancel_scheduled",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "subscription.cancel_scheduled",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
       "id": "webhook-event:decabill-backend-feature-billing-manager:subscription.canceled",
       "type": "webhook-event",
       "attrs": {
@@ -15103,6 +15185,24 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "subscription.created",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:subscription.period_charged",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "subscription.period_charged",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:subscription.resumed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "subscription.resumed",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -21748,6 +21848,76 @@
       }
     },
     {
+      "id": "concept:decabill-advance-billing-and-yearly-interval",
+      "type": "concept",
+      "attrs": {
+        "title": "Advance billing and yearly interval",
+        "docPath": "docs/decabill/features/advance-billing-and-yearly-interval.md",
+        "sectionAnchor": "advance-billing-and-yearly-interval",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-yearly-interval",
+      "type": "concept",
+      "attrs": {
+        "title": "Yearly interval",
+        "docPath": "docs/decabill/features/advance-billing-and-yearly-interval.md",
+        "sectionAnchor": "yearly-interval",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-advance-vs-arrear",
+      "type": "concept",
+      "attrs": {
+        "title": "Advance vs arrear",
+        "docPath": "docs/decabill/features/advance-billing-and-yearly-interval.md",
+        "sectionAnchor": "advance-vs-arrear",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-usage-based-billing",
+      "type": "concept",
+      "attrs": {
+        "title": "Usage-based billing",
+        "docPath": "docs/decabill/features/advance-billing-and-yearly-interval.md",
+        "sectionAnchor": "usage-based-billing",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-withdrawal-advance",
+      "type": "concept",
+      "attrs": {
+        "title": "Withdrawal (advance)",
+        "docPath": "docs/decabill/features/advance-billing-and-yearly-interval.md",
+        "sectionAnchor": "withdrawal-advance",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-notifications",
+      "type": "concept",
+      "attrs": {
+        "title": "Notifications",
+        "docPath": "docs/decabill/features/advance-billing-and-yearly-interval.md",
+        "sectionAnchor": "notifications",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-related",
+      "type": "concept",
+      "attrs": {
+        "title": "Related",
+        "docPath": "docs/decabill/features/advance-billing-and-yearly-interval.md",
+        "sectionAnchor": "related",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-authentication-methods",
       "type": "concept",
       "attrs": {
@@ -21864,26 +22034,6 @@
         "title": "Invoice auto-payment lifecycle",
         "docPath": "docs/decabill/features/auto-billing.md",
         "sectionAnchor": "invoice-auto-payment-lifecycle",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-notifications",
-      "type": "concept",
-      "attrs": {
-        "title": "Notifications",
-        "docPath": "docs/decabill/features/auto-billing.md",
-        "sectionAnchor": "notifications",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-related",
-      "type": "concept",
-      "attrs": {
-        "title": "Related",
-        "docPath": "docs/decabill/features/auto-billing.md",
-        "sectionAnchor": "related",
         "domain": "decabill"
       }
     },
@@ -29776,6 +29926,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription-period-charge.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription-provisioning.job-handler.ts",
       "type": "contains"
     },
@@ -31256,12 +31411,32 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-cancel-scheduled",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-canceled",
       "type": "contains"
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-created",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-renewal-reminder",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-resumed",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/subscription-withdrawn",
       "type": "contains"
     },
     {
@@ -33271,12 +33446,27 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:subscription.cancel_scheduled",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:subscription.canceled",
       "type": "contains"
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:subscription.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:subscription.period_charged",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:subscription.resumed",
       "type": "contains"
     },
     {
@@ -37717,6 +37907,46 @@
     {
       "from": "file:docs/decabill/features/README.md",
       "to": "concept:decabill-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/advance-billing-and-yearly-interval.md",
+      "to": "concept:decabill-advance-billing-and-yearly-interval",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/advance-billing-and-yearly-interval.md",
+      "to": "concept:decabill-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/advance-billing-and-yearly-interval.md",
+      "to": "concept:decabill-yearly-interval",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/advance-billing-and-yearly-interval.md",
+      "to": "concept:decabill-advance-vs-arrear",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/advance-billing-and-yearly-interval.md",
+      "to": "concept:decabill-usage-based-billing",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/advance-billing-and-yearly-interval.md",
+      "to": "concept:decabill-withdrawal-advance",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/advance-billing-and-yearly-interval.md",
+      "to": "concept:decabill-notifications",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/advance-billing-and-yearly-interval.md",
+      "to": "concept:decabill-related",
       "type": "contains"
     },
     {
@@ -46710,6 +46940,31 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-usage-based-billing",
+      "to": "api:HTTP:POST:/admin/usage/record",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "api:HTTP:GET:/customer-profile",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "api:HTTP:POST:/customer-profile",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "api:HTTP:GET:/invoices",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "api:HTTP:POST:/invoices",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-authentication-methods",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
@@ -46912,26 +47167,6 @@
     {
       "from": "concept:decabill-setup-and-enable-flow",
       "to": "api:HTTP:DELETE:/admin/billing/customer-profiles/{id}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related",
-      "to": "api:HTTP:GET:/customer-profile",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related",
-      "to": "api:HTTP:POST:/customer-profile",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -50545,6 +50780,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/decabill/features/advance-billing-and-yearly-interval.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/decabill/features/authentication.md",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -53505,6 +53745,41 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-advance-billing-and-yearly-interval",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-yearly-interval",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-advance-vs-arrear",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-usage-based-billing",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-withdrawal-advance",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-notifications",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-authentication-methods",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -53561,16 +53836,6 @@
     },
     {
       "from": "concept:decabill-invoice-auto-payment-lifecycle",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-notifications",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-related",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

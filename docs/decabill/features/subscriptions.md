@@ -23,7 +23,7 @@ stateDiagram-v2
 
 ### Active
 
-Subscription is in good standing. Recurring charges create open positions according to the plan billing interval.
+Subscription is in good standing. Recurring charges create open positions according to the plan billing interval and `billInAdvance` flag (arrear at period end, or advance at period start). See [Advance billing and yearly interval](./advance-billing-and-yearly-interval.md).
 
 ### Pending Cancel
 
@@ -95,7 +95,7 @@ See **[CloudInit Configs](./cloud-init-configs.md)**.
 
 ## Cancel and Resume
 
-- `POST /subscriptions/{subscriptionId}/cancel` - Schedule cancellation at period end or immediately per plan rules
+- `POST /subscriptions/{subscriptionId}/cancel` - Schedule cancellation at period end or immediately per plan rules. Advance-billed plans (`billInAdvance`) always defer to period end. Emits `subscription.cancel_scheduled` (not final `subscription.canceled`).
 - `POST /subscriptions/{subscriptionId}/resume` - Reverse a pending cancel before `effective_at`
 
 ## Statutory Withdrawal (Widerruf)
@@ -157,6 +157,8 @@ The **subscription-item-update** scheduler refreshes bundled controller and mana
 ## Usage Records
 
 Usage-based plans accept metering via `POST /admin/usage/record` (billing admin or `STATIC_API_KEY` only; not customer self-service). Usage is included in invoice line items when `usagePayload` or `units` and `unitPrice` are present. Customers may read their summary at `GET /usage/summary/{subscriptionId}`.
+
+**Advance-billed plans:** usage recording is rejected. Prepaid periods have no usage window before the charge.
 
 ## Pricing Preview
 

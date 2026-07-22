@@ -12,6 +12,8 @@ export class ServicePlanResponseDto {
   billingIntervalValue!: number;
   billingDayOfMonth?: number;
   cancelAtPeriodEnd!: boolean;
+  /** When true, the period is billed at start (prepaid). */
+  billInAdvance!: boolean;
   minCommitmentDays!: number;
   noticeDays!: number;
   basePrice?: string;

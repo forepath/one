@@ -1,12 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { BillingIntervalType } from '../entities/service-plan.entity';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 
-import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
-import { BillingScheduleService } from './billing-schedule.service';
+import { SubscriptionPeriodChargeService } from './subscription-period-charge.service';
 
 @Injectable()
 export class SubscriptionBillingJobHandler {
@@ -16,9 +14,8 @@ export class SubscriptionBillingJobHandler {
   constructor(
     private readonly subscriptionsRepository: SubscriptionsRepository,
     private readonly servicePlansRepository: ServicePlansRepository,
-    private readonly billingScheduleService: BillingScheduleService,
     private readonly openPositionsRepository: OpenPositionsRepository,
-    private readonly billingNotificationPublisher: BillingNotificationPublisher,
+    private readonly subscriptionPeriodChargeService: SubscriptionPeriodChargeService,
   ) {}
 
   async findDueSubscriptionIds(): Promise<string[]> {
@@ -38,28 +35,6 @@ export class SubscriptionBillingJobHandler {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
 
-    await this.openPositionsRepository.create({
-      subscriptionId: subscription.id,
-      userId: subscription.userId,
-      description: `Subscription ${subscription.number}`,
-      billUntil: subscription.nextBillingAt ?? new Date(),
-      skipIfNoBillableAmount: true,
-    });
-
-    const schedule = this.billingScheduleService.calculateSchedule(
-      plan.billingIntervalType as BillingIntervalType,
-      plan.billingIntervalValue,
-      plan.billingDayOfMonth,
-    );
-
-    const updated = await this.subscriptionsRepository.update(subscription.id, {
-      currentPeriodStart: schedule.currentPeriodStart,
-      currentPeriodEnd: schedule.currentPeriodEnd,
-      nextBillingAt: schedule.nextBillingAt,
-    });
-
-    this.billingNotificationPublisher.publishSubscription('subscription.updated', updated);
-
-    this.logger.log(`Billed subscription ${subscription.id}, next billing at ${schedule.nextBillingAt.toISOString()}`);
+    await this.subscriptionPeriodChargeService.processDueBilling(subscription, plan);
   }
 }

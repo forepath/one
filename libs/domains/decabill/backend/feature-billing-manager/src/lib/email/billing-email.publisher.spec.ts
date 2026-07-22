@@ -160,6 +160,7 @@ describe('BillingEmailPublisher', () => {
           planName: 'Pro Plan',
           renewalDate: '2026-09-01',
           subscriptionId: 'sub-1',
+          billInAdvance: false,
         },
       }),
     );
@@ -230,6 +231,54 @@ describe('BillingEmailPublisher', () => {
         templateContext: expect.objectContaining({
           planName: 'Pro Plan',
           effectiveDate: expect.any(String),
+        }),
+      }),
+    );
+  });
+
+  it('publishes order confirmation email', async () => {
+    await publisher.publishSubscriptionCreated(
+      {
+        userId: 'user-1',
+        number: 'SUB-42',
+        currentPeriodEnd: new Date('2026-10-01'),
+      } as never,
+      'Pro Plan',
+      { billInAdvance: true },
+    );
+
+    expect(emailDispatcher.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'subscription.created',
+        templateKey: 'subscription-created',
+        templateContext: expect.objectContaining({
+          planName: 'Pro Plan',
+          subscriptionNumber: 'SUB-42',
+          billInAdvance: true,
+          periodEndDate: expect.any(String),
+        }),
+      }),
+    );
+  });
+
+  it('publishes withdrawal completed email', async () => {
+    await publisher.publishSubscriptionWithdrawn(
+      {
+        userId: 'user-1',
+        number: 'SUB-42',
+        withdrawnAt: new Date('2026-10-01'),
+      } as never,
+      'Pro Plan',
+    );
+
+    expect(emailDispatcher.publish).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'subscription.withdrawn',
+        templateKey: 'subscription-withdrawn',
+        templateContext: expect.objectContaining({
+          planName: 'Pro Plan',
+          subscriptionNumber: 'SUB-42',
+          withdrawnAt: expect.any(String),
         }),
       }),
     );
