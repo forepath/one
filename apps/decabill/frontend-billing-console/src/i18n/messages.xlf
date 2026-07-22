@@ -2124,6 +2124,9 @@
       <trans-unit id="featureServicePlans-cancelAtPeriodEnd" datatype="html">
         <source>Cancel at period end</source>
         </trans-unit>
+      <trans-unit id="featureServicePlans-cancelAtPeriodEndHelp" datatype="html">
+        <source>Cancellation will be scheduled for the end of the current billing period. Unchecking this allows immediate cancellation mid-period.</source>
+        </trans-unit>
       <trans-unit id="featureServicePlans-active" datatype="html">
         <source>Active</source>
         </trans-unit>

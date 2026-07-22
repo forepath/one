@@ -1006,7 +1006,7 @@ export class ServicePlansPageComponent implements OnInit {
       billingIntervalType: 'month',
       billingIntervalValue: 1,
       billingDayOfMonth: undefined,
-      cancelAtPeriodEnd: false,
+      cancelAtPeriodEnd: true,
       minCommitmentDays: 0,
       noticeDays: 0,
       basePrice: undefined,
@@ -1170,7 +1170,7 @@ export class ServicePlansPageComponent implements OnInit {
           billingIntervalValue: Number(this.createForm.billingIntervalValue) || 1,
           billingDayOfMonth:
             this.createForm.billingDayOfMonth != null ? Number(this.createForm.billingDayOfMonth) : undefined,
-          cancelAtPeriodEnd: this.createForm.cancelAtPeriodEnd ?? false,
+          cancelAtPeriodEnd: this.createForm.cancelAtPeriodEnd ?? true,
           minCommitmentDays: Number(this.createForm.minCommitmentDays) || 0,
           noticeDays: Number(this.createForm.noticeDays) || 0,
           basePrice: this.createForm.basePrice?.trim() || undefined,
