@@ -9,6 +9,7 @@ import {
   type CustomerTrustLevel,
   type CustomerTrustScoreDetail,
   type CustomerProfileDto,
+  type VatIdValidationStatus,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade, type UserResponseDto } from '@forepath/identity/frontend';
 import { combineLatestWith, map } from 'rxjs';
@@ -24,6 +25,7 @@ import {
   getProfileCompleteLabel,
   getProfileCompleteTextClass,
   getUnavailableLabel,
+  getVatIdValidationStatusLabel,
 } from '../billing-status-labels';
 
 @Component({
@@ -85,7 +87,11 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   });
 
   createForm: CustomerProfileDto & { userId: string } = this.emptyCreateForm();
-  editForm: CustomerProfileDto & { id: string } = this.emptyEditForm();
+  editForm: CustomerProfileDto & {
+    id: string;
+    vatIdValidationStatus?: VatIdValidationStatus;
+    vatIdValidatedAt?: string | null;
+  } = this.emptyEditForm();
   profileToDelete: AdminCustomerProfileListItem | null = null;
   trustScoreProfile: AdminCustomerProfileListItem | null = null;
 
@@ -109,6 +115,10 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
           firstName: full.firstName ?? '',
           lastName: full.lastName ?? '',
           company: full.company ?? '',
+          customerType: full.customerType ?? 'consumer',
+          vatId: full.vatId ?? '',
+          vatIdValidationStatus: full.vatIdValidationStatus ?? 'none',
+          vatIdValidatedAt: full.vatIdValidatedAt ?? null,
           email: full.email ?? '',
           addressLine1: full.addressLine1 ?? '',
           addressLine2: full.addressLine2 ?? '',
@@ -145,7 +155,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   submitEdit(): void {
     if (!this.editForm.id) return;
 
-    const { id, ...dto } = this.editForm;
+    const { id, vatIdValidationStatus: _status, vatIdValidatedAt: _validatedAt, ...dto } = this.editForm;
 
     this.facade.updateProfile(id, dto);
   }
@@ -204,6 +214,10 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
     return getProfileCompleteTextClass(isComplete);
   }
 
+  vatIdValidationStatusLabel(status: string | null | undefined): string {
+    return getVatIdValidationStatusLabel(status);
+  }
+
   profileTrustLabel(level: CustomerTrustLevel | null | undefined): string {
     return getCustomerTrustLevelLabel(level);
   }
@@ -238,6 +252,8 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
       firstName: '',
       lastName: '',
       company: '',
+      customerType: 'consumer',
+      vatId: '',
       email: '',
       addressLine1: '',
       addressLine2: '',
@@ -249,12 +265,20 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
     };
   }
 
-  private emptyEditForm(): CustomerProfileDto & { id: string } {
+  private emptyEditForm(): CustomerProfileDto & {
+    id: string;
+    vatIdValidationStatus?: VatIdValidationStatus;
+    vatIdValidatedAt?: string | null;
+  } {
     return {
       id: '',
       firstName: '',
       lastName: '',
       company: '',
+      customerType: 'consumer',
+      vatId: '',
+      vatIdValidationStatus: 'none',
+      vatIdValidatedAt: null,
       email: '',
       addressLine1: '',
       addressLine2: '',

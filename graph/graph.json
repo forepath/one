@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-21T21:11:29.136Z",
+  "generatedAt": "2026-07-22T14:41:08.227Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -5891,6 +5891,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/tax-preview.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/tax-preview.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/update-cloud-init-config.dto.ts",
       "type": "dto",
       "attrs": {
@@ -6075,6 +6084,15 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/open-position.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/oss-threshold-ledger.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/oss-threshold-ledger.entity.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -6692,6 +6710,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/oss-threshold-ledgers.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/oss-threshold-ledgers.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/payment-attempts.repository.ts",
       "type": "repository",
       "attrs": {
@@ -7169,6 +7196,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-tax-context.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-tax-context.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice.service.ts",
       "type": "service",
       "attrs": {
@@ -7191,6 +7227,15 @@
       "type": "job",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/open-position-invoice.job-handler.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/oss-threshold.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/oss-threshold.service.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -7412,6 +7457,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-preview.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-preview.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-rate-config.service.ts",
       "type": "service",
       "attrs": {
@@ -7421,10 +7475,37 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-treatment.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-treatment.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/usage.service.ts",
       "type": "service",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/usage.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/vat-id-validation.job-handler.ts",
+      "type": "job",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/vat-id-validation.job-handler.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/vat-id-validation.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/vat-id-validation.service.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -10887,6 +10968,14 @@
       }
     },
     {
+      "id": "file:docs/decabill/features/vat-and-tax-treatment.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/vat-and-tax-treatment.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/decabill/features/webhooks.md",
       "type": "doc",
       "attrs": {
@@ -13669,6 +13758,17 @@
       }
     },
     {
+      "id": "api:HTTP:POST:/pricing/tax-preview",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/pricing/tax-preview",
+        "operationId": "previewTaxForCustomer",
+        "summary": "Preview tax treatment and rates for the authenticated customer",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/customer-profile",
       "type": "endpoint",
       "attrs": {
@@ -13687,6 +13787,17 @@
         "pathOrChannel": "/customer-profile",
         "operationId": "updateCustomerProfile",
         "summary": "Update customer profile",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/customer-profile/vat-id/revalidate",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/customer-profile/vat-id/revalidate",
+        "operationId": "revalidateCustomerVatId",
+        "summary": "Revalidate customer VAT ID via VIES",
         "specKind": "openapi"
       }
     },
@@ -14406,6 +14517,17 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/admin/billing/statistics/by-country",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/statistics/by-country",
+        "operationId": "getAdminBillingStatisticsByCountry",
+        "summary": "Turnover by buyer country (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/admin/billing/capabilities",
       "type": "endpoint",
       "attrs": {
@@ -14413,6 +14535,17 @@
         "pathOrChannel": "/admin/billing/capabilities",
         "operationId": "getAdminBillingCapabilities",
         "summary": "Billing feature capabilities for admin UI (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/tax/preview",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/tax/preview",
+        "operationId": "previewTaxForAdmin",
+        "summary": "Preview tax treatment and rates (issuer or customer)",
         "specKind": "openapi"
       }
     },
@@ -14797,6 +14930,15 @@
       }
     },
     {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:invoice.tax_mode_applied",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "invoice.tax_mode_applied",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
       "id": "webhook-event:decabill-backend-feature-billing-manager:invoice.voided",
       "type": "webhook-event",
       "attrs": {
@@ -14828,6 +14970,15 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "milestone.updated",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:oss.threshold_exceeded",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "oss.threshold_exceeded",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -15008,6 +15159,42 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "time_entry.updated",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:vat_id.validation_failed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "vat_id.validation_failed",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:vat_id.validation_pending",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "vat_id.validation_pending",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:vat_id.validation_succeeded",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "vat_id.validation_succeeded",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:vat_id.validation_unavailable",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "vat_id.validation_unavailable",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -23065,6 +23252,76 @@
       }
     },
     {
+      "id": "concept:decabill-vat-and-tax-treatment",
+      "type": "concept",
+      "attrs": {
+        "title": "VAT and tax treatment",
+        "docPath": "docs/decabill/features/vat-and-tax-treatment.md",
+        "sectionAnchor": "vat-and-tax-treatment",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-tax-modes",
+      "type": "concept",
+      "attrs": {
+        "title": "Tax modes",
+        "docPath": "docs/decabill/features/vat-and-tax-treatment.md",
+        "sectionAnchor": "tax-modes",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-customer-tax-fields",
+      "type": "concept",
+      "attrs": {
+        "title": "Customer tax fields",
+        "docPath": "docs/decabill/features/vat-and-tax-treatment.md",
+        "sectionAnchor": "customer-tax-fields",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-vies-validation",
+      "type": "concept",
+      "attrs": {
+        "title": "VIES validation",
+        "docPath": "docs/decabill/features/vat-and-tax-treatment.md",
+        "sectionAnchor": "vies-validation",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-oss-10-000-threshold",
+      "type": "concept",
+      "attrs": {
+        "title": "OSS €10,000 threshold",
+        "docPath": "docs/decabill/features/vat-and-tax-treatment.md",
+        "sectionAnchor": "oss-10-000-threshold",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-country-rates",
+      "type": "concept",
+      "attrs": {
+        "title": "Country rates",
+        "docPath": "docs/decabill/features/vat-and-tax-treatment.md",
+        "sectionAnchor": "country-rates",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-invoice-snapshot",
+      "type": "concept",
+      "attrs": {
+        "title": "Invoice snapshot",
+        "docPath": "docs/decabill/features/vat-and-tax-treatment.md",
+        "sectionAnchor": "invoice-snapshot",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-webhooks-decabill",
       "type": "concept",
       "attrs": {
@@ -28543,6 +28800,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/tax-preview.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/update-cloud-init-config.dto.ts",
       "type": "contains"
     },
@@ -28644,6 +28906,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/open-position.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/oss-threshold-ledger.entity.ts",
       "type": "contains"
     },
     {
@@ -28988,6 +29255,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/oss-threshold-ledgers.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/payment-attempts.repository.ts",
       "type": "contains"
     },
@@ -29253,6 +29525,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-tax-context.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice.service.ts",
       "type": "contains"
     },
@@ -29264,6 +29541,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/open-position-invoice.job-handler.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/oss-threshold.service.ts",
       "type": "contains"
     },
     {
@@ -29388,12 +29670,32 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-preview.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-rate-config.service.ts",
       "type": "contains"
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-treatment.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/usage.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/vat-id-validation.job-handler.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/vat-id-validation.service.ts",
       "type": "contains"
     },
     {
@@ -32213,12 +32515,22 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/pricing/tax-preview",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/customer-profile",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/customer-profile",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/customer-profile/vat-id/revalidate",
       "type": "contains"
     },
     {
@@ -32548,7 +32860,17 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/statistics/by-country",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/admin/billing/capabilities",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/tax/preview",
       "type": "contains"
     },
     {
@@ -32733,6 +33055,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:invoice.tax_mode_applied",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:invoice.voided",
       "type": "contains"
     },
@@ -32749,6 +33076,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:milestone.updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:oss.threshold_exceeded",
       "type": "contains"
     },
     {
@@ -32849,6 +33181,26 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:time_entry.updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:vat_id.validation_failed",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:vat_id.validation_pending",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:vat_id.validation_succeeded",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:vat_id.validation_unavailable",
       "type": "contains"
     },
     {
@@ -38242,6 +38594,46 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/decabill/features/vat-and-tax-treatment.md",
+      "to": "concept:decabill-vat-and-tax-treatment",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/vat-and-tax-treatment.md",
+      "to": "concept:decabill-tax-modes",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/vat-and-tax-treatment.md",
+      "to": "concept:decabill-customer-tax-fields",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/vat-and-tax-treatment.md",
+      "to": "concept:decabill-vies-validation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/vat-and-tax-treatment.md",
+      "to": "concept:decabill-oss-10-000-threshold",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/vat-and-tax-treatment.md",
+      "to": "concept:decabill-country-rates",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/vat-and-tax-treatment.md",
+      "to": "concept:decabill-invoice-snapshot",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/vat-and-tax-treatment.md",
+      "to": "concept:decabill-related",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/decabill/features/webhooks.md",
       "to": "concept:decabill-webhooks-decabill",
       "type": "contains"
@@ -40443,12 +40835,32 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/statistics/by-country",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/statistics/by-country",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/capabilities",
       "type": "implements"
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:GET:/admin/billing/capabilities",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/tax/preview",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/tax/preview",
       "type": "implements"
     },
     {
@@ -40913,6 +41325,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-profiles.controller.ts",
+      "to": "api:HTTP:POST:/customer-profile/vat-id/revalidate",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/customer-profile/vat-id/revalidate",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-profiles.controller.ts",
       "to": "api:HTTP:POST:/customer-profile/auto-billing/setup",
       "type": "implements"
     },
@@ -41124,6 +41546,16 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:POST:/pricing/preview",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/pricing.controller.ts",
+      "to": "api:HTTP:POST:/pricing/tax-preview",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/pricing/tax-preview",
       "type": "implements"
     },
     {
@@ -46238,22 +46670,22 @@
     },
     {
       "from": "concept:decabill-related",
-      "to": "api:HTTP:GET:/subscriptions",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related",
-      "to": "api:HTTP:POST:/subscriptions",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related",
       "to": "api:HTTP:GET:/customer-profile",
       "type": "documents"
     },
     {
       "from": "concept:decabill-related",
       "to": "api:HTTP:POST:/customer-profile",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "api:HTTP:GET:/invoices",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related",
+      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -46354,6 +46786,11 @@
     {
       "from": "concept:decabill-billing-dashboard",
       "to": "api:HTTP:GET:/admin/billing/statistics/by-product",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-billing-dashboard",
+      "to": "api:HTTP:GET:/admin/billing/statistics/by-country",
       "type": "documents"
     },
     {
@@ -48257,6 +48694,56 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-tax-modes",
+      "to": "api:HTTP:POST:/admin/billing/tax/preview",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-vies-validation",
+      "to": "api:HTTP:GET:/customer-profile",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-vies-validation",
+      "to": "api:HTTP:POST:/customer-profile",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-vies-validation",
+      "to": "api:HTTP:POST:/customer-profile/vat-id/revalidate",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-vies-validation",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-vies-validation",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-vies-validation",
+      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-vies-validation",
+      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-vies-validation",
+      "to": "api:HTTP:DELETE:/admin/billing/customer-profiles/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-oss-10-000-threshold",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-webhooks-decabill",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
@@ -49903,6 +50390,11 @@
     },
     {
       "from": "file:docs/decabill/features/subscriptions.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/vat-and-tax-treatment.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -53513,6 +54005,41 @@
     },
     {
       "from": "concept:decabill-availability",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-vat-and-tax-treatment",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-tax-modes",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-customer-tax-fields",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-vies-validation",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-oss-10-000-threshold",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-country-rates",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-invoice-snapshot",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

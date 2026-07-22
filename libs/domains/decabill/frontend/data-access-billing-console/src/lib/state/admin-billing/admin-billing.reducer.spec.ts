@@ -17,6 +17,9 @@ import {
   loadAdminOpenOverdue,
   loadAdminOpenOverdueFailure,
   loadAdminOpenOverdueSuccess,
+  loadAdminStatisticsByCountry,
+  loadAdminStatisticsByCountryFailure,
+  loadAdminStatisticsByCountrySuccess,
   loadAdminStatisticsByProduct,
   loadAdminStatisticsByProductFailure,
   loadAdminStatisticsByProductSuccess,
@@ -220,6 +223,30 @@ describe('adminBillingReducer', () => {
 
     expect(state.statisticsError).toBe('product fail');
     expect(state.statisticsByProductLoading).toBe(false);
+  });
+
+  it('stores statistics by country on success', () => {
+    const byCountry = {
+      items: [{ countryCode: 'DE', countryName: 'Germany', totalGross: 50 }],
+      totalGross: 50,
+      from: '2024-01-01',
+      to: '2024-01-31',
+    };
+    const loading = adminBillingReducer(initialAdminBillingState, loadAdminStatisticsByCountry({ params: {} }));
+    const state = adminBillingReducer(loading, loadAdminStatisticsByCountrySuccess({ byCountry }));
+
+    expect(state.statisticsByCountry).toEqual(byCountry);
+    expect(state.statisticsByCountryLoading).toBe(false);
+  });
+
+  it('stores statistics error on by-country failure', () => {
+    const state = adminBillingReducer(
+      initialAdminBillingState,
+      loadAdminStatisticsByCountryFailure({ error: 'country fail' }),
+    );
+
+    expect(state.statisticsError).toBe('country fail');
+    expect(state.statisticsByCountryLoading).toBe(false);
   });
 
   it('stores audit logs by invoice on success', () => {

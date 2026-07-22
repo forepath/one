@@ -17,11 +17,14 @@ import {
   AdminBillingService,
   AdminInvoiceManagerFacade,
   InvoicesFacade,
+  computeLineTotalsFromRate,
+  rateForTaxCategory,
   type AdminInvoiceListItem,
   type BillingAuditLogResponse,
   type BillingStatisticsSeriesPoint,
   type ManualInvoiceLineItemDto,
   type SubscriptionResponse,
+  type TaxPreviewRates,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade, type UserResponseDto } from '@forepath/identity/frontend';
 import type {
@@ -30,6 +33,7 @@ import type {
   ApexDataLabels,
   ApexNonAxisChartSeries,
   ApexTitleSubtitle,
+  ApexTooltip,
   ApexXAxis,
 } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
@@ -112,10 +116,15 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
 
   readonly mobilePanels: AdminBillingMobilePanel[] = ['overview', 'invoices'];
   readonly mobilePanel = signal<AdminBillingMobilePanel>('overview');
-  readonly taxCategoryOptions: { value: InvoiceFormLineItem['taxCategory']; label: string }[] = [
-    { value: 'standard', label: 'Standard (19%)' },
-    { value: 'reduced', label: 'Reduced (7%)' },
-  ];
+  readonly taxRates = signal<TaxPreviewRates>({ standard: 19, reduced: 7 });
+  readonly taxCategoryOptions = computed(() => {
+    const rates = this.taxRates();
+
+    return [
+      { value: 'standard' as const, label: `Standard (${rates.standard}%)` },
+      { value: 'reduced' as const, label: `Reduced (${rates.reduced}%)` },
+    ];
+  });
 
   readonly billNowScope = signal<'all' | 'user'>('all');
   billNowUserId = '';
@@ -137,6 +146,8 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
   readonly statisticsSummaryLoading$ = this.adminBillingFacade.statisticsSummaryLoading$;
   readonly statisticsByProduct$ = this.adminBillingFacade.statisticsByProduct$;
   readonly statisticsByProductLoading$ = this.adminBillingFacade.statisticsByProductLoading$;
+  readonly statisticsByCountry$ = this.adminBillingFacade.statisticsByCountry$;
+  readonly statisticsByCountryLoading$ = this.adminBillingFacade.statisticsByCountryLoading$;
   readonly statisticsError$ = this.adminBillingFacade.statisticsError$;
   readonly auditLogsByInvoice$ = this.adminBillingFacade.auditLogsByInvoice$;
   readonly auditLogsLoading$ = this.adminBillingFacade.auditLogsLoading$;
@@ -162,6 +173,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
   readonly users = toSignal(this.authFacade.users$, { initialValue: [] as UserResponseDto[] });
   readonly statisticsSummary = toSignal(this.statisticsSummary$, { initialValue: null });
   readonly statisticsByProduct = toSignal(this.statisticsByProduct$, { initialValue: null });
+  readonly statisticsByCountry = toSignal(this.statisticsByCountry$, { initialValue: null });
   readonly auditLogsByInvoice = toSignal(this.auditLogsByInvoice$, {
     initialValue: {} as Record<string, BillingAuditLogResponse[]>,
   });
@@ -180,6 +192,9 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
 
   readonly seriesChartOptions = computed(() => this.buildSeriesChart(this.statisticsSummary()?.series ?? []));
   readonly donutChartOptions = computed(() => this.buildDonutChart(this.statisticsByProduct()?.items ?? []));
+  readonly countryDonutChartOptions = computed(() =>
+    this.buildCountryDonutChart(this.statisticsByCountry()?.items ?? []),
+  );
 
   createUserId = '';
   createSubscriptionId = '';
@@ -197,6 +212,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     this.invoiceManagerFacade.loadInvoices();
     this.loadStatistics();
     this.authFacade.loadUsers();
+    this.refreshTaxRates();
 
     this.billNowResult$
       .pipe(
@@ -248,6 +264,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
 
   openCreateModal(): void {
     this.resetCreateForm();
+    this.refreshTaxRates();
     showBillingModal(this.createModal);
     queueMicrotask(() => {
       this.createInvoiceUserSelect?.reset();
@@ -259,10 +276,12 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     this.createSubscriptionId = '';
     this.createInvoiceSubscriptionSelect?.reset();
     this.loadCreateInvoiceSubscriptions(userId);
+    this.refreshTaxRates(userId || undefined);
   }
 
   openEditModal(invoice: AdminInvoiceListItem): void {
     this.editInvoiceId = invoice.id;
+    this.refreshTaxRates(invoice.userId);
     this.adminBillingService.getManualInvoiceDetail(invoice.id).subscribe({
       next: (detail) => {
         this.editLineItems =
@@ -472,6 +491,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
 
     this.adminBillingFacade.loadStatisticsSummary(params);
     this.adminBillingFacade.loadStatisticsByProduct(params);
+    this.adminBillingFacade.loadStatisticsByCountry(params);
   }
 
   private setDefaultDates(): void {
@@ -560,12 +580,19 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
       return null;
     }
 
-    const net = Math.round(quantity * unitPriceNet * 100) / 100;
-    const taxRate = line.taxCategory === 'reduced' ? 7 : 19;
-    const tax = Math.round(net * (taxRate / 100) * 100) / 100;
-    const gross = Math.round((net + tax) * 100) / 100;
+    const taxRate = rateForTaxCategory(this.taxRates(), line.taxCategory ?? 'standard');
 
-    return { net, tax, gross, taxRate };
+    return computeLineTotalsFromRate(quantity, unitPriceNet, taxRate);
+  }
+
+  private refreshTaxRates(userId?: string): void {
+    this.adminBillingService
+      .previewTax(userId ? { userId } : {})
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (preview) => this.taxRates.set(preview.rates),
+        error: () => undefined,
+      });
   }
 
   private computeDraftTotals(items: InvoiceFormLineItem[]): { net: number; tax: number; gross: number } | null {
@@ -741,19 +768,51 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
   }
 
   private buildDonutChart(items: { planName: string; totalGross: number }[]) {
+    return this.buildTurnoverDonutChart(
+      items.map((i) => ({ label: i.planName, totalGross: i.totalGross })),
+      $localize`:@@featureAdminBilling-chartProductTitle:Turnover by product`,
+    );
+  }
+
+  private buildCountryDonutChart(items: { countryName: string; totalGross: number }[]) {
+    return this.buildTurnoverDonutChart(
+      items.map((i) => ({ label: i.countryName, totalGross: i.totalGross })),
+      $localize`:@@featureAdminBilling-chartCountryTitle:Turnover by country`,
+    );
+  }
+
+  private buildTurnoverDonutChart(items: { label: string; totalGross: number }[], title: string) {
     if (items.length === 0) return null;
 
+    const series = items.map((i) => i.totalGross);
+    const formatEuro = (value: number): string =>
+      `€${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
     return {
-      series: items.map((i) => i.totalGross) as ApexNonAxisChartSeries,
+      series: series as ApexNonAxisChartSeries,
       chart: { type: 'donut', height: 240, background: 'transparent' } as ApexChart,
-      labels: items.map((i) => i.planName),
+      labels: items.map((i) => i.label),
       colors: BS_CHART_COLORS.slice(0, items.length),
+      dataLabels: {
+        enabled: true,
+        formatter: (percent: number) => `${percent.toFixed(1)}%`,
+        style: {
+          fontSize: '10px',
+          colors: ['#ffffff'],
+          fontFamily: 'var(--bs-body-font-family)',
+        },
+      } as ApexDataLabels,
       legend: {
         labels: { colors: 'var(--bs-body-color)' },
         fontFamily: 'var(--bs-body-font-family)',
       },
+      tooltip: {
+        y: {
+          formatter: (value: number) => formatEuro(value),
+        },
+      } as ApexTooltip,
       title: {
-        text: $localize`:@@featureAdminBilling-chartProductTitle:Turnover by product`,
+        text: title,
         style: { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
       } as ApexTitleSubtitle,
     };

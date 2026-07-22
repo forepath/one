@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { TaxCategory } from '../constants/tax-category.constants';
+import { TaxMode } from '../constants/tax-mode.constants';
 import { DatevExportScope, DATEV_BOOKING_ROW_FIELD_COUNT } from '../constants/datev-export.constants';
 import type { InvoiceCreditDocumentEntity } from '../entities/invoice-credit-document.entity';
 import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity';
@@ -32,12 +33,7 @@ export class DatevBookingMapperService {
     tenantSlug?: string;
     documentLink?: string;
   }): string[] {
-    const revenueAccount =
-      params.line.taxCategory === TaxCategory.REDUCED
-        ? params.config.revenueAccountReduced
-        : params.config.revenueAccountStandard;
-    const buKey =
-      params.line.taxCategory === TaxCategory.REDUCED ? params.config.buKeyReduced : params.config.buKeyStandard;
+    const { revenueAccount, buKey } = this.resolveAccounts(params.invoice, params.line.taxCategory, params.config);
 
     return this.toRow({
       amountGross: Number(params.line.lineGross),
@@ -47,7 +43,12 @@ export class DatevBookingMapperService {
       buKey,
       documentDate: params.invoice.issuedAt ?? params.invoice.createdAt,
       documentNumber: params.invoice.invoiceNumber ?? params.invoice.id,
-      bookingText: this.buildBookingText(params.line.description, params.scope, params.tenantSlug),
+      bookingText: this.buildBookingText(
+        params.line.description,
+        params.scope,
+        params.tenantSlug,
+        params.invoice.buyerVatId,
+      ),
       documentLink: params.documentLink,
     });
   }
@@ -62,12 +63,7 @@ export class DatevBookingMapperService {
     voidedAt: Date;
     documentLink?: string;
   }): string[] {
-    const revenueAccount =
-      params.line.taxCategory === TaxCategory.REDUCED
-        ? params.config.revenueAccountReduced
-        : params.config.revenueAccountStandard;
-    const buKey =
-      params.line.taxCategory === TaxCategory.REDUCED ? params.config.buKeyReduced : params.config.buKeyStandard;
+    const { revenueAccount, buKey } = this.resolveAccounts(params.invoice, params.line.taxCategory, params.config);
     const creditNoteNumber = params.invoice.invoiceNumber
       ? buildCreditNoteNumber(params.invoice.invoiceNumber)
       : `${params.invoice.id}-CN`;
@@ -80,7 +76,12 @@ export class DatevBookingMapperService {
       buKey,
       documentDate: params.voidedAt,
       documentNumber: creditNoteNumber,
-      bookingText: this.buildBookingText(params.line.description, params.scope, params.tenantSlug),
+      bookingText: this.buildBookingText(
+        params.line.description,
+        params.scope,
+        params.tenantSlug,
+        params.invoice.buyerVatId,
+      ),
       documentLink: params.documentLink,
     });
   }
@@ -94,12 +95,11 @@ export class DatevBookingMapperService {
     tenantSlug?: string;
     documentLink?: string;
   }): string[] {
-    const revenueAccount =
-      params.credit.taxCategory === TaxCategory.REDUCED
-        ? params.config.revenueAccountReduced
-        : params.config.revenueAccountStandard;
-    const buKey =
-      params.credit.taxCategory === TaxCategory.REDUCED ? params.config.buKeyReduced : params.config.buKeyStandard;
+    const { revenueAccount, buKey } = this.resolveAccounts(
+      params.invoice,
+      params.credit.taxCategory as TaxCategory,
+      params.config,
+    );
     const bookingText = params.credit.description?.trim() || `Withdrawal credit ${params.credit.documentNumber}`;
 
     return this.toRow({
@@ -110,7 +110,7 @@ export class DatevBookingMapperService {
       buKey,
       documentDate: params.credit.withdrawnAt,
       documentNumber: params.credit.documentNumber,
-      bookingText: this.buildBookingText(bookingText, params.scope, params.tenantSlug),
+      bookingText: this.buildBookingText(bookingText, params.scope, params.tenantSlug, params.invoice.buyerVatId),
       documentLink: params.documentLink,
     });
   }
@@ -135,13 +135,54 @@ export class DatevBookingMapperService {
     return fields;
   }
 
-  private buildBookingText(description: string, scope: DatevExportScope, tenantSlug?: string): string {
-    const base = description.trim();
+  private resolveAccounts(
+    invoice: InvoiceEntity,
+    taxCategory: TaxCategory | string,
+    config: DatevTenantExportConfig,
+  ): { revenueAccount: string; buKey: string } {
+    const mode = invoice.taxMode;
 
-    if (scope === DatevExportScope.UNIFIED && tenantSlug) {
-      return truncateDatevText(`[${tenantSlug}] ${base}`, 60);
+    if (mode === TaxMode.EU_REVERSE_CHARGE) {
+      return { revenueAccount: config.revenueAccountReverseCharge, buKey: config.buKeyReverseCharge };
     }
 
-    return truncateDatevText(base, 60);
+    if (mode === TaxMode.EU_B2C_OSS || mode === TaxMode.NON_EU_ISSUER_EU_B2C) {
+      return { revenueAccount: config.revenueAccountOss, buKey: config.buKeyOss };
+    }
+
+    if (
+      mode === TaxMode.THIRD_COUNTRY_B2B_NO_VAT ||
+      mode === TaxMode.THIRD_COUNTRY_B2C_NO_DOMESTIC_VAT ||
+      mode === TaxMode.NON_EU_ISSUER_EU_B2B
+    ) {
+      return { revenueAccount: config.revenueAccountThirdCountry, buKey: config.buKeyThirdCountry };
+    }
+
+    if (taxCategory === TaxCategory.REDUCED) {
+      return { revenueAccount: config.revenueAccountReduced, buKey: config.buKeyReduced };
+    }
+
+    return { revenueAccount: config.revenueAccountStandard, buKey: config.buKeyStandard };
+  }
+
+  private buildBookingText(
+    description: string,
+    scope: DatevExportScope,
+    tenantSlug?: string,
+    buyerVatId?: string | null,
+  ): string {
+    const parts: string[] = [];
+
+    if (scope === DatevExportScope.UNIFIED && tenantSlug) {
+      parts.push(`[${tenantSlug}]`);
+    }
+
+    parts.push(description.trim());
+
+    if (buyerVatId?.trim()) {
+      parts.push(`VAT ${buyerVatId.trim()}`);
+    }
+
+    return truncateDatevText(parts.filter(Boolean).join(' '), 60);
   }
 }

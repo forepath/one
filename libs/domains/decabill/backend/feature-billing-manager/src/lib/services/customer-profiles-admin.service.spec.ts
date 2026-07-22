@@ -11,7 +11,12 @@ describe('CustomerProfilesAdminService', () => {
     update: jest.fn(),
     delete: jest.fn(),
   };
-  const customerProfilesService = { isProfileComplete: jest.fn().mockReturnValue(true) };
+  const customerProfilesService = {
+    isProfileComplete: jest.fn().mockReturnValue(true),
+    upsert: jest.fn(),
+    revalidateVatId: jest.fn(),
+    markVatIdValidatedByAdmin: jest.fn(),
+  };
   const usersRepository = { findByIdForTenant: jest.fn() };
   const invoicesRepository = { countByUserId: jest.fn() };
   const subscriptionsRepository = { findAllByUser: jest.fn() };
@@ -41,9 +46,10 @@ describe('CustomerProfilesAdminService', () => {
   };
 
   beforeEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks();
     usersRepository.findByIdForTenant.mockResolvedValue({ id: 'user-1', email: 'user@example.com' });
     customerProfilesService.isProfileComplete.mockReturnValue(true);
+    customerProfilesService.upsert.mockReset();
     customerTrustScoreService.ensureFreshSnapshot.mockImplementation(async (value: unknown) => value);
   });
 
@@ -110,7 +116,7 @@ describe('CustomerProfilesAdminService', () => {
 
   it('create persists profile for valid user', async () => {
     customerProfilesRepository.findByUserId.mockResolvedValue(null);
-    customerProfilesRepository.create.mockResolvedValue(profile);
+    customerProfilesService.upsert.mockResolvedValue(profile);
 
     const result = await service.create({
       userId: 'user-1',
@@ -120,21 +126,29 @@ describe('CustomerProfilesAdminService', () => {
     });
 
     expect(result.userId).toBe('user-1');
-    expect(customerProfilesRepository.create).toHaveBeenCalled();
+    expect(customerProfilesService.upsert).toHaveBeenCalledWith(
+      'user-1',
+      expect.objectContaining({
+        firstName: 'Jane',
+        lastName: 'Doe',
+        email: 'jane@example.com',
+      }),
+    );
   });
 
   it('update persists profile changes', async () => {
     customerProfilesRepository.findByIdOrThrow.mockResolvedValue(profile);
-    customerProfilesRepository.update.mockResolvedValue({ ...profile, country: 'DE' });
+    customerProfilesService.upsert.mockResolvedValue({ ...profile, country: 'DE' });
 
     const result = await service.update('profile-1', {
       firstName: 'Jane',
       lastName: 'Doe',
       email: 'jane@example.com',
       country: 'DE',
-    });
+    } as never);
 
     expect(result.country).toBe('DE');
+    expect(customerProfilesService.upsert).toHaveBeenCalledWith('user-1', expect.objectContaining({ country: 'DE' }));
   });
 
   it('getTrustScore returns recomputed trust detail', async () => {

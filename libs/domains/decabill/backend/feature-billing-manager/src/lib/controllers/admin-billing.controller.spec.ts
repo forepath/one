@@ -28,7 +28,7 @@ describe('AdminBillingController', () => {
     issueDraft: jest.fn(),
     deleteDraft: jest.fn(),
   };
-  const statisticsQueryService = { getSummary: jest.fn(), getByProduct: jest.fn() };
+  const statisticsQueryService = { getSummary: jest.fn(), getByProduct: jest.fn(), getByCountry: jest.fn() };
   const auditLogService = { listForInvoice: jest.fn() };
   const invoiceService = { getPdfBuffer: jest.fn(), getVoidPdfBuffer: jest.fn(), getTimeReportPdfBuffer: jest.fn() };
   const invoicesRepository = { findById: jest.fn() };
@@ -36,6 +36,7 @@ describe('AdminBillingController', () => {
     isEnabled: jest.fn().mockReturnValue(true),
     isUnifiedExportAllowedForTenant: jest.fn().mockReturnValue(false),
   };
+  const taxPreviewService = { preview: jest.fn() };
   const controller = new AdminBillingController(
     billingAdminService as never,
     adminBillNowService as never,
@@ -46,6 +47,7 @@ describe('AdminBillingController', () => {
     invoiceService as never,
     invoicesRepository as never,
     datevExportConfigService as never,
+    taxPreviewService as never,
   );
 
   beforeEach(() => {
@@ -350,6 +352,14 @@ describe('AdminBillingController', () => {
     await controller.getStatisticsByProduct('2024-01-01', '2024-01-31', 'user-1');
 
     expect(statisticsQueryService.getByProduct).toHaveBeenCalledWith(expect.objectContaining({ userId: 'user-1' }));
+  });
+
+  it('getStatisticsByCountry delegates with parsed dates', async () => {
+    statisticsQueryService.getByCountry.mockResolvedValue({ items: [], totalGross: 0 });
+
+    await controller.getStatisticsByCountry('2024-01-01', '2024-01-31', 'user-1');
+
+    expect(statisticsQueryService.getByCountry).toHaveBeenCalledWith(expect.objectContaining({ userId: 'user-1' }));
   });
 
   it('throws on invalid statistics date range', async () => {

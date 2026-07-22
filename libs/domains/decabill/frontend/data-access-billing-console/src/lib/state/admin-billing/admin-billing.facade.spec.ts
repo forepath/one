@@ -10,6 +10,7 @@ import {
   loadAdminAuditLogs,
   loadAdminBillingSummary,
   loadAdminOpenOverdue,
+  loadAdminStatisticsByCountry,
   loadAdminStatisticsByProduct,
   loadAdminStatisticsSummary,
 } from './admin-billing.actions';
@@ -78,6 +79,14 @@ describe('AdminBillingFacade', () => {
 
     expect(store.dispatch).toHaveBeenCalledWith(
       loadAdminStatisticsByProduct({ params: { from: '2024-01-01', to: '2024-01-31' } }),
+    );
+  });
+
+  it('dispatches loadStatisticsByCountry', () => {
+    facade.loadStatisticsByCountry({ from: '2024-01-01', to: '2024-01-31' });
+
+    expect(store.dispatch).toHaveBeenCalledWith(
+      loadAdminStatisticsByCountry({ params: { from: '2024-01-01', to: '2024-01-31' } }),
     );
   });
 

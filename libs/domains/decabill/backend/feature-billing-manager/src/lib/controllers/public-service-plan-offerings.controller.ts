@@ -7,6 +7,7 @@ import { ServicePlansRepository } from '../repositories/service-plans.repository
 import { PricingService } from '../services/pricing.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
 import { TaxCalculationService } from '../services/tax-calculation.service';
+import { InvoiceTaxContextService } from '../services/invoice-tax-context.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
 import { normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
 import { enrichPricingWithTax } from '../utils/pricing-tax.utils';
@@ -24,6 +25,7 @@ export class PublicServicePlanOfferingsController {
     private readonly servicePlansRepository: ServicePlansRepository,
     private readonly pricingService: PricingService,
     private readonly taxCalculationService: TaxCalculationService,
+    private readonly invoiceTaxContextService: InvoiceTaxContextService,
     private readonly withdrawalPolicyService: WithdrawalPolicyService,
     private readonly providerServerTypesService: ProviderServerTypesService,
   ) {}
@@ -39,7 +41,8 @@ export class PublicServicePlanOfferingsController {
       throw new NotFoundException('No active service plan offerings');
     }
 
-    const offerings = await Promise.all(rows.map((row) => this.mapToOffering(row)));
+    const computeOptions = await this.resolveIssuerComputeOptions();
+    const offerings = await Promise.all(rows.map((row) => this.mapToOffering(row, computeOptions)));
     let bestOffering = offerings[0];
     let bestPrice = bestOffering.totalGrossFrom ?? bestOffering.totalGross;
 
@@ -67,16 +70,30 @@ export class PublicServicePlanOfferingsController {
     const rawOffset = offset ?? 0;
     const skip = Math.max(Number.isFinite(rawOffset) ? rawOffset : 0, 0);
     const rows = await this.servicePlansRepository.findActiveWithServiceType(take, skip, serviceTypeId);
+    const computeOptions = await this.resolveIssuerComputeOptions();
 
-    return Promise.all(rows.map((row) => this.mapToOffering(row)));
+    return Promise.all(rows.map((row) => this.mapToOffering(row, computeOptions)));
   }
 
-  private async mapToOffering(row: ServicePlanEntity): Promise<PublicServicePlanOfferingDto> {
+  private async resolveIssuerComputeOptions() {
+    const taxContext = await this.invoiceTaxContextService.resolveIssuerDefault();
+
+    return {
+      taxTreatment: taxContext.treatment,
+      forceChargeNonEuIssuerEuB2b: taxContext.forceChargeNonEuIssuerEuB2b,
+    };
+  }
+
+  private async mapToOffering(
+    row: ServicePlanEntity,
+    computeOptions: Awaited<ReturnType<PublicServicePlanOfferingsController['resolveIssuerComputeOptions']>>,
+  ): Promise<PublicServicePlanOfferingDto> {
     const taxCategory = resolvePlanTaxCategory(row);
     const pricingWithTax = enrichPricingWithTax(
       this.pricingService.calculate(row),
       taxCategory,
       this.taxCalculationService,
+      computeOptions,
     );
     const allowCustomerServerTypeSelection = row.allowCustomerServerTypeSelection === true;
     const allowedServerTypes = normalizeAllowedServerTypes(row.allowedServerTypes);
@@ -98,6 +115,7 @@ export class PublicServicePlanOfferingsController {
           this.pricingService.calculate(row, lowestBase),
           taxCategory,
           this.taxCalculationService,
+          computeOptions,
         );
 
         totalPriceFrom = fromPricing.totalPrice;

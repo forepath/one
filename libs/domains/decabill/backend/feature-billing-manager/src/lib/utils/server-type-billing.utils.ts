@@ -176,6 +176,7 @@ export async function resolvePeriodTotalPrice(
     items?: SubscriptionItemBillingContext[];
     configSnapshot?: Record<string, unknown>;
     serviceType?: SubscriptionItemBillingContext['serviceType'];
+    computeOptions?: import('../services/tax-calculation.service').ComputeLinesOptions;
   },
 ): Promise<number> {
   let basePriceOverride: number | undefined;
@@ -193,14 +194,17 @@ export async function resolvePeriodTotalPrice(
   const netPrice = pricingService.calculate(plan, basePriceOverride).totalPrice;
   const taxCategory = resolvePlanTaxCategory(plan);
 
-  return taxCalculationService.computeLines([
-    {
-      description: 'Subscription period',
-      quantity: 1,
-      unitPriceNet: netPrice,
-      taxCategory,
-    },
-  ]).totalGross;
+  return taxCalculationService.computeLines(
+    [
+      {
+        description: 'Subscription period',
+        quantity: 1,
+        unitPriceNet: netPrice,
+        taxCategory,
+      },
+    ],
+    context.computeOptions,
+  ).totalGross;
 }
 
 export function extractBillingBasePriceOverride(

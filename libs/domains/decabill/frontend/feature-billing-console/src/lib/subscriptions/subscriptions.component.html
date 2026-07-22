@@ -1785,6 +1785,54 @@
               [disabled]="(customerProfileUpdating$ | async) === true"
             />
           </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="profileCustomerType" class="form-label" i18n="@@featureSubscriptions-customerType"
+                >Customer type</label
+              >
+              <select
+                id="profileCustomerType"
+                name="customerType"
+                class="form-select"
+                [(ngModel)]="profileForm.customerType"
+                [disabled]="(customerProfileUpdating$ | async) === true"
+              >
+                <option value="consumer" i18n="@@featureBilling-customerTypeConsumer">Consumer</option>
+                <option value="business" i18n="@@featureBilling-customerTypeBusiness">Business</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="profileVatId" class="form-label" i18n="@@featureSubscriptions-vatId">VAT ID</label>
+              <input
+                type="text"
+                class="form-control"
+                id="profileVatId"
+                name="vatId"
+                [(ngModel)]="profileForm.vatId"
+                [disabled]="(customerProfileUpdating$ | async) === true"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+          @if (customerProfile$ | async; as validationProfile) {
+            <div class="mb-3">
+              <label class="form-label" i18n="@@featureSubscriptions-vatIdValidationStatus">VAT ID validation</label>
+              <input
+                type="text"
+                class="form-control"
+                [value]="vatIdValidationStatusLabel(validationProfile.vatIdValidationStatus)"
+                readonly
+                disabled
+                aria-readonly="true"
+              />
+              @if (validationProfile.vatIdValidatedAt) {
+                <div class="form-text">
+                  <span i18n="@@featureSubscriptions-vatIdValidatedAt">Validated at:</span>
+                  {{ formatDate(validationProfile.vatIdValidatedAt) }}
+                </div>
+              }
+            </div>
+          }
           <div class="mb-3">
             <label for="profileEmail" class="form-label" i18n="@@featureSubscriptions-email">Email</label>
             <input

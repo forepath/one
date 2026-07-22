@@ -12,6 +12,8 @@ import {
   selectAdminOpenOverdueItems,
   selectAdminOpenOverdueLoading,
   selectAdminOpenOverdueTotal,
+  selectAdminStatisticsByCountry,
+  selectAdminStatisticsByCountryLoading,
   selectAdminStatisticsByProduct,
   selectAdminStatisticsByProductLoading,
   selectAdminStatisticsError,
@@ -49,6 +51,13 @@ describe('adminBillingSelectors', () => {
     statisticsSummaryLoading: true,
     statisticsByProduct: { items: [], totalGross: 0, from: '2024-01-01', to: '2024-01-31' },
     statisticsByProductLoading: true,
+    statisticsByCountry: {
+      items: [{ countryCode: 'DE', countryName: 'Germany', totalGross: 40 }],
+      totalGross: 40,
+      from: '2024-01-01',
+      to: '2024-01-31',
+    },
+    statisticsByCountryLoading: true,
     statisticsError: 'stats err',
     auditLogsByInvoice: { 'inv-1': [] },
     auditLogsTotalByInvoice: { 'inv-1': 0 },
@@ -85,6 +94,8 @@ describe('adminBillingSelectors', () => {
     expect(selectAdminStatisticsSummaryLoading.projector(state)).toBe(true);
     expect(selectAdminStatisticsByProduct.projector(state)?.totalGross).toBe(0);
     expect(selectAdminStatisticsByProductLoading.projector(state)).toBe(true);
+    expect(selectAdminStatisticsByCountry.projector(state)?.totalGross).toBe(40);
+    expect(selectAdminStatisticsByCountryLoading.projector(state)).toBe(true);
     expect(selectAdminStatisticsError.projector(state)).toBe('stats err');
   });
 

@@ -1,6 +1,8 @@
 # Per-plan tax category
 
-Service plans store a `taxCategory` (`standard` or `reduced`) that drives VAT on all **automated subscription** flows.
+Service plans store a `taxCategory` (`standard` or `reduced`) that drives the **rate class** on automated subscription lines.
+
+Place-of-supply / reverse charge / OSS is determined separately by **tax mode** (see `docs/decabill/features/vat-and-tax-treatment.md`). Category chooses standard vs reduced **within** the tax country selected by tax mode.
 
 ## Semantics
 
@@ -8,29 +10,28 @@ Service plans store a `taxCategory` (`standard` or `reduced`) that drives VAT on
 - **Default:** Existing and new plans default to `standard` when omitted.
 - **Manual invoices:** Per-line tax on admin-created invoices is unchanged and independent of plan settings.
 - **Project billing:** Time-based default lines remain `standard` unless admins add custom lines.
+- **Country rates:** Resolved from `eu-vat-rates.constants.ts` for the tax country (not only DE 19/7 env vars).
 
 ## Affected flows
 
 | Flow                                           | Tax source                                                       |
 | ---------------------------------------------- | ---------------------------------------------------------------- |
-| Subscription invoices                          | `resolvePlanTaxCategory(plan)`                                   |
-| Pricing preview (`POST /pricing/preview`)      | Plan tax category                                                |
+| Subscription invoices                          | Plan category + customer/issuer tax mode                         |
+| Pricing preview (`POST /pricing/preview`)      | Plan tax category (+ tax mode when customer context available)   |
 | `periodTotalPrice` on subscriptions/backorders | Plan tax category                                                |
 | Withdrawal partial refunds                     | Plan tax category at withdrawal                                  |
 | Partial credit PDFs                            | Plan tax category                                                |
 | Public offerings (`totalGross`, `taxRate`)     | Plan tax category                                                |
-| DATEV Buchungsstapel (invoice lines)           | Persisted line `taxCategory` from invoice creation               |
+| DATEV Buchungsstapel (invoice lines)           | Persisted line + invoice `taxMode`                               |
 | DATEV Buchungsstapel (partial credits)         | Snapshotted `tax_category` on `billing_invoice_credit_documents` |
 
 ## Admin configuration
 
-On the service plans page, choose **Standard (19%)** or **Reduced (7%)** when creating or editing a plan. Estimated prices in the modal show net + VAT + gross.
+On the service plans page, choose **Standard** or **Reduced** when creating or editing a plan. UI labels may still show example rates; actual percentages come from the country rate table / env overrides.
 
 ## DATEV export
 
-Invoice booking rows already map `line.taxCategory` to revenue accounts (`8400`/`8300` SKR03 defaults). Partial withdrawal credits are exported as separate `H` rows using the snapshotted credit document `taxCategory`.
-
-Operators using reduced plans should confirm `BILLING_DATEV_REVENUE_ACCOUNT_REDUCED` and `BILLING_DATEV_BU_KEY_REDUCED` match their chart of accounts.
+Booking rows map by **`taxMode` + `taxCategory`** to revenue accounts (including reverse-charge / OSS / third-country accounts). See environment configuration for `BILLING_DATEV_REVENUE_ACCOUNT_*` keys.
 
 ## Plan tax change mid-subscription
 

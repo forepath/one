@@ -12,6 +12,7 @@ export * from './lib/utils/plan-provisioning-options.utils';
 export * from './lib/utils/provider-config-schema.utils';
 export * from './lib/utils/server-type-format.utils';
 export * from './lib/utils/server-type-list.utils';
+export * from './lib/utils/tax-preview.utils';
 
 // Constants
 export * from './lib/constants/supported-countries';

@@ -18,11 +18,12 @@ Split layout with dashboard cards and charts on the left, invoice list on the ri
 
 ### KPIs and Statistics
 
-| Method | Path                                   | Purpose                      |
-| ------ | -------------------------------------- | ---------------------------- |
-| GET    | `/admin/billing/summary`               | High-level billing summary   |
-| GET    | `/admin/billing/statistics/summary`    | Aggregated statistics        |
-| GET    | `/admin/billing/statistics/by-product` | Breakdown by product or plan |
+| Method | Path                                   | Purpose                                           |
+| ------ | -------------------------------------- | ------------------------------------------------- |
+| GET    | `/admin/billing/summary`               | High-level billing summary                        |
+| GET    | `/admin/billing/statistics/summary`    | Aggregated statistics                             |
+| GET    | `/admin/billing/statistics/by-product` | Breakdown by plan or project (Unknown if neither) |
+| GET    | `/admin/billing/statistics/by-country` | Breakdown by buyer country                        |
 
 ### Invoice Lists
 

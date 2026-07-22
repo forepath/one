@@ -9,3 +9,7 @@ export const DatevExportJobName = {
   COORDINATOR: 'datev-export.coordinator',
   UNIT: 'datev-export.unit',
 } as const;
+
+export const VatIdValidationJobName = {
+  UNIT: 'vat-id-validation.unit',
+} as const;

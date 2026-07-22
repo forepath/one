@@ -51,6 +51,7 @@ import { PricingService } from './pricing.service';
 import { ProvisioningService } from './provisioning.service';
 import { PromotionRedemptionService } from './promotion-redemption.service';
 import { TaxCalculationService } from './tax-calculation.service';
+import { InvoiceTaxContextService } from './invoice-tax-context.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
@@ -76,6 +77,7 @@ export class SubscriptionService {
     private readonly providerServerTypesService: ProviderServerTypesService,
     private readonly pricingService: PricingService,
     private readonly taxCalculationService: TaxCalculationService,
+    private readonly invoiceTaxContextService: InvoiceTaxContextService,
     private readonly withdrawalPolicyService: WithdrawalPolicyService,
     private readonly withdrawalRefundService: WithdrawalRefundService,
     private readonly backordersRepository: BackordersRepository,
@@ -565,12 +567,19 @@ export class SubscriptionService {
     let periodTotalPrice: number | undefined;
 
     if (plan) {
+      const taxContext = await this.invoiceTaxContextService.resolveForUser(subscription.userId);
       periodTotalPrice = await resolvePeriodTotalPrice(
         plan,
         this.pricingService,
         this.taxCalculationService,
         this.providerServerTypesService,
-        { items },
+        {
+          items,
+          computeOptions: {
+            taxTreatment: taxContext.treatment,
+            forceChargeNonEuIssuerEuB2b: taxContext.forceChargeNonEuIssuerEuB2b,
+          },
+        },
       );
     }
 

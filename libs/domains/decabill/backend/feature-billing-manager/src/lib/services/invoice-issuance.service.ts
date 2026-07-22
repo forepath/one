@@ -15,9 +15,13 @@ import { BillingIssuerConfigService } from './billing-issuer-config.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { InvoicePdfService } from './invoice-pdf.service';
+import { InvoiceTaxContextService } from './invoice-tax-context.service';
+import { OssThresholdService } from './oss-threshold.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
+import { isEuMemberState } from '../constants/eu-member-states.constants';
+import { TaxMode } from '../constants/tax-mode.constants';
 
 export interface IssueDraftOptions {
   skipNotification?: boolean;
@@ -39,6 +43,8 @@ export class InvoiceIssuanceService {
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly autoBillingService: AutoBillingService,
     private readonly customerTrustScoreService: CustomerTrustScoreService,
+    private readonly invoiceTaxContextService: InvoiceTaxContextService,
+    private readonly ossThresholdService: OssThresholdService,
   ) {}
 
   async issueDraft(invoiceId: string, dueInDays = 14, options?: IssueDraftOptions): Promise<InvoiceEntity> {
@@ -115,6 +121,28 @@ export class InvoiceIssuanceService {
     }
 
     this.billingNotificationPublisher.publishInvoice('invoice.issued', issued);
+
+    if (issued.taxMode && issued.taxMode !== TaxMode.DOMESTIC_VAT) {
+      this.billingNotificationPublisher.publish(
+        'invoice.tax_mode_applied',
+        {
+          invoiceId: issued.id,
+          userId: issued.userId,
+          taxMode: issued.taxMode,
+          taxCountryCode: issued.taxCountryCode ?? null,
+          buyerCountry: issued.buyerCountry ?? null,
+        },
+        issued.userId,
+      );
+    }
+
+    const taxContext = await this.invoiceTaxContextService.resolveForUser(invoice.userId);
+
+    if (taxContext.countsTowardOssLedger && isEuMemberState(issued.buyerCountry) && Number(issued.subtotalNet) > 0) {
+      await this.ossThresholdService.recordCrossBorderB2cNet({
+        netAmount: Number(issued.subtotalNet),
+      });
+    }
 
     if (!isPromotionalZeroBalance) {
       await this.autoBillingService.scheduleIfEligible(issued);

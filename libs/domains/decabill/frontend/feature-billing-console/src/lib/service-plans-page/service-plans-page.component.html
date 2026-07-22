@@ -412,7 +412,7 @@
             </div>
             <div class="mb-3">
               <span class="form-label d-block" i18n="@@featureServicePlans-taxCategory">VAT rate</span>
-              @for (option of taxCategoryOptions; track option.value) {
+              @for (option of taxCategoryOptions(); track option.value) {
                 <div class="form-check">
                   <input
                     type="radio"
@@ -1164,7 +1164,7 @@
             </div>
             <div class="mb-3">
               <span class="form-label d-block" i18n="@@featureServicePlans-taxCategory">VAT rate</span>
-              @for (option of taxCategoryOptions; track option.value) {
+              @for (option of taxCategoryOptions(); track option.value) {
                 <div class="form-check">
                   <input
                     type="radio"

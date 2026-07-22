@@ -10,10 +10,16 @@ export interface DatevTenantExportConfig {
   accountLength: number;
   revenueAccountStandard: string;
   revenueAccountReduced: string;
+  revenueAccountReverseCharge: string;
+  revenueAccountOss: string;
+  revenueAccountThirdCountry: string;
   debtorAccountStart: number;
   debtorAccountEnd: number;
   buKeyStandard: string;
   buKeyReduced: string;
+  buKeyReverseCharge: string;
+  buKeyOss: string;
+  buKeyThirdCountry: string;
   includeDocuments: boolean;
   dictationAbbr: string;
   fiscalYearStartMonth: number;
@@ -26,10 +32,16 @@ interface DatevTenantConfigOverrides {
   accountLength?: number;
   revenueAccountStandard?: string;
   revenueAccountReduced?: string;
+  revenueAccountReverseCharge?: string;
+  revenueAccountOss?: string;
+  revenueAccountThirdCountry?: string;
   debtorAccountStart?: number;
   debtorAccountEnd?: number;
   buKeyStandard?: string;
   buKeyReduced?: string;
+  buKeyReverseCharge?: string;
+  buKeyOss?: string;
+  buKeyThirdCountry?: string;
   includeDocuments?: boolean;
   dictationAbbr?: string;
   fiscalYearStartMonth?: number;
@@ -98,6 +110,24 @@ export class DatevExportConfigService implements OnModuleInit {
         'BILLING_DATEV_REVENUE_ACCOUNT_REDUCED',
         chartOfAccounts === 'SKR04' ? '4300' : '8300',
       ),
+      revenueAccountReverseCharge: this.resolveString(
+        tenantId,
+        'revenueAccountReverseCharge',
+        'BILLING_DATEV_REVENUE_ACCOUNT_REVERSE_CHARGE',
+        chartOfAccounts === 'SKR04' ? '4336' : '8336',
+      ),
+      revenueAccountOss: this.resolveString(
+        tenantId,
+        'revenueAccountOss',
+        'BILLING_DATEV_REVENUE_ACCOUNT_OSS',
+        chartOfAccounts === 'SKR04' ? '4400' : '8400',
+      ),
+      revenueAccountThirdCountry: this.resolveString(
+        tenantId,
+        'revenueAccountThirdCountry',
+        'BILLING_DATEV_REVENUE_ACCOUNT_THIRD_COUNTRY',
+        chartOfAccounts === 'SKR04' ? '4338' : '8338',
+      ),
       debtorAccountStart: this.resolveNumber(
         tenantId,
         'debtorAccountStart',
@@ -107,6 +137,9 @@ export class DatevExportConfigService implements OnModuleInit {
       debtorAccountEnd: this.resolveNumber(tenantId, 'debtorAccountEnd', 'BILLING_DATEV_DEBTOR_ACCOUNT_END', 69_999),
       buKeyStandard: this.resolveString(tenantId, 'buKeyStandard', 'BILLING_DATEV_BU_KEY_STANDARD', ''),
       buKeyReduced: this.resolveString(tenantId, 'buKeyReduced', 'BILLING_DATEV_BU_KEY_REDUCED', ''),
+      buKeyReverseCharge: this.resolveString(tenantId, 'buKeyReverseCharge', 'BILLING_DATEV_BU_KEY_REVERSE_CHARGE', ''),
+      buKeyOss: this.resolveString(tenantId, 'buKeyOss', 'BILLING_DATEV_BU_KEY_OSS', ''),
+      buKeyThirdCountry: this.resolveString(tenantId, 'buKeyThirdCountry', 'BILLING_DATEV_BU_KEY_THIRD_COUNTRY', ''),
       includeDocuments: this.resolveBoolean(
         tenantId,
         'includeDocuments',

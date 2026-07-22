@@ -337,6 +337,41 @@
     </div>
   </div>
   <input class="form-control mb-2" placeholder="Company" [(ngModel)]="form.company" [name]="prefix + 'Company'" />
+  <div class="row g-2">
+    <div class="col-md-6">
+      <select class="form-select mb-2" [(ngModel)]="form.customerType" [name]="prefix + 'CustomerType'">
+        <option value="consumer" i18n="@@featureBilling-customerTypeConsumer">Consumer</option>
+        <option value="business" i18n="@@featureBilling-customerTypeBusiness">Business</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <input
+        class="form-control mb-2"
+        placeholder="VAT ID"
+        i18n-placeholder="@@featureAdminProfiles-vatIdPlaceholder"
+        [(ngModel)]="form.vatId"
+        [name]="prefix + 'VatId'"
+        autocomplete="off"
+      />
+    </div>
+  </div>
+  @if (prefix === 'edit') {
+    <input
+      class="form-control mb-2"
+      [value]="vatIdValidationStatusLabel(editForm.vatIdValidationStatus)"
+      readonly
+      disabled
+      aria-readonly="true"
+      i18n-aria-label="@@featureAdminProfiles-vatIdValidationStatus"
+      aria-label="VAT ID validation"
+    />
+    @if (editForm.vatIdValidatedAt) {
+      <p class="form-text mb-2">
+        <span i18n="@@featureAdminProfiles-vatIdValidatedAt">Validated at:</span>
+        {{ formatDate(editForm.vatIdValidatedAt) }}
+      </p>
+    }
+  }
   <input class="form-control mb-2" placeholder="Email" [(ngModel)]="form.email" [name]="prefix + 'Email'" />
   <input
     class="form-control mb-2"

@@ -79,6 +79,29 @@ describe('InvoiceService', () => {
   const customerTrustScoreService = {
     triggerRecomputeForUser: jest.fn(),
   };
+  const invoiceTaxContextService = {
+    resolveForUser: jest.fn().mockResolvedValue({
+      treatment: {
+        taxMode: 'domestic_vat',
+        taxCountryCode: 'DE',
+        chargeVat: true,
+        einvoiceTaxCategoryCode: 'S',
+        invoiceNoteKey: 'domestic_vat',
+        invoiceNote: '',
+        issuerIsInEu: true,
+      },
+      forceChargeNonEuIssuerEuB2b: false,
+      buyerVatId: null,
+      buyerCountry: 'DE',
+      buyerCustomerType: 'consumer',
+      issuerCountry: 'DE',
+      countsTowardOssLedger: false,
+    }),
+  };
+  const ossThresholdService = {
+    recordCrossBorderB2cNet: jest.fn(),
+    getDecision: jest.fn(),
+  };
   const service = new InvoiceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -97,6 +120,8 @@ describe('InvoiceService', () => {
     promotionApplicationService as never,
     billingNotificationPublisher as never,
     customerTrustScoreService as never,
+    invoiceTaxContextService as never,
+    ossThresholdService as never,
   );
   const subscriptionId = 'sub-1';
   const userId = 'user-1';
@@ -106,6 +131,23 @@ describe('InvoiceService', () => {
     process.env.BILLING_TAX_RATE_STANDARD = '19';
     process.env.BILLING_TAX_RATE_REDUCED = '7';
     delete process.env.BILLING_SKIP_FILE_CACHE;
+    invoiceTaxContextService.resolveForUser.mockResolvedValue({
+      treatment: {
+        taxMode: 'domestic_vat',
+        taxCountryCode: 'DE',
+        chargeVat: true,
+        einvoiceTaxCategoryCode: 'S',
+        invoiceNoteKey: 'domestic_vat',
+        invoiceNote: '',
+        issuerIsInEu: true,
+      },
+      forceChargeNonEuIssuerEuB2b: false,
+      buyerVatId: null,
+      buyerCountry: 'DE',
+      buyerCustomerType: 'consumer',
+      issuerCountry: 'DE',
+      countsTowardOssLedger: false,
+    });
     subscriptionsRepository.findById.mockResolvedValue({
       id: subscriptionId,
       planId: 'plan-1',

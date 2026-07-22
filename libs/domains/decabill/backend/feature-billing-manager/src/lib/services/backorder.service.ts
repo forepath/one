@@ -41,6 +41,7 @@ import { ProviderServerTypesService } from './provider-server-types.service';
 import { PricingService } from './pricing.service';
 import { ProvisioningService } from './provisioning.service';
 import { TaxCalculationService } from './tax-calculation.service';
+import { InvoiceTaxContextService } from './invoice-tax-context.service';
 
 @Injectable()
 export class BackorderService {
@@ -61,6 +62,7 @@ export class BackorderService {
     private readonly providerServerTypesService: ProviderServerTypesService,
     private readonly pricingService: PricingService,
     private readonly taxCalculationService: TaxCalculationService,
+    private readonly invoiceTaxContextService: InvoiceTaxContextService,
   ) {}
 
   async create(data: {
@@ -326,6 +328,7 @@ export class BackorderService {
     const resolvedPlan = plan ?? (await this.servicePlansRepository.findByIdOrThrow(row.planId));
     const resolvedServiceType =
       serviceType ?? (await this.serviceTypesRepository.findByIdOrThrow(resolvedPlan.serviceTypeId));
+    const taxContext = await this.invoiceTaxContextService.resolveForUser(row.userId);
     const periodTotalPrice = await resolvePeriodTotalPrice(
       resolvedPlan,
       this.pricingService,
@@ -334,6 +337,10 @@ export class BackorderService {
       {
         configSnapshot: row.requestedConfigSnapshot,
         serviceType: resolvedServiceType,
+        computeOptions: {
+          taxTreatment: taxContext.treatment,
+          forceChargeNonEuIssuerEuB2b: taxContext.forceChargeNonEuIssuerEuB2b,
+        },
       },
     );
 

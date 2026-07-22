@@ -473,13 +473,63 @@ export interface PricingPreviewResponse {
   taxCategory?: TaxCategory;
 }
 
+export interface TaxPreviewRates {
+  standard: number;
+  reduced: number;
+}
+
+export interface TaxPreviewLineItemDto {
+  description?: string;
+  quantity: number;
+  unitPriceNet: number;
+  taxCategory?: TaxCategory;
+}
+
+export interface TaxPreviewRequestDto {
+  userId?: string;
+  lineItems?: TaxPreviewLineItemDto[];
+}
+
+export interface TaxPreviewResponse {
+  taxMode: string;
+  taxCountryCode: string;
+  chargeVat: boolean;
+  taxNote: string | null;
+  einvoiceTaxCategoryCode: string;
+  rates: TaxPreviewRates;
+  subtotalNet?: number;
+  taxTotal?: number;
+  totalGross?: number;
+  lines?: Array<{
+    description: string;
+    quantity: number;
+    unitPriceNet: number;
+    taxCategory: TaxCategory;
+    taxRate: number;
+    lineNet: number;
+    lineTax: number;
+    lineGross: number;
+  }>;
+}
+
 // Customer Profile
+export type CustomerType = 'business' | 'consumer';
+
+export type VatIdValidationStatus = 'none' | 'pending' | 'valid' | 'invalid' | 'unavailable';
+
+export type VatIdValidationSource = 'vies_sync' | 'vies_async' | 'admin' | 'format_only';
+
 export interface CustomerProfileResponse {
   id: string;
   userId: string;
   firstName?: string | null;
   lastName?: string | null;
   company?: string | null;
+  customerType?: CustomerType | null;
+  vatId?: string | null;
+  vatIdValidationStatus?: VatIdValidationStatus;
+  vatIdValidatedAt?: string | null;
+  vatIdValidationSource?: VatIdValidationSource | null;
   addressLine1?: string | null;
   addressLine2?: string | null;
   postalCode?: string | null;
@@ -500,6 +550,8 @@ export interface CustomerProfileDto {
   firstName?: string;
   lastName?: string;
   company?: string;
+  customerType?: CustomerType;
+  vatId?: string | null;
   addressLine1?: string;
   addressLine2?: string;
   postalCode?: string;
@@ -802,6 +854,19 @@ export interface BillingStatisticsByProduct {
   to: string;
 }
 
+export interface BillingStatisticsByCountryItem {
+  countryCode: string;
+  countryName: string;
+  totalGross: number;
+}
+
+export interface BillingStatisticsByCountry {
+  items: BillingStatisticsByCountryItem[];
+  totalGross: number;
+  from: string;
+  to: string;
+}
+
 export interface AdminBillingStatisticsParams {
   from?: string;
   to?: string;
@@ -850,6 +915,11 @@ export interface AdminCustomerProfileListItem {
   firstName?: string;
   lastName?: string;
   company?: string;
+  customerType?: CustomerType | null;
+  vatId?: string | null;
+  vatIdValidationStatus?: VatIdValidationStatus;
+  vatIdValidatedAt?: string | null;
+  vatIdValidationSource?: VatIdValidationSource | null;
   email?: string;
   country?: string;
   isComplete: boolean;

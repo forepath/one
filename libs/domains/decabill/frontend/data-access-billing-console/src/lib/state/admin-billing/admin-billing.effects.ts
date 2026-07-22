@@ -29,6 +29,9 @@ import {
   loadAdminStatisticsByProduct,
   loadAdminStatisticsByProductFailure,
   loadAdminStatisticsByProductSuccess,
+  loadAdminStatisticsByCountry,
+  loadAdminStatisticsByCountryFailure,
+  loadAdminStatisticsByCountrySuccess,
   loadAdminStatisticsSummary,
   loadAdminStatisticsSummaryFailure,
   loadAdminStatisticsSummarySuccess,
@@ -157,6 +160,20 @@ export const loadAdminStatisticsByProduct$ = createEffect(
         service.getStatisticsByProduct(params).pipe(
           map((byProduct) => loadAdminStatisticsByProductSuccess({ byProduct })),
           catchError((error) => of(loadAdminStatisticsByProductFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const loadAdminStatisticsByCountry$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
+    actions$.pipe(
+      ofType(loadAdminStatisticsByCountry),
+      switchMap(({ params }) =>
+        service.getStatisticsByCountry(params).pipe(
+          map((byCountry) => loadAdminStatisticsByCountrySuccess({ byCountry })),
+          catchError((error) => of(loadAdminStatisticsByCountryFailure({ error: normalizeError(error) }))),
         ),
       ),
     ),

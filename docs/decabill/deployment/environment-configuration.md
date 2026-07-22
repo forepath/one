@@ -67,8 +67,11 @@ Billing data and users are partitioned by **`tenant_id`**. HTTP clients send **`
 | `ENCRYPTION_KEY`                           | Encrypts sensitive stored data (API tokens, snapshots, webhook auth/signing secrets)                                             |
 | `BILLING_ISSUER_*`                         | Legal entity on invoices and public withdrawal addressee (name, VAT, address, bank); also fallback for email brand header/footer |
 | `PUBLIC_WITHDRAWAL_CONFIRMATION_TTL_HOURS` | Hours until a public withdrawal confirmation code expires (default `48`)                                                         |
-| `BILLING_TAX_RATE_STANDARD`                | Default standard tax rate (default `19`)                                                                                         |
-| `BILLING_TAX_RATE_REDUCED`                 | Reduced tax rate (default `7`)                                                                                                   |
+| `BILLING_TAX_RATE_STANDARD`                | Issuer-country override for standard rate when EU table entry missing (default `19`)                                             |
+| `BILLING_TAX_RATE_REDUCED`                 | Issuer-country override for reduced rate when EU table entry missing (default `7`)                                               |
+| `BILLING_OSS_REGISTERED`                   | When `true`, always use destination-country VAT for EU B2C (skip €10k threshold ledger)                                          |
+| `BILLING_OSS_THRESHOLD_EUR`                | Cross-border EU B2C net threshold (default `10000`)                                                                              |
+| `BILLING_NON_EU_ISSUER_EU_B2B_CHARGE_VAT`  | When `true`, non-EU issuer → EU B2B charges customer-country VAT instead of default no-VAT                                       |
 | `BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS` | Days after provisioning during which statutory withdrawal is allowed (default `14`)                                              |
 | `BILLING_INVOICE_PDF_STORAGE_PATH`         | PDF output path (default `/data/invoices`)                                                                                       |
 | `BILLING_SKIP_FILE_CACHE`                  | Skip PDF file cache when `true`                                                                                                  |

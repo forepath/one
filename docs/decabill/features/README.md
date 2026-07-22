@@ -13,6 +13,7 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **Service Types and Plans** - Admin-managed catalog with provider schemas and pricing
 - **Billing Administration** - Manual invoices, customer profiles, KPIs, and bill-now
 - **Customer Profiles** - Self-service and admin billing metadata required for ordering
+- **VAT and tax treatment** - EU place-of-supply modes, VIES VAT ID validation, OSS threshold, reverse charge
 - **Customer Trust Score** - Admin-only traffic-light trust ranking on billing profiles
 - **Dashboard and Server Control** - Overview of subscriptions with start, stop, and restart actions
 - **Real-time Status** - WebSocket dashboard stream for provisioned server status
@@ -118,6 +119,11 @@ Billing metadata required before subscription orders and for compliant invoice i
 - Admin CRUD under `/admin/billing/customer-profiles`
 - Stripe customer ID stored on profile when payments are initiated
 - Completeness validation before `POST /subscriptions`
+- Customer type, VAT ID, and VIES validation status for reverse-charge eligibility
+
+### [VAT and tax treatment](./vat-and-tax-treatment.md)
+
+EU place-of-supply tax modes (domestic, reverse charge, OSS, third-country), country VAT rate table, invoice snapshots, eInvoice/DATEV parity, and OSS €10k threshold.
 
 ### [Customer Trust Score](./customer-trust-score.md)
 

@@ -46,6 +46,7 @@ Events are published from the **billing** service after successful mutations.
 ### Billing and subscriptions
 
 - `invoice.created`, `invoice.issued`, `invoice.voided`
+- `invoice.tax_mode_applied` (non-domestic tax modes at issue time)
 - `payment.initiated`, `payment.succeeded`, `payment.failed`
 - `payment.auto.initiated`, `payment.auto.retry_scheduled`, `payment.auto.exhausted`
 - `auto_billing.enabled`, `auto_billing.disabled`
@@ -82,6 +83,8 @@ Ticket payloads include metadata only; full ticket body content is not included 
 ### DATEV exports
 
 - `datev_export.started`, `datev_export.completed`, `datev_export.failed`
+- `vat_id.validation_succeeded`, `vat_id.validation_failed`, `vat_id.validation_pending`, `vat_id.validation_unavailable`
+- `oss.threshold_exceeded`
 
 DATEV export events are tenant-scoped admin operations; `client_id` is omitted. Export file contents and storage paths are never included in webhook payloads.
 
