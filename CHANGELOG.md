@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.18.0](https://github.com/forepath/one/compare/v2.17.1...v2.18.0) (2026-07-22)
+
+
+### Features
+
+* customer trust scores ([#502](https://github.com/forepath/one/issues/502)) ([b666d73](https://github.com/forepath/one/commit/b666d73638eb514fd722c52aa664f4f63fb11753))
+* extended taxing logic ([#506](https://github.com/forepath/one/issues/506)) ([c2f7932](https://github.com/forepath/one/commit/c2f7932627dca48d4b06feacebfffc3c9f2ddaa2))
+* personal access token auth ([#500](https://github.com/forepath/one/issues/500)) ([d98b90f](https://github.com/forepath/one/commit/d98b90fa162d1fa494f96b4b7641405ddda4e280))
+
 ## [2.17.1](https://github.com/forepath/one/compare/v2.17.0...v2.17.1) (2026-07-18)
 
 
