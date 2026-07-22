@@ -19,7 +19,9 @@ Before `POST /subscriptions`, the backend validates:
 - City
 - Country
 
-Optional fields may include company name, VAT ID, postal code, and phone depending on deployment configuration and invoice issuer rules.
+Optional fields may include company name, customer type (business/consumer), VAT ID (with VIES validation status), postal code, and phone depending on deployment configuration and invoice issuer rules.
+
+See [VAT and tax treatment](./vat-and-tax-treatment.md) for reverse-charge eligibility and cross-border rules.
 
 ## Self-Service
 

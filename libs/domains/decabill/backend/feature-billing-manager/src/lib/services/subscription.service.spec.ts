@@ -112,6 +112,12 @@ describe('SubscriptionService', () => {
   const taxCalculationService = {
     computeLines: jest.fn().mockReturnValue({ totalGross: 11.9 }),
   } as unknown as import('./tax-calculation.service').TaxCalculationService;
+  const invoiceTaxContextService = {
+    resolveForUser: jest.fn().mockResolvedValue({
+      treatment: { taxMode: 'domestic_vat', taxCountryCode: 'DE', chargeVat: true },
+      forceChargeNonEuIssuerEuB2b: false,
+    }),
+  } as never;
   const withdrawalPolicyService = new WithdrawalPolicyService();
   const withdrawalRefundService = {
     applyProvisionedWithdrawalRefund: jest.fn(),
@@ -154,6 +160,7 @@ describe('SubscriptionService', () => {
     providerServerTypesService,
     pricingService,
     taxCalculationService,
+    invoiceTaxContextService,
     withdrawalPolicyService,
     withdrawalRefundService,
     backordersRepository,

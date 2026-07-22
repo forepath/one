@@ -29,6 +29,7 @@ import type {
   AdminBillNowResponseDto,
   AdminBillingSummaryResponseDto,
   AdminSubscriptionListItemDto,
+  BillingStatisticsByCountryDto,
   BillingStatisticsByProductDto,
   BillingStatisticsSummaryDto,
   MarkInvoicePaymentStatusDto,
@@ -54,8 +55,10 @@ import { DatevExportConfigService } from '../services/datev-export-config.servic
 import { InvoiceAdminService } from '../services/invoice-admin.service';
 import { InvoiceService } from '../services/invoice.service';
 import { ManualInvoiceService } from '../services/manual-invoice.service';
+import { TaxPreviewService } from '../services/tax-preview.service';
 import { InvoicesRepository } from '../repositories/invoices.repository';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
+import { TaxPreviewRequestDto } from '../dto/tax-preview.dto';
 
 @Controller('admin/billing')
 @KeycloakRoles(UserRole.ADMIN)
@@ -71,7 +74,14 @@ export class AdminBillingController {
     private readonly invoiceService: InvoiceService,
     private readonly invoicesRepository: InvoicesRepository,
     private readonly datevExportConfigService: DatevExportConfigService,
+    private readonly taxPreviewService: TaxPreviewService,
   ) {}
+
+  @RequireScopes('billing_admin:read')
+  @Post('tax/preview')
+  async previewTax(@Body() dto: TaxPreviewRequestDto) {
+    return await this.taxPreviewService.preview(dto);
+  }
 
   @RequireScopes('billing_admin:read')
   @Get('capabilities')
@@ -411,6 +421,22 @@ export class AdminBillingController {
     const { fromDate, toDate } = this.parseDateRange(from, to);
 
     return await this.statisticsQueryService.getByProduct({
+      from: fromDate,
+      to: toDate,
+      userId,
+    });
+  }
+
+  @RequireScopes('billing_admin:read')
+  @Get('statistics/by-country')
+  async getStatisticsByCountry(
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('userId') userId?: string,
+  ): Promise<BillingStatisticsByCountryDto> {
+    const { fromDate, toDate } = this.parseDateRange(from, to);
+
+    return await this.statisticsQueryService.getByCountry({
       from: fromDate,
       to: toDate,
       userId,

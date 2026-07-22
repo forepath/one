@@ -1,7 +1,9 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { AutoPaymentStatus } from '../constants/auto-payment-status.constants';
+import { CustomerType } from '../constants/customer-type.constants';
 import { InvoiceStatus } from '../constants/invoice-status.constants';
+import { EinvoiceTaxCategoryCode, TaxMode } from '../constants/tax-mode.constants';
 
 import { ProjectEntity } from '../projects/entities/project.entity';
 
@@ -50,6 +52,36 @@ export class InvoiceEntity {
 
   @Column({ type: 'decimal', precision: 12, scale: 4, default: 0, name: 'balance_due' })
   balanceDue!: number;
+
+  @Column({ type: 'varchar', length: 64, nullable: true, name: 'tax_mode' })
+  taxMode?: TaxMode | null;
+
+  @Column({ type: 'varchar', length: 2, nullable: true, name: 'tax_country_code' })
+  taxCountryCode?: string | null;
+
+  @Column({ type: 'text', nullable: true, name: 'tax_note' })
+  taxNote?: string | null;
+
+  @Column({ type: 'varchar', length: 8, nullable: true, name: 'einvoice_tax_category_code' })
+  einvoiceTaxCategoryCode?: EinvoiceTaxCategoryCode | string | null;
+
+  @Column({ type: 'decimal', precision: 8, scale: 4, nullable: true, name: 'resolved_tax_rate' })
+  resolvedTaxRate?: number | null;
+
+  @Column({ type: 'varchar', length: 32, nullable: true, name: 'buyer_vat_id' })
+  buyerVatId?: string | null;
+
+  @Column({ type: 'varchar', length: 2, nullable: true, name: 'buyer_country' })
+  buyerCountry?: string | null;
+
+  @Column({ type: 'varchar', length: 16, nullable: true, name: 'buyer_customer_type' })
+  buyerCustomerType?: CustomerType | null;
+
+  @Column({ type: 'varchar', length: 2, nullable: true, name: 'issuer_country' })
+  issuerCountry?: string | null;
+
+  @Column({ type: 'boolean', nullable: true, name: 'issuer_is_in_eu' })
+  issuerIsInEu?: boolean | null;
 
   @Column({ type: 'timestamp', nullable: true, name: 'issued_at' })
   issuedAt?: Date;

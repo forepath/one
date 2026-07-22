@@ -13,6 +13,12 @@ describe('WithdrawalRefundService', () => {
   const pricingService = { calculate: jest.fn() };
   const billingScheduleService = new BillingScheduleService();
   const taxCalculationService = { computeLines: jest.fn() };
+  const invoiceTaxContextService = {
+    resolveForUser: jest.fn().mockResolvedValue({
+      treatment: { taxMode: 'domestic_vat', taxCountryCode: 'DE', chargeVat: true },
+      forceChargeNonEuIssuerEuB2b: false,
+    }),
+  };
   const invoicesRepository = { findLatestBillableBySubscription: jest.fn(), update: jest.fn() };
   const invoiceLineItemsRepository = {};
   const invoiceCreditDocumentsRepository = { create: jest.fn() };
@@ -47,6 +53,7 @@ describe('WithdrawalRefundService', () => {
     pricingService as never,
     billingScheduleService as never,
     taxCalculationService as never,
+    invoiceTaxContextService as never,
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
     invoiceCreditDocumentsRepository as never,
@@ -210,6 +217,7 @@ describe('WithdrawalRefundService', () => {
           totalGross: Math.round(inputs[0].unitPriceNet * 119) / 100,
         })),
       } as never,
+      invoiceTaxContextService as never,
       invoicesRepository as never,
       invoiceLineItemsRepository as never,
       invoiceCreditDocumentsRepository as never,
@@ -291,9 +299,12 @@ describe('WithdrawalRefundService', () => {
       currentPeriodEnd: periodEnd,
     } as never);
 
-    expect(taxCalculationService.computeLines).toHaveBeenCalledWith([
-      expect.objectContaining({ taxCategory: 'reduced' }),
-    ]);
+    expect(taxCalculationService.computeLines).toHaveBeenCalledWith(
+      [expect.objectContaining({ taxCategory: 'reduced' })],
+      expect.objectContaining({
+        taxTreatment: expect.objectContaining({ taxMode: 'domestic_vat' }),
+      }),
+    );
     expect(result).toBe(5.35);
   });
 });

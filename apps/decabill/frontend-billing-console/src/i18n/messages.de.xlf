@@ -82,6 +82,10 @@
         <source> No product breakdown for selected period. </source>
         <target> Keine Produktaufschlüsselung für den ausgewählten Zeitraum. </target>
       </trans-unit>
+      <trans-unit id="featureAdminBilling-noCountryData" datatype="html">
+        <source> No country breakdown for selected period. </source>
+        <target> Keine Länderaufschlüsselung für den ausgewählten Zeitraum. </target>
+      </trans-unit>
       <trans-unit id="featureAdminBilling-invoicesTitle" datatype="html">
         <source>Invoices</source>
         <target>Rechnungen</target>
@@ -314,6 +318,10 @@
         <source>Turnover by product</source>
         <target>Umsatz nach Produkt</target>
       </trans-unit>
+      <trans-unit id="featureAdminBilling-chartCountryTitle" datatype="html">
+        <source>Turnover by country</source>
+        <target>Umsatz nach Land</target>
+      </trans-unit>
       <trans-unit id="featureAdminProfiles-title" datatype="html">
         <source>Billing Profiles</source>
         <target>Abrechnungsprofile</target>
@@ -389,6 +397,18 @@
       <trans-unit id="featureAdminProfiles-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-vatIdPlaceholder" datatype="html">
+        <source>VAT ID</source>
+        <target>USt-IdNr.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-vatIdValidationStatus" datatype="html">
+        <source>VAT ID validation</source>
+        <target>USt-IdNr.-Prüfung</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-vatIdValidatedAt" datatype="html">
+        <source>Validated at:</source>
+        <target>Geprüft am:</target>
       </trans-unit>
       <trans-unit id="featureBilling-customerTrustGreen" datatype="html">
         <source>High trust</source>
@@ -745,6 +765,34 @@
       <trans-unit id="featureBilling-profileIncomplete" datatype="html">
         <source>Incomplete</source>
         <target>Unvollständig</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-customerTypeBusiness" datatype="html">
+        <source>Business</source>
+        <target>Unternehmen</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-customerTypeConsumer" datatype="html">
+        <source>Consumer</source>
+        <target>Privatkunde</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-vatIdValidationNone" datatype="html">
+        <source>Not validated</source>
+        <target>Nicht geprüft</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-vatIdValidationPending" datatype="html">
+        <source>Pending</source>
+        <target>Ausstehend</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-vatIdValidationValid" datatype="html">
+        <source>Valid</source>
+        <target>Gültig</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-vatIdValidationInvalid" datatype="html">
+        <source>Invalid</source>
+        <target>Ungültig</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-vatIdValidationUnavailable" datatype="html">
+        <source>Unavailable</source>
+        <target>Nicht verfügbar</target>
       </trans-unit>
       <trans-unit id="featureBilling-intervalMonthly" datatype="html">
         <source>Monthly</source>
@@ -2005,6 +2053,22 @@
       <trans-unit id="featureSubscriptions-company" datatype="html">
         <source>Company</source>
         <target>Firma</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-customerType" datatype="html">
+        <source>Customer type</source>
+        <target>Kundentyp</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-vatId" datatype="html">
+        <source>VAT ID</source>
+        <target>USt-IdNr.</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-vatIdValidationStatus" datatype="html">
+        <source>VAT ID validation</source>
+        <target>USt-IdNr.-Prüfung</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-vatIdValidatedAt" datatype="html">
+        <source>Validated at:</source>
+        <target>Geprüft am:</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-email" datatype="html">
         <source>Email</source>

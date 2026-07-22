@@ -11,6 +11,7 @@ import type {
   AdminBillingSummaryResponse,
   AdminOpenOverdueListParams,
   AdminSubscriptionsListParams,
+  BillingStatisticsByCountry,
   BillingStatisticsByProduct,
   BillingStatisticsSummary,
   CreateManualInvoiceDto,
@@ -32,6 +33,7 @@ import type {
   TriggerDatevExportDto,
   TriggerDatevExportResponse,
 } from '../types/billing.types';
+import type { TaxPreviewRequestDto, TaxPreviewResponse } from '../types/billing.types';
 
 @Injectable({
   providedIn: 'root',
@@ -121,6 +123,20 @@ export class AdminBillingService {
     if (params.userId) httpParams = httpParams.set('userId', params.userId);
 
     return this.http.get<BillingStatisticsByProduct>(`${this.apiUrl}/admin/billing/statistics/by-product`, {
+      params: httpParams,
+    });
+  }
+
+  getStatisticsByCountry(params: AdminBillingStatisticsParams): Observable<BillingStatisticsByCountry> {
+    let httpParams = new HttpParams();
+
+    if (params.from) httpParams = httpParams.set('from', params.from);
+
+    if (params.to) httpParams = httpParams.set('to', params.to);
+
+    if (params.userId) httpParams = httpParams.set('userId', params.userId);
+
+    return this.http.get<BillingStatisticsByCountry>(`${this.apiUrl}/admin/billing/statistics/by-country`, {
       params: httpParams,
     });
   }
@@ -215,6 +231,10 @@ export class AdminBillingService {
 
   getCapabilities(): Observable<BillingCapabilitiesResponse> {
     return this.http.get<BillingCapabilitiesResponse>(`${this.apiUrl}/admin/billing/capabilities`);
+  }
+
+  previewTax(dto: TaxPreviewRequestDto = {}): Observable<TaxPreviewResponse> {
+    return this.http.post<TaxPreviewResponse>(`${this.apiUrl}/admin/billing/tax/preview`, dto);
   }
 
   listDatevExports(params: AdminDatevExportListParams): Observable<PaginatedAdminDatevExportsResponse> {

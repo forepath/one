@@ -43,6 +43,23 @@ describe('ManualInvoiceService', () => {
     isProfileComplete: jest.fn(),
   };
   const auditLog = { log: jest.fn() };
+  const invoiceTaxContextService = {
+    resolveForUser: jest.fn().mockResolvedValue({
+      treatment: {
+        taxMode: 'domestic_vat',
+        taxCountryCode: 'DE',
+        chargeVat: true,
+        invoiceNote: '',
+        einvoiceTaxCategoryCode: 'S',
+        issuerIsInEu: true,
+      },
+      forceChargeNonEuIssuerEuB2b: false,
+      buyerVatId: null,
+      buyerCountry: 'DE',
+      buyerCustomerType: 'consumer',
+      issuerCountry: 'DE',
+    }),
+  };
 
   const service = new ManualInvoiceService(
     invoicesRepository as never,
@@ -54,6 +71,7 @@ describe('ManualInvoiceService', () => {
     taxCalculationService as never,
     customerProfilesService as never,
     auditLog as never,
+    invoiceTaxContextService as never,
   );
 
   const draftInvoice = {
@@ -73,6 +91,21 @@ describe('ManualInvoiceService', () => {
       status: InvoiceStatus.DRAFT,
       lineItems: [],
       taxBreakdown: [],
+    });
+    invoiceTaxContextService.resolveForUser.mockResolvedValue({
+      treatment: {
+        taxMode: 'domestic_vat',
+        taxCountryCode: 'DE',
+        chargeVat: true,
+        invoiceNote: '',
+        einvoiceTaxCategoryCode: 'S',
+        issuerIsInEu: true,
+      },
+      forceChargeNonEuIssuerEuB2b: false,
+      buyerVatId: null,
+      buyerCountry: 'DE',
+      buyerCustomerType: 'consumer',
+      issuerCountry: 'DE',
     });
     taxCalculationService.computeLines.mockReturnValue({
       subtotalNet: 100,

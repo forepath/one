@@ -32,6 +32,7 @@ import {
   SubscriptionItemEntity,
   PublicWithdrawalRequestEntity,
   UsageRecordEntity,
+  OssThresholdLedgerEntity,
 } from '@forepath/decabill/backend';
 import { WebhookDeliveryEntity, WebhookEndpointEntity, EmailDeliveryEntity } from '@forepath/shared/backend';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
@@ -91,6 +92,7 @@ export const typeormConfig: DataSourceOptions = {
     BackorderEntity,
     AvailabilitySnapshotEntity,
     CustomerProfileEntity,
+    OssThresholdLedgerEntity,
     DatevDebtorAccountEntity,
     DatevExportEntity,
     ProjectEntity,

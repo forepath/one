@@ -723,7 +723,7 @@
     </div>
     <div class="mt-2">
       <span class="form-label d-block" i18n="@@featureAdminInvoices-lineTaxCategory">VAT rate</span>
-      @for (option of taxCategoryOptions; track option.value) {
+      @for (option of taxCategoryOptions(); track option.value) {
         <div class="form-check form-check-inline">
           <input
             type="radio"

@@ -117,17 +117,14 @@ export class CustomerProfilesAdminService {
     }
 
     const { userId, ...profileFields } = dto;
-    const profile = await this.customerProfilesRepository.create({
-      userId,
-      ...profileFields,
-    });
+    const profile = await this.customerProfilesService.upsert(userId, profileFields);
 
     return this.mapResponse(profile);
   }
 
   async update(id: string, dto: CustomerProfileDto): Promise<CustomerProfileResponseDto> {
-    const profile = await this.customerProfilesRepository.findByIdOrThrow(id);
-    const updated = await this.customerProfilesRepository.update(id, this.sanitizeUpdate(dto));
+    const existing = await this.customerProfilesRepository.findByIdOrThrow(id);
+    const updated = await this.customerProfilesService.upsert(existing.userId, this.sanitizeUpdate(dto));
 
     return this.mapResponse(updated);
   }
@@ -182,6 +179,11 @@ export class CustomerProfilesAdminService {
       firstName: row.firstName,
       lastName: row.lastName,
       company: row.company,
+      customerType: row.customerType,
+      vatId: row.vatId,
+      vatIdValidationStatus: row.vatIdValidationStatus,
+      vatIdValidatedAt: row.vatIdValidatedAt,
+      vatIdValidationSource: row.vatIdValidationSource,
       addressLine1: row.addressLine1,
       addressLine2: row.addressLine2,
       postalCode: row.postalCode,
@@ -196,5 +198,18 @@ export class CustomerProfilesAdminService {
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
+  }
+
+  async markVatIdValidated(id: string): Promise<CustomerProfileResponseDto> {
+    const updated = await this.customerProfilesService.markVatIdValidatedByAdmin(id);
+
+    return this.mapResponse(updated);
+  }
+
+  async revalidateVatId(id: string): Promise<CustomerProfileResponseDto> {
+    const profile = await this.customerProfilesRepository.findByIdOrThrow(id);
+    const updated = await this.customerProfilesService.revalidateVatId(profile.userId);
+
+    return this.mapResponse(updated);
   }
 }

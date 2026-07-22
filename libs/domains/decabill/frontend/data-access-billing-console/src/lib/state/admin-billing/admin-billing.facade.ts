@@ -16,6 +16,7 @@ import {
   loadAdminAuditLogs,
   loadAdminBillingSummary,
   loadAdminOpenOverdue,
+  loadAdminStatisticsByCountry,
   loadAdminStatisticsByProduct,
   loadAdminStatisticsSummary,
 } from './admin-billing.actions';
@@ -32,6 +33,8 @@ import {
   selectAdminOpenOverdueItems,
   selectAdminOpenOverdueLoading,
   selectAdminOpenOverdueTotal,
+  selectAdminStatisticsByCountry,
+  selectAdminStatisticsByCountryLoading,
   selectAdminStatisticsByProduct,
   selectAdminStatisticsByProductLoading,
   selectAdminStatisticsError,
@@ -66,6 +69,8 @@ export class AdminBillingFacade {
   readonly statisticsSummaryLoading$ = this.store.select(selectAdminStatisticsSummaryLoading);
   readonly statisticsByProduct$ = this.store.select(selectAdminStatisticsByProduct);
   readonly statisticsByProductLoading$ = this.store.select(selectAdminStatisticsByProductLoading);
+  readonly statisticsByCountry$ = this.store.select(selectAdminStatisticsByCountry);
+  readonly statisticsByCountryLoading$ = this.store.select(selectAdminStatisticsByCountryLoading);
   readonly statisticsError$ = this.store.select(selectAdminStatisticsError);
 
   readonly auditLogsByInvoice$ = this.store.select(selectAdminAuditLogsByInvoice);
@@ -102,6 +107,10 @@ export class AdminBillingFacade {
 
   loadStatisticsByProduct(params: AdminBillingStatisticsParams): void {
     this.store.dispatch(loadAdminStatisticsByProduct({ params }));
+  }
+
+  loadStatisticsByCountry(params: AdminBillingStatisticsParams): void {
+    this.store.dispatch(loadAdminStatisticsByCountry({ params }));
   }
 
   loadAuditLogs(invoiceRefId: string, limit?: number, offset?: number): void {

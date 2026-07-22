@@ -49,4 +49,11 @@ export class CustomerProfileService {
   disableAutoBilling(): Observable<CustomerProfileResponse> {
     return this.http.post<CustomerProfileResponse>(`${this.apiUrl}/customer-profile/auto-billing/disable`, {});
   }
+
+  /**
+   * Re-run VAT ID validation for the current user's customer profile.
+   */
+  revalidateVatId(): Observable<CustomerProfileResponse> {
+    return this.http.post<CustomerProfileResponse>(`${this.apiUrl}/customer-profile/vat-id/revalidate`, {});
+  }
 }

@@ -7,6 +7,7 @@ import { PricingService } from '../services/pricing.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
 import { TaxCalculationService } from '../services/tax-calculation.service';
 import { TaxRateConfigService } from '../services/tax-rate-config.service';
+import { InvoiceTaxContextService } from '../services/invoice-tax-context.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
 
 import { PublicServicePlanOfferingsController } from './public-service-plan-offerings.controller';
@@ -47,6 +48,22 @@ describe('PublicServicePlanOfferingsController', () => {
         { provide: PricingService, useValue: { calculate } },
         TaxRateConfigService,
         TaxCalculationService,
+        {
+          provide: InvoiceTaxContextService,
+          useValue: {
+            resolveIssuerDefault: jest.fn().mockResolvedValue({
+              treatment: {
+                taxMode: 'domestic_vat',
+                taxCountryCode: 'DE',
+                chargeVat: true,
+                invoiceNote: '',
+                einvoiceTaxCategoryCode: 'S',
+                issuerIsInEu: true,
+              },
+              forceChargeNonEuIssuerEuB2b: false,
+            }),
+          },
+        },
         { provide: ProviderServerTypesService, useValue: { getServerTypes: jest.fn().mockResolvedValue([]) } },
         { provide: WithdrawalPolicyService, useValue: new WithdrawalPolicyService() },
       ],
@@ -119,6 +136,22 @@ describe('PublicServicePlanOfferingsController', () => {
         { provide: PricingService, useValue: { calculate } },
         TaxRateConfigService,
         TaxCalculationService,
+        {
+          provide: InvoiceTaxContextService,
+          useValue: {
+            resolveIssuerDefault: jest.fn().mockResolvedValue({
+              treatment: {
+                taxMode: 'domestic_vat',
+                taxCountryCode: 'DE',
+                chargeVat: true,
+                invoiceNote: '',
+                einvoiceTaxCategoryCode: 'S',
+                issuerIsInEu: true,
+              },
+              forceChargeNonEuIssuerEuB2b: false,
+            }),
+          },
+        },
         { provide: ProviderServerTypesService, useValue: { getServerTypes } },
         { provide: WithdrawalPolicyService, useValue: new WithdrawalPolicyService() },
       ],
@@ -229,6 +262,22 @@ describe('PublicServicePlanOfferingsController', () => {
           { provide: PricingService, useValue: { calculate } },
           TaxRateConfigService,
           TaxCalculationService,
+          {
+            provide: InvoiceTaxContextService,
+            useValue: {
+              resolveIssuerDefault: jest.fn().mockResolvedValue({
+                treatment: {
+                  taxMode: 'domestic_vat',
+                  taxCountryCode: 'DE',
+                  chargeVat: true,
+                  invoiceNote: '',
+                  einvoiceTaxCategoryCode: 'S',
+                  issuerIsInEu: true,
+                },
+                forceChargeNonEuIssuerEuB2b: false,
+              }),
+            },
+          },
           { provide: ProviderServerTypesService, useValue: { getServerTypes } },
           { provide: WithdrawalPolicyService, useValue: new WithdrawalPolicyService() },
         ],

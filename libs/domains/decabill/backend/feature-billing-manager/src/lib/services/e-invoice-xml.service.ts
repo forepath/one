@@ -57,6 +57,7 @@ export class EInvoiceXmlService {
       .ele('rsm:SupplyChainTradeTransaction');
 
     for (const line of lineItems) {
+      const categoryCode = String(invoice.einvoiceTaxCategoryCode ?? 'S');
       doc
         .ele('ram:IncludedSupplyChainTradeLineItem')
         .ele('ram:AssociatedDocumentLineDocument')
@@ -87,7 +88,7 @@ export class EInvoiceXmlService {
         .txt('VAT')
         .up()
         .ele('ram:CategoryCode')
-        .txt('S')
+        .txt(categoryCode)
         .up()
         .ele('ram:RateApplicablePercent')
         .txt(String(line.taxRate))
@@ -151,7 +152,15 @@ export class EInvoiceXmlService {
       .ele('ram:CountryID')
       .txt(buyerAddress.country)
       .up()
-      .up()
+      .up();
+
+    const buyerVatId = (invoice.buyerVatId ?? buyer.vatId)?.trim();
+
+    if (buyerVatId) {
+      chain = chain.ele('ram:SpecifiedTaxRegistration').ele('ram:ID', { schemeID: 'VA' }).txt(buyerVatId).up().up();
+    }
+
+    chain = chain
       .up()
       .ele('ram:BuyerOrderReferencedDocument')
       .ele('ram:IssuerAssignedID')
@@ -188,7 +197,11 @@ export class EInvoiceXmlService {
       chain = this.appendPaymentMeans(chain, issuer);
     }
 
-    chain
+    const headerCategory = String(invoice.einvoiceTaxCategoryCode ?? 'S');
+    const headerRate =
+      invoice.resolvedTaxRate != null ? String(invoice.resolvedTaxRate) : String(lineItems[0]?.taxRate ?? 0);
+
+    let taxBlock = chain
       .ele('ram:ApplicableTradeTax')
       .ele('ram:CalculatedAmount', { currencyID: invoice.currency })
       .txt(String(invoice.taxTotal))
@@ -200,12 +213,19 @@ export class EInvoiceXmlService {
       .txt(String(invoice.subtotalNet))
       .up()
       .ele('ram:CategoryCode')
-      .txt('S')
+      .txt(headerCategory)
       .up()
       .ele('ram:RateApplicablePercent')
-      .txt('19')
-      .up()
-      .up()
+      .txt(headerRate)
+      .up();
+
+    if (invoice.taxNote?.trim()) {
+      taxBlock = taxBlock.ele('ram:ExemptionReason').txt(invoice.taxNote.trim()).up();
+    }
+
+    chain = taxBlock.up();
+
+    chain
       .ele('ram:SpecifiedTradeSettlementHeaderMonetarySummation')
       .ele('ram:LineTotalAmount', { currencyID: invoice.currency })
       .txt(String(invoice.subtotalNet))

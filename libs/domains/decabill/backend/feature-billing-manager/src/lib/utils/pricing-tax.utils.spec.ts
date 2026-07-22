@@ -28,13 +28,16 @@ describe('pricing-tax.utils', () => {
       taxRate: 19,
       taxCategory: TaxCategory.STANDARD,
     });
-    expect(taxCalculationService.computeLines).toHaveBeenCalledWith([
-      {
-        description: 'Subscription period',
-        quantity: 1,
-        unitPriceNet: 19.49,
-        taxCategory: TaxCategory.STANDARD,
-      },
-    ]);
+    expect(taxCalculationService.computeLines).toHaveBeenCalledWith(
+      [
+        {
+          description: 'Subscription period',
+          quantity: 1,
+          unitPriceNet: 19.49,
+          taxCategory: TaxCategory.STANDARD,
+        },
+      ],
+      undefined,
+    );
   });
 });

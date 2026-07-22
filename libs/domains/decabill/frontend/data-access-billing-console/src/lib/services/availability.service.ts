@@ -9,6 +9,8 @@ import type {
   AvailabilityResponse,
   PricingPreviewDto,
   PricingPreviewResponse,
+  TaxPreviewRequestDto,
+  TaxPreviewResponse,
 } from '../types/billing.types';
 
 @Injectable({
@@ -44,5 +46,12 @@ export class AvailabilityService {
    */
   previewPricing(preview: PricingPreviewDto): Observable<PricingPreviewResponse> {
     return this.http.post<PricingPreviewResponse>(`${this.apiUrl}/pricing/preview`, preview);
+  }
+
+  /**
+   * Preview tax treatment and rates for the authenticated customer.
+   */
+  previewTax(dto: TaxPreviewRequestDto = {}): Observable<TaxPreviewResponse> {
+    return this.http.post<TaxPreviewResponse>(`${this.apiUrl}/pricing/tax-preview`, dto);
   }
 }

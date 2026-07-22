@@ -1,6 +1,6 @@
 import { TaxCategory } from '../constants/tax-category.constants';
 import type { PricingResult } from '../services/pricing.service';
-import type { TaxCalculationService } from '../services/tax-calculation.service';
+import type { ComputeLinesOptions, TaxCalculationService } from '../services/tax-calculation.service';
 
 export interface PricingPreviewWithTax extends PricingResult {
   taxTotal: number;
@@ -13,15 +13,19 @@ export function enrichPricingWithTax(
   pricing: PricingResult,
   taxCategory: TaxCategory,
   taxCalculationService: TaxCalculationService,
+  computeOptions?: ComputeLinesOptions,
 ): PricingPreviewWithTax {
-  const totals = taxCalculationService.computeLines([
-    {
-      description: 'Subscription period',
-      quantity: 1,
-      unitPriceNet: pricing.totalPrice,
-      taxCategory,
-    },
-  ]);
+  const totals = taxCalculationService.computeLines(
+    [
+      {
+        description: 'Subscription period',
+        quantity: 1,
+        unitPriceNet: pricing.totalPrice,
+        taxCategory,
+      },
+    ],
+    computeOptions,
+  );
 
   return {
     ...pricing,

@@ -47,6 +47,27 @@ describe('InvoiceIssuanceService', () => {
   const customerTrustScoreService = {
     triggerRecomputeForUser: jest.fn(),
   };
+  const invoiceTaxContextService = {
+    resolveForUser: jest.fn().mockResolvedValue({
+      treatment: {
+        taxMode: 'domestic_vat',
+        taxCountryCode: 'DE',
+        chargeVat: true,
+        taxNote: null,
+        einvoiceTaxCategoryCode: 'S',
+        issuerIsInEu: true,
+      },
+      forceChargeNonEuIssuerEuB2b: false,
+      buyerVatId: null,
+      buyerCountry: 'DE',
+      buyerCustomerType: 'consumer',
+      issuerCountry: 'DE',
+      countsTowardOssLedger: false,
+    }),
+  };
+  const ossThresholdService = {
+    recordCrossBorderB2cNet: jest.fn(),
+  };
   const service = new InvoiceIssuanceService(
     invoicesRepository as never,
     invoiceLineItemsRepository as never,
@@ -68,6 +89,8 @@ describe('InvoiceIssuanceService', () => {
       scheduleIfEligible: jest.fn(),
     } as never,
     customerTrustScoreService as never,
+    invoiceTaxContextService as never,
+    ossThresholdService as never,
   );
   const draftInvoice = {
     id: 'inv-1',
@@ -91,6 +114,22 @@ describe('InvoiceIssuanceService', () => {
       postalCode: '1',
       city: 'C',
       country: 'DE',
+    });
+    invoiceTaxContextService.resolveForUser.mockResolvedValue({
+      treatment: {
+        taxMode: 'domestic_vat',
+        taxCountryCode: 'DE',
+        chargeVat: true,
+        taxNote: null,
+        einvoiceTaxCategoryCode: 'S',
+        issuerIsInEu: true,
+      },
+      forceChargeNonEuIssuerEuB2b: false,
+      buyerVatId: null,
+      buyerCountry: 'DE',
+      buyerCustomerType: 'consumer',
+      issuerCountry: 'DE',
+      countsTowardOssLedger: false,
     });
     invoicesRepository.findByIdOrThrow.mockResolvedValue(draftInvoice);
     invoiceLineItemsRepository.findByInvoiceId.mockResolvedValue([

@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   ServicePlansFacade,
   ServiceTypesFacade,
   ServiceTypesService,
   CloudInitConfigsFacade,
+  AdminBillingService,
   buildProvisioningOptionsFromKeys,
   collectPlanProductEnvFields,
   formatServerTypeOption,
@@ -21,6 +22,8 @@ import {
   isObjectSchemaProperty,
   isSensitiveConfigFieldKey,
   planProvisioningOptionKeysFromDefaults,
+  computeLineTotalsFromRate,
+  rateForTaxCategory,
   type IntegratedProductService,
   type PlanProductEnvField,
   type BillingIntervalType,
@@ -33,6 +36,7 @@ import {
   type ServicePlanResponse,
   type ServiceTypeResponse,
   type TaxCategory,
+  type TaxPreviewRates,
   type UpdateServicePlanDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
@@ -79,6 +83,7 @@ export class ServicePlansPageComponent implements OnInit {
   private readonly typesFacade = inject(ServiceTypesFacade);
   private readonly cloudInitConfigsFacade = inject(CloudInitConfigsFacade);
   private readonly serviceTypesService = inject(ServiceTypesService);
+  private readonly adminBillingService = inject(AdminBillingService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly searchQuery = signal('');
@@ -120,10 +125,15 @@ export class ServicePlansPageComponent implements OnInit {
   readonly deleting$ = this.plansFacade.getServicePlansDeleting$();
 
   readonly billingIntervalTypes: BillingIntervalType[] = ['hour', 'day', 'month'];
-  readonly taxCategoryOptions: { value: TaxCategory; label: string }[] = [
-    { value: 'standard', label: 'Standard (19%)' },
-    { value: 'reduced', label: 'Reduced (7%)' },
-  ];
+  readonly taxRates = signal<TaxPreviewRates>({ standard: 19, reduced: 7 });
+  readonly taxCategoryOptions = computed(() => {
+    const rates = this.taxRates();
+
+    return [
+      { value: 'standard' as TaxCategory, label: `Standard (${rates.standard}%)` },
+      { value: 'reduced' as TaxCategory, label: `Reduced (${rates.reduced}%)` },
+    ];
+  });
 
   createForm: CreateServicePlanDto = this.getDefaultCreateForm();
   editForm: UpdateServicePlanDto & { id: string } = this.getDefaultEditForm();
@@ -295,7 +305,7 @@ export class ServicePlansPageComponent implements OnInit {
   }
 
   planTaxRatePercent(plan: ServicePlanResponse): number {
-    return plan.taxCategory === 'reduced' ? 7 : 19;
+    return rateForTaxCategory(this.taxRates(), plan.taxCategory ?? 'standard');
   }
 
   planTaxRateLabel(plan: ServicePlanResponse): string {
@@ -970,11 +980,9 @@ export class ServicePlansPageComponent implements OnInit {
 
     if (net === null) return null;
 
-    const taxRate = taxCategory === 'reduced' ? 7 : 19;
-    const tax = Math.round(net * (taxRate / 100) * 100) / 100;
-    const gross = Math.round((net + tax) * 100) / 100;
+    const taxRate = rateForTaxCategory(this.taxRates(), taxCategory);
 
-    return { net, tax, gross, taxRate };
+    return computeLineTotalsFromRate(1, net, taxRate);
   }
 
   formatEstimatedPriceBreakdown(
@@ -1043,7 +1051,18 @@ export class ServicePlansPageComponent implements OnInit {
     this.typesFacade.loadServiceTypes();
     this.typesFacade.loadProviderDetails();
     this.cloudInitConfigsFacade.loadCloudInitConfigs();
+    this.refreshIssuerTaxRates();
     this.registerModalCloseWatchers();
+  }
+
+  private refreshIssuerTaxRates(): void {
+    this.adminBillingService
+      .previewTax({})
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (preview) => this.taxRates.set(preview.rates),
+        error: () => undefined,
+      });
   }
 
   openCreateModal(): void {

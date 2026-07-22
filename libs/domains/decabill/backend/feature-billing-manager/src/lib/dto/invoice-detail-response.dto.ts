@@ -28,6 +28,12 @@ export class InvoiceDetailResponseDto {
   taxTotal!: number;
   totalGross!: number;
   balanceDue!: number;
+  taxMode?: string;
+  taxCountryCode?: string;
+  taxNote?: string;
+  einvoiceTaxCategoryCode?: string;
+  resolvedTaxRate?: number;
+  buyerVatId?: string;
   lineItems!: InvoiceLineItemResponseDto[];
   taxBreakdown!: InvoiceTaxBreakdownDto[];
   issuedAt?: Date;

@@ -40,6 +40,11 @@ export interface TurnoverByPlanRow {
   totalGross: number;
 }
 
+export interface TurnoverByCountryRow {
+  countryCode: string;
+  totalGross: number;
+}
+
 @Injectable()
 export class InvoicesRepository {
   constructor(
@@ -416,11 +421,24 @@ export class InvoicesRepository {
   }
 
   async sumByPlanInPeriod(from: Date, to: Date, userId?: string): Promise<TurnoverByPlanRow[]> {
+    // Prefer service-plan product; fall back to project name; otherwise Unknown.
+    // Use CAST(...) instead of :: so TypeORM does not mangle PostgreSQL casts.
+    const productIdExpr = `COALESCE(
+      CAST(plan.id AS text),
+      CASE WHEN project.id IS NOT NULL THEN CONCAT('project:', CAST(project.id AS text)) END,
+      'UNKNOWN'
+    )`;
+    const productNameExpr = `COALESCE(
+      NULLIF(TRIM(plan.name), ''),
+      NULLIF(TRIM(project.name), ''),
+      'Unknown'
+    )`;
     const qb = this.repository
       .createQueryBuilder('inv')
       .innerJoin('users', 'user', 'user.id = inv.user_id')
-      .innerJoin('inv.subscription', 'subscription')
-      .innerJoin('subscription.plan', 'plan')
+      .leftJoin('billing_subscriptions', 'subscription', 'subscription.id = inv.subscription_id')
+      .leftJoin('billing_service_plans', 'plan', 'plan.id = subscription.plan_id')
+      .leftJoin('billing_projects', 'project', 'project.id = inv.project_id')
       .where('inv.status IN (:...statuses)', { statuses: BILLED_INVOICE_STATUSES })
       .andWhere('inv.issued_at IS NOT NULL')
       .andWhere('inv.issued_at >= :from', { from })
@@ -433,17 +451,46 @@ export class InvoicesRepository {
     }
 
     const rows = await qb
-      .select('plan.id', 'planId')
-      .addSelect('plan.name', 'planName')
+      .select(productIdExpr, 'planId')
+      .addSelect(productNameExpr, 'planName')
       .addSelect('COALESCE(SUM(inv.total_gross), 0)', 'totalGross')
-      .groupBy('plan.id')
-      .addGroupBy('plan.name')
+      .groupBy(productIdExpr)
+      .addGroupBy(productNameExpr)
       .orderBy('COALESCE(SUM(inv.total_gross), 0)', 'DESC')
       .getRawMany<{ planId: string; planName: string; totalGross: string }>();
 
     return rows.map((row) => ({
       planId: row.planId,
       planName: row.planName,
+      totalGross: parseFloat(String(row.totalGross)),
+    }));
+  }
+
+  async sumByBuyerCountryInPeriod(from: Date, to: Date, userId?: string): Promise<TurnoverByCountryRow[]> {
+    const countryExpr = `COALESCE(NULLIF(UPPER(TRIM(inv.buyer_country)), ''), 'UNKNOWN')`;
+    const qb = this.repository
+      .createQueryBuilder('inv')
+      .innerJoin('users', 'user', 'user.id = inv.user_id')
+      .where('inv.status IN (:...statuses)', { statuses: BILLED_INVOICE_STATUSES })
+      .andWhere('inv.issued_at IS NOT NULL')
+      .andWhere('inv.issued_at >= :from', { from })
+      .andWhere('inv.issued_at <= :to', { to });
+
+    applyUserTenantFilter(qb, 'user');
+
+    if (userId) {
+      qb.andWhere('inv.userId = :userId', { userId });
+    }
+
+    const rows = await qb
+      .select(countryExpr, 'countryCode')
+      .addSelect('COALESCE(SUM(inv.total_gross), 0)', 'totalGross')
+      .groupBy(countryExpr)
+      .orderBy('COALESCE(SUM(inv.total_gross), 0)', 'DESC')
+      .getRawMany<{ countryCode: string; totalGross: string }>();
+
+    return rows.map((row) => ({
+      countryCode: row.countryCode,
       totalGross: parseFloat(String(row.totalGross)),
     }));
   }

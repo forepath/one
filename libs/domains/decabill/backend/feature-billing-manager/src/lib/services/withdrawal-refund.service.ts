@@ -22,6 +22,7 @@ import { BillingIssuerConfigService } from './billing-issuer-config.service';
 import { BillingScheduleService } from './billing-schedule.service';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { InvoicePdfService } from './invoice-pdf.service';
+import { InvoiceTaxContextService } from './invoice-tax-context.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { PricingService } from './pricing.service';
 import { ProviderServerTypesService } from './provider-server-types.service';
@@ -50,6 +51,7 @@ export class WithdrawalRefundService {
     private readonly pricingService: PricingService,
     private readonly billingScheduleService: BillingScheduleService,
     private readonly taxCalculationService: TaxCalculationService,
+    private readonly invoiceTaxContextService: InvoiceTaxContextService,
     private readonly invoicesRepository: InvoicesRepository,
     private readonly invoiceLineItemsRepository: InvoiceLineItemsRepository,
     private readonly invoiceCreditDocumentsRepository: InvoiceCreditDocumentsRepository,
@@ -216,14 +218,21 @@ export class WithdrawalRefundService {
 
     const roundedNet = Math.round(refundNet * 100) / 100;
     const taxCategory = resolvePlanTaxCategory(plan);
-    const totals = this.taxCalculationService.computeLines([
+    const taxContext = await this.invoiceTaxContextService.resolveForUser(subscription.userId);
+    const totals = this.taxCalculationService.computeLines(
+      [
+        {
+          description: 'Unused subscription period',
+          quantity: 1,
+          unitPriceNet: roundedNet,
+          taxCategory,
+        },
+      ],
       {
-        description: 'Unused subscription period',
-        quantity: 1,
-        unitPriceNet: roundedNet,
-        taxCategory,
+        taxTreatment: taxContext.treatment,
+        forceChargeNonEuIssuerEuB2b: taxContext.forceChargeNonEuIssuerEuB2b,
       },
-    ]);
+    );
 
     return { refundNet: roundedNet, refundGross: totals.totalGross };
   }

@@ -24,6 +24,8 @@ import { buildCreditNoteNumber } from './e-invoice-document-options';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { InvoiceIssuanceService } from './invoice-issuance.service';
 import { InvoicePdfService } from './invoice-pdf.service';
+import { InvoiceTaxContextService } from './invoice-tax-context.service';
+import { OssThresholdService } from './oss-threshold.service';
 import { PromotionApplicationService } from './promotion-application.service';
 import { resolveInvoicingPeriod } from './invoicing-period.util';
 import { resolvePurchaseOrderReference } from './purchase-order-reference.util';
@@ -60,6 +62,8 @@ export class InvoiceService {
     private readonly promotionApplicationService: PromotionApplicationService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly customerTrustScoreService: CustomerTrustScoreService,
+    private readonly invoiceTaxContextService: InvoiceTaxContextService,
+    private readonly ossThresholdService: OssThresholdService,
   ) {}
 
   async createAndIssue(params: CreateInvoiceDraftParams): Promise<{ invoiceRefId: string; invoiceNumber?: string }> {
@@ -70,7 +74,11 @@ export class InvoiceService {
   }
 
   async createDraft(params: CreateInvoiceDraftParams): Promise<InvoiceEntity> {
-    const totals = this.taxCalculationService.computeLines(params.lineInputs);
+    const taxContext = await this.invoiceTaxContextService.resolveForUser(params.userId);
+    const totals = this.taxCalculationService.computeLines(params.lineInputs, {
+      taxTreatment: taxContext.treatment,
+      forceChargeNonEuIssuerEuB2b: taxContext.forceChargeNonEuIssuerEuB2b,
+    });
     const balanceDue = Math.max(0, totals.totalGross);
     const invoice = await this.invoicesRepository.create({
       subscriptionId: params.subscriptionId,
@@ -82,6 +90,16 @@ export class InvoiceService {
       taxTotal: totals.taxTotal,
       totalGross: totals.totalGross,
       balanceDue,
+      taxMode: taxContext.treatment.taxMode,
+      taxCountryCode: taxContext.treatment.taxCountryCode,
+      taxNote: taxContext.treatment.invoiceNote || null,
+      einvoiceTaxCategoryCode: taxContext.treatment.einvoiceTaxCategoryCode,
+      resolvedTaxRate: totals.resolvedTaxRate ?? null,
+      buyerVatId: taxContext.buyerVatId,
+      buyerCountry: taxContext.buyerCountry,
+      buyerCustomerType: taxContext.buyerCustomerType,
+      issuerCountry: taxContext.issuerCountry,
+      issuerIsInEu: taxContext.treatment.issuerIsInEu,
     });
 
     await this.invoiceLineItemsRepository.createMany(
@@ -224,14 +242,24 @@ export class InvoiceService {
 
   private async buildDetailResponse(invoice: InvoiceEntity): Promise<InvoiceDetailResponseDto> {
     const lineItems = await this.invoiceLineItemsRepository.findByInvoiceId(invoice.id);
-    const totals = this.taxCalculationService.computeLines(
-      lineItems.map((line) => ({
-        description: line.description,
-        quantity: Number(line.quantity),
-        unitPriceNet: Number(line.unitPriceNet),
-        taxCategory: line.taxCategory as TaxCategory,
-      })),
-    );
+    const taxByKey = new Map<string, { taxCategory: TaxCategory; taxRate: number; taxAmount: number }>();
+
+    for (const line of lineItems) {
+      const taxCategory = line.taxCategory as TaxCategory;
+      const taxRate = Number(line.taxRate);
+      const key = `${taxCategory}:${taxRate}`;
+      const existing = taxByKey.get(key);
+
+      if (existing) {
+        existing.taxAmount = Math.round((existing.taxAmount + Number(line.lineTax)) * 100) / 100;
+      } else {
+        taxByKey.set(key, {
+          taxCategory,
+          taxRate,
+          taxAmount: Number(line.lineTax),
+        });
+      }
+    }
 
     return {
       id: invoice.id,
@@ -243,6 +271,12 @@ export class InvoiceService {
       taxTotal: Number(invoice.taxTotal),
       totalGross: Number(invoice.totalGross),
       balanceDue: Number(invoice.balanceDue),
+      taxMode: invoice.taxMode ?? undefined,
+      taxCountryCode: invoice.taxCountryCode ?? undefined,
+      taxNote: invoice.taxNote ?? undefined,
+      einvoiceTaxCategoryCode: invoice.einvoiceTaxCategoryCode ?? undefined,
+      resolvedTaxRate: invoice.resolvedTaxRate != null ? Number(invoice.resolvedTaxRate) : undefined,
+      buyerVatId: invoice.buyerVatId ?? undefined,
       lineItems: lineItems.map((line) => ({
         description: line.description,
         quantity: Number(line.quantity),
@@ -253,10 +287,11 @@ export class InvoiceService {
         lineTax: Number(line.lineTax),
         lineGross: Number(line.lineGross),
       })),
-      taxBreakdown: totals.taxBreakdown,
+      taxBreakdown: Array.from(taxByKey.values()),
       issuedAt: invoice.issuedAt,
       dueDate: invoice.dueDate,
       createdAt: invoice.createdAt,
+      autoPaymentStatus: invoice.autoPaymentStatus,
       ...this.capabilityFlags(invoice),
     };
   }

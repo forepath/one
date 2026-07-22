@@ -93,4 +93,17 @@ export class BillingStatisticsByProductDto {
   to!: string;
 }
 
+export class BillingStatisticsByCountryItemDto {
+  countryCode!: string;
+  countryName!: string;
+  totalGross!: number;
+}
+
+export class BillingStatisticsByCountryDto {
+  items!: BillingStatisticsByCountryItemDto[];
+  totalGross!: number;
+  from!: string;
+  to!: string;
+}
+
 export type AdminInvoiceStatus = InvoiceStatus;

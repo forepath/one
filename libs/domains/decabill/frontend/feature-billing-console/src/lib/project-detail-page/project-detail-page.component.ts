@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
@@ -9,12 +9,15 @@ import {
   ProjectBoardSocketFacade,
   ProjectTimeEntriesFacade,
   ProjectsFacade,
+  computeLineTotalsFromRate,
+  rateForTaxCategory,
   type AdminProjectDetailResponse,
   type BillProjectTimeDto,
   type ManualInvoiceLineItemDto,
   type ProjectSummaryResponse,
   type ProjectTimeEntryResponse,
   type SubscriptionResponse,
+  type TaxPreviewRates,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { filter, finalize, map, startWith, switchMap, distinctUntilChanged, EMPTY, take } from 'rxjs';
 import type { Subscription } from 'rxjs';
@@ -121,10 +124,15 @@ export class ProjectDetailPageComponent implements OnInit {
   readonly billBoundsEntryCount = signal(0);
   readonly billTimeSubscriptions = signal<SubscriptionResponse[]>([]);
   readonly billTimeSubscriptionsLoading = signal(false);
-  readonly taxCategoryOptions: { value: BillTimeFormLineItem['taxCategory']; label: string }[] = [
-    { value: 'standard', label: 'Standard (19%)' },
-    { value: 'reduced', label: 'Reduced (7%)' },
-  ];
+  readonly taxRates = signal<TaxPreviewRates>({ standard: 19, reduced: 7 });
+  readonly taxCategoryOptions = computed(() => {
+    const rates = this.taxRates();
+
+    return [
+      { value: 'standard' as const, label: `Standard (${rates.standard}%)` },
+      { value: 'reduced' as const, label: `Reduced (${rates.reduced}%)` },
+    ];
+  });
   private billTimeSubscriptionsRequest?: Subscription;
 
   ngOnInit(): void {
@@ -242,6 +250,9 @@ export class ProjectDetailPageComponent implements OnInit {
 
       if (userId) {
         this.loadBillTimeSubscriptions(userId);
+        this.refreshTaxRates(userId);
+      } else {
+        this.refreshTaxRates();
       }
     });
 
@@ -368,12 +379,10 @@ export class ProjectDetailPageComponent implements OnInit {
       return '—';
     }
 
-    const net = Math.round(quantity * unitPriceNet * 100) / 100;
-    const taxRate = line.taxCategory === 'reduced' ? 7 : 19;
-    const tax = Math.round(net * (taxRate / 100) * 100) / 100;
-    const gross = Math.round((net + tax) * 100) / 100;
+    const taxRate = rateForTaxCategory(this.taxRates(), line.taxCategory ?? 'standard');
+    const totals = computeLineTotalsFromRate(quantity, unitPriceNet, taxRate);
 
-    return `€${gross.toFixed(2)} gross (${taxRate}% VAT)`;
+    return `€${totals.gross.toFixed(2)} gross (${totals.taxRate}% VAT)`;
   }
 
   addBillTimeLineItem(): void {
@@ -663,6 +672,16 @@ export class ProjectDetailPageComponent implements OnInit {
       .subscribe({
         next: (subscriptions) => this.billTimeSubscriptions.set(subscriptions),
         error: () => this.billTimeSubscriptions.set([]),
+      });
+  }
+
+  private refreshTaxRates(userId?: string): void {
+    this.adminBillingService
+      .previewTax(userId ? { userId } : {})
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (preview) => this.taxRates.set(preview.rates),
+        error: () => undefined,
       });
   }
 

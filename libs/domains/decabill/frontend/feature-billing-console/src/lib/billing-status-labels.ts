@@ -375,6 +375,34 @@ export function getProfileCompleteLabel(isComplete: boolean): string {
     : $localize`:@@featureBilling-profileIncomplete:Incomplete`;
 }
 
+export function getCustomerTypeLabel(customerType: string | null | undefined): string {
+  switch (customerType) {
+    case 'business':
+      return $localize`:@@featureBilling-customerTypeBusiness:Business`;
+    case 'consumer':
+      return $localize`:@@featureBilling-customerTypeConsumer:Consumer`;
+    default:
+      return getUnavailableLabel();
+  }
+}
+
+export function getVatIdValidationStatusLabel(status: string | null | undefined): string {
+  switch (status) {
+    case 'none':
+      return $localize`:@@featureBilling-vatIdValidationNone:Not validated`;
+    case 'pending':
+      return $localize`:@@featureBilling-vatIdValidationPending:Pending`;
+    case 'valid':
+      return $localize`:@@featureBilling-vatIdValidationValid:Valid`;
+    case 'invalid':
+      return $localize`:@@featureBilling-vatIdValidationInvalid:Invalid`;
+    case 'unavailable':
+      return $localize`:@@featureBilling-vatIdValidationUnavailable:Unavailable`;
+    default:
+      return getUnavailableLabel();
+  }
+}
+
 export function getProfileCompleteTextClass(isComplete: boolean): string {
   return isComplete ? 'text-success' : 'text-warning';
 }

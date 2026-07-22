@@ -15,6 +15,7 @@ import {
   SubscriptionProvisioningJobHandler,
   SubscriptionRenewalReminderJobHandler,
   SubscriptionWithdrawalJobHandler,
+  VatIdValidationJobHandler,
 } from '@forepath/decabill/backend';
 import {
   DEFAULT_TENANT,
@@ -64,6 +65,7 @@ export class BillingJobsProcessor extends WorkerHost {
     private readonly adminBillNow: AdminBillNowService,
     private readonly datevExportConfig: DatevExportConfigService,
     private readonly datevExportJobHandler: DatevExportJobHandler,
+    private readonly vatIdValidationJobHandler: VatIdValidationJobHandler,
     private readonly webhookDeliveryService: WebhookDeliveryService,
     private readonly webhookDeliveryRetentionService: WebhookDeliveryRetentionService,
     private readonly emailDeliveryService: EmailDeliveryService,
@@ -125,6 +127,11 @@ export class BillingJobsProcessor extends WorkerHost {
             triggeredBy: string;
             force?: boolean;
           },
+        );
+        break;
+      case BillingJobName.VAT_ID_VALIDATION_UNIT:
+        await this.vatIdValidationJobHandler.processUnit(
+          job.data as { profileId: string; userId: string; vatId: string },
         );
         break;
       case BillingJobName.ADMIN_BILL_NOW_COORDINATOR:

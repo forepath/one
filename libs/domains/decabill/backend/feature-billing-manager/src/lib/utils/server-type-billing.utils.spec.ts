@@ -149,14 +149,17 @@ describe('server-type-billing.utils', () => {
           items: [{ configSnapshot: { billingBasePrice: 6.49 } }],
         }),
       ).resolves.toBe(8.91);
-      expect(taxCalculationService.computeLines).toHaveBeenCalledWith([
-        {
-          description: 'Subscription period',
-          quantity: 1,
-          unitPriceNet: 7.49,
-          taxCategory: TaxCategory.STANDARD,
-        },
-      ]);
+      expect(taxCalculationService.computeLines).toHaveBeenCalledWith(
+        [
+          {
+            description: 'Subscription period',
+            quantity: 1,
+            unitPriceNet: 7.49,
+            taxCategory: TaxCategory.STANDARD,
+          },
+        ],
+        undefined,
+      );
     });
 
     it('uses reduced plan tax category for gross period price', async () => {
@@ -170,14 +173,17 @@ describe('server-type-billing.utils', () => {
 
       await resolvePeriodTotalPrice(plan, pricingService, taxCalculationService, providerServerTypesService, {});
 
-      expect(taxCalculationService.computeLines).toHaveBeenCalledWith([
-        {
-          description: 'Subscription period',
-          quantity: 1,
-          unitPriceNet: 11,
-          taxCategory: TaxCategory.REDUCED,
-        },
-      ]);
+      expect(taxCalculationService.computeLines).toHaveBeenLastCalledWith(
+        [
+          {
+            description: 'Subscription period',
+            quantity: 1,
+            unitPriceNet: 11,
+            taxCategory: TaxCategory.REDUCED,
+          },
+        ],
+        undefined,
+      );
     });
   });
 });

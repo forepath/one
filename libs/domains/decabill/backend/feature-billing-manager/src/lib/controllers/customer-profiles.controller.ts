@@ -42,6 +42,19 @@ export class CustomerProfilesController {
     return this.mapToResponse(profile);
   }
 
+  @Post('vat-id/revalidate')
+  async revalidateVatId(@Req() req?: RequestWithUser): Promise<CustomerProfileResponseDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    const profile = await this.customerProfilesService.revalidateVatId(userInfo.userId);
+
+    return this.mapToResponse(profile);
+  }
+
   private mapToResponse(row: CustomerProfileEntity): CustomerProfileResponseDto {
     const processorType = process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR ?? 'stripe';
     let supportsAutoPayment = false;
@@ -58,6 +71,11 @@ export class CustomerProfilesController {
       firstName: row.firstName,
       lastName: row.lastName,
       company: row.company,
+      customerType: row.customerType,
+      vatId: row.vatId,
+      vatIdValidationStatus: row.vatIdValidationStatus,
+      vatIdValidatedAt: row.vatIdValidatedAt,
+      vatIdValidationSource: row.vatIdValidationSource,
       addressLine1: row.addressLine1,
       addressLine2: row.addressLine2,
       postalCode: row.postalCode,

@@ -5,6 +5,7 @@ import type {
   AdminBillingSummaryResponse,
   AdminInvoiceListItem,
   BillingAuditLogResponse,
+  BillingStatisticsByCountry,
   BillingStatisticsByProduct,
   BillingStatisticsSummary,
 } from '../../types/billing.types';
@@ -31,6 +32,9 @@ import {
   loadAdminOpenOverdue,
   loadAdminOpenOverdueFailure,
   loadAdminOpenOverdueSuccess,
+  loadAdminStatisticsByCountry,
+  loadAdminStatisticsByCountryFailure,
+  loadAdminStatisticsByCountrySuccess,
   loadAdminStatisticsByProduct,
   loadAdminStatisticsByProductFailure,
   loadAdminStatisticsByProductSuccess,
@@ -58,6 +62,8 @@ export interface AdminBillingState {
   statisticsSummaryLoading: boolean;
   statisticsByProduct: BillingStatisticsByProduct | null;
   statisticsByProductLoading: boolean;
+  statisticsByCountry: BillingStatisticsByCountry | null;
+  statisticsByCountryLoading: boolean;
   statisticsError: string | null;
   auditLogsByInvoice: Record<string, BillingAuditLogResponse[]>;
   auditLogsTotalByInvoice: Record<string, number>;
@@ -84,6 +90,8 @@ export const initialAdminBillingState: AdminBillingState = {
   statisticsSummaryLoading: false,
   statisticsByProduct: null,
   statisticsByProductLoading: false,
+  statisticsByCountry: null,
+  statisticsByCountryLoading: false,
   statisticsError: null,
   auditLogsByInvoice: {},
   auditLogsTotalByInvoice: {},
@@ -203,6 +211,21 @@ export const adminBillingReducer = createReducer(
   on(loadAdminStatisticsByProductFailure, (state, { error }) => ({
     ...state,
     statisticsByProductLoading: false,
+    statisticsError: error,
+  })),
+  on(loadAdminStatisticsByCountry, (state) => ({
+    ...state,
+    statisticsByCountryLoading: true,
+    statisticsError: null,
+  })),
+  on(loadAdminStatisticsByCountrySuccess, (state, { byCountry }) => ({
+    ...state,
+    statisticsByCountry: byCountry,
+    statisticsByCountryLoading: false,
+  })),
+  on(loadAdminStatisticsByCountryFailure, (state, { error }) => ({
+    ...state,
+    statisticsByCountryLoading: false,
     statisticsError: error,
   })),
   on(loadAdminAuditLogs, (state) => ({

@@ -27,6 +27,19 @@ describe('ProjectBillingService', () => {
   const invoiceIssuanceService = { issueDraft: jest.fn() };
   const billingEmailPublisher = { publishInvoiceIssued: jest.fn().mockResolvedValue(true) };
   const taxCalculationService = new TaxCalculationService(new TaxRateConfigService());
+  const invoiceTaxContextService = {
+    resolveForUser: jest.fn().mockResolvedValue({
+      treatment: {
+        taxMode: 'domestic_vat',
+        taxCountryCode: 'DE',
+        chargeVat: true,
+        invoiceNote: '',
+        einvoiceTaxCategoryCode: 'S',
+        issuerIsInEu: true,
+      },
+      forceChargeNonEuIssuerEuB2b: false,
+    }),
+  };
   const auditLog = { log: jest.fn() };
   const projectBoardSummary = { emitSummaryChanged: jest.fn() };
   const projectTimeReportService = {
@@ -52,6 +65,17 @@ describe('ProjectBillingService', () => {
     projectTimeReportService.generateAndStoreForBilling.mockResolvedValue('sub-1/inv-1-time-report.pdf');
     timeEntriesRepository.markBilled.mockImplementation(async (_projectId: string, ids: string[]) => ids.length);
     invoiceService.voidInvoice.mockResolvedValue({ id: 'inv-1', status: 'void' });
+    invoiceTaxContextService.resolveForUser.mockResolvedValue({
+      treatment: {
+        taxMode: 'domestic_vat',
+        taxCountryCode: 'DE',
+        chargeVat: true,
+        invoiceNote: '',
+        einvoiceTaxCategoryCode: 'S',
+        issuerIsInEu: true,
+      },
+      forceChargeNonEuIssuerEuB2b: false,
+    });
     service = new ProjectBillingService(
       dataSource as never,
       projectsRepository as never,
@@ -63,6 +87,7 @@ describe('ProjectBillingService', () => {
       invoiceIssuanceService as never,
       billingEmailPublisher as never,
       taxCalculationService,
+      invoiceTaxContextService as never,
       auditLog as never,
       projectBoardSummary as never,
       projectTimeReportService as never,

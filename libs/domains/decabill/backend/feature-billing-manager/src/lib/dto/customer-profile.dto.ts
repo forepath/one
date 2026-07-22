@@ -1,4 +1,6 @@
-import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString, Length, MaxLength } from 'class-validator';
+
+import { CustomerType } from '../constants/customer-type.constants';
 
 export class CustomerProfileDto {
   @IsOptional()
@@ -12,6 +14,15 @@ export class CustomerProfileDto {
   @IsOptional()
   @IsString({ message: 'Company must be a string' })
   company?: string;
+
+  @IsOptional()
+  @IsEnum(CustomerType, { message: 'Customer type must be business or consumer' })
+  customerType?: CustomerType;
+
+  @IsOptional()
+  @IsString({ message: 'VAT ID must be a string' })
+  @MaxLength(32, { message: 'VAT ID must be at most 32 characters' })
+  vatId?: string | null;
 
   @IsOptional()
   @IsString({ message: 'Address line 1 must be a string' })

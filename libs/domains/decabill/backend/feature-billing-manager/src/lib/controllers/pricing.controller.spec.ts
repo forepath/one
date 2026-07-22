@@ -3,9 +3,11 @@ import { Test } from '@nestjs/testing';
 import { BillingIntervalType, ServicePlanEntity } from '../entities/service-plan.entity';
 import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
+import { InvoiceTaxContextService } from '../services/invoice-tax-context.service';
 import { PricingService } from '../services/pricing.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
 import { TaxCalculationService } from '../services/tax-calculation.service';
+import { TaxPreviewService } from '../services/tax-preview.service';
 import { TaxRateConfigService } from '../services/tax-rate-config.service';
 
 import { PricingController } from './pricing.controller';
@@ -23,6 +25,8 @@ describe('PricingController', () => {
     taxCategory: 'standard',
     providerConfigDefaults: { serverType: 'cx11' },
   } as unknown as ServicePlanEntity;
+
+  const authReq = { user: { id: 'user-1', roles: ['user'] } };
 
   let controller: PricingController;
   let findPlanById: jest.Mock;
@@ -57,6 +61,27 @@ describe('PricingController', () => {
         TaxRateConfigService,
         TaxCalculationService,
         { provide: ProviderServerTypesService, useValue: { getServerTypes } },
+        {
+          provide: InvoiceTaxContextService,
+          useValue: {
+            resolveForUser: jest.fn().mockResolvedValue({
+              treatment: {
+                taxMode: 'domestic_vat',
+                taxCountryCode: 'DE',
+                chargeVat: true,
+                invoiceNote: '',
+                einvoiceTaxCategoryCode: 'S',
+                issuerIsInEu: true,
+              },
+              forceChargeNonEuIssuerEuB2b: false,
+            }),
+          },
+        },
+        {
+          provide: TaxPreviewService,
+          useValue: { preview: jest.fn() },
+        },
+        { provide: ProviderServerTypesService, useValue: { getServerTypes } },
       ],
     }).compile();
 
@@ -64,7 +89,7 @@ describe('PricingController', () => {
   });
 
   it('returns zeroed preview when planId is missing', async () => {
-    const result = await controller.preview({ planId: '' });
+    const result = await controller.preview({ planId: '' }, authReq as never);
 
     expect(result).toEqual({
       totalPrice: 0,
@@ -80,10 +105,13 @@ describe('PricingController', () => {
   });
 
   it('uses requested server type price when catalog match exists', async () => {
-    const result = await controller.preview({
-      planId: planRow.id,
-      requestedConfig: { serverType: 'cpx11' },
-    });
+    const result = await controller.preview(
+      {
+        planId: planRow.id,
+        requestedConfig: { serverType: 'cpx11' },
+      },
+      authReq as never,
+    );
 
     expect(getServerTypes).toHaveBeenCalledWith('hetzner', { HETZNER_API_TOKEN: 'tenant-token' });
     expect(calculate).toHaveBeenCalledWith(planRow, 6.49);
@@ -96,10 +124,13 @@ describe('PricingController', () => {
   it('falls back to plan pricing when server type catalog price is missing', async () => {
     getServerTypes.mockResolvedValue([{ id: 'cx11', priceMonthly: 4.15 }]);
 
-    const result = await controller.preview({
-      planId: planRow.id,
-      requestedConfig: { serverType: 'unknown-type' },
-    });
+    const result = await controller.preview(
+      {
+        planId: planRow.id,
+        requestedConfig: { serverType: 'unknown-type' },
+      },
+      authReq as never,
+    );
 
     expect(calculate).toHaveBeenCalledWith(planRow);
     expect(result.totalPrice).toBe(10);
@@ -113,7 +144,7 @@ describe('PricingController', () => {
       providerConfigDefaults: {},
     });
 
-    const result = await controller.preview({ planId: planRow.id });
+    const result = await controller.preview({ planId: planRow.id }, authReq as never);
 
     expect(calculate).toHaveBeenCalledWith(expect.objectContaining({ taxCategory: 'reduced' }));
     expect(result.taxCategory).toBe('reduced');

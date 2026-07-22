@@ -256,7 +256,9 @@
                       [chart]="chart.chart"
                       [labels]="chart.labels"
                       [colors]="chart.colors"
+                      [dataLabels]="chart.dataLabels"
                       [legend]="chart.legend"
+                      [tooltip]="chart.tooltip"
                       [title]="chart.title"
                     ></apx-chart>
                   } @else if (statisticsByProductLoading$ | async) {
@@ -264,6 +266,28 @@
                   } @else {
                     <p class="text-muted small mb-0" i18n="@@featureAdminBilling-noProductData">
                       No product breakdown for selected period.
+                    </p>
+                  }
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body">
+                  @if (countryDonutChartOptions(); as chart) {
+                    <apx-chart
+                      [series]="chart.series"
+                      [chart]="chart.chart"
+                      [labels]="chart.labels"
+                      [colors]="chart.colors"
+                      [dataLabels]="chart.dataLabels"
+                      [legend]="chart.legend"
+                      [tooltip]="chart.tooltip"
+                      [title]="chart.title"
+                    ></apx-chart>
+                  } @else if (statisticsByCountryLoading$ | async) {
+                    <div class="text-center py-4"><span class="spinner-border spinner-border-sm"></span></div>
+                  } @else {
+                    <p class="text-muted small mb-0" i18n="@@featureAdminBilling-noCountryData">
+                      No country breakdown for selected period.
                     </p>
                   }
                 </div>
@@ -853,7 +877,7 @@
     </div>
     <div class="mt-2">
       <span class="form-label d-block" i18n="@@featureAdminInvoices-lineTaxCategory">VAT rate</span>
-      @for (option of taxCategoryOptions; track option.value) {
+      @for (option of taxCategoryOptions(); track option.value) {
         <div class="form-check form-check-inline">
           <input
             type="radio"

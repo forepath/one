@@ -116,4 +116,26 @@ describe('CustomerProfileService', () => {
       req.flush(disabled);
     });
   });
+
+  describe('revalidateVatId', () => {
+    it('should post revalidate and return updated customer profile', (done) => {
+      const revalidated = {
+        ...mockProfile,
+        vatId: 'DE123456789',
+        vatIdValidationStatus: 'valid' as const,
+        vatIdValidatedAt: '2024-06-01T00:00:00Z',
+      };
+
+      service.revalidateVatId().subscribe((profile) => {
+        expect(profile.vatIdValidationStatus).toBe('valid');
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/customer-profile/vat-id/revalidate`);
+
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({});
+      req.flush(revalidated);
+    });
+  });
 });

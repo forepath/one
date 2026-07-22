@@ -11,11 +11,16 @@ const createMockQueryBuilder = () => ({
   where: jest.fn().mockReturnThis(),
   andWhere: jest.fn().mockReturnThis(),
   orderBy: jest.fn().mockReturnThis(),
+  select: jest.fn().mockReturnThis(),
+  addSelect: jest.fn().mockReturnThis(),
+  groupBy: jest.fn().mockReturnThis(),
+  addGroupBy: jest.fn().mockReturnThis(),
   take: jest.fn().mockReturnThis(),
   skip: jest.fn().mockReturnThis(),
   getCount: jest.fn(),
   getMany: jest.fn(),
   getOne: jest.fn(),
+  getRawMany: jest.fn(),
 });
 
 describe('InvoicesRepository', () => {
@@ -253,5 +258,36 @@ describe('InvoicesRepository', () => {
         autoPaymentNextRetryAt: new Date(),
       }),
     ).resolves.toBe(false);
+  });
+
+  it('sumByPlanInPeriod maps product rows including Unknown', async () => {
+    mockQueryBuilder.getRawMany.mockResolvedValue([
+      { planId: 'plan-1', planName: 'Basic', totalGross: '120.5' },
+      { planId: 'UNKNOWN', planName: 'Unknown', totalGross: '10' },
+    ]);
+
+    const rows = await repository.sumByPlanInPeriod(new Date('2026-01-01'), new Date('2026-01-31'), 'user-1');
+
+    expect(rows).toEqual([
+      { planId: 'plan-1', planName: 'Basic', totalGross: 120.5 },
+      { planId: 'UNKNOWN', planName: 'Unknown', totalGross: 10 },
+    ]);
+    expect(mockQueryBuilder.leftJoin).toHaveBeenCalled();
+    expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('inv.userId = :userId', { userId: 'user-1' });
+  });
+
+  it('sumByBuyerCountryInPeriod maps country rows', async () => {
+    mockQueryBuilder.getRawMany.mockResolvedValue([
+      { countryCode: 'DE', totalGross: '50' },
+      { countryCode: 'UNKNOWN', totalGross: '5' },
+    ]);
+
+    const rows = await repository.sumByBuyerCountryInPeriod(new Date('2026-01-01'), new Date('2026-01-31'));
+
+    expect(rows).toEqual([
+      { countryCode: 'DE', totalGross: 50 },
+      { countryCode: 'UNKNOWN', totalGross: 5 },
+    ]);
+    expect(mockQueryBuilder.select).toHaveBeenCalled();
   });
 });

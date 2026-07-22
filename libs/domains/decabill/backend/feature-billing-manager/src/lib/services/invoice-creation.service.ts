@@ -18,6 +18,7 @@ import { resolvePlanTaxCategory } from '../utils/plan-tax.utils';
 import type { LineItemInput } from './tax-calculation.service';
 import { TaxCalculationService } from './tax-calculation.service';
 import { InvoiceService } from './invoice.service';
+import { InvoiceTaxContextService } from './invoice-tax-context.service';
 import { PricingService } from './pricing.service';
 import { PromotionApplicationService, type PromotionRedemptionUpdate } from './promotion-application.service';
 import { ProviderServerTypesService } from './provider-server-types.service';
@@ -50,6 +51,7 @@ export class InvoiceCreationService {
     private readonly promotionApplicationService: PromotionApplicationService,
     private readonly subscriptionChargePeriodService: SubscriptionChargePeriodService,
     private readonly taxCalculationService: TaxCalculationService,
+    private readonly invoiceTaxContextService: InvoiceTaxContextService,
   ) {}
 
   async createInvoice(subscriptionId: string, userId: string, description?: string, options?: InvoiceCreationOptions) {
@@ -106,7 +108,11 @@ export class InvoiceCreationService {
       subscriptionChargeNet: Math.round(chargePeriod.baseAmount * 100) / 100,
     });
     const lineInputs = [...promoResult.discountLines, chargeLine];
-    const totals = this.taxCalculationService.computeLines(lineInputs);
+    const taxContext = await this.invoiceTaxContextService.resolveForUser(userId);
+    const totals = this.taxCalculationService.computeLines(lineInputs, {
+      taxTreatment: taxContext.treatment,
+      forceChargeNonEuIssuerEuB2b: taxContext.forceChargeNonEuIssuerEuB2b,
+    });
     const minCheckoutPaymentAmount = getMinCheckoutPaymentAmount();
 
     // Align with accumulate/hold: do not issue positive balances below the Checkout minimum.
@@ -195,7 +201,11 @@ export class InvoiceCreationService {
     }
 
     const primarySubscriptionId = billableGroups[0].group.subscriptionId;
-    const totals = this.taxCalculationService.computeLines(lineInputs);
+    const taxContext = await this.invoiceTaxContextService.resolveForUser(userId);
+    const totals = this.taxCalculationService.computeLines(lineInputs, {
+      taxTreatment: taxContext.treatment,
+      forceChargeNonEuIssuerEuB2b: taxContext.forceChargeNonEuIssuerEuB2b,
+    });
     const minCheckoutPaymentAmount = getMinCheckoutPaymentAmount();
 
     // Hold unbilled positions when there is a positive payable amount below the Checkout minimum.

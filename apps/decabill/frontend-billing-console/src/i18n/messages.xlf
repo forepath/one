@@ -62,6 +62,9 @@
       <trans-unit id="featureAdminBilling-noProductData" datatype="html">
         <source> No product breakdown for selected period. </source>
         </trans-unit>
+      <trans-unit id="featureAdminBilling-noCountryData" datatype="html">
+        <source> No country breakdown for selected period. </source>
+        </trans-unit>
       <trans-unit id="featureAdminBilling-invoicesTitle" datatype="html">
         <source>Invoices</source>
         </trans-unit>
@@ -215,6 +218,9 @@
       <trans-unit id="featureAdminBilling-chartProductTitle" datatype="html">
         <source>Turnover by product</source>
         </trans-unit>
+      <trans-unit id="featureAdminBilling-chartCountryTitle" datatype="html">
+        <source>Turnover by country</source>
+        </trans-unit>
       <trans-unit id="featureAdminProfiles-title" datatype="html">
         <source>Billing Profiles</source>
         </trans-unit>
@@ -280,6 +286,15 @@
         </trans-unit>
       <trans-unit id="featureAdminProfiles-delete" datatype="html">
         <source> Delete </source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-vatIdPlaceholder" datatype="html">
+        <source>VAT ID</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-vatIdValidationStatus" datatype="html">
+        <source>VAT ID validation</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-vatIdValidatedAt" datatype="html">
+        <source>Validated at:</source>
         </trans-unit>
       <trans-unit id="featureBilling-customerTrustGreen" datatype="html">
         <source>High trust</source>
@@ -796,6 +811,27 @@
         </trans-unit>
       <trans-unit id="featureBilling-profileIncomplete" datatype="html">
         <source>Incomplete</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-customerTypeBusiness" datatype="html">
+        <source>Business</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-customerTypeConsumer" datatype="html">
+        <source>Consumer</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-vatIdValidationNone" datatype="html">
+        <source>Not validated</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-vatIdValidationPending" datatype="html">
+        <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-vatIdValidationValid" datatype="html">
+        <source>Valid</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-vatIdValidationInvalid" datatype="html">
+        <source>Invalid</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-vatIdValidationUnavailable" datatype="html">
+        <source>Unavailable</source>
         </trans-unit>
       <trans-unit id="featureBilling-promotionRedemptionContextNew" datatype="html">
         <source>New subscription</source>
@@ -2483,6 +2519,18 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-company" datatype="html">
         <source>Company</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-customerType" datatype="html">
+        <source>Customer type</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-vatId" datatype="html">
+        <source>VAT ID</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-vatIdValidationStatus" datatype="html">
+        <source>VAT ID validation</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-vatIdValidatedAt" datatype="html">
+        <source>Validated at:</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-email" datatype="html">
         <source>Email</source>

@@ -39,6 +39,14 @@ export const selectAdminStatisticsByProductLoading = createSelector(
   selectAdminBillingState,
   (state) => state.statisticsByProductLoading,
 );
+export const selectAdminStatisticsByCountry = createSelector(
+  selectAdminBillingState,
+  (state) => state.statisticsByCountry,
+);
+export const selectAdminStatisticsByCountryLoading = createSelector(
+  selectAdminBillingState,
+  (state) => state.statisticsByCountryLoading,
+);
 export const selectAdminStatisticsError = createSelector(selectAdminBillingState, (state) => state.statisticsError);
 
 export const selectAdminAuditLogsByInvoice = createSelector(

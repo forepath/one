@@ -1886,6 +1886,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /pricing/tax-preview:
+    post:
+      summary: Preview tax treatment and rates for the authenticated customer
+      operationId: previewTaxForCustomer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxPreviewRequest'
+      responses:
+        '200':
+          description: Tax preview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxPreviewResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /customer-profile:
     get:
       summary: Get customer profile
@@ -1921,6 +1944,29 @@ paths:
                 $ref: '#/components/schemas/CustomerProfileResponse'
         '400':
           description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /customer-profile/vat-id/revalidate:
+    post:
+      summary: Revalidate customer VAT ID via VIES
+      operationId: revalidateCustomerVatId
+      responses:
+        '200':
+          description: Customer profile with updated VAT validation status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerProfileResponse'
+        '400':
+          description: Profile missing or invalid
           content:
             application/json:
               schema:
@@ -3361,6 +3407,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BillingStatisticsByProduct'
+  /admin/billing/statistics/by-country:
+    get:
+      tags: [Admin Billing]
+      summary: Turnover by buyer country (admin only)
+      operationId: getAdminBillingStatisticsByCountry
+      parameters:
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+        - name: userId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Turnover by buyer country
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingStatisticsByCountry'
   /admin/billing/capabilities:
     get:
       tags: [Admin Billing]
@@ -3373,6 +3441,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BillingCapabilitiesResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin access required
+  /admin/billing/tax/preview:
+    post:
+      tags: [Admin Billing]
+      summary: Preview tax treatment and rates (issuer or customer)
+      operationId: previewTaxForAdmin
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxPreviewRequest'
+      responses:
+        '200':
+          description: Tax preview
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxPreviewResponse'
         '401':
           description: Unauthorized
         '403':
@@ -4990,6 +5080,58 @@ components:
             enum: [standard, reduced],
             description: Plan VAT category used for this preview,
           }
+    TaxPreviewRequest:
+      type: object
+      properties:
+        userId:
+          {
+            type: string,
+            format: uuid,
+            description: Customer user id (admin). When omitted,
+            issuer domestic rates apply.,
+          }
+        lineItems:
+          type: array
+          items:
+            type: object
+            required: [quantity, unitPriceNet]
+            properties:
+              description: { type: string }
+              quantity: { type: number }
+              unitPriceNet: { type: number }
+              taxCategory: { type: string, enum: [standard, reduced] }
+    TaxPreviewResponse:
+      type: object
+      required:
+        [taxMode, taxCountryCode, chargeVat, rates, einvoiceTaxCategoryCode]
+      properties:
+        taxMode: { type: string }
+        taxCountryCode: { type: string }
+        chargeVat: { type: boolean }
+        taxNote: { type: string, nullable: true }
+        einvoiceTaxCategoryCode: { type: string }
+        rates:
+          type: object
+          required: [standard, reduced]
+          properties:
+            standard: { type: number }
+            reduced: { type: number }
+        subtotalNet: { type: number }
+        taxTotal: { type: number }
+        totalGross: { type: number }
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              description: { type: string }
+              quantity: { type: number }
+              unitPriceNet: { type: number }
+              taxCategory: { type: string, enum: [standard, reduced] }
+              taxRate: { type: number }
+              lineNet: { type: number }
+              lineTax: { type: number }
+              lineGross: { type: number }
     CustomerProfileDto:
       type: object
       properties:
@@ -5004,6 +5146,8 @@ components:
         country: { type: string, minLength: 2, maxLength: 2 }
         email: { type: string, format: email }
         phone: { type: string }
+        customerType: { type: string, enum: [business, consumer] }
+        vatId: { type: string, nullable: true, maxLength: 32 }
     CustomerProfileResponse:
       type: object
       properties:
@@ -5012,6 +5156,18 @@ components:
         firstName: { type: string, nullable: true }
         lastName: { type: string, nullable: true }
         company: { type: string, nullable: true }
+        customerType:
+          { type: string, enum: [business, consumer], nullable: true }
+        vatId: { type: string, nullable: true }
+        vatIdValidationStatus:
+          { type: string, enum: [none, pending, valid, invalid, unavailable] }
+        vatIdValidatedAt: { type: string, format: date-time, nullable: true }
+        vatIdValidationSource:
+          {
+            type: string,
+            enum: [vies_sync, vies_async, admin, format_only],
+            nullable: true,
+          }
         addressLine1: { type: string, nullable: true }
         addressLine2: { type: string, nullable: true }
         postalCode: { type: string, nullable: true }
@@ -5375,8 +5531,16 @@ components:
     BillingStatisticsByProductItem:
       type: object
       properties:
-        planId: { type: string, format: uuid }
-        planName: { type: string }
+        planId:
+          {
+            type: string,
+            description: 'Plan UUID, project:<uuid>, or UNKNOWN when unassigned',
+          }
+        planName:
+          {
+            type: string,
+            description: 'Service plan name, project name, or Unknown',
+          }
         totalGross: { type: number }
     BillingStatisticsByProduct:
       type: object
@@ -5385,6 +5549,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/BillingStatisticsByProductItem'
+        totalGross: { type: number }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+    BillingStatisticsByCountryItem:
+      type: object
+      properties:
+        countryCode: { type: string }
+        countryName: { type: string }
+        totalGross: { type: number }
+    BillingStatisticsByCountry:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillingStatisticsByCountryItem'
         totalGross: { type: number }
         from: { type: string, format: date }
         to: { type: string, format: date }

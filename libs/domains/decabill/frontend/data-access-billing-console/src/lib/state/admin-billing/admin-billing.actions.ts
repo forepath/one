@@ -8,6 +8,7 @@ import type {
   AdminInvoiceListItem,
   AdminOpenOverdueListParams,
   BillingAuditLogResponse,
+  BillingStatisticsByCountry,
   BillingStatisticsByProduct,
   BillingStatisticsSummary,
   MarkInvoicePaymentStatusDto,
@@ -93,6 +94,19 @@ export const loadAdminStatisticsByProductSuccess = createAction(
 );
 export const loadAdminStatisticsByProductFailure = createAction(
   '[AdminBilling] Load Statistics By Product Failure',
+  props<{ error: string }>(),
+);
+
+export const loadAdminStatisticsByCountry = createAction(
+  '[AdminBilling] Load Statistics By Country',
+  props<{ params: AdminBillingStatisticsParams }>(),
+);
+export const loadAdminStatisticsByCountrySuccess = createAction(
+  '[AdminBilling] Load Statistics By Country Success',
+  props<{ byCountry: BillingStatisticsByCountry }>(),
+);
+export const loadAdminStatisticsByCountryFailure = createAction(
+  '[AdminBilling] Load Statistics By Country Failure',
   props<{ error: string }>(),
 );
 

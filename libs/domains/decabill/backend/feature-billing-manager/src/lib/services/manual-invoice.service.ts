@@ -13,6 +13,7 @@ import { BillingAuditLogService } from './billing-audit-log.service';
 import { CustomerProfilesService } from './customer-profiles.service';
 import { InvoiceIssuanceService } from './invoice-issuance.service';
 import { InvoiceService, type CreateInvoiceDraftParams } from './invoice.service';
+import { InvoiceTaxContextService } from './invoice-tax-context.service';
 import { TaxCalculationService } from './tax-calculation.service';
 
 @Injectable()
@@ -27,6 +28,7 @@ export class ManualInvoiceService {
     private readonly taxCalculationService: TaxCalculationService,
     private readonly customerProfilesService: CustomerProfilesService,
     private readonly auditLog: BillingAuditLogService,
+    private readonly invoiceTaxContextService: InvoiceTaxContextService,
   ) {}
 
   async createDraft(dto: CreateManualInvoiceDto, adminUserId: string): Promise<ManualInvoiceDetailResponseDto> {
@@ -76,7 +78,11 @@ export class ManualInvoiceService {
     assertDraftEditable(invoice);
 
     const lineInputs = mapManualInvoiceLineItemsToInputs(dto.lineItems);
-    const totals = this.taxCalculationService.computeLines(lineInputs);
+    const taxContext = await this.invoiceTaxContextService.resolveForUser(invoice.userId);
+    const totals = this.taxCalculationService.computeLines(lineInputs, {
+      taxTreatment: taxContext.treatment,
+      forceChargeNonEuIssuerEuB2b: taxContext.forceChargeNonEuIssuerEuB2b,
+    });
 
     await this.invoiceLineItemsRepository.deleteByInvoiceId(invoiceRefId);
     await this.invoiceLineItemsRepository.createMany(
@@ -99,6 +105,16 @@ export class ManualInvoiceService {
       taxTotal: totals.taxTotal,
       totalGross: totals.totalGross,
       balanceDue: totals.totalGross,
+      taxMode: taxContext.treatment.taxMode,
+      taxCountryCode: taxContext.treatment.taxCountryCode,
+      taxNote: taxContext.treatment.invoiceNote || null,
+      einvoiceTaxCategoryCode: taxContext.treatment.einvoiceTaxCategoryCode,
+      resolvedTaxRate: totals.resolvedTaxRate ?? null,
+      buyerVatId: taxContext.buyerVatId,
+      buyerCountry: taxContext.buyerCountry,
+      buyerCustomerType: taxContext.buyerCustomerType,
+      issuerCountry: taxContext.issuerCountry,
+      issuerIsInEu: taxContext.treatment.issuerIsInEu,
     });
 
     await this.auditLog.log({

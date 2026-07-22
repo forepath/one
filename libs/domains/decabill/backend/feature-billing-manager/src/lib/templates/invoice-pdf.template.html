@@ -276,7 +276,9 @@
           <p class="address-name">{{buyer.name}}</p>
           {{#each buyer.lines}}
           <p class="address-line">{{this}}</p>
-          {{/each}} {{#if buyer.email}}
+          {{/each}} {{#if buyer.vatId}}
+          <p class="address-line">VAT: {{buyer.vatId}}</p>
+          {{/if}} {{#if buyer.email}}
           <p class="address-line">{{buyer.email}}</p>
           {{/if}}
         </section>
@@ -321,6 +323,12 @@
             <span>Tax total</span>
             <span>{{taxTotal}} {{currency}}</span>
           </div>
+          {{#if taxModeLabel}}
+          <div class="totals-row">
+            <span>Tax treatment</span>
+            <span>{{taxModeLabel}}</span>
+          </div>
+          {{/if}}
           <div class="totals-row total">
             <span>Total</span>
             <span>{{totalGross}} {{currency}}</span>
@@ -334,7 +342,12 @@
         </div>
       </div>
 
-      {{#if paymentDetails}}
+      {{#if taxNote}}
+      <section class="payment-details">
+        <h2 class="payment-heading">Tax note</h2>
+        <p class="address-line">{{taxNote}}</p>
+      </section>
+      {{/if}} {{#if paymentDetails}}
       <section class="payment-details">
         <h2 class="payment-heading">Payment details</h2>
         <div class="payment-grid">

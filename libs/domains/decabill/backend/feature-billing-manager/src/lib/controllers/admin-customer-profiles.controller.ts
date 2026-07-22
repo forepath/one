@@ -70,6 +70,20 @@ export class AdminCustomerProfilesController {
     return await this.customerProfilesAdminService.recomputeTrustScore(id);
   }
 
+  @Post(':id/vat-id/revalidate')
+  async revalidateVatId(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<CustomerProfileResponseDto> {
+    return await this.customerProfilesAdminService.revalidateVatId(id);
+  }
+
+  @Post(':id/vat-id/mark-validated')
+  async markVatIdValidated(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<CustomerProfileResponseDto> {
+    return await this.customerProfilesAdminService.markVatIdValidated(id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {

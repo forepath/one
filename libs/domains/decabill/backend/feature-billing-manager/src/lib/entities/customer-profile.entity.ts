@@ -1,6 +1,8 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
+import { CustomerType } from '../constants/customer-type.constants';
 import { CustomerTrustLevel } from '../trust-score/trust-score.types';
+import { VatIdValidationSource, VatIdValidationStatus } from '../constants/vat-id-validation.constants';
 
 @Entity('billing_customer_profiles')
 export class CustomerProfileEntity {
@@ -18,6 +20,36 @@ export class CustomerProfileEntity {
 
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'company' })
   company?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 16,
+    nullable: true,
+    name: 'customer_type',
+  })
+  customerType?: CustomerType | null;
+
+  @Column({ type: 'varchar', length: 32, nullable: true, name: 'vat_id' })
+  vatId?: string | null;
+
+  @Column({
+    type: 'varchar',
+    length: 16,
+    name: 'vat_id_validation_status',
+    default: VatIdValidationStatus.NONE,
+  })
+  vatIdValidationStatus!: VatIdValidationStatus;
+
+  @Column({ type: 'timestamp', nullable: true, name: 'vat_id_validated_at' })
+  vatIdValidatedAt?: Date | null;
+
+  @Column({
+    type: 'varchar',
+    length: 16,
+    nullable: true,
+    name: 'vat_id_validation_source',
+  })
+  vatIdValidationSource?: VatIdValidationSource | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'address_line_1' })
   addressLine1?: string;

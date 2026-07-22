@@ -135,6 +135,22 @@ describe('AdminBillingService', () => {
     req.flush({ items: [], totalGross: 50, from: '2024-01-01', to: '2024-01-31' });
   });
 
+  it('gets statistics by country', (done) => {
+    service.getStatisticsByCountry({ from: '2024-01-01', to: '2024-01-31' }).subscribe((res) => {
+      expect(res.totalGross).toBe(75);
+      done();
+    });
+    const req = httpMock.expectOne((r) => r.url === `${apiUrl}/admin/billing/statistics/by-country`);
+
+    expect(req.request.params.get('from')).toBe('2024-01-01');
+    req.flush({
+      items: [{ countryCode: 'DE', countryName: 'Germany', totalGross: 75 }],
+      totalGross: 75,
+      from: '2024-01-01',
+      to: '2024-01-31',
+    });
+  });
+
   it('lists user subscriptions', (done) => {
     const userId = '11111111-1111-4111-8111-111111111111';
 

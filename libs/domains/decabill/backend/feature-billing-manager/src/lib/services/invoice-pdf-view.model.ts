@@ -40,5 +40,7 @@ export interface InvoicePdfViewModel {
   taxTotal: string;
   totalGross: string;
   balanceDue: string;
+  taxNote?: string;
+  taxModeLabel?: string;
   paymentDetails?: InvoicePdfPaymentDetailsView;
 }

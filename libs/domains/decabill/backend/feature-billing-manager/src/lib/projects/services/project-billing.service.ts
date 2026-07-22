@@ -8,6 +8,7 @@ import { CustomerProfilesService } from '../../services/customer-profiles.servic
 import { BillingEmailPublisher } from '../../email/billing-email.publisher';
 import { InvoiceIssuanceService } from '../../services/invoice-issuance.service';
 import { InvoiceService } from '../../services/invoice.service';
+import { InvoiceTaxContextService } from '../../services/invoice-tax-context.service';
 import { SubscriptionsRepository } from '../../repositories/subscriptions.repository';
 import { InvoicesRepository } from '../../repositories/invoices.repository';
 import { TaxCalculationService } from '../../services/tax-calculation.service';
@@ -36,6 +37,7 @@ export class ProjectBillingService {
     private readonly invoiceIssuanceService: InvoiceIssuanceService,
     private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly taxCalculationService: TaxCalculationService,
+    private readonly invoiceTaxContextService: InvoiceTaxContextService,
     private readonly auditLog: BillingAuditLogService,
     private readonly projectBoardSummary: ProjectBoardSummaryService,
     private readonly projectTimeReportService: ProjectTimeReportService,
@@ -108,7 +110,11 @@ export class ProjectBillingService {
       },
       ...customLineInputs,
     ];
-    const totals = this.taxCalculationService.computeLines(lineInputs);
+    const taxContext = await this.invoiceTaxContextService.resolveForUser(project.userId);
+    const totals = this.taxCalculationService.computeLines(lineInputs, {
+      taxTreatment: taxContext.treatment,
+      forceChargeNonEuIssuerEuB2b: taxContext.forceChargeNonEuIssuerEuB2b,
+    });
     const minCheckoutPaymentAmount = getMinCheckoutPaymentAmount();
 
     if (totals.subtotalNet < MIN_BILLABLE_AMOUNT) {

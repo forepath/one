@@ -39,6 +39,7 @@ describe('InvoiceCreationService', () => {
       promotionApplicationService?: any;
       subscriptionChargePeriodService?: SubscriptionChargePeriodService;
       taxCalculationService?: any;
+      invoiceTaxContextService?: any;
     } = {},
   ) {
     const invoicesRepository =
@@ -60,6 +61,14 @@ describe('InvoiceCreationService', () => {
           };
         }),
       } as any);
+    const invoiceTaxContextService =
+      deps.invoiceTaxContextService ??
+      ({
+        resolveForUser: jest.fn().mockResolvedValue({
+          treatment: { taxMode: 'domestic_vat', taxCountryCode: 'DE', chargeVat: true },
+          forceChargeNonEuIssuerEuB2b: false,
+        }),
+      } as any);
 
     return new InvoiceCreationService(
       deps.subscriptionsRepository ?? ({} as any),
@@ -73,6 +82,7 @@ describe('InvoiceCreationService', () => {
       deps.promotionApplicationService ?? defaultPromotionApplicationService,
       deps.subscriptionChargePeriodService ?? createChargePeriodService(invoicesRepository, itemsRepository),
       taxCalculationService,
+      invoiceTaxContextService,
     );
   }
 

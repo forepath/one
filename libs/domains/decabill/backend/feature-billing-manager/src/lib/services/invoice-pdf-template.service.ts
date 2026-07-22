@@ -53,13 +53,13 @@ export class InvoicePdfTemplateService {
       statusLabel: this.formatStatusLabel(invoice.status),
       currency: invoice.currency,
       issuer: this.buildIssuerAddress(issuer),
-      buyer: this.buildBuyerAddress(buyer),
+      buyer: this.buildBuyerAddress(buyer, invoice),
       lineItems: lineItems.map((line) => ({
         position: line.position + 1,
         description: line.description,
         quantity: formatAmount(line.quantity),
         unitPriceNet: formatAmount(line.unitPriceNet),
-        taxRate: toAmount(line.taxRate).toFixed(0),
+        taxRate: toAmount(line.taxRate).toFixed(2),
         lineNet: formatAmount(line.lineNet),
         lineTax: formatAmount(line.lineTax),
         lineGross: formatAmount(line.lineGross),
@@ -68,6 +68,8 @@ export class InvoicePdfTemplateService {
       taxTotal: formatAmount(invoice.taxTotal),
       totalGross: formatAmount(invoice.totalGross),
       balanceDue: presentation.showBalanceDue ? formatAmount(invoice.balanceDue) : '0.00',
+      taxNote: invoice.taxNote?.trim() || undefined,
+      taxModeLabel: invoice.taxMode?.replace(/_/g, ' ') || undefined,
       ...(paymentDetails ? { paymentDetails } : {}),
     };
   }
@@ -86,7 +88,7 @@ export class InvoicePdfTemplateService {
     };
   }
 
-  private buildBuyerAddress(buyer: CustomerProfileEntity): InvoicePdfAddressView {
+  private buildBuyerAddress(buyer: CustomerProfileEntity, invoice?: InvoiceEntity): InvoicePdfAddressView {
     const name =
       buyer.company?.trim() || [buyer.firstName, buyer.lastName].filter(Boolean).join(' ').trim() || 'Customer';
     const lines: string[] = [];
@@ -114,6 +116,7 @@ export class InvoicePdfTemplateService {
     return {
       name,
       lines,
+      vatId: (invoice?.buyerVatId ?? buyer.vatId)?.trim() || undefined,
       email: buyer.email?.trim() || undefined,
     };
   }

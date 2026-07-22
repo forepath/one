@@ -1,4 +1,4 @@
-import { AdminBillNowJobName, DatevExportJobName } from '@forepath/decabill/backend';
+import { AdminBillNowJobName, DatevExportJobName, VatIdValidationJobName } from '@forepath/decabill/backend';
 import {
   buildCoordinatorJobId,
   getWebhookDeliveryRetentionCoordinatorIntervalMs,
@@ -34,6 +34,7 @@ export const BillingJobName = {
   ADMIN_BILL_NOW_UNIT: AdminBillNowJobName.UNIT,
   DATEV_EXPORT_COORDINATOR: DatevExportJobName.COORDINATOR,
   DATEV_EXPORT_UNIT: DatevExportJobName.UNIT,
+  VAT_ID_VALIDATION_UNIT: VatIdValidationJobName.UNIT,
   WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
 } as const;
 

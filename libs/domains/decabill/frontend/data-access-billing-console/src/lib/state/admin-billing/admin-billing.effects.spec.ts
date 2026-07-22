@@ -27,6 +27,9 @@ import {
   loadAdminOpenOverdue,
   loadAdminOpenOverdueFailure,
   loadAdminOpenOverdueSuccess,
+  loadAdminStatisticsByCountry,
+  loadAdminStatisticsByCountryFailure,
+  loadAdminStatisticsByCountrySuccess,
   loadAdminStatisticsByProduct,
   loadAdminStatisticsByProductFailure,
   loadAdminStatisticsByProductSuccess,
@@ -42,6 +45,7 @@ import {
   loadAdminAuditLogs$,
   loadAdminBillingSummary$,
   loadAdminOpenOverdue$,
+  loadAdminStatisticsByCountry$,
   loadAdminStatisticsByProduct$,
   loadAdminStatisticsSummary$,
 } from './admin-billing.effects';
@@ -71,6 +75,7 @@ describe('AdminBillingEffects', () => {
       listAuditLogs: jest.fn(),
       getStatisticsSummary: jest.fn(),
       getStatisticsByProduct: jest.fn(),
+      getStatisticsByCountry: jest.fn(),
     } as never;
 
     TestBed.configureTestingModule({
@@ -285,6 +290,37 @@ describe('AdminBillingEffects', () => {
     TestBed.runInInjectionContext(() => {
       loadAdminStatisticsByProduct$().subscribe((action) => {
         expect(action).toEqual(loadAdminStatisticsByProductFailure({ error: 'product fail' }));
+        done();
+      });
+    });
+  });
+
+  it('loadAdminStatisticsByCountry$ emits success', (done) => {
+    const byCountry = {
+      items: [{ countryCode: 'DE', countryName: 'Germany', totalGross: 80 }],
+      totalGross: 80,
+      from: '2024-01-01',
+      to: '2024-01-31',
+    };
+
+    service.getStatisticsByCountry.mockReturnValue(of(byCountry));
+    actions$ = of(loadAdminStatisticsByCountry({ params: {} }));
+
+    TestBed.runInInjectionContext(() => {
+      loadAdminStatisticsByCountry$().subscribe((action) => {
+        expect(action).toEqual(loadAdminStatisticsByCountrySuccess({ byCountry }));
+        done();
+      });
+    });
+  });
+
+  it('loadAdminStatisticsByCountry$ emits failure', (done) => {
+    service.getStatisticsByCountry.mockReturnValue(throwError(() => new Error('country fail')));
+    actions$ = of(loadAdminStatisticsByCountry({ params: {} }));
+
+    TestBed.runInInjectionContext(() => {
+      loadAdminStatisticsByCountry$().subscribe((action) => {
+        expect(action).toEqual(loadAdminStatisticsByCountryFailure({ error: 'country fail' }));
         done();
       });
     });

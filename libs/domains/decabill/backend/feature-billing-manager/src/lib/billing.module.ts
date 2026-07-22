@@ -88,6 +88,7 @@ import { AvailabilitySnapshotEntity } from './entities/availability-snapshot.ent
 import { BackorderEntity } from './entities/backorder.entity';
 import { BillingAuditLogEntity } from './entities/billing-audit-log.entity';
 import { CustomerProfileEntity } from './entities/customer-profile.entity';
+import { OssThresholdLedgerEntity } from './entities/oss-threshold-ledger.entity';
 import { DatevDebtorAccountEntity } from './entities/datev-debtor-account.entity';
 import { DatevExportEntity } from './entities/datev-export.entity';
 import { InvoiceLineItemEntity } from './entities/invoice-line-item.entity';
@@ -121,10 +122,13 @@ import { AdminBillNowEnqueueAdapter } from './queue/admin-bill-now-enqueue.adapt
 import { ADMIN_BILL_NOW_ENQUEUE } from './queue/admin-bill-now-enqueue.token';
 import { DatevExportEnqueueAdapter } from './queue/datev-export-enqueue.adapter';
 import { DATEV_EXPORT_ENQUEUE } from './queue/datev-export-enqueue.token';
+import { VatIdValidationEnqueueAdapter } from './queue/vat-id-validation-enqueue.adapter';
+import { VAT_ID_VALIDATION_ENQUEUE } from './queue/vat-id-validation-enqueue.token';
 import { AvailabilitySnapshotsRepository } from './repositories/availability-snapshots.repository';
 import { BackordersRepository } from './repositories/backorders.repository';
 import { BillingAuditLogsRepository } from './repositories/billing-audit-logs.repository';
 import { CustomerProfilesRepository } from './repositories/customer-profiles.repository';
+import { OssThresholdLedgersRepository } from './repositories/oss-threshold-ledgers.repository';
 import { DatevDebtorAccountsRepository } from './repositories/datev-debtor-accounts.repository';
 import { DatevExportRepository } from './repositories/datev-export.repository';
 import { InvoiceLineItemsRepository } from './repositories/invoice-line-items.repository';
@@ -218,6 +222,12 @@ import { SubscriptionService } from './services/subscription.service';
 import { PublicWithdrawalService } from './services/public-withdrawal.service';
 import { TaxCalculationService } from './services/tax-calculation.service';
 import { TaxRateConfigService } from './services/tax-rate-config.service';
+import { TaxTreatmentService } from './services/tax-treatment.service';
+import { VatIdValidationService } from './services/vat-id-validation.service';
+import { VatIdValidationJobHandler } from './services/vat-id-validation.job-handler';
+import { OssThresholdService } from './services/oss-threshold.service';
+import { InvoiceTaxContextService } from './services/invoice-tax-context.service';
+import { TaxPreviewService } from './services/tax-preview.service';
 import { UsageService } from './services/usage.service';
 import { applyProviderConfigFieldScopes } from './utils/provider-config-schema.utils';
 import { DIGITALOCEAN_ENV_DEFAULT_FIELDS, HETZNER_ENV_DEFAULT_FIELDS } from './utils/provider-env-defaults.utils';
@@ -440,6 +450,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
       BackorderEntity,
       AvailabilitySnapshotEntity,
       CustomerProfileEntity,
+      OssThresholdLedgerEntity,
       UserEntity,
       RevokedUserTokenEntity,
       UserPersonalAccessTokenEntity,
@@ -504,7 +515,19 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     ProviderServerTypesService,
     ProviderLocationsService,
     TaxRateConfigService,
+    TaxTreatmentService,
     TaxCalculationService,
+    VatIdValidationService,
+    VatIdValidationJobHandler,
+    VatIdValidationEnqueueAdapter,
+    {
+      provide: VAT_ID_VALIDATION_ENQUEUE,
+      useExisting: VatIdValidationEnqueueAdapter,
+    },
+    OssThresholdLedgersRepository,
+    OssThresholdService,
+    InvoiceTaxContextService,
+    TaxPreviewService,
     BillingIssuerConfigService,
     AdminBillNowEnqueueAdapter,
     DatevExportEnqueueAdapter,
@@ -730,6 +753,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     ProjectsService,
     ProjectsRepository,
     DatevExportJobHandler,
+    VatIdValidationJobHandler,
     DatevExportConfigService,
     ProviderRegistryService,
     BillingIdentityEmailBridgeModule,

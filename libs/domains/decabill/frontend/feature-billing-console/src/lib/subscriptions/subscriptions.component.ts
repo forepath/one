@@ -55,6 +55,7 @@ import {
   getProvisioningStatusLabel,
   getSubscriptionStatusBadgeClass,
   getSubscriptionStatusLabel,
+  getVatIdValidationStatusLabel,
 } from '../billing-status-labels';
 import { filterItemsBySearch } from '../billing-list-search';
 import {
@@ -405,6 +406,10 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   profileCompleteLabel(isComplete: boolean): string {
     return getProfileCompleteLabel(isComplete);
+  }
+
+  vatIdValidationStatusLabel(status: string | null | undefined): string {
+    return getVatIdValidationStatusLabel(status);
   }
 
   mobilePanelLabel(panel: CustomerPlansMobilePanel): string {
@@ -1451,6 +1456,8 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
           firstName: profile?.firstName ?? undefined,
           lastName: profile?.lastName ?? undefined,
           company: profile?.company ?? undefined,
+          customerType: profile?.customerType ?? 'consumer',
+          vatId: profile?.vatId ?? undefined,
           addressLine1: profile?.addressLine1 ?? undefined,
           addressLine2: profile?.addressLine2 ?? undefined,
           postalCode: profile?.postalCode ?? undefined,
