@@ -12,7 +12,7 @@ Before you begin, ensure you have:
 - **Keycloak** (optional, for OAuth2/OIDC login in the billing console)
 - **Stripe test keys** (optional, for checkout and payment flows)
 
-For CPU, memory, and disk baselines by component (API, worker, scheduler, frontends), see **[System Requirements](./deployment/system-requirements.md)**.
+For CPU, memory, and disk baselines by component (API, worker, scheduler, frontends), see **[System Requirements](./deployment/system-requirements.md)**. For install capacity and verification checklists, see **[Operator Runbook](./deployment/operator-runbook.md)**.
 
 > **Licensing**: The billing manager backend is **AGPL-3.0**. The billing console UI is **BUSL-1.1** with an Additional Use Grant. See [Applications](./applications/README.md#licensing) for details.
 

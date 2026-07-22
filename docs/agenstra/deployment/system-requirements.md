@@ -222,6 +222,7 @@ Ingress: expose console (**4200** or TLS terminator), controller API (**3100**) 
 
 ## Related Documentation
 
+- **[Operator Runbook](./operator-runbook.md)** - Install capacity, verification, and day-2 checklists
 - **[Docker Deployment](./docker-deployment.md)** - Compose layout and socket mounts
 - **[Background Jobs](./background-jobs.md)** - Controller queue roles and concurrency
 - **[Production Checklist](./production-checklist.md)** - Set container limits before go-live

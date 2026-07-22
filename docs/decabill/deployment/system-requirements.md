@@ -182,6 +182,7 @@ Ingress: expose console (**4500** or behind TLS terminator), API (**3200**), and
 
 ## Related Documentation
 
+- **[Operator Runbook](./operator-runbook.md)** - Install capacity, verification, and day-2 checklists
 - **[Docker Deployment](./docker-deployment.md)** - Compose services and startup order
 - **[Background Jobs](./background-jobs.md)** - Queue roles and concurrency
 - **[Production Checklist](./production-checklist.md)** - Set container limits before go-live

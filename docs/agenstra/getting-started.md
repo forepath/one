@@ -12,7 +12,7 @@ Before you begin, ensure you have:
 - **Keycloak** server (optional, for authentication - can use API key authentication instead)
 - **Git** repository (optional, for agent workspace)
 
-For CPU, memory, and disk baselines by role (controller stack, manager host, agent containers), see **[System Requirements](./deployment/system-requirements.md)**.
+For CPU, memory, and disk baselines by role (controller stack, manager host, agent containers), see **[System Requirements](./deployment/system-requirements.md)**. For install capacity and verification checklists, see **[Operator Runbook](./deployment/operator-runbook.md)**.
 
 ## Installation
 
