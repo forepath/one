@@ -75,6 +75,70 @@ jobs:
         run: |
           npx commitlint --from=origin/${{ github.base_ref }} --to=HEAD --config ./.commitlintrc.json
 
+  knowledge-graph-impact:
+    name: Knowledge Graph Blast Radius
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-env
+
+      - name: Build knowledge graph tooling
+        run: npx nx run graph:build
+
+      - name: Compute blast radius vs PR base
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          # Call the CLI directly so Nx banners do not pollute the comment body.
+          node dist/tools/graph/src/query-cli.js impact \
+            --base "$BASE_SHA" \
+            --no-uncommitted \
+            --format markdown \
+            > knowledge-graph-blast-radius.md
+
+      - name: Upsert PR blast radius comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- knowledge-graph-blast-radius -->';
+            const body = fs.readFileSync('knowledge-graph-blast-radius.md', 'utf8');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+              core.info(`Updated blast radius comment ${existing.id}`);
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+              core.info('Created blast radius comment');
+            }
+
   check:
     name: Format Check
     runs-on: ubuntu-latest

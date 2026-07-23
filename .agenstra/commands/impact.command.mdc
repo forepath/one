@@ -1,0 +1,21 @@
+---
+id: impact
+name: Diff blast radius (knowledge graph)
+description: Map git/path changes to owning Nx projects and R1 neighborhoods via the knowledge graph
+---
+
+Use the monorepo **knowledge graph** to compute blast radius for the current change set.
+
+## Steps
+
+1. Ensure `graph/graph.json` is current (`nx run graph:generate-kg` if the tree moved).
+2. Prefer MCP tool `graph_impact` (or CLI `nx run graph:impact -- --base main`).
+3. Summarize:
+   - Which `project:*` nodes own the changed paths
+   - Outgoing/incoming `depends_on` for each
+   - Contained API surfaces / docs that may need updates (use `*Count` / `containsTotals`; R1 lists are samples — see `samples.note`)
+   - `sharedDependencyIds` across touched projects
+4. For soft/textual consumers not in Nx deps, run `graph_mentions` on key libs.
+5. Only then open source under each project's `root` / `docPath`.
+
+Do **not** dump all of `graph/graph.json` into context.

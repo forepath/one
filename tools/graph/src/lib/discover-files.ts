@@ -17,7 +17,17 @@ import {
 } from './schema';
 
 const SENSITIVE_NAME_RE = /(^|[/\\])(\.env($|\.)|.*secret.*|.*credential.*)/i;
-const SKIP_DIR_NAMES = new Set(['node_modules', 'dist', '.git', 'coverage', 'tmp']);
+const SKIP_DIR_NAMES = new Set([
+  'node_modules',
+  'dist',
+  '.git',
+  'coverage',
+  'tmp',
+  '__fixtures__',
+  '.angular',
+  '.cache',
+  '.nx',
+]);
 
 const STATE_MEMBER_HINT_RE = /\.(actions|reducer|effects|selectors)\.ts$/i;
 

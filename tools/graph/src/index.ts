@@ -104,3 +104,27 @@ export {
   resolveToolIdentities,
 } from './lib/link-tool-usage';
 export { linkDocuments } from './lib/link-documents';
+export {
+  KnowledgeGraphIndex,
+  collectImpactPaths,
+  computeImpact,
+  findMentions,
+  recipeR1,
+  recipeR2,
+  recipeR3,
+  recipeR5,
+  resolveGraphJsonPath,
+  resolveWorkspaceRoot,
+} from './lib/query';
+export type {
+  CollectImpactPathsOptions,
+  ImpactResult,
+  MentionsOptions,
+  MentionsResult,
+  NodeSummary,
+  RecipeR1Result,
+  RecipeR2Result,
+  RecipeR3Query,
+  RecipeR3Result,
+  RecipeR5Result,
+} from './lib/query';

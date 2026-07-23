@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-23T15:58:16.475Z",
+  "generatedAt": "2026-07-23T22:12:22.805Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -1538,7 +1538,10 @@
           "build",
           "test",
           "generate-kg",
-          "serve"
+          "serve",
+          "query",
+          "impact",
+          "mcp"
         ]
       }
     },
@@ -9902,157 +9905,6 @@
       }
     },
     {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/demo-api.module.ts",
-      "type": "module",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/demo-api.module.ts",
-        "languageOrKind": "ts",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/dto/create-invoice.dto.ts",
-      "type": "dto",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/dto/create-invoice.dto.ts",
-        "languageOrKind": "ts",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/entities/invoice.entity.ts",
-      "type": "entity",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/entities/invoice.entity.ts",
-        "languageOrKind": "ts",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/gateways/status.gateway.ts",
-      "type": "gateway",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/gateways/status.gateway.ts",
-        "languageOrKind": "ts",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/guards/tenant-user.guard.ts",
-      "type": "guard",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/guards/tenant-user.guard.ts",
-        "languageOrKind": "ts",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "type": "controller",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-        "languageOrKind": "ts",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/payment-processors/processors/stripe-payment.processor.ts",
-      "type": "provider",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/payment-processors/processors/stripe-payment.processor.ts",
-        "languageOrKind": "ts",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/providers/demo-cloud.provider.ts",
-      "type": "provider",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/providers/demo-cloud.provider.ts",
-        "languageOrKind": "ts",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/repositories/invoices.repository.ts",
-      "type": "repository",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/repositories/invoices.repository.ts",
-        "languageOrKind": "ts",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/services/invoice-overdue.job-handler.ts",
-      "type": "job",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/services/invoice-overdue.job-handler.ts",
-        "languageOrKind": "ts",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/services/invoices.service.ts",
-      "type": "service",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/services/invoices.service.ts",
-        "languageOrKind": "ts",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/docs/demo/billing.md",
-      "type": "readme",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/docs/demo/billing.md",
-        "languageOrKind": "md",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/spec/asyncapi.yaml",
-      "type": "asyncapi",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/spec/asyncapi.yaml",
-        "languageOrKind": "asyncapi",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/spec/openapi.yaml",
-      "type": "openapi",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/spec/openapi.yaml",
-        "languageOrKind": "openapi",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/src/lib/services/invoices.service.ts",
-      "type": "service",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/src/lib/services/invoices.service.ts",
-        "languageOrKind": "ts",
-        "projectName": "graph"
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/src/lib/state/invoices",
-      "type": "state",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/src/lib/state/invoices",
-        "languageOrKind": "ts",
-        "projectName": "graph",
-        "sliceName": "invoices",
-        "memberFiles": [
-          "invoices.actions.ts",
-          "invoices.effects.ts",
-          "invoices.reducer.ts",
-          "invoices.selectors.ts"
-        ]
-      }
-    },
-    {
       "id": "file:tools/code/README.md",
       "type": "readme",
       "attrs": {
@@ -10263,20 +10115,6 @@
         "memberFiles": [
           "password-reset.template.html",
           "password-reset.template.txt"
-        ]
-      }
-    },
-    {
-      "id": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/templates/invoice-issued",
-      "type": "email",
-      "attrs": {
-        "path": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/templates/invoice-issued",
-        "languageOrKind": "template",
-        "projectName": "graph",
-        "templateName": "invoice-issued",
-        "memberFiles": [
-          "invoice-issued.template.html",
-          "invoice-issued.template.txt"
         ]
       }
     },
@@ -16210,64 +16048,6 @@
       }
     },
     {
-      "id": "webhook-event:graph:invoice.created",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "invoice.created",
-        "projectName": "graph",
-        "catalogPath": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/notifications/demo-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:graph:invoice.issued",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "invoice.issued",
-        "projectName": "graph",
-        "catalogPath": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/notifications/demo-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:graph:payment.succeeded",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "payment.succeeded",
-        "projectName": "graph",
-        "catalogPath": "tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/notifications/demo-notification.events.ts"
-      }
-    },
-    {
-      "id": "api:channel:demo/status",
-      "type": "channel",
-      "attrs": {
-        "pathOrChannel": "demo/status",
-        "operationId": "publishDemoStatus",
-        "summary": "Demo status channel",
-        "specKind": "asyncapi"
-      }
-    },
-    {
-      "id": "api:HTTP:GET:/invoices",
-      "type": "endpoint",
-      "attrs": {
-        "method": "GET",
-        "pathOrChannel": "/invoices",
-        "operationId": "listInvoices",
-        "summary": "List invoices",
-        "specKind": "openapi"
-      }
-    },
-    {
-      "id": "api:HTTP:POST:/invoices",
-      "type": "endpoint",
-      "attrs": {
-        "method": "POST",
-        "pathOrChannel": "/invoices",
-        "operationId": "createInvoice",
-        "specKind": "openapi"
-      }
-    },
-    {
       "id": "concept:agenstra-agenstra-documentation",
       "type": "concept",
       "attrs": {
@@ -16574,6 +16354,16 @@
         "title": "Using the graph with AI tools",
         "docPath": "docs/agenstra/ai-agents/knowledge-graph.md",
         "sectionAnchor": "using-the-graph-with-ai-tools",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
+      "type": "concept",
+      "attrs": {
+        "title": "or: node tools/graph/mcp-run.cjs  # builds dist if missing, then starts MCP",
+        "docPath": "docs/agenstra/ai-agents/knowledge-graph.md",
+        "sectionAnchor": "or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
         "domain": "agenstra"
       }
     },
@@ -31295,86 +31085,6 @@
       "type": "contains"
     },
     {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/demo-api.module.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/dto/create-invoice.dto.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/entities/invoice.entity.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/gateways/status.gateway.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/guards/tenant-user.guard.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/payment-processors/processors/stripe-payment.processor.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/providers/demo-cloud.provider.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/repositories/invoices.repository.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/services/invoice-overdue.job-handler.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/services/invoices.service.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/docs/demo/billing.md",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/spec/asyncapi.yaml",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/spec/openapi.yaml",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/src/lib/services/invoices.service.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/src/lib/state/invoices",
-      "type": "contains"
-    },
-    {
       "from": "project:code",
       "to": "file:tools/code/README.md",
       "type": "contains"
@@ -31452,11 +31162,6 @@
     {
       "from": "project:shared-backend-feature-notifications",
       "to": "file:libs/domains/shared/backend/feature-notifications/src/lib/templates/password-reset",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/templates/invoice-issued",
       "type": "contains"
     },
     {
@@ -33960,41 +33665,6 @@
       "type": "contains"
     },
     {
-      "from": "project:graph",
-      "to": "webhook-event:graph:invoice.created",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "webhook-event:graph:invoice.issued",
-      "type": "contains"
-    },
-    {
-      "from": "project:graph",
-      "to": "webhook-event:graph:payment.succeeded",
-      "type": "contains"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/spec/asyncapi.yaml",
-      "to": "api:channel:demo/status",
-      "type": "contains"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "contains"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "contains"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/health",
-      "type": "contains"
-    },
-    {
       "from": "file:docs/agenstra/README.md",
       "to": "concept:agenstra-agenstra-documentation",
       "type": "contains"
@@ -34187,6 +33857,11 @@
     {
       "from": "file:docs/agenstra/ai-agents/knowledge-graph.md",
       "to": "concept:agenstra-using-the-graph-with-ai-tools",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/ai-agents/knowledge-graph.md",
+      "to": "concept:agenstra-or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
       "type": "contains"
     },
     {
@@ -41945,26 +41620,6 @@
       "type": "implements"
     },
     {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/invoices.controller.ts",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "implements"
-    },
-    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/payments-webhook.controller.ts",
       "to": "api:HTTP:POST:/webhooks/payments/stripe",
       "type": "implements"
@@ -43620,186 +43275,6 @@
       "type": "implements"
     },
     {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices/summary",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices/summary",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices/open-overdue",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices/open-overdue",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices/history",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices/history",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices/ref/{invoiceRefId}",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices/ref/{invoiceRefId}",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices/ref/{invoiceRefId}/pdf",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices/ref/{invoiceRefId}/pdf",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices/ref/{invoiceRefId}/void-document/pdf",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices/ref/{invoiceRefId}/void-document/pdf",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices/ref/{invoiceRefId}/time-report/pdf",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices/ref/{invoiceRefId}/time-report/pdf",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:POST:/invoices/ref/{invoiceRefId}/pay",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:POST:/invoices/ref/{invoiceRefId}/pay",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices/{subscriptionId}",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices/{subscriptionId}",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:POST:/invoices/{subscriptionId}",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:POST:/invoices/{subscriptionId}",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices/{subscriptionId}/ref/{invoiceRefId}",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices/{subscriptionId}/ref/{invoiceRefId}",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices/{subscriptionId}/ref/{invoiceRefId}/pdf",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices/{subscriptionId}/ref/{invoiceRefId}/pdf",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices/{subscriptionId}/ref/{invoiceRefId}/void-document/pdf",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices/{subscriptionId}/ref/{invoiceRefId}/void-document/pdf",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices/{subscriptionId}/ref/{invoiceRefId}/time-report/pdf",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices/{subscriptionId}/ref/{invoiceRefId}/time-report/pdf",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:POST:/invoices/{subscriptionId}/ref/{invoiceRefId}/pay",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:POST:/invoices/{subscriptionId}/ref/{invoiceRefId}/pay",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:POST:/invoices/{subscriptionId}/ref/{invoiceRefId}/void",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:POST:/invoices/{subscriptionId}/ref/{invoiceRefId}/void",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "implements"
-    },
-    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
       "to": "api:channel:clients/setClient",
       "type": "implements"
@@ -44477,16 +43952,6 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "api:channel:agents/containerStats",
-      "type": "implements"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/gateways/status.gateway.ts",
-      "to": "api:channel:demo/status",
-      "type": "implements"
-    },
-    {
-      "from": "project:graph",
-      "to": "api:channel:demo/status",
       "type": "implements"
     },
     {
@@ -47716,6 +47181,11 @@
     },
     {
       "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-overdue.job-handler.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-auto-payment.job-handler.ts",
       "type": "injects"
     },
@@ -47772,11 +47242,6 @@
     {
       "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
       "to": "file:libs/domains/shared/backend/feature-notifications/src/lib/services/email-delivery.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/invoices.controller.ts",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/repositories/invoices.repository.ts",
       "type": "injects"
     },
     {
@@ -50595,16 +50060,6 @@
       "type": "contains"
     },
     {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/src/lib/state/invoices",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/apps/demo-api/src/services/invoices.service.ts",
-      "type": "contains"
-    },
-    {
-      "from": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/src/lib/state/invoices",
-      "to": "file:tools/graph/src/lib/__fixtures__/mini-workspace/libs/demo-feature/src/lib/services/invoices.service.ts",
-      "type": "contains"
-    },
-    {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/invoices",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/invoices.service.ts",
       "type": "injects"
@@ -51625,11 +51080,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-security-features",
-      "to": "api:HTTP:GET:/users/{id}",
-      "type": "documents"
-    },
-    {
       "from": "concept:agenstra-authentication-flow-diagram",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
@@ -51737,11 +51187,6 @@
     {
       "from": "concept:agenstra-wiring",
       "to": "api:HTTP:POST:/auth/register",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-events",
-      "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
     },
     {
@@ -52017,11 +51462,6 @@
     {
       "from": "concept:agenstra-tickets-board-realtime-tickets-namespace",
       "to": "api:HTTP:POST:/tickets",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-error-handling",
-      "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
     },
     {
@@ -52310,16 +51750,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-backend-billing-manager",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-backend-billing-manager",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-features",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
@@ -52400,16 +51830,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-features",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-features",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-queue-roles",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
@@ -52417,16 +51837,6 @@
     {
       "from": "concept:decabill-docker-image",
       "to": "project:decabill-backend-billing-manager",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-docker-image",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-docker-image",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -52505,16 +51915,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-major-api-areas",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-major-api-areas",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-run-locally-set-queue-role-all-in-env",
       "to": "project:decabill-backend-billing-manager",
       "type": "documents"
@@ -52532,11 +51932,6 @@
     {
       "from": "concept:decabill-generate-typescript-client-from-openapi",
       "to": "project:decabill-backend-billing-manager",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-routes-overview",
-      "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
     },
     {
@@ -52610,16 +52005,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-routes-overview",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-routes-overview",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-express-ssr-server",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
@@ -52690,16 +52075,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-stripe-redirect-and-webhook-flow",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-stripe-redirect-and-webhook-flow",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-server-provisioning-flow",
       "to": "api:HTTP:GET:/cloud-init-configs",
       "type": "documents"
@@ -52712,16 +52087,6 @@
     {
       "from": "concept:decabill-admin-manual-invoice-flow",
       "to": "api:HTTP:GET:/admin/billing/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-manual-invoice-flow",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-manual-invoice-flow",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -52757,16 +52122,6 @@
     {
       "from": "concept:decabill-prerequisites",
       "to": "api:HTTP:POST:/auth/login",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-docker-compose-setup",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-docker-compose-setup",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -52822,16 +52177,6 @@
     {
       "from": "concept:decabill-environment-specific-defaults",
       "to": "api:HTTP:POST:/users",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-stripe-optional-for-local-payment-flows",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-stripe-optional-for-local-payment-flows",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -52915,16 +52260,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-persistent-volumes",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-persistent-volumes",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-usage-based-billing",
       "to": "api:HTTP:POST:/admin/usage/record",
       "type": "documents"
@@ -52937,16 +52272,6 @@
     {
       "from": "concept:decabill-related",
       "to": "api:HTTP:POST:/customer-profile",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -52987,16 +52312,6 @@
     {
       "from": "concept:decabill-authentication-methods",
       "to": "api:HTTP:GET:/projects",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-authentication-methods",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-authentication-methods",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -53260,16 +52575,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-billing-dashboard",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-billing-dashboard",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-manual-invoice-administration",
       "to": "api:HTTP:GET:/admin/billing/invoices",
       "type": "documents"
@@ -53327,16 +52632,6 @@
     {
       "from": "concept:decabill-manual-invoice-administration",
       "to": "api:HTTP:GET:/admin/billing/invoices/{invoiceRefId}/audit-logs",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-manual-invoice-administration",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-manual-invoice-administration",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -53855,16 +53150,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-user-billing-day",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-user-billing-day",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-scope",
       "to": "api:HTTP:GET:/customer-profile",
       "type": "documents"
@@ -53950,36 +53235,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-invoices",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-invoices",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-invoice-statuses",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-invoice-statuses",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-open-positions-and-billing-day",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-open-positions-and-billing-day",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-customer-invoice-access",
       "to": "api:HTTP:GET:/invoices/summary",
       "type": "documents"
@@ -54030,16 +53285,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-customer-invoice-access",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-customer-invoice-access",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-admin-invoice-operations",
       "to": "api:HTTP:POST:/admin/billing/bill-now",
       "type": "documents"
@@ -54050,26 +53295,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-admin-invoice-operations",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-invoice-operations",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-pdf-generation",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-pdf-generation",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-usage-on-invoices",
       "to": "api:HTTP:GET:/usage/summary/{subscriptionId}",
       "type": "documents"
@@ -54077,26 +53302,6 @@
     {
       "from": "concept:decabill-usage-on-invoices",
       "to": "api:HTTP:POST:/admin/usage/record",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-usage-on-invoices",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-usage-on-invoices",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-payment",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-payment",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -54140,16 +53345,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-project-time-billing",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-project-time-billing",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-manual-invoice-workflow-admin",
       "to": "api:HTTP:GET:/admin/billing/invoices",
       "type": "documents"
@@ -54177,16 +53372,6 @@
     {
       "from": "concept:decabill-manual-invoice-workflow-admin",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/issue",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-manual-invoice-workflow-admin",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-manual-invoice-workflow-admin",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -54255,16 +53440,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-api-endpoints-summary",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-api-endpoints-summary",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-public-catalog",
       "to": "api:HTTP:GET:/public/service-plan-offerings",
       "type": "documents"
@@ -54300,16 +53475,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-customer-payment-flow",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-customer-payment-flow",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-admin-manual-payment-status",
       "to": "api:HTTP:GET:/admin/billing/invoices",
       "type": "documents"
@@ -54337,16 +53502,6 @@
     {
       "from": "concept:decabill-admin-manual-payment-status",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/mark-unpaid",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-manual-payment-status",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-manual-payment-status",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -54625,16 +53780,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-time-report-admin",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-time-report-admin",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-kpi-summary",
       "to": "api:HTTP:GET:/projects",
       "type": "documents"
@@ -54697,16 +53842,6 @@
     {
       "from": "concept:decabill-related-docs",
       "to": "api:HTTP:POST:/subscriptions",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related-docs",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-related-docs",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -55245,16 +54380,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-stripe-optional",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-stripe-optional",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-first-login",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
@@ -55285,16 +54410,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-verify-the-stack",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-verify-the-stack",
-      "to": "api:HTTP:POST:/invoices",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-next-steps",
       "to": "api:HTTP:GET:/subscriptions",
       "type": "documents"
@@ -55315,11 +54430,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-dr-001-provisioning-ssh-cloud-init-templates",
-      "to": "api:HTTP:POST:/auth/login",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-dr-003-web-frontends-csp-unsafe-inline-unsafe-eval-monaco",
       "to": "project:decabill-frontend-billing-console",
       "type": "documents"
@@ -55327,11 +54437,6 @@
     {
       "from": "concept:decabill-dr-003-web-frontends-csp-unsafe-inline-unsafe-eval-monaco",
       "to": "project:decabill-frontend-docs",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-hardening-paths-if-an-acceptance-is-withdrawn",
-      "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
     },
     {
@@ -55357,16 +54462,6 @@
     {
       "from": "concept:decabill-billing-api-image-decabill-billing-api",
       "to": "api:HTTP:GET:/health",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-billing-api-image-decabill-billing-api",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-billing-api-image-decabill-billing-api",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -55437,16 +54532,6 @@
     {
       "from": "concept:decabill-api-testing",
       "to": "api:HTTP:POST:/subscriptions",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-common-debugging-scenarios",
-      "to": "api:HTTP:GET:/invoices",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-common-debugging-scenarios",
-      "to": "api:HTTP:POST:/invoices",
       "type": "documents"
     },
     {
@@ -57091,6 +56176,11 @@
     },
     {
       "from": "concept:agenstra-using-the-graph-with-ai-tools",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

@@ -49,6 +49,27 @@ nx run graph:serve -- --port=4300
 nx run graph:serve -- --dir=graph
 ```
 
+## Query / MCP / impact
+
+Prefer recipe tools over loading `graph.json` into an LLM:
+
+```bash
+nx run graph:build
+
+# CLI
+nx run graph:query -- r1 decabill-backend-feature-billing-manager
+nx run graph:query -- endpoint --method POST --path /auth/register
+nx run graph:impact -- --base main
+nx run graph:query -- mentions shared-backend-feature-notifications
+
+# MCP (stdio) — also registered via .agenstra/mcp-definitions/knowledge-graph.mcp.json
+# Launcher builds dist on demand if missing:
+#   node tools/graph/mcp-run.cjs
+nx run graph:mcp
+```
+
+MCP tools: `graph_r1`, `graph_docs`, `graph_endpoint`, `graph_search`, `graph_impact`, `graph_mentions`.
+
 ## Pre-commit
 
 [`.husky/pre-commit`](../../.husky/pre-commit) runs `nx run graph:generate-kg` and `git add`s the artifacts so they are included in the same commit automatically.

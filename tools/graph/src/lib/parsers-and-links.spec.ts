@@ -355,4 +355,38 @@ describe('linkDocuments', () => {
       ]),
     );
   });
+
+  it('should not substring-match very short project names without boundaries', () => {
+    const conceptId = conceptNodeId('demo-awaiting');
+    const edges = linkDocuments({
+      conceptNodes: [
+        {
+          id: conceptId,
+          type: 'concept',
+          attrs: {
+            title: 'Awaiting deploy',
+            docPath: 'docs/demo/awaiting.md',
+            domain: 'demo',
+          },
+        },
+      ],
+      projectNodes: [
+        {
+          id: projectNodeId('ai'),
+          type: 'lib',
+          attrs: {
+            name: 'ai',
+            root: 'tools/ai',
+            tags: [],
+            type: 'lib',
+            targets: [],
+          },
+        },
+      ],
+      apiNodes: [],
+      conceptTexts: new Map([[conceptId, 'Still awaiting deployment details for the release.']]),
+    });
+
+    expect(edges.find((e) => e.to === projectNodeId('ai'))).toBeUndefined();
+  });
 });

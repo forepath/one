@@ -1,0 +1,9 @@
+{
+  "id": "knowledge-graph",
+  "name": "Knowledge Graph",
+  "description": "Query monorepo knowledge graph recipes (R1 blast radius, R3 endpoints, impact from diff, soft mentions) without loading graph.json into context",
+  "type": "local",
+  "command": ["node", "${workspaceFolder}/tools/graph/mcp-run.cjs"],
+  "environment": {},
+  "enabled": true
+}
