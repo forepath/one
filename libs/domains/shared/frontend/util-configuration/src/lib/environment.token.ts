@@ -5,6 +5,9 @@ import { Environment } from './environment.interface';
 
 export const ENVIRONMENT = new InjectionToken<Environment>('Environment');
 
+/** Client-side timeout for `GET /config` so a slow/unreachable CONFIG proxy cannot stall bootstrap. */
+export const RUNTIME_CONFIG_CLIENT_FETCH_TIMEOUT_MS = 2000;
+
 function mergeEnvironmentOverrides(base: Environment, overrides: Partial<Environment> | null | undefined): Environment {
   if (!overrides) {
     return base;
@@ -33,7 +36,9 @@ function mergeEnvironmentOverrides(base: Environment, overrides: Partial<Environ
 
 export async function loadRuntimeEnvironment(): Promise<Environment> {
   try {
-    const response: Response = await fetch('/config');
+    const response: Response = await fetch('/config', {
+      signal: AbortSignal.timeout(RUNTIME_CONFIG_CLIENT_FETCH_TIMEOUT_MS),
+    });
 
     if (!response.ok) {
       return environment;

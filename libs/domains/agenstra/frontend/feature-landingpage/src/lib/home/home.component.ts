@@ -54,7 +54,10 @@ export class PortalHomeComponent implements OnInit {
     : `${this.environment.billing.frontendUrl}/subscriptions?order=true`;
 
   ngOnInit(): void {
-    this.servicePlansFacade.loadCheapestServicePlanOffering();
+    if (isPlatformBrowser(this.platformId)) {
+      this.servicePlansFacade.loadCheapestServicePlanOffering();
+    }
+
     const metaTitle = $localize`:@@featurePortalHome-metaTitle:One place to run, govern, and ship with agents :: Agenstra`;
     const metaDescription = $localize`:@@featurePortalHome-metaDescription:Run and govern coding agents at enterprise scale: workspaces, ticket automation, in-browser coding, releases, policy, and audit trails. Self-host Agenstra or run on Agenstra Cloud.`;
 

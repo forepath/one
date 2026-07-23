@@ -24,6 +24,12 @@
       "@forepath/shared/frontend/util-express-server/docs-server": [
         "libs/domains/shared/frontend/util-express-server/src/lib/docs-server.ts"
       ],
+      "@forepath/shared/frontend/util-express-server/ssr": [
+        "libs/domains/shared/frontend/util-express-server/src/ssr.ts"
+      ],
+      "@forepath/shared/frontend/util-express-server/delegating-server": [
+        "libs/domains/shared/frontend/util-express-server/src/delegating-server.ts"
+      ],
       "@forepath/shared/frontend/util-runtime-config-server": [
         "libs/domains/shared/frontend/util-runtime-config-server/src/index.ts"
       ],

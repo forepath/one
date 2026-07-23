@@ -1,5 +1,6 @@
 import {
   assertConfigHostnameResolvesToPublicIps,
+  clearRuntimeConfigSuccessCache,
   fetchRuntimeConfigFromEnv,
   parseAllowedHosts,
 } from './runtime-config-proxy';
@@ -88,11 +89,13 @@ describe('fetchRuntimeConfigFromEnv', () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+    clearRuntimeConfigSuccessCache();
     dns.promises.lookup.mockResolvedValue([{ address: '203.0.113.10', family: 4 }]);
   });
 
   afterEach(() => {
     global.fetch = originalFetch;
+    clearRuntimeConfigSuccessCache();
   });
 
   it('returns no_config when CONFIG is unset', async () => {
@@ -287,5 +290,50 @@ describe('fetchRuntimeConfigFromEnv', () => {
       log: expect.stringContaining('could not be resolved'),
     });
     expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('caches successful CONFIG responses and skips upstream on cache hit', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      headers: { get: () => 'application/json' },
+      text: async () => JSON.stringify({ controller: { restApiUrl: 'https://api.example.com' } }),
+    });
+
+    const env = {
+      CONFIG: 'https://example.com/x.json',
+      CONFIG_ALLOWED_HOSTS: 'example.com',
+      NODE_ENV: 'production',
+      CONFIG_CACHE_TTL_MS: '60000',
+    };
+
+    const first = await fetchRuntimeConfigFromEnv(env);
+    const second = await fetchRuntimeConfigFromEnv(env);
+
+    expect(first).toEqual({
+      kind: 'ok',
+      value: { controller: { restApiUrl: 'https://api.example.com' } },
+    });
+    expect(second).toEqual(first);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not use success cache when CONFIG_CACHE_TTL_MS is 0', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      headers: { get: () => 'application/json' },
+      text: async () => JSON.stringify({ ok: true }),
+    });
+
+    const env = {
+      CONFIG: 'https://example.com/x.json',
+      CONFIG_ALLOWED_HOSTS: 'example.com',
+      NODE_ENV: 'production',
+      CONFIG_CACHE_TTL_MS: '0',
+    };
+
+    await fetchRuntimeConfigFromEnv(env);
+    await fetchRuntimeConfigFromEnv(env);
+
+    expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 });

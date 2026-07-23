@@ -3,8 +3,8 @@ export default {
   preset: '../../../../../jest.preset.cjs',
   testEnvironment: 'node',
   transform: {
-    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
+    '^.+\\.tsx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
-  moduleFileExtensions: ['ts', 'js'],
+  moduleFileExtensions: ['ts', 'js', 'mjs'],
   coverageDirectory: '../../../../../coverage/libs/domains/shared/frontend/util-express-server',
 };

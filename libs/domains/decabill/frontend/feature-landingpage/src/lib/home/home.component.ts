@@ -92,7 +92,10 @@ export class PortalHomeComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.servicePlansFacade.loadCheapestServicePlanOffering();
+    if (isPlatformBrowser(this.platformId)) {
+      this.servicePlansFacade.loadCheapestServicePlanOffering();
+    }
+
     const pageTitle = $localize`:@@featureDecabillHome-metaTitlePage:Billing for agencies and digital products`;
     const metaTitle = formatProductMetaTitle(pageTitle, this.environment.productName);
     const metaDescription = $localize`:@@featureDecabillHome-metaDescription:Decabill helps agencies and digital product teams bill services, projects, SaaS subscriptions, and hosting. Invoicing, payments, and customer self-service in one multi-tenant platform.`;

@@ -197,7 +197,7 @@
         "{workspaceRoot}/dist/apps/agenstra/frontend-docs-delegating-server"
       ],
       "options": {
-        "command": "mkdir -p dist/apps/agenstra/frontend-docs-delegating-server/server && npx tsc apps/shared/frontend-docs/src/delegating-server.ts --outDir dist/apps/agenstra/frontend-docs-delegating-server/server --target es2022 --module esnext --moduleResolution node --allowSyntheticDefaultImports --esModuleInterop --skipLibCheck --declaration false --sourceMap false --removeComments true",
+        "command": "mkdir -p dist/apps/agenstra/frontend-docs-delegating-server/server && npx esbuild apps/shared/frontend-docs/src/delegating-server.ts --bundle --platform=node --format=esm --outfile=dist/apps/agenstra/frontend-docs-delegating-server/server/delegating-server.js --alias:@forepath/shared/frontend/util-express-server/delegating-server=./libs/domains/shared/frontend/util-express-server/src/delegating-server.ts",
         "cwd": "."
       }
     },

@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { environment } from './environment';
 import { Environment } from './environment.interface';
-import { ENVIRONMENT, loadRuntimeEnvironment } from './environment.token';
+import { ENVIRONMENT, loadRuntimeEnvironment, RUNTIME_CONFIG_CLIENT_FETCH_TIMEOUT_MS } from './environment.token';
 
 describe('environment.token', () => {
   describe('ENVIRONMENT', () => {
@@ -98,7 +98,31 @@ describe('environment.token', () => {
       });
 
       await loadRuntimeEnvironment();
-      expect(global.fetch).toHaveBeenCalledWith('/config');
+      expect(global.fetch).toHaveBeenCalledWith('/config', {
+        signal: expect.any(AbortSignal),
+      });
+    });
+
+    it('should use a short AbortSignal timeout for /config', async () => {
+      const timeoutSpy = jest.spyOn(AbortSignal, 'timeout');
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => ({}),
+      });
+
+      await loadRuntimeEnvironment();
+
+      expect(timeoutSpy).toHaveBeenCalledWith(RUNTIME_CONFIG_CLIENT_FETCH_TIMEOUT_MS);
+      timeoutSpy.mockRestore();
+    });
+
+    it('should return environment when /config times out', async () => {
+      (global.fetch as jest.Mock).mockRejectedValue(new DOMException('The operation was aborted', 'TimeoutError'));
+
+      const result = await loadRuntimeEnvironment();
+
+      expect(result).toBe(environment);
     });
   });
 
