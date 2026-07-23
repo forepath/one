@@ -6,7 +6,7 @@ describe('SubscriptionChargePeriodService', () => {
 
   it('returns null when bill until is not after subscription start', async () => {
     const service = new SubscriptionChargePeriodService(
-      { findLatestBySubscription: jest.fn() } as never,
+      { findLatestBySubscription: jest.fn().mockResolvedValue(null) } as never,
       { findBySubscription: jest.fn() } as never,
       billingScheduleService,
     );
@@ -15,11 +15,43 @@ describe('SubscriptionChargePeriodService', () => {
       createdAt: new Date('2026-02-01T00:00:00Z'),
       currentPeriodStart: new Date('2026-02-01T00:00:00Z'),
     } as never;
-    const plan = { billingIntervalType: 'day', billingIntervalValue: 1 } as never;
+    const plan = { billingIntervalType: 'day', billInAdvance: false, billingIntervalValue: 1 } as never;
 
     const result = await service.resolveChargePeriod(subscription, plan, 30, new Date('2026-02-01T00:00:00Z'));
 
     expect(result).toBeNull();
+  });
+
+  it('bills closed arrear period after schedule was rolled forward', async () => {
+    const service = new SubscriptionChargePeriodService(
+      { findLatestBySubscription: jest.fn().mockResolvedValue(null) } as never,
+      { findBySubscription: jest.fn().mockResolvedValue([]) } as never,
+      billingScheduleService,
+    );
+    const createdAt = new Date('2026-01-01T00:00:00Z');
+    const billUntil = new Date('2026-02-01T00:00:00Z');
+    const subscription = {
+      id: 'sub-1',
+      createdAt,
+      // Schedule already advanced by the billing job before invoice creation.
+      currentPeriodStart: new Date('2026-02-01T00:00:05Z'),
+      currentPeriodEnd: new Date('2026-03-01T00:00:00Z'),
+    } as never;
+    const plan = {
+      billingIntervalType: 'day',
+      billInAdvance: false,
+      billingIntervalValue: 1,
+    } as never;
+
+    const result = await service.resolveChargePeriod(subscription, plan, 31, billUntil);
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        periodStart: createdAt,
+        periodEnd: billUntil,
+      }),
+    );
+    expect(result?.baseAmount).toBeGreaterThan(0);
   });
 
   it('returns full period when no prior invoice exists', async () => {
@@ -35,7 +67,7 @@ describe('SubscriptionChargePeriodService', () => {
       createdAt: periodStart,
       currentPeriodStart: periodStart,
     } as never;
-    const plan = { billingIntervalType: 'day', billingIntervalValue: 1 } as never;
+    const plan = { billingIntervalType: 'day', billInAdvance: false, billingIntervalValue: 1 } as never;
 
     const result = await service.resolveChargePeriod(subscription, plan, 31, billUntil);
 
@@ -64,7 +96,7 @@ describe('SubscriptionChargePeriodService', () => {
       currentPeriodStart: new Date('2026-01-01T00:00:00Z'),
       withdrawnAt: new Date('2026-01-05T00:00:00Z'),
     } as never;
-    const plan = { billingIntervalType: 'day', billingIntervalValue: 1 } as never;
+    const plan = { billingIntervalType: 'day', billInAdvance: false, billingIntervalValue: 1 } as never;
 
     const result = await service.resolveChargePeriod(subscription, plan, 30, new Date('2026-01-05T00:00:00Z'));
 
@@ -84,7 +116,7 @@ describe('SubscriptionChargePeriodService', () => {
       currentPeriodStart: new Date('2026-01-01T00:00:00Z'),
       cancelEffectiveAt: new Date('2026-01-10T00:00:00Z'),
     } as never;
-    const plan = { billingIntervalType: 'day', billingIntervalValue: 1 } as never;
+    const plan = { billingIntervalType: 'day', billInAdvance: false, billingIntervalValue: 1 } as never;
 
     const result = await service.resolveChargePeriod(subscription, plan, 10, new Date('2026-01-20T00:00:00Z'));
 

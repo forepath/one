@@ -20,6 +20,7 @@ describe('PublicServicePlanOfferingsController', () => {
     description: 'Full stack',
     billingIntervalType: BillingIntervalType.MONTH,
     billingIntervalValue: 1,
+    billInAdvance: false,
     orderingHighlights: [{ icon: 'check', text: 'Included' }],
     serviceType: { name: 'Agent Hosting' },
   } as ServicePlanEntity;
@@ -86,6 +87,7 @@ describe('PublicServicePlanOfferingsController', () => {
       serviceTypeName: 'Agent Hosting',
       billingIntervalType: BillingIntervalType.MONTH,
       billingIntervalValue: 1,
+      billInAdvance: false,
       totalPrice: 12,
       totalGross: 14.28,
       taxRate: 19,

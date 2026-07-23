@@ -24,6 +24,23 @@ function nextMonthlyDate(reference: Date, dayOfMonth: number): Date {
   );
 }
 
+function nextYearlyDate(reference: Date, intervalValue: number, billingDayOfMonth?: number | null): Date {
+  const years = Math.max(1, intervalValue);
+  const target = new Date(reference);
+
+  target.setFullYear(target.getFullYear() + years);
+
+  if (billingDayOfMonth != null) {
+    const daysInMonth = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+    const safeDay = Math.min(Math.max(billingDayOfMonth, 1), daysInMonth);
+
+    target.setDate(safeDay);
+    target.setHours(reference.getHours(), reference.getMinutes(), 0, 0);
+  }
+
+  return target;
+}
+
 export function getBillingPeriodEnd(billing: PromotionBillingContext, periodStart: Date): Date {
   if (billing.billingIntervalType === 'hour') {
     return new Date(periodStart.getTime() + billing.billingIntervalValue * 60 * 60 * 1000);
@@ -35,6 +52,10 @@ export function getBillingPeriodEnd(billing: PromotionBillingContext, periodStar
     periodEnd.setDate(periodEnd.getDate() + billing.billingIntervalValue);
 
     return periodEnd;
+  }
+
+  if (billing.billingIntervalType === 'year') {
+    return nextYearlyDate(periodStart, billing.billingIntervalValue, billing.billingDayOfMonth);
   }
 
   return nextMonthlyDate(periodStart, billing.billingDayOfMonth ?? 1);

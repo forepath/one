@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { SubscriptionStatus } from '../entities/subscription.entity';
+import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { OpenPositionsRepository } from '../repositories/open-positions.repository';
+import { ServicePlansRepository } from '../repositories/service-plans.repository';
 import { SubscriptionItemsRepository } from '../repositories/subscription-items.repository';
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { getProvisioningCredentials } from '../utils/provider-env-defaults.utils';
@@ -25,12 +27,14 @@ export class SubscriptionTeardownService {
   constructor(
     private readonly subscriptionsRepository: SubscriptionsRepository,
     private readonly subscriptionItemsRepository: SubscriptionItemsRepository,
+    private readonly servicePlansRepository: ServicePlansRepository,
     private readonly provisioningService: ProvisioningService,
     private readonly openPositionsRepository: OpenPositionsRepository,
     private readonly hostnameReservationService: HostnameReservationService,
     private readonly cloudflareDnsService: CloudflareDnsService,
     private readonly withdrawalRefundService: WithdrawalRefundService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
+    private readonly billingEmailPublisher: BillingEmailPublisher,
   ) {}
 
   /**
@@ -41,21 +45,37 @@ export class SubscriptionTeardownService {
    */
   async processWithdrawal(subscriptionId: string): Promise<void> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
+    const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const withdrawnAt = subscription.withdrawnAt ?? new Date();
+    const billInAdvance = plan.billInAdvance === true;
 
-    if (subscription.withdrawPhase === 'withdrawal_period') {
+    if (billInAdvance) {
+      const unbilled = await this.openPositionsRepository.findUnbilledBySubscription(subscription.id);
+
+      if (unbilled.length > 0) {
+        // Case B (also covers unprovisioned advance): shrink prepaid debt to the used window.
+        // Prefer this over crediting an older invoice from a prior period.
+        await this.openPositionsRepository.updateUnbilledBillUntil(subscription.id, withdrawnAt);
+      } else if (subscription.withdrawPhase === 'withdrawal_period') {
+        // Case A: current period already invoiced — partial credit on the billable invoice.
+        await this.withdrawalRefundService.applyProvisionedWithdrawalRefund(subscription, withdrawnAt);
+      }
+    } else if (subscription.withdrawPhase === 'withdrawal_period') {
       await this.withdrawalRefundService.applyProvisionedWithdrawalRefund(subscription, withdrawnAt);
     }
 
     await this.teardownImmediate(subscriptionId, {
       withdrawn: true,
       billUntil: withdrawnAt,
-      skipOpenPosition: subscription.withdrawPhase === 'unprovisioned',
+      skipOpenPosition:
+        subscription.withdrawPhase === 'unprovisioned' ||
+        (billInAdvance && subscription.withdrawPhase === 'withdrawal_period'),
     });
   }
 
   async teardownImmediate(subscriptionId: string, options: TeardownOptions = {}): Promise<void> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
+    const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const items = await this.subscriptionItemsRepository.findBySubscription(subscription.id);
 
     this.logger.log(`Tearing down subscription ${subscription.id} with ${items.length} item(s)`);
@@ -114,6 +134,12 @@ export class SubscriptionTeardownService {
       ...(options.withdrawn ? { withdrawnAt: billUntil } : {}),
     });
 
-    this.billingNotificationPublisher.publishSubscription('subscription.canceled', canceled);
+    this.billingNotificationPublisher.publishSubscription('subscription.canceled', canceled, plan);
+
+    if (options.withdrawn) {
+      await this.billingEmailPublisher.publishSubscriptionWithdrawn(canceled, plan.name);
+    } else {
+      await this.billingEmailPublisher.publishSubscriptionCanceled(canceled, plan.name);
+    }
   }
 }

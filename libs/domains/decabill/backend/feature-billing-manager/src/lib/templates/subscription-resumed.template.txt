@@ -1,0 +1,5 @@
+Subscription resumed
+
+Dear {{recipientName}},
+
+Your subscription "{{planName}}" has been resumed. The scheduled cancellation was cleared and billing continues as configured.

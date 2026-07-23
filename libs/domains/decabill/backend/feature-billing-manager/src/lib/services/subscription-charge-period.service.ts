@@ -30,7 +30,6 @@ export class SubscriptionChargePeriodService {
     billUntil: Date,
     now: Date = new Date(),
   ): Promise<SubscriptionChargePeriod | null> {
-    const subscriptionStart = subscription.currentPeriodStart ?? subscription.createdAt ?? now;
     const subscriptionEndOrToday =
       subscription.cancelEffectiveAt && subscription.cancelEffectiveAt < now ? subscription.cancelEffectiveAt : now;
     let effectiveUntil = billUntil;
@@ -39,27 +38,37 @@ export class SubscriptionChargePeriodService {
       effectiveUntil = subscriptionEndOrToday;
     }
 
-    if (effectiveUntil <= subscriptionStart) {
+    const latestInvoice = await this.invoicesRepository.findLatestBySubscription(subscription.id);
+    // After an arrear billing tick the schedule is already rolled forward, so
+    // currentPeriodStart can sit at/after billUntil. Prefer last invoice / createdAt
+    // as the charge floor so the closed period remaining on the open position still bills.
+    const rolledForward = subscription.currentPeriodStart != null && subscription.currentPeriodStart >= billUntil;
+    const periodFloor = rolledForward
+      ? (latestInvoice?.createdAt ?? subscription.createdAt ?? now)
+      : (subscription.currentPeriodStart ?? subscription.createdAt ?? now);
+
+    if (effectiveUntil <= periodFloor) {
       return null;
     }
 
-    const latestInvoice = await this.invoicesRepository.findLatestBySubscription(subscription.id);
     let lastBillingAt: Date | undefined = latestInvoice?.createdAt;
 
     if (!lastBillingAt) {
-      lastBillingAt = subscription.currentPeriodStart ?? subscription.createdAt;
+      lastBillingAt = rolledForward
+        ? (subscription.createdAt ?? periodFloor)
+        : (subscription.currentPeriodStart ?? subscription.createdAt);
     }
 
     if (!lastBillingAt) {
       return {
         baseAmount: fullPeriodPrice,
-        periodStart: subscriptionStart,
+        periodStart: periodFloor,
         periodEnd: effectiveUntil,
       };
     }
 
-    if (lastBillingAt < subscriptionStart) {
-      lastBillingAt = subscriptionStart;
+    if (lastBillingAt < periodFloor) {
+      lastBillingAt = periodFloor;
     }
 
     if (subscription.withdrawnAt) {

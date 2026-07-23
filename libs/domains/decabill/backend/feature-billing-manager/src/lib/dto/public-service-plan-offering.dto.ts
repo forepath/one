@@ -11,6 +11,8 @@ export class PublicServicePlanOfferingDto {
   serviceTypeName!: string;
   billingIntervalType!: BillingIntervalType;
   billingIntervalValue!: number;
+  /** When true, the period is billed at start (prepaid). */
+  billInAdvance!: boolean;
   /** Customer-facing total (base + margin); margin breakdown is not exposed. */
   totalPrice!: number;
   /** Customer-facing gross total (incl. VAT) for the default server type. */

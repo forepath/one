@@ -1,9 +1,13 @@
 {{#> email-layout}}
-<h1 class="email-title">Upcoming subscription renewal</h1>
+<h1 class="email-title">Upcoming subscription {{#if billInAdvance}}charge{{else}}renewal{{/if}}</h1>
 <p>Dear {{recipientName}},</p>
 <p>
-  Your subscription "<strong>{{planName}}</strong>" is scheduled for renewal on
+  Your subscription "<strong>{{planName}}</strong>" is scheduled for {{#if billInAdvance}}its next
+  charge{{else}}renewal{{/if}} on
   <strong>{{renewalDate}}</strong>.
 </p>
-<p>If you wish to cancel, please log in to your account before the renewal date.</p>
+{{#if periodEndDate}} {{#if billInAdvance}}
+<p>This charge covers the period through <strong>{{periodEndDate}}</strong>.</p>
+{{/if}} {{/if}}
+<p>If you wish to cancel, please log in to your account before that date.</p>
 {{/email-layout}}

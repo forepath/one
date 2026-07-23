@@ -27,6 +27,7 @@ describe('BackorderService cancel', () => {
     {} as never,
     {} as never,
     {} as never,
+    {} as never,
   );
 
   beforeEach(() => {
@@ -79,6 +80,7 @@ describe('BackorderService retry guard', () => {
     {} as never,
     {} as never,
     {} as never,
+    {} as never,
   );
 
   beforeEach(() => {
@@ -115,6 +117,7 @@ describe('BackorderService server type validation', () => {
     {} as never,
     servicePlansRepository,
     serviceTypesRepository,
+    {} as never,
     {} as never,
     {} as never,
     {} as never,

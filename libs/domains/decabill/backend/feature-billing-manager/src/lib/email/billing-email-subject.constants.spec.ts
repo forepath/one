@@ -36,8 +36,26 @@ describe('BILLING_EMAIL_SUBJECTS', () => {
     expect(resolveEmailSubject(BILLING_EMAIL_SUBJECTS, 'subscription-renewal-reminder', { planName: 'Pro' })).toBe(
       'Upcoming subscription renewal: Pro',
     );
+    expect(
+      resolveEmailSubject(BILLING_EMAIL_SUBJECTS, 'subscription-renewal-reminder', {
+        planName: 'Pro',
+        billInAdvance: true,
+      }),
+    ).toBe('Upcoming subscription charge: Pro');
     expect(resolveEmailSubject(BILLING_EMAIL_SUBJECTS, 'subscription-canceled', { planName: 'Pro' })).toBe(
-      'Subscription canceled: Pro',
+      'Subscription ended: Pro',
+    );
+    expect(resolveEmailSubject(BILLING_EMAIL_SUBJECTS, 'subscription-cancel-scheduled', { planName: 'Pro' })).toBe(
+      'Cancellation scheduled: Pro',
+    );
+    expect(resolveEmailSubject(BILLING_EMAIL_SUBJECTS, 'subscription-resumed', { planName: 'Pro' })).toBe(
+      'Subscription resumed: Pro',
+    );
+    expect(resolveEmailSubject(BILLING_EMAIL_SUBJECTS, 'subscription-created', { planName: 'Pro' })).toBe(
+      'Order confirmation: Pro',
+    );
+    expect(resolveEmailSubject(BILLING_EMAIL_SUBJECTS, 'subscription-withdrawn', { planName: 'Pro' })).toBe(
+      'Withdrawal completed: Pro',
     );
   });
 
@@ -56,7 +74,14 @@ describe('BILLING_EMAIL_SUBJECTS', () => {
 
   it('lists billing email events', () => {
     expect(BILLING_EMAIL_EVENTS).toEqual(
-      expect.arrayContaining(['invoice.issued', 'payment.failed', 'subscription.canceled']),
+      expect.arrayContaining([
+        'invoice.issued',
+        'payment.failed',
+        'subscription.canceled',
+        'subscription.cancel_scheduled',
+        'subscription.created',
+        'subscription.withdrawn',
+      ]),
     );
   });
 });

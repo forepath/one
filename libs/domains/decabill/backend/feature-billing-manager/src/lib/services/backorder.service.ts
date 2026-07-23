@@ -42,6 +42,7 @@ import { PricingService } from './pricing.service';
 import { ProvisioningService } from './provisioning.service';
 import { TaxCalculationService } from './tax-calculation.service';
 import { InvoiceTaxContextService } from './invoice-tax-context.service';
+import { SubscriptionPeriodChargeService } from './subscription-period-charge.service';
 
 @Injectable()
 export class BackorderService {
@@ -63,6 +64,7 @@ export class BackorderService {
     private readonly pricingService: PricingService,
     private readonly taxCalculationService: TaxCalculationService,
     private readonly invoiceTaxContextService: InvoiceTaxContextService,
+    private readonly subscriptionPeriodChargeService: SubscriptionPeriodChargeService,
   ) {}
 
   async create(data: {
@@ -238,6 +240,7 @@ export class BackorderService {
       currentPeriodEnd: schedule.currentPeriodEnd,
       nextBillingAt: schedule.nextBillingAt,
     });
+
     const baseItem = await this.subscriptionItemsRepository.create({
       subscriptionId: subscription.id,
       serviceTypeId: plan.serviceTypeId,
@@ -315,6 +318,20 @@ export class BackorderService {
         await this.subscriptionItemsRepository.updateProvisioningStatus(baseItem.id, 'failed');
         throw error;
       }
+    }
+
+    // Charge prepaid debt only after provisioning succeeds so a failed fulfill does not leave
+    // an open position for a server the customer never received.
+    if (plan.billInAdvance === true) {
+      const createdSubscription = await this.subscriptionsRepository.findByIdOrThrow(subscription.id);
+
+      await this.subscriptionPeriodChargeService.recordOpenPositionForPeriod(
+        createdSubscription,
+        plan,
+        schedule.currentPeriodEnd,
+        schedule.currentPeriodStart,
+        schedule.currentPeriodEnd,
+      );
     }
 
     return await this.backordersRepository.update(backorderId, { status: BackorderStatus.FULFILLED });

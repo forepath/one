@@ -1,7 +1,7 @@
 // Types based on OpenAPI spec for Billing Service API
 
 // Enums
-export type BillingIntervalType = 'hour' | 'day' | 'month';
+export type BillingIntervalType = 'hour' | 'day' | 'month' | 'year';
 
 export type SubscriptionStatus = 'active' | 'pending_backorder' | 'pending_cancel' | 'pending_withdrawal' | 'canceled';
 
@@ -219,6 +219,8 @@ export interface ServicePlanResponse {
   billingIntervalValue: number;
   billingDayOfMonth?: number | null;
   cancelAtPeriodEnd: boolean;
+  /** When true, the period is billed at start (prepaid). */
+  billInAdvance: boolean;
   minCommitmentDays: number;
   noticeDays: number;
   basePrice?: string | null;
@@ -244,6 +246,7 @@ export interface CreateServicePlanDto {
   billingIntervalValue: number;
   billingDayOfMonth?: number;
   cancelAtPeriodEnd?: boolean;
+  billInAdvance?: boolean;
   minCommitmentDays?: number;
   noticeDays?: number;
   basePrice?: string;
@@ -265,6 +268,7 @@ export interface UpdateServicePlanDto {
   billingIntervalValue?: number;
   billingDayOfMonth?: number;
   cancelAtPeriodEnd?: boolean;
+  billInAdvance?: boolean;
   minCommitmentDays?: number;
   noticeDays?: number;
   basePrice?: string;

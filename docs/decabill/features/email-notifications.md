@@ -37,11 +37,15 @@ If no company name is resolved, header and footer are omitted. On Decabill, leav
 | `invoice.issued`                    | `invoice-issued`                | Invoice issuance / project billing   |
 | `invoice.voided`                    | `invoice-voided`                | Invoice void                         |
 | `invoice.partial_credit_issued`     | `invoice-partial-credit`        | Statutory withdrawal credit          |
-| `subscription.renewal_reminder`     | `subscription-renewal-reminder` | Renewal reminder job                 |
+| `subscription.created`              | `subscription-created`          | Order confirmation on subscribe      |
+| `subscription.renewal_reminder`     | `subscription-renewal-reminder` | Renewal / next-charge reminder job   |
 | `withdrawal.confirmation_requested` | `withdrawal-confirmation`       | Public withdrawal OTP                |
 | `payment.succeeded`                 | `payment-succeeded`             | Payment webhook success              |
 | `payment.failed`                    | `payment-failed`                | Payment webhook failure              |
-| `subscription.canceled`             | `subscription-canceled`         | Cancel subscription                  |
+| `subscription.cancel_scheduled`     | `subscription-cancel-scheduled` | Cancel request (pending cancel)      |
+| `subscription.canceled`             | `subscription-canceled`         | Final cancel teardown (not withdraw) |
+| `subscription.resumed`              | `subscription-resumed`          | Resume from pending cancel           |
+| `subscription.withdrawn`            | `subscription-withdrawn`        | Statutory withdrawal teardown done   |
 | `user.email_confirmation_requested` | `email-confirmation`            | Identity registration / email change |
 | `user.password_reset_requested`     | `password-reset`                | Password reset                       |
 
@@ -54,4 +58,4 @@ If no company name is resolved, header and footer are omitted. On Decabill, leav
 
 ## Future (webhook-only today)
 
-`payment.initiated`, `invoice.created`, `invoice.overdue`, `subscription.created/updated`, project/milestone/ticket/time_entry CRUD, `datev_export.*`
+`payment.initiated`, `invoice.created`, `invoice.overdue`, `subscription.updated`, project/milestone/ticket/time_entry CRUD, `datev_export.*`

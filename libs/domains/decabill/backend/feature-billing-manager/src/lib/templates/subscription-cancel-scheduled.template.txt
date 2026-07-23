@@ -1,0 +1,12 @@
+Cancellation scheduled
+
+Dear {{recipientName}},
+
+Your cancellation of subscription "{{planName}}" has been scheduled.
+{{#if effectiveDate}}
+Your service remains available until {{effectiveDate}}. You can resume the subscription before that date.
+{{else}}
+Your service will end shortly.
+{{/if}}
+
+If this was unexpected, please log in to your billing account and resume the subscription.

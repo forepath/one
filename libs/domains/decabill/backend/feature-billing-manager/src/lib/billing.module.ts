@@ -213,6 +213,7 @@ import { ProvisioningService } from './services/provisioning.service';
 import { SshExecutorService } from './services/ssh-executor.service';
 import { SubscriptionBillingJobHandler } from './services/subscription-billing.job-handler';
 import { SubscriptionExpirationJobHandler } from './services/subscription-expiration.job-handler';
+import { SubscriptionPeriodChargeService } from './services/subscription-period-charge.service';
 import { SubscriptionProvisioningJobHandler } from './services/subscription-provisioning.job-handler';
 import { SubscriptionWithdrawalJobHandler } from './services/subscription-withdrawal.job-handler';
 import { SubscriptionItemServerService } from './services/subscription-item-server.service';
@@ -506,6 +507,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     WithdrawalPolicyService,
     WithdrawalRefundService,
     SubscriptionTeardownService,
+    SubscriptionPeriodChargeService,
     CloudInitConfigService,
     CloudflareDnsService,
     DigitaloceanProvisioningService,

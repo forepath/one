@@ -19,6 +19,7 @@ describe('PricingController', () => {
     name: 'Pro',
     billingIntervalType: BillingIntervalType.MONTH,
     billingIntervalValue: 1,
+    billInAdvance: false,
     basePrice: '10',
     marginPercent: '0',
     marginFixed: '0',

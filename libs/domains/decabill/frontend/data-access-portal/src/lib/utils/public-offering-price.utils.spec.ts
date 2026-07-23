@@ -11,6 +11,7 @@ describe('formatPublicOfferingPrice', () => {
     serviceTypeName: 'Hosting',
     billingIntervalType: 'month',
     billingIntervalValue: 1,
+    billInAdvance: false,
     totalPrice: 10,
     totalGross: 11.9,
     taxRate: 19,

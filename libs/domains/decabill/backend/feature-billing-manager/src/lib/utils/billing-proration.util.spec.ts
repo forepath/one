@@ -8,6 +8,7 @@ describe('calculateProratedAmount', () => {
   const dayPlan = {
     billingIntervalType: BillingIntervalType.DAY,
     billingIntervalValue: 1,
+    billInAdvance: false,
     billingDayOfMonth: undefined,
   };
 

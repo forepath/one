@@ -34,6 +34,9 @@ describe('BILLING_NOTIFICATION_EVENTS', () => {
         'payment.auto.initiated',
         'payment.auto.retry_scheduled',
         'payment.auto.exhausted',
+        'subscription.cancel_scheduled',
+        'subscription.resumed',
+        'subscription.period_charged',
       ]),
     );
   });

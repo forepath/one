@@ -868,6 +868,23 @@
                 immediate cancellation mid-period.
               </div>
             </div>
+            <div class="form-check mb-3">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="createBillInAdvance"
+                name="billInAdvance"
+                [(ngModel)]="createForm.billInAdvance"
+                [disabled]="(creating$ | async) === true"
+              />
+              <label class="form-check-label" for="createBillInAdvance" i18n="@@featureServicePlans-billInAdvance"
+                >Bill in advance</label
+              >
+              <div class="form-text text-body-secondary small" i18n="@@featureServicePlans-billInAdvanceHelp">
+                Charge the full period at its start (prepaid). Usage-based metering cannot be used with advance billing.
+                Cancellation always takes effect at the end of the already-billed period.
+              </div>
+            </div>
             <div class="form-check">
               <input
                 type="checkbox"
@@ -1627,6 +1644,23 @@
               <div class="form-text text-body-secondary small" i18n="@@featureServicePlans-cancelAtPeriodEndHelp">
                 Cancellation will be scheduled for the end of the current billing period. Unchecking this allows
                 immediate cancellation mid-period.
+              </div>
+            </div>
+            <div class="form-check mb-3">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="editBillInAdvance"
+                name="billInAdvance"
+                [(ngModel)]="editForm.billInAdvance"
+                [disabled]="(updating$ | async) === true"
+              />
+              <label class="form-check-label" for="editBillInAdvance" i18n="@@featureServicePlans-billInAdvance"
+                >Bill in advance</label
+              >
+              <div class="form-text text-body-secondary small" i18n="@@featureServicePlans-billInAdvanceHelp">
+                Charge the full period at its start (prepaid). Usage-based metering cannot be used with advance billing.
+                Cancellation always takes effect at the end of the already-billed period.
               </div>
             </div>
             <div class="form-check">

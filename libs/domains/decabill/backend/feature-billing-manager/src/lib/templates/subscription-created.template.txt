@@ -1,0 +1,15 @@
+Order confirmation
+
+Dear {{recipientName}},
+
+Thank you for your order. Your subscription "{{planName}}"{{#if subscriptionNumber}} ({{subscriptionNumber}}){{/if}} is confirmed.
+{{#if periodEndDate}}
+Current period ends on {{periodEndDate}}.
+{{/if}}
+{{#if billInAdvance}}
+This plan is billed in advance. The charge for the current period has been recorded and will appear on your next invoice.
+{{else}}
+This plan is billed in arrears. Usage for the current period will appear on your invoice after the period ends.
+{{/if}}
+
+You can manage your subscription from your billing account.

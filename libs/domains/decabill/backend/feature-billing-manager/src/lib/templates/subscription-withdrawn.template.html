@@ -1,0 +1,16 @@
+{{#> email-layout}}
+<h1 class="email-title">Statutory withdrawal completed</h1>
+<p>Dear {{recipientName}},</p>
+<p>
+  Your statutory withdrawal for subscription "<strong>{{planName}}</strong>" {{#if
+  subscriptionNumber}}(<strong>{{subscriptionNumber}}</strong>){{/if}} is complete. Access has been removed.
+</p>
+{{#if withdrawnAt}}
+<p>Withdrawal date: <strong>{{withdrawnAt}}</strong></p>
+{{/if}}
+<p>
+  If a refund or credit note applies for unused prepaid time, it is processed separately and you will receive a
+  dedicated credit note email when available.
+</p>
+<p>If this was unexpected, please contact support.</p>
+{{/email-layout}}

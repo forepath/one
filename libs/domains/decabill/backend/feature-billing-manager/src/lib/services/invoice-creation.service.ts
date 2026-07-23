@@ -63,8 +63,12 @@ export class InvoiceCreationService {
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const pricing = await this.resolveSubscriptionPricing(subscriptionId, plan);
-    const usage = await this.usageRecordsRepository.findLatestForSubscription(subscriptionId);
-    const usageCost = usage ? this.extractUsageCost(usage.usagePayload) : 0;
+    const usageCost =
+      plan.billInAdvance === true
+        ? 0
+        : this.extractUsageCost(
+            (await this.usageRecordsRepository.findLatestForSubscription(subscriptionId))?.usagePayload ?? {},
+          );
     const billUntil = options?.billUntil ?? new Date();
     const chargePeriod = await this.subscriptionChargePeriodService.resolveChargePeriod(
       subscription,
@@ -290,8 +294,12 @@ export class InvoiceCreationService {
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const pricing = await this.resolveSubscriptionPricing(position.subscriptionId, plan);
-    const usage = await this.usageRecordsRepository.findLatestForSubscription(position.subscriptionId);
-    const usageCost = usage ? this.extractUsageCost(usage.usagePayload) : 0;
+    const usageCost =
+      plan.billInAdvance === true
+        ? 0
+        : this.extractUsageCost(
+            (await this.usageRecordsRepository.findLatestForSubscription(position.subscriptionId))?.usagePayload ?? {},
+          );
     const chargePeriod = await this.subscriptionChargePeriodService.resolveChargePeriod(
       subscription,
       plan,
@@ -326,7 +334,11 @@ export class InvoiceCreationService {
     return charge?.amount ?? 0;
   }
 
-  private extractUsageCost(payload: Record<string, unknown>): number {
+  private extractUsageCost(payload: Record<string, unknown> | undefined): number {
+    if (!payload) {
+      return 0;
+    }
+
     const direct = this.parseNumeric(payload['totalCost']) ?? this.parseNumeric(payload['usageCost']);
 
     if (direct !== null) {

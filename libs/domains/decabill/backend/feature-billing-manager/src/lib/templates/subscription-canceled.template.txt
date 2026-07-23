@@ -1,10 +1,10 @@
-Subscription canceled
+Subscription ended
 
 Dear {{recipientName}},
 
-Your subscription "{{planName}}" has been canceled.
+Your subscription "{{planName}}" has ended and access has been removed.
 {{#if effectiveDate}}
 Effective date: {{effectiveDate}}
 {{/if}}
 
-If this was unexpected, please contact support or renew from your billing account.
+If this was unexpected, please contact support or order a new subscription from your billing account.

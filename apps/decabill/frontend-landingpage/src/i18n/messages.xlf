@@ -923,6 +923,9 @@
       <trans-unit id="featureDecabillHome-planPriceDay" datatype="html">
         <source>/day</source>
         </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceYear" datatype="html">
+        <source>/year</source>
+        </trans-unit>
       <trans-unit id="featureDecabillLegalDisclosure-title" datatype="html">
         <source> Legal Disclosure </source>
         </trans-unit>

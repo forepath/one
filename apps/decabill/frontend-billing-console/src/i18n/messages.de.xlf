@@ -806,6 +806,10 @@
         <source>Hourly</source>
         <target>Stündlich</target>
       </trans-unit>
+      <trans-unit id="featureBilling-intervalYearly" datatype="html">
+        <source>Yearly</source>
+        <target>Jährlich</target>
+      </trans-unit>
       <trans-unit id="featureBilling-intervalEveryHours" datatype="html">
         <source>Every <x id="PH" equiv-text="value"/> hours</source>
         <target>Every <x id="PH" equiv-text="value"/> hours</target>
@@ -813,6 +817,10 @@
       <trans-unit id="featureBilling-intervalEveryDays" datatype="html">
         <source>Every <x id="PH" equiv-text="value"/> days</source>
         <target>Every <x id="PH" equiv-text="value"/> days</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-intervalEveryYears" datatype="html">
+        <source>Every <x id="PH" equiv-text="value"/> years</source>
+        <target>Alle <x id="PH" equiv-text="value"/> Jahre</target>
       </trans-unit>
       <trans-unit id="featureBilling-intervalEveryMonths" datatype="html">
         <source>Every <x id="PH" equiv-text="value"/> months</source>
@@ -1545,6 +1553,14 @@
       <trans-unit id="featureServicePlans-cancelAtPeriodEnd" datatype="html">
         <source>Cancel at period end</source>
         <target>Zum Periodenende kündigen</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-billInAdvance" datatype="html">
+        <source>Bill in advance</source>
+        <target>Im Voraus abrechnen</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-billInAdvanceHelp" datatype="html">
+        <source>Charge the full period at its start (prepaid). Usage-based metering cannot be used with advance billing. Cancellation always takes effect at the end of the already-billed period.</source>
+        <target>Die volle Periode wird zu Beginn belastet (Prepaid). Nutzungsbasierte Abrechnung ist mit Vorausabrechnung nicht verfügbar. Eine Kündigung wirkt immer zum Ende der bereits abgerechneten Periode.</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-active" datatype="html">
         <source>Active</source>

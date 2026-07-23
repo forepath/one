@@ -130,6 +130,7 @@ export class BillingEmailPublisher {
     recipientEmail: string,
     recipientName: string,
     renewalDate: string,
+    options?: { billInAdvance?: boolean; periodEndDate?: string },
   ): Promise<void> {
     await this.emailDispatcher.publish({
       eventType: 'subscription.renewal_reminder',
@@ -141,6 +142,8 @@ export class BillingEmailPublisher {
         planName,
         renewalDate,
         subscriptionId: subscription.id,
+        billInAdvance: options?.billInAdvance === true,
+        ...(options?.periodEndDate ? { periodEndDate: options.periodEndDate } : {}),
       },
     });
   }
@@ -169,6 +172,92 @@ export class BillingEmailPublisher {
     await this.publishPaymentEmail('payment.failed', 'payment-failed', invoice, context);
   }
 
+  async publishSubscriptionCreated(
+    subscription: SubscriptionEntity,
+    planName: string,
+    options?: { billInAdvance?: boolean },
+  ): Promise<void> {
+    const profile = await this.customerProfilesRepository.findByUserId(subscription.userId);
+    const to = await this.resolveRecipientEmail(subscription.userId, profile);
+
+    if (!to) {
+      this.logger.warn(`No billing email for user ${subscription.userId}, skipping order confirmation email`);
+
+      return;
+    }
+
+    const periodEndDate = subscription.currentPeriodEnd
+      ? subscription.currentPeriodEnd.toLocaleDateString()
+      : undefined;
+
+    await this.emailDispatcher.publish({
+      eventType: 'subscription.created',
+      scopeKey: getTenantIdOrDefault(),
+      to,
+      templateKey: 'subscription-created',
+      templateContext: {
+        recipientName: this.greeting(profile),
+        planName,
+        billInAdvance: options?.billInAdvance === true,
+        ...(subscription.number ? { subscriptionNumber: subscription.number } : {}),
+        ...(periodEndDate ? { periodEndDate } : {}),
+      },
+    });
+  }
+
+  async publishSubscriptionWithdrawn(subscription: SubscriptionEntity, planName: string): Promise<void> {
+    const profile = await this.customerProfilesRepository.findByUserId(subscription.userId);
+    const to = await this.resolveRecipientEmail(subscription.userId, profile);
+
+    if (!to) {
+      this.logger.warn(`No billing email for user ${subscription.userId}, skipping withdrawal email`);
+
+      return;
+    }
+
+    const withdrawnAt = subscription.withdrawnAt ? subscription.withdrawnAt.toLocaleDateString() : undefined;
+
+    await this.emailDispatcher.publish({
+      eventType: 'subscription.withdrawn',
+      scopeKey: getTenantIdOrDefault(),
+      to,
+      templateKey: 'subscription-withdrawn',
+      templateContext: {
+        recipientName: this.greeting(profile),
+        planName,
+        ...(subscription.number ? { subscriptionNumber: subscription.number } : {}),
+        ...(withdrawnAt ? { withdrawnAt } : {}),
+      },
+    });
+  }
+
+  async publishSubscriptionCancelScheduled(subscription: SubscriptionEntity, planName: string): Promise<void> {
+    const profile = await this.customerProfilesRepository.findByUserId(subscription.userId);
+    const to = await this.resolveRecipientEmail(subscription.userId, profile);
+
+    if (!to) {
+      this.logger.warn(`No billing email for user ${subscription.userId}, skipping cancel-scheduled email`);
+
+      return;
+    }
+
+    const effectiveDate = subscription.cancelEffectiveAt
+      ? subscription.cancelEffectiveAt.toLocaleDateString()
+      : undefined;
+
+    await this.emailDispatcher.publish({
+      eventType: 'subscription.cancel_scheduled',
+      scopeKey: getTenantIdOrDefault(),
+      to,
+      templateKey: 'subscription-cancel-scheduled',
+      templateContext: {
+        recipientName: this.greeting(profile),
+        planName,
+        ...(effectiveDate ? { effectiveDate } : {}),
+      },
+    });
+  }
+
   async publishSubscriptionCanceled(subscription: SubscriptionEntity, planName: string): Promise<void> {
     const profile = await this.customerProfilesRepository.findByUserId(subscription.userId);
     const to = await this.resolveRecipientEmail(subscription.userId, profile);
@@ -192,6 +281,28 @@ export class BillingEmailPublisher {
         recipientName: this.greeting(profile),
         planName,
         ...(effectiveDate ? { effectiveDate } : {}),
+      },
+    });
+  }
+
+  async publishSubscriptionResumed(subscription: SubscriptionEntity, planName: string): Promise<void> {
+    const profile = await this.customerProfilesRepository.findByUserId(subscription.userId);
+    const to = await this.resolveRecipientEmail(subscription.userId, profile);
+
+    if (!to) {
+      this.logger.warn(`No billing email for user ${subscription.userId}, skipping resume email`);
+
+      return;
+    }
+
+    await this.emailDispatcher.publish({
+      eventType: 'subscription.resumed',
+      scopeKey: getTenantIdOrDefault(),
+      to,
+      templateKey: 'subscription-resumed',
+      templateContext: {
+        recipientName: this.greeting(profile),
+        planName,
       },
     });
   }

@@ -15,6 +15,7 @@ export class CancellationPolicyService {
     minCommitmentDays: number,
     noticeDays: number,
     now: Date = new Date(),
+    options?: { billInAdvance?: boolean },
   ): CancellationDecision {
     const commitmentEnd = new Date(createdAt);
 
@@ -22,6 +23,17 @@ export class CancellationPolicyService {
 
     if (now < commitmentEnd) {
       return { canCancel: false, reason: 'Minimum commitment not yet reached' };
+    }
+
+    // Advance-billed subscriptions always remain active until the already-paid period ends.
+    // Skip the arrear "last N days of period" notice window — prepaid customers may schedule
+    // that end any time after the commitment (effective date stays period end).
+    if (options?.billInAdvance === true) {
+      if (!currentPeriodEnd) {
+        return { canCancel: false, reason: 'Current period end is required for advance-billed cancellation' };
+      }
+
+      return { canCancel: true, effectiveAt: currentPeriodEnd };
     }
 
     const effectiveAt = cancelAtPeriodEnd && currentPeriodEnd ? currentPeriodEnd : now;

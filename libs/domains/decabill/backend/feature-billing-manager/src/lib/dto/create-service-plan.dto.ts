@@ -34,7 +34,7 @@ export class CreateServicePlanDto {
   description?: string;
 
   @IsNotEmpty({ message: 'Billing interval type is required' })
-  @IsEnum(BillingIntervalType, { message: 'Billing interval type must be hour, day, or month' })
+  @IsEnum(BillingIntervalType, { message: 'Billing interval type must be hour, day, month, or year' })
   billingIntervalType!: BillingIntervalType;
 
   @IsNotEmpty({ message: 'Billing interval value is required' })
@@ -51,6 +51,10 @@ export class CreateServicePlanDto {
   @IsOptional()
   @IsBoolean({ message: 'cancelAtPeriodEnd must be a boolean' })
   cancelAtPeriodEnd?: boolean;
+
+  @IsOptional()
+  @IsBoolean({ message: 'billInAdvance must be a boolean' })
+  billInAdvance?: boolean;
 
   @IsOptional()
   @IsInt({ message: 'minCommitmentDays must be an integer' })

@@ -18,6 +18,7 @@ describe('ServicePlansFacade', () => {
     serviceTypeName: 'Cloud',
     billingIntervalType: 'month',
     billingIntervalValue: 1,
+    billInAdvance: false,
     totalPrice: 99,
     totalGross: 117.81,
     taxRate: 19,

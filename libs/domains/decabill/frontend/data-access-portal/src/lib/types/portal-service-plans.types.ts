@@ -1,6 +1,6 @@
 /** Matches {@link PublicServicePlanOfferingDto} from the billing API. */
 
-export type BillingIntervalType = 'hour' | 'day' | 'month';
+export type BillingIntervalType = 'hour' | 'day' | 'month' | 'year';
 
 export interface ServicePlanOrderingHighlight {
   icon: string;
@@ -22,6 +22,7 @@ export interface PublicServicePlanOffering {
   serviceTypeName: string;
   billingIntervalType: BillingIntervalType;
   billingIntervalValue: number;
+  billInAdvance: boolean;
   totalPrice: number;
   totalGross: number;
   taxRate: number;

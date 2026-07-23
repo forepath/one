@@ -25,4 +25,30 @@ describe('BillingScheduleService', () => {
 
     expect(result.currentPeriodEnd.getUTCDate()).toBeGreaterThan(0);
   });
+
+  it('calculates yearly schedule by calendar years', () => {
+    const now = new Date('2024-03-15T10:30:00Z');
+    const result = service.calculateSchedule(BillingIntervalType.YEAR, 1, undefined, now);
+
+    expect(result.currentPeriodEnd.getUTCFullYear()).toBe(2025);
+    expect(result.currentPeriodEnd.getUTCMonth()).toBe(2);
+    expect(result.currentPeriodEnd.getUTCDate()).toBe(15);
+    expect(result.nextBillingAt).toEqual(result.currentPeriodEnd);
+  });
+
+  it('aligns yearly schedule to billingDayOfMonth when set', () => {
+    const now = new Date('2024-01-31T00:00:00Z');
+    const result = service.calculateSchedule(BillingIntervalType.YEAR, 1, 31, now);
+
+    expect(result.currentPeriodEnd.getUTCFullYear()).toBe(2025);
+    expect(result.currentPeriodEnd.getUTCMonth()).toBe(0);
+    expect(result.currentPeriodEnd.getUTCDate()).toBe(31);
+  });
+
+  it('supports multi-year interval values', () => {
+    const now = new Date('2024-06-01T00:00:00Z');
+    const result = service.calculateSchedule(BillingIntervalType.YEAR, 2, undefined, now);
+
+    expect(result.currentPeriodEnd.getUTCFullYear()).toBe(2026);
+  });
 });

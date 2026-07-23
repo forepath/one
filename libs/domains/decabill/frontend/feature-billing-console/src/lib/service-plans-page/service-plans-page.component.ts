@@ -124,7 +124,7 @@ export class ServicePlansPageComponent implements OnInit {
   readonly updating$ = this.plansFacade.getServicePlansUpdating$();
   readonly deleting$ = this.plansFacade.getServicePlansDeleting$();
 
-  readonly billingIntervalTypes: BillingIntervalType[] = ['hour', 'day', 'month'];
+  readonly billingIntervalTypes: BillingIntervalType[] = ['hour', 'day', 'month', 'year'];
   readonly taxRates = signal<TaxPreviewRates>({ standard: 19, reduced: 7 });
   readonly taxCategoryOptions = computed(() => {
     const rates = this.taxRates();
@@ -1007,6 +1007,7 @@ export class ServicePlansPageComponent implements OnInit {
       billingIntervalValue: 1,
       billingDayOfMonth: undefined,
       cancelAtPeriodEnd: true,
+      billInAdvance: false,
       minCommitmentDays: 0,
       noticeDays: 0,
       basePrice: undefined,
@@ -1031,6 +1032,7 @@ export class ServicePlansPageComponent implements OnInit {
       billingIntervalValue: 1,
       billingDayOfMonth: undefined,
       cancelAtPeriodEnd: false,
+      billInAdvance: false,
       minCommitmentDays: 0,
       noticeDays: 0,
       basePrice: undefined,
@@ -1101,6 +1103,7 @@ export class ServicePlansPageComponent implements OnInit {
       billingIntervalValue: plan.billingIntervalValue,
       billingDayOfMonth: plan.billingDayOfMonth ?? undefined,
       cancelAtPeriodEnd: plan.cancelAtPeriodEnd,
+      billInAdvance: plan.billInAdvance === true,
       minCommitmentDays: plan.minCommitmentDays,
       noticeDays: plan.noticeDays,
       basePrice: plan.basePrice ?? undefined,
@@ -1171,6 +1174,7 @@ export class ServicePlansPageComponent implements OnInit {
           billingDayOfMonth:
             this.createForm.billingDayOfMonth != null ? Number(this.createForm.billingDayOfMonth) : undefined,
           cancelAtPeriodEnd: this.createForm.cancelAtPeriodEnd ?? true,
+          billInAdvance: this.createForm.billInAdvance === true,
           minCommitmentDays: Number(this.createForm.minCommitmentDays) || 0,
           noticeDays: Number(this.createForm.noticeDays) || 0,
           basePrice: this.createForm.basePrice?.trim() || undefined,
@@ -1216,6 +1220,7 @@ export class ServicePlansPageComponent implements OnInit {
           billingDayOfMonth:
             this.editForm.billingDayOfMonth != null ? Number(this.editForm.billingDayOfMonth) : undefined,
           cancelAtPeriodEnd: this.editForm.cancelAtPeriodEnd,
+          billInAdvance: this.editForm.billInAdvance === true,
           minCommitmentDays: Number(this.editForm.minCommitmentDays) ?? 0,
           noticeDays: Number(this.editForm.noticeDays) ?? 0,
           basePrice: this.editForm.basePrice?.trim() || undefined,

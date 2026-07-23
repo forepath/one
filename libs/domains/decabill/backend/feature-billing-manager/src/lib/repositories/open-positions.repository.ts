@@ -61,6 +61,32 @@ export class OpenPositionsRepository {
     return count > 0;
   }
 
+  async findUnbilledBySubscription(subscriptionId: string): Promise<OpenPositionEntity[]> {
+    const qb = this.repository
+      .createQueryBuilder('pos')
+      .innerJoin('users', 'user', 'user.id = pos.user_id')
+      .where('pos.subscription_id = :subscriptionId', { subscriptionId })
+      .andWhere('pos.invoice_ref_id IS NULL')
+      .orderBy('pos.createdAt', 'ASC');
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
+  }
+
+  async updateUnbilledBillUntil(subscriptionId: string, billUntil: Date): Promise<number> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .update(OpenPositionEntity)
+      .set({ billUntil })
+      .where('subscription_id = :subscriptionId', { subscriptionId })
+      .andWhere('invoice_ref_id IS NULL')
+      .andWhere(`user_id IN (SELECT id FROM users WHERE tenant_id = :tenantId)`, { tenantId: getRequiredTenantId() })
+      .execute();
+
+    return result.affected ?? 0;
+  }
+
   async findDistinctUserIdsWithUnbilled(): Promise<string[]> {
     const qb = this.repository
       .createQueryBuilder('pos')

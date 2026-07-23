@@ -24,6 +24,8 @@ export class BillingScheduleService {
     } else if (intervalType === BillingIntervalType.DAY) {
       periodEnd = new Date(periodStart);
       periodEnd.setDate(periodEnd.getDate() + intervalValue);
+    } else if (intervalType === BillingIntervalType.YEAR) {
+      periodEnd = this.nextYearlyDate(periodStart, intervalValue, billingDayOfMonth);
     } else {
       const targetDay = billingDayOfMonth ?? 1;
 
@@ -53,5 +55,22 @@ export class BillingScheduleService {
       0,
       0,
     );
+  }
+
+  private nextYearlyDate(reference: Date, intervalValue: number, billingDayOfMonth: number | undefined): Date {
+    const years = Math.max(1, intervalValue);
+    const target = new Date(reference);
+
+    target.setFullYear(target.getFullYear() + years);
+
+    if (billingDayOfMonth != null) {
+      const daysInMonth = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+      const safeDay = Math.min(Math.max(billingDayOfMonth, 1), daysInMonth);
+
+      target.setDate(safeDay);
+      target.setHours(reference.getHours(), reference.getMinutes(), 0, 0);
+    }
+
+    return target;
   }
 }

@@ -9,6 +9,7 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **Authentication** - Keycloak OAuth2/OIDC, built-in users with JWT, or static API key
 - **Multi-tenancy** - Tenant-scoped data with `X-Tenant` header and configurable tenant frontends
 - **Subscriptions** - Order, cancel, and resume service plans with optional cloud provisioning
+- **Advance billing and yearly interval** - Prepaid period charges and `year` billing interval
 - **Invoices** - ZUGFeRD PDFs, open positions, billing-day accumulation, and Stripe checkout
 - **Service Types and Plans** - Admin-managed catalog with provider schemas and pricing
 - **Billing Administration** - Manual invoices, customer profiles, KPIs, and bill-now
@@ -60,9 +61,13 @@ Order service plans, manage lifecycle (cancel, resume), and provision cloud inst
 
 - Subscription creation with availability checks and provider config validation
 - Optional `promotionCode` at order time (validated before submit)
-- Cancel and resume with effective dates
+- Cancel and resume with effective dates (`cancel_scheduled` vs final cancel)
 - Subscription items with provisioning status and hostname reservation
-- Usage records for usage-based pricing
+- Usage records for usage-based pricing (arrear plans only)
+
+### [Advance billing and yearly interval](./advance-billing-and-yearly-interval.md)
+
+Plan flag `billInAdvance` for prepaid period charges, `year` billing interval, withdrawal accounting for unbilled vs invoiced advance debt, and related webhook/email events.
 
 ### [Marketing promotions](./promotions.md)
 

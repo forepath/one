@@ -55,6 +55,7 @@ import { InvoiceTaxContextService } from './invoice-tax-context.service';
 import { BillingNotificationPublisher } from '../notifications/billing-notification.publisher';
 import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
+import { SubscriptionPeriodChargeService } from './subscription-period-charge.service';
 
 @Injectable()
 export class SubscriptionService {
@@ -85,6 +86,7 @@ export class SubscriptionService {
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingEmailPublisher: BillingEmailPublisher,
     private readonly customerTrustScoreService: CustomerTrustScoreService,
+    private readonly subscriptionPeriodChargeService: SubscriptionPeriodChargeService,
   ) {}
 
   async createSubscription(
@@ -269,7 +271,20 @@ export class SubscriptionService {
     // returned entity; save() does not reliably hydrate database defaults.
     const created = await this.subscriptionsRepository.findByIdOrThrow(subscription.id);
 
-    this.billingNotificationPublisher.publishSubscription('subscription.created', created);
+    if (plan.billInAdvance === true) {
+      await this.subscriptionPeriodChargeService.recordOpenPositionForPeriod(
+        created,
+        plan,
+        schedule.currentPeriodEnd,
+        schedule.currentPeriodStart,
+        schedule.currentPeriodEnd,
+      );
+    }
+
+    this.billingNotificationPublisher.publishSubscription('subscription.created', created, plan);
+    await this.billingEmailPublisher.publishSubscriptionCreated(created, plan.name, {
+      billInAdvance: plan.billInAdvance === true,
+    });
     this.customerTrustScoreService.triggerRecomputeForUser(created.userId);
 
     return created;
@@ -459,6 +474,8 @@ export class SubscriptionService {
       plan.cancelAtPeriodEnd,
       plan.minCommitmentDays,
       plan.noticeDays,
+      new Date(),
+      { billInAdvance: plan.billInAdvance === true },
     );
 
     if (!decision.canCancel) {
@@ -471,9 +488,9 @@ export class SubscriptionService {
       cancelEffectiveAt: decision.effectiveAt,
     });
 
-    this.billingNotificationPublisher.publishSubscription('subscription.canceled', canceled);
+    this.billingNotificationPublisher.publishSubscription('subscription.cancel_scheduled', canceled, plan);
     this.customerTrustScoreService.triggerRecomputeForUser(canceled.userId);
-    await this.billingEmailPublisher.publishSubscriptionCanceled(canceled, plan.name);
+    await this.billingEmailPublisher.publishSubscriptionCancelScheduled(canceled, plan.name);
 
     return canceled;
   }
@@ -485,6 +502,7 @@ export class SubscriptionService {
       throw new BadRequestException('Subscription is not pending cancel');
     }
 
+    const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const resumed = await this.subscriptionsRepository.update(subscriptionId, {
       status: SubscriptionStatus.ACTIVE,
       resumedAt: new Date(),
@@ -492,8 +510,9 @@ export class SubscriptionService {
       cancelEffectiveAt: null,
     });
 
-    this.billingNotificationPublisher.publishSubscription('subscription.updated', resumed);
+    this.billingNotificationPublisher.publishSubscription('subscription.resumed', resumed, plan);
     this.customerTrustScoreService.triggerRecomputeForUser(resumed.userId);
+    await this.billingEmailPublisher.publishSubscriptionResumed(resumed, plan.name);
 
     return resumed;
   }
@@ -545,7 +564,7 @@ export class SubscriptionService {
 
     const updated = await this.subscriptionsRepository.findByIdOrThrow(subscriptionId);
 
-    this.billingNotificationPublisher.publishSubscription('subscription.updated', updated);
+    this.billingNotificationPublisher.publishSubscription('subscription.updated', updated, plan);
     this.customerTrustScoreService.triggerRecomputeForUser(updated.userId);
 
     const withdrawalResult: WithdrawalResultDto = {

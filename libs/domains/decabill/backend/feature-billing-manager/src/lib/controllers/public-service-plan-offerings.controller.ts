@@ -136,6 +136,7 @@ export class PublicServicePlanOfferingsController {
       serviceTypeName: row.serviceType?.name ?? '',
       billingIntervalType: row.billingIntervalType,
       billingIntervalValue: row.billingIntervalValue,
+      billInAdvance: row.billInAdvance === true,
       totalPrice: pricingWithTax.totalPrice,
       totalGross: pricingWithTax.totalGross,
       taxRate: pricingWithTax.taxRate,

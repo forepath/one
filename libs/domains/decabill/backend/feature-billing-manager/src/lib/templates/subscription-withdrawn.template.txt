@@ -1,0 +1,12 @@
+Statutory withdrawal completed
+
+Dear {{recipientName}},
+
+Your statutory withdrawal for subscription "{{planName}}"{{#if subscriptionNumber}} ({{subscriptionNumber}}){{/if}} is complete. Access has been removed.
+{{#if withdrawnAt}}
+Withdrawal date: {{withdrawnAt}}
+{{/if}}
+
+If a refund or credit note applies for unused prepaid time, it is processed separately and you will receive a dedicated credit note email when available.
+
+If this was unexpected, please contact support.
