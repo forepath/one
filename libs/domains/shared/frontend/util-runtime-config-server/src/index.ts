@@ -1,5 +1,6 @@
 export {
   assertConfigHostnameResolvesToPublicIps,
+  clearRuntimeConfigSuccessCache,
   fetchRuntimeConfigFromEnv,
   parseAllowedHosts,
   type FetchRuntimeConfigEnv,

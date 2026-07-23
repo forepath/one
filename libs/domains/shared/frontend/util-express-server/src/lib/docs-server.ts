@@ -1,50 +1,25 @@
-import { dirname, join, resolve } from 'node:path';
+import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { APP_BASE_HREF } from '@angular/common';
-import { CommonEngine } from '@angular/ssr/node';
-import express, { type Express, type NextFunction, type Request, type Response } from 'express';
+import { createSsrExpressApp, type SsrExpressAppHandle, type SsrExpressBootstrap } from './create-ssr-express-app';
 
-import { registerRuntimeConfigEndpoint } from './runtime-config-route';
-import { createSecurityHeadersMiddleware } from './security-headers';
-import { buildSsrAllowedHosts } from './ssr-allowed-hosts';
+export type DocsServerBootstrap = SsrExpressBootstrap;
 
-export type DocsServerBootstrap = Parameters<CommonEngine['render']>[0]['bootstrap'];
+export type DocsServerHandle = SsrExpressAppHandle;
 
-export function createDocsServer(apexDomains: readonly string[], bootstrap: DocsServerBootstrap): Express {
-  const serverDistFolder = dirname(fileURLToPath(import.meta.url));
-  const browserDistFolder = resolve(serverDistFolder, '../browser');
-  const indexHtml = join(serverDistFolder, 'index.server.html');
-  const app = express();
-  const commonEngine = new CommonEngine({
-    allowedHosts: buildSsrAllowedHosts(apexDomains),
+/**
+ * @param serverDistFolder Directory of the locale SSR entry (`server/<locale>/`).
+ * Prefer passing `dirname(fileURLToPath(import.meta.url))` from the app `server.ts`
+ * so chunked bundles do not resolve the browser dist from a chunk path.
+ */
+export function createDocsServer(
+  apexDomains: readonly string[],
+  bootstrap: DocsServerBootstrap,
+  serverDistFolder: string = dirname(fileURLToPath(import.meta.url)),
+): DocsServerHandle {
+  return createSsrExpressApp({
+    apexDomains,
+    bootstrap,
+    serverDistFolder,
   });
-
-  app.use(createSecurityHeadersMiddleware());
-  registerRuntimeConfigEndpoint(app);
-
-  app.get(
-    '**',
-    express.static(browserDistFolder, {
-      maxAge: '1y',
-      index: 'index.html',
-    }),
-  );
-
-  app.get('**', (req: Request, res: Response, next: NextFunction) => {
-    const { protocol, originalUrl, baseUrl, headers } = req;
-
-    commonEngine
-      .render({
-        bootstrap,
-        documentFilePath: indexHtml,
-        url: `${protocol}://${headers.host}${originalUrl}`,
-        publicPath: browserDistFolder,
-        providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
-      })
-      .then((html: string) => res.send(html))
-      .catch((err: unknown) => next(err));
-  });
-
-  return app;
 }

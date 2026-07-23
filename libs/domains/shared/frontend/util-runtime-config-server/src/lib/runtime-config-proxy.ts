@@ -42,7 +42,38 @@ export interface FetchRuntimeConfigEnv {
   CONFIG_FETCH_MAX_BYTES?: string;
   CONFIG_JSON_MAX_DEPTH?: string;
   CONFIG_JSON_MAX_KEYS?: string;
+  /** In-memory success cache TTL in ms (default 60000, max 300000, 0 disables). */
+  CONFIG_CACHE_TTL_MS?: string;
   NODE_ENV?: string;
+}
+
+interface RuntimeConfigSuccessCacheEntry {
+  key: string;
+  value: Record<string, unknown>;
+  expiresAt: number;
+}
+
+let runtimeConfigSuccessCache: RuntimeConfigSuccessCacheEntry | null = null;
+
+export function clearRuntimeConfigSuccessCache(): void {
+  runtimeConfigSuccessCache = null;
+}
+
+function resolveConfigCacheTtlMs(env: FetchRuntimeConfigEnv): number {
+  const parsed = parseInt(env.CONFIG_CACHE_TTL_MS ?? '60000', 10);
+  const ttlMs = Number.isFinite(parsed) ? parsed : 60000;
+
+  return Math.min(Math.max(ttlMs, 0), 300_000);
+}
+
+function buildConfigCacheKey(configUrl: string, env: FetchRuntimeConfigEnv): string {
+  return [
+    configUrl,
+    env.CONFIG_ALLOWED_HOSTS ?? '',
+    env.CONFIG_ALLOW_INSECURE_HTTP ?? '',
+    env.CONFIG_ALLOW_INTERNAL_HOST ?? '',
+    env.NODE_ENV ?? '',
+  ].join('|');
 }
 
 /**
@@ -171,6 +202,19 @@ export async function fetchRuntimeConfigFromEnv(env: FetchRuntimeConfigEnv): Pro
     return { kind: 'error', statusCode: 500, log: 'CONFIG hostname is not allowed' };
   }
 
+  const cacheKey = buildConfigCacheKey(configUrlRaw, env);
+  const cacheTtlMs = resolveConfigCacheTtlMs(env);
+  const now = Date.now();
+
+  if (
+    cacheTtlMs > 0 &&
+    runtimeConfigSuccessCache &&
+    runtimeConfigSuccessCache.key === cacheKey &&
+    runtimeConfigSuccessCache.expiresAt > now
+  ) {
+    return { kind: 'ok', value: runtimeConfigSuccessCache.value };
+  }
+
   const dnsResult = await assertConfigHostnameResolvesToPublicIps(host, env);
 
   if (dnsResult) {
@@ -245,5 +289,15 @@ export async function fetchRuntimeConfigFromEnv(env: FetchRuntimeConfigEnv): Pro
     };
   }
 
-  return { kind: 'ok', value: parsed as Record<string, unknown> };
+  const value = parsed as Record<string, unknown>;
+
+  if (cacheTtlMs > 0) {
+    runtimeConfigSuccessCache = {
+      key: cacheKey,
+      value,
+      expiresAt: now + cacheTtlMs,
+    };
+  }
+
+  return { kind: 'ok', value };
 }

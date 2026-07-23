@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -8,6 +8,7 @@ import {
   inject,
   LOCALE_ID,
   OnInit,
+  PLATFORM_ID,
   signal,
   ViewChild,
 } from '@angular/core';
@@ -42,6 +43,7 @@ export class PortalCloudComponent implements OnInit, AfterViewInit {
   private readonly environment = inject<Environment>(ENVIRONMENT);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly locale = inject(LOCALE_ID);
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
 
   @ViewChild('plansCarousel') plansCarousel!: ElementRef<HTMLDivElement>;
@@ -125,8 +127,10 @@ export class PortalCloudComponent implements OnInit, AfterViewInit {
       ),
     );
 
-    this.servicePlansFacade.loadCheapestServicePlanOffering();
-    this.servicePlansFacade.loadServicePlans();
+    if (isPlatformBrowser(this.platformId)) {
+      this.servicePlansFacade.loadCheapestServicePlanOffering();
+      this.servicePlansFacade.loadServicePlans();
+    }
   }
 
   ngAfterViewInit(): void {

@@ -159,7 +159,7 @@
         "{workspaceRoot}/dist/apps/forepath/frontend-landingpage-delegating-server"
       ],
       "options": {
-        "command": "mkdir -p dist/apps/forepath/frontend-landingpage-delegating-server/server && npx tsc apps/forepath/frontend-landingpage/src/delegating-server.ts --outDir dist/apps/forepath/frontend-landingpage-delegating-server/server --target es2022 --module esnext --moduleResolution node --allowSyntheticDefaultImports --esModuleInterop --skipLibCheck --declaration false --sourceMap false --removeComments true",
+        "command": "mkdir -p dist/apps/forepath/frontend-landingpage-delegating-server/server && npx esbuild apps/forepath/frontend-landingpage/src/delegating-server.ts --bundle --platform=node --format=esm --outfile=dist/apps/forepath/frontend-landingpage-delegating-server/server/delegating-server.js --alias:@forepath/shared/frontend/util-express-server/delegating-server=./libs/domains/shared/frontend/util-express-server/src/delegating-server.ts",
         "cwd": "."
       }
     },

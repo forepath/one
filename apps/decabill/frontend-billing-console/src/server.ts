@@ -3,8 +3,12 @@ import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 import {
+  createMemoryStaticMiddleware,
   createSecurityHeadersMiddleware,
+  getCachedStaticFile,
   registerRuntimeConfigEndpoint,
+  sendCachedStaticFile,
+  warmStaticMemoryCache,
 } from '@forepath/shared/frontend/util-express-server';
 import express from 'express';
 
@@ -154,6 +158,18 @@ function getLocalePath(locale: string): string {
   return join(baseDistPath, DEFAULT_LOCALE);
 }
 
+function sendFileFromCacheOrDisk(res: express.Response, absolutePath: string): void {
+  const cached = getCachedStaticFile(absolutePath);
+
+  if (cached) {
+    sendCachedStaticFile(res, cached);
+
+    return;
+  }
+
+  res.sendFile(resolve(absolutePath));
+}
+
 // Middleware to handle Monaco Editor CSS imports as JavaScript modules
 // Monaco Editor imports CSS files as modules (e.g., import './editor.css')
 // Browsers don't support CSS imports, so we return a JS module that loads the CSS as a stylesheet
@@ -190,7 +206,7 @@ app.use((req, res, next) => {
       const localePath = getLocalePath(locale);
       const cssFilePath = join(localePath, pathWithoutLocale);
 
-      if (existsSync(cssFilePath)) {
+      if (existsSync(cssFilePath) || getCachedStaticFile(cssFilePath)) {
         // Return a JavaScript module that dynamically loads the CSS as a stylesheet
         res.type('application/javascript');
 
@@ -213,7 +229,7 @@ document.head.appendChild(link);
       const localePath = getLocalePath(DEFAULT_LOCALE);
       const cssFilePath = join(localePath, req.path);
 
-      if (existsSync(cssFilePath)) {
+      if (existsSync(cssFilePath) || getCachedStaticFile(cssFilePath)) {
         // Return a JavaScript module that dynamically loads the CSS as a stylesheet
         res.type('application/javascript');
 
@@ -237,19 +253,35 @@ document.head.appendChild(link);
   return next();
 });
 
-// Serve static files for each locale
-// Express static middleware will only serve files that exist, and call next() for others
-// This is after the CSS middleware so CSS files are intercepted first
+// Serve static files for each locale from the start-time memory cache
 for (const locale of AVAILABLE_LOCALES) {
   const localePath = getLocalePath(locale);
 
-  app.use(`/${locale}`, express.static(localePath, { index: false }));
+  app.use(
+    `/${locale}`,
+    createMemoryStaticMiddleware({
+      root: localePath,
+      index: false,
+    }),
+  );
+  app.use(`/${locale}`, express.static(localePath, { index: false, fallthrough: true }));
 }
 
 // Also serve from root for default locale (backward compatibility and direct access)
 const defaultLocalePath = getLocalePath(DEFAULT_LOCALE);
 
-app.use(express.static(defaultLocalePath, { index: false }));
+app.use(
+  createMemoryStaticMiddleware({
+    root: defaultLocalePath,
+    index: false,
+  }),
+);
+app.use(express.static(defaultLocalePath, { index: false, fallthrough: true }));
+
+// Never publish source maps
+app.get(/\.map$/i, (_req, res) => {
+  res.status(404).end();
+});
 
 // Middleware to handle extensionless Monaco Editor JavaScript imports
 // Monaco Editor uses relative imports without .js extensions, but browsers require them
@@ -271,16 +303,16 @@ app.use((req, res, next) => {
       const localePath = getLocalePath(locale);
       const filePath = join(localePath, pathWithoutLocale + '.js');
 
-      if (existsSync(filePath)) {
-        return res.sendFile(resolve(filePath));
+      if (getCachedStaticFile(filePath) || existsSync(filePath)) {
+        return sendFileFromCacheOrDisk(res, filePath);
       }
     } else {
       // Root path (no locale prefix)
       const localePath = getLocalePath(DEFAULT_LOCALE);
       const filePath = join(localePath, req.path + '.js');
 
-      if (existsSync(filePath)) {
-        return res.sendFile(resolve(filePath));
+      if (getCachedStaticFile(filePath) || existsSync(filePath)) {
+        return sendFileFromCacheOrDisk(res, filePath);
       }
     }
   }
@@ -295,7 +327,7 @@ app.get('*', (req, res) => {
   const localePath = getLocalePath(locale);
   const indexPath = join(localePath, 'index.html');
 
-  if (!existsSync(indexPath)) {
+  if (!getCachedStaticFile(indexPath) && !existsSync(indexPath)) {
     console.error(`Index file not found: ${indexPath}`);
     res.status(404).send('Locale build not found. Please build the application first.');
 
@@ -308,12 +340,19 @@ app.get('*', (req, res) => {
     return;
   }
 
-  res.sendFile(resolve(indexPath));
+  sendFileFromCacheOrDisk(res, indexPath);
 });
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`🚀 Express server running on http://localhost:${port}`);
-  console.log(`📦 Serving files from: ${baseDistPath}`);
-  console.log(`🌐 Available locales: ${AVAILABLE_LOCALES.join(', ')}`);
-  console.log(`🌍 Default locale: ${DEFAULT_LOCALE}`);
-});
+warmStaticMemoryCache([baseDistPath])
+  .then(() => {
+    app.listen(port, '0.0.0.0', () => {
+      console.log(`🚀 Express server running on http://localhost:${port}`);
+      console.log(`📦 Serving files from: ${baseDistPath}`);
+      console.log(`🌐 Available locales: ${AVAILABLE_LOCALES.join(', ')}`);
+      console.log(`🌍 Default locale: ${DEFAULT_LOCALE}`);
+    });
+  })
+  .catch((error: unknown) => {
+    console.error('Failed to warm static memory cache:', error);
+    process.exit(1);
+  });

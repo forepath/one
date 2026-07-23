@@ -59,7 +59,10 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
     : `${this.environment.billing.frontendUrl}/subscriptions?order=true`;
 
   ngOnInit(): void {
-    this.servicePlansFacade.loadCheapestServicePlanOffering();
+    if (isPlatformBrowser(this.platformId)) {
+      this.servicePlansFacade.loadCheapestServicePlanOffering();
+    }
+
     const metaTitle = $localize`:@@featurePortalPricing-metaTitle:Licensing from open source to enterprise :: Agenstra`;
     const metaDescription = $localize`:@@featurePortalPricing-metaDescription:Compare open-source, team, and enterprise Agenstra plans. Flexible licensing for self-hosted or cloud deployments, with governance and scale when you need it.`;
 
