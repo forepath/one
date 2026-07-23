@@ -13,6 +13,7 @@ Agenstra is a full-stack agent management platform that enables you to:
 - **Version Control Integration** - Full Git operations (status, branches, commit, push, pull, rebase) directly from the web interface
 - **Container Management** - Monitor and interact with agent containers, view logs, and manage container lifecycle
 - **VNC Browser Access** - Graphical browser access via VNC with XFCE4 desktop and Chromium browser
+- **Browser Preview** - Browser-only Chromium control via CDP without publishing extra ports
 
 ## Documentation Structure
 
@@ -66,6 +67,7 @@ Comprehensive feature documentation:
 - [Web IDE](./features/web-ide.md) - Monaco Editor integration for code editing
 - [Chat Interface](./features/chat-interface.md) - AI chat functionality and message flow
 - [VNC Browser Access](./features/vnc-browser-access.md) - Graphical browser access via VNC and noVNC
+- [Browser Preview](./features/browser-preview.md) - Browser-only Chromium Preview via CDP
 - [Authentication](./features/authentication.md) - Multiple authentication methods with configurable user registration
 - [Atlassian import](./features/atlassian-import.md) - Jira and Confluence imports into controller tickets and knowledge (admin)
 - [Dynamic provider plugins](./features/dynamic-provider-plugins.md) - Runtime provider extensions for controller and manager (baked-in or mounted)

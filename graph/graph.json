@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-23T15:58:16.475Z",
+  "generatedAt": "2026-07-23T20:39:38.409Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -1910,6 +1910,14 @@
       }
     },
     {
+      "id": "package:ws",
+      "type": "package",
+      "attrs": {
+        "name": "ws",
+        "version": "8.18.0"
+      }
+    },
+    {
       "id": "package:@angular/animations",
       "type": "package",
       "attrs": {
@@ -3164,6 +3172,24 @@
           "agents.reducer.ts",
           "agents.selectors.ts",
           "agents.types.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/browser-preview",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/browser-preview",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "browser-preview",
+        "memberFiles": [
+          "browser-preview.actions.ts",
+          "browser-preview.effects.ts",
+          "browser-preview.facade.ts",
+          "browser-preview.reducer.ts",
+          "browser-preview.selectors.ts",
+          "browser-preview.utils.ts"
         ]
       }
     },
@@ -8519,6 +8545,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/browser-preview.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/browser-preview.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/config.service.ts",
       "type": "service",
       "attrs": {
@@ -10517,6 +10552,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/agenstra/features/authentication.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/agenstra/features/browser-preview.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/browser-preview.md",
         "languageOrKind": "md"
       }
     },
@@ -15514,6 +15557,78 @@
       }
     },
     {
+      "id": "api:channel:agents/startBrowserPreview",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/startBrowserPreview",
+        "summary": "Client starts a browser-only Preview session (CDP screencast). Requires login and browserPreview enabled.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:agents/browserPreviewStarted",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/browserPreviewStarted",
+        "summary": "Server acknowledges successful browser Preview session start.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:agents/browserPreviewFrame",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/browserPreviewFrame",
+        "summary": "Server streams JPEG screencast frames for an active Preview session.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:agents/browserPreviewInput",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/browserPreviewInput",
+        "summary": "Client sends mouse or keyboard input to an active Preview session.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:agents/browserPreviewCommand",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/browserPreviewCommand",
+        "summary": "Client sends navigate/reload/back/forward chrome commands to an active Preview session.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:agents/browserPreviewLocation",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/browserPreviewLocation",
+        "summary": "Server reports current Preview URL and history capability after navigation or session start.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:agents/stopBrowserPreview",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/stopBrowserPreview",
+        "summary": "Client stops an active browser Preview session.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:agents/browserPreviewStopped",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/browserPreviewStopped",
+        "summary": "Server acknowledges Preview session stop (also emitted on disconnect/teardown).",
+        "specKind": "asyncapi"
+      }
+    },
+    {
       "id": "api:channel:agents/containerStats",
       "type": "channel",
       "attrs": {
@@ -18514,6 +18629,36 @@
         "title": "Per-Client Permissions",
         "docPath": "docs/agenstra/features/authentication.md",
         "sectionAnchor": "per-client-permissions",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-browser-preview",
+      "type": "concept",
+      "attrs": {
+        "title": "Browser Preview",
+        "docPath": "docs/agenstra/features/browser-preview.md",
+        "sectionAnchor": "browser-preview",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-flag-matrix",
+      "type": "concept",
+      "attrs": {
+        "title": "Flag matrix",
+        "docPath": "docs/agenstra/features/browser-preview.md",
+        "sectionAnchor": "flag-matrix",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-data-model",
+      "type": "concept",
+      "attrs": {
+        "title": "Data model",
+        "docPath": "docs/agenstra/features/browser-preview.md",
+        "sectionAnchor": "data-model",
         "domain": "agenstra"
       }
     },
@@ -25625,6 +25770,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:agenstra-backend-agent-controller",
+      "to": "package:ws",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-frontend-billing-console",
       "to": "package:@angular/animations",
       "type": "depends_on"
@@ -26446,6 +26596,11 @@
     },
     {
       "from": "project:agenstra-backend-agent-manager",
+      "to": "package:handlebars",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-manager",
       "to": "package:keycloak-connect",
       "type": "depends_on"
     },
@@ -26502,6 +26657,11 @@
     {
       "from": "project:agenstra-backend-agent-manager",
       "to": "package:uuid",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-manager",
+      "to": "package:ws",
       "type": "depends_on"
     },
     {
@@ -27672,6 +27832,11 @@
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agents",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/browser-preview",
       "type": "contains"
     },
     {
@@ -30542,6 +30707,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/browser-preview.service.ts",
       "type": "contains"
     },
     {
@@ -33641,6 +33811,46 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/startBrowserPreview",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/browserPreviewStarted",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/browserPreviewFrame",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/browserPreviewInput",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/browserPreviewCommand",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/browserPreviewLocation",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/stopBrowserPreview",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/browserPreviewStopped",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
       "to": "api:channel:agents/containerStats",
       "type": "contains"
     },
@@ -35592,6 +35802,41 @@
     {
       "from": "file:docs/agenstra/features/authentication.md",
       "to": "concept:agenstra-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/browser-preview.md",
+      "to": "concept:agenstra-browser-preview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/browser-preview.md",
+      "to": "concept:agenstra-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/browser-preview.md",
+      "to": "concept:agenstra-flag-matrix",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/browser-preview.md",
+      "to": "concept:agenstra-architecture",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/browser-preview.md",
+      "to": "concept:agenstra-security",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/browser-preview.md",
+      "to": "concept:agenstra-data-model",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/browser-preview.md",
+      "to": "concept:agenstra-related",
       "type": "contains"
     },
     {
@@ -44471,6 +44716,86 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "api:channel:agents/startBrowserPreview",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:channel:agents/startBrowserPreview",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "api:channel:agents/browserPreviewStarted",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:channel:agents/browserPreviewStarted",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "api:channel:agents/browserPreviewFrame",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:channel:agents/browserPreviewFrame",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "api:channel:agents/browserPreviewInput",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:channel:agents/browserPreviewInput",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "api:channel:agents/browserPreviewCommand",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:channel:agents/browserPreviewCommand",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "api:channel:agents/browserPreviewLocation",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:channel:agents/browserPreviewLocation",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "api:channel:agents/stopBrowserPreview",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:channel:agents/stopBrowserPreview",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "api:channel:agents/browserPreviewStopped",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:channel:agents/browserPreviewStopped",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
       "to": "api:channel:agents/containerStats",
       "type": "implements"
     },
@@ -47315,6 +47640,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/browser-preview.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/cursor-agent.provider.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
       "type": "injects"
@@ -47447,6 +47777,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/browser-preview.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
       "type": "injects"
     },
     {
@@ -49066,6 +49401,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/browser-preview.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-messages.service.ts",
       "type": "provides"
     },
@@ -50627,16 +50967,6 @@
     {
       "from": "concept:agenstra-documentation-structure",
       "to": "api:HTTP:GET:/config",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-related",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-related",
-      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
@@ -56540,6 +56870,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/features/browser-preview.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/features/chat-interface.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -58061,6 +58396,21 @@
     },
     {
       "from": "concept:agenstra-per-client-permissions",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-browser-preview",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-flag-matrix",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-data-model",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

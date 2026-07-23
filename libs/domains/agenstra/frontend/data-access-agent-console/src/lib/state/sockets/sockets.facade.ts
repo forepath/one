@@ -335,6 +335,44 @@ export class SocketsFacade {
   }
 
   /**
+   * Start a browser-only Preview session for an agent.
+   */
+  forwardStartBrowserPreview(sessionId: string | undefined, agentId: string): void {
+    this.forwardEvent(ForwardableEvent.START_BROWSER_PREVIEW, { sessionId }, agentId);
+  }
+
+  /**
+   * Send mouse/keyboard input to an active browser Preview session.
+   */
+  forwardBrowserPreviewInput(
+    sessionId: string,
+    kind: 'mouse' | 'key',
+    event: Record<string, unknown>,
+    agentId: string,
+  ): void {
+    this.forwardEvent(ForwardableEvent.BROWSER_PREVIEW_INPUT, { sessionId, kind, event }, agentId);
+  }
+
+  /**
+   * Send a navigation / chrome command to an active browser Preview session.
+   */
+  forwardBrowserPreviewCommand(
+    sessionId: string,
+    command: 'navigate' | 'reload' | 'back' | 'forward',
+    agentId: string,
+    url?: string,
+  ): void {
+    this.forwardEvent(ForwardableEvent.BROWSER_PREVIEW_COMMAND, { sessionId, command, url }, agentId);
+  }
+
+  /**
+   * Stop an active browser Preview session.
+   */
+  forwardStopBrowserPreview(sessionId: string, agentId: string): void {
+    this.forwardEvent(ForwardableEvent.STOP_BROWSER_PREVIEW, { sessionId }, agentId);
+  }
+
+  /**
    * Get forwarded events for a specific event name
    * @param eventName - The event name to filter by
    * @returns Observable of filtered forwarded events

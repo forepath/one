@@ -18,6 +18,7 @@ describe('AgentMessagesRepository', () => {
     volumePath: '/opt/agents/test-volume-uuid',
     agentType: 'cursor',
     containerType: ContainerType.GENERIC,
+    browserPreviewEnabled: false,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

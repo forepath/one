@@ -47,6 +47,7 @@ export * from './lib/repositories/agents.repository';
 export * from './lib/services/agent-messages.service';
 export * from './lib/services/agents-vcs.service';
 export * from './lib/services/agents.service';
+export * from './lib/services/browser-preview.service';
 export * from './lib/services/config.service';
 export * from './lib/services/docker.service';
 export * from './lib/services/workspace-configuration-overrides.service';

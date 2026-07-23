@@ -1480,7 +1480,15 @@ components:
         createVirtualWorkspace:
           type: boolean
           default: true
-          description: Whether to create a VNC virtual workspace container (defaults to true)
+          description: |
+            Whether to publish full noVNC desktop access (defaults to true in API; console UI defaults to false).
+            When true, browser Preview is always enabled as well.
+        createBrowserPreview:
+          type: boolean
+          default: true
+          description: |
+            Whether to deploy the virtual workspace sidecar and enable browser-only Preview via CDP
+            (defaults to true). Forced true when createVirtualWorkspace is true.
         createSshConnection:
           type: boolean
           default: true
@@ -1561,6 +1569,31 @@ components:
         agentType:
           type: string
           description: Agent provider type identifier
+        browserPreview:
+          type: object
+          nullable: true
+          description: Present when browser-only Preview is enabled
+          properties:
+            enabled:
+              type: boolean
+              enum: [true]
+        vnc:
+          type: object
+          nullable: true
+          description: Present only when full noVNC desktop access was enabled (published host port)
+          properties:
+            port:
+              type: integer
+            password:
+              type: string
+        ssh:
+          type: object
+          nullable: true
+          properties:
+            port:
+              type: integer
+            password:
+              type: string
         git:
           type: [object, 'null']
           properties:

@@ -30,10 +30,11 @@ The system will:
 - Generate a secure password
 - Create a Docker container for the agent
 - Clone the Git repository (if configured) into the container
-- Create a VNC container (if VNC support is enabled) with XFCE4 desktop and Chromium browser
+- Create a VNC sidecar (if browser Preview and/or full VNC is enabled) with XFCE4 and Chromium
 - Create a Docker network connecting the agent and VNC containers
+- Optionally publish noVNC when full VNC is enabled; always enable CDP Preview when VNC is enabled
 - Store credentials in the controller for automatic login
-- Return the agent details including the password and VNC information
+- Return the agent details including Preview and/or VNC information
 
 **Important**: Save the password! You'll need it to authenticate with the agent via WebSocket (though the system handles this automatically).
 

@@ -165,6 +165,54 @@ channels:
       terminalClosedEvent:
         $ref: '#/components/messages/TerminalClosed'
     description: Server acknowledges terminal closure. Also emitted when terminal session ends (e.g., exit command).
+  agents/startBrowserPreview:
+    address: agents/startBrowserPreview
+    messages:
+      startBrowserPreviewCommand:
+        $ref: '#/components/messages/StartBrowserPreview'
+    description: Client starts a browser-only Preview session (CDP screencast). Requires login and browserPreview enabled.
+  agents/browserPreviewStarted:
+    address: agents/browserPreviewStarted
+    messages:
+      browserPreviewStartedEvent:
+        $ref: '#/components/messages/BrowserPreviewStarted'
+    description: Server acknowledges successful browser Preview session start.
+  agents/browserPreviewFrame:
+    address: agents/browserPreviewFrame
+    messages:
+      browserPreviewFrameEvent:
+        $ref: '#/components/messages/BrowserPreviewFrame'
+    description: Server streams JPEG screencast frames for an active Preview session.
+  agents/browserPreviewInput:
+    address: agents/browserPreviewInput
+    messages:
+      browserPreviewInputCommand:
+        $ref: '#/components/messages/BrowserPreviewInput'
+    description: Client sends mouse or keyboard input to an active Preview session.
+  agents/browserPreviewCommand:
+    address: agents/browserPreviewCommand
+    messages:
+      browserPreviewCommandCommand:
+        $ref: '#/components/messages/BrowserPreviewCommand'
+    description: Client sends navigate/reload/back/forward chrome commands to an active Preview session.
+  agents/browserPreviewLocation:
+    address: agents/browserPreviewLocation
+    messages:
+      browserPreviewLocationEvent:
+        $ref: '#/components/messages/BrowserPreviewLocation'
+    description: Server reports current Preview URL and history capability after navigation or session start.
+  agents/stopBrowserPreview:
+    address: agents/stopBrowserPreview
+    messages:
+      stopBrowserPreviewCommand:
+        $ref: '#/components/messages/StopBrowserPreview'
+    description: Client stops an active browser Preview session.
+  agents/browserPreviewStopped:
+    address: agents/browserPreviewStopped
+    messages:
+      browserPreviewStoppedEvent:
+        $ref: '#/components/messages/BrowserPreviewStopped'
+    description: Server acknowledges Preview session stop (also emitted on disconnect/teardown).
   agents/containerStats:
     address: agents/containerStats
     messages:
@@ -304,6 +352,54 @@ operations:
       $ref: '#/channels/agents~1terminalClosed'
     messages:
       - $ref: '#/channels/agents~1terminalClosed/messages/terminalClosedEvent'
+  clientSendsStartBrowserPreview:
+    action: send
+    channel:
+      $ref: '#/channels/agents~1startBrowserPreview'
+    messages:
+      - $ref: '#/channels/agents~1startBrowserPreview/messages/startBrowserPreviewCommand'
+  serverEmitsBrowserPreviewStarted:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1browserPreviewStarted'
+    messages:
+      - $ref: '#/channels/agents~1browserPreviewStarted/messages/browserPreviewStartedEvent'
+  serverEmitsBrowserPreviewFrame:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1browserPreviewFrame'
+    messages:
+      - $ref: '#/channels/agents~1browserPreviewFrame/messages/browserPreviewFrameEvent'
+  clientSendsBrowserPreviewInput:
+    action: send
+    channel:
+      $ref: '#/channels/agents~1browserPreviewInput'
+    messages:
+      - $ref: '#/channels/agents~1browserPreviewInput/messages/browserPreviewInputCommand'
+  clientSendsBrowserPreviewCommand:
+    action: send
+    channel:
+      $ref: '#/channels/agents~1browserPreviewCommand'
+    messages:
+      - $ref: '#/channels/agents~1browserPreviewCommand/messages/browserPreviewCommandCommand'
+  serverEmitsBrowserPreviewLocation:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1browserPreviewLocation'
+    messages:
+      - $ref: '#/channels/agents~1browserPreviewLocation/messages/browserPreviewLocationEvent'
+  clientSendsStopBrowserPreview:
+    action: send
+    channel:
+      $ref: '#/channels/agents~1stopBrowserPreview'
+    messages:
+      - $ref: '#/channels/agents~1stopBrowserPreview/messages/stopBrowserPreviewCommand'
+  serverEmitsBrowserPreviewStopped:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1browserPreviewStopped'
+    messages:
+      - $ref: '#/channels/agents~1browserPreviewStopped/messages/browserPreviewStoppedEvent'
   serverBroadcastsContainerStats:
     action: receive
     channel:
@@ -1042,6 +1138,150 @@ components:
           timestamp:
             type: string
             description: ISO timestamp
+    StartBrowserPreview:
+      name: StartBrowserPreview
+      title: Start browser Preview command
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          sessionId:
+            type: string
+            description: Optional client-chosen session ID
+    BrowserPreviewStarted:
+      name: BrowserPreviewStarted
+      title: Browser Preview started event
+      contentType: application/json
+      payload:
+        type: object
+        required: [success, data, timestamp]
+        properties:
+          success:
+            type: boolean
+            enum: [true]
+          data:
+            type: object
+            required: [sessionId]
+            properties:
+              sessionId:
+                type: string
+              workspaceHostname:
+                type: string
+                description: Docker DNS name of the workspace container on the shared Preview network
+          timestamp:
+            type: string
+    BrowserPreviewFrame:
+      name: BrowserPreviewFrame
+      title: Browser Preview screencast frame
+      contentType: application/json
+      payload:
+        type: object
+        required: [success, data, timestamp]
+        properties:
+          success:
+            type: boolean
+            enum: [true]
+          data:
+            type: object
+            required: [sessionId, data, metadata]
+            properties:
+              sessionId:
+                type: string
+              data:
+                type: string
+                description: Base64-encoded JPEG frame
+              metadata:
+                type: object
+                additionalProperties: true
+          timestamp:
+            type: string
+    BrowserPreviewInput:
+      name: BrowserPreviewInput
+      title: Browser Preview input command
+      contentType: application/json
+      payload:
+        type: object
+        required: [sessionId, kind, event]
+        properties:
+          sessionId:
+            type: string
+          kind:
+            type: string
+            enum: [mouse, key]
+          event:
+            type: object
+            additionalProperties: true
+            description: CDP Input.dispatchMouseEvent or Input.dispatchKeyEvent fields
+    BrowserPreviewCommand:
+      name: BrowserPreviewCommand
+      title: Browser Preview chrome command
+      contentType: application/json
+      payload:
+        type: object
+        required: [sessionId, command]
+        properties:
+          sessionId:
+            type: string
+          command:
+            type: string
+            enum: [navigate, reload, back, forward]
+          url:
+            type: string
+            description: Absolute http(s) URL required when command is navigate
+    BrowserPreviewLocation:
+      name: BrowserPreviewLocation
+      title: Browser Preview location event
+      contentType: application/json
+      payload:
+        type: object
+        required: [success, data, timestamp]
+        properties:
+          success:
+            type: boolean
+            enum: [true]
+          data:
+            type: object
+            required: [sessionId, url, canGoBack, canGoForward]
+            properties:
+              sessionId:
+                type: string
+              url:
+                type: string
+              canGoBack:
+                type: boolean
+              canGoForward:
+                type: boolean
+          timestamp:
+            type: string
+    StopBrowserPreview:
+      name: StopBrowserPreview
+      title: Stop browser Preview command
+      contentType: application/json
+      payload:
+        type: object
+        required: [sessionId]
+        properties:
+          sessionId:
+            type: string
+    BrowserPreviewStopped:
+      name: BrowserPreviewStopped
+      title: Browser Preview stopped event
+      contentType: application/json
+      payload:
+        type: object
+        required: [success, data, timestamp]
+        properties:
+          success:
+            type: boolean
+            enum: [true]
+          data:
+            type: object
+            required: [sessionId]
+            properties:
+              sessionId:
+                type: string
+          timestamp:
+            type: string
     ContainerStats:
       name: ContainerStats
       title: Container stats event

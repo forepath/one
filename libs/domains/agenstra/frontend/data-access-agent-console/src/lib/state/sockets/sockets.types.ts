@@ -27,6 +27,10 @@ export enum ForwardableEvent {
   CREATE_TERMINAL = 'createTerminal',
   TERMINAL_INPUT = 'terminalInput',
   CLOSE_TERMINAL = 'closeTerminal',
+  START_BROWSER_PREVIEW = 'startBrowserPreview',
+  BROWSER_PREVIEW_INPUT = 'browserPreviewInput',
+  BROWSER_PREVIEW_COMMAND = 'browserPreviewCommand',
+  STOP_BROWSER_PREVIEW = 'stopBrowserPreview',
 }
 
 /**
@@ -51,7 +55,11 @@ export type ForwardableEventPayload =
   | FileUpdatePayload
   | CreateTerminalPayload
   | TerminalInputPayload
-  | CloseTerminalPayload;
+  | CloseTerminalPayload
+  | StartBrowserPreviewPayload
+  | BrowserPreviewInputPayload
+  | BrowserPreviewCommandPayload
+  | StopBrowserPreviewPayload;
 
 /**
  * Chat event payload (from agents.gateway.ts ChatPayload)
@@ -190,6 +198,38 @@ export interface CloseTerminalPayload {
 }
 
 /**
+ * Start browser Preview session
+ */
+export interface StartBrowserPreviewPayload {
+  sessionId?: string;
+}
+
+/**
+ * Browser Preview input (mouse or key)
+ */
+export interface BrowserPreviewInputPayload {
+  sessionId: string;
+  kind: 'mouse' | 'key';
+  event: Record<string, unknown>;
+}
+
+/**
+ * Browser Preview navigation / chrome command
+ */
+export interface BrowserPreviewCommandPayload {
+  sessionId: string;
+  command: 'navigate' | 'reload' | 'back' | 'forward';
+  url?: string;
+}
+
+/**
+ * Stop browser Preview session
+ */
+export interface StopBrowserPreviewPayload {
+  sessionId: string;
+}
+
+/**
  * Acknowledgement for forwarded events
  */
 export interface ForwardAckPayload {
@@ -318,6 +358,49 @@ export interface TerminalOutputData {
  */
 export interface TerminalClosedData {
   sessionId: string;
+}
+
+/**
+ * Browser Preview session started
+ */
+export interface BrowserPreviewStartedData {
+  sessionId: string;
+  /** Docker DNS name of the workspace container, when available. */
+  workspaceHostname?: string;
+}
+
+/**
+ * Browser Preview screencast frame
+ */
+export interface BrowserPreviewFrameData {
+  sessionId: string;
+  data: string;
+  metadata: {
+    offsetTop: number;
+    pageScaleFactor: number;
+    deviceWidth: number;
+    deviceHeight: number;
+    scrollOffsetX: number;
+    scrollOffsetY: number;
+    timestamp: number;
+  };
+}
+
+/**
+ * Browser Preview session stopped
+ */
+export interface BrowserPreviewStoppedData {
+  sessionId: string;
+}
+
+/**
+ * Browser Preview location / history state
+ */
+export interface BrowserPreviewLocationData {
+  sessionId: string;
+  url: string;
+  canGoBack: boolean;
+  canGoForward: boolean;
 }
 
 /**
@@ -450,6 +533,10 @@ export type ForwardedEventPayload =
   | SuccessResponse<TerminalCreatedData> // terminalCreated
   | SuccessResponse<TerminalOutputData> // terminalOutput
   | SuccessResponse<TerminalClosedData> // terminalClosed
+  | SuccessResponse<BrowserPreviewStartedData> // browserPreviewStarted
+  | SuccessResponse<BrowserPreviewFrameData> // browserPreviewFrame
+  | SuccessResponse<BrowserPreviewStoppedData> // browserPreviewStopped
+  | SuccessResponse<BrowserPreviewLocationData> // browserPreviewLocation
   | SuccessResponse<ContainerStatsPayload> // containerStats
   | SuccessResponse<AgentEventEnvelope> // chatEvent
   | TicketAutomationRunChatEventPayload // ticketAutomationRunChatUpsert

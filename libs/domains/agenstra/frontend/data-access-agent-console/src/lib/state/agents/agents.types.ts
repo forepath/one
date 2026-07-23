@@ -5,6 +5,9 @@ export interface AgentResponseDto {
   description?: string;
   agentType: string;
   containerType: ContainerType;
+  browserPreview?: {
+    enabled: true;
+  };
   vnc?: {
     port: number;
     password: string;
@@ -28,6 +31,7 @@ export interface CreateAgentDto {
   containerType?: ContainerType;
   gitRepositorySetupMode?: 'clone' | 'empty';
   gitRepositoryUrl?: string;
+  createBrowserPreview?: boolean;
   createVirtualWorkspace?: boolean;
   createSshConnection?: boolean;
 }
