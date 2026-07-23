@@ -7,12 +7,12 @@
   "types": "./src/index.d.ts",
   "dependencies": {
     "tslib": "2.8.1",
-    "@nestjs/core": "11.1.6",
+    "@nestjs/core": "11.1.18",
     "@nestjs/common": "11.1.6",
     "@nestjs/throttler": "6.5.0",
     "nest-keycloak-connect": "2.0.0-alpha.2",
     "express": "4.21.2",
-    "typeorm": "0.3.27",
+    "typeorm": "0.3.31",
     "bcrypt": "6.0.0"
   }
 }
