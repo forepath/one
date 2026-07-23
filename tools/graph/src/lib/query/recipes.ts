@@ -21,6 +21,21 @@ const ARCH_CONTAIN_TYPES = new Set([
   'readme',
 ]);
 
+/** Sample-list limits for R1 payloads (token budget). Totals use *Count / containsTotals. */
+export const R1_SAMPLE_CAPS = {
+  containsPerType: 40,
+  endpoints: 80,
+  channels: 80,
+  documents: 80,
+  injectSources: 25,
+  injectTargetsPerSource: 20,
+  provideModules: 15,
+  provideTargetsPerModule: 30,
+} as const;
+
+const R1_SAMPLES_NOTE =
+  'List fields (containsByType, endpoints, channels, documents, injectsFromSources, providesFromModules) are samples truncated for token budget. Use endpointCount, channelCount, documentCount, and containsTotals for full sizes — do not treat sampled array .length as complete.';
+
 export interface RecipeR1Result {
   recipe: 'R1';
   project: NodeSummary & { domain?: string; context?: string; tags?: string[] };
@@ -30,8 +45,16 @@ export interface RecipeR1Result {
   endpoints: NodeSummary[];
   channels: NodeSummary[];
   documents: Array<NodeSummary & { title?: string; sectionAnchor?: string }>;
+  endpointCount: number;
+  channelCount: number;
+  documentCount: number;
   injectsFromSources: Array<{ from: NodeSummary; to: NodeSummary[] }>;
   providesFromModules: Array<{ from: NodeSummary; to: NodeSummary[] }>;
+  /** Always present so agents see that lists are samples. */
+  samples: {
+    note: string;
+    caps: typeof R1_SAMPLE_CAPS;
+  };
 }
 
 function projectSummary(index: KnowledgeGraphIndex, node: KnowledgeNode): RecipeR1Result['project'] {
@@ -46,13 +69,14 @@ function projectSummary(index: KnowledgeGraphIndex, node: KnowledgeNode): Recipe
 
 /**
  * Recipe R1 — blast radius for a project.
+ * List fields are capped samples; *Count / containsTotals are complete.
  */
 export function recipeR1(
   index: KnowledgeGraphIndex,
   projectName: string,
   options?: { maxPerType?: number },
 ): RecipeR1Result {
-  const maxPerType = options?.maxPerType ?? 40;
+  const maxPerType = options?.maxPerType ?? R1_SAMPLE_CAPS.containsPerType;
   const project = index.resolveProject(projectName);
   const pid = project.id;
 
@@ -87,6 +111,8 @@ export function recipeR1(
 
   const endpoints: NodeSummary[] = [];
   const channels: NodeSummary[] = [];
+  let endpointCount = 0;
+  let channelCount = 0;
   const seenSurface = new Set<string>();
 
   for (const parent of surfaceParents) {
@@ -95,10 +121,12 @@ export function recipeR1(
       if (!surface || seenSurface.has(surface.id)) continue;
       if (surface.type === 'endpoint') {
         seenSurface.add(surface.id);
-        if (endpoints.length < 80) endpoints.push(index.summarize(surface));
+        endpointCount += 1;
+        if (endpoints.length < R1_SAMPLE_CAPS.endpoints) endpoints.push(index.summarize(surface));
       } else if (surface.type === 'channel') {
         seenSurface.add(surface.id);
-        if (channels.length < 80) channels.push(index.summarize(surface));
+        channelCount += 1;
+        if (channels.length < R1_SAMPLE_CAPS.channels) channels.push(index.summarize(surface));
       }
     }
   }
@@ -115,7 +143,8 @@ export function recipeR1(
     }
   }
 
-  const documents = [...docConcepts.values()].slice(0, 80).map((n) => {
+  const documentCount = docConcepts.size;
+  const documents = [...docConcepts.values()].slice(0, R1_SAMPLE_CAPS.documents).map((n) => {
     const attrs = n.attrs as ConceptNodeAttrs;
     return {
       ...index.summarize(n),
@@ -128,27 +157,33 @@ export function recipeR1(
     ['controller', 'gateway', 'service', 'job', 'provider', 'state'].includes(n.type),
   );
   const injectsFromSources: RecipeR1Result['injectsFromSources'] = [];
-  for (const src of injectSources.slice(0, 25)) {
+  for (const src of injectSources.slice(0, R1_SAMPLE_CAPS.injectSources)) {
     const tos = index
       .edgesOut(src.id, 'injects')
       .map((e) => index.getNode(e.to))
       .filter((n): n is KnowledgeNode => !!n)
       .map((n) => index.summarize(n));
     if (tos.length) {
-      injectsFromSources.push({ from: index.summarize(src), to: tos.slice(0, 20) });
+      injectsFromSources.push({
+        from: index.summarize(src),
+        to: tos.slice(0, R1_SAMPLE_CAPS.injectTargetsPerSource),
+      });
     }
   }
 
   const modules = surfaceParents.filter((n) => n.type === 'module');
   const providesFromModules: RecipeR1Result['providesFromModules'] = [];
-  for (const mod of modules.slice(0, 15)) {
+  for (const mod of modules.slice(0, R1_SAMPLE_CAPS.provideModules)) {
     const tos = index
       .edgesOut(mod.id, 'provides')
       .map((e) => index.getNode(e.to))
       .filter((n): n is KnowledgeNode => !!n)
       .map((n) => index.summarize(n));
     if (tos.length) {
-      providesFromModules.push({ from: index.summarize(mod), to: tos.slice(0, 30) });
+      providesFromModules.push({
+        from: index.summarize(mod),
+        to: tos.slice(0, R1_SAMPLE_CAPS.provideTargetsPerModule),
+      });
     }
   }
 
@@ -161,8 +196,15 @@ export function recipeR1(
     endpoints,
     channels,
     documents,
+    endpointCount,
+    channelCount,
+    documentCount,
     injectsFromSources,
     providesFromModules,
+    samples: {
+      note: R1_SAMPLES_NOTE,
+      caps: R1_SAMPLE_CAPS,
+    },
   };
 }
 

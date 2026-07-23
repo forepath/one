@@ -13,7 +13,7 @@ Use the monorepo **knowledge graph** to compute blast radius for the current cha
 3. Summarize:
    - Which `project:*` nodes own the changed paths
    - Outgoing/incoming `depends_on` for each
-   - Contained API surfaces / docs that may need updates
+   - Contained API surfaces / docs that may need updates (use `*Count` / `containsTotals`; R1 lists are samples — see `samples.note`)
    - `sharedDependencyIds` across touched projects
 4. For soft/textual consumers not in Nx deps, run `graph_mentions` on key libs.
 5. Only then open source under each project's `root` / `docPath`.

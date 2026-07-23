@@ -2,7 +2,16 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
-import { KnowledgeGraphIndex, computeImpact, recipeR1, recipeR2, recipeR3, recipeR5 } from './index';
+import {
+  KnowledgeGraphIndex,
+  computeImpact,
+  formatImpactMarkdown,
+  recipeR1,
+  recipeR2,
+  recipeR3,
+  recipeR5,
+} from './index';
+import { IMPACT_COMMENT_MARKER } from './format-impact-markdown';
 import { buildMentionPatterns, findMentions, isNoisyMentionPath } from './mentions';
 import { KnowledgeEdge, KnowledgeGraph, KnowledgeNode } from '../schema';
 
@@ -69,6 +78,11 @@ describe('knowledge graph query recipes', () => {
     expect(result.containsTotals.controller).toBe(1);
     expect(result.endpoints.some((e) => e.id === 'api:HTTP:POST:/items')).toBe(true);
     expect(result.documents.some((d) => d.docPath === 'docs/demo/items.md')).toBe(true);
+    expect(result.endpointCount).toBe(1);
+    expect(result.channelCount).toBe(0);
+    expect(result.documentCount).toBe(1);
+    expect(result.samples.caps.endpoints).toBe(80);
+    expect(result.samples.note).toMatch(/samples/i);
   });
 
   it('recipeR2 lists doc paths', () => {
@@ -113,11 +127,7 @@ describe('knowledge graph query recipes', () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'graph-patterns-'));
     try {
       fs.mkdirSync(path.join(tmp, 'tools/graph'), { recursive: true });
-      fs.writeFileSync(
-        path.join(tmp, 'tools/graph/package.json'),
-        JSON.stringify({ name: '@forepath/graph' }),
-        'utf8'
-      );
+      fs.writeFileSync(path.join(tmp, 'tools/graph/package.json'), JSON.stringify({ name: '@forepath/graph' }), 'utf8');
       const patterns = buildMentionPatterns(tmp, {
         name: 'graph',
         root: 'tools/graph',
@@ -137,5 +147,14 @@ describe('knowledge graph query recipes', () => {
     expect(isNoisyMentionPath('apps/x/vite/deps/chunk.js')).toBe(true);
     expect(isNoisyMentionPath('tools/graph/src/lib/__fixtures__/mini-workspace/a.ts')).toBe(true);
     expect(isNoisyMentionPath('apps/demo/src/main.ts')).toBe(false);
+  });
+
+  it('formatImpactMarkdown renders sticky overview with marker', () => {
+    const impact = computeImpact(index, ['libs/demo-lib/src/demo.controller.ts'], { baseRef: 'origin/main' });
+    const md = formatImpactMarkdown(impact);
+    expect(md.startsWith(IMPACT_COMMENT_MARKER)).toBe(true);
+    expect(md).toContain('Knowledge graph blast radius');
+    expect(md).toContain('| Project |');
+    expect(md).toContain('demo-lib');
   });
 });

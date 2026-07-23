@@ -131,6 +131,8 @@ Goal: blast radius and related docs/APIs before editing.
 7. Collect **incoming** `documents` where `to` is `project:<X>` or any of those endpoints / channels → open each concept's `docPath`.
 8. Only then open source under attrs.`root`.
 
+**Sample caps:** `graph_r1` / impact-embedded R1 return **truncated sample lists** for token budget. Prefer `endpointCount`, `channelCount`, `documentCount`, and `containsTotals` for sizes. Do **not** treat `.length` of `endpoints` / `channels` / `documents` / `containsByType[*]` as complete. Every R1 payload includes `samples.note` and `samples.caps` describing the limits.
+
 ### R2 — Find all docs touching project `Y`
 
 Goal: every curated doc concept that references Y.

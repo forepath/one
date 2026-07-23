@@ -67,7 +67,7 @@ const FALLBACK_SKIP_DIRS = new Set([
 export function findMentions(
   index: KnowledgeGraphIndex,
   projectName: string,
-  options: MentionsOptions
+  options: MentionsOptions,
 ): MentionsResult {
   const project = index.resolveProject(projectName);
   const attrs = project.attrs as ProjectNodeAttrs;
@@ -133,8 +133,7 @@ export function findMentions(
     mentionFiles,
     softReferenceFiles,
     softReferenceProjects: [...softProjects.values()],
-    note:
-      'depends_on = declared Nx/tool/package coupling. softReference* = textual mentions outside that set — use for copy-paste/import-string consumers, not build blast radius. Short bare names (<8 chars) are omitted from patterns; prefer package name / project root path.',
+    note: 'depends_on = declared Nx/tool/package coupling. softReference* = textual mentions outside that set — use for copy-paste/import-string consumers, not build blast radius. Short bare names (<8 chars) are omitted from patterns; prefer package name / project root path.',
   };
 }
 
@@ -198,7 +197,13 @@ function searchMentionFiles(input: {
 }): string[] {
   if (input.patterns.length === 0) return [];
 
-  const rgArgs = ['-l', '--hidden', ...RG_EXCLUDE_GLOBS.flatMap((g) => ['--glob', g]), '-e', input.patterns.map(escapeRegex).join('|')];
+  const rgArgs = [
+    '-l',
+    '--hidden',
+    ...RG_EXCLUDE_GLOBS.flatMap((g) => ['--glob', g]),
+    '-e',
+    input.patterns.map(escapeRegex).join('|'),
+  ];
   rgArgs.push(...(input.neighborRoots && input.neighborRoots.length > 0 ? input.neighborRoots : ['.']));
 
   const rg = spawnSync('rg', rgArgs, {

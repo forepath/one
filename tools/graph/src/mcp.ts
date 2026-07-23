@@ -113,7 +113,7 @@ const server = new McpServer({
 
 server.tool(
   'graph_r1',
-  'Recipe R1: blast radius for an Nx project (deps, contains by type, endpoints/channels, docs, injects/provides). Prefer over grepping graph.json.',
+  'Recipe R1: blast radius for an Nx project (deps, contains by type, endpoints/channels, docs, injects/provides). List fields are truncated samples — use endpointCount/channelCount/documentCount/containsTotals and read samples.note/caps. Prefer over grepping graph.json.',
   { project: z.string().describe('Nx project name or project:<name> id') },
   async ({ project }: { project: string }) => {
     try {
@@ -177,7 +177,7 @@ server.tool(
 
 server.tool(
   'graph_impact',
-  'Diff → blast radius: map changed paths (explicit and/or git) to owning projects and run R1 for each.',
+  'Diff → blast radius: map changed paths (explicit and/or git) to owning projects and run R1 for each. Embedded R1 lists are samples; prefer *Count fields and samples.note.',
   {
     paths: z.array(z.string()).optional().describe('Workspace-relative paths'),
     baseRef: z.string().optional().describe('Git base ref for baseRef...HEAD (e.g. main, origin/main)'),

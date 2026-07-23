@@ -101,7 +101,7 @@ export function computeImpact(
     projects.push({
       project: index.summarize(entry.node),
       matchedPaths: entry.paths,
-      r1: recipeR1(index, name, { maxPerType: 20 }),
+      r1: recipeR1(index, name),
     });
   }
 

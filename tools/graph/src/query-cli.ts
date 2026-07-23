@@ -7,7 +7,7 @@
  *   node dist/tools/graph/src/query-cli.js docs <project>
  *   node dist/tools/graph/src/query-cli.js endpoint --method POST --path /auth/register
  *   node dist/tools/graph/src/query-cli.js search <keyword>
- *   node dist/tools/graph/src/query-cli.js impact [--base main] [--paths file1,file2]
+ *   node dist/tools/graph/src/query-cli.js impact [--base main] [--paths file1,file2] [--format json|markdown]
  *   node dist/tools/graph/src/query-cli.js mentions <project> [--scope workspace|neighbors]
  */
 import {
@@ -15,6 +15,7 @@ import {
   collectImpactPaths,
   computeImpact,
   findMentions,
+  formatImpactMarkdown,
   recipeR1,
   recipeR2,
   recipeR3,
@@ -33,7 +34,7 @@ function usage(): never {
   query-cli docs <project> [--no-endpoints]
   query-cli endpoint [--id ID] [--method M --path /p] [--operationId ID] [--channel NAME]
   query-cli search <keyword>
-  query-cli impact [--base <ref>] [--paths a,b] [--no-uncommitted]
+  query-cli impact [--base <ref>] [--paths a,b] [--no-uncommitted] [--format json|markdown]
   query-cli mentions <project> [--scope workspace|neighbors]`);
   process.exit(2);
 }
@@ -118,7 +119,13 @@ async function main(): Promise<void> {
         baseRef: typeof flags.base === 'string' ? flags.base : undefined,
         includeUncommitted: !flags['no-uncommitted'],
       });
-      printJson(computeImpact(index, collected.paths, { baseRef: collected.baseRef }));
+      const impact = computeImpact(index, collected.paths, { baseRef: collected.baseRef });
+      const format = typeof flags.format === 'string' ? flags.format.toLowerCase() : 'json';
+      if (format === 'markdown' || format === 'md') {
+        process.stdout.write(formatImpactMarkdown(impact));
+        return;
+      }
+      printJson(impact);
       return;
     }
     case 'mentions': {
