@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.19.0](https://github.com/forepath/one/compare/v2.18.1...v2.19.0) (2026-07-23)
+
+
+### Features
+
+* advance billing periods ([#511](https://github.com/forepath/one/issues/511)) ([1a11968](https://github.com/forepath/one/commit/1a1196828a179826a18aca61d1b351ac95a605fd))
+* static assets in-memory cache ([#512](https://github.com/forepath/one/issues/512)) ([3646f95](https://github.com/forepath/one/commit/3646f95488bcee922b179b8d82c5c2c9ed5ab5fd))
+
+
+### Bug Fixes
+
+* add missing handlebars dependency ([#514](https://github.com/forepath/one/issues/514)) ([a9a5881](https://github.com/forepath/one/commit/a9a58817f5e0b6ca5a4f3bfb34f9e0ff04100a92))
+* solve cancel at period end ambiguity ([#510](https://github.com/forepath/one/issues/510)) ([e116780](https://github.com/forepath/one/commit/e116780530ebddc1b2e5720ec1222ad636356abe))
+
+
+### Chores
+
+* improve ai graph ([#513](https://github.com/forepath/one/issues/513)) ([d2a351d](https://github.com/forepath/one/commit/d2a351d7f6703af8afe5e1de079b4ae794a1e14f))
+
+
+### Documentation
+
+* operator runbooks ([#509](https://github.com/forepath/one/issues/509)) ([7668f33](https://github.com/forepath/one/commit/7668f3312156fc69bec84823dfee0c384dadc515))
+
 ## [2.18.1](https://github.com/forepath/one/compare/v2.18.0...v2.18.1) (2026-07-22)
 
 
