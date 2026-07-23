@@ -1,6 +1,8 @@
 # VNC Browser Access
 
-VNC (Virtual Network Computing) browser access enables you to interact with a Chromium browser running in a virtual workspace container associated with an agent. This feature provides a graphical desktop environment accessible through a web-based noVNC client.
+VNC (Virtual Network Computing) browser access enables you to interact with a Chromium browser running in a virtual workspace container associated with an agent. The full XFCE4 desktop is available through a web-based noVNC client when **Create Virtual Workspace (VNC)** is enabled.
+
+For **browser-only** control without exposing the full desktop, see **[Browser Preview](./browser-preview.md)**. Preview can be enabled without publishing noVNC; enabling full VNC always enables Preview as well.
 
 ## Overview
 

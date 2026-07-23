@@ -486,18 +486,22 @@ export class AgentsService implements OnApplicationBootstrap {
         };
       }
 
-      // Create VNC container
+      // Create virtual workspace sidecar (browser Preview and/or full VNC).
+      // VNC access always implies Preview; Preview alone does not publish noVNC.
+      const createVirtualWorkspace = !!createAgentDto.createVirtualWorkspace;
+      const browserPreviewEnabled = !!(createAgentDto.createBrowserPreview || createVirtualWorkspace);
       let virtualWorkspace:
         | {
             containerId: string;
-            hostPort: number;
+            hostPort?: number;
             password: string;
+            browserPreviewEnabled: boolean;
           }
         | undefined;
 
-      if (createAgentDto.createVirtualWorkspace && virtualWorkspaceDockerImage) {
-        const virtualWorkspaceHostPort = await this.generateRandomVNCPort();
+      if (browserPreviewEnabled && virtualWorkspaceDockerImage) {
         const virtualWorkspacePassword = this.generateRandomPassword();
+        const virtualWorkspaceHostPort = createVirtualWorkspace ? await this.generateRandomVNCPort() : undefined;
 
         await this.dockerService.ensureImageExists(virtualWorkspaceDockerImage);
 
@@ -508,6 +512,7 @@ export class AgentsService implements OnApplicationBootstrap {
             CURSOR_API_KEY: process.env.CURSOR_API_KEY,
             ...this.buildGitContainerEnv(gitRepositorySetupMode, repositoryUrl),
             VNC_PASSWORD: virtualWorkspacePassword,
+            BROWSER_PREVIEW_ENABLED: 'true',
           },
           volumes: [
             {
@@ -521,25 +526,29 @@ export class AgentsService implements OnApplicationBootstrap {
               readOnly: true,
             },
           ],
-          ports: [
-            {
-              containerPort: 6080,
-              hostPort: virtualWorkspaceHostPort,
-            },
-          ],
+          ports:
+            createVirtualWorkspace && virtualWorkspaceHostPort !== undefined
+              ? [
+                  {
+                    containerPort: 6080,
+                    hostPort: virtualWorkspaceHostPort,
+                  },
+                ]
+              : [],
         });
 
         virtualWorkspace = {
           containerId: virtualWorkspaceContainerId,
           hostPort: virtualWorkspaceHostPort,
           password: virtualWorkspacePassword,
+          browserPreviewEnabled: true,
         };
       }
 
       try {
         let networkId: string | undefined;
 
-        if (createAgentDto.createVirtualWorkspace && virtualWorkspace) {
+        if (browserPreviewEnabled && virtualWorkspace) {
           networkId = await this.dockerService.createNetwork({
             name: uuidv4(),
             containerIds: [
@@ -559,12 +568,13 @@ export class AgentsService implements OnApplicationBootstrap {
           volumePath: agentVolumePath,
           agentType: createAgentDto.agentType || 'cursor',
           containerType: createAgentDto.containerType || ContainerType.GENERIC,
-          ...(createAgentDto.createVirtualWorkspace &&
+          ...(browserPreviewEnabled &&
             virtualWorkspace && {
               vncContainerId: virtualWorkspace.containerId,
               vncHostPort: virtualWorkspace.hostPort,
               vncNetworkId: networkId,
               vncPassword: virtualWorkspace.password,
+              browserPreviewEnabled: true,
             }),
           ...(createAgentDto.createSshConnection &&
             sshConnection && {
@@ -606,7 +616,7 @@ export class AgentsService implements OnApplicationBootstrap {
       } catch (error) {
         // Clean up the container if any step after creation fails
         try {
-          if (createAgentDto.createVirtualWorkspace && virtualWorkspace) {
+          if (browserPreviewEnabled && virtualWorkspace) {
             await this.dockerService.deleteContainer(virtualWorkspace.containerId);
           }
 
@@ -965,6 +975,7 @@ export class AgentsService implements OnApplicationBootstrap {
       description: agent.description,
       agentType: agent.agentType,
       containerType: agent.containerType,
+      browserPreview: agent.browserPreviewEnabled ? { enabled: true } : undefined,
       vnc: agent.vncHostPort
         ? {
             port: agent.vncHostPort,

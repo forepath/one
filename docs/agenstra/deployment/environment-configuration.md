@@ -111,6 +111,7 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 - `PORT` - HTTP API port (default: `3000`)
 - `WEBSOCKET_PORT` - WebSocket gateway port (default: `8080`)
 - `NODE_ENV` - Environment mode (`development` or `production`)
+- `MANAGER_CONTAINER_ID` - Docker container ID or name of the manager API container. Used to temporarily join per-agent networks for browser Preview CDP. Defaults to compose `container_name` (`agent-manager-api`); falls back to `HOSTNAME` when unset.
 
 ### Database Configuration
 

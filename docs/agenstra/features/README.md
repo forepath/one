@@ -15,6 +15,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Web IDE** Monaco Editor integration for code editing
 - **Chat Interface** AI chat functionality with real-time responses
 - **VNC Browser Access** Graphical browser access via VNC and noVNC
+- **Browser Preview** Browser-only Chromium stream/control via CDP (no extra published ports)
 - **Deployment** CI/CD pipeline management and deployment functionality
 - **Authentication** Multiple authentication methods with configurable user registration
 - **Tickets and Workspaces** Ticket boards, migration, and automation on the controller
@@ -133,6 +134,18 @@ Graphical browser access via VNC and noVNC. Access a Chromium browser running in
 - Dedicated Docker network for container isolation
 - Shared workspace volume between agent and VNC containers
 
+### [Browser Preview](./browser-preview.md)
+
+Browser-only Preview of Chromium via CDP over existing Socket.IO. Separately gated from full VNC; VNC implies Preview.
+
+**Key Capabilities**:
+
+- Stream and control Chromium without publishing extra host ports
+- Screencast frames and input over the existing Socket.IO path
+- Fresh Chromium tab per Preview session with fixed viewport
+- Separately gated from full desktop VNC; enabling VNC always includes Preview
+- Reach workspace apps over the shared Docker network (not `localhost` in Preview)
+
 ### [Deployment](./deployment.md)
 
 CI/CD pipeline management and deployment functionality. Configure CI/CD providers (GitHub Actions), trigger pipeline runs, monitor their status, and view logs directly from the Agenstra console.
@@ -246,6 +259,7 @@ graph TB
     IDE[Web IDE]
     Chat[Chat Interface]
     VNC[VNC Browser Access]
+    BP[Browser Preview]
     DEP[Deployment]
     AUTH[Authentication]
     TK[Tickets and Workspaces]
@@ -261,6 +275,7 @@ graph TB
     AM --> IDE
     AM --> Chat
     AM --> VNC
+    AM --> BP
     AM --> DEP
     WS --> Chat
     WS --> TK

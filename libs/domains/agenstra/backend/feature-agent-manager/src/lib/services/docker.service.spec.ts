@@ -153,7 +153,7 @@ describe('DockerService', () => {
       });
     });
 
-    it('should pull image, create and start container with binds and ports', async () => {
+    it('should use local image without pulling when inspect succeeds', async () => {
       const result = await service.createContainer({
         image: 'node:22-alpine',
         env: { FOO: 'bar' },
@@ -168,7 +168,9 @@ describe('DockerService', () => {
         network: 'test-network',
       });
 
-      expect((mockDocker as any).pull).toHaveBeenCalledWith('node:22-alpine', expect.any(Function));
+      expect(mockDocker.getImage).toHaveBeenCalledWith('node:22-alpine');
+      expect(mockImage.inspect).toHaveBeenCalled();
+      expect((mockDocker as any).pull).not.toHaveBeenCalled();
       expect((mockDocker as any).createContainer).toHaveBeenCalledWith({
         Image: 'node:22-alpine',
         Env: ['FOO=bar'],
@@ -202,21 +204,23 @@ describe('DockerService', () => {
       try {
         const result = await service.createContainer({ volumes: [], ports: [] });
 
-        expect((mockDocker as any).pull).toHaveBeenCalledWith('env/image:latest', expect.any(Function));
+        expect(mockDocker.getImage).toHaveBeenCalledWith('env/image:latest');
+        expect((mockDocker as any).pull).not.toHaveBeenCalled();
         expect(result).toBe('abc123');
       } finally {
         process.env.AGENT_DEFAULT_IMAGE = original;
       }
     });
 
-    it('should proceed if pulling image fails (image exists locally)', async () => {
+    it('should not pull when the image already exists locally', async () => {
       (mockDocker as any).pull = jest.fn((_image: string, cb: (err: unknown, stream?: any) => void) => {
-        cb(new Error('pull failed'));
+        cb(new Error('pull should not be called'));
       });
       (mockDocker as any).createContainer = jest.fn().mockResolvedValue(createdContainer);
 
       const result = await service.createContainer({ image: 'local/image:tag' });
 
+      expect((mockDocker as any).pull).not.toHaveBeenCalled();
       expect((mockDocker as any).createContainer).toHaveBeenCalled();
       expect(result).toBe('abc123');
     });
@@ -2534,19 +2538,36 @@ describe('DockerService', () => {
 
     it('should pull when image inspect returns 404', async () => {
       mockImage.inspect.mockRejectedValue({ statusCode: 404 });
+      (mockDocker as any).modem = {
+        followProgress: (_s: any, done: (err?: unknown) => void) => done(),
+      };
+      (mockDocker as any).pull = jest.fn((_image: string, cb: (err: unknown, stream: any) => void) => {
+        cb(null, {});
+      });
 
       await service.ensureImageExists('missing:image');
 
       expect(mockDocker.getImage).toHaveBeenCalledWith('missing:image');
-      expect((mockDocker as any).pull).toHaveBeenCalledWith('missing:image');
+      expect((mockDocker as any).pull).toHaveBeenCalledWith('missing:image', expect.any(Function));
     });
 
-    it('should not pull when image inspect fails with a non-404 error', async () => {
+    it('should throw when image inspect fails with a non-404 error', async () => {
       mockImage.inspect.mockRejectedValue({ statusCode: 500, message: 'server error' });
 
-      await service.ensureImageExists('node:22-alpine');
-
+      await expect(service.ensureImageExists('node:22-alpine')).rejects.toEqual({
+        statusCode: 500,
+        message: 'server error',
+      });
       expect((mockDocker as any).pull).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when pull fails after a local 404', async () => {
+      mockImage.inspect.mockRejectedValue({ statusCode: 404 });
+      (mockDocker as any).pull = jest.fn((_image: string, cb: (err: unknown, stream?: any) => void) => {
+        cb(new Error('no such host'));
+      });
+
+      await expect(service.ensureImageExists('missing:image')).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 });

@@ -31,6 +31,7 @@ describe('AgentsService', () => {
     volumePath: '/opt/agents/test-volume-uuid',
     agentType: 'cursor',
     containerType: ContainerType.GENERIC,
+    browserPreviewEnabled: false,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
@@ -286,6 +287,7 @@ describe('AgentsService', () => {
         vncHostPort: 50000,
         vncNetworkId: 'network-id',
         vncPassword: 'vnc-password',
+        browserPreviewEnabled: true,
       };
 
       repository.findByName.mockResolvedValue(null);
@@ -315,6 +317,7 @@ describe('AgentsService', () => {
           env: expect.objectContaining({
             AGENT_NAME: createDto.name,
             VNC_PASSWORD: expect.any(String),
+            BROWSER_PREVIEW_ENABLED: 'true',
           }),
           volumes: [
             {
@@ -341,6 +344,110 @@ describe('AgentsService', () => {
           containerIds: [workerContainerId, vncContainerId],
         }),
       );
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          vncContainerId,
+          vncHostPort: expect.any(Number),
+          browserPreviewEnabled: true,
+        }),
+      );
+    });
+
+    it('should create preview-only sidecar without publishing noVNC port', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'Preview Agent',
+        createBrowserPreview: true,
+        createVirtualWorkspace: false,
+        createSshConnection: false,
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const workerContainerId = 'worker-container-id';
+      const vncContainerId = 'vnc-container-id';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        hashedPassword,
+        containerId: workerContainerId,
+        volumePath: '/opt/agents/test-volume-uuid',
+        vncContainerId,
+        vncHostPort: undefined,
+        vncNetworkId: 'network-id',
+        vncPassword: 'vnc-password',
+        browserPreviewEnabled: true,
+      };
+
+      repository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValueOnce(workerContainerId).mockResolvedValueOnce(vncContainerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      dockerService.createNetwork.mockResolvedValue('network-id');
+      repository.create.mockResolvedValue(createdAgent);
+
+      const result = await service.create(createDto);
+
+      expect(dockerService.createContainer).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          ports: [],
+          env: expect.objectContaining({
+            BROWSER_PREVIEW_ENABLED: 'true',
+          }),
+        }),
+      );
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          vncContainerId,
+          vncHostPort: undefined,
+          browserPreviewEnabled: true,
+        }),
+      );
+      expect(result.browserPreview).toEqual({ enabled: true });
+      expect(result.vnc).toBeUndefined();
+    });
+
+    it('should force browser preview when only virtual workspace is requested', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'VNC Implies Preview',
+        createBrowserPreview: false,
+        createVirtualWorkspace: true,
+        createSshConnection: false,
+        containerType: ContainerType.GENERIC,
+      };
+      const hashedPassword = 'hashed-password';
+      const workerContainerId = 'worker-container-id';
+      const vncContainerId = 'vnc-container-id';
+      const createdAgent = {
+        ...mockAgent,
+        name: createDto.name,
+        hashedPassword,
+        containerId: workerContainerId,
+        volumePath: '/opt/agents/test-volume-uuid',
+        vncContainerId,
+        vncHostPort: 50001,
+        vncNetworkId: 'network-id',
+        vncPassword: 'vnc-password',
+        browserPreviewEnabled: true,
+      };
+
+      repository.findByName.mockResolvedValue(null);
+      repository.findPortInUse.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue(hashedPassword);
+      dockerService.createContainer.mockResolvedValueOnce(workerContainerId).mockResolvedValueOnce(vncContainerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      dockerService.createNetwork.mockResolvedValue('network-id');
+      repository.create.mockResolvedValue(createdAgent);
+
+      const result = await service.create(createDto);
+
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          browserPreviewEnabled: true,
+          vncHostPort: expect.any(Number),
+        }),
+      );
+      expect(result.browserPreview).toEqual({ enabled: true });
+      expect(result.vnc?.port).toBeDefined();
     });
 
     it('should ensure docker images exist before creating SSH connection container', async () => {
@@ -417,6 +524,7 @@ describe('AgentsService', () => {
         volumePath,
         agentType: 'cursor',
         containerType: ContainerType.GENERIC,
+        browserPreviewEnabled: false,
         createdAt: mockAgent.createdAt,
         updatedAt: mockAgent.updatedAt,
       };

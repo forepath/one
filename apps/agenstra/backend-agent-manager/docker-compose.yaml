@@ -29,6 +29,8 @@ services:
       WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-agents}
       WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
       NODE_ENV: ${NODE_ENV:-development}
+      # Used to join per-agent Docker networks for browser Preview (CDP). Defaults to this service's container_name.
+      MANAGER_CONTAINER_ID: ${MANAGER_CONTAINER_ID:-agent-manager-api}
       # Cursor agent configuration
       CURSOR_API_KEY: ${CURSOR_API_KEY:-}
       AGENT_DEFAULT_IMAGE: ${AGENT_DEFAULT_IMAGE:-ghcr.io/forepath/agenstra-manager-worker:latest}

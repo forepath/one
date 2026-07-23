@@ -53,21 +53,6 @@ export class DockerService {
       portBindings[key].push({ HostPort: p.hostPort ? String(p.hostPort) : undefined });
     }
 
-    // Ensure image is available (pull if necessary)
-    await new Promise<void>((resolve, reject) => {
-      this.docker.pull(resolvedImage, (err: unknown, stream: NodeJS.ReadableStream) => {
-        if (err) return reject(err);
-
-        // followProgress is available via modem (not typed in dockerode)
-        const modem: any = (this.docker as any).modem;
-
-        modem.followProgress(stream, (pullErr: unknown) => (pullErr ? reject(pullErr) : resolve()));
-      });
-    }).catch((e) => {
-      // If pull fails, log and proceed - create might still work if image exists locally
-      this.logger.warn(`Failed to pull image ${resolvedImage}: ${(e as Error).message}`);
-    });
-
     // Map env object to KEY=VALUE strings as required by Docker API
     // Escape special characters in the value to preserve intent (no quoting)
     const escapeEnvValue = (val: string): string =>
@@ -91,7 +76,7 @@ export class DockerService {
         })
       : undefined;
 
-    // Ensure the Docker image exists
+    // Prefer a local image; pull only when inspect reports it is missing.
     await this.ensureImageExists(resolvedImage);
 
     // Create container
@@ -694,6 +679,112 @@ export class DockerService {
       this.logger.error(`Error deleting network: ${err.message}`, err.stack);
       throw error;
     }
+  }
+
+  /**
+   * Connect a container to an existing Docker network.
+   */
+  async connectContainerToNetwork(containerId: string, networkId: string): Promise<void> {
+    try {
+      const network = this.docker.getNetwork(networkId);
+
+      await network.connect({ Container: containerId });
+      this.logger.debug(`Connected container ${containerId} to network ${networkId}`);
+    } catch (error: unknown) {
+      const err = error as { statusCode?: number; message?: string; stack?: string };
+
+      // Already connected is fine
+      if (err.message?.includes('already exists') || err.message?.includes('already connected')) {
+        return;
+      }
+
+      this.logger.error(`Error connecting container ${containerId} to network ${networkId}: ${err.message}`, err.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Disconnect a container from a Docker network.
+   */
+  async disconnectContainerFromNetwork(containerId: string, networkId: string): Promise<void> {
+    try {
+      const network = this.docker.getNetwork(networkId);
+
+      await network.disconnect({ Container: containerId, Force: true });
+      this.logger.debug(`Disconnected container ${containerId} from network ${networkId}`);
+    } catch (error: unknown) {
+      const err = error as { statusCode?: number; message?: string };
+
+      if (err.statusCode === 404) {
+        return;
+      }
+
+      this.logger.warn(
+        `Failed to disconnect container ${containerId} from network ${networkId}: ${err.message ?? 'unknown error'}`,
+      );
+    }
+  }
+
+  /**
+   * Resolve a Docker container name (without leading slash) for DNS on shared networks.
+   */
+  async getContainerName(containerId: string): Promise<string> {
+    const container = this.docker.getContainer(containerId);
+    const inspectInfo = await container.inspect();
+    const name = inspectInfo.Name?.startsWith('/') ? inspectInfo.Name.slice(1) : inspectInfo.Name;
+
+    if (!name) {
+      throw new NotFoundException(`No name found for container '${containerId}'`);
+    }
+
+    return name;
+  }
+
+  /**
+   * Resolve a container IPv4 address on a specific network (or the first attached network).
+   */
+  async getContainerIpAddress(containerId: string, networkId?: string): Promise<string> {
+    const container = this.docker.getContainer(containerId);
+    const inspectInfo = await container.inspect();
+    const networks = inspectInfo.NetworkSettings?.Networks || {};
+
+    if (networkId) {
+      const named = networks[networkId];
+
+      if (named?.IPAddress) {
+        return named.IPAddress;
+      }
+
+      for (const entry of Object.values(networks)) {
+        if (entry?.NetworkID === networkId && entry.IPAddress) {
+          return entry.IPAddress;
+        }
+      }
+    }
+
+    for (const entry of Object.values(networks)) {
+      if (entry?.IPAddress) {
+        return entry.IPAddress;
+      }
+    }
+
+    throw new NotFoundException(`No IP address found for container '${containerId}'`);
+  }
+
+  /**
+   * Resolve the manager API container ID for joining per-agent Docker networks.
+   * Prefer MANAGER_CONTAINER_ID; fall back to Docker HOSTNAME (short container id).
+   */
+  getManagerContainerId(): string | undefined {
+    const configured = process.env.MANAGER_CONTAINER_ID?.trim();
+
+    if (configured) {
+      return configured;
+    }
+
+    const hostname = process.env.HOSTNAME?.trim();
+
+    return hostname || undefined;
   }
 
   /**
@@ -1846,19 +1937,45 @@ export class DockerService {
   }
 
   /**
-   * Ensure a Docker image exists.
+   * Ensure a Docker image exists locally, pulling only when inspect returns 404.
    * @param image - The image name (including tag)
-   * @throws NotFoundException if image is not found
+   * @throws NotFoundException if the image is missing locally and cannot be pulled
    */
   async ensureImageExists(image: string): Promise<void> {
     try {
       await this.docker.getImage(image).inspect();
+
+      return;
     } catch (error: unknown) {
       const err = error as { statusCode?: number };
 
-      if (err.statusCode === 404) {
-        await this.docker.pull(image);
+      if (err.statusCode !== 404) {
+        throw error;
       }
+    }
+
+    this.logger.log(`Image ${image} not found locally; pulling...`);
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        this.docker.pull(image, (pullErr: unknown, stream: NodeJS.ReadableStream) => {
+          if (pullErr) {
+            reject(pullErr);
+
+            return;
+          }
+
+          // followProgress is available via modem (not typed in dockerode)
+          const modem: any = (this.docker as any).modem;
+
+          modem.followProgress(stream, (progressErr: unknown) => (progressErr ? reject(progressErr) : resolve()));
+        });
+      });
+    } catch (pullError: unknown) {
+      const message = pullError instanceof Error ? pullError.message : String(pullError);
+
+      this.logger.error(`Failed to pull image ${image}: ${message}`);
+      throw new NotFoundException(`Docker image '${image}' is not available locally and could not be pulled`);
     }
   }
 }

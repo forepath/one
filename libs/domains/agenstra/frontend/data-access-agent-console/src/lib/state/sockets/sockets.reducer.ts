@@ -371,8 +371,8 @@ export const socketsReducer = createReducer(
   })),
   // Forwarded Event Received
   on(forwardedEventReceived, (state, { event, payload }) => {
-    // Don't track containerStats events
-    if (event === 'containerStats') {
+    // Don't track high-frequency streaming events in the forwardedEvents buffer
+    if (event === 'containerStats' || event === 'browserPreviewFrame') {
       return state;
     }
 
