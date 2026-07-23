@@ -921,6 +921,69 @@
       <trans-unit id="featureChat-createVirtualWorkspaceHint" datatype="html">
         <source>Enable VNC access to the environment&apos;s virtual workspace. Defaults to disabled.</source>
         </trans-unit>
+      <trans-unit id="featureChat-enableBrowserPreview" datatype="html">
+        <source>Enable Browser Preview</source>
+        </trans-unit>
+      <trans-unit id="featureChat-createBrowserPreviewHint" datatype="html">
+        <source>Stream and control Chromium in the virtual workspace without full desktop VNC access. Defaults to enabled. Enabling VNC always includes Preview.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-openBrowserPreview" datatype="html">
+        <source>Open browser Preview</source>
+        </trans-unit>
+      <trans-unit id="featureChat-openVirtualDesktop" datatype="html">
+        <source>Open virtual desktop</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewTitle" datatype="html">
+        <source>Browser Preview</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewClose" datatype="html">
+        <source>Close</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewConnecting" datatype="html">
+        <source>Connecting to browser…</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewBack" datatype="html">
+        <source>Back</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewForward" datatype="html">
+        <source>Forward</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewReload" datatype="html">
+        <source>Reload</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewAddress" datatype="html">
+        <source>Address</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewAddressPlaceholder" datatype="html">
+        <source>https://example.com</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewGo" datatype="html">
+        <source>Go</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewGuideTitle" datatype="html">
+        <source>How to use Browser Preview</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewGuideNav" datatype="html">
+        <source>Enter a URL in the address bar and press Go (or Enter) to open a page in this virtual browser.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewGuideInteract" datatype="html">
+        <source>Click, scroll, and type on the stream below to control the remote browser. Use Back, Forward, and Reload like a normal browser.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewGuideClose" datatype="html">
+        <source>Close this window when you are done. Each open starts a fresh browser tab.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewGuideWorkspaceTitle" datatype="html">
+        <source>Open an app running in the workspace</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewGuideWorkspaceBody" datatype="html">
+        <source>Preview shares a private Docker network with the workspace container. <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>localhost<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> here is the Preview browser itself—not the workspace. Bind your app to <x id="START_TAG_CODE_1" ctype="x-code" equiv-text="&lt;code&gt;"/>0.0.0.0<x id="CLOSE_TAG_CODE_1" ctype="x-code" equiv-text="&lt;/code&gt;"/> (all interfaces), then open it with the workspace hostname and port.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewGuideWorkspaceExampleLabel" datatype="html">
+        <source>Example:</source>
+        </trans-unit>
+      <trans-unit id="featureChat-browserPreviewGuideWorkspaceFallback" datatype="html">
+        <source>Use <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>http://&lt;workspace-container-name&gt;:&lt;port&gt;<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/>. Ask the agent or run <x id="START_TAG_CODE_1" ctype="x-code" equiv-text="&lt;code&gt;"/>hostname<x id="CLOSE_TAG_CODE_1" ctype="x-code" equiv-text="&lt;/code&gt;"/> in a workspace terminal to get the container name.</source>
+        </trans-unit>
       <trans-unit id="featureChat-createSshConnectionHint" datatype="html">
         <source>Enable SSH access to the environment container. Defaults to disabled.</source>
         </trans-unit>

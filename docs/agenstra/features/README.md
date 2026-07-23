@@ -15,6 +15,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Web IDE** - Monaco Editor integration for code editing
 - **Chat Interface** - AI chat functionality with real-time responses
 - **VNC Browser Access** - Graphical browser access via VNC and noVNC
+- **Browser Preview** - Browser-only Chromium stream/control via CDP (no extra published ports)
 - **Deployment** - CI/CD pipeline management and deployment functionality
 - **Authentication** - Multiple authentication methods with configurable user registration
 - **Tickets and Workspaces** - Ticket boards, migration, and automation on the controller
@@ -121,7 +122,11 @@ AI chat functionality with real-time responses. Send messages to agents and rece
 
 ### [VNC Browser Access](./vnc-browser-access.md)
 
-Graphical browser access via VNC and noVNC. Access a Chromium browser running in a virtual workspace container associated with an agent.
+Graphical desktop access via VNC and noVNC. Access XFCE4 and Chromium in a virtual workspace container.
+
+### [Browser Preview](./browser-preview.md)
+
+Browser-only Preview of Chromium via CDP over existing Socket.IO. Separately gated from full VNC; VNC implies Preview.
 
 **Key Capabilities**:
 

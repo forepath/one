@@ -63,6 +63,10 @@ export class AgentEntity {
   })
   vncPassword?: string;
 
+  /** When true, authenticated clients may open a browser-only CDP preview session. */
+  @Column({ type: 'boolean', name: 'browser_preview_enabled', default: false })
+  browserPreviewEnabled!: boolean;
+
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'ssh_container_id' })
   sshContainerId?: string;
 

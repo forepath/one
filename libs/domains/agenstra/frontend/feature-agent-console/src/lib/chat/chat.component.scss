@@ -554,3 +554,119 @@ span {
   border-radius: 0.25rem;
   background-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
 }
+
+.browser-preview-modal {
+  background-color: rgba(var(--bs-emphasis-color-rgb), 0.35);
+
+  .modal-dialog {
+    height: 100%;
+    margin: 0;
+  }
+
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100vh;
+  }
+
+  .modal-header {
+    flex-shrink: 0;
+  }
+
+  .browser-preview-modal-body {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .browser-preview-toolbar {
+    flex-shrink: 0;
+    border-bottom-color: var(--bs-border-color) !important;
+  }
+
+  .browser-preview-surface {
+    position: relative;
+    flex: 1 1 0;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .browser-preview-status {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: calc(100% - 2rem);
+  }
+
+  .browser-preview-guide {
+    position: absolute;
+    z-index: 1;
+    inset: 1.25rem;
+    margin: auto;
+    max-width: 40rem;
+    max-height: calc(100% - 2.5rem);
+    overflow: auto;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .browser-preview-guide__title {
+    margin: 0 0 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+
+  .browser-preview-guide__subtitle {
+    margin: 1.25rem 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .browser-preview-guide__list {
+    margin: 0;
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.55rem;
+    font-size: 0.925rem;
+    line-height: 1.45;
+  }
+
+  .browser-preview-guide__text,
+  .browser-preview-guide__example {
+    margin: 0.35rem 0 0;
+    font-size: 0.925rem;
+    line-height: 1.45;
+  }
+
+  .browser-preview-guide code {
+    padding: 0.1rem 0.35rem;
+    border-radius: var(--bs-border-radius-sm);
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-code-color);
+    font-size: 0.88em;
+    word-break: break-all;
+  }
+
+  .browser-preview-canvas {
+    /* Display size is set in TS to contain within the surface. */
+    display: block;
+    flex: 0 0 auto;
+    max-width: none;
+    max-height: none;
+    cursor: default;
+    outline: none;
+
+    &--hidden {
+      display: none;
+    }
+  }
+}

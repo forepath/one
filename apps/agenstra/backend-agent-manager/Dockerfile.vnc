@@ -8,7 +8,10 @@
 # Build:      npx nx run backend-agent-manager:vnc-container-image
 # Run:        nx docker:run agenstra-backend-agent-manager -p 6080:6080
 # Notes:      Required runtime env: VNC_PASSWORD
-#              Optional: VNC_DISPLAY, VNC_RESOLUTION, VNC_DEPTH
+#              Optional: VNC_DISPLAY, VNC_RESOLUTION, VNC_DEPTH, BROWSER_PREVIEW_ENABLED
+#              When BROWSER_PREVIEW_ENABLED=true, Chromium CDP is available on internal port 9222 via socat
+#              (Chromium binds loopback :9223; 9222 is not published to the host)
+
 #              Agent workspace mount path: /home/agenstra/environment
 # -----------------------------------------------------------------------------
 #
@@ -38,6 +41,7 @@ RUN apt-get update && \
     supervisor \
     net-tools \
     openssl \
+    socat \
     novnc \
     websockify \
     nano \
@@ -76,8 +80,21 @@ RUN mkdir -p /home/agenstra/.config/xfce4/xfconf/xfce-perchannel-xml && \
     > /home/agenstra/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-settings.xml && \
     chown -R agenstra:agenstra /home/agenstra/.config/xfce4
 
-RUN sed -i 's|Exec=/usr/bin/chromium %U|Exec=/usr/bin/chromium --no-sandbox --disable-dev-shm-usage --display=:1 %U|g' \
+RUN sed -i 's|Exec=/usr/bin/chromium %U|Exec=/usr/local/bin/chromium-launch %U|g' \
     /usr/share/applications/chromium.desktop
+
+# Chromium CDP only binds loopback; expose it on the container network via socat (see entrypoint).
+RUN printf '%s\n' \
+    '#!/bin/bash' \
+    'set -euo pipefail' \
+    'CHROMIUM_FLAGS=(--no-sandbox --disable-dev-shm-usage --display=:1 --window-size=1910,865 --window-position=0,0 --start-maximized)' \
+    'if [ "${BROWSER_PREVIEW_ENABLED:-}" = "true" ] || [ "${BROWSER_PREVIEW_ENABLED:-}" = "1" ]; then' \
+    '  CHROMIUM_FLAGS+=(--remote-debugging-port=9223 --remote-allow-origins=*)' \
+    'fi' \
+    'exec /usr/bin/chromium "${CHROMIUM_FLAGS[@]}" "$@"' \
+    > /usr/local/bin/chromium-launch && \
+    chmod 755 /usr/local/bin/chromium-launch && \
+    chown agenstra:agenstra /usr/local/bin/chromium-launch
 
 RUN printf '%s\n' \
     '#!/bin/bash' \
@@ -143,6 +160,10 @@ RUN printf '%s\n' \
     'fi' \
     'vncserver "${VNC_DISPLAY}" -geometry "${VNC_RESOLUTION}" -depth "${VNC_DEPTH}" -localhost no -SecurityTypes VncAuth' \
     'websockify -D --web /usr/share/novnc/ --cert "$HOME/.novnc/ssl/novnc.crt" --key "$HOME/.novnc/ssl/novnc.key" 6080 localhost:5901' \
+    'if [ "${BROWSER_PREVIEW_ENABLED:-}" = "true" ] || [ "${BROWSER_PREVIEW_ENABLED:-}" = "1" ]; then' \
+    '  # Chromium listens on 127.0.0.1:9223; proxy to 0.0.0.0:9222 for manager CDP over the agent network.' \
+    '  socat TCP-LISTEN:9222,fork,reuseaddr,bind=0.0.0.0 TCP:127.0.0.1:9223 &' \
+    'fi' \
     'exec tail -f /dev/null' \
     > /usr/local/bin/docker-entrypoint.sh && \
     chmod 755 /usr/local/bin/docker-entrypoint.sh && \

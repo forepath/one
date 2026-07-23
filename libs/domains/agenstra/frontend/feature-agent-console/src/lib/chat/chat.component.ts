@@ -20,6 +20,7 @@ import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/ro
 import {
   AgentsFacade,
   AuthenticationFacade,
+  BrowserPreviewFacade,
   ClientAgentAutonomyFacade,
   ClientsFacade,
   ContainerType,
@@ -29,6 +30,11 @@ import {
   filterTicketsForTicketContextSuggestions,
   findPermittedTicketByExactSha,
   KnowledgeFacade,
+  mapCanvasPointerToDeviceCoordinates,
+  mapDomKeyboardEventToCdpKeyEvents,
+  mapDomMouseButton,
+  isBrowserPreviewBlankUrl,
+  normalizeBrowserPreviewNavigateUrl,
   NotificationsFacade,
   SocketsFacade,
   StatsFacade,
@@ -75,6 +81,7 @@ import {
   delay,
   distinctUntilChanged,
   filter,
+  fromEvent,
   map,
   Observable,
   of,
@@ -167,6 +174,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly authFacade = inject(AuthenticationFacade);
   private readonly socketsFacade = inject(SocketsFacade);
+  private readonly browserPreviewFacade = inject(BrowserPreviewFacade);
   protected readonly notificationsFacade = inject(NotificationsFacade);
   private readonly statsFacade = inject(StatsFacade);
   private readonly ticketsFacade = inject(TicketsFacade);
@@ -972,9 +980,57 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     containerType: undefined,
     gitRepositorySetupMode: 'clone',
     gitRepositoryUrl: undefined,
+    createBrowserPreview: true,
     createVirtualWorkspace: false,
     createSshConnection: false,
   });
+  readonly browserPreviewOpen$ = this.browserPreviewFacade.open$;
+  readonly browserPreviewStarting$ = this.browserPreviewFacade.starting$;
+  readonly browserPreviewFrameData$ = this.browserPreviewFacade.frameData$;
+  readonly browserPreviewFrameMetadata$ = this.browserPreviewFacade.frameMetadata$;
+  readonly browserPreviewError$ = this.browserPreviewFacade.error$;
+  readonly browserPreviewSessionId$ = this.browserPreviewFacade.sessionId$;
+  readonly browserPreviewAgentId$ = this.browserPreviewFacade.agentId$;
+  readonly browserPreviewCurrentUrl$ = this.browserPreviewFacade.currentUrl$;
+  readonly browserPreviewWorkspaceHostname$ = this.browserPreviewFacade.workspaceHostname$;
+  readonly browserPreviewCanGoBack$ = this.browserPreviewFacade.canGoBack$;
+  readonly browserPreviewCanGoForward$ = this.browserPreviewFacade.canGoForward$;
+  readonly browserPreviewUrlDraft = signal('');
+  readonly isBrowserPreviewBlankUrl = isBrowserPreviewBlankUrl;
+  private browserPreviewCanvasRef?: ElementRef<HTMLCanvasElement>;
+  private pendingBrowserPreviewFrame: string | null = null;
+  private browserPreviewFramePixelWidth = 0;
+  private browserPreviewFramePixelHeight = 0;
+  private browserPreviewSurfaceResizeObserver?: ResizeObserver;
+  private browserPreviewPaintInFlight = false;
+
+  @ViewChild('browserPreviewCanvas')
+  set browserPreviewCanvas(ref: ElementRef<HTMLCanvasElement> | undefined) {
+    this.browserPreviewSurfaceResizeObserver?.disconnect();
+    this.browserPreviewSurfaceResizeObserver = undefined;
+    this.browserPreviewCanvasRef = ref;
+
+    if (!ref) {
+      return;
+    }
+
+    const surface = ref.nativeElement.parentElement;
+
+    if (surface && typeof ResizeObserver !== 'undefined') {
+      this.browserPreviewSurfaceResizeObserver = new ResizeObserver(() => {
+        this.fitBrowserPreviewCanvasToSurface(false);
+      });
+      this.browserPreviewSurfaceResizeObserver.observe(surface);
+    }
+
+    if (this.pendingBrowserPreviewFrame) {
+      this.paintBrowserPreviewFrame(this.pendingBrowserPreviewFrame);
+    } else {
+      this.fitBrowserPreviewCanvasToSurface();
+    }
+  }
+
+  @ViewChild('browserPreviewModal') browserPreviewModal?: ElementRef<HTMLElement>;
 
   // Edit state
   readonly editingClientId = signal<string | null>(null);
@@ -1241,6 +1297,30 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     // Default chat model to auto mode on load
     this.socketsFacade.setChatModel(null);
+
+    this.browserPreviewFacade.frameData$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        filter((data): data is string => !!data),
+      )
+      .subscribe((data) => {
+        this.paintBrowserPreviewFrame(data);
+      });
+
+    fromEvent(window, 'resize')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.fitBrowserPreviewCanvasToSurface();
+      });
+
+    this.browserPreviewFacade.currentUrl$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        filter((url): url is string => !!url),
+      )
+      .subscribe((url) => {
+        this.browserPreviewUrlDraft.set(url);
+      });
 
     this.socketsFacade.chatEnhancementLastResult$
       .pipe(
@@ -1919,6 +1999,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   ngOnDestroy(): void {
+    this.browserPreviewSurfaceResizeObserver?.disconnect();
+    this.browserPreviewSurfaceResizeObserver = undefined;
+
     // Cancel any pending sync to prevent callbacks holding component reference
     if (this.syncAnimationFrameId !== null) {
       cancelAnimationFrame(this.syncAnimationFrameId);
@@ -3838,7 +3921,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       createDto.containerType = agentData.containerType;
     }
 
-    // Include boolean fields (default to true if not set)
+    createDto.createBrowserPreview = !!(agentData.createBrowserPreview || agentData.createVirtualWorkspace);
     createDto.createVirtualWorkspace = agentData.createVirtualWorkspace ?? false;
     createDto.createSshConnection = agentData.createSshConnection ?? false;
 
@@ -3861,6 +3944,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           containerType: undefined,
           gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
           gitRepositoryUrl: undefined,
+          createBrowserPreview: true,
           createVirtualWorkspace: false,
           createSshConnection: false,
         });
@@ -3960,7 +4044,263 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   updateAgentField<K extends keyof CreateAgentDto>(field: K, value: CreateAgentDto[K]): void {
-    this.newAgent.update((current) => ({ ...current, [field]: value }));
+    this.newAgent.update((current) => {
+      const next = { ...current, [field]: value };
+
+      if (field === 'createVirtualWorkspace' && value === true) {
+        next.createBrowserPreview = true;
+      }
+
+      return next;
+    });
+  }
+
+  onToggleBrowserPreview(agent: AgentResponseDto): void {
+    if (!agent.browserPreview?.enabled) {
+      return;
+    }
+
+    this.browserPreviewFacade.openPreview(agent.id);
+  }
+
+  onCloseBrowserPreview(): void {
+    this.pendingBrowserPreviewFrame = null;
+    this.browserPreviewFramePixelWidth = 0;
+    this.browserPreviewFramePixelHeight = 0;
+    this.browserPreviewPaintInFlight = false;
+    this.browserPreviewFacade.closePreview();
+  }
+
+  private paintBrowserPreviewFrame(data: string): void {
+    this.pendingBrowserPreviewFrame = data;
+    const canvas = this.browserPreviewCanvasRef?.nativeElement;
+
+    if (!canvas) {
+      return;
+    }
+
+    if (this.browserPreviewPaintInFlight) {
+      return;
+    }
+
+    this.browserPreviewPaintInFlight = true;
+    const image = new Image();
+
+    image.onload = () => {
+      const latest = this.pendingBrowserPreviewFrame;
+
+      if (!latest) {
+        this.browserPreviewPaintInFlight = false;
+
+        return;
+      }
+
+      // Decode the latest pending frame if a newer one arrived while this Image loaded.
+      if (latest !== data) {
+        this.browserPreviewPaintInFlight = false;
+        this.paintBrowserPreviewFrame(latest);
+
+        return;
+      }
+
+      canvas.width = image.width;
+      canvas.height = image.height;
+      this.browserPreviewFramePixelWidth = image.width;
+      this.browserPreviewFramePixelHeight = image.height;
+
+      const context = canvas.getContext('2d');
+
+      if (context) {
+        context.drawImage(image, 0, 0);
+      }
+
+      this.fitBrowserPreviewCanvasToSurface();
+      this.browserPreviewPaintInFlight = false;
+
+      if (this.pendingBrowserPreviewFrame && this.pendingBrowserPreviewFrame !== data) {
+        this.paintBrowserPreviewFrame(this.pendingBrowserPreviewFrame);
+      }
+    };
+    image.onerror = () => {
+      this.browserPreviewPaintInFlight = false;
+    };
+    image.src = `data:image/jpeg;base64,${data}`;
+  }
+
+  private fitBrowserPreviewCanvasToSurface(allowRetry = true): void {
+    const canvas = this.browserPreviewCanvasRef?.nativeElement;
+    const surface = canvas?.parentElement;
+
+    if (!canvas || !surface) {
+      return;
+    }
+
+    const pixelWidth = this.browserPreviewFramePixelWidth || canvas.width;
+    const pixelHeight = this.browserPreviewFramePixelHeight || canvas.height;
+
+    if (!pixelWidth || !pixelHeight) {
+      return;
+    }
+
+    if (surface.clientWidth < 1 || surface.clientHeight < 1) {
+      if (allowRetry) {
+        requestAnimationFrame(() => this.fitBrowserPreviewCanvasToSurface(false));
+      }
+
+      return;
+    }
+
+    const scale = Math.min(surface.clientWidth / pixelWidth, surface.clientHeight / pixelHeight);
+    canvas.style.width = `${Math.max(1, Math.floor(pixelWidth * scale))}px`;
+    canvas.style.height = `${Math.max(1, Math.floor(pixelHeight * scale))}px`;
+  }
+
+  onBrowserPreviewPointer(event: MouseEvent, type: 'mousePressed' | 'mouseReleased' | 'mouseMoved'): void {
+    const canvas = this.browserPreviewCanvasRef?.nativeElement;
+
+    if (!canvas) {
+      return;
+    }
+
+    combineLatest([
+      this.browserPreviewFacade.sessionId$,
+      this.browserPreviewFacade.agentId$,
+      this.browserPreviewFacade.frameMetadata$,
+    ])
+      .pipe(take(1))
+      .subscribe(([sessionId, agentId, metadata]) => {
+        if (!sessionId || !agentId || !metadata) {
+          return;
+        }
+
+        const { x, y } = mapCanvasPointerToDeviceCoordinates({
+          clientX: event.clientX,
+          clientY: event.clientY,
+          canvasRect: canvas.getBoundingClientRect(),
+          deviceWidth: metadata.deviceWidth,
+          deviceHeight: metadata.deviceHeight,
+        });
+
+        this.browserPreviewFacade.sendMouseInput(sessionId, agentId, {
+          type,
+          x,
+          y,
+          button: mapDomMouseButton(event.button),
+          clickCount: type === 'mouseMoved' ? 0 : 1,
+          modifiers: 0,
+        });
+      });
+  }
+
+  onBrowserPreviewWheel(event: WheelEvent): void {
+    event.preventDefault();
+    const canvas = this.browserPreviewCanvasRef?.nativeElement;
+
+    if (!canvas) {
+      return;
+    }
+
+    combineLatest([
+      this.browserPreviewFacade.sessionId$,
+      this.browserPreviewFacade.agentId$,
+      this.browserPreviewFacade.frameMetadata$,
+    ])
+      .pipe(take(1))
+      .subscribe(([sessionId, agentId, metadata]) => {
+        if (!sessionId || !agentId || !metadata) {
+          return;
+        }
+
+        const { x, y } = mapCanvasPointerToDeviceCoordinates({
+          clientX: event.clientX,
+          clientY: event.clientY,
+          canvasRect: canvas.getBoundingClientRect(),
+          deviceWidth: metadata.deviceWidth,
+          deviceHeight: metadata.deviceHeight,
+        });
+
+        this.browserPreviewFacade.sendMouseInput(sessionId, agentId, {
+          type: 'mouseWheel',
+          x,
+          y,
+          deltaX: event.deltaX,
+          deltaY: event.deltaY,
+          modifiers: 0,
+        });
+      });
+  }
+
+  onBrowserPreviewKey(event: KeyboardEvent, type: 'keyDown' | 'keyUp'): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    combineLatest([this.browserPreviewFacade.sessionId$, this.browserPreviewFacade.agentId$])
+      .pipe(take(1))
+      .subscribe(([sessionId, agentId]) => {
+        if (!sessionId || !agentId) {
+          return;
+        }
+
+        for (const cdpEvent of mapDomKeyboardEventToCdpKeyEvents(event, type)) {
+          this.browserPreviewFacade.sendKeyInput(sessionId, agentId, cdpEvent);
+        }
+      });
+  }
+
+  onBrowserPreviewNavigateSubmit(event?: Event): void {
+    event?.preventDefault();
+
+    const url = normalizeBrowserPreviewNavigateUrl(this.browserPreviewUrlDraft());
+
+    if (!url) {
+      return;
+    }
+
+    combineLatest([this.browserPreviewFacade.sessionId$, this.browserPreviewFacade.agentId$])
+      .pipe(take(1))
+      .subscribe(([sessionId, agentId]) => {
+        if (!sessionId || !agentId) {
+          return;
+        }
+
+        this.browserPreviewFacade.navigate(sessionId, agentId, url);
+      });
+  }
+
+  onBrowserPreviewReload(): void {
+    combineLatest([this.browserPreviewFacade.sessionId$, this.browserPreviewFacade.agentId$])
+      .pipe(take(1))
+      .subscribe(([sessionId, agentId]) => {
+        if (!sessionId || !agentId) {
+          return;
+        }
+
+        this.browserPreviewFacade.reload(sessionId, agentId);
+      });
+  }
+
+  onBrowserPreviewBack(): void {
+    combineLatest([this.browserPreviewFacade.sessionId$, this.browserPreviewFacade.agentId$])
+      .pipe(take(1))
+      .subscribe(([sessionId, agentId]) => {
+        if (!sessionId || !agentId) {
+          return;
+        }
+
+        this.browserPreviewFacade.goBack(sessionId, agentId);
+      });
+  }
+
+  onBrowserPreviewForward(): void {
+    combineLatest([this.browserPreviewFacade.sessionId$, this.browserPreviewFacade.agentId$])
+      .pipe(take(1))
+      .subscribe(([sessionId, agentId]) => {
+        if (!sessionId || !agentId) {
+          return;
+        }
+
+        this.browserPreviewFacade.goForward(sessionId, agentId);
+      });
   }
 
   // Helper methods to update editing signal values for form binding

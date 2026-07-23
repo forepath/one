@@ -35,6 +35,18 @@ export class CreateAgentDto {
   @IsString({ message: 'Git repository URL must be a string' })
   gitRepositoryUrl?: string;
 
+  /**
+   * Deploy the virtual workspace sidecar and enable browser-only Preview (CDP).
+   * Forced on when createVirtualWorkspace is true. Defaults to true.
+   */
+  @IsOptional()
+  @IsBoolean({ message: 'Create browser preview must be a boolean' })
+  createBrowserPreview?: boolean = true;
+
+  /**
+   * Publish full noVNC desktop access. Implies createBrowserPreview.
+   * Defaults to true in the DTO; the agent console UI defaults to false.
+   */
   @IsOptional()
   @IsBoolean({ message: 'Create virtual workspace must be a boolean' })
   createVirtualWorkspace?: boolean = true;

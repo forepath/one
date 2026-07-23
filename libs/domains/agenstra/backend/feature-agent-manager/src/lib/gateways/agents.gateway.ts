@@ -28,6 +28,7 @@ import { AgentMessageEventsService } from '../services/agent-message-events.serv
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
 import { AgentsService } from '../services/agents.service';
+import { BrowserPreviewService } from '../services/browser-preview.service';
 import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 import { ContextInjectionPayload } from '../types/context-injection.types';
@@ -101,6 +102,26 @@ interface TerminalInputPayload {
 }
 
 interface CloseTerminalPayload {
+  sessionId: string;
+}
+
+interface StartBrowserPreviewPayload {
+  sessionId?: string;
+}
+
+interface BrowserPreviewInputPayload {
+  sessionId: string;
+  kind: 'mouse' | 'key';
+  event: Record<string, unknown>;
+}
+
+interface BrowserPreviewCommandPayload {
+  sessionId: string;
+  command: 'navigate' | 'reload' | 'back' | 'forward';
+  url?: string;
+}
+
+interface StopBrowserPreviewPayload {
   sessionId: string;
 }
 
@@ -266,6 +287,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     private readonly promptContextComposer: PromptContextComposerService,
     private readonly agentSessionHydrationService: AgentSessionHydrationService,
     private readonly gitStateBroadcast: AgentGitStateBroadcastService,
+    private readonly browserPreviewService: BrowserPreviewService,
   ) {}
 
   onModuleInit(): void {
@@ -314,6 +336,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
       this.terminalSessionsBySocket.delete(socket.id);
     }
+
+    void this.browserPreviewService.stopSessionsForSocket(socket.id);
 
     // Clean up stats interval if this was the last socket for this agent
     if (agentUuid) {
@@ -2479,6 +2503,214 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         socket.emit('error', createErrorResponse('Error closing terminal session', 'TERMINAL_ERROR'));
         this.logger.error(`Terminal close error for session ${sessionId}: ${err.message}`);
       }
+    }
+  }
+
+  /**
+   * Start a browser-only Preview session (CDP screencast) for the authenticated agent.
+   */
+  @SubscribeMessage('startBrowserPreview')
+  async handleStartBrowserPreview(@MessageBody() data: StartBrowserPreviewPayload, @ConnectedSocket() socket: Socket) {
+    const agentUuid = this.authenticatedClients.get(socket.id);
+
+    if (!agentUuid) {
+      socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+
+      return;
+    }
+
+    try {
+      const entity = await this.agentsRepository.findById(agentUuid);
+
+      if (!entity?.browserPreviewEnabled || !entity.vncContainerId) {
+        socket.emit('error', createErrorResponse('Browser preview is not enabled for this agent', 'PREVIEW_DISABLED'));
+
+        return;
+      }
+
+      const sessionId = data.sessionId || `${socket.id}-preview-${Date.now()}`;
+      let workspaceHostname: string | undefined;
+
+      if (entity.containerId) {
+        try {
+          workspaceHostname = await this.dockerService.getContainerName(entity.containerId);
+        } catch (hostnameError) {
+          const err = hostnameError as { message?: string };
+
+          this.logger.warn(`Could not resolve workspace hostname for agent ${agentUuid}: ${err.message}`);
+        }
+      }
+
+      await this.browserPreviewService.startSession({
+        sessionId,
+        agentId: agentUuid,
+        socketId: socket.id,
+        vncContainerId: entity.vncContainerId,
+        networkId: entity.vncNetworkId,
+        onFrame: (frame) => {
+          if (socket.connected) {
+            try {
+              socket.emit('browserPreviewFrame', createSuccessResponse(frame));
+            } catch (emitError) {
+              this.logger.warn(`Failed to emit browser preview frame for session ${sessionId}: ${emitError}`);
+            }
+          }
+        },
+        onLocation: (location) => {
+          if (socket.connected) {
+            try {
+              socket.emit('browserPreviewLocation', createSuccessResponse(location));
+            } catch (emitError) {
+              this.logger.warn(`Failed to emit browser preview location for session ${sessionId}: ${emitError}`);
+            }
+          }
+        },
+        onClosed: () => {
+          if (socket.connected) {
+            try {
+              socket.emit('browserPreviewStopped', createSuccessResponse({ sessionId }));
+            } catch {
+              // ignore
+            }
+          }
+        },
+      });
+
+      socket.emit(
+        'browserPreviewStarted',
+        createSuccessResponse({
+          sessionId,
+          ...(workspaceHostname ? { workspaceHostname } : {}),
+        }),
+      );
+      this.logger.log(`Started browser preview session ${sessionId} for agent ${agentUuid}`);
+    } catch (error) {
+      const err = error as { message?: string };
+
+      socket.emit('error', createErrorResponse('Error starting browser preview', 'PREVIEW_ERROR'));
+      this.logger.error(`Browser preview start error for agent ${agentUuid}: ${err.message}`);
+    }
+  }
+
+  /**
+   * Forward mouse/keyboard input to an active browser Preview session.
+   */
+  @SubscribeMessage('browserPreviewInput')
+  async handleBrowserPreviewInput(@MessageBody() data: BrowserPreviewInputPayload, @ConnectedSocket() socket: Socket) {
+    const agentUuid = this.authenticatedClients.get(socket.id);
+
+    if (!agentUuid) {
+      socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+
+      return;
+    }
+
+    if (!data?.sessionId || (data.kind !== 'mouse' && data.kind !== 'key') || !data.event) {
+      socket.emit('error', createErrorResponse('Invalid browser preview input', 'INVALID_PAYLOAD'));
+
+      return;
+    }
+
+    if (!this.browserPreviewService.hasSession(data.sessionId, socket.id)) {
+      socket.emit('error', createErrorResponse('Browser preview session not found or access denied', 'PREVIEW_ERROR'));
+
+      return;
+    }
+
+    try {
+      await this.browserPreviewService.dispatchInput(data.sessionId, {
+        kind: data.kind,
+        event: data.event as never,
+      });
+    } catch (error) {
+      const err = error as { message?: string };
+
+      socket.emit('error', createErrorResponse('Error sending browser preview input', 'PREVIEW_ERROR'));
+      this.logger.warn(`Browser preview input error for session ${data.sessionId}: ${err.message}`);
+    }
+  }
+
+  /**
+   * Run a browser Preview chrome command (navigate / reload / back / forward).
+   */
+  @SubscribeMessage('browserPreviewCommand')
+  async handleBrowserPreviewCommand(
+    @MessageBody() data: BrowserPreviewCommandPayload,
+    @ConnectedSocket() socket: Socket,
+  ) {
+    const agentUuid = this.authenticatedClients.get(socket.id);
+
+    if (!agentUuid) {
+      socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+
+      return;
+    }
+
+    const allowedCommands = new Set(['navigate', 'reload', 'back', 'forward']);
+
+    if (!data?.sessionId || !allowedCommands.has(data.command)) {
+      socket.emit('error', createErrorResponse('Invalid browser preview command', 'INVALID_PAYLOAD'));
+
+      return;
+    }
+
+    if (!this.browserPreviewService.hasSession(data.sessionId, socket.id)) {
+      socket.emit('error', createErrorResponse('Browser preview session not found or access denied', 'PREVIEW_ERROR'));
+
+      return;
+    }
+
+    try {
+      if (data.command === 'navigate') {
+        await this.browserPreviewService.dispatchCommand(data.sessionId, {
+          type: 'navigate',
+          url: typeof data.url === 'string' ? data.url : '',
+        });
+      } else {
+        await this.browserPreviewService.dispatchCommand(data.sessionId, { type: data.command });
+      }
+    } catch (error) {
+      const err = error as { message?: string };
+
+      socket.emit('error', createErrorResponse('Error running browser preview command', 'PREVIEW_ERROR'));
+      this.logger.warn(`Browser preview command error for session ${data.sessionId}: ${err.message}`);
+    }
+  }
+
+  /**
+   * Stop an active browser Preview session.
+   */
+  @SubscribeMessage('stopBrowserPreview')
+  async handleStopBrowserPreview(@MessageBody() data: StopBrowserPreviewPayload, @ConnectedSocket() socket: Socket) {
+    const agentUuid = this.authenticatedClients.get(socket.id);
+
+    if (!agentUuid) {
+      socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+
+      return;
+    }
+
+    if (!data?.sessionId) {
+      socket.emit('error', createErrorResponse('sessionId is required', 'INVALID_PAYLOAD'));
+
+      return;
+    }
+
+    if (!this.browserPreviewService.hasSession(data.sessionId, socket.id)) {
+      socket.emit('error', createErrorResponse('Browser preview session not found or access denied', 'PREVIEW_ERROR'));
+
+      return;
+    }
+
+    try {
+      await this.browserPreviewService.stopSession(data.sessionId);
+      socket.emit('browserPreviewStopped', createSuccessResponse({ sessionId: data.sessionId }));
+      this.logger.log(`Stopped browser preview session ${data.sessionId} for agent ${agentUuid}`);
+    } catch (error) {
+      const err = error as { message?: string };
+
+      socket.emit('error', createErrorResponse('Error stopping browser preview', 'PREVIEW_ERROR'));
+      this.logger.error(`Browser preview stop error for session ${data.sessionId}: ${err.message}`);
     }
   }
 

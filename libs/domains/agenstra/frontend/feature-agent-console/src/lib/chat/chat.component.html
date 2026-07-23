@@ -717,11 +717,25 @@
               }
               @if (activeClient$ | async; as activeClient) {
                 @if (selectedAgent$ | async; as selectedAgent) {
+                  @if (selectedAgent.browserPreview?.enabled) {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary"
+                      (click)="onToggleBrowserPreview(selectedAgent)"
+                      i18n-title="@@featureChat-openBrowserPreview"
+                      title="Open browser Preview"
+                    >
+                      <i class="bi bi-globe" aria-hidden="true"></i>
+                      <span class="visually-hidden" i18n="@@featureChat-openBrowserPreview">Open browser Preview</span>
+                    </button>
+                  }
                   @if (selectedAgent.vnc?.port && (activeClient$ | async)) {
                     <button
                       type="button"
                       class="btn btn-sm btn-outline-primary"
                       (click)="onToggleVNC(activeClient, selectedAgent)"
+                      i18n-title="@@featureChat-openVirtualDesktop"
+                      title="Open virtual desktop"
                     >
                       <i class="bi bi-window-desktop" aria-hidden="true"></i>
                     </button>
@@ -1409,11 +1423,25 @@
               }
               @if (activeClient$ | async; as activeClient) {
                 @if (selectedAgent$ | async; as selectedAgent) {
+                  @if (selectedAgent.browserPreview?.enabled) {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary"
+                      (click)="onToggleBrowserPreview(selectedAgent)"
+                      i18n-title="@@featureChat-openBrowserPreview"
+                      title="Open browser Preview"
+                    >
+                      <i class="bi bi-globe" aria-hidden="true"></i>
+                      <span class="visually-hidden" i18n="@@featureChat-openBrowserPreview">Open browser Preview</span>
+                    </button>
+                  }
                   @if (selectedAgent.vnc?.port && (activeClient$ | async)) {
                     <button
                       type="button"
                       class="btn btn-sm btn-outline-primary"
                       (click)="onToggleVNC(activeClient, selectedAgent)"
+                      i18n-title="@@featureChat-openVirtualDesktop"
+                      title="Open virtual desktop"
                     >
                       <i class="bi bi-window-desktop" aria-hidden="true"></i>
                     </button>
@@ -2633,6 +2661,26 @@
                 <input
                   class="form-check-input"
                   type="checkbox"
+                  id="createBrowserPreview"
+                  name="createBrowserPreview"
+                  [ngModel]="!!newAgent().createBrowserPreview"
+                  (ngModelChange)="updateAgentField('createBrowserPreview', $event)"
+                  [disabled]="(agentsCreating$ | async) === true || !!newAgent().createVirtualWorkspace"
+                />
+                <label class="form-check-label" for="createBrowserPreview" i18n="@@featureChat-enableBrowserPreview">
+                  Enable Browser Preview
+                </label>
+              </div>
+              <small class="form-text text-muted d-block mt-1" i18n="@@featureChat-createBrowserPreviewHint"
+                >Stream and control Chromium in the virtual workspace without full desktop VNC access. Defaults to
+                enabled. Enabling VNC always includes Preview.</small
+              >
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
                   id="createVirtualWorkspace"
                   name="createVirtualWorkspace"
                   [ngModel]="!!newAgent().createVirtualWorkspace"
@@ -3657,3 +3705,146 @@
     </div>
   </div>
 </div>
+
+@if (browserPreviewOpen$ | async) {
+  <div class="modal fade show d-block browser-preview-modal" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-fullscreen" role="document">
+      <div class="modal-content border-0">
+        <div class="modal-header py-2">
+          <h5 class="modal-title" i18n="@@featureChat-browserPreviewTitle">Browser Preview</h5>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Close"
+            i18n-aria-label="@@featureChat-browserPreviewClose"
+            (click)="onCloseBrowserPreview()"
+          ></button>
+        </div>
+        <div class="modal-body p-0 bg-body-secondary d-flex flex-column browser-preview-modal-body">
+          <form
+            class="browser-preview-toolbar d-flex align-items-center gap-2 px-2 py-2 border-bottom bg-body"
+            (submit)="onBrowserPreviewNavigateSubmit($event)"
+          >
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              [disabled]="(browserPreviewCanGoBack$ | async) !== true"
+              (click)="onBrowserPreviewBack()"
+              i18n-aria-label="@@featureChat-browserPreviewBack"
+              aria-label="Back"
+              title="Back"
+            >
+              <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              [disabled]="(browserPreviewCanGoForward$ | async) !== true"
+              (click)="onBrowserPreviewForward()"
+              i18n-aria-label="@@featureChat-browserPreviewForward"
+              aria-label="Forward"
+              title="Forward"
+            >
+              <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              (click)="onBrowserPreviewReload()"
+              i18n-aria-label="@@featureChat-browserPreviewReload"
+              aria-label="Reload"
+              title="Reload"
+            >
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </button>
+            <label class="visually-hidden" for="browserPreviewAddress" i18n="@@featureChat-browserPreviewAddress"
+              >Address</label
+            >
+            <input
+              id="browserPreviewAddress"
+              class="form-control form-control-sm flex-grow-1"
+              type="url"
+              name="browserPreviewAddress"
+              autocomplete="off"
+              spellcheck="false"
+              [ngModel]="browserPreviewUrlDraft()"
+              (ngModelChange)="browserPreviewUrlDraft.set($event)"
+              i18n-placeholder="@@featureChat-browserPreviewAddressPlaceholder"
+              placeholder="https://example.com"
+            />
+            <button type="submit" class="btn btn-sm btn-primary" i18n="@@featureChat-browserPreviewGo">Go</button>
+          </form>
+          <div class="browser-preview-surface bg-body-tertiary">
+            @if (browserPreviewStarting$ | async) {
+              <div class="browser-preview-status text-body p-4" i18n="@@featureChat-browserPreviewConnecting">
+                Connecting to browser…
+              </div>
+            }
+            @if (browserPreviewError$ | async; as previewError) {
+              <div class="browser-preview-status alert alert-danger m-3" role="alert">{{ previewError }}</div>
+            }
+            @if (
+              (browserPreviewStarting$ | async) !== true &&
+              !(browserPreviewError$ | async) &&
+              isBrowserPreviewBlankUrl(browserPreviewCurrentUrl$ | async)
+            ) {
+              <aside class="browser-preview-guide text-body" aria-labelledby="browserPreviewGuideTitle">
+                <h2
+                  id="browserPreviewGuideTitle"
+                  class="browser-preview-guide__title"
+                  i18n="@@featureChat-browserPreviewGuideTitle"
+                >
+                  How to use Browser Preview
+                </h2>
+                <ol class="browser-preview-guide__list">
+                  <li i18n="@@featureChat-browserPreviewGuideNav">
+                    Enter a URL in the address bar and press Go (or Enter) to open a page in this virtual browser.
+                  </li>
+                  <li i18n="@@featureChat-browserPreviewGuideInteract">
+                    Click, scroll, and type on the stream below to control the remote browser. Use Back, Forward, and
+                    Reload like a normal browser.
+                  </li>
+                  <li i18n="@@featureChat-browserPreviewGuideClose">
+                    Close this window when you are done. Each open starts a fresh browser tab.
+                  </li>
+                </ol>
+                <h3 class="browser-preview-guide__subtitle" i18n="@@featureChat-browserPreviewGuideWorkspaceTitle">
+                  Open an app running in the workspace
+                </h3>
+                <p class="browser-preview-guide__text" i18n="@@featureChat-browserPreviewGuideWorkspaceBody">
+                  Preview shares a private Docker network with the workspace container.
+                  <code>localhost</code> here is the Preview browser itself—not the workspace. Bind your app to
+                  <code>0.0.0.0</code> (all interfaces), then open it with the workspace hostname and port.
+                </p>
+                @if (browserPreviewWorkspaceHostname$ | async; as workspaceHost) {
+                  <p class="browser-preview-guide__example">
+                    <span i18n="@@featureChat-browserPreviewGuideWorkspaceExampleLabel">Example:</span>
+                    <code>http://{{ workspaceHost }}:3000</code>
+                  </p>
+                } @else {
+                  <p class="browser-preview-guide__text" i18n="@@featureChat-browserPreviewGuideWorkspaceFallback">
+                    Use <code>http://&lt;workspace-container-name&gt;:&lt;port&gt;</code>. Ask the agent or run
+                    <code>hostname</code> in a workspace terminal to get the container name.
+                  </p>
+                }
+              </aside>
+            }
+            <canvas
+              #browserPreviewCanvas
+              class="browser-preview-canvas"
+              [class.browser-preview-canvas--hidden]="isBrowserPreviewBlankUrl(browserPreviewCurrentUrl$ | async)"
+              tabindex="0"
+              (mousedown)="onBrowserPreviewPointer($event, 'mousePressed')"
+              (mouseup)="onBrowserPreviewPointer($event, 'mouseReleased')"
+              (mousemove)="onBrowserPreviewPointer($event, 'mouseMoved')"
+              (wheel)="onBrowserPreviewWheel($event)"
+              (keydown)="onBrowserPreviewKey($event, 'keyDown')"
+              (keyup)="onBrowserPreviewKey($event, 'keyUp')"
+              (contextmenu)="$event.preventDefault()"
+            ></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}
