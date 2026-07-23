@@ -23,7 +23,7 @@ export function linkDocuments(input: LinkDocumentsInput): KnowledgeEdge[] {
     }));
 
   const apis = input.apiNodes
-    .filter((n) => n.type === 'endpoint')
+    .filter((n) => n.type === 'endpoint' || n.type === 'channel')
     .map((n) => {
       const attrs = n.attrs as ApiNodeAttrs;
       return {

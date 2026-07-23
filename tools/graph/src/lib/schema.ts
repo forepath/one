@@ -8,11 +8,12 @@
  * - patch:<filename> (patch-package files under patches/)
  * - domain:<name> | context:<name> | feature-group:<name> (cluster labels)
  * - file:<posixRelPath> (path-based sources; `type` is a FileDerivedNodeType)
- * - api:HTTP:<METHOD>:<path> | api:channel:<name> (node `type`: `endpoint`)
+ * - api:HTTP:<METHOD>:<path> (node `type`: `endpoint` from OpenAPI)
+ * - api:channel:<name> (node `type`: `channel` from AsyncAPI)
  * - webhook-event:<project>:<eventName> (outbound notification / webhook event)
  * - concept:<slug>
  *
- * Edge types: depends_on | contains | implements | documents | belongs_to
+ * Edge types: depends_on | contains | implements | injects | provides | calls | documents | belongs_to
  */
 
 /** Supported knowledge-graph node kinds. */
@@ -44,10 +45,19 @@ export type KnowledgeNodeType =
   | 'asyncapi'
   | 'diagram'
   | 'endpoint'
+  | 'channel'
   | 'concept';
 
 /** Supported knowledge-graph edge kinds. */
-export type KnowledgeEdgeType = 'depends_on' | 'contains' | 'implements' | 'documents' | 'belongs_to';
+export type KnowledgeEdgeType =
+  | 'depends_on'
+  | 'contains'
+  | 'implements'
+  | 'injects'
+  | 'provides'
+  | 'calls'
+  | 'documents'
+  | 'belongs_to';
 
 /** Nx / workspace project classification (mirrors node.type for project-like nodes). */
 export type ProjectNodeKind = 'app' | 'lib' | 'tool';
