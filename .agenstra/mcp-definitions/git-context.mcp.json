@@ -1,8 +1,0 @@
-{
-  "id": "git-context",
-  "name": "Git Repository Context",
-  "description": "Provides git repository information and file content",
-  "type": "local",
-  "command": ["git", "log", "--oneline", "-n", "10"],
-  "environment": {}
-}

@@ -3,20 +3,45 @@ id: graph-kg
 name: Knowledge Graph Skill
 description: >
   Use when you need structural understanding of this Nx monorepo.
-  Builds/consumes graph/graph.json from the project graph, OpenAPI/AsyncAPI,
-  and docs/<domain>. Prefer before large refactors, cross-service changes, or architecture reviews.
+  Prefer knowledge-graph MCP tools (graph_r1, graph_endpoint, graph_impact, graph_mentions)
+  over loading graph/graph.json or scanning the repo.
 ---
 
 # Knowledge Graph Skill
 
-Prefer `graph/graph.json` over scanning the whole repo for project relationships, API surfaces, or doc concepts. Use the recipes below as **repeatable patterns** — do not invent ad-hoc traversals when a recipe fits.
+Prefer the **knowledge-graph MCP** (or `nx run graph:query`) over loading `graph/graph.json` into context or scanning the whole repo. Use the recipes below as **repeatable patterns** — do not invent ad-hoc traversals when a recipe fits.
 
 ## Operating rules
 
 1. **Read before large change** — before refactoring a project, moving APIs, or touching cross-domain flows, run the matching recipe and summarize findings first.
-2. **Query, then open files** — resolve owning projects, specs, and docs from the graph; only then read source under each project's `root`.
-3. **Stale tree** — if the working tree changed since the last commit and the task depends on structure, run `nx run graph:generate-kg` first.
-4. **Missing edges are normal** — fall back to source when `implements` / `documents` are absent; do not invent links.
+2. **MCP first** — call `graph_r1` / `graph_endpoint` / `graph_docs` / `graph_impact` / `graph_mentions` / `graph_search` instead of grepping or pasting `graph.json`.
+3. **Query, then open files** — resolve owning projects, specs, and docs from recipe results; only then read source under each project's `root`.
+4. **Stale tree** — if the working tree changed since the last commit and the task depends on structure, run `nx run graph:generate-kg` first. MCP launcher builds `dist` on demand if missing; rebuild explicitly after graph tool source changes (`nx run graph:build`).
+5. **Missing edges are normal** — fall back to source when `implements` / `documents` are absent; do not invent links.
+6. **Declared vs mentions** — `depends_on` / `graph_r1` = build & boundary blast radius. For textual/copy-paste consumers, run `graph_mentions` after R1 (soft references).
+
+## MCP tools (preferred)
+
+| Tool             | Recipe   | Use                                                      |
+| ---------------- | -------- | -------------------------------------------------------- |
+| `graph_r1`       | R1       | Blast radius for `project`                               |
+| `graph_docs`     | R2       | Doc concepts / `docPath`s for a project                  |
+| `graph_endpoint` | R3       | Owners / implementers / callers for HTTP path or channel |
+| `graph_search`   | R5       | Keyword over typed graph nodes                           |
+| `graph_impact`   | impact   | Diff/path list → owning projects → R1 each               |
+| `graph_mentions` | mentions | Soft textual references outside `depends_on`             |
+
+CLI equivalents (same JSON payloads):
+
+```bash
+nx run graph:build
+nx run graph:query -- r1 <project>
+nx run graph:query -- docs <project>
+nx run graph:query -- endpoint --method POST --path /example/resource
+nx run graph:query -- search <keyword>
+nx run graph:impact -- --base main
+nx run graph:query -- mentions <project>
+```
 
 ## Generating / viewing
 
@@ -29,52 +54,82 @@ nx run graph:serve                # http://127.0.0.1:4211/ (not file://)
 
 ## Schema (quick reference)
 
-| Kind | Id pattern | Meaning |
-| ---- | ---------- | ------- |
-| `app` / `lib` | `project:<nxName>` | Nx application or library |
-| `domain` | `domain:<name>` | Product domain (`domain:*` tag or path) |
-| `context` | `context:<name>` | Bounded context (`scope:*` tag) |
-| `feature-group` | `feature-group:<name>` | Feature group (`type:*` tag) |
-| `file` | `file:<path>` | Controllers and other indexed sources |
-| `doc` | `file:<path>` | Markdown under `docs/` |
-| `readme` | `file:<path>` | Markdown outside `docs/` |
-| `openapi` / `asyncapi` | `file:<path>` | Spec files |
-| `diagram` | `file:<path>` | Mermaid `.mmd` |
-| `endpoint` | `api:HTTP:<METHOD>:<path>` or `api:channel:<name>` | Spec operation / channel |
-| `concept` | `concept:<slug>` | Heading from `docs/` |
+| Kind                   | Id pattern                             | Meaning                                      |
+| ---------------------- | -------------------------------------- | -------------------------------------------- |
+| `app` / `lib`          | `project:<nxName>`                     | Nx application or library                    |
+| `tool`                 | `project:<nxName>` or `tool:<dirname>` | Nx project under `tools/` or non-Nx tool dir |
+| `package`              | `package:<npmName>`                    | Production npm dep attributed to an app      |
+| `patch`                | `patch:<filename>`                     | patch-package file linked to a `package`     |
+| `domain`               | `domain:<name>`                        | Product domain (`domain:*` tag or path)      |
+| `context`              | `context:<name>`                       | Bounded context (`scope:*` tag)              |
+| `feature-group`        | `feature-group:<name>`                 | Feature group (`type:*` tag)                 |
+| `controller`           | `file:<path>`                          | Nest HTTP controller                         |
+| `gateway`              | `file:<path>`                          | Nest WebSocket gateway                       |
+| `job`                  | `file:<path>`                          | Job handler (`*.job-handler.ts`)             |
+| `service`              | `file:<path>`                          | Nest / Angular `*.service.ts`                |
+| `repository`           | `file:<path>`                          | Data-access repository                       |
+| `entity`               | `file:<path>`                          | Persistence entity                           |
+| `dto`                  | `file:<path>`                          | Request/response DTO                         |
+| `guard`                | `file:<path>`                          | Auth / access guard                          |
+| `module`               | `file:<path>`                          | Nest / Angular module                        |
+| `state`                | `file:<path-to-slice-dir>`             | Accumulated NgRx slice folder                |
+| `provider`             | `file:<path>`                          | Domain strategy provider / payment processor |
+| `email`                | `file:<path-to-template-stem>`         | Accumulated email template (html/txt)        |
+| `webhook-event`        | `webhook-event:<project>:<eventName>`  | Outbound notification / webhook event        |
+| `doc`                  | `file:<path>`                          | Markdown under `docs/`                       |
+| `readme`               | `file:<path>`                          | Markdown outside `docs/`                     |
+| `openapi` / `asyncapi` | `file:<path>`                          | Spec files                                   |
+| `diagram`              | `file:<path>`                          | Mermaid `.mmd`                               |
+| `endpoint`             | `api:HTTP:<METHOD>:<path>`             | OpenAPI HTTP operation                       |
+| `channel`              | `api:channel:<name>`                   | AsyncAPI channel                             |
+| `concept`              | `concept:<slug>`                       | Heading from `docs/`                         |
 
-| Edge | Direction | Use for |
-| ---- | --------- | ------- |
-| `depends_on` | project → project | Build / import coupling |
-| `contains` | project → file; file → endpoint/concept | Ownership and membership |
-| `implements` | file/project → endpoint | Controller ↔ OpenAPI match (heuristic) |
-| `documents` | concept → project/endpoint | Docs that mention a project or API |
-| `belongs_to` | project/doc/concept → domain\|context\|feature-group | Cluster membership |
+| Edge         | Direction                                                            | Use for                                      |
+| ------------ | -------------------------------------------------------------------- | -------------------------------------------- |
+| `depends_on` | project → project; app → package; app/lib → tool                     | Build / import / npm / tool coupling         |
+| `contains`   | project → source; source → endpoint/channel/concept; state → service | Ownership and membership                     |
+| `implements` | controller/gateway/project → endpoint/channel                        | Controller ↔ OpenAPI; gateway ↔ AsyncAPI   |
+| `injects`    | controller/gateway/service/state → service/repository/…              | Nest constructor DI; NgRx facade `inject()`  |
+| `provides`   | module → controller/gateway/service/repository/…                     | Nest `@Module` controllers/providers/exports |
+| `calls`      | frontend HTTP service → endpoint                                     | Angular HttpClient path → OpenAPI            |
+| `documents`  | concept → project/endpoint/channel                                   | Docs that mention a project or API           |
+| `belongs_to` | project/doc/concept → domain\|context\|feature-group                 | Cluster membership                           |
 
-Attrs of interest: project `root`, `tags`, `targets`, `domain`, `context`, `featureGroup`; cluster `name`, `kind`, `label`, `source`; file `path`, `languageOrKind`, `projectName`; endpoint `method`, `pathOrChannel`, `operationId`, `specKind`; concept `title`, `docPath`, `domain`.
+Attrs of interest: project `root`, `tags`, `targets`, `domain`, `context`, `featureGroup`; cluster `name`, `kind`, `label`, `source`; file `path`, `languageOrKind`, `projectName`; state `sliceName`, `memberFiles`; email `templateName`, `memberFiles`; webhook-event `eventName`, `catalogPath`; endpoint / channel `method`, `pathOrChannel`, `operationId`, `specKind`; concept `title`, `docPath`, `domain`.
 
 ## How to query
 
-Work from `graph/graph.json`. Prefer targeted search (ripgrep / structured JSON tools) over loading the whole file into context.
+Prefer MCP/CLI recipes above. If you must read `graph/graph.json` directly, use targeted search (ripgrep / structured JSON tools) — never load the whole file into context.
 
-- **By id prefix:** `project:`, `domain:`, `context:`, `feature-group:`, `file:`, `api:HTTP:`, `api:channel:`, `concept:`
-- **By type:** filter `nodes` where `type` is `app` \| `lib` \| `domain` \| `context` \| `feature-group` \| `doc` \| `endpoint` \| …
+- **By id prefix:** `project:`, `tool:`, `package:`, `patch:`, `domain:`, `context:`, `feature-group:`, `file:`, `api:HTTP:`, `api:channel:`, `webhook-event:`, `concept:`
+- **By type:** filter `nodes` where `type` is `app` \| `lib` \| `tool` \| `package` \| `patch` \| `controller` \| `service` \| `repository` \| `entity` \| `dto` \| `provider` \| `email` \| `webhook-event` \| `state` \| `endpoint` \| `channel` \| …
 - **Outgoing edges:** `edges` with `from === <id>`
 - **Incoming edges:** `edges` with `to === <id>`
-- **By edge type:** filter `edges` where `type` is `depends_on` \| `contains` \| `implements` \| `documents` \| `belongs_to`
+- **By edge type:** filter `edges` where `type` is `depends_on` \| `contains` \| `implements` \| `injects` \| `provides` \| `calls` \| `documents` \| `belongs_to`
 
 ## Recipes
+
+### Impact — Before reviewing or landing a diff
+
+Goal: map changed files to projects and blast radius.
+
+1. Call `graph_impact` with `baseRef` (e.g. `main`) and/or explicit `paths`, or uncommitted changes by default.
+2. Summarize owning projects, shared deps, and linked `docPath`s.
+3. Optionally `graph_mentions` on heavily shared libs for soft consumers.
+4. Open only the listed roots / docs.
 
 ### R1 — Before changing project `X`
 
 Goal: blast radius and related docs/APIs before editing.
 
-1. Locate `project:<X>` (match Nx project name).
+1. Call `graph_r1` with the Nx project name (preferred), or locate `project:<X>` manually.
 2. List **outgoing** `depends_on` (what X imports) and **incoming** `depends_on` (who depends on X).
-3. Follow **outgoing** `contains` → `openapi` / `asyncapi` / `file` / `diagram` / `readme` owned by X.
-4. From those files, follow `contains` → `endpoint` nodes (API surface of X).
-5. Collect **incoming** `documents` where `to` is `project:<X>` or any of those endpoints → open each concept's `docPath`.
-6. Only then open source under attrs.`root`.
+3. Follow **outgoing** `contains` → `openapi` / `asyncapi` / `controller` / `gateway` / `service` / `entity` / `provider` / `email` / `webhook-event` / `state` / `diagram` / `readme` owned by X.
+4. From those files, follow `contains` → `endpoint` / `channel` nodes (API surface of X).
+5. From `controller` / `gateway` / `service` nodes, follow outgoing `injects` (and from `module` follow `provides`).
+6. For frontend data-access projects: `state` → `injects` → HTTP `service` → `calls` → `endpoint`.
+7. Collect **incoming** `documents` where `to` is `project:<X>` or any of those endpoints / channels → open each concept's `docPath`.
+8. Only then open source under attrs.`root`.
 
 ### R2 — Find all docs touching project `Y`
 
@@ -83,18 +138,20 @@ Goal: every curated doc concept that references Y.
 1. Start at `project:<Y>`.
 2. Take all edges with `type === "documents"` and `to === "project:<Y>"`.
 3. For each `from` (`concept:…`), read attrs.`title`, `docPath`, `sectionAnchor`.
-4. Optionally expand: endpoints contained by Y (R1 steps 3–4), then incoming `documents` to those endpoints.
+4. Optionally expand: endpoints / channels contained by Y (R1 steps 3–4), then incoming `documents` to those surfaces.
 5. Ignore `readme` nodes for this recipe unless you need project-local READMEs; concepts come only from `doc` markdown under `docs/`.
 
 ### R3 — Before changing an HTTP path or channel
 
 Goal: owners, implementers, and docs for one API surface.
 
-1. Find `endpoint` by id (`api:HTTP:<METHOD>:<path>` or `api:channel:<name>`) or by attrs.`pathOrChannel` / `operationId`.
+1. Find `endpoint` (`api:HTTP:<METHOD>:<path>`) or `channel` (`api:channel:<name>`) by id or by attrs.`pathOrChannel` / `operationId`.
 2. Incoming `contains` → owning `openapi` / `asyncapi` file → incoming `contains` → owning `project:…`.
-3. Incoming `implements` → controller `file:…` and/or `project:…` (may be empty — heuristic).
-4. Incoming `documents` → concepts; open `docPath`.
-5. Sibling endpoints: other `contains` children of the same spec file.
+3. Incoming `implements` → `controller` / `gateway` and/or `project:…` (may be empty — heuristic).
+4. Incoming `calls` → frontend HTTP services that hit this endpoint (when present).
+5. From controllers/gateways, outgoing `injects` → wired services/repositories (Nest DI); from services, further `injects`.
+6. Incoming `documents` → concepts; open `docPath`.
+7. Sibling surfaces: other `contains` children of the same spec file.
 
 ### R4 — Before a cross-service / cross-domain change
 
@@ -104,24 +161,24 @@ Goal: shared libs and documentation bridges between apps.
 2. Start from `domain:<name>` nodes; take **incoming** `belongs_to` for member projects, docs, and concepts.
 3. For each member project, run R1 (deps + contained specs).
 4. Intersect dependency neighborhoods: shared `lib` projects on paths between the apps (often under `domain:shared`).
-5. Summarize: domains involved, shared libraries, shared endpoints, and doc concepts that bind the change together.
+5. Summarize: domains involved, shared libraries, shared endpoints / channels, and doc concepts that bind the change together.
 
 ### R5 — Map a feature area by keyword
 
 Goal: discover related endpoints and docs when you only have a term (e.g. resource name).
 
 1. Search node ids and attrs (`pathOrChannel`, `operationId`, `summary`, `title`, `path`, `docPath`, cluster `name`) for the keyword.
-2. Classify hits: `endpoint` vs `concept` vs `doc`/`readme` vs `project` vs `domain`/`context`/`feature-group`.
-3. For each `endpoint` hit → R3. For each `project` hit → R1. For each `concept` hit → follow outgoing `documents`. For each cluster hit → incoming `belongs_to`.
+2. Classify hits: `endpoint` / `channel` vs `concept` vs `doc`/`readme` vs `project` vs `controller`/`service`/`state` vs `domain`/`context`/`feature-group`.
+3. For each `endpoint` / `channel` hit → R3. For each `project` hit → R1. For each `concept` hit → follow outgoing `documents`. For each cluster hit → incoming `belongs_to`.
 4. Deduplicate projects and `docPath`s before reading source.
 
 ### R6 — Trace who implements an OpenAPI/AsyncAPI file
 
 1. Find the `openapi` or `asyncapi` node (`file:…/openapi.yaml` etc.).
 2. Incoming `contains` from `project:…` → owner.
-3. Outgoing `contains` → all `endpoint` children.
-4. For each endpoint, incoming `implements` → controllers/projects.
-5. Endpoints with no `implements` edge need a manual controller/spec check.
+3. Outgoing `contains` → all `endpoint` / `channel` children.
+4. For each surface node, incoming `implements` → controllers/gateways/projects.
+5. Surfaces with no `implements` edge need a manual controller/spec check.
 
 ### R7 — Domain map for product `D`
 
@@ -135,7 +192,19 @@ Goal: everything in one product domain.
 
 ## Edge cases
 
-- **No docs for a project** — use project + file + endpoint nodes; read source under `root`.
-- **Weak `implements`** — dynamic Nest routes may not match; open the controller and spec.
+- **No docs for a project** — use project + source + endpoint / channel nodes; read source under `root`.
+- **Weak `implements`** — dynamic Nest routes or gateway namespaces may not match; open the controller/gateway and spec. Gateways match AsyncAPI channels by **namespace** (incl. `process.env.X \|\| 'literal'`), not bare `@SubscribeMessage` across namespaces.
+- **Weak `injects`** — constructor type annotations on controllers/gateways/services/jobs/providers; facade `inject(Service)` on NgRx state; `@Inject('token')` skipped. Prefer same-project class matches.
+- **Weak `provides` / `calls`** — module metadata identifiers and HttpClient template paths only; dynamic URLs and string tokens may be missing.
+- **NgRx state** — one `state` node per `…/state/<slice>/` folder; matching `<slice>.service.ts` is linked via `contains`; facade `inject()` adds `injects`.
+- **Emails** — one `email` node per template stem (`invoice-issued.template.html` + `.txt`); partials and `*-pdf.template.*` are skipped.
+- **Providers** — backend `*.provider.ts` and payment `*.processor.ts` under `*/processors/`; frontend DI `*.providers.ts` / `*.provider.ts` are excluded.
+- **Webhook events** — individual events from `*notification.events.ts` catalogs (`webhook-event:<project>:<name>`).
+- **Tools** — Nx projects under `tools/` are typed `tool`; non-Nx dirs like `tools/ci` get `tool:<name>` nodes. Apps/libs that reference a tool in `project.json` (executor plugin id, package name, `implicitDependencies`, or `tools/<name>` path) get `depends_on` → that tool.
+- **Packages** — production npm deps attributed to **apps only** via Nx `createPackageJson` (same as SBOM / `generatePackageJson`). Not from the root lockfile alone.
+- **Patches** — `patches/*.patch` linked to an existing `package` node when present; orphan patches are skipped.
 - **Stale graph** — regenerate before architecture reviews on a dirty tree.
 - **Secrets** — graph stores paths and API metadata only, never `.env` values or credentials.
+- **Mentions vs `depends_on`** — Code may _mention_ a lib without an Nx edge. `graph_r1` answers declared coupling; `graph_mentions` lists soft file hits and `softReferenceProjects`. Bare tokens shorter than 8 characters are omitted from mention patterns (use `tools/<name>` / the package `name` from `package.json` instead). Cache/fixture paths (`.angular`, `vite/deps`, `__fixtures__`) are excluded.
+- **MCP binary** — Cursor/OpenCode should start `tools/graph/mcp-run.cjs` (builds `dist/tools/graph/src/mcp.js` if missing). After editing graph tool sources, run `nx run graph:build` (or restart MCP so a fresh require picks up dist).
+- **Fixtures** — `__fixtures__` directories are not indexed into `graph/graph.json` (keeps tool test sandboxes out of product blast radius).

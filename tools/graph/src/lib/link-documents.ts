@@ -8,6 +8,9 @@ export interface LinkDocumentsInput {
   conceptTexts?: Map<string, string>;
 }
 
+/** Bare project names shorter than this need word-boundary matching (avoids `ai` / `graph` noise). */
+export const MIN_PROJECT_NAME_SUBSTRING = 8;
+
 /**
  * Build documents edges from concepts to projects/apis mentioned in titles or body text.
  */
@@ -42,13 +45,13 @@ export function linkDocuments(input: LinkDocumentsInput): KnowledgeEdge[] {
     const haystack = textParts.join('\n').toLowerCase();
 
     for (const project of projectNames) {
-      if (haystack.includes(project.name.toLowerCase())) {
+      if (mentionsToken(haystack, project.name)) {
         addEdge(edges, seen, concept.id, project.id);
       }
     }
 
     for (const api of apis) {
-      if (api.operationId && haystack.includes(api.operationId.toLowerCase())) {
+      if (api.operationId && mentionsToken(haystack, api.operationId)) {
         addEdge(edges, seen, concept.id, api.id);
       }
       const pathToken = api.pathOrChannel.toLowerCase();
@@ -60,6 +63,22 @@ export function linkDocuments(input: LinkDocumentsInput): KnowledgeEdge[] {
   }
 
   return edges;
+}
+
+/**
+ * Match a token in haystack. Short tokens require non-alphanumeric boundaries.
+ */
+export function mentionsToken(haystack: string, token: string): boolean {
+  const normalized = token.trim().toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+  if (normalized.length >= MIN_PROJECT_NAME_SUBSTRING) {
+    return haystack.includes(normalized);
+  }
+  const escaped = normalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const boundary = new RegExp(`(^|[^a-z0-9_/-])${escaped}([^a-z0-9_/-]|$)`, 'i');
+  return boundary.test(haystack);
 }
 
 function addEdge(edges: KnowledgeEdge[], seen: Set<string>, from: string, to: string): void {

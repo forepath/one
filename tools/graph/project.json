@@ -53,6 +53,26 @@
       "options": {
         "command": "node dist/tools/graph/src/serve.js"
       }
+    },
+    "query": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/tools/graph/src/query-cli.js"
+      }
+    },
+    "impact": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "command": "node dist/tools/graph/src/query-cli.js impact"
+      }
+    },
+    "mcp": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node tools/graph/mcp-run.cjs"
+      }
     }
   }
 }

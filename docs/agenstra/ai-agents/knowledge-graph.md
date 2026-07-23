@@ -66,13 +66,25 @@ See the **Knowledge Graph Skill** for id patterns and traversal recipes.
 ## Using the graph with AI tools
 
 1. Load the **Knowledge Graph Skill**.
-2. Read `graph/graph.json` (prefer targeted searches by node `id` or `type`).
-3. Optionally open `graph/graph.html` in a browser for neighborhood inspection.
-4. Fall back to source under each project's `root` when edges are missing.
+2. Prefer the **knowledge-graph MCP** (`.agenstra/mcp-definitions/knowledge-graph.mcp.json` → Cursor `.cursor/mcp.json`) — tools `graph_r1`, `graph_docs`, `graph_endpoint`, `graph_search`, `graph_impact`, `graph_mentions`.
+3. Or use the CLI: `nx run graph:query -- r1 <project>`, `nx run graph:impact -- --base main`, `nx run graph:query -- mentions <project>`.
+4. Do **not** paste all of `graph/graph.json` into context; recipe tools return compact neighborhoods.
+5. Optionally open `graph/graph.html` via `nx run graph:serve` for visual inspection.
+6. Fall back to source under each project's `root` when edges are missing.
+7. Use `graph_mentions` when you need textual consumers that are not declared Nx `depends_on` edges.
+
+Build the MCP/CLI entrypoints after graph tool changes (or let the launcher build on first start):
+
+```bash
+nx run graph:build
+# or: node tools/graph/mcp-run.cjs  # builds dist if missing, then starts MCP
+```
 
 ## Security
 
 The generator indexes **paths and API metadata only**. It skips sensitive path names (for example `.env*`, `*secret*`, `*credential*`) and does not embed environment values, tokens, or encrypted secrets into `graph.json`.
+
+`__fixtures__`, `.angular`, and `.cache` directories are skipped during discovery so test sandboxes and build caches do not pollute blast-radius results. `graph_mentions` also omits bare tokens shorter than 8 characters and ignores cache/fixture hit paths.
 
 ## Implementation
 
