@@ -59,6 +59,8 @@ describe('buildKnowledgeGraph (fixture workspace)', () => {
     expect(ids.has(httpApiNodeId('GET', '/invoices'))).toBe(true);
     expect(ids.has(httpApiNodeId('POST', '/invoices'))).toBe(true);
     expect(ids.has(channelApiNodeId('demo/status'))).toBe(true);
+    expect(byId.get(channelApiNodeId('demo/status'))?.type).toBe('channel');
+    expect(byId.get(httpApiNodeId('GET', '/invoices'))?.type).toBe('endpoint');
     expect(ids.has('domain:demo')).toBe(true);
 
     expect(byId.get('file:apps/demo-api/src/invoices.controller.ts')?.type).toBe('controller');
@@ -139,6 +141,33 @@ describe('buildKnowledgeGraph (fixture workspace)', () => {
           e.type === 'implements' &&
           e.from === 'file:apps/demo-api/src/gateways/status.gateway.ts' &&
           e.to === channelApiNodeId('demo/status'),
+      ),
+    ).toBe(true);
+
+    expect(
+      graph.edges.some(
+        (e) =>
+          e.type === 'injects' &&
+          e.from === 'file:apps/demo-api/src/invoices.controller.ts' &&
+          e.to === 'file:apps/demo-api/src/services/invoices.service.ts',
+      ),
+    ).toBe(true);
+
+    expect(
+      graph.edges.some(
+        (e) =>
+          e.type === 'injects' &&
+          e.from === 'file:apps/demo-api/src/invoices.controller.ts' &&
+          e.to === 'file:apps/demo-api/src/repositories/invoices.repository.ts',
+      ),
+    ).toBe(true);
+
+    expect(
+      graph.edges.some(
+        (e) =>
+          e.type === 'injects' &&
+          e.from === 'file:apps/demo-api/src/gateways/status.gateway.ts' &&
+          e.to === 'file:apps/demo-api/src/services/invoices.service.ts',
       ),
     ).toBe(true);
 

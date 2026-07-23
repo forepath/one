@@ -62,14 +62,40 @@ export {
   parseWebhookEventsCatalogFile,
 } from './lib/parse-webhook-events';
 export {
+  channelMatchesGateway,
   channelMatchesHint,
+  channelMatchesStem,
+  channelBelongsToNamespace,
   extractControllerPaths,
+  extractGatewayBinding,
   extractGatewayChannelHints,
   linkImplements,
   normalizeApiPath,
   normalizeChannelToken,
   pathMatchesPrefix,
 } from './lib/link-implements';
+export {
+  extractBalancedParenContents,
+  extractConstructorInjectedTypes,
+  extractExportedClassNames,
+  INJECTOR_SOURCE_TYPES,
+  linkInjects,
+  resolveInjectableTarget,
+} from './lib/link-injects';
+export {
+  extractBalancedBracketContents,
+  extractModuleArrayIdentifiers,
+  extractModuleProvidedClassNames,
+  linkModuleProvides,
+} from './lib/link-module-provides';
+export {
+  extractHttpCalls,
+  extractInjectedClassTokens,
+  frontendUrlToApiPath,
+  linkHttpCalls,
+  linkStateFacadeInjects,
+  pathPatternKey,
+} from './lib/link-http-calls';
 export { linkStateServices } from './lib/link-state-services';
 export {
   collectToolIdentifiers,

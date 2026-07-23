@@ -1,16 +1,15 @@
 import * as fs from 'fs';
 
 import { ApiNodeAttrs, fileNodeId, KnowledgeEdge, KnowledgeNode, projectNodeId } from './schema';
+import { extractBalancedParenContents } from './link-injects';
 
 const CONTROLLER_DECORATOR_RE =
   /@Controller\s*\(\s*(?:'([^']+)'|"([^"]+)"|`([^`]+)`|\{\s*path\s*:\s*(?:'([^']+)'|"([^"]+)"|`([^`]+)`))/g;
 
-const WEBSOCKET_GATEWAY_RE =
-  /@WebSocketGateway\s*\(\s*(?:(\d+)\s*,\s*)?\{([^}]*)\}|@WebSocketGateway\s*\(\s*\{([^}]*)\}\s*\)|@WebSocketGateway\s*\(\s*(\d+)\s*\)/g;
-
-const NAMESPACE_IN_OPTIONS_RE = /namespace\s*:\s*(?:'([^']+)'|"([^"]+)"|`([^`]+)`)/;
-
 const SUBSCRIBE_MESSAGE_RE = /@SubscribeMessage\s*\(\s*(?:'([^']+)'|"([^"]+)"|`([^`]+)`)\s*\)/g;
+
+const NAMESPACE_LITERAL_RE =
+  /namespace\s*:\s*(?:process\.env\.\w+\s*(?:\?\?|\|\|)\s*)?(?:'([^']+)'|"([^"]+)"|`([^`]+)`)/;
 
 export interface ControllerBinding {
   relativePath: string;
@@ -35,23 +34,34 @@ export function extractControllerPaths(source: string): string[] {
   return paths;
 }
 
-/**
- * Extract WebSocket namespace / channel tokens from a Nest gateway source file.
- */
-export function extractGatewayChannelHints(source: string): string[] {
-  const hints = new Set<string>();
+export interface GatewayBinding {
+  /** Resolved WebSocket namespaces (literals / env fallbacks). */
+  namespaces: string[];
+  /** @SubscribeMessage event names. */
+  events: string[];
+  /** Filename stem without `.gateway.ts`, normalized. */
+  stem?: string;
+}
 
-  const gatewayRe = new RegExp(WEBSOCKET_GATEWAY_RE.source, WEBSOCKET_GATEWAY_RE.flags);
-  let gatewayMatch: RegExpExecArray | null;
-  while ((gatewayMatch = gatewayRe.exec(source)) !== null) {
-    const optionsBlock = gatewayMatch[2] ?? gatewayMatch[3] ?? '';
-    if (optionsBlock) {
-      const ns = NAMESPACE_IN_OPTIONS_RE.exec(optionsBlock);
-      const raw = ns?.[1] ?? ns?.[2] ?? ns?.[3];
-      if (raw) {
+/**
+ * Extract WebSocket namespace / SubscribeMessage bindings from a Nest gateway source file.
+ */
+export function extractGatewayBinding(source: string, relativePath?: string): GatewayBinding {
+  const namespaces = new Set<string>();
+  const events = new Set<string>();
+
+  const gatewayIdx = source.search(/@WebSocketGateway\s*\(/);
+  if (gatewayIdx >= 0) {
+    const openIdx = source.indexOf('(', gatewayIdx);
+    const args = extractBalancedParenContents(source, openIdx);
+    if (args) {
+      const nsRe = new RegExp(NAMESPACE_LITERAL_RE.source, 'g');
+      let nsMatch: RegExpExecArray | null;
+      while ((nsMatch = nsRe.exec(args)) !== null) {
+        const raw = nsMatch[1] ?? nsMatch[2] ?? nsMatch[3] ?? '';
         const normalized = normalizeChannelToken(raw);
         if (normalized) {
-          hints.add(normalized);
+          namespaces.add(normalized);
         }
       }
     }
@@ -63,11 +73,28 @@ export function extractGatewayChannelHints(source: string): string[] {
     const raw = subscribeMatch[1] ?? subscribeMatch[2] ?? subscribeMatch[3] ?? '';
     const normalized = normalizeChannelToken(raw);
     if (normalized) {
-      hints.add(normalized);
+      events.add(normalized);
     }
   }
 
-  return [...hints];
+  let stem: string | undefined;
+  if (relativePath) {
+    const base = relativePath.replace(/\\/g, '/').split('/').pop() ?? '';
+    const rawStem = base.replace(/\.gateway\.ts$/i, '');
+    if (rawStem) {
+      stem = normalizeChannelToken(rawStem);
+    }
+  }
+
+  return { namespaces: [...namespaces], events: [...events], stem };
+}
+
+/**
+ * @deprecated Prefer {@link extractGatewayBinding}. Returns flat hint tokens for legacy callers/tests.
+ */
+export function extractGatewayChannelHints(source: string): string[] {
+  const binding = extractGatewayBinding(source);
+  return [...binding.namespaces, ...binding.events];
 }
 
 export function normalizeApiPath(raw: string): string {
@@ -95,28 +122,75 @@ export function pathMatchesPrefix(apiPath: string, controllerPrefix: string): bo
 }
 
 /**
- * Match AsyncAPI channel names to gateway hints (namespace or SubscribeMessage).
- * Allows equality or either side containing the other as a path segment / suffix.
+ * Match AsyncAPI channel names to gateway namespace + event bindings.
+ * Prefer namespace-scoped matches to avoid cross-gateway SubscribeMessage collisions
+ * (e.g. `setClient` on clients vs pages vs tickets).
  */
-export function channelMatchesHint(channelName: string, hint: string): boolean {
+export function channelMatchesGateway(channelName: string, binding: GatewayBinding): boolean {
   const channel = normalizeChannelToken(channelName);
-  const token = normalizeChannelToken(hint);
+  if (!channel) {
+    return false;
+  }
+
+  if (binding.namespaces.length > 0) {
+    for (const ns of binding.namespaces) {
+      if (!channelBelongsToNamespace(channel, ns)) {
+        continue;
+      }
+      if (binding.events.length === 0) {
+        return true;
+      }
+      const lastSegment = channel.includes('/') ? channel.slice(channel.lastIndexOf('/') + 1) : channel;
+      if (binding.events.includes(lastSegment) || binding.events.includes(channel)) {
+        return true;
+      }
+      // Namespace-owned channel (e.g. clients/error) even when not a SubscribeMessage handler.
+      return true;
+    }
+    return false;
+  }
+
+  // No namespace: match events only as exact channel or */event, not bare substring across namespaces.
+  for (const event of binding.events) {
+    if (channel === event || channel.endsWith(`/${event}`)) {
+      return true;
+    }
+  }
+
+  if (binding.stem) {
+    return channelMatchesStem(channel, binding.stem);
+  }
+  return false;
+}
+
+export function channelBelongsToNamespace(channelName: string, namespace: string): boolean {
+  const channel = normalizeChannelToken(channelName);
+  const ns = normalizeChannelToken(namespace);
+  if (!channel || !ns) {
+    return false;
+  }
+  return channel === ns || channel.startsWith(`${ns}/`);
+}
+
+export function channelMatchesStem(channelName: string, stem: string): boolean {
+  const channel = normalizeChannelToken(channelName);
+  const token = normalizeChannelToken(stem);
   if (!channel || !token) {
     return false;
   }
   if (channel === token) {
     return true;
   }
-  if (channel.endsWith(`/${token}`) || channel.startsWith(`${token}/`)) {
-    return true;
-  }
-  if (token.endsWith(`/${channel}`) || token.startsWith(`${channel}/`)) {
-    return true;
-  }
-  // Filename-style: billing-status vs billing/status
   const channelFlat = channel.replace(/\//g, '-');
   const tokenFlat = token.replace(/\//g, '-');
-  return channelFlat === tokenFlat || channelFlat.includes(tokenFlat) || tokenFlat.includes(channelFlat);
+  return channelFlat === tokenFlat || channel.startsWith(`${token}/`) || channelFlat.startsWith(`${tokenFlat}-`);
+}
+
+/**
+ * @deprecated Prefer {@link channelMatchesGateway}.
+ */
+export function channelMatchesHint(channelName: string, hint: string): boolean {
+  return channelMatchesGateway(channelName, { namespaces: [], events: [], stem: hint });
 }
 
 export interface SourceFileRef {
@@ -142,7 +216,7 @@ function pushImplementsEdge(edges: KnowledgeEdge[], seen: Set<string>, fromId: s
 
 /**
  * Build implements edges from Nest controllers to OpenAPI endpoints
- * and from Nest gateways to AsyncAPI channel endpoints.
+ * and from Nest gateways to AsyncAPI channels.
  */
 export function linkImplements(input: LinkImplementsInput): KnowledgeEdge[] {
   const edges: KnowledgeEdge[] = [];
@@ -157,7 +231,7 @@ export function linkImplements(input: LinkImplementsInput): KnowledgeEdge[] {
   });
 
   const asyncApiNodes = input.apiNodes.filter((node) => {
-    if (node.type !== 'endpoint') {
+    if (node.type !== 'channel') {
       return false;
     }
     const attrs = node.attrs as ApiNodeAttrs;
@@ -203,31 +277,23 @@ export function linkImplements(input: LinkImplementsInput): KnowledgeEdge[] {
       continue;
     }
 
-    const hints = extractGatewayChannelHints(source);
-    // Always include basename stem (e.g. billing-status from billing-status.gateway.ts)
-    const base = file.relativePath.replace(/\\/g, '/').split('/').pop() ?? '';
-    const stem = base.replace(/\.gateway\.ts$/i, '');
-    if (stem) {
-      hints.push(normalizeChannelToken(stem));
-    }
-    if (hints.length === 0) {
+    const binding = extractGatewayBinding(source, file.relativePath);
+    if (binding.namespaces.length === 0 && binding.events.length === 0 && !binding.stem) {
       continue;
     }
 
     const fileId = fileNodeId(file.relativePath);
     const projectId = file.projectName ? projectNodeId(file.projectName) : undefined;
 
-    for (const hint of hints) {
-      for (const apiNode of asyncApiNodes) {
-        const attrs = apiNode.attrs as ApiNodeAttrs;
-        if (!channelMatchesHint(attrs.pathOrChannel, hint)) {
-          continue;
-        }
+    for (const apiNode of asyncApiNodes) {
+      const attrs = apiNode.attrs as ApiNodeAttrs;
+      if (!channelMatchesGateway(attrs.pathOrChannel, binding)) {
+        continue;
+      }
 
-        pushImplementsEdge(edges, seen, fileId, apiNode.id);
-        if (projectId) {
-          pushImplementsEdge(edges, seen, projectId, apiNode.id);
-        }
+      pushImplementsEdge(edges, seen, fileId, apiNode.id);
+      if (projectId) {
+        pushImplementsEdge(edges, seen, projectId, apiNode.id);
       }
     }
   }

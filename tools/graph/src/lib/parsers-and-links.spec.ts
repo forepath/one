@@ -52,7 +52,7 @@ paths:
 });
 
 describe('parseAsyncApi', () => {
-  it('should emit channel api nodes', () => {
+  it('should emit channel nodes for AsyncAPI channels', () => {
     const yaml = `
 asyncapi: 2.6.0
 channels:
@@ -64,6 +64,7 @@ channels:
     const result = parseAsyncApi('libs/demo/spec/asyncapi.yaml', yaml);
     expect(result.nodes).toHaveLength(1);
     expect(result.nodes[0].id).toBe(channelApiNodeId('billing/status'));
+    expect(result.nodes[0].type).toBe('channel');
     expect(result.nodes[0].attrs).toMatchObject({
       pathOrChannel: 'billing/status',
       operationId: 'publishBillingStatus',
@@ -201,7 +202,7 @@ describe('linkImplements', () => {
 
     expect(extractGatewayChannelHints(`@WebSocketGateway({ namespace: 'demo/status' })`)).toEqual(['demo/status']);
     expect(channelMatchesHint('demo/status', 'demo/status')).toBe(true);
-    expect(channelMatchesHint('demo/status', 'status')).toBe(true);
+    expect(channelMatchesHint('demo/status', 'status')).toBe(false);
 
     const edges = linkImplements({
       controllerFiles: [],
@@ -215,9 +216,17 @@ describe('linkImplements', () => {
       apiNodes: [
         {
           id: channelApiNodeId('demo/status'),
-          type: 'endpoint',
+          type: 'channel',
           attrs: {
             pathOrChannel: 'demo/status',
+            specKind: 'asyncapi',
+          },
+        },
+        {
+          id: channelApiNodeId('clients/setClient'),
+          type: 'channel',
+          attrs: {
+            pathOrChannel: 'clients/setClient',
             specKind: 'asyncapi',
           },
         },
@@ -238,6 +247,61 @@ describe('linkImplements', () => {
         },
       ]),
     );
+    expect(edges.find((e) => e.to === channelApiNodeId('clients/setClient'))).toBeUndefined();
+  });
+
+  it('should scope gateway implements to namespace (not bare SubscribeMessage)', () => {
+    const fs = require('fs') as typeof import('fs');
+    const os = require('os') as typeof import('os');
+    const path = require('path') as typeof import('path');
+    const { extractGatewayBinding, channelMatchesGateway } =
+      require('./link-implements') as typeof import('./link-implements');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'kg-gw-ns-'));
+    const filePath = path.join(dir, 'pages.gateway.ts');
+    fs.writeFileSync(
+      filePath,
+      `@WebSocketGateway(parseInt(process.env.PORT || '8081', 10), {
+  namespace: process.env.NS || 'pages',
+})
+export class PagesGateway {
+  @SubscribeMessage('setClient')
+  handle() {}
+}
+`,
+    );
+
+    const source = fs.readFileSync(filePath, 'utf8');
+    const binding = extractGatewayBinding(source, 'apps/x/pages.gateway.ts');
+    expect(binding.namespaces).toEqual(['pages']);
+    expect(binding.events).toEqual(['setclient']);
+    expect(channelMatchesGateway('pages/setClient', binding)).toBe(true);
+    expect(channelMatchesGateway('clients/setClient', binding)).toBe(false);
+
+    const edges = linkImplements({
+      controllerFiles: [],
+      gatewayFiles: [
+        {
+          relativePath: 'apps/demo-api/src/gateways/pages.gateway.ts',
+          absolutePath: filePath,
+          projectName: 'demo-api',
+        },
+      ],
+      apiNodes: [
+        {
+          id: channelApiNodeId('pages/setClient'),
+          type: 'channel',
+          attrs: { pathOrChannel: 'pages/setClient', specKind: 'asyncapi' },
+        },
+        {
+          id: channelApiNodeId('clients/setClient'),
+          type: 'channel',
+          attrs: { pathOrChannel: 'clients/setClient', specKind: 'asyncapi' },
+        },
+      ],
+    });
+
+    expect(edges.map((e) => e.to)).toEqual(expect.arrayContaining([channelApiNodeId('pages/setClient')]));
+    expect(edges.find((e) => e.to === channelApiNodeId('clients/setClient'))).toBeUndefined();
   });
 });
 

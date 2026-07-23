@@ -9,6 +9,9 @@ import { buildClusterSlice } from './build-clusters';
 import { fromProjectGraph } from './from-project-graph';
 import { linkDocuments } from './link-documents';
 import { linkImplements } from './link-implements';
+import { INJECTOR_SOURCE_TYPES, linkInjects } from './link-injects';
+import { linkHttpCalls, linkStateFacadeInjects } from './link-http-calls';
+import { linkModuleProvides } from './link-module-provides';
 import { linkPackages } from './link-packages';
 import { linkToolUsage } from './link-tool-usage';
 import { linkStateServices } from './link-state-services';
@@ -172,12 +175,80 @@ export function buildKnowledgeGraph(options: BuildKnowledgeGraphOptions): Knowle
     const base = f.relativePath.replace(/\\/g, '/').split('/').pop()?.toLowerCase() ?? '';
     return base.endsWith('.gateway.ts');
   });
+  const apiSurfaceNodes = [...nodesById.values()].filter((n) => n.type === 'endpoint' || n.type === 'channel');
   const implementsEdges = linkImplements({
     controllerFiles,
     gatewayFiles,
-    apiNodes: [...nodesById.values()].filter((n) => n.type === 'endpoint'),
+    apiNodes: apiSurfaceNodes,
   });
   for (const edge of implementsEdges) {
+    addEdge(edge);
+  }
+
+  const injectorFiles = discovered.files.filter((f) => {
+    if (f.languageOrKind !== 'ts' || f.stateSlice) {
+      return false;
+    }
+    const node = nodesById.get(fileNodeId(f.relativePath));
+    return !!node && INJECTOR_SOURCE_TYPES.has(node.type);
+  });
+  const injectableTargetFiles = discovered.files.filter((f) => {
+    if (f.languageOrKind !== 'ts' || f.stateSlice) {
+      return false;
+    }
+    const node = nodesById.get(fileNodeId(f.relativePath));
+    return (
+      !!node &&
+      (node.type === 'service' ||
+        node.type === 'repository' ||
+        node.type === 'guard' ||
+        node.type === 'provider' ||
+        node.type === 'job' ||
+        node.type === 'controller' ||
+        node.type === 'gateway')
+    );
+  });
+  const injectsEdges = linkInjects({
+    injectorFiles,
+    targetFiles: injectableTargetFiles,
+    nodes: [...nodesById.values()],
+  });
+  for (const edge of injectsEdges) {
+    addEdge(edge);
+  }
+
+  const moduleFiles = discovered.files.filter((f) => {
+    if (f.languageOrKind !== 'ts' || f.stateSlice) {
+      return false;
+    }
+    const node = nodesById.get(fileNodeId(f.relativePath));
+    return node?.type === 'module';
+  });
+  const moduleProvidesEdges = linkModuleProvides({
+    moduleFiles,
+    targetFiles: [...injectorFiles, ...injectableTargetFiles, ...moduleFiles],
+    nodes: [...nodesById.values()],
+  });
+  for (const edge of moduleProvidesEdges) {
+    addEdge(edge);
+  }
+
+  const frontendHttpServiceFiles = discovered.files.filter((f) => {
+    if (f.languageOrKind !== 'ts' || f.stateSlice) {
+      return false;
+    }
+    const node = nodesById.get(fileNodeId(f.relativePath));
+    if (node?.type !== 'service') {
+      return false;
+    }
+    const rel = f.relativePath.replace(/\\/g, '/');
+    return rel.includes('/frontend/');
+  });
+  const httpCallEdges = linkHttpCalls({
+    serviceFiles: frontendHttpServiceFiles,
+    endpointNodes: apiSurfaceNodes,
+  });
+  for (const edge of httpCallEdges) {
     addEdge(edge);
   }
 
@@ -186,10 +257,32 @@ export function buildKnowledgeGraph(options: BuildKnowledgeGraphOptions): Knowle
     addEdge(edge);
   }
 
+  const stateDirs = discovered.files
+    .filter((f) => f.stateSlice)
+    .map((f) => ({
+      relativePath: f.relativePath,
+      absolutePath: f.absolutePath,
+      projectName: f.projectName,
+      memberFiles: f.stateSlice?.memberFiles ?? [],
+    }));
+  const stateFacadeInjectEdges = linkStateFacadeInjects({
+    stateDirs,
+    serviceFiles: discovered.files.filter((f) => {
+      if (f.languageOrKind !== 'ts' || f.stateSlice) {
+        return false;
+      }
+      return nodesById.get(fileNodeId(f.relativePath))?.type === 'service';
+    }),
+    nodes: [...nodesById.values()],
+  });
+  for (const edge of stateFacadeInjectEdges) {
+    addEdge(edge);
+  }
+
   const documentEdges = linkDocuments({
     conceptNodes: [...nodesById.values()].filter((n) => n.type === 'concept'),
     projectNodes: [...nodesById.values()].filter((n) => n.type === 'app' || n.type === 'lib'),
-    apiNodes: [...nodesById.values()].filter((n) => n.type === 'endpoint'),
+    apiNodes: apiSurfaceNodes,
     conceptTexts,
   });
   for (const edge of documentEdges) {

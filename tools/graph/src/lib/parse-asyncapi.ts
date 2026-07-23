@@ -10,7 +10,7 @@ export interface ParseAsyncApiResult {
 }
 
 /**
- * Parse an AsyncAPI YAML/JSON document into channel api nodes and contains edges.
+ * Parse an AsyncAPI YAML/JSON document into channel nodes and contains edges.
  */
 export function parseAsyncApi(relativePath: string, content: string): ParseAsyncApiResult {
   const nodes: KnowledgeNode[] = [];
@@ -62,7 +62,7 @@ export function parseAsyncApi(relativePath: string, content: string): ParseAsync
     const apiId = channelApiNodeId(channelName);
     nodes.push({
       id: apiId,
-      type: 'endpoint',
+      type: 'channel',
       attrs: {
         pathOrChannel: channelName,
         operationId,
