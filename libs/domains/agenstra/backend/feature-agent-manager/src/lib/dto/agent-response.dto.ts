@@ -11,6 +11,11 @@ export class AgentResponseDto {
   description?: string;
   agentType!: string;
   containerType!: ContainerType;
+  /** Present when browser-only Preview is enabled for this agent. */
+  browserPreview?: {
+    enabled: true;
+  };
+  /** Present only when full noVNC desktop access was enabled (published host port). */
   vnc?: {
     port: number;
     password: string;

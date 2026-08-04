@@ -62,6 +62,7 @@ import { AgentsFiltersService } from '../services/agents-filters.service';
 import { AgentsVcsService } from '../services/agents-vcs.service';
 import { AgentsVerificationService } from '../services/agents-verification.service';
 import { AgentsService } from '../services/agents.service';
+import { BrowserPreviewService } from '../services/browser-preview.service';
 import { ConfigService } from '../services/config.service';
 import { InstanceStatusService } from '../services/instance-status.service';
 import { DeploymentsService } from '../services/deployments.service';
@@ -105,6 +106,7 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
     AgenstraManagerMetricsCollectorService,
     AgentsGateway,
     AgentsService,
+    BrowserPreviewService,
     AgentMessagesService,
     PromptContextComposerService,
     AgentMessageEventsService,

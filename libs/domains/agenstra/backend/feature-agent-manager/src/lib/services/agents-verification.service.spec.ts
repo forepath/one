@@ -22,6 +22,7 @@ describe('AgentsVerificationService', () => {
     volumePath: '/v',
     agentType: 'cursor',
     containerType: ContainerType.GENERIC,
+    browserPreviewEnabled: false,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

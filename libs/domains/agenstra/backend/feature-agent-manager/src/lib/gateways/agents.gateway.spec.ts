@@ -13,6 +13,7 @@ import { AgentMessageEventsService } from '../services/agent-message-events.serv
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
 import { AgentsService } from '../services/agents.service';
+import { BrowserPreviewService } from '../services/browser-preview.service';
 import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 
@@ -44,6 +45,7 @@ describe('AgentsGateway', () => {
     containerId: 'container-123',
     agentType: 'cursor',
     containerType: ContainerType.GENERIC,
+    browserPreviewEnabled: false,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
@@ -127,6 +129,13 @@ describe('AgentsGateway', () => {
       gitStateBroadcaster?.(agentId);
     }),
   };
+  const mockBrowserPreviewService = {
+    startSession: jest.fn(),
+    stopSession: jest.fn(),
+    stopSessionsForSocket: jest.fn(),
+    hasSession: jest.fn().mockReturnValue(false),
+    dispatchInput: jest.fn(),
+  };
 
   beforeEach(async () => {
     gitStateBroadcaster = undefined;
@@ -172,6 +181,10 @@ describe('AgentsGateway', () => {
         {
           provide: AgentGitStateBroadcastService,
           useValue: mockGitStateBroadcast,
+        },
+        {
+          provide: BrowserPreviewService,
+          useValue: mockBrowserPreviewService,
         },
       ],
     }).compile();
@@ -3693,6 +3706,89 @@ describe('AgentsGateway', () => {
 
       expect(parts[0].args).toMatchObject({ autoEnrichmentEnabled: true });
       expect(parts[1].result).toMatchObject({ autoEnrichmentEnabled: true });
+    });
+  });
+
+  describe('browser preview', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockBrowserPreviewService.hasSession.mockReturnValue(false);
+    });
+
+    it('should reject startBrowserPreview when unauthorized', async () => {
+      await gateway.handleStartBrowserPreview({}, mockSocket as Socket);
+
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'error',
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({ code: 'UNAUTHORIZED' }),
+        }),
+      );
+    });
+
+    it('should reject startBrowserPreview when preview is disabled', async () => {
+      (gateway as any).authenticatedClients.set(mockSocket.id, 'agent-1');
+      agentsRepository.findById.mockResolvedValue({
+        id: 'agent-1',
+        browserPreviewEnabled: false,
+        vncContainerId: 'vnc-1',
+      } as any);
+
+      await gateway.handleStartBrowserPreview({}, mockSocket as Socket);
+
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'error',
+        expect.objectContaining({
+          error: expect.objectContaining({ code: 'PREVIEW_DISABLED' }),
+        }),
+      );
+    });
+
+    it('should start browser preview when enabled', async () => {
+      (gateway as any).authenticatedClients.set(mockSocket.id, 'agent-1');
+      agentsRepository.findById.mockResolvedValue({
+        id: 'agent-1',
+        browserPreviewEnabled: true,
+        vncContainerId: 'vnc-1',
+        vncNetworkId: 'net-1',
+      } as any);
+      mockBrowserPreviewService.startSession.mockResolvedValue(undefined);
+
+      await gateway.handleStartBrowserPreview({ sessionId: 'preview-1' }, mockSocket as Socket);
+
+      expect(mockBrowserPreviewService.startSession).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sessionId: 'preview-1',
+          agentId: 'agent-1',
+          vncContainerId: 'vnc-1',
+          networkId: 'net-1',
+        }),
+      );
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'browserPreviewStarted',
+        expect.objectContaining({
+          success: true,
+          data: { sessionId: 'preview-1' },
+        }),
+      );
+    });
+
+    it('should reject browserPreviewInput for foreign session', async () => {
+      (gateway as any).authenticatedClients.set(mockSocket.id, 'agent-1');
+      mockBrowserPreviewService.hasSession.mockReturnValue(false);
+
+      await gateway.handleBrowserPreviewInput(
+        { sessionId: 'preview-1', kind: 'mouse', event: { type: 'mouseMoved', x: 1, y: 2 } },
+        mockSocket as Socket,
+      );
+
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'error',
+        expect.objectContaining({
+          error: expect.objectContaining({ code: 'PREVIEW_ERROR' }),
+        }),
+      );
     });
   });
 });

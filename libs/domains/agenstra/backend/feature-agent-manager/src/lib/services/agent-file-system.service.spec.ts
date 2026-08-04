@@ -33,6 +33,7 @@ describe('AgentFileSystemService', () => {
   };
   const mockAgentEntity: AgentEntity = {
     ...mockAgentResponse,
+    browserPreviewEnabled: false,
     containerId: mockContainerId,
     hashedPassword: 'hashed-password',
     volumePath: '/opt/agents/test-uuid',
