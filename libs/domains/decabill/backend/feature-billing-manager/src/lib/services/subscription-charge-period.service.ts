@@ -8,11 +8,18 @@ import { calculateProratedAmount } from '../utils/billing-proration.util';
 import { getEarliestProvisionedAt } from '../utils/provisioned-billing.util';
 
 import { BillingScheduleService } from './billing-schedule.service';
+import { subtractBillingInterval } from './invoicing-period.util';
 
 export interface SubscriptionChargePeriod {
   baseAmount: number;
+  /** Floor used for subscription base proration (often last invoice createdAt). */
   periodStart: Date;
   periodEnd: Date;
+  /**
+   * Floor for meter aggregation. Schedule-aligned when the arrear tick already rolled
+   * the subscription forward, so lagged invoice.createdAt does not drop collector samples.
+   */
+  meterPeriodStart: Date;
 }
 
 @Injectable()
@@ -60,10 +67,20 @@ export class SubscriptionChargePeriodService {
     }
 
     if (!lastBillingAt) {
+      const meterPeriodStart = this.resolveMeterPeriodStart({
+        subscription,
+        plan,
+        billUntil: effectiveUntil,
+        rolledForward,
+        fallbackStart: periodFloor,
+        hasPriorInvoice: false,
+      });
+
       return {
         baseAmount: fullPeriodPrice,
         periodStart: periodFloor,
         periodEnd: effectiveUntil,
+        meterPeriodStart,
       };
     }
 
@@ -95,11 +112,52 @@ export class SubscriptionChargePeriodService {
       effectiveUntil,
       this.billingScheduleService,
     );
+    const meterPeriodStart = this.resolveMeterPeriodStart({
+      subscription,
+      plan,
+      billUntil: effectiveUntil,
+      rolledForward,
+      fallbackStart: lastBillingAt,
+      hasPriorInvoice: latestInvoice != null,
+    });
 
     return {
       baseAmount,
       periodStart: lastBillingAt,
       periodEnd: effectiveUntil,
+      meterPeriodStart,
     };
+  }
+
+  private resolveMeterPeriodStart(params: {
+    subscription: SubscriptionEntity;
+    plan: ServicePlanEntity;
+    billUntil: Date;
+    rolledForward: boolean;
+    fallbackStart: Date;
+    hasPriorInvoice: boolean;
+  }): Date {
+    const createdAt = params.subscription.createdAt ?? params.fallbackStart;
+
+    if (params.rolledForward && params.hasPriorInvoice) {
+      const alignedStart = subtractBillingInterval(params.billUntil, params.plan);
+
+      return alignedStart.getTime() > createdAt.getTime() ? alignedStart : createdAt;
+    }
+
+    // Direct createInvoice / in-period charges: do not let a lagged invoice.createdAt
+    // push the meter floor past the open schedule period start.
+    const scheduleStart = params.subscription.currentPeriodStart;
+
+    if (
+      params.hasPriorInvoice &&
+      scheduleStart &&
+      scheduleStart.getTime() < params.billUntil.getTime() &&
+      scheduleStart.getTime() < params.fallbackStart.getTime()
+    ) {
+      return scheduleStart.getTime() > createdAt.getTime() ? scheduleStart : createdAt;
+    }
+
+    return params.fallbackStart;
   }
 }

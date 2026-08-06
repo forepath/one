@@ -63,6 +63,7 @@ import { BillingEmailPublisher } from '../email/billing-email.publisher';
 import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.service';
 import { SubscriptionPeriodChargeService } from './subscription-period-charge.service';
 import { convertAddonPriceToPlanPeriod } from '../utils/addon-pricing.util';
+import { MeterBillingService } from './meter-billing.service';
 
 const PROVISIONING_SSH_USER = 'root';
 const PROVISIONING_SSH_PORT = 22;
@@ -105,6 +106,7 @@ export class SubscriptionService {
     private readonly customerTrustScoreService: CustomerTrustScoreService,
     private readonly subscriptionPeriodChargeService: SubscriptionPeriodChargeService,
     private readonly sshExecutor: SshExecutorService,
+    private readonly meterBillingService: MeterBillingService,
   ) {}
 
   async createSubscription(
@@ -958,6 +960,11 @@ export class SubscriptionService {
       withdrawalEligibility: eligibility,
       withdrawalResult,
       periodTotalPrice,
+      meters: await this.meterBillingService.buildSubscriptionMeterSummaries({
+        subscription,
+        periodStart: subscription.currentPeriodStart,
+        periodEnd: subscription.currentPeriodEnd,
+      }),
       createdAt: subscription.createdAt,
       updatedAt: subscription.updatedAt,
     };

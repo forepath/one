@@ -1,3 +1,5 @@
+import type { DeclaredMeterDefinition } from './declared-meter.dto';
+
 export interface ProviderEnvDefaultField {
   envKey: string;
   label: string;
@@ -47,4 +49,10 @@ export class ProviderDetailDto {
    * Fail-closed: omitted / false means downgrades are not offered.
    */
   supportsServerTypeDowngrade?: boolean;
+
+  /**
+   * Required usage meters declared by the provider (or product) implementation.
+   * Sideloaded onto service types as non-removable attachments.
+   */
+  meters?: DeclaredMeterDefinition[];
 }

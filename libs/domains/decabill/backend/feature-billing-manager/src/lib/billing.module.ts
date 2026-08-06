@@ -85,6 +85,8 @@ import { ServiceTypesController } from './controllers/service-types.controller';
 import { SubscriptionItemsController } from './controllers/subscription-items.controller';
 import { SubscriptionsController } from './controllers/subscriptions.controller';
 import { AdminUsageController } from './controllers/admin-usage.controller';
+import { AdminSubscriptionMetersController } from './controllers/admin-subscription-meters.controller';
+import { MetersController } from './controllers/meters.controller';
 import { UsageController } from './controllers/usage.controller';
 import { AvailabilitySnapshotEntity } from './entities/availability-snapshot.entity';
 import { BackorderEntity } from './entities/backorder.entity';
@@ -109,13 +111,17 @@ import { ProviderPriceSnapshotEntity } from './entities/provider-price-snapshot.
 import { PublicWithdrawalRequestEntity } from './entities/public-withdrawal-request.entity';
 import { ReservedHostnameEntity } from './entities/reserved-hostname.entity';
 import { AddonEntity } from './entities/addon.entity';
+import { AddonMeterEntity } from './entities/addon-meter.entity';
 import { CloudInitConfigEntity } from './entities/cloud-init-config.entity';
 import { SubscriptionAddonEntity } from './entities/subscription-addon.entity';
 import { SubscriptionConfigChangeEntity } from './entities/subscription-config-change.entity';
 import { ServicePlanEntity } from './entities/service-plan.entity';
+import { ServicePlanMeterEntity } from './entities/service-plan-meter.entity';
+import { ServiceTypeMeterEntity } from './entities/service-type-meter.entity';
 import { ServiceTypeEntity } from './entities/service-type.entity';
 import { SubscriptionItemEntity } from './entities/subscription-item.entity';
 import { SubscriptionEntity } from './entities/subscription.entity';
+import { MeterEntity } from './entities/meter.entity';
 import { UsageRecordEntity } from './entities/usage-record.entity';
 import { BillingStatusGateway } from './gateways/billing-status.gateway';
 import { DatevExportEnabledGuard } from './guards/datev-export-enabled.guard';
@@ -153,14 +159,18 @@ import { PaymentWebhookEventsRepository } from './repositories/payment-webhook-e
 import { ProviderPriceSnapshotsRepository } from './repositories/provider-price-snapshots.repository';
 import { ReservedHostnamesRepository } from './repositories/reserved-hostnames.repository';
 import { AddonsRepository } from './repositories/addons.repository';
+import { AddonMetersRepository } from './repositories/addon-meters.repository';
 import { CloudInitConfigsRepository } from './repositories/cloud-init-configs.repository';
 import { SubscriptionAddonsRepository } from './repositories/subscription-addons.repository';
 import { SubscriptionConfigChangesRepository } from './repositories/subscription-config-changes.repository';
 import { ServicePlansRepository } from './repositories/service-plans.repository';
+import { ServicePlanMetersRepository } from './repositories/service-plan-meters.repository';
+import { ServiceTypeMetersRepository } from './repositories/service-type-meters.repository';
 import { ServiceTypesRepository } from './repositories/service-types.repository';
 import { SubscriptionItemsRepository } from './repositories/subscription-items.repository';
 import { SubscriptionsRepository } from './repositories/subscriptions.repository';
 import { PublicWithdrawalRequestsRepository } from './repositories/public-withdrawal-requests.repository';
+import { MetersRepository } from './repositories/meters.repository';
 import { UsageRecordsRepository } from './repositories/usage-records.repository';
 import { UsersBillingDayRepository } from './repositories/users-billing-day.repository';
 import { AdminBillNowService } from './services/admin-bill-now.service';
@@ -179,10 +189,14 @@ import { WithdrawalPolicyService } from './services/withdrawal-policy.service';
 import { WithdrawalRefundService } from './services/withdrawal-refund.service';
 import { SubscriptionTeardownService } from './services/subscription-teardown.service';
 import { AddonModuleRegistryService } from './services/addon-module-registry.service';
+import { createBuiltinProviderModules } from './services/builtin-provider-modules';
+import { MeterCollectJobHandler } from './services/meter-collect.job-handler';
+import { ProviderModuleRegistryService } from './services/provider-module-registry.service';
 import { AddonLifecycleService } from './services/addon-lifecycle.service';
 import { AddonService } from './services/addon.service';
 import { CloudInitConfigService } from './services/cloud-init-config.service';
 import type { BillingAddonModule } from './services/addon-module-registry.service';
+import type { BillingProviderModule } from './services/provider-module-registry.service';
 import { CloudflareDnsService } from './services/cloudflare-dns.service';
 import { CustomerProfilesService } from './services/customer-profiles.service';
 import { CustomerProfilesAdminService } from './services/customer-profiles-admin.service';
@@ -251,6 +265,8 @@ import { OssThresholdService } from './services/oss-threshold.service';
 import { InvoiceTaxContextService } from './services/invoice-tax-context.service';
 import { TaxPreviewService } from './services/tax-preview.service';
 import { UsageService } from './services/usage.service';
+import { MeterService } from './services/meter.service';
+import { MeterBillingService } from './services/meter-billing.service';
 import { applyProviderConfigFieldScopes } from './utils/provider-config-schema.utils';
 import { DIGITALOCEAN_ENV_DEFAULT_FIELDS, HETZNER_ENV_DEFAULT_FIELDS } from './utils/provider-env-defaults.utils';
 import { CustomerTrustScoreService } from './trust-score/customer-trust-score.service';
@@ -451,13 +467,17 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     TypeOrmModule.forFeature([
       ServiceTypeEntity,
       ServicePlanEntity,
+      ServicePlanMeterEntity,
+      ServiceTypeMeterEntity,
       CloudInitConfigEntity,
       AddonEntity,
+      AddonMeterEntity,
       SubscriptionAddonEntity,
       SubscriptionEntity,
       SubscriptionConfigChangeEntity,
       SubscriptionItemEntity,
       ReservedHostnameEntity,
+      MeterEntity,
       UsageRecordEntity,
       InvoiceEntity,
       InvoicePromotionApplicationEntity,
@@ -498,6 +518,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     ServiceTypesController,
     CloudInitConfigsController,
     AddonsController,
+    MetersController,
     PublicServicePlanOfferingsController,
     PublicWithdrawalController,
     ServicePlansController,
@@ -510,6 +531,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     PromotionsController,
     AdminPromotionsController,
     AdminBillingController,
+    AdminSubscriptionMetersController,
     AdminCustomerProfilesController,
     AdminCustomerAutoBillingController,
     AdminDatevExportsController,
@@ -536,8 +558,12 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionPeriodChargeService,
     CloudInitConfigService,
     AddonService,
+    MeterService,
+    MeterBillingService,
     AddonLifecycleService,
     AddonModuleRegistryService,
+    ProviderModuleRegistryService,
+    MeterCollectJobHandler,
     CloudflareDnsService,
     DigitaloceanProvisioningService,
     HostnameReservationService,
@@ -709,14 +735,18 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     ProviderPriceSnapshotsRepository,
     CloudInitConfigsRepository,
     AddonsRepository,
+    AddonMetersRepository,
     SubscriptionAddonsRepository,
     SubscriptionConfigChangesRepository,
     ServicePlansRepository,
+    ServicePlanMetersRepository,
+    ServiceTypeMetersRepository,
     ServiceTypesRepository,
     ReservedHostnamesRepository,
     SubscriptionItemsRepository,
     SubscriptionsRepository,
     PublicWithdrawalRequestsRepository,
+    MetersRepository,
     UsageRecordsRepository,
     CustomerProfilesRepository,
     DatevExportRepository,
@@ -784,6 +814,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     SubscriptionProvisioningJobHandler,
     SubscriptionConfigChangeJobHandler,
     PriceRecalcJobHandler,
+    MeterCollectJobHandler,
     SubscriptionRenewalReminderJobHandler,
     OpenPositionInvoiceJobHandler,
     SubscriptionItemUpdateJobHandler,
@@ -808,6 +839,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
     VatIdValidationJobHandler,
     DatevExportConfigService,
     ProviderRegistryService,
+    ProviderModuleRegistryService,
     BillingIdentityEmailBridgeModule,
     BillingIdentityNotificationBridgeModule,
     BillingUpdatesModule,
@@ -816,6 +848,7 @@ const DIGITALOCEAN_CONFIG_SCHEMA: Record<string, unknown> = {
 export class BillingModule implements OnModuleInit {
   constructor(
     private readonly providerRegistry: ProviderRegistryService,
+    private readonly providerModuleRegistry: ProviderModuleRegistryService,
     private readonly dynamicLoader: DynamicProviderLoaderService,
     private readonly trustScoreProviderRegistry: TrustScoreProviderRegistry,
     private readonly internalBillingTrustScoreProvider: InternalBillingTrustScoreProvider,
@@ -842,12 +875,24 @@ export class BillingModule implements OnModuleInit {
       supportsServerTypeDowngrade: true,
     });
 
+    for (const module of createBuiltinProviderModules()) {
+      this.providerModuleRegistry.register(module);
+    }
+
     await registerDynamicProviderMetadata({
       envKey: 'DYNAMIC_BILLING_PROVIDER_METADATA',
       criticality: 'optional',
       register: (metadata) => this.providerRegistry.register(metadata),
       dynamicLoader: this.dynamicLoader,
       loggerContext: 'ProviderRegistryService',
+    });
+
+    await registerDynamicProviders<BillingProviderModule>({
+      envKey: 'DYNAMIC_BILLING_PROVIDER_MODULES',
+      criticality: 'optional',
+      register: (module) => this.providerModuleRegistry.register(module),
+      dynamicLoader: this.dynamicLoader,
+      loggerContext: 'ProviderModuleRegistryService',
     });
 
     await registerDynamicProviders<BillingAddonModule>({

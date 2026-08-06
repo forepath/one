@@ -97,10 +97,15 @@ Ops checklist for mid-life addon remove and related env knobs: [Subscription Con
 
 ## Admin API
 
-| Method          | Path           | Purpose               |
-| --------------- | -------------- | --------------------- |
-| GET/POST        | `/addons`      | List / create         |
-| GET/POST/DELETE | `/addons/{id}` | Get / update / delete |
+| Method          | Path                            | Purpose                              |
+| --------------- | ------------------------------- | ------------------------------------ |
+| GET/POST        | `/addons`                       | List / create                        |
+| GET/POST/DELETE | `/addons/{id}`                  | Get / update / delete                |
+| GET/POST        | `/addons/{id}/meters`           | List / attach usage meters           |
+| POST/DELETE     | `/addons/{id}/meters/{meterId}` | Update override / detach             |
+| GET             | `/addons/modules`               | Registered modules + declared meters |
+
+Addon responses embed attached meters (optional unit-price override). Module addons sync declared meters as required (`source=module`) on create/update; required meters cannot be detached. See [Usage meters](./usage-meters.md).
 
 ## Customer API
 
@@ -120,3 +125,4 @@ See [Webhooks](./webhooks.md) and [Email notifications](./email-notifications.md
 - [CloudInit configs](./cloud-init-configs.md) Env var and random default pattern
 - [Service types and plans](./service-types-and-plans.md) Catalog attachment of addons to plans
 - [Subscriptions](./subscriptions.md) Addon lifecycle on subscription orders
+- [Usage meters](./usage-meters.md) Meter attachments on addons and scoped usage billing

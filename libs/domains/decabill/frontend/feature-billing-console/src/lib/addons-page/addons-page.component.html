@@ -79,6 +79,12 @@
                           >{{ configFieldCount(addon) }} config fields</span
                         >
                       </span>
+                      @if (addonMeterCount(addon) > 0) {
+                        <span class="me-2">
+                          <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>{{ addonMeterCount(addon) }}
+                          <span i18n="@@featureAddons-metersBadge">meters</span>
+                        </span>
+                      }
                     </div>
                   </div>
                 </div>
@@ -537,6 +543,189 @@
         [name]="prefix + 'AddonIntervalValue'"
         [disabled]="disabled || !form.basePrice.trim()"
       />
+    </div>
+    <div class="col-12">
+      <div class="border rounded p-3 bg-body-secondary">
+        <h6 class="mb-2" i18n="@@featureAddons-meters">Usage meters</h6>
+        <p class="form-text text-body-secondary small mb-3" i18n="@@featureAddons-metersHelp">
+          Attach usage meters to this addon with optional unit price overrides.
+        </p>
+        @if (prefix === 'edit' && addonMeterAttachError) {
+          <div class="alert alert-danger py-2">{{ addonMeterAttachError }}</div>
+        }
+        @if (prefix === 'edit' && addonMeterAttachLoading && attachedMetersFor('edit').length === 0) {
+          <div class="text-muted small mb-2" i18n="@@featureAddons-metersLoading">Loading meters…</div>
+        }
+        @for (attached of attachedMetersFor(prefix); track attached.meterId) {
+          <div class="row g-2 mb-2 align-items-end">
+            <div class="col-12 col-md-4">
+              <div class="fw-semibold">{{ attached.name }}</div>
+              <div class="small text-muted">
+                {{ attached.key }} · {{ attached.aggregator }} · €{{ attached.effectiveUnitPriceNet }}
+                @if (attached.unitLabel) {
+                  <span>/ {{ attached.unitLabel }}</span>
+                }
+              </div>
+            </div>
+            <div class="col-12 col-md-5">
+              <label
+                class="form-label small mb-0"
+                [for]="prefix + 'AddonMeterOverride' + attached.meterId"
+                i18n="@@featureAddons-meterUnitPriceOverride"
+                >Unit price override (net)</label
+              >
+              <input
+                type="number"
+                min="0"
+                step="0.0001"
+                class="form-control form-control-sm"
+                [id]="prefix + 'AddonMeterOverride' + attached.meterId"
+                #addonMeterOverride
+                [value]="attachedMeterOverrideInput(attached)"
+                [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
+              />
+            </div>
+            <div class="col-12 col-md-3 d-flex gap-1 flex-wrap justify-content-md-end">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                (click)="updateAttachedAddonMeter(prefix, attached, addonMeterOverride.value)"
+                [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
+                title="Update price"
+                i18n-title="@@featureAddons-updateMeterPrice"
+                aria-label="Update price"
+                i18n-aria-label="@@featureAddons-updateMeterPrice"
+              >
+                <i class="bi bi-check-lg" aria-hidden="true"></i>
+              </button>
+              @if (!attached.required) {
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="detachAddonMeter(prefix, attached.meterId)"
+                  [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
+                  title="Detach meter"
+                  i18n-title="@@featureAddons-detachMeter"
+                  aria-label="Detach meter"
+                  i18n-aria-label="@@featureAddons-detachMeter"
+                >
+                  <i class="bi bi-trash" aria-hidden="true"></i>
+                </button>
+              } @else {
+                <span class="small text-muted align-self-center" i18n="@@featureAddons-requiredMeter">Required</span>
+              }
+            </div>
+          </div>
+        } @empty {
+          @if (prefix === 'create' || !addonMeterAttachLoading) {
+            <p class="text-muted small mb-3" i18n="@@featureAddons-noMetersAttached">
+              No meters attached to this addon yet.
+            </p>
+          }
+        }
+        @if (activeMeters$ | async; as meters) {
+          @if (availableMetersForAddonAttach(meters, prefix); as availableMeters) {
+            @if (availableMeters.length > 0) {
+              <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-5">
+                  <label
+                    class="form-label small mb-0"
+                    [for]="prefix + 'AttachAddonMeter'"
+                    i18n="@@featureAddons-attachMeter"
+                    >Attach meter</label
+                  >
+                  @if (prefix === 'create') {
+                    <select
+                      [id]="prefix + 'AttachAddonMeter'"
+                      class="form-select form-select-sm"
+                      [(ngModel)]="createAddonMeterAttachMeterId"
+                      [name]="prefix + 'AttachAddonMeter'"
+                      [disabled]="disabled"
+                    >
+                      <option [ngValue]="''" i18n="@@featureAddons-selectMeter">Select meter</option>
+                      @for (meter of availableMeters; track meter.id) {
+                        <option [ngValue]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
+                      }
+                    </select>
+                  } @else {
+                    <select
+                      [id]="prefix + 'AttachAddonMeter'"
+                      class="form-select form-select-sm"
+                      [(ngModel)]="editAddonMeterAttachMeterId"
+                      [name]="prefix + 'AttachAddonMeter'"
+                      [disabled]="disabled || addonMeterAttachLoading"
+                    >
+                      <option [ngValue]="''" i18n="@@featureAddons-selectMeter">Select meter</option>
+                      @for (meter of availableMeters; track meter.id) {
+                        <option [ngValue]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
+                      }
+                    </select>
+                  }
+                </div>
+                <div class="col-12 col-md-5">
+                  <label
+                    class="form-label small mb-0"
+                    [for]="prefix + 'AttachAddonMeterPrice'"
+                    i18n="@@featureAddons-attachMeterPrice"
+                    >Override price (optional)</label
+                  >
+                  @if (prefix === 'create') {
+                    <input
+                      [id]="prefix + 'AttachAddonMeterPrice'"
+                      type="number"
+                      min="0"
+                      step="0.0001"
+                      class="form-control form-control-sm"
+                      [(ngModel)]="createAddonMeterAttachUnitPrice"
+                      [name]="prefix + 'AttachAddonMeterPrice'"
+                      [disabled]="disabled"
+                    />
+                  } @else {
+                    <input
+                      [id]="prefix + 'AttachAddonMeterPrice'"
+                      type="number"
+                      min="0"
+                      step="0.0001"
+                      class="form-control form-control-sm"
+                      [(ngModel)]="editAddonMeterAttachUnitPrice"
+                      [name]="prefix + 'AttachAddonMeterPrice'"
+                      [disabled]="disabled || addonMeterAttachLoading"
+                    />
+                  }
+                </div>
+                <div class="col-12 col-md-2 d-flex justify-content-md-end">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+                    (click)="attachAddonMeter(prefix)"
+                    [disabled]="
+                      disabled ||
+                      (prefix === 'edit' && addonMeterAttachLoading) ||
+                      (prefix === 'create' ? !createAddonMeterAttachMeterId : !editAddonMeterAttachMeterId)
+                    "
+                    title="Attach meter"
+                    i18n-title="@@featureAddons-attachMeterAction"
+                    aria-label="Attach meter"
+                    i18n-aria-label="@@featureAddons-attachMeterAction"
+                  >
+                    <i class="bi bi-plus" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+            } @else if (meters.length === 0) {
+              <p class="text-muted small mb-0" i18n="@@featureAddons-noCatalogMeters">
+                No active meters in the catalog. Create meters under Administration → Usage meters first.
+              </p>
+            } @else {
+              <p class="text-muted small mb-0" i18n="@@featureAddons-allMetersAttached">
+                All active catalog meters are already attached to this addon.
+              </p>
+            }
+          }
+        } @else {
+          <p class="text-muted small mb-0" i18n="@@featureAddons-metersCatalogLoading">Loading meter catalog…</p>
+        }
+      </div>
     </div>
     <div class="col-12">
       <div class="form-check">

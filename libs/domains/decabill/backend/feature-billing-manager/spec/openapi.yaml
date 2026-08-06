@@ -347,6 +347,144 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /service-types/{id}/meters:
+    get:
+      summary: List meters attached to a service type
+      operationId: listServiceTypeMeters
+      description: |
+        Returns attached meters for the service type. Provider-declared meters are synced
+        on read (ensured in catalog and sideloaded as required). Includes manual attachments.
+      parameters:
+        - $ref: '#/components/parameters/ServiceTypeId'
+      responses:
+        '200':
+          description: Attached meters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttachedMeterResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Service type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Attach a catalog meter to a service type (admin only)
+      operationId: attachServiceTypeMeter
+      parameters:
+        - $ref: '#/components/parameters/ServiceTypeId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachMeterDto'
+      responses:
+        '200':
+          description: Attached meter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachedMeterResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /service-types/{id}/meters/{meterId}:
+    post:
+      summary: Update service type meter unit-price override (admin only)
+      operationId: updateServiceTypeMeter
+      parameters:
+        - $ref: '#/components/parameters/ServiceTypeId'
+        - name: meterId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAttachedMeterDto'
+      responses:
+        '200':
+          description: Updated attachment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachedMeterResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Detach meter from service type (admin only)
+      description: Required (provider-sourced) meters cannot be detached.
+      operationId: detachServiceTypeMeter
+      parameters:
+        - $ref: '#/components/parameters/ServiceTypeId'
+        - name: meterId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Detached
+        '400':
+          description: Required meter cannot be detached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /service-types/{id}:
     get:
       summary: Get service type
@@ -806,6 +944,91 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /meters:
+    get:
+      summary: List usage meters (admin only)
+      operationId: listMeters
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 10 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Meters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MeterResponse'
+    post:
+      summary: Create usage meter (admin only)
+      operationId: createMeter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMeterDto'
+      responses:
+        '201':
+          description: Meter created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeterResponse'
+  /meters/{id}:
+    get:
+      summary: Get usage meter (admin only)
+      operationId: getMeter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Meter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeterResponse'
+    post:
+      summary: Update usage meter (admin only)
+      operationId: updateMeter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMeterDto'
+      responses:
+        '200':
+          description: Meter updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeterResponse'
+    delete:
+      summary: Delete usage meter (admin only)
+      description: Blocked while plan links, addon links, or usage rows reference the meter. Prefer isActive=false.
+      operationId: deleteMeter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Meter deleted
   /addons:
     get:
       summary: List addons (admin only)
@@ -856,6 +1079,34 @@ paths:
                 $ref: '#/components/schemas/AddonResponse'
         '400':
           description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /addons/modules:
+    get:
+      summary: List registered addon modules (admin only)
+      operationId: listAddonModules
+      description: |
+        Returns registered addon modules and their declared required meters.
+        Used by the admin UI to preview fixed meters before saving a module addon.
+      responses:
+        '200':
+          description: Registered addon modules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AddonModuleDetail'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
           content:
             application/json:
               schema:
@@ -914,6 +1165,166 @@ paths:
       responses:
         '204':
           description: Addon deleted
+  /addons/{id}/meters:
+    get:
+      summary: List meters attached to an addon
+      operationId: listAddonMeters
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Attached meters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttachedMeterResponse'
+    post:
+      summary: Attach a meter to an addon
+      operationId: attachAddonMeter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachMeterDto'
+      responses:
+        '200':
+          description: Attached meter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachedMeterResponse'
+  /addons/{id}/meters/{meterId}:
+    post:
+      summary: Update addon meter unit-price override
+      operationId: updateAddonMeter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: meterId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAttachedMeterDto'
+      responses:
+        '200':
+          description: Updated attachment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachedMeterResponse'
+    delete:
+      summary: Detach meter from addon
+      operationId: detachAddonMeter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: meterId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Detached
+  /service-plans/{id}/meters:
+    get:
+      summary: List meters attached to a service plan
+      operationId: listServicePlanMeters
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Attached meters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttachedMeterResponse'
+    post:
+      summary: Attach a meter to a service plan
+      operationId: attachServicePlanMeter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachMeterDto'
+      responses:
+        '200':
+          description: Attached meter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachedMeterResponse'
+  /service-plans/{id}/meters/{meterId}:
+    post:
+      summary: Update plan meter unit-price override
+      operationId: updateServicePlanMeter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: meterId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAttachedMeterDto'
+      responses:
+        '200':
+          description: Updated attachment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachedMeterResponse'
+    delete:
+      summary: Detach meter from service plan
+      operationId: detachServicePlanMeter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: meterId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Detached
   /service-plans/{id}/addons:
     get:
       summary: List orderable addons for a plan
@@ -1602,6 +2013,27 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Subscription not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /subscriptions/{subscriptionId}/meters:
+    get:
+      summary: List meter summaries for a subscription
+      operationId: listSubscriptionMeters
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      responses:
+        '200':
+          description: Plan- and addon-scoped meter summaries for the current period
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionMeterSummary'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -2795,6 +3227,94 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /admin/billing/subscriptions/{subscriptionId}/meters:
+    get:
+      tags: [Admin Billing]
+      summary: List subscription meter summaries (admin)
+      operationId: adminListSubscriptionMeters
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      responses:
+        '200':
+          description: Meter summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionMeterSummary'
+  /admin/billing/subscriptions/{subscriptionId}/meter-entries:
+    get:
+      tags: [Admin Billing]
+      summary: List metered usage entries for a subscription
+      operationId: adminListSubscriptionMeterEntries
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      responses:
+        '200':
+          description: Meter entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UsageMeterEntryResponse'
+    post:
+      tags: [Admin Billing]
+      summary: Create a metered usage entry for a subscription
+      operationId: adminCreateSubscriptionMeterEntry
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionMeterEntryDto'
+      responses:
+        '200':
+          description: Entry created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageRecordResponse'
+  /admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}:
+    post:
+      tags: [Admin Billing]
+      summary: Update a metered usage entry
+      operationId: adminUpdateSubscriptionMeterEntry
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+        - name: entryId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUsageMeterEntryDto'
+      responses:
+        '200':
+          description: Updated entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageMeterEntryResponse'
+    delete:
+      tags: [Admin Billing]
+      summary: Delete a metered usage entry
+      operationId: adminDeleteSubscriptionMeterEntry
+      parameters:
+        - $ref: '#/components/parameters/SubscriptionId'
+        - name: entryId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Entry deleted
   /admin/billing/summary:
     get:
       tags: [Admin Billing]
@@ -5054,6 +5574,45 @@ components:
           description: |
             When true, plans for this provider may offer customer-selectable addons.
             Omitted or false means the provider lacks required provision/teardown or cloud-init append hooks (fail closed).
+        supportsServerTypeUpgrade:
+          type: boolean
+          description: When true, in-place server type upgrades are supported for this provider.
+        supportsServerTypeDowngrade:
+          type: boolean
+          description: When true, in-place server type downgrades are supported for this provider.
+        meters:
+          type: array
+          description: |
+            Required usage meters declared by the provider (or product) implementation.
+            Sideloaded onto service types as non-removable attachments (`source=provider`, `required=true`).
+          items:
+            $ref: '#/components/schemas/DeclaredMeterDefinition'
+    DeclaredMeterDefinition:
+      type: object
+      required: [key, name, aggregator, defaultUnitPriceNet]
+      description: Fixed meter declaration from a provider or addon module.
+      properties:
+        key: { type: string }
+        name: { type: string }
+        description: { type: string }
+        unitLabel: { type: string }
+        aggregator:
+          {
+            type: string,
+            enum: [max, min, avg, first, last, sum, sum_positive_deltas],
+          }
+        defaultUnitPriceNet: { type: number }
+    AddonModuleDetail:
+      type: object
+      required: [key, displayName, meters]
+      description: Registered addon module with optional declared required meters.
+      properties:
+        key: { type: string }
+        displayName: { type: string }
+        meters:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeclaredMeterDefinition'
     ProviderEnvDefaultField:
       type: object
       required: [envKey, label, sensitive, type]
@@ -5526,6 +6085,10 @@ components:
         updatedAt: { type: string, format: date-time }
         withdrawalPolicy:
           $ref: '#/components/schemas/WithdrawalPolicy'
+        meters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachedMeterResponse'
     AvailabilityCheckDto:
       type: object
       required: [serviceTypeId, region, serverType]
@@ -5694,6 +6257,11 @@ components:
         periodTotalPrice:
           type: number
           description: Total gross price charged per billing period for this subscription
+        meters:
+          type: array
+          description: Plan- and addon-scoped meter summaries for the current billing period
+          items:
+            $ref: '#/components/schemas/SubscriptionMeterSummary'
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     WithdrawSubscriptionDto:
@@ -6080,9 +6648,14 @@ components:
         isActive: { type: boolean }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+        meters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachedMeterResponse'
     PlanAddonOption:
       type: object
-      required: [id, key, name, implementationType, periodPrice, orderFields]
+      required:
+        [id, key, name, implementationType, periodPrice, orderFields, meters]
       properties:
         id: { type: string, format: uuid }
         key: { type: string }
@@ -6098,6 +6671,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CloudInitConfigOrderField'
+        meters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachedMeterResponse'
     CreateAddonDto:
       type: object
       required: [key, name, implementationType]
@@ -6392,12 +6969,217 @@ components:
         usagePayload: { type: object }
     CreateUsageRecordDto:
       type: object
-      required: [subscriptionId, periodStart, periodEnd, usagePayload]
+      required: [subscriptionId, periodStart, periodEnd]
       properties:
         subscriptionId: { type: string, format: uuid }
         periodStart: { type: string, format: date-time }
         periodEnd: { type: string, format: date-time }
+        usagePayload:
+          type: object
+          description: Legacy payload cost fields when the subscription has no meter attachments
+        meterId:
+          type: string
+          format: uuid
+          description: Required when the subscription has plan or addon meter attachments
+        value:
+          type: number
+          description: Metered value; required when meterId is set
+        attachmentType:
+          type: string
+          enum: [plan, addon]
+          default: plan
+        addonId:
+          type: string
+          format: uuid
+          description: Required when attachmentType is addon
+    UpdateUsageMeterEntryDto:
+      type: object
+      properties:
+        periodStart: { type: string, format: date-time }
+        periodEnd: { type: string, format: date-time }
+        value: { type: number, minimum: 0 }
         usagePayload: { type: object }
+        attachmentType: { type: string, enum: [plan, addon] }
+        meterId: { type: string, format: uuid }
+        addonId: { type: string, format: uuid, nullable: true }
+    CreateSubscriptionMeterEntryDto:
+      type: object
+      required: [periodStart, periodEnd]
+      properties:
+        periodStart: { type: string, format: date-time }
+        periodEnd: { type: string, format: date-time }
+        usagePayload: { type: object }
+        meterId: { type: string, format: uuid }
+        value: { type: number }
+        attachmentType: { type: string, enum: [plan, addon], default: plan }
+        addonId: { type: string, format: uuid }
+    MeterResponse:
+      type: object
+      required:
+        [
+          id,
+          key,
+          name,
+          aggregator,
+          defaultUnitPriceNet,
+          isActive,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        key: { type: string }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        unitLabel: { type: string, nullable: true }
+        aggregator:
+          {
+            type: string,
+            enum: [max, min, avg, first, last, sum, sum_positive_deltas],
+          }
+        defaultUnitPriceNet: { type: number }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateMeterDto:
+      type: object
+      required: [key, name, aggregator, defaultUnitPriceNet]
+      properties:
+        key: { type: string }
+        name: { type: string }
+        description: { type: string }
+        unitLabel: { type: string }
+        aggregator:
+          {
+            type: string,
+            enum: [max, min, avg, first, last, sum, sum_positive_deltas],
+          }
+        defaultUnitPriceNet: { type: number }
+        isActive: { type: boolean }
+    UpdateMeterDto:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string, nullable: true }
+        unitLabel: { type: string, nullable: true }
+        aggregator:
+          {
+            type: string,
+            enum: [max, min, avg, first, last, sum, sum_positive_deltas],
+          }
+        defaultUnitPriceNet: { type: number }
+        isActive: { type: boolean }
+    AttachMeterDto:
+      type: object
+      required: [meterId]
+      properties:
+        meterId: { type: string, format: uuid }
+        unitPriceNet: { type: number, nullable: true }
+    UpdateAttachedMeterDto:
+      type: object
+      properties:
+        unitPriceNet: { type: number, nullable: true }
+    AttachedMeterResponse:
+      type: object
+      required:
+        [
+          meterId,
+          key,
+          name,
+          aggregator,
+          defaultUnitPriceNet,
+          effectiveUnitPriceNet,
+          isActive,
+          source,
+          required,
+        ]
+      properties:
+        meterId: { type: string, format: uuid }
+        key: { type: string }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        unitLabel: { type: string, nullable: true }
+        aggregator:
+          {
+            type: string,
+            enum: [max, min, avg, first, last, sum, sum_positive_deltas],
+          }
+        defaultUnitPriceNet: { type: number }
+        unitPriceNetOverride: { type: number, nullable: true }
+        effectiveUnitPriceNet: { type: number }
+        isActive: { type: boolean }
+        source:
+          type: string
+          enum: [manual, module, provider]
+          description: How the attachment was created.
+        required:
+          type: boolean
+          description: When true, detach is rejected.
+        inherited:
+          type: boolean
+          description: |
+            True when listed on a plan but sourced from the plan's service type
+            (not a direct plan attachment).
+    SubscriptionMeterSummary:
+      type: object
+      required:
+        [
+          meterId,
+          key,
+          name,
+          aggregator,
+          attachmentType,
+          effectiveUnitPriceNet,
+          aggregatedValue,
+          estimatedChargeNet,
+          entryCount,
+        ]
+      properties:
+        meterId: { type: string, format: uuid }
+        key: { type: string }
+        name: { type: string }
+        unitLabel: { type: string, nullable: true }
+        aggregator:
+          {
+            type: string,
+            enum: [max, min, avg, first, last, sum, sum_positive_deltas],
+          }
+        attachmentType: { type: string, enum: [plan, addon] }
+        addonId: { type: string, format: uuid, nullable: true }
+        addonName: { type: string, nullable: true }
+        effectiveUnitPriceNet: { type: number }
+        aggregatedValue: { type: number }
+        estimatedChargeNet: { type: number }
+        entryCount: { type: integer }
+        periodStart: { type: string, format: date-time, nullable: true }
+        periodEnd: { type: string, format: date-time, nullable: true }
+    UsageMeterEntryResponse:
+      type: object
+      required:
+        [
+          id,
+          subscriptionId,
+          meterId,
+          value,
+          attachmentType,
+          periodStart,
+          periodEnd,
+          usageSource,
+          usagePayload,
+          createdAt,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        subscriptionId: { type: string, format: uuid }
+        meterId: { type: string, format: uuid }
+        value: { type: number }
+        attachmentType: { type: string, enum: [plan, addon] }
+        addonId: { type: string, format: uuid, nullable: true }
+        periodStart: { type: string, format: date-time }
+        periodEnd: { type: string, format: date-time }
+        usageSource: { type: string }
+        usagePayload: { type: object }
+        createdAt: { type: string, format: date-time }
     UsageRecordResponse:
       type: object
       properties:

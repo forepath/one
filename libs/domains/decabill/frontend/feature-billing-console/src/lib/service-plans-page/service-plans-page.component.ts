@@ -9,6 +9,8 @@ import {
   CloudInitConfigsFacade,
   AddonsFacade,
   AdminBillingService,
+  MetersFacade,
+  ServicePlansService,
   buildProvisioningOptionsFromKeys,
   collectPlanProductEnvFields,
   formatServerTypeOption,
@@ -29,8 +31,10 @@ import {
   type PlanProductEnvField,
   type BillingIntervalType,
   type AddonResponse,
+  type AttachedMeterResponse,
   type CloudInitConfigResponse,
   type CreateServicePlanDto,
+  type MeterResponse,
   type ProviderDetail,
   type ProviderLocation,
   type ServerType,
@@ -47,7 +51,7 @@ import {
   providerLocationCatalogFromList,
   type ProviderLocationCatalog,
 } from '@forepath/shared/frontend/util-provisioning-geography';
-import { combineLatest, map, take } from 'rxjs';
+import { combineLatest, catchError, forkJoin, map, of, switchMap, take } from 'rxjs';
 
 import {
   getActiveStatusLabel,
@@ -86,6 +90,8 @@ export class ServicePlansPageComponent implements OnInit {
   private readonly typesFacade = inject(ServiceTypesFacade);
   private readonly cloudInitConfigsFacade = inject(CloudInitConfigsFacade);
   private readonly addonsFacade = inject(AddonsFacade);
+  private readonly metersFacade = inject(MetersFacade);
+  private readonly servicePlansService = inject(ServicePlansService);
   private readonly serviceTypesService = inject(ServiceTypesService);
   private readonly adminBillingService = inject(AdminBillingService);
   private readonly destroyRef = inject(DestroyRef);
@@ -120,6 +126,7 @@ export class ServicePlansPageComponent implements OnInit {
   readonly serviceTypes$ = this.typesFacade.getServiceTypes$();
   readonly cloudInitConfigs$ = this.cloudInitConfigsFacade.getActiveCloudInitConfigs$();
   readonly activeAddons$ = this.addonsFacade.getActiveAddons$();
+  readonly activeMeters$ = this.metersFacade.getActiveMeters$();
   /** Combined service types + provider details for template (single async). */
   readonly typesAndProviders$ = combineLatest([
     this.typesFacade.getServiceTypes$(),
@@ -158,6 +165,14 @@ export class ServicePlansPageComponent implements OnInit {
   serverTypesLoading = false;
   providerLocationCatalog: ProviderLocationCatalog = new Map();
   providerLocationsLoading = false;
+  createAttachedMeters: AttachedMeterResponse[] = [];
+  editAttachedMeters: AttachedMeterResponse[] = [];
+  createPlanMeterAttachMeterId = '';
+  createPlanMeterAttachUnitPrice = '';
+  editPlanMeterAttachMeterId = '';
+  editPlanMeterAttachUnitPrice = '';
+  planMeterAttachLoading = false;
+  planMeterAttachError: string | null = null;
 
   serviceTypeNameById(types: ServiceTypeResponse[] | null, id: string | null | undefined): string {
     if (isNoneServiceTypeId(id)) {
@@ -391,6 +406,248 @@ export class ServicePlansPageComponent implements OnInit {
     } else {
       delete target.providerConfigDefaults['allowedAddonIds'];
     }
+  }
+
+  attachedMetersFor(mode: string): AttachedMeterResponse[] {
+    return mode === 'create' ? this.createAttachedMeters : this.editAttachedMeters;
+  }
+
+  availableMetersForPlanAttach(meters: MeterResponse[] | null, mode: string): MeterResponse[] {
+    const attachedIds = new Set(this.attachedMetersFor(mode).map((item) => item.meterId));
+
+    return (meters ?? []).filter((meter) => !attachedIds.has(meter.id));
+  }
+
+  loadPlanAttachedMeters(planId: string): void {
+    this.planMeterAttachLoading = true;
+    this.planMeterAttachError = null;
+    this.servicePlansService
+      .listPlanMeters(planId)
+      .pipe(take(1))
+      .subscribe({
+        next: (meters) => {
+          this.editAttachedMeters = meters;
+          this.planMeterAttachLoading = false;
+        },
+        error: (error: unknown) => {
+          this.planMeterAttachError = this.formatMeterHttpError(error, 'Failed to load plan meters');
+          this.planMeterAttachLoading = false;
+        },
+      });
+  }
+
+  resetPlanMeterAttachForm(mode: string): void {
+    if (mode === 'create') {
+      this.createPlanMeterAttachMeterId = '';
+      this.createPlanMeterAttachUnitPrice = '';
+      return;
+    }
+
+    this.editPlanMeterAttachMeterId = '';
+    this.editPlanMeterAttachUnitPrice = '';
+  }
+
+  attachPlanMeter(mode: string): void {
+    const meterId = mode === 'create' ? this.createPlanMeterAttachMeterId : this.editPlanMeterAttachMeterId;
+    const unitPriceRaw =
+      mode === 'create' ? this.createPlanMeterAttachUnitPrice.trim() : this.editPlanMeterAttachUnitPrice.trim();
+
+    if (!meterId) return;
+
+    if (mode === 'create') {
+      this.planMeterAttachError = null;
+      this.activeMeters$.pipe(take(1)).subscribe((meters) => {
+        const meter = meters.find((item) => item.id === meterId);
+
+        if (!meter) {
+          this.planMeterAttachError = 'Selected meter is not available';
+          return;
+        }
+
+        const override = unitPriceRaw ? Number(unitPriceRaw) : null;
+
+        this.createAttachedMeters = [
+          ...this.createAttachedMeters,
+          this.toPendingAttachedMeter(meter, Number.isFinite(override as number) ? override : null),
+        ];
+        this.resetPlanMeterAttachForm('create');
+      });
+
+      return;
+    }
+
+    if (!this.editForm.id) return;
+
+    this.planMeterAttachLoading = true;
+    this.planMeterAttachError = null;
+    this.servicePlansService
+      .attachPlanMeter(this.editForm.id, {
+        meterId,
+        unitPriceNet: unitPriceRaw ? Number(unitPriceRaw) : undefined,
+      })
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.resetPlanMeterAttachForm('edit');
+          this.loadPlanAttachedMeters(this.editForm.id);
+          this.plansFacade.loadServicePlans();
+        },
+        error: (error: unknown) => {
+          this.planMeterAttachError = this.formatMeterHttpError(error, 'Failed to attach meter');
+          this.planMeterAttachLoading = false;
+        },
+      });
+  }
+
+  updateAttachedPlanMeter(mode: string, meter: AttachedMeterResponse, unitPriceInput: string): void {
+    const trimmed = unitPriceInput.trim();
+    const override = trimmed ? Number(trimmed) : null;
+
+    if (mode === 'create') {
+      this.createAttachedMeters = this.createAttachedMeters.map((item) =>
+        item.meterId === meter.meterId
+          ? {
+              ...item,
+              unitPriceNetOverride: Number.isFinite(override as number) ? override : null,
+              effectiveUnitPriceNet:
+                Number.isFinite(override as number) && override != null ? override : item.defaultUnitPriceNet,
+            }
+          : item,
+      );
+
+      return;
+    }
+
+    if (!this.editForm.id) return;
+
+    this.planMeterAttachLoading = true;
+    this.planMeterAttachError = null;
+    this.servicePlansService
+      .updatePlanMeter(this.editForm.id, meter.meterId, {
+        unitPriceNet: trimmed ? Number(trimmed) : null,
+      })
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.loadPlanAttachedMeters(this.editForm.id);
+          this.plansFacade.loadServicePlans();
+        },
+        error: (error: unknown) => {
+          this.planMeterAttachError = this.formatMeterHttpError(error, 'Failed to update meter price');
+          this.planMeterAttachLoading = false;
+        },
+      });
+  }
+
+  detachPlanMeter(mode: string, meterId: string): void {
+    if (mode === 'create') {
+      this.createAttachedMeters = this.createAttachedMeters.filter((item) => item.meterId !== meterId);
+
+      return;
+    }
+
+    if (!this.editForm.id) return;
+
+    this.planMeterAttachLoading = true;
+    this.planMeterAttachError = null;
+    this.servicePlansService
+      .detachPlanMeter(this.editForm.id, meterId)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.loadPlanAttachedMeters(this.editForm.id);
+          this.plansFacade.loadServicePlans();
+        },
+        error: (error: unknown) => {
+          this.planMeterAttachError = this.formatMeterHttpError(error, 'Failed to detach meter');
+          this.planMeterAttachLoading = false;
+        },
+      });
+  }
+
+  attachedMeterOverrideInput(meter: AttachedMeterResponse): string {
+    return meter.unitPriceNetOverride != null ? String(meter.unitPriceNetOverride) : '';
+  }
+
+  planMeterCount(plan: ServicePlanResponse): number {
+    return plan.meters?.length ?? 0;
+  }
+
+  private toPendingAttachedMeter(meter: MeterResponse, unitPriceNetOverride: number | null): AttachedMeterResponse {
+    return {
+      meterId: meter.id,
+      key: meter.key,
+      name: meter.name,
+      description: meter.description ?? null,
+      unitLabel: meter.unitLabel ?? null,
+      aggregator: meter.aggregator,
+      defaultUnitPriceNet: meter.defaultUnitPriceNet,
+      unitPriceNetOverride,
+      effectiveUnitPriceNet: unitPriceNetOverride != null ? unitPriceNetOverride : meter.defaultUnitPriceNet,
+      isActive: meter.isActive,
+      source: 'manual',
+      required: false,
+    };
+  }
+
+  private flushPendingCreatePlanMeters(pendingMeters?: AttachedMeterResponse[]): void {
+    const pending = pendingMeters ?? [...this.createAttachedMeters];
+
+    if (pending.length === 0) {
+      return;
+    }
+
+    this.plansFacade
+      .getSelectedServicePlan$()
+      .pipe(
+        take(1),
+        switchMap((plan) => {
+          if (!plan) {
+            return of(null);
+          }
+
+          return forkJoin(
+            pending.map((meter) =>
+              this.servicePlansService
+                .attachPlanMeter(plan.id, {
+                  meterId: meter.meterId,
+                  unitPriceNet: meter.unitPriceNetOverride ?? undefined,
+                })
+                .pipe(catchError(() => of(null))),
+            ),
+          );
+        }),
+        take(1),
+      )
+      .subscribe(() => this.plansFacade.loadServicePlans());
+  }
+
+  private formatMeterHttpError(error: unknown, fallback: string): string {
+    if (error && typeof error === 'object' && 'error' in error) {
+      const body = (error as { error?: unknown }).error;
+
+      if (typeof body === 'string' && body.trim()) {
+        return body.trim();
+      }
+
+      if (body && typeof body === 'object' && 'message' in body) {
+        const message = (body as { message?: unknown }).message;
+
+        if (typeof message === 'string' && message.trim()) {
+          return message.trim();
+        }
+
+        if (Array.isArray(message) && message.length > 0) {
+          return message.map(String).join(', ');
+        }
+      }
+    }
+
+    if (error instanceof Error && error.message.trim()) {
+      return error.message.trim();
+    }
+
+    return fallback;
   }
 
   private isProvisioningConfigKey(key: string): boolean {
@@ -1181,6 +1438,7 @@ export class ServicePlansPageComponent implements OnInit {
     this.typesFacade.loadProviderDetails();
     this.cloudInitConfigsFacade.loadCloudInitConfigs();
     this.addonsFacade.loadAddons();
+    this.metersFacade.loadMeters();
     this.refreshIssuerTaxRates();
     this.registerModalCloseWatchers();
   }
@@ -1197,6 +1455,10 @@ export class ServicePlansPageComponent implements OnInit {
 
   openCreateModal(): void {
     this.resetCreateForm();
+    this.metersFacade.loadMeters();
+    this.createAttachedMeters = [];
+    this.resetPlanMeterAttachForm('create');
+    this.planMeterAttachError = null;
     this.currentServerTypes = [];
     this.createAllowedServerTypes = [];
     this.serverTypesLoading = false;
@@ -1208,6 +1470,11 @@ export class ServicePlansPageComponent implements OnInit {
 
   openEditModal(plan: ServicePlanResponse): void {
     this.editingPlan = plan;
+    this.metersFacade.loadMeters();
+    this.resetPlanMeterAttachForm('edit');
+    this.planMeterAttachError = null;
+    this.editAttachedMeters = plan.meters ?? [];
+    this.loadPlanAttachedMeters(plan.id);
     this.currentServerTypes = [];
     this.editAllowedServerTypes = plan.allowCustomerServerTypeSelection
       ? normalizeAllowedServerTypeIds(plan.allowedServerTypes)
@@ -1454,12 +1721,18 @@ export class ServicePlansPageComponent implements OnInit {
   private resetCreateForm(): void {
     this.createForm = this.getDefaultCreateForm();
     this.createProvisioningOptionKeys = new Set();
+    this.createAttachedMeters = [];
+    this.resetPlanMeterAttachForm('create');
+    this.planMeterAttachError = null;
   }
 
   private resetEditForm(): void {
     this.editForm = this.getDefaultEditForm();
     this.editingPlan = null;
     this.editStaleCustomConfigIds = [];
+    this.editAttachedMeters = [];
+    this.resetPlanMeterAttachForm('edit');
+    this.planMeterAttachError = null;
   }
 
   private registerModalCloseWatchers(): void {
@@ -1468,7 +1741,11 @@ export class ServicePlansPageComponent implements OnInit {
       error$: this.error$,
       modal: () => this.createModal,
       destroyRef: this.destroyRef,
-      onSuccess: () => this.resetCreateForm(),
+      onSuccess: () => {
+        const pendingMeters = [...this.createAttachedMeters];
+        this.resetCreateForm();
+        this.flushPendingCreatePlanMeters(pendingMeters);
+      },
     });
     watchBillingMutationModalClose({
       loading$: this.updating$,

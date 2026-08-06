@@ -17,9 +17,11 @@ import { ConfigChangeEligibilityDto, ConfigChangePreviewResponseDto } from '../d
 import { ConfigChangeRequestDto } from '../dto/config-change-request.dto';
 import { ConfigChangeResponseDto } from '../dto/config-change-response.dto';
 import { CreateSubscriptionDto } from '../dto/create-subscription.dto';
+import { SubscriptionMeterSummaryDto } from '../dto/meter-response.dto';
 import { ResumeSubscriptionDto } from '../dto/resume-subscription.dto';
 import { SubscriptionResponseDto } from '../dto/subscription-response.dto';
 import { WithdrawSubscriptionDto } from '../dto/withdraw-subscription.dto';
+import { MeterBillingService } from '../services/meter-billing.service';
 import { SubscriptionConfigChangeService } from '../services/subscription-config-change.service';
 import { SubscriptionService } from '../services/subscription.service';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
@@ -29,6 +31,7 @@ export class SubscriptionsController {
   constructor(
     private readonly subscriptionService: SubscriptionService,
     private readonly subscriptionConfigChangeService: SubscriptionConfigChangeService,
+    private readonly meterBillingService: MeterBillingService,
   ) {}
 
   @RequireScopes('subscriptions:write')
@@ -70,6 +73,27 @@ export class SubscriptionsController {
     const rows = await this.subscriptionService.listSubscriptions(userInfo.userId, limit ?? 10, offset ?? 0);
 
     return await this.subscriptionService.mapManyToResponses(rows);
+  }
+
+  @RequireScopes('subscriptions:read')
+  @Get(':id/meters')
+  async listMeters(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<SubscriptionMeterSummaryDto[]> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+
+    if (!userInfo.userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    const subscription = await this.subscriptionService.getSubscription(id, userInfo.userId);
+
+    return await this.meterBillingService.buildSubscriptionMeterSummaries({
+      subscription,
+      periodStart: subscription.currentPeriodStart,
+      periodEnd: subscription.currentPeriodEnd,
+    });
   }
 
   @RequireScopes('subscriptions:read')

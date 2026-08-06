@@ -62,4 +62,35 @@ describe('UsageRecordsRepository', () => {
     expect(mockRepository.create).toHaveBeenCalledWith(dto);
     expect(result).toEqual(created);
   });
+
+  it('findLatestCollectorForMeter filters by collector source and attachment', async () => {
+    const usage = { id: 'usage-1', usageSource: 'collector' };
+    const mockAddOrderBy = jest.fn().mockReturnThis();
+    mockGetOne.mockResolvedValue(usage);
+
+    const mockRepository = {
+      create: jest.fn(),
+      save: jest.fn(),
+      createQueryBuilder: jest.fn().mockReturnValue({
+        ...createQueryBuilderReturn,
+        addOrderBy: mockAddOrderBy,
+      }),
+    };
+    const repository = new UsageRecordsRepository(mockRepository as never);
+    const result = await runWithTenantId('default', () =>
+      repository.findLatestCollectorForMeter({
+        subscriptionId: 'sub-1',
+        meterId: 'meter-1',
+        attachmentType: 'plan',
+        addonId: null,
+      }),
+    );
+
+    expect(mockAndWhere).toHaveBeenCalledWith('usage.usage_source = :usageSource', {
+      usageSource: 'collector',
+    });
+    expect(mockAndWhere).toHaveBeenCalledWith('usage.addon_id IS NULL');
+    expect(mockOrderBy).toHaveBeenCalledWith('usage.period_end', 'DESC');
+    expect(result).toEqual(usage);
+  });
 });

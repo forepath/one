@@ -14,6 +14,8 @@ import {
 } from '@nestjs/common';
 
 import { CreateServiceTypeDto } from '../dto/create-service-type.dto';
+import { AttachMeterDto, UpdateAttachedMeterDto } from '../dto/meter.dto';
+import { AttachedMeterResponseDto } from '../dto/meter-response.dto';
 import { ProviderDetailDto } from '../dto/provider-detail.dto';
 import { ProviderLocationDto } from '../dto/provider-location.dto';
 import { ServerTypeDto } from '../dto/server-type.dto';
@@ -21,6 +23,7 @@ import { ServiceTypeResponseDto } from '../dto/service-type-response.dto';
 import { UpdateServiceTypeDto } from '../dto/update-service-type.dto';
 import { ServiceTypeEntity } from '../entities/service-type.entity';
 import { ServiceTypesRepository } from '../repositories/service-types.repository';
+import { MeterService } from '../services/meter.service';
 import { ProviderRegistryService } from '../services/provider-registry.service';
 import { ProviderLocationsService } from '../services/provider-locations.service';
 import { ProviderServerTypesService } from '../services/provider-server-types.service';
@@ -39,6 +42,7 @@ export class ServiceTypesController {
     private readonly providerRegistry: ProviderRegistryService,
     private readonly providerServerTypesService: ProviderServerTypesService,
     private readonly providerLocationsService: ProviderLocationsService,
+    private readonly meterService: MeterService,
   ) {}
 
   /**
@@ -137,7 +141,58 @@ export class ServiceTypesController {
       providerDefaults,
     });
 
+    await this.meterService.syncServiceTypeProviderMeters(row);
+
     return this.mapToResponse(row);
+  }
+
+  @RequireScopes('subscriptions:read')
+  @Get(':id/meters')
+  async listMeters(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AttachedMeterResponseDto[]> {
+    const row = await this.serviceTypesRepository.findByIdOrThrow(id);
+    await this.meterService.syncServiceTypeProviderMeters(row);
+
+    return await this.meterService.listServiceTypeMeters(id);
+  }
+
+  @RequireScopes('catalog:write')
+  @Post(':id/meters')
+  @KeycloakRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN)
+  async attachMeter(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: AttachMeterDto,
+  ): Promise<AttachedMeterResponseDto> {
+    await this.serviceTypesRepository.findByIdOrThrow(id);
+
+    return await this.meterService.attachServiceTypeMeter(id, dto.meterId, dto.unitPriceNet);
+  }
+
+  @RequireScopes('catalog:write')
+  @Post(':id/meters/:meterId')
+  @KeycloakRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN)
+  async updateMeterAttachment(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('meterId', new ParseUUIDPipe({ version: '4' })) meterId: string,
+    @Body() dto: UpdateAttachedMeterDto,
+  ): Promise<AttachedMeterResponseDto> {
+    await this.serviceTypesRepository.findByIdOrThrow(id);
+
+    return await this.meterService.updateServiceTypeMeter(id, meterId, dto.unitPriceNet);
+  }
+
+  @RequireScopes('catalog:write')
+  @Delete(':id/meters/:meterId')
+  @KeycloakRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async detachMeter(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('meterId', new ParseUUIDPipe({ version: '4' })) meterId: string,
+  ): Promise<void> {
+    await this.serviceTypesRepository.findByIdOrThrow(id);
+    await this.meterService.detachServiceTypeMeter(id, meterId);
   }
 
   @RequireScopes('catalog:write')
@@ -165,6 +220,8 @@ export class ServiceTypesController {
       disallowStatutoryWithdrawal: dto.disallowStatutoryWithdrawal,
       ...(providerDefaults !== undefined ? { providerDefaults } : {}),
     });
+
+    await this.meterService.syncServiceTypeProviderMeters(row);
 
     return this.mapToResponse(row);
   }

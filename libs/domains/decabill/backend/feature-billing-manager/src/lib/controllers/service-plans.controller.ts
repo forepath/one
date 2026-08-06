@@ -33,8 +33,11 @@ import { ServiceTypesRepository } from '../repositories/service-types.repository
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { AddonService } from '../services/addon.service';
 import { CloudInitConfigService } from '../services/cloud-init-config.service';
+import { MeterService } from '../services/meter.service';
 import { ProviderRegistryService } from '../services/provider-registry.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
+import { AttachMeterDto, UpdateAttachedMeterDto } from '../dto/meter.dto';
+import { AttachedMeterResponseDto } from '../dto/meter-response.dto';
 import {
   PLAN_PRICE_MIGRATE_ENQUEUE,
   type PlanPriceMigrateEnqueuePort,
@@ -60,6 +63,7 @@ export class ServicePlansController {
     private readonly providerRegistry: ProviderRegistryService,
     private readonly cloudInitConfigService: CloudInitConfigService,
     private readonly addonService: AddonService,
+    private readonly meterService: MeterService,
     private readonly addonsRepository: AddonsRepository,
     private readonly subscriptionsRepository: SubscriptionsRepository,
     private readonly withdrawalPolicyService: WithdrawalPolicyService,
@@ -100,6 +104,56 @@ export class ServicePlansController {
   }
 
   @RequireScopes('subscriptions:read')
+  @Get(':id/meters')
+  async listPlanMeters(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+  ): Promise<AttachedMeterResponseDto[]> {
+    const plan = await this.servicePlansRepository.findByIdOrThrow(id);
+
+    return await this.meterService.listEffectivePlanMeters(id, plan.serviceTypeId);
+  }
+
+  @RequireScopes('catalog:write')
+  @Post(':id/meters')
+  @KeycloakRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN)
+  async attachPlanMeter(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: AttachMeterDto,
+  ): Promise<AttachedMeterResponseDto> {
+    await this.servicePlansRepository.findByIdOrThrow(id);
+
+    return await this.meterService.attachPlanMeter(id, dto.meterId, dto.unitPriceNet);
+  }
+
+  @RequireScopes('catalog:write')
+  @Post(':id/meters/:meterId')
+  @KeycloakRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN)
+  async updatePlanMeter(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('meterId', new ParseUUIDPipe({ version: '4' })) meterId: string,
+    @Body() dto: UpdateAttachedMeterDto,
+  ): Promise<AttachedMeterResponseDto> {
+    await this.servicePlansRepository.findByIdOrThrow(id);
+
+    return await this.meterService.updatePlanMeter(id, meterId, dto.unitPriceNet);
+  }
+
+  @RequireScopes('catalog:write')
+  @Delete(':id/meters/:meterId')
+  @KeycloakRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async detachPlanMeter(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('meterId', new ParseUUIDPipe({ version: '4' })) meterId: string,
+  ): Promise<void> {
+    await this.servicePlansRepository.findByIdOrThrow(id);
+    await this.meterService.detachPlanMeter(id, meterId);
+  }
+
+  @RequireScopes('subscriptions:read')
   @Get(':id/addons')
   async listOrderAddons(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<PlanAddonOptionDto[]> {
     const plan = await this.servicePlansRepository.findByIdOrThrow(id);
@@ -122,12 +176,14 @@ export class ServicePlansController {
 
     const addons = await this.addonsRepository.findByIds(allowedIds);
 
-    return addons
+    const compatible = addons
       .filter((addon) => addon.isActive)
       .filter(
         (addon) => addon.compatibleProviders.length === 0 || addon.compatibleProviders.includes(serviceType.provider),
-      )
-      .map((addon) => ({
+      );
+
+    return await Promise.all(
+      compatible.map(async (addon) => ({
         id: addon.id,
         key: addon.key,
         name: addon.name,
@@ -138,7 +194,9 @@ export class ServicePlansController {
         priceIntervalValue: addon.priceIntervalValue ?? null,
         periodPrice: convertAddonPriceToPlanPeriod(addon, plan),
         orderFields: this.addonService.getOrderFieldsForAddon(addon),
-      }));
+        meters: await this.meterService.listAddonMeters(addon.id),
+      })),
+    );
   }
 
   @RequireScopes('subscriptions:read')
@@ -400,6 +458,7 @@ export class ServicePlansController {
       allowedServerTypes: normalizeAllowedServerTypes(row.allowedServerTypes),
       taxCategory: row.taxCategory ?? TaxCategory.STANDARD,
       withdrawalPolicy,
+      meters: await this.meterService.listEffectivePlanMeters(row.id, row.serviceTypeId),
       isActive: row.isActive,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

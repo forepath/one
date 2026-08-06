@@ -181,7 +181,9 @@ The **subscription-item-update** scheduler refreshes bundled agenstra-controller
 
 ## Usage Records
 
-Usage-based plans accept metering via `POST /admin/usage/record` (billing admin or `STATIC_API_KEY` only; not customer self-service). Usage is included in invoice line items when `usagePayload` or `units` and `unitPrice` are present. Customers may read their summary at `GET /usage/summary/{subscriptionId}`.
+Prefer first-class [usage meters](./usage-meters.md) attached to plans and addons. Metered records require `meterId`, `value`, and attachment scope (`plan` or `addon` + `addonId`). Invoice lines are emitted per attachment.
+
+Legacy payload-only recording (`usagePayload` with `totalCost` / `usageCost` / `units`×`unitPrice`) remains when the subscription has **no** plan or billable addon meter attachments. Usage is posted via `POST /admin/usage/record` (billing admin or `STATIC_API_KEY` only; not customer self-service). Customers may read summaries at `GET /usage/summary/{subscriptionId}` and `GET /subscriptions/{id}/meters`.
 
 **Advance-billed plans:** usage recording is rejected. Prepaid periods have no usage window before the charge.
 

@@ -1,6 +1,7 @@
 import { TaxCategory } from '../constants/tax-category.constants';
 import { BillingIntervalType, ServicePlanOrderingHighlight } from '../entities/service-plan.entity';
 
+import { AttachedMeterResponseDto } from './meter-response.dto';
 import { WithdrawalPolicyDto } from './withdrawal-policy.dto';
 
 export class ServicePlanResponseDto {
@@ -34,6 +35,7 @@ export class ServicePlanResponseDto {
   allowedServerTypes!: string[];
   taxCategory!: TaxCategory;
   withdrawalPolicy!: WithdrawalPolicyDto;
+  meters!: AttachedMeterResponseDto[];
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;

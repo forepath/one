@@ -25,6 +25,7 @@ import { PricingService } from './pricing.service';
 import { PromotionApplicationService, type PromotionRedemptionUpdate } from './promotion-application.service';
 import { ProviderServerTypesService } from './provider-server-types.service';
 import { BillingScheduleService } from './billing-schedule.service';
+import { MeterBillingService, type MeterChargeLine } from './meter-billing.service';
 import { SubscriptionChargePeriodService, type SubscriptionChargePeriod } from './subscription-charge-period.service';
 import type { InvoicePromotionApplicationDraft } from '../dto/promotion.dto';
 
@@ -57,6 +58,7 @@ export class InvoiceCreationService {
     private readonly invoiceTaxContextService: InvoiceTaxContextService,
     private readonly subscriptionAddonsRepository: SubscriptionAddonsRepository,
     private readonly billingScheduleService: BillingScheduleService,
+    private readonly meterBillingService: MeterBillingService,
   ) {}
 
   async createInvoice(subscriptionId: string, userId: string, description?: string, options?: InvoiceCreationOptions) {
@@ -68,12 +70,6 @@ export class InvoiceCreationService {
 
     const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
     const pricing = await this.resolveSubscriptionPricing(subscriptionId, plan);
-    const usageCost =
-      plan.billInAdvance === true
-        ? 0
-        : this.extractUsageCost(
-            (await this.usageRecordsRepository.findLatestForSubscription(subscriptionId))?.usagePayload ?? {},
-          );
     const billUntil = options?.billUntil ?? new Date();
     const chargePeriod = await this.subscriptionChargePeriodService.resolveChargePeriod(
       subscription,
@@ -90,7 +86,23 @@ export class InvoiceCreationService {
       throw new BadRequestException('No billable amount since last invoice');
     }
 
-    const total = chargePeriod.baseAmount + usageCost;
+    const hasMeterAttachments = await this.meterBillingService.hasAnyMeterAttachments(subscription, plan.serviceTypeId);
+    const usageCost =
+      plan.billInAdvance === true || hasMeterAttachments
+        ? 0
+        : this.extractUsageCost(
+            (await this.usageRecordsRepository.findLatestForSubscription(subscriptionId))?.usagePayload ?? {},
+          );
+    const meterLines = hasMeterAttachments
+      ? await this.meterBillingService.buildMeterChargeLines({
+          subscription,
+          plan,
+          periodStart: chargePeriod.meterPeriodStart,
+          periodEnd: chargePeriod.periodEnd,
+        })
+      : [];
+    const meterTotal = meterLines.reduce((sum, line) => sum + line.unitPriceNet, 0);
+    const total = chargePeriod.baseAmount + usageCost + meterTotal;
 
     if (total < MIN_BILLABLE_AMOUNT) {
       if (options?.skipIfNoBillableAmount) {
@@ -100,7 +112,7 @@ export class InvoiceCreationService {
       throw new BadRequestException('No billable amount since last invoice');
     }
 
-    const roundedTotal = Math.round(total * 100) / 100;
+    const roundedTotal = Math.round((chargePeriod.baseAmount + usageCost) * 100) / 100;
     const taxCategory = resolvePlanTaxCategory(plan);
     const chargeLine = {
       description: description || 'Subscription charge',
@@ -137,16 +149,17 @@ export class InvoiceCreationService {
         };
       })
       .filter((line): line is NonNullable<typeof line> => line != null);
+    const meterChargeLines = this.mapMeterLinesToInputs(meterLines, taxCategory);
 
     const promoResult = await this.promotionApplicationService.calculatePromotions({
       userId,
       subscriptionId,
-      chargeLines: [chargeLine, ...addonChargeLines],
+      chargeLines: [chargeLine, ...addonChargeLines, ...meterChargeLines],
       defaultTaxCategory: taxCategory,
       chargePeriod: { start: chargePeriod.periodStart, end: chargePeriod.periodEnd },
       subscriptionChargeNet: Math.round(chargePeriod.baseAmount * 100) / 100,
     });
-    const lineInputs = [...promoResult.discountLines, chargeLine, ...addonChargeLines];
+    const lineInputs = [...promoResult.discountLines, chargeLine, ...addonChargeLines, ...meterChargeLines];
     const taxContext = await this.invoiceTaxContextService.resolveForUser(userId);
     const totals = this.taxCalculationService.computeLines(lineInputs, {
       taxTreatment: taxContext.treatment,
@@ -194,6 +207,7 @@ export class InvoiceCreationService {
       group: (typeof groups)[number];
       chargePeriod: ChargePeriodResult;
       amount: number;
+      meterLines: MeterChargeLine[];
     }[] = [];
 
     for (const group of groups) {
@@ -204,7 +218,12 @@ export class InvoiceCreationService {
       const charge = await this.getBillableChargeForPosition(group.representative);
 
       if (charge && charge.amount >= MIN_BILLABLE_AMOUNT) {
-        billableGroups.push({ group, chargePeriod: charge.chargePeriod, amount: charge.amount });
+        billableGroups.push({
+          group,
+          chargePeriod: charge.chargePeriod,
+          amount: charge.amount,
+          meterLines: charge.meterLines,
+        });
       }
     }
 
@@ -224,7 +243,7 @@ export class InvoiceCreationService {
     const promotionApplications: InvoicePromotionApplicationDraft[] = [];
     const redemptionUpdates: PromotionRedemptionUpdate[] = [];
 
-    for (const { group, amount, chargePeriod } of billableGroups) {
+    for (const { group, amount, chargePeriod, meterLines } of billableGroups) {
       const subscription = await this.subscriptionsRepository.findByIdOrThrow(group.subscriptionId);
       const plan = await this.servicePlansRepository.findByIdOrThrow(subscription.planId);
       const taxCategory = resolvePlanTaxCategory(plan);
@@ -257,8 +276,10 @@ export class InvoiceCreationService {
           };
         })
         .filter((line): line is NonNullable<typeof line> => line != null);
+      const meterChargeLines = this.mapMeterLinesToInputs(meterLines, taxCategory);
       const addonTotal = addonChargeLines.reduce((sum, line) => sum + line.unitPriceNet, 0);
-      const planAmount = Math.max(0, Math.round((amount - addonTotal) * 100) / 100);
+      const meterTotal = meterChargeLines.reduce((sum, line) => sum + line.unitPriceNet, 0);
+      const planAmount = Math.max(0, Math.round((amount - addonTotal - meterTotal) * 100) / 100);
       const chargeLine = {
         description: group.representative.description ?? 'Subscription',
         quantity: 1,
@@ -268,13 +289,13 @@ export class InvoiceCreationService {
       const promoResult = await this.promotionApplicationService.calculatePromotions({
         userId,
         subscriptionId: group.subscriptionId,
-        chargeLines: [chargeLine, ...addonChargeLines],
+        chargeLines: [chargeLine, ...addonChargeLines, ...meterChargeLines],
         defaultTaxCategory: taxCategory,
         chargePeriod: { start: chargePeriod.periodStart, end: chargePeriod.periodEnd },
         subscriptionChargeNet: Math.round(chargePeriod.baseAmount * 100) / 100,
       });
 
-      lineInputs.push(...promoResult.discountLines, chargeLine, ...addonChargeLines);
+      lineInputs.push(...promoResult.discountLines, chargeLine, ...addonChargeLines, ...meterChargeLines);
       promotionApplications.push(...promoResult.applications);
       redemptionUpdates.push(...promoResult.redemptionUpdates);
     }
@@ -419,7 +440,7 @@ export class InvoiceCreationService {
 
   private async getBillableChargeForPosition(
     position: OpenPositionEntity,
-  ): Promise<{ amount: number; chargePeriod: ChargePeriodResult } | null> {
+  ): Promise<{ amount: number; chargePeriod: ChargePeriodResult; meterLines: MeterChargeLine[] } | null> {
     const subscription = await this.subscriptionsRepository.findByIdOrThrow(position.subscriptionId);
 
     if (subscription.userId !== position.userId) {
@@ -436,12 +457,6 @@ export class InvoiceCreationService {
 
       return sum + (Number.isFinite(price) && price > 0 ? price : 0);
     }, 0);
-    const usageCost =
-      plan.billInAdvance === true
-        ? 0
-        : this.extractUsageCost(
-            (await this.usageRecordsRepository.findLatestForSubscription(position.subscriptionId))?.usagePayload ?? {},
-          );
     const chargePeriod = await this.subscriptionChargePeriodService.resolveChargePeriod(
       subscription,
       plan,
@@ -457,7 +472,23 @@ export class InvoiceCreationService {
       throw new BadRequestException('No billable amount since last invoice');
     }
 
-    const total = chargePeriod.baseAmount + usageCost;
+    const hasMeterAttachments = await this.meterBillingService.hasAnyMeterAttachments(subscription, plan.serviceTypeId);
+    const usageCost =
+      plan.billInAdvance === true || hasMeterAttachments
+        ? 0
+        : this.extractUsageCost(
+            (await this.usageRecordsRepository.findLatestForSubscription(position.subscriptionId))?.usagePayload ?? {},
+          );
+    const meterLines = hasMeterAttachments
+      ? await this.meterBillingService.buildMeterChargeLines({
+          subscription,
+          plan,
+          periodStart: chargePeriod.meterPeriodStart,
+          periodEnd: chargePeriod.periodEnd,
+        })
+      : [];
+    const meterTotal = meterLines.reduce((sum, line) => sum + line.unitPriceNet, 0);
+    const total = chargePeriod.baseAmount + usageCost + meterTotal;
 
     if (total < MIN_BILLABLE_AMOUNT) {
       if (position.skipIfNoBillableAmount) {
@@ -467,7 +498,19 @@ export class InvoiceCreationService {
       throw new BadRequestException('No billable amount since last invoice');
     }
 
-    return { amount: total, chargePeriod };
+    return { amount: total, chargePeriod, meterLines };
+  }
+
+  private mapMeterLinesToInputs(
+    meterLines: MeterChargeLine[] | undefined,
+    taxCategory: ReturnType<typeof resolvePlanTaxCategory>,
+  ): LineItemInput[] {
+    return (meterLines ?? []).map((line) => ({
+      description: line.description,
+      quantity: line.quantity,
+      unitPriceNet: line.unitPriceNet,
+      taxCategory,
+    }));
   }
 
   private async getBillableAmountForPosition(position: OpenPositionEntity): Promise<number> {

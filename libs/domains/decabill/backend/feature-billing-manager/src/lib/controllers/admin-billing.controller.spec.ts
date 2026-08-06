@@ -207,6 +207,7 @@ describe('AdminBillingController', () => {
         cancelRequestedAt: null,
         cancelEffectiveAt: null,
         resumedAt: null,
+        meters: [],
         createdAt,
         updatedAt: createdAt,
       },

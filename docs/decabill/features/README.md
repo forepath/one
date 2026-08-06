@@ -9,6 +9,7 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **Authentication** Keycloak OAuth2/OIDC, built-in users with JWT, or static API key
 - **Multi-tenancy** Tenant-scoped data with `X-Tenant` header and configurable tenant frontends
 - **Subscriptions** Order, cancel, and resume service plans with optional cloud provisioning
+- **Usage meters** Tenant meter catalog attachable to plans and addons with attachment-scoped usage billing
 - **Advance billing and yearly interval** Prepaid period charges and `year` billing interval
 - **Invoices** ZUGFeRD PDFs, open positions, billing-day accumulation, and Stripe checkout
 - **Service Types and Plans** Admin-managed catalog with provider schemas and pricing
@@ -66,6 +67,17 @@ Order service plans, manage lifecycle (cancel, resume), and provision cloud inst
 - Mid-life [config change](./subscription-config-change.md) (server type up-/downgrade and addon add/remove)
 - Subscription items with provisioning status and hostname reservation
 - Usage records for usage-based pricing (arrear plans only)
+
+### [Usage meters](./usage-meters.md)
+
+Reusable tenant meters attached to plans and addons with optional unit-price overrides. Usage is recorded per attachment and billed as separate invoice lines.
+
+**Key Capabilities**:
+
+- Meter catalog CRUD (`max` / `min` / `avg` / `first` / `last` aggregators)
+- Plan and addon attachments with coalesce pricing
+- Attachment-scoped recording and admin meter-entry CRUD
+- Separate invoice lines per plan/addon attachment; legacy payload fallback when no meters
 
 ### [Subscription Config Change](./subscription-config-change.md)
 

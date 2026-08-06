@@ -1,6 +1,7 @@
 import type { AddonImplementationType } from '../entities/addon.entity';
 import type { BillingIntervalType } from '../entities/service-plan.entity';
 import type { CloudInitConfigOrderFieldDto } from './cloud-init-config-response.dto';
+import type { AttachedMeterResponseDto } from './meter-response.dto';
 
 export class AddonResponseDto {
   id!: string;
@@ -18,6 +19,7 @@ export class AddonResponseDto {
   basePrice?: string | null;
   priceIntervalType?: BillingIntervalType | null;
   priceIntervalValue?: number | null;
+  meters!: AttachedMeterResponseDto[];
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
@@ -37,4 +39,6 @@ export class PlanAddonOptionDto {
   periodPrice!: number;
   /** Customer-visible config fields (no secret values). */
   orderFields!: CloudInitConfigOrderFieldDto[];
+  /** Attached usage meters (read-only on customer order). */
+  meters!: AttachedMeterResponseDto[];
 }

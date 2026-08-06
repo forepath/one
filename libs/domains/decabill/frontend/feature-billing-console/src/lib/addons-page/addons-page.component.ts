@@ -5,18 +5,21 @@ import { FormsModule } from '@angular/forms';
 import {
   AddonsFacade,
   AddonsService,
+  MetersFacade,
   ServiceTypesFacade,
   type AddonConfigEnvVariableDefinition,
   type AddonConfigSchema,
   type AddonConfigSchemaInput,
   type AddonImplementationType,
   type AddonResponse,
+  type AttachedMeterResponse,
   type BillingIntervalType,
   type CreateAddonDto,
+  type MeterResponse,
   type ProviderDetail,
   type UpdateAddonDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { combineLatest, map, take } from 'rxjs';
+import { combineLatest, catchError, forkJoin, map, of, switchMap, take } from 'rxjs';
 
 import { getActiveStatusLabel, getActiveStatusTextClass } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
@@ -67,6 +70,7 @@ export class AddonsPageComponent implements OnInit {
 
   private readonly facade = inject(AddonsFacade);
   private readonly addonsService = inject(AddonsService);
+  private readonly metersFacade = inject(MetersFacade);
   private readonly serviceTypesFacade = inject(ServiceTypesFacade);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -82,6 +86,7 @@ export class AddonsPageComponent implements OnInit {
   readonly providerOptions$ = this.serviceTypesFacade
     .getProviderDetails$()
     .pipe(map((providers) => providers.filter((provider) => provider.supportsAddons === true)));
+  readonly activeMeters$ = this.metersFacade.getActiveMeters$();
   readonly loading$ = this.facade.getAddonsLoading$();
   readonly loadingAny$ = this.facade.getAddonsLoadingAny$();
   readonly creating$ = this.facade.getAddonsCreating$();
@@ -98,19 +103,33 @@ export class AddonsPageComponent implements OnInit {
   createForm = this.defaultForm();
   editForm: AddonForm & { id: string } = { ...this.defaultForm(), id: '' };
   addonToDelete: AddonResponse | null = null;
+  createAttachedMeters: AttachedMeterResponse[] = [];
+  editAttachedMeters: AttachedMeterResponse[] = [];
+  createAddonMeterAttachMeterId = '';
+  createAddonMeterAttachUnitPrice = '';
+  editAddonMeterAttachMeterId = '';
+  editAddonMeterAttachUnitPrice = '';
+  addonMeterAttachLoading = false;
+  addonMeterAttachError: string | null = null;
 
   ngOnInit(): void {
     this.facade.loadAddons();
+    this.metersFacade.loadMeters();
     this.serviceTypesFacade.loadProviderDetails();
     this.registerModalCloseWatchers();
   }
 
   openCreateModal(): void {
     this.createForm = this.defaultForm();
+    this.metersFacade.loadMeters();
+    this.createAttachedMeters = [];
+    this.resetAddonMeterAttachForm('create');
+    this.addonMeterAttachError = null;
     this.showModalWithMonacoLayout(this.createModal);
   }
 
   openEditModal(addon: AddonResponse): void {
+    this.metersFacade.loadMeters();
     this.addonsService
       .getAddon(addon.id)
       .pipe(take(1))
@@ -154,8 +173,254 @@ export class AddonsPageComponent implements OnInit {
               ),
         };
         showBillingModal(this.editModal);
+        this.resetAddonMeterAttachForm('edit');
+        this.addonMeterAttachError = null;
+        this.editAttachedMeters = detail.meters ?? [];
+        this.loadAddonAttachedMeters(detail.id);
         this.scheduleMonacoLayout(this.editModal);
       });
+  }
+
+  attachedMetersFor(mode: string): AttachedMeterResponse[] {
+    return mode === 'create' ? this.createAttachedMeters : this.editAttachedMeters;
+  }
+
+  availableMetersForAddonAttach(meters: MeterResponse[] | null, mode: string): MeterResponse[] {
+    const attachedIds = new Set(this.attachedMetersFor(mode).map((item) => item.meterId));
+
+    return (meters ?? []).filter((meter) => !attachedIds.has(meter.id));
+  }
+
+  loadAddonAttachedMeters(addonId: string): void {
+    this.addonMeterAttachLoading = true;
+    this.addonMeterAttachError = null;
+    this.addonsService
+      .listAddonMeters(addonId)
+      .pipe(take(1))
+      .subscribe({
+        next: (meters) => {
+          this.editAttachedMeters = meters;
+          this.addonMeterAttachLoading = false;
+        },
+        error: (error: unknown) => {
+          this.addonMeterAttachError = this.formatMeterHttpError(error, 'Failed to load addon meters');
+          this.addonMeterAttachLoading = false;
+        },
+      });
+  }
+
+  resetAddonMeterAttachForm(mode: string): void {
+    if (mode === 'create') {
+      this.createAddonMeterAttachMeterId = '';
+      this.createAddonMeterAttachUnitPrice = '';
+      return;
+    }
+
+    this.editAddonMeterAttachMeterId = '';
+    this.editAddonMeterAttachUnitPrice = '';
+  }
+
+  attachAddonMeter(mode: string): void {
+    const meterId = mode === 'create' ? this.createAddonMeterAttachMeterId : this.editAddonMeterAttachMeterId;
+    const unitPriceRaw =
+      mode === 'create' ? this.createAddonMeterAttachUnitPrice.trim() : this.editAddonMeterAttachUnitPrice.trim();
+
+    if (!meterId) return;
+
+    if (mode === 'create') {
+      this.addonMeterAttachError = null;
+      this.activeMeters$.pipe(take(1)).subscribe((meters) => {
+        const meter = meters.find((item) => item.id === meterId);
+
+        if (!meter) {
+          this.addonMeterAttachError = 'Selected meter is not available';
+          return;
+        }
+
+        const override = unitPriceRaw ? Number(unitPriceRaw) : null;
+
+        this.createAttachedMeters = [
+          ...this.createAttachedMeters,
+          this.toPendingAttachedMeter(meter, Number.isFinite(override as number) ? override : null),
+        ];
+        this.resetAddonMeterAttachForm('create');
+      });
+
+      return;
+    }
+
+    if (!this.editForm.id) return;
+
+    this.addonMeterAttachLoading = true;
+    this.addonMeterAttachError = null;
+    this.addonsService
+      .attachAddonMeter(this.editForm.id, {
+        meterId,
+        unitPriceNet: unitPriceRaw ? Number(unitPriceRaw) : undefined,
+      })
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.resetAddonMeterAttachForm('edit');
+          this.loadAddonAttachedMeters(this.editForm.id);
+          this.facade.loadAddons();
+        },
+        error: (error: unknown) => {
+          this.addonMeterAttachError = this.formatMeterHttpError(error, 'Failed to attach meter');
+          this.addonMeterAttachLoading = false;
+        },
+      });
+  }
+
+  updateAttachedAddonMeter(mode: string, meter: AttachedMeterResponse, unitPriceInput: string): void {
+    const trimmed = unitPriceInput.trim();
+    const override = trimmed ? Number(trimmed) : null;
+
+    if (mode === 'create') {
+      this.createAttachedMeters = this.createAttachedMeters.map((item) =>
+        item.meterId === meter.meterId
+          ? {
+              ...item,
+              unitPriceNetOverride: Number.isFinite(override as number) ? override : null,
+              effectiveUnitPriceNet:
+                Number.isFinite(override as number) && override != null ? override : item.defaultUnitPriceNet,
+            }
+          : item,
+      );
+
+      return;
+    }
+
+    if (!this.editForm.id) return;
+
+    this.addonMeterAttachLoading = true;
+    this.addonMeterAttachError = null;
+    this.addonsService
+      .updateAddonMeter(this.editForm.id, meter.meterId, {
+        unitPriceNet: trimmed ? Number(trimmed) : null,
+      })
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.loadAddonAttachedMeters(this.editForm.id);
+          this.facade.loadAddons();
+        },
+        error: (error: unknown) => {
+          this.addonMeterAttachError = this.formatMeterHttpError(error, 'Failed to update meter price');
+          this.addonMeterAttachLoading = false;
+        },
+      });
+  }
+
+  detachAddonMeter(mode: string, meterId: string): void {
+    if (mode === 'create') {
+      this.createAttachedMeters = this.createAttachedMeters.filter((item) => item.meterId !== meterId);
+
+      return;
+    }
+
+    if (!this.editForm.id) return;
+
+    this.addonMeterAttachLoading = true;
+    this.addonMeterAttachError = null;
+    this.addonsService
+      .detachAddonMeter(this.editForm.id, meterId)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.loadAddonAttachedMeters(this.editForm.id);
+          this.facade.loadAddons();
+        },
+        error: (error: unknown) => {
+          this.addonMeterAttachError = this.formatMeterHttpError(error, 'Failed to detach meter');
+          this.addonMeterAttachLoading = false;
+        },
+      });
+  }
+
+  attachedMeterOverrideInput(meter: AttachedMeterResponse): string {
+    return meter.unitPriceNetOverride != null ? String(meter.unitPriceNetOverride) : '';
+  }
+
+  addonMeterCount(addon: AddonResponse): number {
+    return addon.meters?.length ?? 0;
+  }
+
+  private toPendingAttachedMeter(meter: MeterResponse, unitPriceNetOverride: number | null): AttachedMeterResponse {
+    return {
+      meterId: meter.id,
+      key: meter.key,
+      name: meter.name,
+      description: meter.description ?? null,
+      unitLabel: meter.unitLabel ?? null,
+      aggregator: meter.aggregator,
+      defaultUnitPriceNet: meter.defaultUnitPriceNet,
+      unitPriceNetOverride,
+      effectiveUnitPriceNet: unitPriceNetOverride != null ? unitPriceNetOverride : meter.defaultUnitPriceNet,
+      isActive: meter.isActive,
+      source: 'manual',
+      required: false,
+    };
+  }
+
+  private flushPendingCreateAddonMeters(pendingMeters?: AttachedMeterResponse[]): void {
+    const pending = pendingMeters ?? [...this.createAttachedMeters];
+
+    if (pending.length === 0) {
+      return;
+    }
+
+    this.facade
+      .getSelectedAddon$()
+      .pipe(
+        take(1),
+        switchMap((addon) => {
+          if (!addon) {
+            return of(null);
+          }
+
+          return forkJoin(
+            pending.map((meter) =>
+              this.addonsService
+                .attachAddonMeter(addon.id, {
+                  meterId: meter.meterId,
+                  unitPriceNet: meter.unitPriceNetOverride ?? undefined,
+                })
+                .pipe(catchError(() => of(null))),
+            ),
+          );
+        }),
+        take(1),
+      )
+      .subscribe(() => this.facade.loadAddons());
+  }
+
+  private formatMeterHttpError(error: unknown, fallback: string): string {
+    if (error && typeof error === 'object' && 'error' in error) {
+      const body = (error as { error?: unknown }).error;
+
+      if (typeof body === 'string' && body.trim()) {
+        return body.trim();
+      }
+
+      if (body && typeof body === 'object' && 'message' in body) {
+        const message = (body as { message?: unknown }).message;
+
+        if (typeof message === 'string' && message.trim()) {
+          return message.trim();
+        }
+
+        if (Array.isArray(message) && message.length > 0) {
+          return message.map(String).join(', ');
+        }
+      }
+    }
+
+    if (error instanceof Error && error.message.trim()) {
+      return error.message.trim();
+    }
+
+    return fallback;
   }
 
   openDeleteConfirm(addon: AddonResponse): void {
@@ -471,7 +736,12 @@ export class AddonsPageComponent implements OnInit {
       modal: () => this.createModal,
       destroyRef: this.destroyRef,
       onSuccess: () => {
+        const pendingMeters = [...this.createAttachedMeters];
         this.createForm = this.defaultForm();
+        this.createAttachedMeters = [];
+        this.resetAddonMeterAttachForm('create');
+        this.addonMeterAttachError = null;
+        this.flushPendingCreateAddonMeters(pendingMeters);
       },
     });
     watchBillingMutationModalClose({
@@ -481,6 +751,9 @@ export class AddonsPageComponent implements OnInit {
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.editForm = { ...this.defaultForm(), id: '' };
+        this.editAttachedMeters = [];
+        this.resetAddonMeterAttachForm('edit');
+        this.addonMeterAttachError = null;
       },
     });
     watchBillingMutationModalClose({

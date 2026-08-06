@@ -84,4 +84,60 @@ describe('ServiceTypesService', () => {
       req.flush(mockLocations);
     });
   });
+
+  describe('service type meters', () => {
+    const attachedMeter = {
+      meterId: 'meter-1',
+      key: 'traffic',
+      name: 'Traffic',
+      aggregator: 'max' as const,
+      defaultUnitPriceNet: 0.01,
+      effectiveUnitPriceNet: 0.01,
+      isActive: true,
+      source: 'manual' as const,
+      required: false,
+    };
+
+    it('lists service type meters', (done) => {
+      service.listServiceTypeMeters('st-1').subscribe((meters) => {
+        expect(meters).toEqual([attachedMeter]);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/service-types/st-1/meters`);
+      expect(req.request.method).toBe('GET');
+      req.flush([attachedMeter]);
+    });
+
+    it('attaches a service type meter', (done) => {
+      service.attachServiceTypeMeter('st-1', { meterId: 'meter-1', unitPriceNet: 0.02 }).subscribe((meter) => {
+        expect(meter).toEqual(attachedMeter);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/service-types/st-1/meters`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ meterId: 'meter-1', unitPriceNet: 0.02 });
+      req.flush(attachedMeter);
+    });
+
+    it('updates a service type meter override', (done) => {
+      service.updateServiceTypeMeter('st-1', 'meter-1', { unitPriceNet: 0.05 }).subscribe((meter) => {
+        expect(meter.effectiveUnitPriceNet).toBe(0.05);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/service-types/st-1/meters/meter-1`);
+      expect(req.request.method).toBe('POST');
+      req.flush({ ...attachedMeter, effectiveUnitPriceNet: 0.05 });
+    });
+
+    it('detaches a service type meter', (done) => {
+      service.detachServiceTypeMeter('st-1', 'meter-1').subscribe(() => done());
+
+      const req = httpMock.expectOne(`${apiUrl}/service-types/st-1/meters/meter-1`);
+      expect(req.request.method).toBe('DELETE');
+      req.flush(null);
+    });
+  });
 });

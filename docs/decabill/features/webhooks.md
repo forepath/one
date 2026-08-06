@@ -58,6 +58,12 @@ Events are published from the **billing** service after successful mutations.
 - `subscription.provisioned`, `subscription.provision_failed` (itemId plus hostname/service/providerReference or errorMessage; never secrets)
 - `subscription.ssh_access_granted` (metadata only: subscription/item ids, hostname, grantedAt — never the private key)
 - `addon.activated`, `addon.deactivated`, `addon.provision_failed`, `addon.teardown_failed`
+- `meter.created`, `meter.updated`, `meter.deleted`
+- `service_plan.meter_attached`, `service_plan.meter_updated`, `service_plan.meter_detached`
+- `addon.meter_attached`, `addon.meter_updated`, `addon.meter_detached`
+- `usage.recorded`, `usage.updated`, `usage.deleted` (high volume; no email)
+
+`subscription.period_charged` may include `meterCharges[]` (`meterId`, `attachmentType`, optional `addonId`, amounts). See [Usage meters](./usage-meters.md).
 
 Plans with `serviceTypeId: null` (billing-only, no deployment) do not emit `subscription.provisioned` / `provision_failed`; fulfillment is immediate and silent, same as other non-cloud providers. Plan catalog CRUD does not emit webhooks. Orders still emit `subscription.created`. See [Service Types and Plans](./service-types-and-plans.md#plans-without-a-service-type-null).
 

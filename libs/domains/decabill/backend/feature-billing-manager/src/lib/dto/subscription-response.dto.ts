@@ -1,5 +1,6 @@
 import { SubscriptionStatus } from '../entities/subscription.entity';
 
+import { SubscriptionMeterSummaryDto } from './meter-response.dto';
 import { WithdrawalEligibilityDto, WithdrawalResultDto } from './withdrawal-policy.dto';
 
 export class SubscriptionResponseDto {
@@ -20,6 +21,7 @@ export class SubscriptionResponseDto {
   withdrawalEligibility?: WithdrawalEligibilityDto;
   withdrawalResult?: WithdrawalResultDto;
   periodTotalPrice?: number;
+  meters!: SubscriptionMeterSummaryDto[];
   createdAt!: Date;
   updatedAt!: Date;
 }

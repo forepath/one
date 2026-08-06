@@ -34,7 +34,7 @@ export function resolveInvoicingPeriod(
   return normalizePeriod({ periodStart, periodEnd });
 }
 
-function subtractBillingInterval(
+export function subtractBillingInterval(
   end: Date,
   plan: Pick<ServicePlanEntity, 'billingIntervalType' | 'billingIntervalValue' | 'billingDayOfMonth'>,
 ): Date {

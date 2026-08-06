@@ -106,7 +106,9 @@ No dedicated webhook events are emitted for plan CRUD or for “non-provision fu
 - **`serviceTypeId`** UUID of a catalog service type, or **`null`** for no deployment
 - Title, description, and active flag
 - Billing interval (hourly, daily, monthly, **yearly**)
-- **`billInAdvance`** when true, charge at period start (prepaid); default false (arrear). Incompatible with usage-based metering. See [Advance billing and yearly interval](./advance-billing-and-yearly-interval.md).
+- **`billInAdvance`** when true, charge at period start (prepaid); default false (arrear). Incompatible with usage-based metering. See [Advance billing and yearly interval](./advance-billing-and-yearly-interval.md) and [Usage meters](./usage-meters.md).
+- **Plan meters** attach via `GET/POST /service-plans/{id}/meters` (optional unit-price override). Embedded on `ServicePlanResponse.meters` as the effective set: explicit plan attachments plus meters inherited from the plan’s service type (`inherited=true`). Inherited meters are fixed in the plan UI.
+- **Service-type meters** attach via `GET/POST /service-types/{id}/meters`. Provider-declared meters sync as required (`source=provider`); admins may attach extra manual meters. See [Usage meters](./usage-meters.md).
 - **`autoRecalculatePriceDaily`** when true, nightly job refreshes catalog base price from the provider and migrates eligible subscriptions (default false, opt-in; not allowed for null-`serviceTypeId` plans). See [Automatic daily price recalculation](./automatic-price-recalculation.md).
 - **Admin commercial migrate** on plan update, optional request field `migrateExistingSubscriptions` (not stored). When true **and** `basePrice`, `marginPercent`, `marginFixed`, or `taxCategory` actually change, a `plan-price-migrate.unit` job migrates eligible subscriptions with the same settlement, withdrawal restart, and consolidated price-change email as nightly recalc. Unchecked updates affect new orders only.
 - Base price, margin, and computed customer total

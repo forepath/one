@@ -318,6 +318,7 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
     billUntil: Date,
     periodStart: Date,
     periodEnd: Date,
+    meterCharges?: Array<Record<string, unknown>>,
   ): void {
     this.publish(
       'subscription.period_charged',
@@ -326,6 +327,7 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
         billUntil: billUntil.toISOString(),
         chargedPeriodStart: periodStart.toISOString(),
         chargedPeriodEnd: periodEnd.toISOString(),
+        meterCharges: meterCharges ?? [],
       },
       subscription.userId,
     );

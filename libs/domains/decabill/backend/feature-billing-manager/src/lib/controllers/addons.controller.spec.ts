@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 
 import { AddonsRepository } from '../repositories/addons.repository';
 import { AddonService } from '../services/addon.service';
+import { MeterService } from '../services/meter.service';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 
 import { AddonsController } from './addons.controller';
@@ -36,6 +37,16 @@ describe('AddonsController', () => {
       providers: [
         { provide: AddonsRepository, useValue: repository },
         { provide: AddonService, useValue: addonService },
+        {
+          provide: MeterService,
+          useValue: {
+            listAddonMeters: jest.fn().mockResolvedValue([]),
+            attachAddonMeter: jest.fn(),
+            updateAddonMeter: jest.fn(),
+            detachAddonMeter: jest.fn(),
+            syncAddonModuleMeters: jest.fn().mockResolvedValue([]),
+          },
+        },
       ],
     }).compile();
 

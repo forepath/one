@@ -199,6 +199,7 @@ describe('SubscriptionService', () => {
     customerTrustScoreService as never,
     subscriptionPeriodChargeService as never,
     sshExecutor as never,
+    { buildSubscriptionMeterSummaries: jest.fn().mockResolvedValue([]) } as never,
   );
 
   beforeEach(() => {

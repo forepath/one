@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
+import type { DeclaredMeterDefinition } from '../dto/declared-meter.dto';
+import type { MeterCollectContext, MeterCollectSample } from '../dto/meter-collect.types';
 import type { AddonConfigFieldDefinition } from '../utils/addon-config.utils';
 
 export interface AddonLifecycleContext {
@@ -21,8 +23,18 @@ export interface BillingAddonModule {
    * Persisted onto the catalog addon `configSchema` at create/update; admins set defaults only.
    */
   readonly configFields?: AddonConfigFieldDefinition[];
+  /**
+   * Required usage meters declared by the module implementation.
+   * Sideloaded onto the catalog addon as non-removable attachments.
+   */
+  readonly meters?: DeclaredMeterDefinition[];
   provision(ctx: AddonLifecycleContext): Promise<void>;
   teardown(ctx: AddonLifecycleContext): Promise<void>;
+  /**
+   * Optional pull hook for meters with collectionIntervalMs.
+   * Invoked by the meter-collect job when due; omit to keep meters push-only.
+   */
+  collectMeters?(ctx: MeterCollectContext): Promise<MeterCollectSample[]>;
 }
 
 /**

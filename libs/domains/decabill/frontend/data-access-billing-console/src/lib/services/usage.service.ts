@@ -4,7 +4,12 @@ import type { Environment } from '@forepath/shared/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
-import type { CreateUsageRecordDto, UsageRecordResponse, UsageSummary } from '../types/billing.types';
+import type {
+  CreateUsageRecordDto,
+  SubscriptionMeterSummary,
+  UsageRecordResponse,
+  UsageSummary,
+} from '../types/billing.types';
 
 @Injectable({
   providedIn: 'root',
@@ -32,5 +37,9 @@ export class UsageService {
    */
   recordUsage(record: CreateUsageRecordDto): Observable<UsageRecordResponse> {
     return this.http.post<UsageRecordResponse>(`${this.apiUrl}/admin/usage/record`, record);
+  }
+
+  getSubscriptionMeters(subscriptionId: string): Observable<SubscriptionMeterSummary[]> {
+    return this.http.get<SubscriptionMeterSummary[]>(`${this.apiUrl}/subscriptions/${subscriptionId}/meters`);
   }
 }

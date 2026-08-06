@@ -48,14 +48,16 @@ export class BillingAdminService {
     };
   }
 
-  async listUserSubscriptions(userId: string, limit: number, offset: number): Promise<SubscriptionEntity[]> {
+  async listUserSubscriptions(userId: string, limit: number, offset: number): Promise<SubscriptionResponseDto[]> {
     const user = await this.usersRepository.findByIdForTenant(userId);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    return await this.subscriptionService.listSubscriptions(userId, limit, offset);
+    const rows = await this.subscriptionService.listSubscriptions(userId, limit, offset);
+
+    return await this.subscriptionService.mapManyToResponses(rows);
   }
 
   async listSubscriptionsForAdmin(params: {

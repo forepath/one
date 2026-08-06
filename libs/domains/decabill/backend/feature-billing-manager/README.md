@@ -86,9 +86,12 @@ Use `GET /customer-profile` to retrieve the profile and `POST /customer-profile`
 profile. The backend returns 400 if the profile is missing or incomplete. Required fields: first name, last name, email,
 address line, city, country. See `docs/billing-profile-required-for-order-spec.md` and `docs/sequence-subscription-order.mmd`.
 
-Usage records can be posted to `POST /admin/usage/record` (admin JWT or `STATIC_API_KEY` only; customers cannot
-self-report) and will be included in invoice creation if a `usagePayload` with `totalCost` or `usageCost` is present,
-or when `units` and `unitPrice` are provided.
+Usage meters (catalog + plan/addon attachments) are documented in `docs/decabill/features/usage-meters.md`.
+Records are posted to `POST /admin/usage/record` (admin JWT or `STATIC_API_KEY` only; customers cannot
+self-report). With meter attachments, provide `meterId`/`value`/`attachmentType`/`addonId`. Without attachments,
+legacy `usagePayload` with `totalCost` or `usageCost` (or `units` and `unitPrice`) still applies.
+Declared meters may set `collectionIntervalMs`; the `meter-collect` BullMQ job (every minute by default) pulls
+samples via provider/addon `collectMeters` into usage history with `usageSource: collector`.
 
 ## Provider details
 
@@ -98,6 +101,10 @@ or when `units` and `unitPrice` are provided.
 
 - `DYNAMIC_PAYMENT_PROCESSORS` - Comma-separated extra payment processor packages (critical; use with `DYNAMIC_PROVIDERS_FAIL_FAST=true` in production)
 - `DYNAMIC_BILLING_PROVIDER_METADATA` - Comma-separated packages exporting `providerMetadata` for the billing UI registry
+- `DYNAMIC_BILLING_PROVIDER_MODULES` - Comma-separated runtime provider modules implementing `collectMeters` (optional `meters`)
+- `DYNAMIC_ADDON_MODULES` - Addon lifecycle modules (`provision` / `teardown` / optional `collectMeters`)
+- `BILLING_METER_COLLECT_ENABLED` - When `false`, disables the meter-collect coordinator (default `true`)
+- `BILLING_METER_COLLECT_INTERVAL` - Coordinator interval ms (default `60000`)
 - `DYNAMIC_PROVIDERS_FAIL_FAST` - When `true`, abort startup if critical dynamic providers fail to load
 - `DYNAMIC_PROVIDER_PLUGIN_PATH` - Plugin root for post-build loading (compose default: `/var/lib/forepath/provider-plugins`)
 - `DYNAMIC_PROVIDER_PLUGIN_INSTALL` - Startup `npm install` targets into the plugin path

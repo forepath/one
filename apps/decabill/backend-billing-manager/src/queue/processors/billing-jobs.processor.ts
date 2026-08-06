@@ -10,6 +10,7 @@ import {
   InvoiceOverdueJobHandler,
   OpenPositionInvoiceJobHandler,
   PriceRecalcJobHandler,
+  MeterCollectJobHandler,
   type PlanPriceMigrateUnitPayload,
   SubscriptionBillingJobHandler,
   SubscriptionConfigChangeJobHandler,
@@ -74,6 +75,7 @@ export class BillingJobsProcessor extends WorkerHost {
     private readonly datevExportConfig: DatevExportConfigService,
     private readonly datevExportJobHandler: DatevExportJobHandler,
     private readonly priceRecalc: PriceRecalcJobHandler,
+    private readonly meterCollect: MeterCollectJobHandler,
     private readonly vatIdValidationJobHandler: VatIdValidationJobHandler,
     private readonly webhookDeliveryService: WebhookDeliveryService,
     private readonly webhookDeliveryRetentionService: WebhookDeliveryRetentionService,
@@ -135,6 +137,9 @@ export class BillingJobsProcessor extends WorkerHost {
         break;
       case BillingJobName.PRICE_RECALC_COORDINATOR:
         await this.runPriceRecalcCoordinator();
+        break;
+      case BillingJobName.METER_COLLECT_COORDINATOR:
+        await this.runMeterCollectCoordinator();
         break;
       case BillingJobName.UPDATE_CHECK:
       case UPDATE_CHECK_JOB_NAME:
@@ -227,6 +232,9 @@ export class BillingJobsProcessor extends WorkerHost {
               break;
             case BillingJobName.PRICE_RECALC_UNIT:
               await this.runPriceRecalcUnit(job.data as { tenantId: string; runDate: string });
+              break;
+            case BillingJobName.METER_COLLECT_UNIT:
+              await this.runMeterCollectUnit(job.data as { tenantId: string });
               break;
             case BillingJobName.PLAN_PRICE_MIGRATE_UNIT:
               await this.priceRecalc.processPlanCommercialMigrate(job.data as PlanPriceMigrateUnitPayload);
@@ -650,6 +658,54 @@ export class BillingJobsProcessor extends WorkerHost {
     }
 
     await this.priceRecalc.processTenant(data.tenantId, data.runDate);
+  }
+
+  private isMeterCollectEnabled(): boolean {
+    const raw = process.env.BILLING_METER_COLLECT_ENABLED;
+
+    if (raw === undefined || raw.trim() === '') {
+      return true;
+    }
+
+    const normalized = raw.trim().toLowerCase();
+
+    if (normalized === 'true' || normalized === '1') {
+      return true;
+    }
+
+    if (normalized === 'false' || normalized === '0') {
+      return false;
+    }
+
+    return true;
+  }
+
+  private async runMeterCollectCoordinator(): Promise<void> {
+    if (!this.isMeterCollectEnabled()) {
+      this.logger.debug('Meter collect disabled — skipping coordinator');
+
+      return;
+    }
+
+    await this.forEachConfiguredTenant(async (tenantId) => {
+      await this.enqueueBillingUnitJob({
+        queue: this.billingQueue,
+        jobName: BillingJobName.METER_COLLECT_UNIT,
+        payload: { tenantId },
+        jobIdNamespace: 'meter-collect',
+        jobIdParts: ['tenant', tenantId],
+      });
+    });
+  }
+
+  private async runMeterCollectUnit(data: { tenantId: string }): Promise<void> {
+    if (!this.isMeterCollectEnabled()) {
+      this.logger.debug('Meter collect disabled — skipping unit job');
+
+      return;
+    }
+
+    await this.meterCollect.processTenant(data.tenantId);
   }
 
   private async runAdminBillNowCoordinator(data: AdminBillNowCoordinatorPayload): Promise<void> {

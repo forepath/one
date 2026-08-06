@@ -40,6 +40,32 @@ export class AddonService {
     this.validateCompatibleProviders(dto.compatibleProviders);
   }
 
+  listRegisteredModules(): Array<{
+    key: string;
+    displayName: string;
+    meters: Array<{
+      key: string;
+      name: string;
+      description?: string;
+      unitLabel?: string;
+      aggregator: string;
+      defaultUnitPriceNet: number;
+    }>;
+  }> {
+    return this.addonModuleRegistry.list().map((module) => ({
+      key: module.key,
+      displayName: module.displayName,
+      meters: (module.meters ?? []).map((meter) => ({
+        key: meter.key,
+        name: meter.name,
+        description: meter.description,
+        unitLabel: meter.unitLabel,
+        aggregator: meter.aggregator,
+        defaultUnitPriceNet: meter.defaultUnitPriceNet,
+      })),
+    }));
+  }
+
   validateUpdatePayload(
     existing: AddonEntity,
     dto: UpdateAddonDto,

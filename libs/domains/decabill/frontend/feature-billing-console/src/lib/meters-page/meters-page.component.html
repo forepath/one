@@ -1,0 +1,285 @@
+<div class="meters-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureMeters-title">Usage meters</h5>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      (click)="openCreateModal()"
+      [disabled]="(loadingAny$ | async) === true"
+      title="Add meter"
+      i18n-title="@@featureMeters-add"
+      aria-label="Add meter"
+      i18n-aria-label="@@featureMeters-add"
+    >
+      <i class="bi bi-plus" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="input-group search-input-container border-bottom">
+    <i class="bi bi-search" aria-hidden="true"></i>
+    <input
+      type="search"
+      class="form-control border-0 search-input"
+      placeholder="Search meters"
+      i18n-placeholder="@@featureMeters-searchPlaceholder"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="searchQuery.set($event)"
+      name="search"
+    />
+  </div>
+  <div class="flex-grow-1 overflow-auto">
+    @if (loading$ | async) {
+      <div class="d-flex justify-content-center align-items-center p-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden" i18n="@@featureMeters-loading">Loading...</span>
+        </div>
+      </div>
+    } @else {
+      @if (error$ | async; as error) {
+        <div class="alert alert-danger m-3" role="alert">{{ error }}</div>
+      }
+      @if (meters$ | async; as meters) {
+        @if (meters.length === 0) {
+          <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+            <p class="mb-0" i18n="@@featureMeters-empty">No meters.</p>
+          </div>
+        } @else {
+          <div class="list-group list-group-flush">
+            @for (meter of meters; track meter.id) {
+              <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3">
+                <div class="min-w-0">
+                  <div class="fw-semibold mb-1">{{ meter.name }}</div>
+                  <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+                    <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                      <span class="me-2" [ngClass]="activeStatusTextClass(meter.isActive)">
+                        @if (meter.isActive) {
+                          <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                        } @else {
+                          <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
+                        }
+                        {{ activeStatusLabel(meter.isActive) }}
+                      </span>
+                      <span class="me-2"> <i class="bi bi-key me-1" aria-hidden="true"></i>{{ meter.key }} </span>
+                      <span class="me-2">
+                        <i class="bi bi-bar-chart me-1" aria-hidden="true"></i>{{ aggregatorLabel(meter.aggregator) }}
+                      </span>
+                      @if (meter.unitLabel) {
+                        <span class="me-2">
+                          <i class="bi bi-rulers me-1" aria-hidden="true"></i>{{ meter.unitLabel }}
+                        </span>
+                      }
+                      <span class="me-2">
+                        <i class="bi bi-cash-stack me-1" aria-hidden="true"></i
+                        >{{ formatUnitPrice(meter.defaultUnitPriceNet) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="btn-group btn-group-sm flex-shrink-0"
+                  role="group"
+                  aria-label="Meter actions"
+                  i18n-aria-label="@@featureMeters-actionsAria"
+                >
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    (click)="openEditModal(meter)"
+                    [disabled]="(loadingAny$ | async) === true"
+                    title="Edit meter"
+                    i18n-title="@@featureMeters-edit"
+                    aria-label="Edit meter"
+                    i18n-aria-label="@@featureMeters-edit"
+                  >
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger"
+                    (click)="openDeleteConfirm(meter)"
+                    [disabled]="(loadingAny$ | async) === true"
+                    title="Delete meter"
+                    i18n-title="@@featureMeters-delete"
+                    aria-label="Delete meter"
+                    i18n-aria-label="@@featureMeters-delete"
+                  >
+                    <i class="bi bi-trash" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    }
+  </div>
+</div>
+
+<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureMeters-createTitle">Create meter</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form (ngSubmit)="onSubmitCreate()">
+        <div class="modal-body">
+          <ng-container
+            *ngTemplateOutlet="
+              meterForm;
+              context: { form: createForm, prefix: 'create', disabled: (creating$ | async) }
+            "
+          ></ng-container>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" [disabled]="(creating$ | async) === true">
+            <span i18n="@@featureMeters-create">Create</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureMeters-editTitle">Edit meter</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form (ngSubmit)="onSubmitEdit()">
+        <div class="modal-body">
+          <ng-container
+            *ngTemplateOutlet="meterForm; context: { form: editForm, prefix: 'edit', disabled: (updating$ | async) }"
+          ></ng-container>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" [disabled]="(updating$ | async) === true">
+            <span i18n="@@featureMeters-save">Save</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<ng-template #meterForm let-form="form" let-prefix="prefix" let-disabled="disabled">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label" [for]="prefix + 'MeterKey'" i18n="@@featureMeters-key">Key</label>
+      <input
+        class="form-control"
+        [id]="prefix + 'MeterKey'"
+        [(ngModel)]="form.key"
+        [name]="prefix + 'MeterKey'"
+        [disabled]="prefix === 'edit' || disabled"
+        required
+      />
+    </div>
+    <div class="col-md-6">
+      <label class="form-label" [for]="prefix + 'MeterName'" i18n="@@featureMeters-name">Name</label>
+      <input
+        class="form-control"
+        [id]="prefix + 'MeterName'"
+        [(ngModel)]="form.name"
+        [name]="prefix + 'MeterName'"
+        [disabled]="disabled"
+        required
+      />
+    </div>
+    <div class="col-12">
+      <label class="form-label" [for]="prefix + 'MeterDescription'" i18n="@@featureMeters-description"
+        >Description</label
+      >
+      <textarea
+        class="form-control"
+        rows="2"
+        [id]="prefix + 'MeterDescription'"
+        [(ngModel)]="form.description"
+        [name]="prefix + 'MeterDescription'"
+        [disabled]="disabled"
+      ></textarea>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" [for]="prefix + 'MeterUnitLabel'" i18n="@@featureMeters-unitLabel">Unit label</label>
+      <input
+        class="form-control"
+        [id]="prefix + 'MeterUnitLabel'"
+        [(ngModel)]="form.unitLabel"
+        [name]="prefix + 'MeterUnitLabel'"
+        [disabled]="disabled"
+      />
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" [for]="prefix + 'MeterAggregator'" i18n="@@featureMeters-aggregator">Aggregator</label>
+      <select
+        class="form-select"
+        [id]="prefix + 'MeterAggregator'"
+        [(ngModel)]="form.aggregator"
+        [name]="prefix + 'MeterAggregator'"
+        [disabled]="disabled"
+      >
+        @for (aggregator of aggregators; track aggregator) {
+          <option [ngValue]="aggregator">{{ aggregatorLabel(aggregator) }}</option>
+        }
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" [for]="prefix + 'MeterDefaultPrice'" i18n="@@featureMeters-defaultUnitPriceNet"
+        >Default unit price (net)</label
+      >
+      <input
+        type="number"
+        min="0"
+        step="0.0001"
+        class="form-control"
+        [id]="prefix + 'MeterDefaultPrice'"
+        [(ngModel)]="form.defaultUnitPriceNet"
+        [name]="prefix + 'MeterDefaultPrice'"
+        [disabled]="disabled"
+        required
+      />
+    </div>
+    <div class="col-12">
+      <div class="form-check">
+        <input
+          type="checkbox"
+          class="form-check-input"
+          [id]="prefix + 'MeterActive'"
+          [(ngModel)]="form.isActive"
+          [name]="prefix + 'MeterActive'"
+          [disabled]="disabled"
+        />
+        <label class="form-check-label" [for]="prefix + 'MeterActive'" i18n="@@featureMeters-active">Active</label>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<div #deleteConfirmModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureMeters-deleteTitle">Delete meter</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (meterToDelete) {
+          <p i18n="@@featureMeters-deleteConfirm">Delete meter "{{ meterToDelete.name }}"?</p>
+          <p class="text-danger mb-0" i18n="@@featureMeters-cannotUndo">This action cannot be undone.</p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmDelete()"
+          [disabled]="(deleting$ | async) === true"
+          i18n="@@featureMeters-delete"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

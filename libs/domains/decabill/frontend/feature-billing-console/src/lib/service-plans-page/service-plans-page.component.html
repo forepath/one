@@ -76,6 +76,12 @@
                       <span class="me-2">
                         <i class="bi bi-percent me-1" aria-hidden="true"></i>{{ planTaxRateLabel(plan) }}
                       </span>
+                      @if (planMeterCount(plan) > 0) {
+                        <span class="me-2">
+                          <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>{{ planMeterCount(plan) }}
+                          <span i18n="@@featureServicePlans-metersBadge">meters</span>
+                        </span>
+                      }
                     </div>
                   </div>
                 </div>
@@ -886,6 +892,16 @@
                 }
               }
             }
+            <ng-container
+              *ngTemplateOutlet="
+                planMetersSection;
+                context: {
+                  mode: 'create',
+                  billInAdvance: createForm.billInAdvance,
+                  disabled: (creating$ | async) === true,
+                }
+              "
+            ></ng-container>
             @if (supportsCustomerLocationSelection(data.serviceTypes, data.providerDetails, createForm.serviceTypeId)) {
               <div class="form-check mb-3">
                 <input
@@ -1794,6 +1810,12 @@
                 }
               }
             }
+            <ng-container
+              *ngTemplateOutlet="
+                planMetersSection;
+                context: { mode: 'edit', billInAdvance: editForm.billInAdvance, disabled: (updating$ | async) === true }
+              "
+            ></ng-container>
             @if (
               editingPlan &&
               supportsCustomerLocationSelection(data.serviceTypes, data.providerDetails, editingPlan.serviceTypeId)
@@ -1969,3 +1991,190 @@
     </div>
   </div>
 </div>
+
+<ng-template #planMetersSection let-mode="mode" let-billInAdvance="billInAdvance" let-disabled="disabled">
+  <div class="mb-3 border rounded p-3 bg-body-secondary">
+    <h6 class="mb-2" i18n="@@featureServicePlans-meters">Usage meters</h6>
+    <p class="form-text text-body-secondary small mb-3" i18n="@@featureServicePlans-metersHelp">
+      Attach usage meters billed in arrears. Optional unit price overrides the catalog default.
+    </p>
+    @if (billInAdvance) {
+      <div class="alert alert-warning py-2 small" i18n="@@featureServicePlans-metersPrepaidWarning">
+        Prepaid plans cannot record or bill metered usage. Detach meters or disable bill-in-advance before using meters.
+      </div>
+    }
+    @if (mode === 'edit' && planMeterAttachError) {
+      <div class="alert alert-danger py-2">{{ planMeterAttachError }}</div>
+    }
+    @if (mode === 'edit' && planMeterAttachLoading && attachedMetersFor(mode).length === 0) {
+      <div class="text-muted small mb-2" i18n="@@featureServicePlans-metersLoading">Loading meters…</div>
+    }
+    @for (attached of attachedMetersFor(mode); track attached.meterId) {
+      <div class="row g-2 mb-2 align-items-end">
+        <div class="col-12 col-md-4">
+          <div class="fw-semibold">{{ attached.name }}</div>
+          <div class="small text-muted">
+            {{ attached.key }} · {{ attached.aggregator }} · €{{ attached.effectiveUnitPriceNet }}
+            @if (attached.unitLabel) {
+              <span>/ {{ attached.unitLabel }}</span>
+            }
+          </div>
+          @if (attached.inherited) {
+            <div class="small text-muted" i18n="@@featureServicePlans-meterFromServiceType">From service type</div>
+          }
+        </div>
+        <div class="col-12 col-md-5">
+          <label
+            class="form-label small mb-0"
+            [for]="mode + 'PlanMeterOverride' + attached.meterId"
+            i18n="@@featureServicePlans-meterUnitPriceOverride"
+            >Unit price override (net)</label
+          >
+          <input
+            type="number"
+            min="0"
+            step="0.0001"
+            class="form-control form-control-sm"
+            [id]="mode + 'PlanMeterOverride' + attached.meterId"
+            #planMeterOverride
+            [value]="attachedMeterOverrideInput(attached)"
+            [disabled]="disabled || attached.inherited === true || (mode === 'edit' && planMeterAttachLoading)"
+          />
+        </div>
+        <div class="col-12 col-md-3 d-flex gap-1 flex-wrap justify-content-md-end">
+          @if (!attached.inherited) {
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              (click)="updateAttachedPlanMeter(mode, attached, planMeterOverride.value)"
+              [disabled]="disabled || (mode === 'edit' && planMeterAttachLoading)"
+              title="Update price"
+              i18n-title="@@featureServicePlans-updateMeterPrice"
+              aria-label="Update price"
+              i18n-aria-label="@@featureServicePlans-updateMeterPrice"
+            >
+              <i class="bi bi-check-lg" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-danger"
+              (click)="detachPlanMeter(mode, attached.meterId)"
+              [disabled]="disabled || attached.required === true || (mode === 'edit' && planMeterAttachLoading)"
+              title="Detach meter"
+              i18n-title="@@featureServicePlans-detachMeter"
+              aria-label="Detach meter"
+              i18n-aria-label="@@featureServicePlans-detachMeter"
+            >
+              <i class="bi bi-trash" aria-hidden="true"></i>
+            </button>
+          }
+        </div>
+      </div>
+    } @empty {
+      @if (mode === 'create' || !planMeterAttachLoading) {
+        <p class="text-muted small mb-3" i18n="@@featureServicePlans-noMetersAttached">
+          No meters attached to this plan yet.
+        </p>
+      }
+    }
+    @if (activeMeters$ | async; as meters) {
+      @if (availableMetersForPlanAttach(meters, mode); as availableMeters) {
+        @if (availableMeters.length > 0) {
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-5">
+              <label class="form-label small mb-0" [for]="mode + 'AttachMeter'" i18n="@@featureServicePlans-attachMeter"
+                >Attach meter</label
+              >
+              @if (mode === 'create') {
+                <select
+                  [id]="mode + 'AttachMeter'"
+                  class="form-select form-select-sm"
+                  [(ngModel)]="createPlanMeterAttachMeterId"
+                  [name]="mode + 'AttachMeter'"
+                  [disabled]="disabled"
+                >
+                  <option [ngValue]="''" i18n="@@featureServicePlans-selectMeter">Select meter</option>
+                  @for (meter of availableMeters; track meter.id) {
+                    <option [ngValue]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
+                  }
+                </select>
+              } @else {
+                <select
+                  [id]="mode + 'AttachMeter'"
+                  class="form-select form-select-sm"
+                  [(ngModel)]="editPlanMeterAttachMeterId"
+                  [name]="mode + 'AttachMeter'"
+                  [disabled]="disabled || planMeterAttachLoading"
+                >
+                  <option [ngValue]="''" i18n="@@featureServicePlans-selectMeter">Select meter</option>
+                  @for (meter of availableMeters; track meter.id) {
+                    <option [ngValue]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
+                  }
+                </select>
+              }
+            </div>
+            <div class="col-12 col-md-5">
+              <label
+                class="form-label small mb-0"
+                [for]="mode + 'AttachMeterPrice'"
+                i18n="@@featureServicePlans-attachMeterPrice"
+                >Override price (optional)</label
+              >
+              @if (mode === 'create') {
+                <input
+                  [id]="mode + 'AttachMeterPrice'"
+                  type="number"
+                  min="0"
+                  step="0.0001"
+                  class="form-control form-control-sm"
+                  [(ngModel)]="createPlanMeterAttachUnitPrice"
+                  [name]="mode + 'AttachMeterPrice'"
+                  [disabled]="disabled"
+                />
+              } @else {
+                <input
+                  [id]="mode + 'AttachMeterPrice'"
+                  type="number"
+                  min="0"
+                  step="0.0001"
+                  class="form-control form-control-sm"
+                  [(ngModel)]="editPlanMeterAttachUnitPrice"
+                  [name]="mode + 'AttachMeterPrice'"
+                  [disabled]="disabled || planMeterAttachLoading"
+                />
+              }
+            </div>
+            <div class="col-12 col-md-2 d-flex justify-content-md-end">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                (click)="attachPlanMeter(mode)"
+                [disabled]="
+                  disabled ||
+                  (mode === 'edit' && planMeterAttachLoading) ||
+                  (mode === 'create' ? !createPlanMeterAttachMeterId : !editPlanMeterAttachMeterId)
+                "
+                title="Attach meter"
+                i18n-title="@@featureServicePlans-attachMeterAction"
+                aria-label="Attach meter"
+                i18n-aria-label="@@featureServicePlans-attachMeterAction"
+              >
+                <i class="bi bi-plus" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+        } @else if (meters.length === 0) {
+          <p class="text-muted small mb-0 mt-3" i18n="@@featureServicePlans-noCatalogMeters">
+            No active meters in the catalog. Create meters under Administration → Usage meters first.
+          </p>
+        } @else {
+          <p class="text-muted small mb-0 mt-3" i18n="@@featureServicePlans-allMetersAttached">
+            All active catalog meters are already attached to this plan.
+          </p>
+        }
+      }
+    } @else {
+      <p class="text-muted small mb-0" i18n="@@featureServicePlans-metersCatalogLoading">Loading meter catalog…</p>
+    }
+  </div>
+</ng-template>

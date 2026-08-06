@@ -52,6 +52,10 @@ describe('AdminUsageController', () => {
         periodEnd: new Date(recordBody.periodEnd),
         usagePayload: recordBody.usagePayload,
         usageSource: 'admin',
+        meterId: undefined,
+        value: undefined,
+        attachmentType: undefined,
+        addonId: undefined,
       });
       expect(result).toEqual({ id: 'record-1' });
     });

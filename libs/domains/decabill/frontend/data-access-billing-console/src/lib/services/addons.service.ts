@@ -4,7 +4,16 @@ import type { Environment } from '@forepath/shared/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
-import type { AddonResponse, CreateAddonDto, ListParams, UpdateAddonDto } from '../types/billing.types';
+import type {
+  AddonModuleDetail,
+  AddonResponse,
+  AttachedMeterResponse,
+  AttachMeterDto,
+  CreateAddonDto,
+  ListParams,
+  UpdateAddonDto,
+  UpdateAttachedMeterDto,
+} from '../types/billing.types';
 
 @Injectable({
   providedIn: 'root',
@@ -31,6 +40,10 @@ export class AddonsService {
     return this.http.get<AddonResponse[]>(`${this.apiUrl}/addons`, { params: httpParams });
   }
 
+  listAddonModules(): Observable<AddonModuleDetail[]> {
+    return this.http.get<AddonModuleDetail[]>(`${this.apiUrl}/addons/modules`);
+  }
+
   getAddon(id: string): Observable<AddonResponse> {
     return this.http.get<AddonResponse>(`${this.apiUrl}/addons/${id}`);
   }
@@ -45,5 +58,21 @@ export class AddonsService {
 
   deleteAddon(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/addons/${id}`);
+  }
+
+  listAddonMeters(addonId: string): Observable<AttachedMeterResponse[]> {
+    return this.http.get<AttachedMeterResponse[]>(`${this.apiUrl}/addons/${addonId}/meters`);
+  }
+
+  attachAddonMeter(addonId: string, dto: AttachMeterDto): Observable<AttachedMeterResponse> {
+    return this.http.post<AttachedMeterResponse>(`${this.apiUrl}/addons/${addonId}/meters`, dto);
+  }
+
+  updateAddonMeter(addonId: string, meterId: string, dto: UpdateAttachedMeterDto): Observable<AttachedMeterResponse> {
+    return this.http.post<AttachedMeterResponse>(`${this.apiUrl}/addons/${addonId}/meters/${meterId}`, dto);
+  }
+
+  detachAddonMeter(addonId: string, meterId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/addons/${addonId}/meters/${meterId}`);
   }
 }

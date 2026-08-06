@@ -7,6 +7,7 @@ import { OpenPositionsRepository } from '../repositories/open-positions.reposito
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 
 import { BillingScheduleService } from './billing-schedule.service';
+import { MeterBillingService } from './meter-billing.service';
 
 @Injectable()
 export class SubscriptionPeriodChargeService {
@@ -17,6 +18,7 @@ export class SubscriptionPeriodChargeService {
     private readonly subscriptionsRepository: SubscriptionsRepository,
     private readonly billingScheduleService: BillingScheduleService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
+    private readonly meterBillingService: MeterBillingService,
   ) {}
 
   /**
@@ -38,7 +40,15 @@ export class SubscriptionPeriodChargeService {
       skipIfNoBillableAmount: true,
     });
 
-    this.billingNotificationPublisher.publishPeriodCharged(subscription, plan, billUntil, periodStart, periodEnd);
+    const meterCharges = await this.resolveMeterCharges(subscription, plan, periodStart, periodEnd);
+    this.billingNotificationPublisher.publishPeriodCharged(
+      subscription,
+      plan,
+      billUntil,
+      periodStart,
+      periodEnd,
+      meterCharges,
+    );
     this.logger.log(`Recorded open position for subscription ${subscription.id} until ${billUntil.toISOString()}`);
   }
 
@@ -50,11 +60,13 @@ export class SubscriptionPeriodChargeService {
   async processDueBilling(subscription: SubscriptionEntity, plan: ServicePlanEntity): Promise<SubscriptionEntity> {
     const now = new Date();
     const billInAdvance = plan.billInAdvance === true;
+    // Arrear: advance from the closed period end so late ticks do not open a gap that drops meter samples.
+    const scheduleAnchor = billInAdvance ? now : (subscription.nextBillingAt ?? now);
     const schedule = this.billingScheduleService.calculateSchedule(
       plan.billingIntervalType as BillingIntervalType,
       plan.billingIntervalValue,
       plan.billingDayOfMonth,
-      now,
+      scheduleAnchor,
     );
 
     const billUntil = billInAdvance ? schedule.currentPeriodEnd : (subscription.nextBillingAt ?? now);
@@ -71,7 +83,15 @@ export class SubscriptionPeriodChargeService {
       skipIfNoBillableAmount: true,
     });
 
-    this.billingNotificationPublisher.publishPeriodCharged(subscription, plan, billUntil, periodStart, periodEnd);
+    const meterCharges = await this.resolveMeterCharges(subscription, plan, periodStart, periodEnd);
+    this.billingNotificationPublisher.publishPeriodCharged(
+      subscription,
+      plan,
+      billUntil,
+      periodStart,
+      periodEnd,
+      meterCharges,
+    );
 
     const updated = await this.subscriptionsRepository.update(subscription.id, {
       currentPeriodStart: schedule.currentPeriodStart,
@@ -83,5 +103,33 @@ export class SubscriptionPeriodChargeService {
     this.logger.log(`Billed subscription ${subscription.id}, next billing at ${schedule.nextBillingAt.toISOString()}`);
 
     return updated;
+  }
+
+  private async resolveMeterCharges(
+    subscription: SubscriptionEntity,
+    plan: Pick<ServicePlanEntity, 'billInAdvance' | 'billingIntervalType'> & Partial<ServicePlanEntity>,
+    periodStart: Date,
+    periodEnd: Date,
+  ): Promise<Array<Record<string, unknown>>> {
+    if (plan.billInAdvance === true) {
+      return [];
+    }
+
+    const lines = await this.meterBillingService.buildMeterChargeLines({
+      subscription,
+      plan: plan as ServicePlanEntity,
+      periodStart,
+      periodEnd,
+    });
+
+    return lines.map((line) => ({
+      meterId: line.meterId,
+      attachmentType: line.attachmentType,
+      addonId: line.addonId ?? null,
+      description: line.description,
+      aggregatedValue: line.aggregatedValue,
+      effectiveUnitPriceNet: line.effectiveUnitPriceNet,
+      unitPriceNet: line.unitPriceNet,
+    }));
   }
 }
