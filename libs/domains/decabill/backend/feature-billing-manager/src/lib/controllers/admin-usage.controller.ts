@@ -33,6 +33,10 @@ export class AdminUsageController {
       periodEnd: new Date(body.periodEnd),
       usagePayload: body.usagePayload ?? {},
       usageSource: userInfo.isApiKeyAuth ? 'api-key' : 'admin',
+      meterId: body.meterId,
+      value: body.value,
+      attachmentType: body.attachmentType,
+      addonId: body.addonId,
     });
 
     return { id: record.id };

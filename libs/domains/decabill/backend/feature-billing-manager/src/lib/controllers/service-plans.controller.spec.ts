@@ -10,6 +10,7 @@ import { ServiceTypesRepository } from '../repositories/service-types.repository
 import { ProviderRegistryService } from '../services/provider-registry.service';
 import { AddonService } from '../services/addon.service';
 import { CloudInitConfigService } from '../services/cloud-init-config.service';
+import { MeterService } from '../services/meter.service';
 import { WithdrawalPolicyService } from '../services/withdrawal-policy.service';
 import { AddonsRepository } from '../repositories/addons.repository';
 import { PLAN_PRICE_MIGRATE_ENQUEUE } from '../queue/plan-price-migrate-enqueue.token';
@@ -113,6 +114,17 @@ describe('ServicePlansController', () => {
         { provide: ProviderRegistryService, useValue: providerRegistryStub },
         { provide: CloudInitConfigService, useValue: cloudInitConfigServiceStub },
         { provide: AddonService, useValue: addonServiceStub },
+        {
+          provide: MeterService,
+          useValue: {
+            listPlanMeters: jest.fn().mockResolvedValue([]),
+            listEffectivePlanMeters: jest.fn().mockResolvedValue([]),
+            listAddonMeters: jest.fn().mockResolvedValue([]),
+            attachPlanMeter: jest.fn(),
+            updatePlanMeter: jest.fn(),
+            detachPlanMeter: jest.fn(),
+          },
+        },
         { provide: AddonsRepository, useValue: addonsRepositoryStub },
         { provide: SubscriptionsRepository, useValue: subscriptionsRepositoryStub },
         { provide: WithdrawalPolicyService, useValue: new WithdrawalPolicyService() },

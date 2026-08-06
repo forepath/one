@@ -2,6 +2,201 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featureAddons-title" datatype="html">
+        <source>Addons</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-add" datatype="html">
+        <source>Add addon</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-searchPlaceholder" datatype="html">
+        <source>Search addons</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-empty" datatype="html">
+        <source>No addons.</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-configFieldCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ configFieldCount(addon) }}"/> config fields</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-metersBadge" datatype="html">
+        <source>meters</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-addonActionsAria" datatype="html">
+        <source>Addon actions</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-edit" datatype="html">
+        <source>Edit addon</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-delete" datatype="html">
+        <source>Delete addon</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-createTitle" datatype="html">
+        <source>Add addon</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-editTitle" datatype="html">
+        <source>Edit addon</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-key" datatype="html">
+        <source>Key</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-name" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-description" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-implementationType" datatype="html">
+        <source>Implementation type</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-compatibleProviders" datatype="html">
+        <source>Compatible providers</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-compatibleProvidersHelp" datatype="html">
+        <source> Hold Ctrl/Cmd to select multiple. Leave empty for all addon-capable providers. </source>
+        </trans-unit>
+      <trans-unit id="featureAddons-moduleKey" datatype="html">
+        <source>Module key</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-moduleDefaults" datatype="html">
+        <source>Module defaults</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-moduleDefaultsHelp" datatype="html">
+        <source> Defaults for module environment variables. Schema is defined by the registered module; leave blank when unused. </source>
+        </trans-unit>
+      <trans-unit id="featureAddons-randomDefaultHint" datatype="html">
+        <source> Uses a random default at provision time. </source>
+        </trans-unit>
+      <trans-unit id="featureAddons-scriptTemplate" datatype="html">
+        <source>Cloud-init provision script template</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-deprovisionScriptTemplate" datatype="html">
+        <source>Cloud-init deprovision script template</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-envVariables" datatype="html">
+        <source>Environment variables</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-addEnvVar" datatype="html">
+        <source>Add line</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-envKey" datatype="html">
+        <source>Key</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-envLabel" datatype="html">
+        <source>Label</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-envDescription" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-envRandom" datatype="html">
+        <source>Random</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-envDefault" datatype="html">
+        <source>Default</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-envRandomLength" datatype="html">
+        <source>Length</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-envRandomSpecial" datatype="html">
+        <source>Special chars</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-envOrder" datatype="html">
+        <source>Order</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-removeHighlight" datatype="html">
+        <source>Remove</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-basePrice" datatype="html">
+        <source>Base price</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-priceIntervalType" datatype="html">
+        <source>Price interval</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-priceIntervalValue" datatype="html">
+        <source>Interval value</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-meters" datatype="html">
+        <source>Usage meters</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-metersHelp" datatype="html">
+        <source> Attach usage meters to this addon with optional unit price overrides. </source>
+        </trans-unit>
+      <trans-unit id="featureAddons-metersLoading" datatype="html">
+        <source>Loading meters…</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-meterUnitPriceOverride" datatype="html">
+        <source>Unit price override (net)</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-updateMeterPrice" datatype="html">
+        <source>Update price</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-detachMeter" datatype="html">
+        <source>Detach meter</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-requiredMeter" datatype="html">
+        <source>Required</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-noMetersAttached" datatype="html">
+        <source> No meters attached to this addon yet. </source>
+        </trans-unit>
+      <trans-unit id="featureAddons-attachMeter" datatype="html">
+        <source>Attach meter</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-selectMeter" datatype="html">
+        <source>Select meter</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-attachMeterPrice" datatype="html">
+        <source>Override price (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-attachMeterAction" datatype="html">
+        <source>Attach meter</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-noCatalogMeters" datatype="html">
+        <source> No active meters in the catalog. Create meters under Administration → Usage meters first. </source>
+        </trans-unit>
+      <trans-unit id="featureAddons-allMetersAttached" datatype="html">
+        <source> All active catalog meters are already attached to this addon. </source>
+        </trans-unit>
+      <trans-unit id="featureAddons-metersCatalogLoading" datatype="html">
+        <source>Loading meter catalog…</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-active" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-deleteTitle" datatype="html">
+        <source>Delete addon</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-deleteConfirm" datatype="html">
+        <source>Delete addon &quot;<x id="INTERPOLATION" equiv-text="{{ addonToDelete.name }}"/>&quot;?</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-scriptEnvHint" datatype="html">
+        <source>Use {{env.KEY}} placeholders in the script for configured environment variables.</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-deprovisionScriptHint" datatype="html">
+        <source>Leave empty for status-only mid-life removal (no SSH reverse script).</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-module" datatype="html">
+        <source>Module</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-cloudInitScript" datatype="html">
+        <source>Cloud-init script</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-free" datatype="html">
+        <source>Free</source>
+        </trans-unit>
+      <trans-unit id="featureAddons-allProviders" datatype="html">
+        <source>All providers</source>
+        </trans-unit>
       <trans-unit id="featureAdminBilling-title" datatype="html">
         <source>Billing</source>
         </trans-unit>
@@ -236,47 +431,14 @@
       <trans-unit id="featureAdminProfiles-profileActionsAria" datatype="html">
         <source>Profile actions</source>
         </trans-unit>
-      <trans-unit id="featureAdminProfiles-editButtonTitle" datatype="html">
-        <source>Edit profile</source>
-        </trans-unit>
       <trans-unit id="featureAdminProfiles-trustButtonTitle" datatype="html">
         <source>View trust score</source>
         </trans-unit>
       <trans-unit id="featureAdminProfiles-customDataButtonTitle" datatype="html">
         <source>Edit custom data</source>
         </trans-unit>
-      <trans-unit id="featureAdminProfiles-customDataTitle" datatype="html">
-        <source>Custom data</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-customDataHelp" datatype="html">
-        <source>Admin-only key/value pairs for linking this customer to external systems. Values are stored encrypted.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-customDataFor" datatype="html">
-        <source>Custom data for</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-customDataEmpty" datatype="html">
-        <source>No custom data entries yet.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-customDataKey" datatype="html">
-        <source>Key</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-customDataValue" datatype="html">
-        <source>Value</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-customDataKeyPlaceholder" datatype="html">
-        <source>Key</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-customDataValuePlaceholder" datatype="html">
-        <source>Value</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-customDataRemove" datatype="html">
-        <source>Remove entry</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-customDataAdd" datatype="html">
-        <source>Add line</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-customDataSave" datatype="html">
-        <source>Save</source>
+      <trans-unit id="featureAdminProfiles-editButtonTitle" datatype="html">
+        <source>Edit profile</source>
         </trans-unit>
       <trans-unit id="featureAdminProfiles-deleteButtonTitle" datatype="html">
         <source>Delete profile</source>
@@ -294,10 +456,10 @@
         <source>Computed:</source>
         </trans-unit>
       <trans-unit id="featureAdminProfiles-trustUnavailable" datatype="html">
-        <source>Trust details are currently unavailable.</source>
+        <source> Trust details are currently unavailable. </source>
         </trans-unit>
       <trans-unit id="featureAdminProfiles-trustRecompute" datatype="html">
-        <source>Recompute</source>
+        <source> Recompute </source>
         </trans-unit>
       <trans-unit id="featureAdminProfiles-createTitle" datatype="html">
         <source>Create billing profile</source>
@@ -323,6 +485,45 @@
       <trans-unit id="featureAdminProfiles-delete" datatype="html">
         <source> Delete </source>
         </trans-unit>
+      <trans-unit id="featureAdminProfiles-customDataTitle" datatype="html">
+        <source>Custom data</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-customDataHelp" datatype="html">
+        <source> Admin-only key/value pairs for linking this customer to external systems. Values are stored encrypted. </source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-customDataFor" datatype="html">
+        <source>Custom data for</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-customDataAdd" datatype="html">
+        <source>Add line</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-customDataEmpty" datatype="html">
+        <source>No custom data entries yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-customDataKey" datatype="html">
+        <source>Key</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-customDataKeyPlaceholder" datatype="html">
+        <source>Key</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-customDataValue" datatype="html">
+        <source>Value</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-customDataValuePlaceholder" datatype="html">
+        <source>Value</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-customDataRemove" datatype="html">
+        <source>Remove entry</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-customDataSave" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureBilling-customerTypeConsumer" datatype="html">
+        <source>Consumer</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-customerTypeBusiness" datatype="html">
+        <source>Business</source>
+        </trans-unit>
       <trans-unit id="featureAdminProfiles-vatIdPlaceholder" datatype="html">
         <source>VAT ID</source>
         </trans-unit>
@@ -331,18 +532,6 @@
         </trans-unit>
       <trans-unit id="featureAdminProfiles-vatIdValidatedAt" datatype="html">
         <source>Validated at:</source>
-        </trans-unit>
-      <trans-unit id="featureBilling-customerTrustGreen" datatype="html">
-        <source>High trust</source>
-        </trans-unit>
-      <trans-unit id="featureBilling-customerTrustYellow" datatype="html">
-        <source>Needs attention</source>
-        </trans-unit>
-      <trans-unit id="featureBilling-customerTrustRed" datatype="html">
-        <source>High risk</source>
-        </trans-unit>
-      <trans-unit id="featureBilling-customerTrustUnknown" datatype="html">
-        <source>Not scored</source>
         </trans-unit>
       <trans-unit id="featureAdminDatevExports-title" datatype="html">
         <source>DATEV exports</source>
@@ -599,23 +788,20 @@
       <trans-unit id="featureAdminSubscriptions-empty" datatype="html">
         <source>No contracts found.</source>
         </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-instantCancelButtonTitle" datatype="html">
-        <source>Instant cancel subscription</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-instantCancelTitle" datatype="html">
-        <source>Instant cancel subscription?</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-instantCancelConfirm" datatype="html">
-        <source> Force-remove this subscription immediately. Access ends now. Arrear plans are billed for used time; prepaid plans refund unused time like a statutory withdrawal. This cannot be resumed. </source>
-        </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-instantCancel" datatype="html">
-        <source>Instant cancel</source>
+      <trans-unit id="featureAdminSubscriptions-hasMeters" datatype="html">
+        <source>Has usage meters</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-subscriptionActionsAria" datatype="html">
         <source>Subscription actions</source>
         </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-manageMetersTitle" datatype="html">
+        <source>Manage usage meters</source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-withdrawButtonTitle" datatype="html">
         <source>Withdraw subscription</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-instantCancelButtonTitle" datatype="html">
+        <source>Instant cancel subscription</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-cancelButtonTitle" datatype="html">
         <source>Cancel subscription</source>
@@ -646,6 +832,75 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-withdraw" datatype="html">
         <source> Withdraw </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-instantCancelTitle" datatype="html">
+        <source>Instant cancel subscription?</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-instantCancelConfirm" datatype="html">
+        <source> Force-remove this subscription immediately. Access ends now. Arrear plans are billed for used time; prepaid plans refund unused time like a statutory withdrawal. This cannot be resumed. </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-instantCancel" datatype="html">
+        <source> Instant cancel </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-metersTitle" datatype="html">
+        <source>Usage meters</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-meterSummaries" datatype="html">
+        <source>Current period summaries</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-metersLoading" datatype="html">
+        <source>Loading meters...</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-noMeterSummaries" datatype="html">
+        <source> No meter summaries. </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-meterEntries" datatype="html">
+        <source>Meter entries</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-noMeterEntries" datatype="html">
+        <source>No entries yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-createEntry" datatype="html">
+        <source>Record meter entry</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-entryMeter" datatype="html">
+        <source>Meter</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-selectMeter" datatype="html">
+        <source>Select meter</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-entryValue" datatype="html">
+        <source>Value</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-entryAttachmentType" datatype="html">
+        <source>Attachment type</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-attachmentPlan" datatype="html">
+        <source>Plan</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-attachmentAddon" datatype="html">
+        <source>Addon</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-entryAddonId" datatype="html">
+        <source>Addon ID</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-entryPeriodStart" datatype="html">
+        <source>Period start</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-entryPeriodEnd" datatype="html">
+        <source>Period end</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-saveEntry" datatype="html">
+        <source> Save entry </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-deleteEntryTitle" datatype="html">
+        <source>Delete meter entry?</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-deleteEntryConfirm" datatype="html">
+        <source>Delete this meter entry?</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-deleteEntry" datatype="html">
+        <source> Delete </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-resumeSubscriptionTitle" datatype="html">
         <source>Resume subscription?</source>
@@ -704,6 +959,12 @@
       <trans-unit id="featureContainer-cloudInitConfigsPage" datatype="html">
         <source>Configs</source>
         </trans-unit>
+      <trans-unit id="featureContainer-addonsPage" datatype="html">
+        <source>Addons</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-metersPage" datatype="html">
+        <source>Usage meters</source>
+        </trans-unit>
       <trans-unit id="featureContainer-servicePlansPage" datatype="html">
         <source>Service Plans</source>
         </trans-unit>
@@ -751,6 +1012,9 @@
         </trans-unit>
       <trans-unit id="featureBilling-subscriptionStatusPendingInstantCancel" datatype="html">
         <source>Pending instant cancel</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusPendingConfigChange" datatype="html">
+        <source>Applying configuration change</source>
         </trans-unit>
       <trans-unit id="featureBilling-subscriptionStatusCanceled" datatype="html">
         <source>Canceled</source>
@@ -824,6 +1088,18 @@
       <trans-unit id="featureBilling-activeStatusInactive" datatype="html">
         <source>Inactive</source>
         </trans-unit>
+      <trans-unit id="featureBilling-customerTrustGreen" datatype="html">
+        <source>High trust</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-customerTrustYellow" datatype="html">
+        <source>Needs attention</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-customerTrustRed" datatype="html">
+        <source>High risk</source>
+        </trans-unit>
+      <trans-unit id="featureBilling-customerTrustUnknown" datatype="html">
+        <source>Not scored</source>
+        </trans-unit>
       <trans-unit id="featureBilling-timeEntryStatusBilled" datatype="html">
         <source>Billed</source>
         </trans-unit>
@@ -862,12 +1138,6 @@
         </trans-unit>
       <trans-unit id="featureBilling-profileIncomplete" datatype="html">
         <source>Incomplete</source>
-        </trans-unit>
-      <trans-unit id="featureBilling-customerTypeBusiness" datatype="html">
-        <source>Business</source>
-        </trans-unit>
-      <trans-unit id="featureBilling-customerTypeConsumer" datatype="html">
-        <source>Consumer</source>
         </trans-unit>
       <trans-unit id="featureBilling-vatIdValidationNone" datatype="html">
         <source>Not validated</source>
@@ -938,69 +1208,6 @@
       <trans-unit id="featureBilling-triggeredBySystem" datatype="html">
         <source>System</source>
         </trans-unit>
-      <trans-unit id="featureAddons-title" datatype="html"><source>Addons</source></trans-unit>
-      <trans-unit id="featureAddons-add" datatype="html"><source>Add addon</source></trans-unit>
-      <trans-unit id="featureAddons-searchPlaceholder" datatype="html"><source>Search addons</source></trans-unit>
-      <trans-unit id="featureAddons-loading" datatype="html"><source>Loading...</source></trans-unit>
-      <trans-unit id="featureAddons-empty" datatype="html"><source>No addons.</source></trans-unit>
-      <trans-unit id="featureAddons-edit" datatype="html"><source>Edit addon</source></trans-unit>
-      <trans-unit id="featureAddons-delete" datatype="html"><source>Delete addon</source></trans-unit>
-      <trans-unit id="featureAddons-createTitle" datatype="html"><source>Add addon</source></trans-unit>
-      <trans-unit id="featureAddons-editTitle" datatype="html"><source>Edit addon</source></trans-unit>
-      <trans-unit id="featureAddons-key" datatype="html"><source>Key</source></trans-unit>
-      <trans-unit id="featureAddons-name" datatype="html"><source>Name</source></trans-unit>
-      <trans-unit id="featureAddons-description" datatype="html"><source>Description</source></trans-unit>
-      <trans-unit id="featureAddons-implementationType" datatype="html"><source>Implementation type</source></trans-unit>
-      <trans-unit id="featureAddons-compatibleProviders" datatype="html"><source>Compatible providers</source></trans-unit>
-      <trans-unit id="featureAddons-compatibleProvidersHelp" datatype="html"><source>Hold Ctrl/Cmd to select multiple. Leave empty for all addon-capable providers.</source></trans-unit>
-      <trans-unit id="featureAddons-moduleKey" datatype="html"><source>Module key</source></trans-unit>
-      <trans-unit id="featureAddons-scriptTemplate" datatype="html"><source>Cloud-init provision script template</source></trans-unit>
-      <trans-unit id="featureAddons-deprovisionScriptTemplate" datatype="html"><source>Cloud-init deprovision script template</source></trans-unit>
-      <trans-unit id="featureAddons-basePrice" datatype="html"><source>Base price</source></trans-unit>
-      <trans-unit id="featureAddons-priceIntervalType" datatype="html"><source>Price interval</source></trans-unit>
-      <trans-unit id="featureAddons-priceIntervalValue" datatype="html"><source>Interval value</source></trans-unit>
-      <trans-unit id="featureAddons-active" datatype="html"><source>Active</source></trans-unit>
-      <trans-unit id="featureAddons-create" datatype="html"><source>Create</source></trans-unit>
-      <trans-unit id="featureAddons-save" datatype="html"><source>Save</source></trans-unit>
-      <trans-unit id="featureAddons-deleteTitle" datatype="html"><source>Delete addon</source></trans-unit>
-      <trans-unit id="featureAddons-deleteConfirm" datatype="html"><source>Delete addon &quot;<x id="INTERPOLATION" equiv-text="{{ addonToDelete.name }}"/>&quot;?</source></trans-unit>
-      <trans-unit id="featureAddons-cannotUndo" datatype="html"><source>This action cannot be undone.</source></trans-unit>
-      <trans-unit id="featureAddons-module" datatype="html"><source>Module</source></trans-unit>
-      <trans-unit id="featureAddons-cloudInitScript" datatype="html"><source>Cloud-init script</source></trans-unit>
-      <trans-unit id="featureAddons-free" datatype="html"><source>Free</source></trans-unit>
-      <trans-unit id="featureAddons-moduleDefaults" datatype="html"><source>Module defaults</source></trans-unit>
-      <trans-unit id="featureAddons-moduleDefaultsHelp" datatype="html"><source>Defaults for module environment variables. Schema is defined by the registered module; leave blank when unused.</source></trans-unit>
-      <trans-unit id="featureAddons-randomDefaultHint" datatype="html"><source>Uses a random default at provision time.</source></trans-unit>
-      <trans-unit id="featureAddons-scriptEnvHint" datatype="html"><source>Use {{env.KEY}} placeholders in the script for configured environment variables.</source></trans-unit>
-      <trans-unit id="featureAddons-deprovisionScriptHint" datatype="html"><source>Leave empty for status-only mid-life removal (no SSH reverse script).</source></trans-unit>
-      <trans-unit id="featureAddons-envVariables" datatype="html"><source>Environment variables</source></trans-unit>
-      <trans-unit id="featureAddons-addEnvVar" datatype="html"><source>Add line</source></trans-unit>
-      <trans-unit id="featureAddons-envKey" datatype="html"><source>Key</source></trans-unit>
-      <trans-unit id="featureAddons-envLabel" datatype="html"><source>Label</source></trans-unit>
-      <trans-unit id="featureAddons-envDescription" datatype="html"><source>Description</source></trans-unit>
-      <trans-unit id="featureAddons-envRandom" datatype="html"><source>Random</source></trans-unit>
-      <trans-unit id="featureAddons-envDefault" datatype="html"><source>Default</source></trans-unit>
-      <trans-unit id="featureAddons-envRandomLength" datatype="html"><source>Length</source></trans-unit>
-      <trans-unit id="featureAddons-envRandomSpecial" datatype="html"><source>Special chars</source></trans-unit>
-      <trans-unit id="featureAddons-envOrder" datatype="html"><source>Order</source></trans-unit>
-      <trans-unit id="featureAddons-configFieldCount" datatype="html">
-        <source><x id="INTERPOLATION" equiv-text="{{ configFieldCount(addon) }}"/> config fields</source>
-      </trans-unit>
-      <trans-unit id="featureAddons-allProviders" datatype="html"><source>All providers</source></trans-unit>
-      <trans-unit id="featureAddons-addonActionsAria" datatype="html"><source>Addon actions</source></trans-unit>
-      <trans-unit id="featureContainer-addonsPage" datatype="html"><source>Addons</source></trans-unit>
-      <trans-unit id="featureContainer-addonsTitle" datatype="html"><source>Addons</source></trans-unit>
-      <trans-unit id="featureContainer-addons" datatype="html"><source>Addons</source></trans-unit>
-      <trans-unit id="featureServicePlans-addons" datatype="html"><source>Customer-selectable addons</source></trans-unit>
-      <trans-unit id="featureServicePlans-addonsHelp" datatype="html"><source>Choose which addons customers may add when ordering this plan.</source></trans-unit>
-      <trans-unit id="featureSubscriptions-loadingAddons" datatype="html"><source>Loading addons…</source></trans-unit>
-      <trans-unit id="featureSubscriptions-addons" datatype="html"><source>Addons</source></trans-unit>
-      <trans-unit id="featureSubscriptions-addonConfigFields" datatype="html"><source>Configuration for this addon</source></trans-unit>
-      <trans-unit id="featureSubscriptions-addonConfigSection" datatype="html"><source>Addon configuration</source></trans-unit>
-      <trans-unit id="featureSubscriptions-addonConfigCardTitle" datatype="html"><source>Addon: <x id="addonName" equiv-text="addonName"/></source></trans-unit>
-      <trans-unit id="featureSubscriptions-productBase" datatype="html"><source>Product total (net)</source></trans-unit>
-      <trans-unit id="featureSubscriptions-addonsTotal" datatype="html"><source>Addons total</source></trans-unit>
-      <trans-unit id="featureSubscriptions-grandTotal" datatype="html"><source>Plan and addons</source></trans-unit>
       <trans-unit id="featureCloudInitConfigs-title" datatype="html">
         <source>CloudInit Configs</source>
         </trans-unit>
@@ -1057,9 +1264,6 @@
         </trans-unit>
       <trans-unit id="featureCloudInitConfigs-addEnvVar" datatype="html">
         <source>Add line</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-removeHighlight" datatype="html">
-        <source>Remove</source>
         </trans-unit>
       <trans-unit id="featureCloudInitConfigs-create" datatype="html">
         <source> Create </source>
@@ -1124,11 +1328,20 @@
       <trans-unit id="featureContainer-projects" datatype="html">
         <source>Projects</source>
         </trans-unit>
+      <trans-unit id="featureContainer-tokensTitle" datatype="html">
+        <source>Access Tokens</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-tokens" datatype="html">
+        <source>Tokens</source>
+        </trans-unit>
       <trans-unit id="featureContainer-adminTitle" datatype="html">
         <source>Admin</source>
         </trans-unit>
       <trans-unit id="featureContainer-admin" datatype="html">
         <source>Admin</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-updatesAttention" datatype="html">
+        <source>Updates need attention</source>
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
@@ -1144,6 +1357,18 @@
         </trans-unit>
       <trans-unit id="featureContainer-cloudInitConfigs" datatype="html">
         <source>Configs</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-addonsTitle" datatype="html">
+        <source>Addons</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-addons" datatype="html">
+        <source>Addons</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-metersTitle" datatype="html">
+        <source>Meters</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-meters" datatype="html">
+        <source>Meters</source>
         </trans-unit>
       <trans-unit id="featureContainer-servicePlansTitle" datatype="html">
         <source>Plans</source>
@@ -1163,32 +1388,23 @@
       <trans-unit id="featureContainer-adminPromotions" datatype="html">
         <source>Promotions</source>
         </trans-unit>
-      <trans-unit id="featureContainer-webhooksTitle" datatype="html">
-        <source>Webhooks</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-webhooks" datatype="html">
-        <source>Webhooks</source>
-        </trans-unit>
       <trans-unit id="featureContainer-updatesTitle" datatype="html">
         <source>Updates</source>
         </trans-unit>
       <trans-unit id="featureContainer-updates" datatype="html">
         <source>Updates</source>
         </trans-unit>
-      <trans-unit id="featureContainer-updatesAttention" datatype="html">
-        <source>Updates need attention</source>
+      <trans-unit id="featureContainer-webhooksTitle" datatype="html">
+        <source>Webhooks</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-webhooks" datatype="html">
+        <source>Webhooks</source>
         </trans-unit>
       <trans-unit id="featureContainer-userManagementTitle" datatype="html">
         <source>User Management</source>
         </trans-unit>
       <trans-unit id="featureContainer-users" datatype="html">
         <source>Users</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-tokensTitle" datatype="html">
-        <source>Access Tokens</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-tokens" datatype="html">
-        <source>Tokens</source>
         </trans-unit>
       <trans-unit id="featureContainer-adminProfilesTitle" datatype="html">
         <source>Billing Profiles</source>
@@ -1218,7 +1434,7 @@
         <source>Billing</source>
         </trans-unit>
       <trans-unit id="featureInvoices-paymentWaiting" datatype="html">
-        <source>Payment submitted. Waiting for confirmation from the payment provider…</source>
+        <source> Payment submitted. Waiting for confirmation from the payment provider… </source>
         </trans-unit>
       <trans-unit id="featureInvoices-paymentConfirmed" datatype="html">
         <source>Payment confirmed. Your invoice is marked as paid.</source>
@@ -1253,9 +1469,6 @@
       <trans-unit id="featureInvoices-noSearchResults" datatype="html">
         <source>No invoices match your search.</source>
         </trans-unit>
-      <trans-unit id="featureInvoices-invoices" datatype="html">
-        <source>Invoices</source>
-        </trans-unit>
       <trans-unit id="featureInvoices-historyList" datatype="html">
         <source>Invoice history</source>
         </trans-unit>
@@ -1268,35 +1481,11 @@
       <trans-unit id="featureInvoices-noHistory" datatype="html">
         <source>No invoice history.</source>
         </trans-unit>
-      <trans-unit id="featureInvoices-selectSubscription" datatype="html">
-        <source> Subscription </source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-chooseSubscription" datatype="html">
-        <source>Choose a subscription</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-searchInvoices" datatype="html">
-        <source> Search invoices </source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-selectFirst" datatype="html">
-        <source>Select a subscription to view invoices.</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-loading" datatype="html">
-        <source>Loading invoices...</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-noInvoices" datatype="html">
-        <source>No invoices for this subscription.</source>
-        </trans-unit>
       <trans-unit id="featureInvoices-invoiceActionsAria" datatype="html">
         <source>Invoice actions</source>
         </trans-unit>
       <trans-unit id="featureInvoices-previewButtonTitle" datatype="html">
         <source>Preview invoice</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-payButtonTitle" datatype="html">
-        <source>Pay invoice</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-payBelowMinimumTitle" datatype="html">
-        <source>Payment is only available for amounts of <x id="min" equiv-text="min"/> or more.</source>
         </trans-unit>
       <trans-unit id="featureInvoices-downloadButtonTitle" datatype="html">
         <source>Download PDF</source>
@@ -1373,14 +1562,104 @@
       <trans-unit id="featureInvoices-createInvoiceDisabledFinalized" datatype="html">
         <source>Subscription is finalized; no further invoices can be created.</source>
         </trans-unit>
+      <trans-unit id="featureInvoices-payButtonTitle" datatype="html">
+        <source>Pay invoice</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-payBelowMinimumTitle" datatype="html">
+        <source>Payment is only available for amounts of <x id="min" equiv-text="min"/> or more.</source>
+        </trans-unit>
       <trans-unit id="featureInvoices-mobileOpenOverdue" datatype="html">
         <source>Open &amp; overdue</source>
         </trans-unit>
       <trans-unit id="featureInvoices-mobileHistory" datatype="html">
         <source>History</source>
         </trans-unit>
-      <trans-unit id="featureInvoices-mobileSubscription" datatype="html">
-        <source>By subscription</source>
+      <trans-unit id="featureMeters-title" datatype="html">
+        <source>Usage meters</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-add" datatype="html">
+        <source>Add meter</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-searchPlaceholder" datatype="html">
+        <source>Search meters</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-empty" datatype="html">
+        <source>No meters.</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-actionsAria" datatype="html">
+        <source>Meter actions</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-edit" datatype="html">
+        <source>Edit meter</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-delete" datatype="html">
+        <source>Delete meter</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-createTitle" datatype="html">
+        <source>Create meter</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-editTitle" datatype="html">
+        <source>Edit meter</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-key" datatype="html">
+        <source>Key</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-name" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-description" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-unitLabel" datatype="html">
+        <source>Unit label</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-aggregator" datatype="html">
+        <source>Aggregator</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-defaultUnitPriceNet" datatype="html">
+        <source>Default unit price (net)</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-active" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-deleteTitle" datatype="html">
+        <source>Delete meter</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-deleteConfirm" datatype="html">
+        <source>Delete meter &quot;<x id="INTERPOLATION" equiv-text="{{ meterToDelete.name }}"/>&quot;?</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-aggregatorMax" datatype="html">
+        <source>Max</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-aggregatorMin" datatype="html">
+        <source>Min</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-aggregatorAvg" datatype="html">
+        <source>Average</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-aggregatorFirst" datatype="html">
+        <source>First</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-aggregatorLast" datatype="html">
+        <source>Last</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-aggregatorSum" datatype="html">
+        <source>Sum</source>
+        </trans-unit>
+      <trans-unit id="featureMeters-aggregatorSumPositiveDeltas" datatype="html">
+        <source>Sum of positive deltas</source>
         </trans-unit>
       <trans-unit id="featureOverview-title" datatype="html">
         <source>Overview</source>
@@ -1448,6 +1727,12 @@
       <trans-unit id="featureOverview-provisioningFailedHint" datatype="html">
         <source> Server setup did not complete. Check backorders or contact support if this persists. </source>
         </trans-unit>
+      <trans-unit id="featureOverview-sshAccessGrantedBadgeTitle" datatype="html">
+        <source>SSH access granted</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-sshAccessGrantedBadge" datatype="html">
+        <source>SSH access granted</source>
+        </trans-unit>
       <trans-unit id="featureOverview-serverActionsAria" datatype="html">
         <source>Server actions</source>
         </trans-unit>
@@ -1460,32 +1745,26 @@
       <trans-unit id="featureOverview-serverRestartButtonTitle" datatype="html">
         <source>Restart server</source>
         </trans-unit>
-      <trans-unit id="featureOverview-sshAccessButtonTitle" datatype="html">
-        <source>Show SSH access key</source>
+      <trans-unit id="featureOverview-serverStatusUpdating" datatype="html">
+        <source>Server status updating…</source>
         </trans-unit>
-      <trans-unit id="featureOverview-sshAccessGrantedButtonTitle" datatype="html">
-        <source>SSH access key already revealed</source>
-        </trans-unit>
-      <trans-unit id="featureOverview-sshAccessGrantedBadge" datatype="html">
-        <source>SSH access granted</source>
-        </trans-unit>
-      <trans-unit id="featureOverview-sshAccessGrantedBadgeTitle" datatype="html">
-        <source>SSH access granted</source>
+      <trans-unit id="featureOverview-openConsoleButtonTitle" datatype="html">
+        <source>Open console</source>
         </trans-unit>
       <trans-unit id="featureOverview-sshAccessConfirmTitle" datatype="html">
-        <source>Reveal SSH access key?</source>
+        <source> Reveal SSH access key? </source>
         </trans-unit>
       <trans-unit id="featureOverview-sshAccessConfirmBody" datatype="html">
         <source> Viewing the SSH access key for this service may limit technical support for that specific service. The key can only be retrieved once. After you continue, this action cannot be repeated. </source>
         </trans-unit>
       <trans-unit id="featureOverview-sshAccessCancel" datatype="html">
-        <source>Cancel</source>
+        <source> Cancel </source>
         </trans-unit>
       <trans-unit id="featureOverview-sshAccessConfirm" datatype="html">
-        <source>Reveal key</source>
+        <source> Reveal key </source>
         </trans-unit>
       <trans-unit id="featureOverview-sshAccessDisplayTitle" datatype="html">
-        <source>SSH access key</source>
+        <source> SSH access key </source>
         </trans-unit>
       <trans-unit id="featureOverview-sshAccessDisplayHint" datatype="html">
         <source> Store this private key securely. It will not be shown again in the billing console. </source>
@@ -1493,26 +1772,20 @@
       <trans-unit id="featureOverview-sshAccessKeyLabel" datatype="html">
         <source>SSH private key</source>
         </trans-unit>
-      <trans-unit id="featureOverview-sshAccessCopy" datatype="html">
-        <source>Copy</source>
-        </trans-unit>
       <trans-unit id="featureOverview-sshAccessCopied" datatype="html">
         <source>Copied</source>
         </trans-unit>
+      <trans-unit id="featureOverview-sshAccessCopy" datatype="html">
+        <source>Copy</source>
+        </trans-unit>
       <trans-unit id="featureOverview-sshAccessClose" datatype="html">
-        <source>Close</source>
+        <source> Close </source>
         </trans-unit>
-      <trans-unit id="featureOverview-sshAccessAlreadyRevealed" datatype="html">
-        <source>The SSH access key has already been revealed for this service.</source>
+      <trans-unit id="featureOverview-sshAccessButtonTitle" datatype="html">
+        <source>Show SSH access key</source>
         </trans-unit>
-      <trans-unit id="featureOverview-sshAccessRevealFailed" datatype="html">
-        <source>Could not retrieve the SSH access key. Please try again or contact support.</source>
-        </trans-unit>
-      <trans-unit id="featureOverview-serverStatusUpdating" datatype="html">
-        <source>Server status updating…</source>
-        </trans-unit>
-      <trans-unit id="featureOverview-openConsoleButtonTitle" datatype="html">
-        <source>Open console</source>
+      <trans-unit id="featureOverview-sshAccessGrantedButtonTitle" datatype="html">
+        <source>SSH access key already revealed</source>
         </trans-unit>
       <trans-unit id="featureOverview-customService" datatype="html">
         <source>Custom application</source>
@@ -1525,6 +1798,12 @@
         </trans-unit>
       <trans-unit id="featureOverview-serverStatusUpdatingLabel" datatype="html">
         <source>Updating</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-sshAccessAlreadyRevealed" datatype="html">
+        <source>The SSH access key has already been revealed for this service.</source>
+        </trans-unit>
+      <trans-unit id="featureOverview-sshAccessRevealFailed" datatype="html">
+        <source>Could not retrieve the SSH access key. Please try again or contact support.</source>
         </trans-unit>
       <trans-unit id="featureProjectBoard-title" datatype="html">
         <source>Board</source>
@@ -2199,6 +2478,9 @@
       <trans-unit id="featureServicePlans-empty" datatype="html">
         <source>No service plans.</source>
         </trans-unit>
+      <trans-unit id="featureServicePlans-metersBadge" datatype="html">
+        <source>meters</source>
+        </trans-unit>
       <trans-unit id="featureServicePlans-planActionsAria" datatype="html">
         <source>Plan actions</source>
         </trans-unit>
@@ -2298,29 +2580,29 @@
       <trans-unit id="featureServicePlans-productDefaultsHelp" datatype="html">
         <source> Defaults for integrated stacks and CloudInit environment variables required by the selected customer options. </source>
         </trans-unit>
+      <trans-unit id="featureServicePlans-addons" datatype="html">
+        <source>Customer-selectable addons</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-addonsHelp" datatype="html">
+        <source> Choose which addons customers may add when ordering this plan. </source>
+        </trans-unit>
       <trans-unit id="featureServicePlans-cancelAtPeriodEnd" datatype="html">
         <source>Cancel at period end</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-cancelAtPeriodEndHelp" datatype="html">
-        <source>Cancellation will be scheduled for the end of the current billing period. Unchecking this allows immediate cancellation mid-period.</source>
+        <source> Cancellation will be scheduled for the end of the current billing period. Unchecking this allows immediate cancellation mid-period. </source>
         </trans-unit>
       <trans-unit id="featureServicePlans-billInAdvance" datatype="html">
         <source>Bill in advance</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-billInAdvanceHelp" datatype="html">
-        <source>Charge the full period at its start (prepaid). Usage-based metering cannot be used with advance billing. Cancellation always takes effect at the end of the already-billed period.</source>
+        <source> Charge the full period at its start (prepaid). Usage-based metering cannot be used with advance billing. Cancellation always takes effect at the end of the already-billed period. </source>
         </trans-unit>
       <trans-unit id="featureServicePlans-autoRecalculatePriceDaily" datatype="html">
         <source>Automatic daily price recalculation</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-autoRecalculatePriceDailyHelp" datatype="html">
-        <source>Opt in only when required for EU compliance. When enabled, the package price is recalculated nightly at midnight from the provider catalog. Checkout must disclose this and the statutory withdrawal restart when the price changes.</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-migrateExistingSubscriptions" datatype="html">
-        <source>Apply base price, margin, and VAT changes to existing subscriptions</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-migrateExistingSubscriptionsHelp" datatype="html">
-        <source>When checked, changing base price, margins, or VAT rate queues a job that migrates eligible subscriptions (differential billing, statutory withdrawal restart, and customer email). Leave unchecked to update the catalog only for new orders.</source>
+        <source> Opt in only when required for EU compliance. When enabled, the package price is recalculated nightly at midnight from the provider catalog. Checkout must disclose this and the statutory withdrawal restart when the price changes. </source>
         </trans-unit>
       <trans-unit id="featureServicePlans-active" datatype="html">
         <source>Active</source>
@@ -2330,6 +2612,12 @@
         </trans-unit>
       <trans-unit id="featureServicePlans-editTitle" datatype="html">
         <source> Edit service plan </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-migrateExistingSubscriptions" datatype="html">
+        <source>Apply base price, margin, and VAT changes to existing subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-migrateExistingSubscriptionsHelp" datatype="html">
+        <source> When checked, changing base price, margins, or VAT rate queues a job that migrates eligible subscriptions (differential billing, statutory withdrawal restart, and customer email). Leave unchecked to update the catalog only for new orders. </source>
         </trans-unit>
       <trans-unit id="featureServicePlans-inactiveCustomConfigWarning" datatype="html">
         <source>This plan referenced inactive CloudInit configs. They were removed from provisioning options. Save to apply the change.</source>
@@ -2348,6 +2636,54 @@
         </trans-unit>
       <trans-unit id="featureServicePlans-delete" datatype="html">
         <source> Delete </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-meters" datatype="html">
+        <source>Usage meters</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-metersHelp" datatype="html">
+        <source> Attach usage meters billed in arrears. Optional unit price overrides the catalog default. </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-metersPrepaidWarning" datatype="html">
+        <source> Prepaid plans cannot record or bill metered usage. Detach meters or disable bill-in-advance before using meters. </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-metersLoading" datatype="html">
+        <source>Loading meters…</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-meterFromServiceType" datatype="html">
+        <source>From service type</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-meterUnitPriceOverride" datatype="html">
+        <source>Unit price override (net)</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-updateMeterPrice" datatype="html">
+        <source>Update price</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-detachMeter" datatype="html">
+        <source>Detach meter</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-noMetersAttached" datatype="html">
+        <source> No meters attached to this plan yet. </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-attachMeter" datatype="html">
+        <source>Attach meter</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-selectMeter" datatype="html">
+        <source>Select meter</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-attachMeterPrice" datatype="html">
+        <source>Override price (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-attachMeterAction" datatype="html">
+        <source>Attach meter</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-noCatalogMeters" datatype="html">
+        <source> No active meters in the catalog. Create meters under Administration → Usage meters first. </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-allMetersAttached" datatype="html">
+        <source> All active catalog meters are already attached to this plan. </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-metersCatalogLoading" datatype="html">
+        <source>Loading meter catalog…</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-showProductDefaults" datatype="html">
         <source>Show</source>
@@ -2436,6 +2772,48 @@
       <trans-unit id="featureServiceTypes-save" datatype="html">
         <source> Save </source>
         </trans-unit>
+      <trans-unit id="featureServiceTypes-meters" datatype="html">
+        <source>Usage meters</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-metersHelp" datatype="html">
+        <source> Provider-declared meters are required. Attach extra catalog meters with optional unit price overrides. </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-requiredMeter" datatype="html">
+        <source>Required</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-metersLoading" datatype="html">
+        <source>Loading meters…</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-meterUnitPriceOverride" datatype="html">
+        <source>Unit price override (net)</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-updateMeterPrice" datatype="html">
+        <source>Update price</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-detachMeter" datatype="html">
+        <source>Detach meter</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-noMetersAttached" datatype="html">
+        <source> No meters attached to this service type yet. </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-attachMeter" datatype="html">
+        <source>Attach meter</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-selectMeter" datatype="html">
+        <source>Select meter</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-attachMeterPrice" datatype="html">
+        <source>Override price (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-attachMeterAction" datatype="html">
+        <source>Attach meter</source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-noCatalogMeters" datatype="html">
+        <source> No active meters in the catalog. Create meters under Administration → Usage meters first. </source>
+        </trans-unit>
+      <trans-unit id="featureServiceTypes-metersCatalogLoading" datatype="html">
+        <source>Loading meter catalog…</source>
+        </trans-unit>
       <trans-unit id="featureServiceTypes-deleteTitle" datatype="html">
         <source> Delete service provider? </source>
         </trans-unit>
@@ -2505,6 +2883,12 @@
       <trans-unit id="featureSubscriptions-noBackorderSearchResults" datatype="html">
         <source> No backorders match your search. </source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-usageMeters" datatype="html">
+        <source>Usage meters</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-modifyConfigButtonTitle" datatype="html">
+        <source>Upgrade or downgrade</source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-backorderActionsAria" datatype="html">
         <source>Backorder actions</source>
         </trans-unit>
@@ -2531,6 +2915,36 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-choosePlan" datatype="html">
         <source>Choose a plan</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-loadingAddons" datatype="html">
+        <source>Loading addons…</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-addons" datatype="html">
+        <source>Addons</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-addonMeterLabel" datatype="html">
+        <source>Meter</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-planMeters" datatype="html">
+        <source> Plan usage meters </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-planMetersHelp" datatype="html">
+        <source> Usage for these meters is recorded in arrears and billed separately from the base plan price. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyTitle" datatype="html">
+        <source> Automatic price adjustment </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyIntro" datatype="html">
+        <source> This plan may have its price adjusted automatically each day based on the provider catalog. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyEmail" datatype="html">
+        <source> You will receive an email if the price changes. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyWithdrawalPrefix" datatype="html">
+        <source>From then on, you have</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyWithdrawalSuffix" datatype="html">
+        <source>days to withdraw without negative impact.</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-cloudInitConfig" datatype="html">
         <source>Instance configuration</source>
@@ -2646,21 +3060,6 @@
       <trans-unit id="featureSubscriptions-withdrawalBeforeProvisioningOnly" datatype="html">
         <source> Statutory withdrawal is only available before the service is provisioned. </source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyTitle" datatype="html">
-        <source>Automatic price adjustment</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyIntro" datatype="html">
-        <source>This plan may have its price adjusted automatically each day based on the provider catalog.</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyEmail" datatype="html">
-        <source>You will receive an email if the price changes.</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyWithdrawalPrefix" datatype="html">
-        <source>From then on, you have</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyWithdrawalSuffix" datatype="html">
-        <source>days to withdraw without negative impact.</source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-autoBackorder" datatype="html">
         <source>Backorder if unavailable</source>
         </trans-unit>
@@ -2682,8 +3081,14 @@
       <trans-unit id="featureSubscriptions-loadingPrice" datatype="html">
         <source>Loading price…</source>
         </trans-unit>
-      <trans-unit id="featurePromotions-orderPlanTotal" datatype="html">
-        <source> Plan total (net) </source>
+      <trans-unit id="featureSubscriptions-productBase" datatype="html">
+        <source> Product total (net) </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-addonsTotal" datatype="html">
+        <source> Addons total </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-grandTotal" datatype="html">
+        <source> Plan and addons </source>
         </trans-unit>
       <trans-unit id="featurePromotions-orderDiscountLabel" datatype="html">
         <source>Promotion</source>
@@ -2703,9 +3108,6 @@
       <trans-unit id="featureSubscriptions-orderStepBack" datatype="html">
         <source> Back </source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-orderStepPlanAddons" datatype="html">
-        <source>Plan &amp; addons</source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-orderStepNext" datatype="html">
         <source> Next </source>
         </trans-unit>
@@ -2714,6 +3116,96 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-submitOrder" datatype="html">
         <source>Order</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeTitle" datatype="html">
+        <source> Upgrade or downgrade </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeConfirmationTitle" datatype="html">
+        <source> Configuration change requested </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeConfirmationMessage" datatype="html">
+        <source> We are applying your changes. You can close this dialog and track progress in your subscriptions list. The final amounts are settled with your next invoice. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeLoadingEligibility" datatype="html">
+        <source>Checking available changes…</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeStepsAria" datatype="html">
+        <source>Configuration change steps</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeCurrentServerType" datatype="html">
+        <source>Current server type</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeLoadingServerTypes" datatype="html">
+        <source>Loading server types…</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeNewServerType" datatype="html">
+        <source>New server type</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeServerTypeHint" datatype="html">
+        <source> Your server keeps its current location. Choosing a server type at the same price is not possible. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeNoServerTypes" datatype="html">
+        <source> No alternative server types are available for this plan. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeAddonActive" datatype="html">
+        <source>Active</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeAddonRemoved" datatype="html">
+        <source>Will be removed</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeAddonConfigLocked" datatype="html">
+        <source> The configuration of this addon is locked and cannot be changed here. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeNoAddons" datatype="html">
+        <source> No addons are available for this plan. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeSummaryTitle" datatype="html">
+        <source>Your changes</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeNoChanges" datatype="html">
+        <source> You have not selected any changes yet. Go back and pick a different server type or adjust your addons. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeSummaryServerType" datatype="html">
+        <source>Server type</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeDisclaimerTitle" datatype="html">
+        <source> Billing information </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeEffectiveAt" datatype="html">
+        <source>Effective</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeAdvisoryNote" datatype="html">
+        <source> All amounts shown are advisory. The final amounts are recalculated when the change is confirmed. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangePriceTitle" datatype="html">
+        <source> Price preview </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeCurrentPeriodNet" datatype="html">
+        <source> Current period (net) </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeNewPeriodNet" datatype="html">
+        <source> New period (net) </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangePeriodDelta" datatype="html">
+        <source> Difference per period </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeImmediateAdjustment" datatype="html">
+        <source> Settled now (net) </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeNoPreview" datatype="html">
+        <source> Select a change to see its effect on your price. </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeDiscountsTitle" datatype="html">
+        <source> Active promotions </source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeDiscountPeriodsLeft" datatype="html">
+        <source>periods left</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeInProgress" datatype="html">
+        <source>Configuration change in progress, please wait</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeSubmit" datatype="html">
+        <source>Apply changes</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-withdrawOrderTitle" datatype="html">
         <source> Withdraw order? </source>
@@ -2776,16 +3268,16 @@
         <source>Auto-billing</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-autoBillingHint" datatype="html">
-        <source>When enabled, open invoices are charged automatically. Manual payment is blocked until auto-payment succeeds or retries are exhausted.</source>
+        <source> When enabled, open invoices are charged automatically. Manual payment is blocked until auto-payment succeeds or retries are exhausted. </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-autoBillingSetupWaiting" datatype="html">
-        <source>Payment method submitted. Waiting for confirmation from the payment provider…</source>
+        <source> Payment method submitted. Waiting for confirmation from the payment provider… </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-autoBillingSetupConfirmed" datatype="html">
-        <source>Payment method confirmed and saved.</source>
+        <source> Payment method confirmed and saved. </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-autoBillingSetupCanceled" datatype="html">
-        <source>Payment method setup was canceled.</source>
+        <source> Payment method setup was canceled. </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-paymentMethodStatus" datatype="html">
         <source>Payment method:</source>
@@ -2793,17 +3285,14 @@
       <trans-unit id="featureSubscriptions-paymentMethodOnFile" datatype="html">
         <source>On file</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-paymentMethodMissing" datatype="html">
-        <source>Not on file</source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-addPaymentMethod" datatype="html">
-        <source>Add payment method</source>
+        <source> Add payment method </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-enableAutoBilling" datatype="html">
-        <source>Enable auto-billing</source>
+        <source> Enable auto-billing </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-disableAutoBilling" datatype="html">
-        <source>Disable auto-billing</source>
+        <source> Disable auto-billing </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-save" datatype="html">
         <source> Save </source>
@@ -2813,6 +3302,51 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-mobilePanelBackorders" datatype="html">
         <source>Backorders</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-meterAddon" datatype="html">
+        <source>Addon meter</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-meterPlan" datatype="html">
+        <source>Plan meter</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-addonConfigCardTitle" datatype="html">
+        <source>Addon: <x id="addonName" equiv-text="addonName"/></source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-orderStepPlanAddons" datatype="html">
+        <source>Plan &amp; addons</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeStepServerType" datatype="html">
+        <source>Server type</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeStepAddons" datatype="html">
+        <source>Addons</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeStepSummary" datatype="html">
+        <source>Summary</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeErrorNotEligible" datatype="html">
+        <source>This subscription cannot be reconfigured right now. Please try again once any pending change has finished.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeErrorNoop" datatype="html">
+        <source>Select at least one change before continuing.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeErrorServerTypeUnsupported" datatype="html">
+        <source>This server type change is not supported for your service.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeErrorServerTypeLateral" datatype="html">
+        <source>The selected server type costs the same as your current one. Choose a larger or a smaller server type.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeErrorAddonInvalid" datatype="html">
+        <source>One of the selected addons is not available for this subscription.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeErrorAddonConfigImmutable" datatype="html">
+        <source>The configuration of an addon that is already active cannot be changed here.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeErrorFailed" datatype="html">
+        <source>The configuration change could not be applied. Please try again later.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-configChangeErrorGeneric" datatype="html">
+        <source>The configuration change could not be processed. Please try again.</source>
         </trans-unit>
       <trans-unit id="featureUserManager-roleAdmin" datatype="html">
         <source>Admin</source>
@@ -2865,11 +3399,11 @@
       <trans-unit id="featureConfirmEmail-codePattern" datatype="html">
         <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
         </trans-unit>
-      <trans-unit id="featureConfirmEmail-submit" datatype="html">
-        <source>Confirm Email</source>
-        </trans-unit>
       <trans-unit id="featureConfirmEmail-backToLogin" datatype="html">
         <source>Back to login</source>
+        </trans-unit>
+      <trans-unit id="featureConfirmEmail-submit" datatype="html">
+        <source>Confirm Email</source>
         </trans-unit>
       <trans-unit id="featureAuth-loginPage" datatype="html">
         <source>Login</source>
@@ -3039,14 +3573,14 @@
       <trans-unit id="featureRegister-privacyLink" datatype="html">
         <source>Privacy Policy</source>
         </trans-unit>
+      <trans-unit id="featureRegister-backToLogin" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
       <trans-unit id="featureRegister-registering" datatype="html">
         <source>Registering...</source>
         </trans-unit>
       <trans-unit id="featureRegister-submit" datatype="html">
         <source>Register</source>
-        </trans-unit>
-      <trans-unit id="featureRegister-alreadyHaveAccount" datatype="html">
-        <source>Already have an account? Log in</source>
         </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-title" datatype="html">
         <source>Check Your Email</source>
@@ -3117,14 +3651,14 @@
       <trans-unit id="featureResetPasswordConfirmation-passwordsMismatch" datatype="html">
         <source> Passwords do not match. </source>
         </trans-unit>
+      <trans-unit id="featureResetPasswordConfirmation-backToLogin" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-resettingButton" datatype="html">
         <source>Resetting...</source>
         </trans-unit>
       <trans-unit id="featureResetPasswordConfirmation-submit" datatype="html">
         <source>Reset Password</source>
-        </trans-unit>
-      <trans-unit id="featureResetPasswordConfirmation-backToLogin" datatype="html">
-        <source>Back to login</source>
         </trans-unit>
       <trans-unit id="featureRequestPasswordReset-title" datatype="html">
         <source>Reset Your Password</source>
@@ -3150,14 +3684,14 @@
       <trans-unit id="featureRequestPasswordReset-emailInvalid" datatype="html">
         <source>Please enter a valid email address.</source>
         </trans-unit>
+      <trans-unit id="featureRequestPasswordReset-backToLogin" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
       <trans-unit id="featureRequestPasswordReset-sending" datatype="html">
         <source>Sending...</source>
         </trans-unit>
       <trans-unit id="featureRequestPasswordReset-submit" datatype="html">
         <source>Send Reset Link</source>
-        </trans-unit>
-      <trans-unit id="featureRequestPasswordReset-backToLogin" datatype="html">
-        <source>Back to login</source>
         </trans-unit>
       <trans-unit id="featureResetPassword-title" datatype="html">
         <source>Set New Password</source>
@@ -3216,14 +3750,102 @@
       <trans-unit id="featureResetPassword-passwordsMismatch" datatype="html">
         <source> Passwords do not match. </source>
         </trans-unit>
+      <trans-unit id="featureResetPassword-backToLogin" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
       <trans-unit id="featureResetPassword-resetting" datatype="html">
         <source>Resetting...</source>
         </trans-unit>
       <trans-unit id="featureResetPassword-submit" datatype="html">
         <source>Reset Password</source>
         </trans-unit>
-      <trans-unit id="featureResetPassword-backToLogin" datatype="html">
-        <source>Back to login</source>
+      <trans-unit id="featureTokenManager-title" datatype="html">
+        <source>Personal Access Tokens</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-addTokenTitle" datatype="html">
+        <source>Create token</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-searchPlaceholder" datatype="html">
+        <source>Search tokens</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-loading" datatype="html">
+        <source>Loading tokens...</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-empty" datatype="html">
+        <source>No personal access tokens</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-scopes" datatype="html">
+        <source>scopes</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-noExpiry" datatype="html">
+        <source>No expiry</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-editButtonTitle" datatype="html">
+        <source>Edit token</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-revokeTitle" datatype="html">
+        <source>Revoke token</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-createTitle" datatype="html">
+        <source> Create personal access token </source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-closeAriaLabel" datatype="html">
+        <source>Close</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-plaintextTitle" datatype="html">
+        <source>Token value</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-plaintextHint" datatype="html">
+        <source> Copy this token now. It will not be shown again. </source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-copied" datatype="html">
+        <source>Copied</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-copy" datatype="html">
+        <source>Copy</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-done" datatype="html">
+        <source> Done </source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-nameLabel" datatype="html">
+        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-expiresAtLabel" datatype="html">
+        <source>Expires at</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-expiresAtHint" datatype="html">
+        <source>Optional. Leave empty for a token that does not expire.</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-scopesLabel" datatype="html">
+        <source>Scopes <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-loadingScopes" datatype="html">
+        <source>Loading scopes...</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-noScopes" datatype="html">
+        <source>No scopes available</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-create" datatype="html">
+        <source>Create</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-editModalTitle" datatype="html">
+        <source> Edit personal access token </source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-update" datatype="html">
+        <source>Update</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-revokeModalTitle" datatype="html">
+        <source> Revoke token </source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-revokeConfirm" datatype="html">
+        <source> Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+            &gt;"/>? </source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureTokenManager-revoke" datatype="html">
+        <source>Revoke</source>
         </trans-unit>
       <trans-unit id="featureUserManager-title" datatype="html">
         <source>User Management</source>
@@ -3315,102 +3937,6 @@
         </trans-unit>
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-title" datatype="html">
-        <source>Personal Access Tokens</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-addTokenTitle" datatype="html">
-        <source>Create token</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-searchPlaceholder" datatype="html">
-        <source>Search tokens</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-loading" datatype="html">
-        <source>Loading tokens...</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-empty" datatype="html">
-        <source>No personal access tokens</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-scopes" datatype="html">
-        <source>scopes</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-created" datatype="html">
-        <source>Created</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-expires" datatype="html">
-        <source>Expires</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-noExpiry" datatype="html">
-        <source>No expiry</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-lastUsed" datatype="html">
-        <source>Last used</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-revokeTitle" datatype="html">
-        <source>Revoke token</source>
-      </trans-unit>
-      <trans-unit id="featureTokenManager-editButtonTitle" datatype="html">
-        <source>Edit token</source>
-      </trans-unit>
-      <trans-unit id="featureTokenManager-editModalTitle" datatype="html">
-        <source>Edit personal access token</source>
-      </trans-unit>
-      <trans-unit id="featureTokenManager-createTitle" datatype="html">
-        <source>Create personal access token</source>
-      </trans-unit>
-      <trans-unit id="featureTokenManager-closeAriaLabel" datatype="html">
-        <source>Close</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-plaintextTitle" datatype="html">
-        <source>Token value</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-plaintextHint" datatype="html">
-        <source>Copy this token now. It will not be shown again.</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-copied" datatype="html">
-        <source>Copied</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-copy" datatype="html">
-        <source>Copy</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-done" datatype="html">
-        <source>Done</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-nameLabel" datatype="html">
-        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-expiresAtLabel" datatype="html">
-        <source>Expires at</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-expiresAtHint" datatype="html">
-        <source>Optional. Leave empty for a token that does not expire.</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-scopesLabel" datatype="html">
-        <source>Scopes <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-loadingScopes" datatype="html">
-        <source>Loading scopes...</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-noScopes" datatype="html">
-        <source>No scopes available</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-create" datatype="html">
-        <source>Create</source>
-      </trans-unit>
-      <trans-unit id="featureTokenManager-update" datatype="html">
-        <source>Update</source>
-      </trans-unit>
-      <trans-unit id="featureTokenManager-revokeModalTitle" datatype="html">
-        <source>Revoke token</source>
-      </trans-unit>
-      <trans-unit id="featureTokenManager-revokeConfirm" datatype="html">
-        <source>Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>?</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-cannotUndo" datatype="html">
-        <source>This action cannot be undone.</source>
-        </trans-unit>
-      <trans-unit id="featureTokenManager-revoke" datatype="html">
-        <source>Revoke</source>
         </trans-unit>
       <trans-unit id="featureDocsBreadcrumbs-documentation" datatype="html">
         <source>Documentation</source>
@@ -3744,7 +4270,7 @@
         <source>Payload</source>
         </trans-unit>
       <trans-unit id="featureNotifications-deliveryResponse" datatype="html">
-        <source>Response</source>
+        <source> Response </source>
         </trans-unit>
       <trans-unit id="featureNotifications-moreDeliveries" datatype="html">
         <source> More deliveries exist than shown. </source>
@@ -3768,49 +4294,58 @@
         <source>Updates</source>
         </trans-unit>
       <trans-unit id="featureUpdates-checkNow" datatype="html">
-        <source>Check now</source>
+        <source> Check now </source>
         </trans-unit>
       <trans-unit id="featureUpdates-loading" datatype="html">
         <source>Loading updates...</source>
         </trans-unit>
-      <trans-unit id="featureUpdates-empty" datatype="html">
-        <source>No update information available.</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-checkInProgress" datatype="html">
-        <source>Checking for updates...</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-statusUpdateAvailable" datatype="html">
-        <source>Update available</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-statusUpToDate" datatype="html">
-        <source>Up to date</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-statusUnknown" datatype="html">
-        <source>Unknown</source>
-        </trans-unit>
       <trans-unit id="featureUpdates-installedVersion" datatype="html">
-        <source>Installed version</source>
+        <source> Installed version </source>
         </trans-unit>
       <trans-unit id="featureUpdates-latestVersion" datatype="html">
-        <source>Latest version</source>
+        <source> Latest version </source>
         </trans-unit>
       <trans-unit id="featureUpdates-viewRelease" datatype="html">
         <source>View release</source>
         </trans-unit>
-      <trans-unit id="featureUpdates-frontendVersion" datatype="html">
-        <source>Frontend version</source>
-        </trans-unit>
       <trans-unit id="featureUpdates-lastCheck" datatype="html">
         <source>Last check</source>
         </trans-unit>
-      <trans-unit id="featureUpdates-instanceCount" datatype="html">
-        <source>Instances</source>
+      <trans-unit id="featureUpdates-checkInProgress" datatype="html">
+        <source>Checking for updates...</source>
         </trans-unit>
-      <trans-unit id="featureUpdates-outdatedInstances" datatype="html">
-        <source>Outdated instances</source>
+      <trans-unit id="featureUpdates-frontendVersion" datatype="html">
+        <source> Frontend version </source>
         </trans-unit>
       <trans-unit id="featureUpdates-instancesTitle" datatype="html">
-        <source>Service instances</source>
+        <source> Service instances </source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-searchInstancesPlaceholder" datatype="html">
+        <source>Search instances</source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-noInstances" datatype="html">
+        <source>No service instances reported yet.</source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-changelogProduct" datatype="html">
+        <source> Product changelog </source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-searchProductChangelogPlaceholder" datatype="html">
+        <source>Search product changelog</source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-noChangelogProduct" datatype="html">
+        <source> No product changelog entries. </source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-changelogShared" datatype="html">
+        <source> Shared changelog </source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-searchSharedChangelogPlaceholder" datatype="html">
+        <source>Search shared changelog</source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-noChangelogShared" datatype="html">
+        <source> No shared changelog entries. </source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-empty" datatype="html">
+        <source>No update information available.</source>
         </trans-unit>
       <trans-unit id="featureUpdates-mobilePanelInstances" datatype="html">
         <source>Instances</source>
@@ -3821,70 +4356,13 @@
       <trans-unit id="featureUpdates-mobilePanelShared" datatype="html">
         <source>Shared</source>
         </trans-unit>
-      <trans-unit id="featureUpdates-searchInstancesPlaceholder" datatype="html">
-        <source>Search instances</source>
+      <trans-unit id="featureUpdates-statusUpdateAvailable" datatype="html">
+        <source>Update available</source>
         </trans-unit>
-      <trans-unit id="featureUpdates-searchProductChangelogPlaceholder" datatype="html">
-        <source>Search product changelog</source>
+      <trans-unit id="featureUpdates-statusUpToDate" datatype="html">
+        <source>Up to date</source>
         </trans-unit>
-      <trans-unit id="featureUpdates-searchSharedChangelogPlaceholder" datatype="html">
-        <source>Search shared changelog</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-noInstances" datatype="html">
-        <source>No service instances reported yet.</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-colInstanceId" datatype="html">
-        <source>Instance</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-colService" datatype="html">
-        <source>Service</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-colRole" datatype="html">
-        <source>Role</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-colHostname" datatype="html">
-        <source>Hostname</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-colInstalledVersion" datatype="html">
-        <source>Installed</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-colUpdateState" datatype="html">
-        <source>Update state</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-colLastHeartbeat" datatype="html">
-        <source>Last heartbeat</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-colRedis" datatype="html">
-        <source>Redis</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-colQueue" datatype="html">
-        <source>Queue</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-colDatabase" datatype="html">
-        <source>Database</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-changelogProduct" datatype="html">
-        <source>Product changelog</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-changelogShared" datatype="html">
-        <source>Shared changelog</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-noChangelogProduct" datatype="html">
-        <source>No product changelog entries.</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-noChangelogShared" datatype="html">
-        <source>No shared changelog entries.</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-dependencyHealthy" datatype="html">
-        <source>Healthy</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-dependencyDegraded" datatype="html">
-        <source>Degraded</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-dependencyNotApplicable" datatype="html">
-        <source>N/A</source>
-        </trans-unit>
-      <trans-unit id="featureUpdates-dependencyUnknown" datatype="html">
+      <trans-unit id="featureUpdates-statusUnknown" datatype="html">
         <source>Unknown</source>
         </trans-unit>
       <trans-unit id="featureUpdates-serviceBillingManager" datatype="html">
@@ -3944,6 +4422,18 @@
       <trans-unit id="featureUpdates-categoryBreakingChanges" datatype="html">
         <source>Breaking changes</source>
         </trans-unit>
+      <trans-unit id="featureUpdates-dependencyHealthy" datatype="html">
+        <source>Healthy</source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-dependencyDegraded" datatype="html">
+        <source>Degraded</source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-dependencyNotApplicable" datatype="html">
+        <source>N/A</source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-dependencyUnknown" datatype="html">
+        <source>Unknown</source>
+        </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>
         </trans-unit>
@@ -3958,135 +4448,6 @@
         </trans-unit>
       <trans-unit id="utilCookieConsent-link" datatype="html">
         <source>Learn more</source>
-        </trans-unit>
-      <trans-unit id="featureBilling-subscriptionStatusPendingConfigChange" datatype="html">
-        <source>Applying configuration change</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-modifyConfigButtonTitle" datatype="html">
-        <source>Upgrade or downgrade</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeTitle" datatype="html">
-        <source> Upgrade or downgrade </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeConfirmationTitle" datatype="html">
-        <source> Configuration change requested </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeConfirmationMessage" datatype="html">
-        <source> We are applying your changes. You can close this dialog and track progress in your subscriptions list. The final amounts are settled with your next invoice. </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeLoadingEligibility" datatype="html">
-        <source>Checking available changes…</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeStepsAria" datatype="html">
-        <source>Configuration change steps</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeCurrentServerType" datatype="html">
-        <source>Current server type</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeLoadingServerTypes" datatype="html">
-        <source>Loading server types…</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeNewServerType" datatype="html">
-        <source>New server type</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeServerTypeHint" datatype="html">
-        <source> Your server keeps its current location. Choosing a server type at the same price is not possible. </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeNoServerTypes" datatype="html">
-        <source> No alternative server types are available for this plan. </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeAddonActive" datatype="html">
-        <source>Active</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeAddonRemoved" datatype="html">
-        <source>Will be removed</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeAddonConfigLocked" datatype="html">
-        <source> The configuration of this addon is locked and cannot be changed here. </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeNoAddons" datatype="html">
-        <source> No addons are available for this plan. </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeSummaryTitle" datatype="html">
-        <source>Your changes</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeNoChanges" datatype="html">
-        <source> You have not selected any changes yet. Go back and pick a different server type or adjust your addons. </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeSummaryServerType" datatype="html">
-        <source>Server type</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeDisclaimerTitle" datatype="html">
-        <source> Billing information </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeEffectiveAt" datatype="html">
-        <source>Effective</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeAdvisoryNote" datatype="html">
-        <source> All amounts shown are advisory. The final amounts are recalculated when the change is confirmed. </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangePriceTitle" datatype="html">
-        <source> Price preview </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeCurrentPeriodNet" datatype="html">
-        <source> Current period (net) </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeNewPeriodNet" datatype="html">
-        <source> New period (net) </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangePeriodDelta" datatype="html">
-        <source> Difference per period </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeImmediateAdjustment" datatype="html">
-        <source> Settled now (net) </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeNoPreview" datatype="html">
-        <source> Select a change to see its effect on your price. </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeDiscountsTitle" datatype="html">
-        <source> Active promotions </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeDiscountPeriodsLeft" datatype="html">
-        <source>periods left</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeInProgress" datatype="html">
-        <source>Configuration change in progress, please wait</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeSubmit" datatype="html">
-        <source>Apply changes</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeStepServerType" datatype="html">
-        <source>Server type</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeStepAddons" datatype="html">
-        <source>Addons</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeStepSummary" datatype="html">
-        <source>Summary</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeErrorNotEligible" datatype="html">
-        <source>This subscription cannot be reconfigured right now. Please try again once any pending change has finished.</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeErrorNoop" datatype="html">
-        <source>Select at least one change before continuing.</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeErrorServerTypeUnsupported" datatype="html">
-        <source>This server type change is not supported for your service.</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeErrorServerTypeLateral" datatype="html">
-        <source>The selected server type costs the same as your current one. Choose a larger or a smaller server type.</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeErrorAddonInvalid" datatype="html">
-        <source>One of the selected addons is not available for this subscription.</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeErrorAddonConfigImmutable" datatype="html">
-        <source>The configuration of an addon that is already active cannot be changed here.</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeErrorFailed" datatype="html">
-        <source>The configuration change could not be applied. Please try again later.</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-configChangeErrorGeneric" datatype="html">
-        <source>The configuration change could not be processed. Please try again.</source>
         </trans-unit>
     </body>
   </file>

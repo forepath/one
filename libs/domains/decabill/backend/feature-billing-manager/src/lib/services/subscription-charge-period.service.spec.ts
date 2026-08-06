@@ -50,9 +50,68 @@ describe('SubscriptionChargePeriodService', () => {
       expect.objectContaining({
         periodStart: createdAt,
         periodEnd: billUntil,
+        meterPeriodStart: createdAt,
       }),
     );
     expect(result?.baseAmount).toBeGreaterThan(0);
+  });
+
+  it('uses schedule-aligned meterPeriodStart when prior invoice lags the period boundary', async () => {
+    const lastInvoiceAt = new Date('2026-02-01T00:05:00Z');
+    const billUntil = new Date('2026-03-01T00:00:00Z');
+    const service = new SubscriptionChargePeriodService(
+      { findLatestBySubscription: jest.fn().mockResolvedValue({ createdAt: lastInvoiceAt }) } as never,
+      { findBySubscription: jest.fn().mockResolvedValue([]) } as never,
+      billingScheduleService,
+    );
+    const subscription = {
+      id: 'sub-1',
+      createdAt: new Date('2026-01-01T00:00:00Z'),
+      currentPeriodStart: billUntil,
+      currentPeriodEnd: new Date('2026-04-01T00:00:00Z'),
+    } as never;
+    const plan = {
+      billingIntervalType: 'month',
+      billInAdvance: false,
+      autoRecalculatePriceDaily: false,
+      billingIntervalValue: 1,
+      billingDayOfMonth: 1,
+    } as never;
+
+    const result = await service.resolveChargePeriod(subscription, plan, 30, billUntil);
+
+    expect(result?.periodStart).toEqual(lastInvoiceAt);
+    expect(result?.periodEnd).toEqual(billUntil);
+    expect(result?.meterPeriodStart).toEqual(new Date('2026-02-01T00:00:00Z'));
+  });
+
+  it('uses currentPeriodStart for meters when createInvoice lags after schedule start', async () => {
+    const lastInvoiceAt = new Date('2026-02-01T00:05:00Z');
+    const currentPeriodStart = new Date('2026-02-01T00:00:00Z');
+    const billUntil = new Date('2026-02-15T00:00:00Z');
+    const service = new SubscriptionChargePeriodService(
+      { findLatestBySubscription: jest.fn().mockResolvedValue({ createdAt: lastInvoiceAt }) } as never,
+      { findBySubscription: jest.fn().mockResolvedValue([]) } as never,
+      billingScheduleService,
+    );
+    const subscription = {
+      id: 'sub-1',
+      createdAt: new Date('2026-01-01T00:00:00Z'),
+      currentPeriodStart,
+      currentPeriodEnd: new Date('2026-03-01T00:00:00Z'),
+    } as never;
+    const plan = {
+      billingIntervalType: 'month',
+      billInAdvance: false,
+      autoRecalculatePriceDaily: false,
+      billingIntervalValue: 1,
+      billingDayOfMonth: 1,
+    } as never;
+
+    const result = await service.resolveChargePeriod(subscription, plan, 30, billUntil);
+
+    expect(result?.periodStart).toEqual(lastInvoiceAt);
+    expect(result?.meterPeriodStart).toEqual(currentPeriodStart);
   });
 
   it('returns full period when no prior invoice exists', async () => {
@@ -76,6 +135,7 @@ describe('SubscriptionChargePeriodService', () => {
       expect.objectContaining({
         periodStart,
         periodEnd: billUntil,
+        meterPeriodStart: periodStart,
       }),
     );
     expect(result?.baseAmount).toBeGreaterThan(0);

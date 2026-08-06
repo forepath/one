@@ -89,4 +89,31 @@ describe('UsageService', () => {
       req.flush(mockRecord);
     });
   });
+
+  describe('getSubscriptionMeters', () => {
+    it('returns meter summaries for a subscription', (done) => {
+      const summaries = [
+        {
+          meterId: 'meter-1',
+          key: 'api_calls',
+          name: 'API Calls',
+          aggregator: 'max' as const,
+          attachmentType: 'plan' as const,
+          effectiveUnitPriceNet: 0.01,
+          aggregatedValue: 100,
+          estimatedChargeNet: 1,
+          entryCount: 1,
+        },
+      ];
+
+      service.getSubscriptionMeters(subscriptionId).subscribe((result) => {
+        expect(result).toEqual(summaries);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/subscriptions/${subscriptionId}/meters`);
+      expect(req.request.method).toBe('GET');
+      req.flush(summaries);
+    });
+  });
 });

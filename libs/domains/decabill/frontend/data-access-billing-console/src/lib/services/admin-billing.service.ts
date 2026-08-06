@@ -25,6 +25,9 @@ import type {
   AdminSubscriptionListItem,
   SubscriptionResponse,
   UpdateManualInvoiceDto,
+  CreateUsageMeterEntryDto,
+  UpdateUsageMeterEntryDto,
+  UsageMeterEntryResponse,
 } from '../types/billing.types';
 import type {
   AdminDatevExportListParams,
@@ -268,5 +271,38 @@ export class AdminBillingService {
     return this.http.get(`${this.apiUrl}/admin/billing/datev-exports/${exportId}/download`, {
       responseType: 'blob',
     });
+  }
+
+  listSubscriptionMeterEntries(subscriptionId: string): Observable<UsageMeterEntryResponse[]> {
+    return this.http.get<UsageMeterEntryResponse[]>(
+      `${this.apiUrl}/admin/billing/subscriptions/${subscriptionId}/meter-entries`,
+    );
+  }
+
+  createSubscriptionMeterEntry(
+    subscriptionId: string,
+    dto: CreateUsageMeterEntryDto,
+  ): Observable<UsageMeterEntryResponse> {
+    return this.http.post<UsageMeterEntryResponse>(
+      `${this.apiUrl}/admin/billing/subscriptions/${subscriptionId}/meter-entries`,
+      dto,
+    );
+  }
+
+  updateSubscriptionMeterEntry(
+    subscriptionId: string,
+    entryId: string,
+    dto: UpdateUsageMeterEntryDto,
+  ): Observable<UsageMeterEntryResponse> {
+    return this.http.post<UsageMeterEntryResponse>(
+      `${this.apiUrl}/admin/billing/subscriptions/${subscriptionId}/meter-entries/${entryId}`,
+      dto,
+    );
+  }
+
+  deleteSubscriptionMeterEntry(subscriptionId: string, entryId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/admin/billing/subscriptions/${subscriptionId}/meter-entries/${entryId}`,
+    );
   }
 }

@@ -6,12 +6,15 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import type {
+  AttachMeterDto,
+  AttachedMeterResponse,
   CreateServiceTypeDto,
   ListParams,
   ProviderDetail,
   ProviderLocation,
   ServerType,
   ServiceTypeResponse,
+  UpdateAttachedMeterDto,
   UpdateServiceTypeDto,
 } from '../types/billing.types';
 import { normalizeProviderServerTypes } from '../utils/server-type-list.utils';
@@ -116,5 +119,28 @@ export class ServiceTypesService {
    */
   deleteServiceType(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/service-types/${id}`);
+  }
+
+  listServiceTypeMeters(serviceTypeId: string): Observable<AttachedMeterResponse[]> {
+    return this.http.get<AttachedMeterResponse[]>(`${this.apiUrl}/service-types/${serviceTypeId}/meters`);
+  }
+
+  attachServiceTypeMeter(serviceTypeId: string, dto: AttachMeterDto): Observable<AttachedMeterResponse> {
+    return this.http.post<AttachedMeterResponse>(`${this.apiUrl}/service-types/${serviceTypeId}/meters`, dto);
+  }
+
+  updateServiceTypeMeter(
+    serviceTypeId: string,
+    meterId: string,
+    dto: UpdateAttachedMeterDto,
+  ): Observable<AttachedMeterResponse> {
+    return this.http.post<AttachedMeterResponse>(
+      `${this.apiUrl}/service-types/${serviceTypeId}/meters/${meterId}`,
+      dto,
+    );
+  }
+
+  detachServiceTypeMeter(serviceTypeId: string, meterId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/service-types/${serviceTypeId}/meters/${meterId}`);
   }
 }

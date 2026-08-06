@@ -5408,6 +5408,474 @@
         <source>Breaking changes</source>
         <target>Breaking Changes</target>
       </trans-unit>
+      <trans-unit id="featureAddons-metersBadge" datatype="html">
+        <source>meters</source>
+        <target>Zähler</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-meters" datatype="html">
+        <source>Usage meters</source>
+        <target>Nutzungszähler</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-metersHelp" datatype="html">
+        <source> Attach usage meters to this addon with optional unit price overrides. </source>
+        <target> Hängen Sie Nutzungszähler an dieses Add-on an, optional mit Stückpreis-Overrides. </target>
+      </trans-unit>
+      <trans-unit id="featureAddons-metersLoading" datatype="html">
+        <source>Loading meters…</source>
+        <target>Zähler werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-meterUnitPriceOverride" datatype="html">
+        <source>Unit price override (net)</source>
+        <target>Stückpreis-Override (netto)</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-updateMeterPrice" datatype="html">
+        <source>Update price</source>
+        <target>Preis aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-detachMeter" datatype="html">
+        <source>Detach meter</source>
+        <target>Zähler entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-requiredMeter" datatype="html">
+        <source>Required</source>
+        <target>Erforderlich</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-noMetersAttached" datatype="html">
+        <source> No meters attached to this addon yet. </source>
+        <target> Noch keine Zähler an dieses Add-on angehängt. </target>
+      </trans-unit>
+      <trans-unit id="featureAddons-attachMeter" datatype="html">
+        <source>Attach meter</source>
+        <target>Zähler anhängen</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-selectMeter" datatype="html">
+        <source>Select meter</source>
+        <target>Zähler auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-attachMeterPrice" datatype="html">
+        <source>Override price (optional)</source>
+        <target>Override-Preis (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-attachMeterAction" datatype="html">
+        <source>Attach meter</source>
+        <target>Zähler anhängen</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-noCatalogMeters" datatype="html">
+        <source> No active meters in the catalog. Create meters under Administration → Usage meters first. </source>
+        <target> Keine aktiven Zähler im Katalog. Legen Sie zuerst Zähler unter Administration → Nutzungszähler an. </target>
+      </trans-unit>
+      <trans-unit id="featureAddons-allMetersAttached" datatype="html">
+        <source> All active catalog meters are already attached to this addon. </source>
+        <target> Alle aktiven Katalogzähler sind bereits an dieses Add-on angehängt. </target>
+      </trans-unit>
+      <trans-unit id="featureAddons-metersCatalogLoading" datatype="html">
+        <source>Loading meter catalog…</source>
+        <target>Zählerkatalog wird geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-hasMeters" datatype="html">
+        <source>Has usage meters</source>
+        <target>Hat Nutzungszähler</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-manageMetersTitle" datatype="html">
+        <source>Manage usage meters</source>
+        <target>Nutzungszähler verwalten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-instantCancelButtonTitle" datatype="html">
+        <source>Instant cancel subscription</source>
+        <target>Abonnement sofort kündigen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-instantCancelTitle" datatype="html">
+        <source>Instant cancel subscription?</source>
+        <target>Abonnement sofort kündigen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-instantCancelConfirm" datatype="html">
+        <source> Force-remove this subscription immediately. Access ends now. Arrear plans are billed for used time; prepaid plans refund unused time like a statutory withdrawal. This cannot be resumed. </source>
+        <target> Dieses Abonnement sofort entfernen. Der Zugang endet jetzt. Nachträglich abgerechnete Tarife werden für die genutzte Zeit berechnet; im Voraus bezahlte Tarife erstatten ungenutzte Zeit wie bei einem gesetzlichen Widerruf. Eine Fortsetzung ist nicht möglich. </target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-instantCancel" datatype="html">
+        <source> Instant cancel </source>
+        <target> Sofort kündigen </target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-metersTitle" datatype="html">
+        <source>Usage meters</source>
+        <target>Nutzungszähler</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-meterSummaries" datatype="html">
+        <source>Current period summaries</source>
+        <target>Zusammenfassungen der aktuellen Periode</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-metersLoading" datatype="html">
+        <source>Loading meters...</source>
+        <target>Zähler werden geladen...</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-noMeterSummaries" datatype="html">
+        <source> No meter summaries. </source>
+        <target> Keine Zählerzusammenfassungen. </target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-meterEntries" datatype="html">
+        <source>Meter entries</source>
+        <target>Zählereinträge</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-noMeterEntries" datatype="html">
+        <source>No entries yet.</source>
+        <target>Noch keine Einträge.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-createEntry" datatype="html">
+        <source>Record meter entry</source>
+        <target>Zählereintrag erfassen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-entryMeter" datatype="html">
+        <source>Meter</source>
+        <target>Zähler</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-selectMeter" datatype="html">
+        <source>Select meter</source>
+        <target>Zähler auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-entryValue" datatype="html">
+        <source>Value</source>
+        <target>Wert</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-entryAttachmentType" datatype="html">
+        <source>Attachment type</source>
+        <target>Zuordnungstyp</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-attachmentPlan" datatype="html">
+        <source>Plan</source>
+        <target>Tarif</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-attachmentAddon" datatype="html">
+        <source>Addon</source>
+        <target>Add-on</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-entryAddonId" datatype="html">
+        <source>Addon ID</source>
+        <target>Add-on-ID</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-entryPeriodStart" datatype="html">
+        <source>Period start</source>
+        <target>Periodenbeginn</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-entryPeriodEnd" datatype="html">
+        <source>Period end</source>
+        <target>Periodenende</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-saveEntry" datatype="html">
+        <source> Save entry </source>
+        <target> Eintrag speichern </target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-deleteEntryTitle" datatype="html">
+        <source>Delete meter entry?</source>
+        <target>Zählereintrag löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-deleteEntryConfirm" datatype="html">
+        <source>Delete this meter entry?</source>
+        <target>Diesen Zählereintrag löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-deleteEntry" datatype="html">
+        <source> Delete </source>
+        <target> Löschen </target>
+      </trans-unit>
+      <trans-unit id="featureContainer-metersPage" datatype="html">
+        <source>Usage meters</source>
+        <target>Nutzungszähler</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-subscriptionStatusPendingInstantCancel" datatype="html">
+        <source>Pending instant cancel</source>
+        <target>Sofortkündigung ausstehend</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-updatesAttention" datatype="html">
+        <source>Updates need attention</source>
+        <target>Updates erfordern Aufmerksamkeit</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-metersTitle" datatype="html">
+        <source>Meters</source>
+        <target>Zähler</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-meters" datatype="html">
+        <source>Meters</source>
+        <target>Zähler</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-updatesTitle" datatype="html">
+        <source>Updates</source>
+        <target>Updates</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-updates" datatype="html">
+        <source>Updates</source>
+        <target>Updates</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-title" datatype="html">
+        <source>Usage meters</source>
+        <target>Nutzungszähler</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-add" datatype="html">
+        <source>Add meter</source>
+        <target>Zähler hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-searchPlaceholder" datatype="html">
+        <source>Search meters</source>
+        <target>Zähler suchen</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-loading" datatype="html">
+        <source>Loading...</source>
+        <target>Laden...</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-empty" datatype="html">
+        <source>No meters.</source>
+        <target>Keine Zähler.</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-actionsAria" datatype="html">
+        <source>Meter actions</source>
+        <target>Zähleraktionen</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-edit" datatype="html">
+        <source>Edit meter</source>
+        <target>Zähler bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-delete" datatype="html">
+        <source>Delete meter</source>
+        <target>Zähler löschen</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-createTitle" datatype="html">
+        <source>Create meter</source>
+        <target>Zähler erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-create" datatype="html">
+        <source>Create</source>
+        <target>Erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-editTitle" datatype="html">
+        <source>Edit meter</source>
+        <target>Zähler bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-key" datatype="html">
+        <source>Key</source>
+        <target>Schlüssel</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-name" datatype="html">
+        <source>Name</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-description" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-unitLabel" datatype="html">
+        <source>Unit label</source>
+        <target>Einheit</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-aggregator" datatype="html">
+        <source>Aggregator</source>
+        <target>Aggregator</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-defaultUnitPriceNet" datatype="html">
+        <source>Default unit price (net)</source>
+        <target>Standard-Stückpreis (netto)</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-active" datatype="html">
+        <source>Active</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-deleteTitle" datatype="html">
+        <source>Delete meter</source>
+        <target>Zähler löschen</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-deleteConfirm" datatype="html">
+        <source>Delete meter &quot;<x id="INTERPOLATION" equiv-text="{{ meterToDelete.name }}"/>&quot;?</source>
+        <target>Zähler &quot;<x id="INTERPOLATION" equiv-text="{{ meterToDelete.name }}"/>&quot; löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-aggregatorMax" datatype="html">
+        <source>Max</source>
+        <target>Maximum</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-aggregatorMin" datatype="html">
+        <source>Min</source>
+        <target>Minimum</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-aggregatorAvg" datatype="html">
+        <source>Average</source>
+        <target>Durchschnitt</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-aggregatorFirst" datatype="html">
+        <source>First</source>
+        <target>Erster</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-aggregatorLast" datatype="html">
+        <source>Last</source>
+        <target>Letzter</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-aggregatorSum" datatype="html">
+        <source>Sum</source>
+        <target>Summe</target>
+      </trans-unit>
+      <trans-unit id="featureMeters-aggregatorSumPositiveDeltas" datatype="html">
+        <source>Sum of positive deltas</source>
+        <target>Summe positiver Deltas</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-metersBadge" datatype="html">
+        <source>meters</source>
+        <target>Zähler</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-noneType" datatype="html">
+        <source>None (no deployment)</source>
+        <target>Keine (kein Deployment)</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-meters" datatype="html">
+        <source>Usage meters</source>
+        <target>Nutzungszähler</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-metersHelp" datatype="html">
+        <source> Attach usage meters billed in arrears. Optional unit price overrides the catalog default. </source>
+        <target> Hängen Sie nachträglich abgerechnete Nutzungszähler an. Ein optionaler Stückpreis überschreibt den Katalogstandard. </target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-metersPrepaidWarning" datatype="html">
+        <source> Prepaid plans cannot record or bill metered usage. Detach meters or disable bill-in-advance before using meters. </source>
+        <target> Im Voraus bezahlte Tarife können keine Zählernutzung erfassen oder abrechnen. Entfernen Sie Zähler oder deaktivieren Sie die Vorauszahlung, bevor Sie Zähler nutzen. </target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-metersLoading" datatype="html">
+        <source>Loading meters…</source>
+        <target>Zähler werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-meterFromServiceType" datatype="html">
+        <source>From service type</source>
+        <target>Vom Service-Typ</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-meterUnitPriceOverride" datatype="html">
+        <source>Unit price override (net)</source>
+        <target>Stückpreis-Override (netto)</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-updateMeterPrice" datatype="html">
+        <source>Update price</source>
+        <target>Preis aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-detachMeter" datatype="html">
+        <source>Detach meter</source>
+        <target>Zähler entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-noMetersAttached" datatype="html">
+        <source> No meters attached to this plan yet. </source>
+        <target> Noch keine Zähler an diesen Tarif angehängt. </target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-attachMeter" datatype="html">
+        <source>Attach meter</source>
+        <target>Zähler anhängen</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-selectMeter" datatype="html">
+        <source>Select meter</source>
+        <target>Zähler auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-attachMeterPrice" datatype="html">
+        <source>Override price (optional)</source>
+        <target>Override-Preis (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-attachMeterAction" datatype="html">
+        <source>Attach meter</source>
+        <target>Zähler anhängen</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-noCatalogMeters" datatype="html">
+        <source> No active meters in the catalog. Create meters under Administration → Usage meters first. </source>
+        <target> Keine aktiven Zähler im Katalog. Legen Sie zuerst Zähler unter Administration → Nutzungszähler an. </target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-allMetersAttached" datatype="html">
+        <source> All active catalog meters are already attached to this plan. </source>
+        <target> Alle aktiven Katalogzähler sind bereits an diesen Tarif angehängt. </target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-metersCatalogLoading" datatype="html">
+        <source>Loading meter catalog…</source>
+        <target>Zählerkatalog wird geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-meters" datatype="html">
+        <source>Usage meters</source>
+        <target>Nutzungszähler</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-metersHelp" datatype="html">
+        <source> Provider-declared meters are required. Attach extra catalog meters with optional unit price overrides. </source>
+        <target> Vom Anbieter deklarierte Zähler sind erforderlich. Hängen Sie zusätzliche Katalogzähler mit optionalen Stückpreis-Overrides an. </target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-requiredMeter" datatype="html">
+        <source>Required</source>
+        <target>Erforderlich</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-metersLoading" datatype="html">
+        <source>Loading meters…</source>
+        <target>Zähler werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-meterUnitPriceOverride" datatype="html">
+        <source>Unit price override (net)</source>
+        <target>Stückpreis-Override (netto)</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-updateMeterPrice" datatype="html">
+        <source>Update price</source>
+        <target>Preis aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-detachMeter" datatype="html">
+        <source>Detach meter</source>
+        <target>Zähler entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-noMetersAttached" datatype="html">
+        <source> No meters attached to this service type yet. </source>
+        <target> Noch keine Zähler an diesen Service-Typ angehängt. </target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-attachMeter" datatype="html">
+        <source>Attach meter</source>
+        <target>Zähler anhängen</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-selectMeter" datatype="html">
+        <source>Select meter</source>
+        <target>Zähler auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-attachMeterPrice" datatype="html">
+        <source>Override price (optional)</source>
+        <target>Override-Preis (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-attachMeterAction" datatype="html">
+        <source>Attach meter</source>
+        <target>Zähler anhängen</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-noCatalogMeters" datatype="html">
+        <source> No active meters in the catalog. Create meters under Administration → Usage meters first. </source>
+        <target> Keine aktiven Zähler im Katalog. Legen Sie zuerst Zähler unter Administration → Nutzungszähler an. </target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-metersCatalogLoading" datatype="html">
+        <source>Loading meter catalog…</source>
+        <target>Zählerkatalog wird geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-usageMeters" datatype="html">
+        <source>Usage meters</source>
+        <target>Nutzungszähler</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-addonMeterLabel" datatype="html">
+        <source>Meter</source>
+        <target>Zähler</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-planMeters" datatype="html">
+        <source> Plan usage meters </source>
+        <target> Tarif-Nutzungszähler </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-planMetersHelp" datatype="html">
+        <source> Usage for these meters is recorded in arrears and billed separately from the base plan price. </source>
+        <target> Die Nutzung dieser Zähler wird nachträglich erfasst und getrennt vom Grundpreis des Tarifs abgerechnet. </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-meterAddon" datatype="html">
+        <source>Addon meter</source>
+        <target>Add-on-Zähler</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-meterPlan" datatype="html">
+        <source>Plan meter</source>
+        <target>Tarif-Zähler</target>
+      </trans-unit>
+      <trans-unit id="featureRegister-backToLogin" datatype="html">
+        <source>Back to login</source>
+        <target>Zurück zur Anmeldung</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

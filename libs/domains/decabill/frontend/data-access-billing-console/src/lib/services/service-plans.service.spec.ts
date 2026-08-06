@@ -221,4 +221,59 @@ describe('ServicePlansService', () => {
       req.flush(options);
     });
   });
+
+  describe('plan meters', () => {
+    const attachedMeter = {
+      meterId: 'meter-1',
+      key: 'api_calls',
+      name: 'API Calls',
+      aggregator: 'max' as const,
+      defaultUnitPriceNet: 0.01,
+      effectiveUnitPriceNet: 0.01,
+      isActive: true,
+    };
+
+    it('lists plan meters', (done) => {
+      service.listPlanMeters('sp-1').subscribe((meters) => {
+        expect(meters).toEqual([attachedMeter]);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/service-plans/sp-1/meters`);
+      expect(req.request.method).toBe('GET');
+      req.flush([attachedMeter]);
+    });
+
+    it('attaches a plan meter', (done) => {
+      service.attachPlanMeter('sp-1', { meterId: 'meter-1', unitPriceNet: 0.02 }).subscribe((meter) => {
+        expect(meter).toEqual({ ...attachedMeter, effectiveUnitPriceNet: 0.02 });
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/service-plans/sp-1/meters`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ meterId: 'meter-1', unitPriceNet: 0.02 });
+      req.flush({ ...attachedMeter, effectiveUnitPriceNet: 0.02 });
+    });
+
+    it('updates a plan meter override', (done) => {
+      service.updatePlanMeter('sp-1', 'meter-1', { unitPriceNet: 0.03 }).subscribe((meter) => {
+        expect(meter.effectiveUnitPriceNet).toBe(0.03);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/service-plans/sp-1/meters/meter-1`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ unitPriceNet: 0.03 });
+      req.flush({ ...attachedMeter, effectiveUnitPriceNet: 0.03 });
+    });
+
+    it('detaches a plan meter', (done) => {
+      service.detachPlanMeter('sp-1', 'meter-1').subscribe(() => done());
+
+      const req = httpMock.expectOne(`${apiUrl}/service-plans/sp-1/meters/meter-1`);
+      expect(req.request.method).toBe('DELETE');
+      req.flush(null);
+    });
+  });
 });

@@ -5,12 +5,15 @@ import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
 import type {
+  AttachedMeterResponse,
+  AttachMeterDto,
   CreateServicePlanDto,
   CloudInitConfigOrderField,
   ListParams,
   OrderProvisioningOption,
   PlanAddonOptionDto,
   ServicePlanResponse,
+  UpdateAttachedMeterDto,
   UpdateServicePlanDto,
 } from '../types/billing.types';
 
@@ -89,5 +92,21 @@ export class ServicePlansService {
    */
   deleteServicePlan(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/service-plans/${id}`);
+  }
+
+  listPlanMeters(planId: string): Observable<AttachedMeterResponse[]> {
+    return this.http.get<AttachedMeterResponse[]>(`${this.apiUrl}/service-plans/${planId}/meters`);
+  }
+
+  attachPlanMeter(planId: string, dto: AttachMeterDto): Observable<AttachedMeterResponse> {
+    return this.http.post<AttachedMeterResponse>(`${this.apiUrl}/service-plans/${planId}/meters`, dto);
+  }
+
+  updatePlanMeter(planId: string, meterId: string, dto: UpdateAttachedMeterDto): Observable<AttachedMeterResponse> {
+    return this.http.post<AttachedMeterResponse>(`${this.apiUrl}/service-plans/${planId}/meters/${meterId}`, dto);
+  }
+
+  detachPlanMeter(planId: string, meterId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/service-plans/${planId}/meters/${meterId}`);
   }
 }

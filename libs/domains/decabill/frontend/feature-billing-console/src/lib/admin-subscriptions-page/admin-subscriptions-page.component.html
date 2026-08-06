@@ -98,6 +98,12 @@
                     <span class="me-2">
                       <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatPeriodPrice(sub) }}
                     </span>
+                    @if (hasSubscriptionMeters(sub)) {
+                      <span class="me-2">
+                        <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i
+                        ><span i18n="@@featureAdminSubscriptions-hasMeters">Has usage meters</span>
+                      </span>
+                    }
                   </div>
                 </div>
               </div>
@@ -107,6 +113,15 @@
                 aria-label="Subscription actions"
                 i18n-aria-label="@@featureSubscriptions-subscriptionActionsAria"
               >
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="openMetersModal(sub)"
+                  title="Manage usage meters"
+                  i18n-title="@@featureAdminSubscriptions-manageMetersTitle"
+                >
+                  <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                </button>
                 @if (sub.withdrawalEligibility?.canWithdraw) {
                   <button
                     type="button"
@@ -249,6 +264,211 @@
           i18n="@@featureAdminSubscriptions-instantCancel"
         >
           Instant cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" tabindex="-1" aria-hidden="true" #metersModal>
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminSubscriptions-metersTitle">Usage meters</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (subscriptionForMeters; as sub) {
+          <p class="text-body-secondary small">{{ subscriptionTitle(sub) }} · {{ subscriptionUserLabel(sub) }}</p>
+        }
+        @if (metersError$ | async; as metersError) {
+          <div class="alert alert-danger" role="alert">{{ metersError }}</div>
+        }
+        <div class="row g-4">
+          <div class="col-lg-5">
+            <h6 class="mb-2" i18n="@@featureAdminSubscriptions-meterSummaries">Current period summaries</h6>
+            @if (metersLoadingAny$ | async) {
+              <div class="text-muted small" i18n="@@featureAdminSubscriptions-metersLoading">Loading meters...</div>
+            } @else if (meterSummaries().length === 0) {
+              <div class="text-muted small" i18n="@@featureAdminSubscriptions-noMeterSummaries">
+                No meter summaries.
+              </div>
+            } @else {
+              <div class="list-group list-group-flush border rounded">
+                @for (
+                  summary of meterSummaries();
+                  track summary.meterId + summary.attachmentType + (summary.addonId ?? '')
+                ) {
+                  <div class="list-group-item">
+                    <div class="fw-semibold">{{ summary.name }}</div>
+                    <div class="small text-muted">
+                      {{ formatMeterValue(summary) }} · {{ formatMeterCharge(summary.estimatedChargeNet) }} ·
+                      {{ attachmentTypeLabel(summary.attachmentType) }}
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <div class="col-lg-7">
+            <h6 class="mb-2" i18n="@@featureAdminSubscriptions-meterEntries">Meter entries</h6>
+            @if (meterEntries().length === 0) {
+              <div class="text-muted small mb-3" i18n="@@featureAdminSubscriptions-noMeterEntries">No entries yet.</div>
+            } @else {
+              <div class="list-group list-group-flush border rounded mb-3">
+                @for (entry of meterEntries(); track entry.id) {
+                  <div class="list-group-item d-flex justify-content-between align-items-start gap-2">
+                    <div>
+                      <div class="fw-semibold">{{ meterNameById(entry.meterId) }}</div>
+                      <div class="small text-muted">
+                        {{ entry.value }} · {{ attachmentTypeLabel(entry.attachmentType) }} ·
+                        {{ formatDateTime(entry.periodStart) }} – {{ formatDateTime(entry.periodEnd) }}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="openDeleteEntryConfirm(entry)"
+                      [disabled]="(deletingEntry$ | async) === true"
+                    >
+                      <i class="bi bi-trash" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+            <div class="border rounded p-3 bg-body-secondary">
+              <h6 class="mb-3" i18n="@@featureAdminSubscriptions-createEntry">Record meter entry</h6>
+              <form (ngSubmit)="submitMeterEntry()">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="entryMeterId" i18n="@@featureAdminSubscriptions-entryMeter"
+                      >Meter</label
+                    >
+                    <select
+                      id="entryMeterId"
+                      class="form-select"
+                      [(ngModel)]="entryForm.meterId"
+                      name="entryMeterId"
+                      required
+                    >
+                      <option value="" i18n="@@featureAdminSubscriptions-selectMeter">Select meter</option>
+                      @for (meter of activeMeters(); track meter.id) {
+                        <option [ngValue]="meter.id">{{ meter.name }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="entryValue" i18n="@@featureAdminSubscriptions-entryValue"
+                      >Value</label
+                    >
+                    <input
+                      id="entryValue"
+                      type="number"
+                      min="0"
+                      step="any"
+                      class="form-control"
+                      [(ngModel)]="entryForm.value"
+                      name="entryValue"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label
+                      class="form-label"
+                      for="entryAttachmentType"
+                      i18n="@@featureAdminSubscriptions-entryAttachmentType"
+                      >Attachment type</label
+                    >
+                    <select
+                      id="entryAttachmentType"
+                      class="form-select"
+                      [(ngModel)]="entryForm.attachmentType"
+                      name="entryAttachmentType"
+                    >
+                      <option value="plan" i18n="@@featureAdminSubscriptions-attachmentPlan">Plan</option>
+                      <option value="addon" i18n="@@featureAdminSubscriptions-attachmentAddon">Addon</option>
+                    </select>
+                  </div>
+                  @if (entryForm.attachmentType === 'addon') {
+                    <div class="col-md-6">
+                      <label class="form-label" for="entryAddonId" i18n="@@featureAdminSubscriptions-entryAddonId"
+                        >Addon ID</label
+                      >
+                      <input
+                        id="entryAddonId"
+                        class="form-control"
+                        [(ngModel)]="entryForm.addonId"
+                        name="entryAddonId"
+                        required
+                      />
+                    </div>
+                  }
+                  <div class="col-md-6">
+                    <label class="form-label" for="entryPeriodStart" i18n="@@featureAdminSubscriptions-entryPeriodStart"
+                      >Period start</label
+                    >
+                    <input
+                      id="entryPeriodStart"
+                      type="datetime-local"
+                      class="form-control"
+                      [(ngModel)]="entryForm.periodStart"
+                      name="entryPeriodStart"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="entryPeriodEnd" i18n="@@featureAdminSubscriptions-entryPeriodEnd"
+                      >Period end</label
+                    >
+                    <input
+                      id="entryPeriodEnd"
+                      type="datetime-local"
+                      class="form-control"
+                      [(ngModel)]="entryForm.periodEnd"
+                      name="entryPeriodEnd"
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    [disabled]="(creatingEntry$ | async) === true || !entryForm.meterId"
+                    i18n="@@featureAdminSubscriptions-saveEntry"
+                  >
+                    Save entry
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" tabindex="-1" aria-hidden="true" #deleteEntryModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminSubscriptions-deleteEntryTitle">Delete meter entry?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p i18n="@@featureAdminSubscriptions-deleteEntryConfirm">Delete this meter entry?</p>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="confirmDeleteEntry()"
+          [disabled]="(deletingEntry$ | async) === true"
+          i18n="@@featureAdminSubscriptions-deleteEntry"
+        >
+          Delete
         </button>
       </div>
     </div>

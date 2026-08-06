@@ -47,7 +47,6 @@ import type {
   UpdateManualInvoiceDto,
 } from '../dto/manual-invoice.dto';
 import { SubscriptionResponseDto } from '../dto/subscription-response.dto';
-import type { SubscriptionEntity } from '../entities/subscription.entity';
 import { AdminBillNowService } from '../services/admin-bill-now.service';
 import { BillingAdminService } from '../services/billing-admin.service';
 import { BillingAuditLogService } from '../services/billing-audit-log.service';
@@ -120,9 +119,7 @@ export class AdminBillingController {
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
   ): Promise<SubscriptionResponseDto[]> {
-    const rows = await this.billingAdminService.listUserSubscriptions(userId, limit ?? 100, offset ?? 0);
-
-    return rows.map((row) => this.mapSubscriptionToResponse(row));
+    return await this.billingAdminService.listUserSubscriptions(userId, limit ?? 100, offset ?? 0);
   }
 
   @RequireScopes('billing_admin:read')
@@ -451,24 +448,6 @@ export class AdminBillingController {
       to: toDate,
       userId,
     });
-  }
-
-  private mapSubscriptionToResponse(row: SubscriptionEntity): SubscriptionResponseDto {
-    return {
-      id: row.id,
-      number: row.number,
-      planId: row.planId,
-      userId: row.userId,
-      status: row.status,
-      currentPeriodStart: row.currentPeriodStart,
-      currentPeriodEnd: row.currentPeriodEnd,
-      nextBillingAt: row.nextBillingAt,
-      cancelRequestedAt: row.cancelRequestedAt,
-      cancelEffectiveAt: row.cancelEffectiveAt,
-      resumedAt: row.resumedAt,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
   }
 
   private parseDateRange(from?: string, to?: string): { fromDate: Date; toDate: Date } {

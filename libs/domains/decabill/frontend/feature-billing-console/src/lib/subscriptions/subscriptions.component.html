@@ -286,6 +286,24 @@
           </span>
         </div>
       </div>
+      @if (hasSubscriptionMeters(sub)) {
+        <div class="small text-muted mt-2 w-100">
+          <div class="fw-semibold mb-1" i18n="@@featureSubscriptions-usageMeters">Usage meters</div>
+          <div class="d-flex flex-column gap-1">
+            @for (
+              meter of subscriptionMeters(sub);
+              track meter.meterId + meter.attachmentType + (meter.addonId ?? '')
+            ) {
+              <div>
+                <span class="fw-medium">{{ meter.name }}</span>
+                <span class="ms-2">{{ formatMeterValue(meter) }}</span>
+                <span class="ms-2">· {{ formatMeterCharge(meter.estimatedChargeNet) }}</span>
+                <span class="ms-2 text-body-secondary">({{ meterAttachmentLabel(meter) }})</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
     </div>
     <div
       class="btn-group btn-group-sm flex-shrink-0"
@@ -505,6 +523,17 @@
                                       }
                                     </label>
                                   </div>
+                                  @if (addon.meters?.length) {
+                                    <ul class="list-unstyled small text-body-secondary ms-4 mb-0 mt-1">
+                                      @for (meter of addon.meters!; track meter.meterId) {
+                                        <li>
+                                          <span i18n="@@featureSubscriptions-addonMeterLabel">Meter</span>:
+                                          {{ meter.name }} · {{ meter.aggregator }} · €{{ meter.effectiveUnitPriceNet
+                                          }}{{ meter.unitLabel ? ' / ' + meter.unitLabel : '' }}
+                                        </li>
+                                      }
+                                    </ul>
+                                  }
                                 </div>
                               }
                             </fieldset>
@@ -515,6 +544,28 @@
                               style="white-space: pre-wrap"
                               [innerHTML]="selectedPlan!.description"
                             ></div>
+                          }
+                          @if (selectedPlan?.meters?.length) {
+                            <div class="mt-3 border rounded bg-body p-3">
+                              <div class="fw-semibold mb-2" i18n="@@featureSubscriptions-planMeters">
+                                Plan usage meters
+                              </div>
+                              <p class="small text-body-secondary mb-2" i18n="@@featureSubscriptions-planMetersHelp">
+                                Usage for these meters is recorded in arrears and billed separately from the base plan
+                                price.
+                              </p>
+                              <ul class="list-unstyled mb-0 small">
+                                @for (meter of selectedPlan!.meters!; track meter.meterId) {
+                                  <li class="mb-1">
+                                    <span class="fw-medium">{{ meter.name }}</span>
+                                    <span class="text-body-secondary">
+                                      · {{ meter.aggregator }} · €{{ meter.effectiveUnitPriceNet
+                                      }}{{ meter.unitLabel ? ' / ' + meter.unitLabel : '' }}
+                                    </span>
+                                  </li>
+                                }
+                              </ul>
+                            </div>
                           }
                           @if (selectedPlan?.orderingHighlights?.length) {
                             <div
@@ -1966,6 +2017,17 @@
                                       }
                                     </label>
                                   </div>
+                                  @if (addon.meters?.length) {
+                                    <ul class="list-unstyled small text-body-secondary ms-4 mb-0 mt-1">
+                                      @for (meter of addon.meters!; track meter.meterId) {
+                                        <li>
+                                          <span i18n="@@featureSubscriptions-addonMeterLabel">Meter</span>:
+                                          {{ meter.name }} · {{ meter.aggregator }} · €{{ meter.effectiveUnitPriceNet
+                                          }}{{ meter.unitLabel ? ' / ' + meter.unitLabel : '' }}
+                                        </li>
+                                      }
+                                    </ul>
+                                  }
                                   @if (
                                     isConfigChangeAddonActive(addon.id) &&
                                     isConfigChangeAddonSelected(addon.id) &&

@@ -39,6 +39,28 @@ describe('billing job-registry', () => {
     delete process.env.BILLING_PRICE_RECALC_ENABLED;
   });
 
+  it('getBillingRepeatableJobs includes optional meter-collect coordinator every 60s', () => {
+    delete process.env.BILLING_METER_COLLECT_ENABLED;
+    delete process.env.BILLING_METER_COLLECT_INTERVAL;
+    const withMeterCollect = getBillingRepeatableJobs();
+    expect(withMeterCollect.map((job) => job.name)).toContain(BillingJobName.METER_COLLECT_COORDINATOR);
+
+    const meterCollectJob = withMeterCollect.find((job) => job.name === BillingJobName.METER_COLLECT_COORDINATOR);
+    expect(meterCollectJob?.everyMs).toBe(60_000);
+
+    process.env.BILLING_METER_COLLECT_INTERVAL = '120000';
+    const customInterval = getBillingRepeatableJobs().find(
+      (job) => job.name === BillingJobName.METER_COLLECT_COORDINATOR,
+    );
+    expect(customInterval?.everyMs).toBe(120_000);
+    delete process.env.BILLING_METER_COLLECT_INTERVAL;
+
+    process.env.BILLING_METER_COLLECT_ENABLED = 'false';
+    const withoutMeterCollect = getBillingRepeatableJobs();
+    expect(withoutMeterCollect.map((job) => job.name)).not.toContain(BillingJobName.METER_COLLECT_COORDINATOR);
+    delete process.env.BILLING_METER_COLLECT_ENABLED;
+  });
+
   it('getBillingRepeatableJobs includes update check coordinator', () => {
     const jobs = getBillingRepeatableJobs();
     const updateCheckJob = jobs.find((job) => job.name === BillingJobName.UPDATE_CHECK);

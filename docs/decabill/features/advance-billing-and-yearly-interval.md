@@ -30,7 +30,7 @@ Liability still flows **subscription → open position → billing-day accumulat
 
 ## Usage-based billing
 
-**Not available** when `billInAdvance` is true. `POST /admin/usage/record` returns 400 for advance-billed subscriptions; invoice creation ignores usage costs for those plans.
+**Not available** when `billInAdvance` is true. `POST /admin/usage/record` returns 400 for advance-billed subscriptions; invoice creation skips meter lines and legacy usage costs for those plans. See [Usage meters](./usage-meters.md).
 
 ## Withdrawal (advance)
 

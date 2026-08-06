@@ -16,11 +16,14 @@ import {
 
 import { AddonResponseDto } from '../dto/addon-response.dto';
 import { CreateAddonDto } from '../dto/create-addon.dto';
+import { AttachMeterDto, UpdateAttachedMeterDto } from '../dto/meter.dto';
+import { AttachedMeterResponseDto } from '../dto/meter-response.dto';
 import { UpdateAddonDto } from '../dto/update-addon.dto';
 import { AddonEntity } from '../entities/addon.entity';
 import { BillingIntervalType } from '../entities/service-plan.entity';
 import { AddonsRepository } from '../repositories/addons.repository';
 import { AddonService } from '../services/addon.service';
+import { MeterService } from '../services/meter.service';
 import { interpolateAddonScriptTemplate, parseAddonConfigFields } from '../utils/addon-config.utils';
 
 @Controller('addons')
@@ -29,6 +32,7 @@ export class AddonsController {
   constructor(
     private readonly addonsRepository: AddonsRepository,
     private readonly addonService: AddonService,
+    private readonly meterService: MeterService,
   ) {}
 
   @Get()
@@ -40,7 +44,75 @@ export class AddonsController {
   ): Promise<AddonResponseDto[]> {
     const rows = await this.addonsRepository.findAll(limit ?? 10, offset ?? 0);
 
-    return rows.map((row) => this.mapToResponse(row, false));
+    return await Promise.all(rows.map((row) => this.mapToResponse(row, false)));
+  }
+
+  @Get('modules')
+  @KeycloakRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN)
+  @RequireScopes('catalog:read')
+  async listModules(): Promise<
+    Array<{
+      key: string;
+      displayName: string;
+      meters: Array<{
+        key: string;
+        name: string;
+        description?: string;
+        unitLabel?: string;
+        aggregator: string;
+        defaultUnitPriceNet: number;
+      }>;
+    }>
+  > {
+    return this.addonService.listRegisteredModules();
+  }
+
+  @Get(':id/meters')
+  @KeycloakRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN)
+  @RequireScopes('catalog:read')
+  async listMeters(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AttachedMeterResponseDto[]> {
+    await this.addonsRepository.findByIdOrThrow(id);
+
+    return await this.meterService.listAddonMeters(id);
+  }
+
+  @Post(':id/meters')
+  @KeycloakRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN)
+  async attachMeter(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() dto: AttachMeterDto,
+  ): Promise<AttachedMeterResponseDto> {
+    await this.addonsRepository.findByIdOrThrow(id);
+
+    return await this.meterService.attachAddonMeter(id, dto.meterId, dto.unitPriceNet);
+  }
+
+  @Post(':id/meters/:meterId')
+  @KeycloakRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN)
+  async updateMeterAttachment(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('meterId', new ParseUUIDPipe({ version: '4' })) meterId: string,
+    @Body() dto: UpdateAttachedMeterDto,
+  ): Promise<AttachedMeterResponseDto> {
+    await this.addonsRepository.findByIdOrThrow(id);
+
+    return await this.meterService.updateAddonMeter(id, meterId, dto.unitPriceNet);
+  }
+
+  @Delete(':id/meters/:meterId')
+  @KeycloakRoles(UserRole.ADMIN)
+  @UsersRoles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async detachMeter(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('meterId', new ParseUUIDPipe({ version: '4' })) meterId: string,
+  ): Promise<void> {
+    await this.addonsRepository.findByIdOrThrow(id);
+    await this.meterService.detachAddonMeter(id, meterId);
   }
 
   @Get(':id')
@@ -49,7 +121,7 @@ export class AddonsController {
   async get(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<AddonResponseDto> {
     const row = await this.addonsRepository.findByIdOrThrow(id);
 
-    return this.mapToResponse(row, true);
+    return await this.mapToResponse(row, true);
   }
 
   @Post()
@@ -89,7 +161,9 @@ export class AddonsController {
       isActive: dto.isActive ?? true,
     });
 
-    return this.mapToResponse(row, true);
+    await this.meterService.syncAddonModuleMeters(row);
+
+    return await this.mapToResponse(row, true);
   }
 
   @Post(':id')
@@ -163,7 +237,7 @@ export class AddonsController {
     }
 
     if (dto.priceIntervalType !== undefined) {
-      updatePayload.priceIntervalType = dto.priceIntervalType;
+      updatePayload.priceIntervalType = (dto.priceIntervalType as BillingIntervalType) ?? null;
     }
 
     if (dto.priceIntervalValue !== undefined) {
@@ -180,7 +254,9 @@ export class AddonsController {
 
     const row = await this.addonsRepository.update(id, updatePayload);
 
-    return this.mapToResponse(row, true);
+    await this.meterService.syncAddonModuleMeters(row);
+
+    return await this.mapToResponse(row, true);
   }
 
   @Delete(':id')
@@ -212,7 +288,7 @@ export class AddonsController {
     }
   }
 
-  private mapToResponse(row: AddonEntity, includeDefaults: boolean): AddonResponseDto {
+  private async mapToResponse(row: AddonEntity, includeDefaults: boolean): Promise<AddonResponseDto> {
     return {
       id: row.id,
       key: row.key,
@@ -228,6 +304,7 @@ export class AddonsController {
       basePrice: row.basePrice ?? null,
       priceIntervalType: row.priceIntervalType ?? null,
       priceIntervalValue: row.priceIntervalValue ?? null,
+      meters: await this.meterService.listAddonMeters(row.id),
       isActive: row.isActive,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

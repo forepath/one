@@ -10,11 +10,12 @@ This page covers **Decabill billing manager** registries only.
 
 ## Registries
 
-| Env var                             | Criticality | Registers                                                                   |
-| ----------------------------------- | ----------- | --------------------------------------------------------------------------- |
-| `DYNAMIC_PAYMENT_PROCESSORS`        | critical    | Payment processor implementations                                           |
-| `DYNAMIC_BILLING_PROVIDER_METADATA` | optional    | Admin UI provider metadata (`providerMetadata` export)                      |
-| `DYNAMIC_ADDON_MODULES`             | optional    | Addon lifecycle modules (`provision` / `teardown`, optional `configFields`) |
+| Env var                             | Criticality | Registers                                                                                               |
+| ----------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------- |
+| `DYNAMIC_PAYMENT_PROCESSORS`        | critical    | Payment processor implementations                                                                       |
+| `DYNAMIC_BILLING_PROVIDER_METADATA` | optional    | Admin UI provider metadata (`providerMetadata` export)                                                  |
+| `DYNAMIC_BILLING_PROVIDER_MODULES`  | optional    | Runtime provider modules (`collectMeters`, optional `meters`) — distinct from metadata                  |
+| `DYNAMIC_ADDON_MODULES`             | optional    | Addon lifecycle modules (`provision` / `teardown` / optional `collectMeters`, `configFields`, `meters`) |
 
 Provider metadata capability flags (all **fail closed** when omitted, treated as `false`):
 
@@ -27,6 +28,13 @@ Provider metadata capability flags (all **fail closed** when omitted, treated as
 See [Addons](./addons.md) and [Subscription Config Change](./subscription-config-change.md). Operators shipping dynamic providers must set the resize flags explicitly; built-in Hetzner/DigitalOcean already register both.
 
 Addon modules may declare `configFields` (CloudInit-style env metadata). Decabill persists that list onto the catalog addon’s `configSchema` at create/update; admins set encrypted defaults only. At order time, customer `addonConfigs` merge with defaults and random fills into `configSnapshot` for `provision` / `teardown`.
+
+### Declared meters and collection
+
+- Metadata packages (`DYNAMIC_BILLING_PROVIDER_METADATA`) and addon modules may declare `meters` (including optional `collectionIntervalMs`) for catalog sync.
+- Runtime **provider modules** (`DYNAMIC_BILLING_PROVIDER_MODULES`, plus built-in Hetzner/DigitalOcean stubs) implement `collectMeters(ctx)` and may also declare `meters` (runtime overrides metadata for the same key when resolving intervals).
+- Addon modules may implement optional `collectMeters` for meters with `collectionIntervalMs`.
+- See [Usage meters](./usage-meters.md) for the meter-collect BullMQ job.
 
 Shared tuning:
 
@@ -114,6 +122,10 @@ Built-in: `stripe` via `StripePaymentProcessor`. See [Payment Processing](./paym
 ## Billing Provider Metadata
 
 `DYNAMIC_BILLING_PROVIDER_METADATA` adds entries to `GET /service-types/providers` for admin UI dropdowns and config schema rendering without implementing full provisioning in the same package.
+
+Optional `providerMetadata.meters` (and the same field on `ProviderDetail`) declares required usage meters. On service-type create/update, Decabill ensures catalog rows by `key` and sideloads them onto `billing_service_type_meters` as non-removable (`source=provider`, `required=true`). Products that register via the same metadata surface declare meters the same way. See [Usage meters](./usage-meters.md).
+
+Addon modules registered via `DYNAMIC_ADDON_MODULES` may declare `meters` the same way; they sync onto `billing_addon_meters` as `source=module`, `required=true`.
 
 Built-in Hetzner and DigitalOcean providers register statically when API tokens are present. They set `supportsAddons`, `supportsServerTypeUpgrade`, and `supportsServerTypeDowngrade` to `true`.
 

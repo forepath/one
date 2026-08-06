@@ -133,4 +133,79 @@ describe('AddonsService', () => {
       req.flush(null);
     });
   });
+
+  describe('addon meters', () => {
+    const attachedMeter = {
+      meterId: 'meter-1',
+      key: 'api_calls',
+      name: 'API Calls',
+      aggregator: 'max' as const,
+      defaultUnitPriceNet: 0.01,
+      effectiveUnitPriceNet: 0.01,
+      isActive: true,
+    };
+
+    it('lists addon meters', (done) => {
+      service.listAddonMeters('addon-1').subscribe((meters) => {
+        expect(meters).toEqual([attachedMeter]);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/addons/addon-1/meters`);
+      expect(req.request.method).toBe('GET');
+      req.flush([attachedMeter]);
+    });
+
+    it('attaches an addon meter', (done) => {
+      service.attachAddonMeter('addon-1', { meterId: 'meter-1' }).subscribe((meter) => {
+        expect(meter).toEqual(attachedMeter);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/addons/addon-1/meters`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ meterId: 'meter-1' });
+      req.flush(attachedMeter);
+    });
+
+    it('updates an addon meter override', (done) => {
+      service.updateAddonMeter('addon-1', 'meter-1', { unitPriceNet: 0.05 }).subscribe((meter) => {
+        expect(meter.effectiveUnitPriceNet).toBe(0.05);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/addons/addon-1/meters/meter-1`);
+      expect(req.request.method).toBe('POST');
+      req.flush({ ...attachedMeter, effectiveUnitPriceNet: 0.05 });
+    });
+
+    it('detaches an addon meter', (done) => {
+      service.detachAddonMeter('addon-1', 'meter-1').subscribe(() => done());
+
+      const req = httpMock.expectOne(`${apiUrl}/addons/addon-1/meters/meter-1`);
+      expect(req.request.method).toBe('DELETE');
+      req.flush(null);
+    });
+  });
+
+  describe('listAddonModules', () => {
+    it('lists registered addon modules', (done) => {
+      const modules = [
+        {
+          key: 'backup',
+          displayName: 'Backup',
+          meters: [{ key: 'traffic', name: 'Traffic', aggregator: 'max' as const, defaultUnitPriceNet: 0.01 }],
+        },
+      ];
+
+      service.listAddonModules().subscribe((list) => {
+        expect(list).toEqual(modules);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/addons/modules`);
+      expect(req.request.method).toBe('GET');
+      req.flush(modules);
+    });
+  });
 });

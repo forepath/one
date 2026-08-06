@@ -3,14 +3,19 @@ import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } 
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
+  MetersFacade,
   ServiceTypesFacade,
+  ServiceTypesService,
+  type AttachedMeterResponse,
   type CreateServiceTypeDto,
+  type DeclaredMeterDefinition,
+  type MeterResponse,
   type ProviderDetail,
   type ProviderEnvDefaultField,
   type ServiceTypeResponse,
   type UpdateServiceTypeDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { map, combineLatest } from 'rxjs';
+import { catchError, combineLatest, forkJoin, map, of, switchMap, take } from 'rxjs';
 
 import { getActiveStatusLabel, getActiveStatusTextClass, getProviderDisplayName } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
@@ -30,6 +35,8 @@ export class ServiceTypesPageComponent implements OnInit {
   @ViewChild('deleteConfirmModal', { static: false }) private deleteConfirmModal!: ElementRef<HTMLDivElement>;
 
   private readonly facade = inject(ServiceTypesFacade);
+  private readonly serviceTypesService = inject(ServiceTypesService);
+  private readonly metersFacade = inject(MetersFacade);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly searchQuery = signal('');
@@ -60,6 +67,9 @@ export class ServiceTypesPageComponent implements OnInit {
   readonly creating$ = this.facade.getServiceTypesCreating$();
   readonly updating$ = this.facade.getServiceTypesUpdating$();
   readonly deleting$ = this.facade.getServiceTypesDeleting$();
+  readonly activeMeters$ = this.metersFacade
+    .getMeters$()
+    .pipe(map((meters) => meters.filter((meter) => meter.isActive)));
 
   createForm: CreateServiceTypeDto & { providerDefaults: Record<string, string> } = {
     key: '',
@@ -86,9 +96,19 @@ export class ServiceTypesPageComponent implements OnInit {
   };
   serviceTypeToDelete: ServiceTypeResponse | null = null;
 
+  createAttachedMeters: AttachedMeterResponse[] = [];
+  editAttachedMeters: AttachedMeterResponse[] = [];
+  createMeterAttachMeterId = '';
+  createMeterAttachUnitPrice = '';
+  editMeterAttachMeterId = '';
+  editMeterAttachUnitPrice = '';
+  meterAttachLoading = false;
+  meterAttachError: string | null = null;
+
   ngOnInit(): void {
     this.facade.loadServiceTypes();
     this.facade.loadProviderDetails();
+    this.metersFacade.loadMeters();
     this.registerModalCloseWatchers();
   }
 
@@ -110,6 +130,9 @@ export class ServiceTypesPageComponent implements OnInit {
     };
     this.editProviderDefaultsExpanded.set(false);
     this.editProviderDefaultsTouched.set(false);
+    this.resetMeterAttachForm('edit');
+    this.meterAttachError = null;
+    this.loadServiceTypeAttachedMeters(st.id);
     showBillingModal(this.editModal);
   }
 
@@ -154,6 +177,19 @@ export class ServiceTypesPageComponent implements OnInit {
     return provider?.envDefaultFields ?? [];
   }
 
+  getProviderDeclaredMeters(
+    providerId: string | undefined,
+    providerDetails: ProviderDetail[] | null | undefined,
+  ): DeclaredMeterDefinition[] {
+    if (!providerId?.trim()) {
+      return [];
+    }
+
+    const provider = providerDetails?.find((item) => item.id === providerId);
+
+    return provider?.meters ?? [];
+  }
+
   getProviderDefaultValue(mode: ServiceTypeFormMode, envKey: string): string {
     const form = mode === 'create' ? this.createForm : this.editForm;
 
@@ -191,6 +227,191 @@ export class ServiceTypesPageComponent implements OnInit {
     this.editForm.providerDefaultsConfigured = {};
     this.editProviderDefaultsExpanded.set(false);
     this.editProviderDefaultsTouched.set(true);
+  }
+
+  attachedMetersFor(mode: ServiceTypeFormMode): AttachedMeterResponse[] {
+    return mode === 'create' ? this.createAttachedMeters : this.editAttachedMeters;
+  }
+
+  availableMetersForAttach(
+    meters: MeterResponse[] | null,
+    mode: ServiceTypeFormMode,
+    providerDetails: ProviderDetail[] | null | undefined,
+  ): MeterResponse[] {
+    const attachedIds = new Set(this.attachedMetersFor(mode).map((item) => item.meterId));
+    const providerId = mode === 'create' ? this.createForm.provider : this.editForm.provider;
+    const declaredKeys =
+      mode === 'create'
+        ? new Set(this.getProviderDeclaredMeters(providerId, providerDetails).map((item) => item.key))
+        : new Set();
+
+    return (meters ?? []).filter((meter) => !attachedIds.has(meter.id) && !declaredKeys.has(meter.key));
+  }
+
+  loadServiceTypeAttachedMeters(serviceTypeId: string): void {
+    this.meterAttachLoading = true;
+    this.meterAttachError = null;
+    this.serviceTypesService
+      .listServiceTypeMeters(serviceTypeId)
+      .pipe(take(1))
+      .subscribe({
+        next: (meters) => {
+          this.editAttachedMeters = meters;
+          this.meterAttachLoading = false;
+        },
+        error: (error: unknown) => {
+          this.meterAttachError = this.formatMeterHttpError(error, 'Failed to load service type meters');
+          this.meterAttachLoading = false;
+        },
+      });
+  }
+
+  resetMeterAttachForm(mode: ServiceTypeFormMode): void {
+    if (mode === 'create') {
+      this.createMeterAttachMeterId = '';
+      this.createMeterAttachUnitPrice = '';
+
+      return;
+    }
+
+    this.editMeterAttachMeterId = '';
+    this.editMeterAttachUnitPrice = '';
+  }
+
+  attachServiceTypeMeter(mode: ServiceTypeFormMode): void {
+    const meterId = mode === 'create' ? this.createMeterAttachMeterId : this.editMeterAttachMeterId;
+    const unitPriceRaw =
+      mode === 'create' ? this.createMeterAttachUnitPrice.trim() : this.editMeterAttachUnitPrice.trim();
+
+    if (!meterId) {
+      return;
+    }
+
+    if (mode === 'create') {
+      this.meterAttachError = null;
+      this.activeMeters$.pipe(take(1)).subscribe((meters) => {
+        const meter = meters.find((item) => item.id === meterId);
+
+        if (!meter) {
+          this.meterAttachError = 'Selected meter is not available';
+
+          return;
+        }
+
+        const override = unitPriceRaw ? Number(unitPriceRaw) : null;
+
+        this.createAttachedMeters = [
+          ...this.createAttachedMeters,
+          this.toPendingAttachedMeter(meter, Number.isFinite(override as number) ? override : null),
+        ];
+        this.resetMeterAttachForm('create');
+      });
+
+      return;
+    }
+
+    if (!this.editForm.id) {
+      return;
+    }
+
+    this.meterAttachLoading = true;
+    this.meterAttachError = null;
+    this.serviceTypesService
+      .attachServiceTypeMeter(this.editForm.id, {
+        meterId,
+        unitPriceNet: unitPriceRaw ? Number(unitPriceRaw) : undefined,
+      })
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.resetMeterAttachForm('edit');
+          this.loadServiceTypeAttachedMeters(this.editForm.id);
+        },
+        error: (error: unknown) => {
+          this.meterAttachError = this.formatMeterHttpError(error, 'Failed to attach meter');
+          this.meterAttachLoading = false;
+        },
+      });
+  }
+
+  updateAttachedServiceTypeMeter(
+    mode: ServiceTypeFormMode,
+    meter: AttachedMeterResponse,
+    unitPriceInput: string,
+  ): void {
+    const trimmed = unitPriceInput.trim();
+    const override = trimmed ? Number(trimmed) : null;
+
+    if (mode === 'create') {
+      this.createAttachedMeters = this.createAttachedMeters.map((item) =>
+        item.meterId === meter.meterId
+          ? {
+              ...item,
+              unitPriceNetOverride: Number.isFinite(override as number) ? override : null,
+              effectiveUnitPriceNet:
+                Number.isFinite(override as number) && override != null ? override : item.defaultUnitPriceNet,
+            }
+          : item,
+      );
+
+      return;
+    }
+
+    if (!this.editForm.id) {
+      return;
+    }
+
+    this.meterAttachLoading = true;
+    this.meterAttachError = null;
+    this.serviceTypesService
+      .updateServiceTypeMeter(this.editForm.id, meter.meterId, {
+        unitPriceNet: trimmed ? Number(trimmed) : null,
+      })
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.loadServiceTypeAttachedMeters(this.editForm.id);
+        },
+        error: (error: unknown) => {
+          this.meterAttachError = this.formatMeterHttpError(error, 'Failed to update meter price');
+          this.meterAttachLoading = false;
+        },
+      });
+  }
+
+  detachServiceTypeMeter(mode: ServiceTypeFormMode, meter: AttachedMeterResponse): void {
+    if (meter.required) {
+      return;
+    }
+
+    if (mode === 'create') {
+      this.createAttachedMeters = this.createAttachedMeters.filter((item) => item.meterId !== meter.meterId);
+
+      return;
+    }
+
+    if (!this.editForm.id) {
+      return;
+    }
+
+    this.meterAttachLoading = true;
+    this.meterAttachError = null;
+    this.serviceTypesService
+      .detachServiceTypeMeter(this.editForm.id, meter.meterId)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          this.loadServiceTypeAttachedMeters(this.editForm.id);
+        },
+        error: (error: unknown) => {
+          this.meterAttachError = this.formatMeterHttpError(error, 'Failed to detach meter');
+          this.meterAttachLoading = false;
+        },
+      });
+  }
+
+  attachedMeterOverrideInput(meter: AttachedMeterResponse): string {
+    return meter.unitPriceNetOverride != null ? String(meter.unitPriceNetOverride) : '';
   }
 
   onSubmitCreate(): void {
@@ -245,6 +466,79 @@ export class ServiceTypesPageComponent implements OnInit {
     return result;
   }
 
+  private toPendingAttachedMeter(meter: MeterResponse, unitPriceNetOverride: number | null): AttachedMeterResponse {
+    return {
+      meterId: meter.id,
+      key: meter.key,
+      name: meter.name,
+      description: meter.description ?? null,
+      unitLabel: meter.unitLabel ?? null,
+      aggregator: meter.aggregator,
+      defaultUnitPriceNet: meter.defaultUnitPriceNet,
+      unitPriceNetOverride,
+      effectiveUnitPriceNet: unitPriceNetOverride != null ? unitPriceNetOverride : meter.defaultUnitPriceNet,
+      isActive: meter.isActive,
+      source: 'manual',
+      required: false,
+    };
+  }
+
+  private flushPendingCreateMeters(pendingMeters?: AttachedMeterResponse[]): void {
+    const pending = pendingMeters ?? [...this.createAttachedMeters];
+
+    if (pending.length === 0) {
+      return;
+    }
+
+    this.facade
+      .getSelectedServiceType$()
+      .pipe(
+        take(1),
+        switchMap((serviceType) => {
+          if (!serviceType) {
+            return of(null);
+          }
+
+          return forkJoin(
+            pending.map((meter) =>
+              this.serviceTypesService
+                .attachServiceTypeMeter(serviceType.id, {
+                  meterId: meter.meterId,
+                  unitPriceNet: meter.unitPriceNetOverride ?? undefined,
+                })
+                .pipe(catchError(() => of(null))),
+            ),
+          );
+        }),
+        take(1),
+      )
+      .subscribe();
+  }
+
+  private formatMeterHttpError(error: unknown, fallback: string): string {
+    if (error && typeof error === 'object' && 'error' in error) {
+      const body = (error as { error?: unknown }).error;
+
+      if (typeof body === 'string' && body.trim()) {
+        return body.trim();
+      }
+
+      if (body && typeof body === 'object' && 'message' in body) {
+        const message = (body as { message?: unknown }).message;
+
+        if (typeof message === 'string' && message.trim()) {
+          return message.trim();
+        }
+
+        if (Array.isArray(message) && message.length > 0) {
+          return message.map(String).join(', ');
+        }
+      }
+    }
+
+    return fallback;
+  }
+
   private resetCreateForm(): void {
     this.createForm = {
       key: '',
@@ -256,6 +550,9 @@ export class ServiceTypesPageComponent implements OnInit {
       providerDefaults: {},
     };
     this.createProviderDefaultsExpanded.set(false);
+    this.createAttachedMeters = [];
+    this.resetMeterAttachForm('create');
+    this.meterAttachError = null;
   }
 
   private resetEditForm(): void {
@@ -271,6 +568,9 @@ export class ServiceTypesPageComponent implements OnInit {
     };
     this.editProviderDefaultsExpanded.set(false);
     this.editProviderDefaultsTouched.set(false);
+    this.editAttachedMeters = [];
+    this.resetMeterAttachForm('edit');
+    this.meterAttachError = null;
   }
 
   private registerModalCloseWatchers(): void {
@@ -279,7 +579,12 @@ export class ServiceTypesPageComponent implements OnInit {
       error$: this.error$,
       modal: () => this.createModal,
       destroyRef: this.destroyRef,
-      onSuccess: () => this.resetCreateForm(),
+      onSuccess: () => {
+        const pendingMeters = [...this.createAttachedMeters];
+
+        this.resetCreateForm();
+        this.flushPendingCreateMeters(pendingMeters);
+      },
     });
     watchBillingMutationModalClose({
       loading$: this.updating$,

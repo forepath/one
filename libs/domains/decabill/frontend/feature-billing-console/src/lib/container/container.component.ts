@@ -5,12 +5,12 @@ import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/ro
 import { BillingCapabilitiesFacade } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
   AuthenticationFacade,
-  IdentityLogoutConfirmModalComponent,
   IDENTITY_AUTH_ENVIRONMENT,
+  IdentityLogoutConfirmModalComponent,
 } from '@forepath/identity/frontend';
+import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { AdminUpdatesFacade } from '@forepath/shared/frontend/data-access-updates';
 import { ENVIRONMENT, LocaleService } from '@forepath/shared/frontend/util-configuration';
-import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { combineLatest, filter, map, startWith } from 'rxjs';
 
 import { ThemeService } from '../theme.service';
@@ -361,6 +361,13 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
         icon: 'bi-puzzle',
         title: $localize`:@@featureContainer-addonsTitle:Addons`,
         label: $localize`:@@featureContainer-addons:Addons`,
+      },
+      {
+        routerLink: ['/administration/meters'],
+        activePaths: ['/administration/meters'],
+        icon: 'bi-speedometer2',
+        title: $localize`:@@featureContainer-metersTitle:Meters`,
+        label: $localize`:@@featureContainer-meters:Meters`,
       },
       {
         routerLink: ['/administration/service-plans'],

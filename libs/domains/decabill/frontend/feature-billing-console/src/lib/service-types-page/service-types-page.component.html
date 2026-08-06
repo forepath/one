@@ -268,6 +268,16 @@
               </div>
             }
           }
+          <ng-container
+            *ngTemplateOutlet="
+              serviceTypeMetersSection;
+              context: {
+                mode: 'create',
+                disabled: (creating$ | async) === true,
+                providerId: createForm.provider,
+              }
+            "
+          />
           <div class="form-check">
             <input
               type="checkbox"
@@ -467,6 +477,16 @@
               </div>
             }
           }
+          <ng-container
+            *ngTemplateOutlet="
+              serviceTypeMetersSection;
+              context: {
+                mode: 'edit',
+                disabled: (updating$ | async) === true,
+                providerId: editForm.provider,
+              }
+            "
+          />
           <div class="form-check">
             <input
               type="checkbox"
@@ -509,6 +529,207 @@
     </div>
   </div>
 </div>
+
+<ng-template #serviceTypeMetersSection let-mode="mode" let-disabled="disabled" let-providerId="providerId">
+  <div class="mb-3 border rounded p-3 bg-body-secondary">
+    <h6 class="mb-2" i18n="@@featureServiceTypes-meters">Usage meters</h6>
+    <p class="form-text text-body-secondary small mb-3" i18n="@@featureServiceTypes-metersHelp">
+      Provider-declared meters are required. Attach extra catalog meters with optional unit price overrides.
+    </p>
+    @if (mode === 'edit' && meterAttachError) {
+      <div class="alert alert-danger py-2">{{ meterAttachError }}</div>
+    }
+    @if (mode === 'create') {
+      @if (providerDetails$ | async; as providers) {
+        @for (declared of getProviderDeclaredMeters(providerId, providers); track declared.key) {
+          <div class="row g-2 mb-2 align-items-end">
+            <div class="col-12">
+              <div class="fw-semibold">{{ declared.name }}</div>
+              <div class="small text-muted">
+                {{ declared.key }} · {{ declared.aggregator }} · €{{ declared.defaultUnitPriceNet }}
+                @if (declared.unitLabel) {
+                  <span>/ {{ declared.unitLabel }}</span>
+                }
+                · <span i18n="@@featureServiceTypes-requiredMeter">Required</span>
+              </div>
+            </div>
+          </div>
+        }
+      }
+    }
+    @if (mode === 'edit' && meterAttachLoading && attachedMetersFor('edit').length === 0) {
+      <div class="text-muted small mb-2" i18n="@@featureServiceTypes-metersLoading">Loading meters…</div>
+    }
+    @for (attached of attachedMetersFor(mode); track attached.meterId) {
+      <div class="row g-2 mb-2 align-items-end">
+        <div class="col-12 col-md-4">
+          <div class="fw-semibold">{{ attached.name }}</div>
+          <div class="small text-muted">
+            {{ attached.key }} · {{ attached.aggregator }} · €{{ attached.effectiveUnitPriceNet }}
+            @if (attached.unitLabel) {
+              <span>/ {{ attached.unitLabel }}</span>
+            }
+          </div>
+          @if (attached.required) {
+            <div class="small text-muted" i18n="@@featureServiceTypes-requiredMeter">Required</div>
+          }
+        </div>
+        <div class="col-12 col-md-5">
+          <label
+            class="form-label small mb-0"
+            [for]="mode + 'ServiceTypeMeterOverride' + attached.meterId"
+            i18n="@@featureServiceTypes-meterUnitPriceOverride"
+            >Unit price override (net)</label
+          >
+          <input
+            type="number"
+            min="0"
+            step="0.0001"
+            class="form-control form-control-sm"
+            [id]="mode + 'ServiceTypeMeterOverride' + attached.meterId"
+            #serviceTypeMeterOverride
+            [value]="attachedMeterOverrideInput(attached)"
+            [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
+          />
+        </div>
+        <div class="col-12 col-md-3 d-flex gap-1 flex-wrap justify-content-md-end">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-primary"
+            (click)="updateAttachedServiceTypeMeter(mode, attached, serviceTypeMeterOverride.value)"
+            [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
+            title="Update price"
+            i18n-title="@@featureServiceTypes-updateMeterPrice"
+            aria-label="Update price"
+            i18n-aria-label="@@featureServiceTypes-updateMeterPrice"
+          >
+            <i class="bi bi-check-lg" aria-hidden="true"></i>
+          </button>
+          @if (!attached.required) {
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-danger"
+              (click)="detachServiceTypeMeter(mode, attached)"
+              [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
+              title="Detach meter"
+              i18n-title="@@featureServiceTypes-detachMeter"
+              aria-label="Detach meter"
+              i18n-aria-label="@@featureServiceTypes-detachMeter"
+            >
+              <i class="bi bi-trash" aria-hidden="true"></i>
+            </button>
+          }
+        </div>
+      </div>
+    } @empty {
+      @if (mode === 'edit' && !meterAttachLoading) {
+        <p class="text-muted small mb-3" i18n="@@featureServiceTypes-noMetersAttached">
+          No meters attached to this service type yet.
+        </p>
+      }
+    }
+    @if (activeMeters$ | async; as meters) {
+      @if (providerDetails$ | async; as providers) {
+        @if (availableMetersForAttach(meters, mode, providers); as availableMeters) {
+          @if (availableMeters.length > 0) {
+            <div class="row g-2 align-items-end">
+              <div class="col-12 col-md-5">
+                <label
+                  class="form-label small mb-0"
+                  [for]="mode + 'AttachServiceTypeMeter'"
+                  i18n="@@featureServiceTypes-attachMeter"
+                  >Attach meter</label
+                >
+                @if (mode === 'create') {
+                  <select
+                    [id]="mode + 'AttachServiceTypeMeter'"
+                    class="form-select form-select-sm"
+                    [(ngModel)]="createMeterAttachMeterId"
+                    [name]="mode + 'AttachServiceTypeMeter'"
+                    [disabled]="disabled"
+                  >
+                    <option [ngValue]="''" i18n="@@featureServiceTypes-selectMeter">Select meter</option>
+                    @for (meter of availableMeters; track meter.id) {
+                      <option [ngValue]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
+                    }
+                  </select>
+                } @else {
+                  <select
+                    [id]="mode + 'AttachServiceTypeMeter'"
+                    class="form-select form-select-sm"
+                    [(ngModel)]="editMeterAttachMeterId"
+                    [name]="mode + 'AttachServiceTypeMeter'"
+                    [disabled]="disabled || meterAttachLoading"
+                  >
+                    <option [ngValue]="''" i18n="@@featureServiceTypes-selectMeter">Select meter</option>
+                    @for (meter of availableMeters; track meter.id) {
+                      <option [ngValue]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
+                    }
+                  </select>
+                }
+              </div>
+              <div class="col-12 col-md-5">
+                <label
+                  class="form-label small mb-0"
+                  [for]="mode + 'AttachServiceTypeMeterPrice'"
+                  i18n="@@featureServiceTypes-attachMeterPrice"
+                  >Override price (optional)</label
+                >
+                @if (mode === 'create') {
+                  <input
+                    [id]="mode + 'AttachServiceTypeMeterPrice'"
+                    type="number"
+                    min="0"
+                    step="0.0001"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="createMeterAttachUnitPrice"
+                    [name]="mode + 'AttachServiceTypeMeterPrice'"
+                    [disabled]="disabled"
+                  />
+                } @else {
+                  <input
+                    [id]="mode + 'AttachServiceTypeMeterPrice'"
+                    type="number"
+                    min="0"
+                    step="0.0001"
+                    class="form-control form-control-sm"
+                    [(ngModel)]="editMeterAttachUnitPrice"
+                    [name]="mode + 'AttachServiceTypeMeterPrice'"
+                    [disabled]="disabled || meterAttachLoading"
+                  />
+                }
+              </div>
+              <div class="col-12 col-md-2 d-flex justify-content-md-end">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary"
+                  (click)="attachServiceTypeMeter(mode)"
+                  [disabled]="
+                    disabled ||
+                    (mode === 'edit' && meterAttachLoading) ||
+                    (mode === 'create' ? !createMeterAttachMeterId : !editMeterAttachMeterId)
+                  "
+                  title="Attach meter"
+                  i18n-title="@@featureServiceTypes-attachMeterAction"
+                  aria-label="Attach meter"
+                  i18n-aria-label="@@featureServiceTypes-attachMeterAction"
+                >
+                  <i class="bi bi-plus" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          } @else if (meters.length === 0) {
+            <p class="text-muted small mb-0" i18n="@@featureServiceTypes-noCatalogMeters">
+              No active meters in the catalog. Create meters under Administration → Usage meters first.
+            </p>
+          }
+        }
+      }
+    } @else {
+      <p class="text-muted small mb-0" i18n="@@featureServiceTypes-metersCatalogLoading">Loading meter catalog…</p>
+    }
+  </div>
+</ng-template>
 
 <!-- Delete confirm modal -->
 <div

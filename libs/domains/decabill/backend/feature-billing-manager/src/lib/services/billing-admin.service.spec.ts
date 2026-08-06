@@ -47,11 +47,13 @@ describe('BillingAdminService', () => {
   it('listUserSubscriptions returns subscriptions for an existing user', async () => {
     usersRepository.findByIdForTenant.mockResolvedValue({ id: 'user-1' });
     subscriptionService.listSubscriptions.mockResolvedValue([{ id: 'sub-1' }]);
+    subscriptionService.mapManyToResponses.mockResolvedValue([{ id: 'sub-1', meters: [] }]);
 
     const result = await service.listUserSubscriptions('user-1', 100, 0);
 
     expect(subscriptionService.listSubscriptions).toHaveBeenCalledWith('user-1', 100, 0);
-    expect(result).toEqual([{ id: 'sub-1' }]);
+    expect(subscriptionService.mapManyToResponses).toHaveBeenCalledWith([{ id: 'sub-1' }]);
+    expect(result).toEqual([{ id: 'sub-1', meters: [] }]);
   });
 
   it('listSubscriptionsForAdmin maps subscriptions with user email and plan name', async () => {

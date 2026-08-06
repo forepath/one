@@ -331,4 +331,70 @@ describe('AdminBillingService', () => {
     expect(req.request.responseType).toBe('blob');
     req.flush(blob);
   });
+
+  describe('subscription meter entries', () => {
+    const entry = {
+      id: 'entry-1',
+      subscriptionId: 'sub-1',
+      meterId: 'meter-1',
+      value: 50,
+      attachmentType: 'plan' as const,
+      periodStart: '2026-01-01T00:00:00Z',
+      periodEnd: '2026-01-31T23:59:59Z',
+      usageSource: 'admin',
+      usagePayload: {},
+      createdAt: '2026-01-15T00:00:00Z',
+    };
+
+    it('lists meter entries', (done) => {
+      service.listSubscriptionMeterEntries('sub-1').subscribe((entries) => {
+        expect(entries).toEqual([entry]);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/admin/billing/subscriptions/sub-1/meter-entries`);
+      expect(req.request.method).toBe('GET');
+      req.flush([entry]);
+    });
+
+    it('creates a meter entry', (done) => {
+      const dto = {
+        meterId: 'meter-1',
+        value: 50,
+        attachmentType: 'plan' as const,
+        periodStart: '2026-01-01T00:00:00Z',
+        periodEnd: '2026-01-31T23:59:59Z',
+      };
+
+      service.createSubscriptionMeterEntry('sub-1', dto).subscribe((created) => {
+        expect(created).toEqual(entry);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/admin/billing/subscriptions/sub-1/meter-entries`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(dto);
+      req.flush(entry);
+    });
+
+    it('updates a meter entry', (done) => {
+      service.updateSubscriptionMeterEntry('sub-1', 'entry-1', { value: 60 }).subscribe((updated) => {
+        expect(updated.value).toBe(60);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/admin/billing/subscriptions/sub-1/meter-entries/entry-1`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ value: 60 });
+      req.flush({ ...entry, value: 60 });
+    });
+
+    it('deletes a meter entry', (done) => {
+      service.deleteSubscriptionMeterEntry('sub-1', 'entry-1').subscribe(() => done());
+
+      const req = httpMock.expectOne(`${apiUrl}/admin/billing/subscriptions/sub-1/meter-entries/entry-1`);
+      expect(req.request.method).toBe('DELETE');
+      req.flush(null);
+    });
+  });
 });

@@ -42,6 +42,7 @@ describe('InvoiceCreationService', () => {
       invoiceTaxContextService?: any;
       subscriptionAddonsRepository?: any;
       billingScheduleService?: any;
+      meterBillingService?: any;
     } = {},
   ) {
     const invoicesRepository =
@@ -90,6 +91,11 @@ describe('InvoiceCreationService', () => {
           findBillableBySubscriptionId: jest.fn().mockResolvedValue([]),
         } as any),
       deps.billingScheduleService ?? ({ calculateSchedule: jest.fn() } as any),
+      deps.meterBillingService ??
+        ({
+          hasAnyMeterAttachments: jest.fn().mockResolvedValue(false),
+          buildMeterChargeLines: jest.fn().mockResolvedValue([]),
+        } as any),
     );
   }
 
@@ -274,6 +280,7 @@ describe('InvoiceCreationService', () => {
     const subscriptionChargePeriodService = {
       resolveChargePeriod: jest.fn().mockResolvedValue({
         baseAmount: 0.005,
+        meterPeriodStart: new Date('2024-01-01T00:00:00Z'),
         periodStart: new Date('2024-01-01T00:00:00Z'),
         periodEnd: new Date('2024-01-01T00:02:00Z'),
       }),
@@ -326,6 +333,7 @@ describe('InvoiceCreationService', () => {
     const subscriptionChargePeriodService = {
       resolveChargePeriod: jest.fn().mockResolvedValue({
         baseAmount: 0.005,
+        meterPeriodStart: new Date('2024-01-01T00:00:00Z'),
         periodStart: new Date('2024-01-01T00:00:00Z'),
         periodEnd: new Date('2024-01-01T00:02:00Z'),
       }),
@@ -378,6 +386,7 @@ describe('InvoiceCreationService', () => {
     const subscriptionChargePeriodService = {
       resolveChargePeriod: jest.fn().mockResolvedValue({
         baseAmount: 0.5,
+        meterPeriodStart: new Date('2024-01-01T00:00:00Z'),
         periodStart: new Date('2024-01-01T00:00:00Z'),
         periodEnd: new Date('2024-01-01T00:02:00Z'),
       }),
@@ -430,6 +439,7 @@ describe('InvoiceCreationService', () => {
     const subscriptionChargePeriodService = {
       resolveChargePeriod: jest.fn().mockResolvedValue({
         baseAmount: 0.5,
+        meterPeriodStart: new Date('2024-01-01T00:00:00Z'),
         periodStart: new Date('2024-01-01T00:00:00Z'),
         periodEnd: new Date('2024-01-01T00:02:00Z'),
       }),
@@ -570,6 +580,7 @@ describe('InvoiceCreationService', () => {
         amount: 10,
         chargePeriod: {
           baseAmount: 10,
+          meterPeriodStart: new Date('2024-01-01'),
           periodStart: new Date('2024-01-01'),
           periodEnd: new Date('2024-02-01'),
         },
@@ -677,6 +688,7 @@ describe('InvoiceCreationService', () => {
           amount: 0.5,
           chargePeriod: {
             baseAmount: 0.5,
+            meterPeriodStart: new Date('2024-01-01'),
             periodStart: new Date('2024-01-01'),
             periodEnd: new Date('2024-02-01'),
           },
@@ -745,6 +757,7 @@ describe('InvoiceCreationService', () => {
           amount: 10,
           chargePeriod: {
             baseAmount: 10,
+            meterPeriodStart: new Date('2024-01-01'),
             periodStart: new Date('2024-01-01'),
             periodEnd: new Date('2024-02-01'),
           },
@@ -812,6 +825,7 @@ describe('InvoiceCreationService', () => {
           amount: 10,
           chargePeriod: {
             baseAmount: 10,
+            meterPeriodStart: new Date('2024-01-01'),
             periodStart: new Date('2024-01-01'),
             periodEnd: new Date('2024-02-01'),
           },

@@ -41,6 +41,7 @@ import {
   type ServiceTypeResponse,
   type ServerType,
   type SubscriptionResponse,
+  type SubscriptionMeterSummary,
   formatBillingProviderLocationLabel,
   formatServerTypeOption,
   isNoneServiceTypeId,
@@ -621,6 +622,32 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   formatSubscriptionPeriodPrice(sub: SubscriptionResponse, plans: ServicePlanResponse[] | null): string {
     return this.formatEntryPeriodPrice(sub.periodTotalPrice, this.getSelectedPlan(plans, sub.planId));
+  }
+
+  subscriptionMeters(sub: SubscriptionResponse): SubscriptionMeterSummary[] {
+    return sub.meters ?? [];
+  }
+
+  hasSubscriptionMeters(sub: SubscriptionResponse): boolean {
+    return this.subscriptionMeters(sub).length > 0;
+  }
+
+  formatMeterCharge(amount: number): string {
+    return `${amount.toFixed(2)} EUR`;
+  }
+
+  formatMeterValue(meter: SubscriptionMeterSummary): string {
+    const unit = meter.unitLabel ? ` ${meter.unitLabel}` : '';
+
+    return `${meter.aggregatedValue}${unit}`;
+  }
+
+  meterAttachmentLabel(meter: SubscriptionMeterSummary): string {
+    if (meter.attachmentType === 'addon') {
+      return meter.addonName?.trim() || meter.addonId || $localize`:@@featureSubscriptions-meterAddon:Addon meter`;
+    }
+
+    return $localize`:@@featureSubscriptions-meterPlan:Plan meter`;
   }
 
   formatBackorderPeriodPrice(bo: BackorderResponse, plans: ServicePlanResponse[] | null): string {

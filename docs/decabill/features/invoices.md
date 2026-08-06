@@ -100,7 +100,11 @@ Issued invoices (and credit notes) also enqueue customer emails via BullMQ; see 
 
 ## Usage on Invoices
 
-Usage records posted via `POST /admin/usage/record` (admin or API key only) appear on invoices when pricing includes usage cost or unit counts. Customers can read usage via `GET /usage/summary/{subscriptionId}` but cannot submit records.
+When the subscription’s plan or billable addons have meter attachments, invoice creation emits a **separate line per attachment** (plan vs each addon) using that attachment’s in-window aggregate × effective unit price. Same catalog meter on plan and addons does not merge into one line. See [Usage meters](./usage-meters.md).
+
+Legacy: if there are no meter attachments, usage cost is taken from the latest `usagePayload` (`totalCost` / `usageCost` / `units`×`unitPrice`) on the subscription base line.
+
+Usage is posted via `POST /admin/usage/record` (admin or API key only). Customers can read usage via `GET /usage/summary/{subscriptionId}` and subscription meter summaries but cannot submit records. Prepaid plans skip meter and legacy usage costs.
 
 ## Payment
 

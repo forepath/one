@@ -180,6 +180,28 @@ export class SubscriptionsRepository {
     return await qb.getMany();
   }
 
+  /**
+   * Active / config-change arrear subscriptions eligible for meter collection.
+   */
+  async findActiveArrearForMeterCollect(limit = 500, offset = 0): Promise<SubscriptionEntity[]> {
+    const qb = this.repository
+      .createQueryBuilder('subscription')
+      .innerJoin('users', 'user', 'user.id = subscription.user_id')
+      .innerJoinAndSelect('subscription.plan', 'plan')
+      .where('subscription.status IN (:...statuses)', {
+        statuses: [SubscriptionStatus.ACTIVE, SubscriptionStatus.PENDING_CONFIG_CHANGE],
+      })
+      .andWhere('plan.bill_in_advance = false')
+      .orderBy('subscription.createdAt', 'ASC')
+      .addOrderBy('subscription.id', 'ASC')
+      .take(limit)
+      .skip(offset);
+
+    applyUserTenantFilter(qb, 'user');
+
+    return await qb.getMany();
+  }
+
   async findDueForCancellation(now: Date = new Date(), limit = 100): Promise<SubscriptionEntity[]> {
     const qb = this.repository
       .createQueryBuilder('subscription')

@@ -24,12 +24,35 @@ export interface ProviderEnvDefaultField {
   type: 'string';
 }
 
+export type MeterAggregator = 'max' | 'min' | 'avg' | 'first' | 'last' | 'sum' | 'sum_positive_deltas';
+
 export interface ProviderDetail {
   id: string;
   displayName: string;
   configSchema?: Record<string, unknown>;
   envDefaultFields?: ProviderEnvDefaultField[];
   supportsAddons?: boolean;
+  supportsServerTypeUpgrade?: boolean;
+  supportsServerTypeDowngrade?: boolean;
+  /** Required meters declared by the provider implementation. */
+  meters?: DeclaredMeterDefinition[];
+}
+
+export interface DeclaredMeterDefinition {
+  key: string;
+  name: string;
+  description?: string;
+  unitLabel?: string;
+  aggregator: MeterAggregator;
+  defaultUnitPriceNet: number;
+  /** When set, the meter-collect job pulls on this interval (ms). */
+  collectionIntervalMs?: number;
+}
+
+export interface AddonModuleDetail {
+  key: string;
+  displayName: string;
+  meters: DeclaredMeterDefinition[];
 }
 
 // Provider server type with specs and pricing (GET .../providers/:id/server-types)
@@ -250,8 +273,121 @@ export interface AddonResponse {
   priceIntervalType?: BillingIntervalType | null;
   priceIntervalValue?: number | null;
   isActive: boolean;
+  meters?: AttachedMeterResponse[];
   createdAt: string;
   updatedAt: string;
+}
+
+// Usage meters
+export type UsageAttachmentType = 'plan' | 'addon';
+
+export interface MeterResponse {
+  id: string;
+  key: string;
+  name: string;
+  description?: string | null;
+  unitLabel?: string | null;
+  aggregator: MeterAggregator;
+  defaultUnitPriceNet: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMeterDto {
+  key: string;
+  name: string;
+  description?: string;
+  unitLabel?: string;
+  aggregator: MeterAggregator;
+  defaultUnitPriceNet: number;
+  isActive?: boolean;
+}
+
+export interface UpdateMeterDto {
+  name?: string;
+  description?: string | null;
+  unitLabel?: string | null;
+  aggregator?: MeterAggregator;
+  defaultUnitPriceNet?: number;
+  isActive?: boolean;
+}
+
+export interface AttachedMeterResponse {
+  meterId: string;
+  key: string;
+  name: string;
+  description?: string | null;
+  unitLabel?: string | null;
+  aggregator: MeterAggregator;
+  defaultUnitPriceNet: number;
+  unitPriceNetOverride?: number | null;
+  effectiveUnitPriceNet: number;
+  isActive: boolean;
+  source?: 'manual' | 'module' | 'provider';
+  required?: boolean;
+  /** True when listed on a plan but sourced from the plan's service type. */
+  inherited?: boolean;
+}
+
+export interface AttachMeterDto {
+  meterId: string;
+  unitPriceNet?: number | null;
+}
+
+export interface UpdateAttachedMeterDto {
+  unitPriceNet?: number | null;
+}
+
+export interface SubscriptionMeterSummary {
+  meterId: string;
+  key: string;
+  name: string;
+  unitLabel?: string | null;
+  aggregator: MeterAggregator;
+  attachmentType: UsageAttachmentType;
+  addonId?: string | null;
+  addonName?: string | null;
+  effectiveUnitPriceNet: number;
+  aggregatedValue: number;
+  estimatedChargeNet: number;
+  entryCount: number;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+}
+
+export interface UsageMeterEntryResponse {
+  id: string;
+  subscriptionId: string;
+  meterId: string;
+  value: number;
+  attachmentType: UsageAttachmentType;
+  addonId?: string | null;
+  periodStart: string;
+  periodEnd: string;
+  usageSource: string;
+  usagePayload: Record<string, unknown>;
+  createdAt: string;
+}
+
+export interface CreateUsageMeterEntryDto {
+  meterId: string;
+  value: number;
+  attachmentType?: UsageAttachmentType;
+  addonId?: string;
+  periodStart: string;
+  periodEnd: string;
+  usagePayload?: Record<string, unknown>;
+}
+
+export interface UpdateUsageMeterEntryDto {
+  meterId?: string;
+  value?: number;
+  attachmentType?: UsageAttachmentType;
+  addonId?: string | null;
+  periodStart?: string;
+  periodEnd?: string;
+  usagePayload?: Record<string, unknown>;
 }
 
 export interface PlanAddonOptionDto {
@@ -266,6 +402,8 @@ export interface PlanAddonOptionDto {
   periodPrice: number;
   /** Customer-visible config fields (no secret values). */
   orderFields: AddonConfigOrderField[];
+  /** Attached usage meters (read-only on customer order). */
+  meters?: AttachedMeterResponse[];
 }
 
 export interface CreateAddonDto {
@@ -333,6 +471,7 @@ export interface ServicePlanResponse {
   taxCategory?: TaxCategory;
   withdrawalPolicy: WithdrawalPolicy;
   isActive: boolean;
+  meters?: AttachedMeterResponse[];
   createdAt: string;
   updatedAt: string;
 }
@@ -406,6 +545,7 @@ export interface SubscriptionResponse {
   withdrawalEligibility?: WithdrawalEligibility;
   withdrawalResult?: WithdrawalResult;
   periodTotalPrice?: number;
+  meters?: SubscriptionMeterSummary[];
   createdAt: string;
   updatedAt: string;
 }
@@ -796,7 +936,11 @@ export interface CreateUsageRecordDto {
   subscriptionId: string;
   periodStart: string;
   periodEnd: string;
-  usagePayload: Record<string, unknown>;
+  usagePayload?: Record<string, unknown>;
+  meterId?: string;
+  value?: number;
+  attachmentType?: UsageAttachmentType;
+  addonId?: string;
 }
 
 export interface UsageRecordResponse {
@@ -806,6 +950,10 @@ export interface UsageRecordResponse {
   periodEnd: string;
   usageSource: string;
   usagePayload: Record<string, unknown>;
+  meterId?: string;
+  value?: number;
+  attachmentType?: UsageAttachmentType;
+  addonId?: string | null;
   createdAt: string;
 }
 

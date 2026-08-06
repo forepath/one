@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-04T17:27:47.835Z",
+  "generatedAt": "2026-08-06T11:41:29.954Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -2652,6 +2652,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-frontend-data-access-billing-console"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/project-milestones.service.ts",
       "type": "service",
       "attrs": {
@@ -2989,6 +2998,23 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/meters",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/meters",
+        "languageOrKind": "ts",
+        "projectName": "decabill-frontend-data-access-billing-console",
+        "sliceName": "meters",
+        "memberFiles": [
+          "meters.actions.ts",
+          "meters.effects.ts",
+          "meters.facade.ts",
+          "meters.reducer.ts",
+          "meters.selectors.ts"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/project-board-socket",
       "type": "state",
       "attrs": {
@@ -3161,6 +3187,23 @@
           "subscription-config-change.facade.ts",
           "subscription-config-change.reducer.ts",
           "subscription-config-change.selectors.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/subscription-meters",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/subscription-meters",
+        "languageOrKind": "ts",
+        "projectName": "decabill-frontend-data-access-billing-console",
+        "sliceName": "subscription-meters",
+        "memberFiles": [
+          "subscription-meters.actions.ts",
+          "subscription-meters.effects.ts",
+          "subscription-meters.facade.ts",
+          "subscription-meters.reducer.ts",
+          "subscription-meters.selectors.ts"
         ]
       }
     },
@@ -5679,6 +5722,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-usage.controller.ts",
       "type": "controller",
       "attrs": {
@@ -5737,6 +5789,15 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/invoices.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/meters.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/meters.controller.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -6057,6 +6118,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/declared-meter.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/declared-meter.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/instant-cancel-subscription.dto.ts",
       "type": "dto",
       "attrs": {
@@ -6088,6 +6158,24 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/manual-invoice.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/meter-response.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/meter-response.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/meter.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/meter.dto.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -6318,6 +6406,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/addon-meter.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/addon-meter.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/addon.entity.ts",
       "type": "entity",
       "attrs": {
@@ -6444,6 +6541,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/meter.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/meter.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/open-position.entity.ts",
       "type": "entity",
       "attrs": {
@@ -6534,10 +6640,28 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/service-plan-meter.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/service-plan-meter.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/service-plan.entity.ts",
       "type": "entity",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/service-plan.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/service-type-meter.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/service-type-meter.entity.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -6984,6 +7108,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/addon-meters.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/addon-meters.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/addons.repository.ts",
       "type": "repository",
       "attrs": {
@@ -7110,6 +7243,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/meters.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/meters.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/open-positions.repository.ts",
       "type": "repository",
       "attrs": {
@@ -7200,10 +7342,28 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plan-meters.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plan-meters.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plans.repository.ts",
       "type": "repository",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plans.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-type-meters.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-type-meters.repository.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -7686,6 +7846,33 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "type": "job",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/open-position-invoice.job-handler.ts",
       "type": "job",
       "attrs": {
@@ -7771,6 +7958,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/provider-locations.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/provider-module-registry.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/provider-module-registry.service.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -11878,6 +12074,14 @@
       }
     },
     {
+      "id": "file:docs/decabill/features/usage-meters.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/usage-meters.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/decabill/features/vat-and-tax-treatment.md",
       "type": "doc",
       "attrs": {
@@ -14646,6 +14850,50 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/service-types/{id}/meters",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/service-types/{id}/meters",
+        "operationId": "listServiceTypeMeters",
+        "summary": "List meters attached to a service type",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/service-types/{id}/meters",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/service-types/{id}/meters",
+        "operationId": "attachServiceTypeMeter",
+        "summary": "Attach a catalog meter to a service type (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/service-types/{id}/meters/{meterId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/service-types/{id}/meters/{meterId}",
+        "operationId": "updateServiceTypeMeter",
+        "summary": "Update service type meter unit-price override (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/service-types/{id}/meters/{meterId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/service-types/{id}/meters/{meterId}",
+        "operationId": "detachServiceTypeMeter",
+        "summary": "Detach meter from service type (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/service-types/{id}",
       "type": "endpoint",
       "attrs": {
@@ -14800,6 +15048,61 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/meters",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/meters",
+        "operationId": "listMeters",
+        "summary": "List usage meters (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/meters",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/meters",
+        "operationId": "createMeter",
+        "summary": "Create usage meter (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/meters/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/meters/{id}",
+        "operationId": "getMeter",
+        "summary": "Get usage meter (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/meters/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/meters/{id}",
+        "operationId": "updateMeter",
+        "summary": "Update usage meter (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/meters/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/meters/{id}",
+        "operationId": "deleteMeter",
+        "summary": "Delete usage meter (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/addons",
       "type": "endpoint",
       "attrs": {
@@ -14818,6 +15121,17 @@
         "pathOrChannel": "/addons",
         "operationId": "createAddon",
         "summary": "Create addon (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/addons/modules",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/addons/modules",
+        "operationId": "listAddonModules",
+        "summary": "List registered addon modules (admin only)",
         "specKind": "openapi"
       }
     },
@@ -14851,6 +15165,94 @@
         "pathOrChannel": "/addons/{id}",
         "operationId": "deleteAddon",
         "summary": "Delete addon (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/addons/{id}/meters",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/addons/{id}/meters",
+        "operationId": "listAddonMeters",
+        "summary": "List meters attached to an addon",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/addons/{id}/meters",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/addons/{id}/meters",
+        "operationId": "attachAddonMeter",
+        "summary": "Attach a meter to an addon",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/addons/{id}/meters/{meterId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/addons/{id}/meters/{meterId}",
+        "operationId": "updateAddonMeter",
+        "summary": "Update addon meter unit-price override",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/addons/{id}/meters/{meterId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/addons/{id}/meters/{meterId}",
+        "operationId": "detachAddonMeter",
+        "summary": "Detach meter from addon",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/service-plans/{id}/meters",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/service-plans/{id}/meters",
+        "operationId": "listServicePlanMeters",
+        "summary": "List meters attached to a service plan",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/service-plans/{id}/meters",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/service-plans/{id}/meters",
+        "operationId": "attachServicePlanMeter",
+        "summary": "Attach a meter to a service plan",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/service-plans/{id}/meters/{meterId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/service-plans/{id}/meters/{meterId}",
+        "operationId": "updateServicePlanMeter",
+        "summary": "Update plan meter unit-price override",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/service-plans/{id}/meters/{meterId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/service-plans/{id}/meters/{meterId}",
+        "operationId": "detachServicePlanMeter",
+        "summary": "Detach meter from service plan",
         "specKind": "openapi"
       }
     },
@@ -14917,6 +15319,17 @@
         "pathOrChannel": "/subscriptions/{subscriptionId}",
         "operationId": "getSubscription",
         "summary": "Get subscription",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/subscriptions/{subscriptionId}/meters",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/subscriptions/{subscriptionId}/meters",
+        "operationId": "listSubscriptionMeters",
+        "summary": "List meter summaries for a subscription",
         "specKind": "openapi"
       }
     },
@@ -15379,6 +15792,61 @@
         "pathOrChannel": "/admin/usage/record",
         "operationId": "recordUsage",
         "summary": "Record usage (admin or API key only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/subscriptions/{subscriptionId}/meters",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/subscriptions/{subscriptionId}/meters",
+        "operationId": "adminListSubscriptionMeters",
+        "summary": "List subscription meter summaries (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+        "operationId": "adminListSubscriptionMeterEntries",
+        "summary": "List metered usage entries for a subscription",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+        "operationId": "adminCreateSubscriptionMeterEntry",
+        "summary": "Create a metered usage entry for a subscription",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
+        "operationId": "adminUpdateSubscriptionMeterEntry",
+        "summary": "Update a metered usage entry",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
+        "operationId": "adminDeleteSubscriptionMeterEntry",
+        "summary": "Delete a metered usage entry",
         "specKind": "openapi"
       }
     },
@@ -16435,6 +16903,33 @@
       }
     },
     {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:addon.meter_attached",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "addon.meter_attached",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:addon.meter_detached",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "addon.meter_detached",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:addon.meter_updated",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "addon.meter_updated",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
       "id": "webhook-event:decabill-backend-feature-billing-manager:addon.provision_failed",
       "type": "webhook-event",
       "attrs": {
@@ -16606,6 +17101,33 @@
       }
     },
     {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:meter.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "meter.created",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:meter.deleted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "meter.deleted",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:meter.updated",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "meter.updated",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
       "id": "webhook-event:decabill-backend-feature-billing-manager:milestone.created",
       "type": "webhook-event",
       "attrs": {
@@ -16732,10 +17254,64 @@
       }
     },
     {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:service_plan.meter_attached",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "service_plan.meter_attached",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:service_plan.meter_detached",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "service_plan.meter_detached",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:service_plan.meter_updated",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "service_plan.meter_updated",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
       "id": "webhook-event:decabill-backend-feature-billing-manager:service_plan.price_recalculated",
       "type": "webhook-event",
       "attrs": {
         "eventName": "service_plan.price_recalculated",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:service_type.meter_attached",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "service_type.meter_attached",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:service_type.meter_detached",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "service_type.meter_detached",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:service_type.meter_updated",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "service_type.meter_updated",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -16916,6 +17492,33 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "time_entry.updated",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:usage.deleted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "usage.deleted",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:usage.recorded",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "usage.recorded",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:usage.updated",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "usage.updated",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -26222,6 +26825,86 @@
       }
     },
     {
+      "id": "concept:decabill-usage-meters",
+      "type": "concept",
+      "attrs": {
+        "title": "Usage meters",
+        "docPath": "docs/decabill/features/usage-meters.md",
+        "sectionAnchor": "usage-meters",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-catalog",
+      "type": "concept",
+      "attrs": {
+        "title": "Catalog",
+        "docPath": "docs/decabill/features/usage-meters.md",
+        "sectionAnchor": "catalog",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-attachments",
+      "type": "concept",
+      "attrs": {
+        "title": "Attachments",
+        "docPath": "docs/decabill/features/usage-meters.md",
+        "sectionAnchor": "attachments",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-recording-usage",
+      "type": "concept",
+      "attrs": {
+        "title": "Recording usage",
+        "docPath": "docs/decabill/features/usage-meters.md",
+        "sectionAnchor": "recording-usage",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-collector-job-pull",
+      "type": "concept",
+      "attrs": {
+        "title": "Collector job (pull)",
+        "docPath": "docs/decabill/features/usage-meters.md",
+        "sectionAnchor": "collector-job-pull",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-subscription-views",
+      "type": "concept",
+      "attrs": {
+        "title": "Subscription views",
+        "docPath": "docs/decabill/features/usage-meters.md",
+        "sectionAnchor": "subscription-views",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-invoice-charge-path-arrear",
+      "type": "concept",
+      "attrs": {
+        "title": "Invoice charge path (arrear)",
+        "docPath": "docs/decabill/features/usage-meters.md",
+        "sectionAnchor": "invoice-charge-path-arrear",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-related-docs",
+      "type": "concept",
+      "attrs": {
+        "title": "Related docs",
+        "docPath": "docs/decabill/features/usage-meters.md",
+        "sectionAnchor": "related-docs",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-vat-and-tax-treatment",
       "type": "concept",
       "attrs": {
@@ -30565,6 +31248,11 @@
     },
     {
       "from": "project:decabill-frontend-data-access-billing-console",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-data-access-billing-console",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/project-milestones.service.ts",
       "type": "contains"
     },
@@ -30690,6 +31378,11 @@
     },
     {
       "from": "project:decabill-frontend-data-access-billing-console",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/meters",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-data-access-billing-console",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/project-board-socket",
       "type": "contains"
     },
@@ -30736,6 +31429,11 @@
     {
       "from": "project:decabill-frontend-data-access-billing-console",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/subscription-config-change",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-data-access-billing-console",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/subscription-meters",
       "type": "contains"
     },
     {
@@ -32020,6 +32718,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-usage.controller.ts",
       "type": "contains"
     },
@@ -32051,6 +32754,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/invoices.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/meters.controller.ts",
       "type": "contains"
     },
     {
@@ -32230,6 +32938,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/declared-meter.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/instant-cancel-subscription.dto.ts",
       "type": "contains"
     },
@@ -32246,6 +32959,16 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/manual-invoice.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/meter-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/meter.dto.ts",
       "type": "contains"
     },
     {
@@ -32375,6 +33098,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/addon-meter.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/addon.entity.ts",
       "type": "contains"
     },
@@ -32445,6 +33173,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/meter.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/open-position.entity.ts",
       "type": "contains"
     },
@@ -32495,7 +33228,17 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/service-plan-meter.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/service-plan.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/service-type-meter.entity.ts",
       "type": "contains"
     },
     {
@@ -32745,6 +33488,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/addon-meters.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/addons.repository.ts",
       "type": "contains"
     },
@@ -32815,6 +33563,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/meters.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/open-positions.repository.ts",
       "type": "contains"
     },
@@ -32865,7 +33618,17 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plan-meters.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plans.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-type-meters.repository.ts",
       "type": "contains"
     },
     {
@@ -33135,6 +33898,21 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/open-position-invoice.job-handler.ts",
       "type": "contains"
     },
@@ -33181,6 +33959,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/provider-locations.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/provider-module-registry.service.ts",
       "type": "contains"
     },
     {
@@ -36140,6 +36923,26 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/service-types/{id}/meters",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/service-types/{id}/meters",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/service-types/{id}/meters/{meterId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/service-types/{id}/meters/{meterId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/service-types/{id}",
       "type": "contains"
     },
@@ -36210,12 +37013,42 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/meters",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/meters",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/meters/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/meters/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/meters/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/addons",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/addons",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/addons/modules",
       "type": "contains"
     },
     {
@@ -36231,6 +37064,46 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:DELETE:/addons/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/addons/{id}/meters",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/addons/{id}/meters",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/addons/{id}/meters/{meterId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/addons/{id}/meters/{meterId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/service-plans/{id}/meters",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/service-plans/{id}/meters",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/service-plans/{id}/meters/{meterId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/service-plans/{id}/meters/{meterId}",
       "type": "contains"
     },
     {
@@ -36361,6 +37234,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/subscriptions/{subscriptionId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/subscriptions/{subscriptionId}/meters",
       "type": "contains"
     },
     {
@@ -36571,6 +37449,31 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/admin/usage/record",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/subscriptions/{subscriptionId}/meters",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
       "type": "contains"
     },
     {
@@ -37060,6 +37963,21 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:addon.meter_attached",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:addon.meter_detached",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:addon.meter_updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:addon.provision_failed",
       "type": "contains"
     },
@@ -37155,6 +38073,21 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:meter.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:meter.deleted",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:meter.updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:milestone.created",
       "type": "contains"
     },
@@ -37225,7 +38158,37 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:service_plan.meter_attached",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:service_plan.meter_detached",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:service_plan.meter_updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:service_plan.price_recalculated",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:service_type.meter_attached",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:service_type.meter_detached",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:service_type.meter_updated",
       "type": "contains"
     },
     {
@@ -37326,6 +38289,21 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:time_entry.updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:usage.deleted",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:usage.recorded",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:usage.updated",
       "type": "contains"
     },
     {
@@ -43714,6 +44692,51 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/decabill/features/usage-meters.md",
+      "to": "concept:decabill-usage-meters",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/usage-meters.md",
+      "to": "concept:decabill-catalog",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/usage-meters.md",
+      "to": "concept:decabill-attachments",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/usage-meters.md",
+      "to": "concept:decabill-recording-usage",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/usage-meters.md",
+      "to": "concept:decabill-collector-job-pull",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/usage-meters.md",
+      "to": "concept:decabill-subscription-views",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/usage-meters.md",
+      "to": "concept:decabill-invoice-charge-path-arrear",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/usage-meters.md",
+      "to": "concept:decabill-notifications",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/usage-meters.md",
+      "to": "concept:decabill-related-docs",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/decabill/features/vat-and-tax-treatment.md",
       "to": "concept:decabill-vat-and-tax-treatment",
       "type": "contains"
@@ -45790,6 +46813,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/addons.controller.ts",
+      "to": "api:HTTP:GET:/addons/modules",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/addons/modules",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/addons.controller.ts",
       "to": "api:HTTP:GET:/addons/{id}",
       "type": "implements"
     },
@@ -45816,6 +46849,96 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:DELETE:/addons/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/addons.controller.ts",
+      "to": "api:HTTP:GET:/addons/{id}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/addons/{id}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/addons.controller.ts",
+      "to": "api:HTTP:POST:/addons/{id}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/addons/{id}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/addons.controller.ts",
+      "to": "api:HTTP:POST:/addons/{id}/meters/{meterId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/addons/{id}/meters/{meterId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/addons.controller.ts",
+      "to": "api:HTTP:DELETE:/addons/{id}/meters/{meterId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/addons/{id}/meters/{meterId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/subscriptions/{subscriptionId}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/subscriptions/{subscriptionId}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
       "type": "implements"
     },
     {
@@ -46631,6 +47754,56 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-promotions.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/promotions/{id}/redemptions",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/subscriptions/{subscriptionId}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/subscriptions",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/cancel",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/withdraw",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/instant-cancel",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/resume",
       "type": "implements"
     },
     {
@@ -46979,6 +48152,56 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/meters.controller.ts",
+      "to": "api:HTTP:GET:/meters",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/meters",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/meters.controller.ts",
+      "to": "api:HTTP:POST:/meters",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/meters",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/meters.controller.ts",
+      "to": "api:HTTP:GET:/meters/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/meters/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/meters.controller.ts",
+      "to": "api:HTTP:POST:/meters/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/meters/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/meters.controller.ts",
+      "to": "api:HTTP:DELETE:/meters/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/meters/{id}",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/payments-webhook.controller.ts",
       "to": "api:HTTP:POST:/webhooks/payments/stripe",
       "type": "implements"
@@ -47170,6 +48393,46 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-plans.controller.ts",
+      "to": "api:HTTP:GET:/service-plans/{id}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/service-plans/{id}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-plans.controller.ts",
+      "to": "api:HTTP:POST:/service-plans/{id}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/service-plans/{id}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-plans.controller.ts",
+      "to": "api:HTTP:POST:/service-plans/{id}/meters/{meterId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/service-plans/{id}/meters/{meterId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-plans.controller.ts",
+      "to": "api:HTTP:DELETE:/service-plans/{id}/meters/{meterId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/service-plans/{id}/meters/{meterId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-plans.controller.ts",
       "to": "api:HTTP:GET:/service-plans/{id}/addons",
       "type": "implements"
     },
@@ -47230,6 +48493,46 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-types.controller.ts",
+      "to": "api:HTTP:GET:/service-types/{id}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/service-types/{id}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-types.controller.ts",
+      "to": "api:HTTP:POST:/service-types/{id}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/service-types/{id}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-types.controller.ts",
+      "to": "api:HTTP:POST:/service-types/{id}/meters/{meterId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/service-types/{id}/meters/{meterId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-types.controller.ts",
+      "to": "api:HTTP:DELETE:/service-types/{id}/meters/{meterId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/service-types/{id}/meters/{meterId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-types.controller.ts",
       "to": "api:HTTP:GET:/service-types/{id}",
       "type": "implements"
     },
@@ -47286,6 +48589,16 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:GET:/subscriptions/{subscriptionId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/subscriptions.controller.ts",
+      "to": "api:HTTP:GET:/subscriptions/{subscriptionId}/meters",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/subscriptions/{subscriptionId}/meters",
       "type": "implements"
     },
     {
@@ -50379,6 +51692,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/addons.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-admin.service.ts",
       "type": "injects"
@@ -50451,6 +51769,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-promotions.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/promotion-admin.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscriptions.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/usage.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
       "type": "injects"
     },
     {
@@ -50531,6 +51864,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/invoices.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscriptions.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/meters.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/meters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/meters.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
       "type": "injects"
     },
     {
@@ -50650,6 +51993,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-plans.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-plans.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/addons.repository.ts",
       "type": "injects"
     },
@@ -50684,6 +52032,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/service-types.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/subscription-items.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription-item-server.service.ts",
       "type": "injects"
@@ -50696,6 +52049,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/subscriptions.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription-config-change.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/subscriptions.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
       "type": "injects"
     },
     {
@@ -51569,6 +52927,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-creation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-issuance.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/invoices.repository.ts",
       "type": "injects"
@@ -51816,6 +53179,131 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/manual-invoice.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-tax-context.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plans.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plan-meters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-type-meters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/addon-meters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscription-addons.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/usage-records.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscriptions.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plans.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscription-items.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscription-addons.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/addons.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/addon-meters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/usage-records.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/usage.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/provider-module-registry.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/provider-registry.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/addon-module-registry.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/meters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plan-meters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/addon-meters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-type-meters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/usage-records.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/addon-module-registry.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/provider-registry.service.ts",
       "type": "injects"
     },
     {
@@ -52344,6 +53832,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription-period-charge.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription-provisioning.job-handler.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscription-items.repository.ts",
       "type": "injects"
@@ -52559,6 +54052,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-calculation.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-rate-config.service.ts",
       "type": "injects"
@@ -52591,6 +54089,31 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/usage.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plans.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/usage.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plan-meters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/usage.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-type-meters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/usage.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/addon-meters.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/usage.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscription-addons.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/usage.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
       "type": "injects"
     },
     {
@@ -53300,6 +54823,11 @@
     },
     {
       "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/vat-id-validation.job-handler.ts",
       "type": "injects"
     },
@@ -53740,6 +55268,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/meters.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/public-service-plan-offerings.controller.ts",
       "type": "provides"
     },
@@ -53796,6 +55329,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-subscription-meters.controller.ts",
       "type": "provides"
     },
     {
@@ -53920,12 +55458,32 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-billing.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/addon-lifecycle.service.ts",
       "type": "provides"
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/addon-module-registry.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/provider-module-registry.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/meter-collect.job-handler.ts",
       "type": "provides"
     },
     {
@@ -54470,6 +56028,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/addon-meters.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscription-addons.repository.ts",
       "type": "provides"
     },
@@ -54481,6 +56044,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plans.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plan-meters.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-type-meters.repository.ts",
       "type": "provides"
     },
     {
@@ -54506,6 +56079,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/public-withdrawal-requests.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/meters.repository.ts",
       "type": "provides"
     },
     {
@@ -54955,6 +56533,11 @@
     },
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/addons.service.ts",
+      "to": "api:HTTP:GET:/addons/modules",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/addons.service.ts",
       "to": "api:HTTP:GET:/addons/{id}",
       "type": "calls"
     },
@@ -54971,6 +56554,26 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/addons.service.ts",
       "to": "api:HTTP:DELETE:/addons/{id}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/addons.service.ts",
+      "to": "api:HTTP:GET:/addons/{id}/meters",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/addons.service.ts",
+      "to": "api:HTTP:POST:/addons/{id}/meters",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/addons.service.ts",
+      "to": "api:HTTP:POST:/addons/{id}/meters/{meterId}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/addons.service.ts",
+      "to": "api:HTTP:DELETE:/addons/{id}/meters/{meterId}",
       "type": "calls"
     },
     {
@@ -55116,6 +56719,26 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
       "to": "api:HTTP:GET:/admin/billing/datev-exports/{exportId}/download",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:GET:/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/meter-entries",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/subscriptions/{subscriptionId}/meter-entries/{entryId}",
       "type": "calls"
     },
     {
@@ -55359,6 +56982,31 @@
       "type": "calls"
     },
     {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
+      "to": "api:HTTP:GET:/meters",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
+      "to": "api:HTTP:GET:/meters/{id}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
+      "to": "api:HTTP:POST:/meters",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
+      "to": "api:HTTP:POST:/meters/{id}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
+      "to": "api:HTTP:DELETE:/meters/{id}",
+      "type": "calls"
+    },
+    {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/projects.service.ts",
       "to": "api:HTTP:GET:/projects",
       "type": "calls"
@@ -55449,6 +57097,26 @@
       "type": "calls"
     },
     {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/service-plans.service.ts",
+      "to": "api:HTTP:GET:/service-plans/{id}/meters",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/service-plans.service.ts",
+      "to": "api:HTTP:POST:/service-plans/{id}/meters",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/service-plans.service.ts",
+      "to": "api:HTTP:POST:/service-plans/{id}/meters/{meterId}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/service-plans.service.ts",
+      "to": "api:HTTP:DELETE:/service-plans/{id}/meters/{meterId}",
+      "type": "calls"
+    },
+    {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/service-types.service.ts",
       "to": "api:HTTP:GET:/service-types/providers",
       "type": "calls"
@@ -55481,6 +57149,26 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/service-types.service.ts",
       "to": "api:HTTP:DELETE:/service-types/{id}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/service-types.service.ts",
+      "to": "api:HTTP:GET:/service-types/{id}/meters",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/service-types.service.ts",
+      "to": "api:HTTP:POST:/service-types/{id}/meters",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/service-types.service.ts",
+      "to": "api:HTTP:POST:/service-types/{id}/meters/{meterId}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/service-types.service.ts",
+      "to": "api:HTTP:DELETE:/service-types/{id}/meters/{meterId}",
       "type": "calls"
     },
     {
@@ -55566,6 +57254,11 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/usage.service.ts",
       "to": "api:HTTP:POST:/admin/usage/record",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/usage.service.ts",
+      "to": "api:HTTP:GET:/subscriptions/{subscriptionId}/meters",
       "type": "calls"
     },
     {
@@ -56266,6 +57959,11 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/invoices",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/invoices.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/meters",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
       "type": "contains"
     },
     {
@@ -61450,6 +63148,31 @@
     },
     {
       "from": "concept:decabill-service-plans",
+      "to": "api:HTTP:GET:/service-types/{id}/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-service-plans",
+      "to": "api:HTTP:POST:/service-types/{id}/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-service-plans",
+      "to": "api:HTTP:GET:/service-types/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-service-plans",
+      "to": "api:HTTP:POST:/service-types/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-service-plans",
+      "to": "api:HTTP:DELETE:/service-types/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-service-plans",
       "to": "api:HTTP:GET:/service-plans",
       "type": "documents"
     },
@@ -61481,6 +63204,26 @@
     {
       "from": "concept:decabill-service-plans",
       "to": "api:HTTP:POST:/cloud-init-configs",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-service-plans",
+      "to": "api:HTTP:GET:/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-service-plans",
+      "to": "api:HTTP:POST:/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-service-plans",
+      "to": "api:HTTP:GET:/service-plans/{id}/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-service-plans",
+      "to": "api:HTTP:POST:/service-plans/{id}/meters",
       "type": "documents"
     },
     {
@@ -61710,6 +63453,16 @@
     },
     {
       "from": "concept:decabill-usage-records",
+      "to": "api:HTTP:GET:/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-usage-records",
+      "to": "api:HTTP:POST:/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-usage-records",
       "to": "api:HTTP:GET:/subscriptions",
       "type": "documents"
     },
@@ -61770,6 +63523,276 @@
     },
     {
       "from": "concept:decabill-availability",
+      "to": "api:HTTP:POST:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-catalog",
+      "to": "api:HTTP:GET:/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-catalog",
+      "to": "api:HTTP:POST:/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-catalog",
+      "to": "api:HTTP:GET:/meters/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-catalog",
+      "to": "api:HTTP:POST:/meters/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-catalog",
+      "to": "api:HTTP:DELETE:/meters/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:GET:/service-types",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/service-types",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:GET:/service-types/providers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:GET:/service-types/{id}/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/service-types/{id}/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/service-types/{id}/meters/{meterId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:DELETE:/service-types/{id}/meters/{meterId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:GET:/service-types/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/service-types/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:DELETE:/service-types/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:GET:/service-plans",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/service-plans",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:GET:/service-plans/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/service-plans/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:DELETE:/service-plans/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:GET:/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:GET:/addons",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/addons",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:GET:/addons/modules",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:GET:/addons/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/addons/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:DELETE:/addons/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:GET:/addons/{id}/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/addons/{id}/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/addons/{id}/meters/{meterId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:DELETE:/addons/{id}/meters/{meterId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:GET:/service-plans/{id}/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/service-plans/{id}/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:POST:/service-plans/{id}/meters/{meterId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "api:HTTP:DELETE:/service-plans/{id}/meters/{meterId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-recording-usage",
+      "to": "api:HTTP:GET:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-recording-usage",
+      "to": "api:HTTP:POST:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-recording-usage",
+      "to": "api:HTTP:POST:/admin/usage/record",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-recording-usage",
+      "to": "api:HTTP:GET:/admin/billing/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-collector-job-pull",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-collector-job-pull",
+      "to": "api:HTTP:POST:/admin/usage/record",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-subscription-views",
+      "to": "api:HTTP:GET:/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-subscription-views",
+      "to": "api:HTTP:POST:/meters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-subscription-views",
+      "to": "api:HTTP:GET:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-subscription-views",
+      "to": "api:HTTP:POST:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-subscription-views",
+      "to": "api:HTTP:GET:/admin/billing/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related-docs",
+      "to": "api:HTTP:GET:/service-types",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related-docs",
+      "to": "api:HTTP:POST:/service-types",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related-docs",
+      "to": "api:HTTP:GET:/addons",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related-docs",
+      "to": "api:HTTP:POST:/addons",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related-docs",
+      "to": "api:HTTP:GET:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-related-docs",
       "to": "api:HTTP:POST:/subscriptions",
       "type": "documents"
     },
@@ -63635,6 +65658,11 @@
     },
     {
       "from": "file:docs/decabill/features/subscriptions.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/usage-meters.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -67880,6 +69908,46 @@
     },
     {
       "from": "concept:decabill-availability",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-usage-meters",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-catalog",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-attachments",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-recording-usage",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-collector-job-pull",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-subscription-views",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-invoice-charge-path-arrear",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-related-docs",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
