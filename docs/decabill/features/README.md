@@ -13,6 +13,7 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **Usage meters** Tenant meter catalog attachable to plans and addons with attachment-scoped usage billing
 - **Advance billing and yearly interval** Prepaid period charges and `year` billing interval
 - **Invoices** ZUGFeRD PDFs, open positions, billing-day accumulation, and Stripe checkout
+- **Offers** Admin draft quotations, customer accept/decline, fulfillment into subscriptions/projects/invoices
 - **Service Types and Plans** Admin-managed catalog with provider schemas and pricing
 - **Billing Administration** Manual invoices, customer profiles, KPIs, and bill-now
 - **Customer Profiles** Self-service and admin billing metadata required for ordering
@@ -105,6 +106,17 @@ Plan flag `billInAdvance` for prepaid period charges, `year` billing interval, w
 ### [Marketing promotions](./promotions.md)
 
 Tenant-scoped promotion codes with fixed discounts, free days, or free billing periods. Customers validate and redeem on `/promotions` or at subscription checkout; benefits apply automatically on invoice creation.
+
+### [Customer offers](./offers.md)
+
+Admin-composed draft quotations with standard, project-template, and plan-template lines. Archive sends a numbered PDF to the customer; accept provisions subscriptions, projects, and invoices per line rules.
+
+**Key Capabilities**:
+
+- Draft CRUD, archive, revoke, and pipeline statistics in admin console
+- Customer pending/history lanes with accept, decline, and PDF download
+- OpenSearch list search with PostgreSQL fallback
+- Webhooks and email on archive/accept; BullMQ expiration and scheduled fulfillment
 
 ### [Invoices](./invoices.md)
 

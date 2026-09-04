@@ -28,6 +28,16 @@ describe('CustomerProfilesAdminService', () => {
   const billingNotificationPublisher = { publish: jest.fn() };
   const datevDebtorAccountsRepository = { findByTenantAndUserId: jest.fn() };
   const billingSearchIndexService = { scheduleUpsert: jest.fn(), scheduleDelete: jest.fn() };
+  const offerProfileSummaryService = {
+    getAdminCountsByStatus: jest.fn().mockResolvedValue({
+      draft: 0,
+      archived: 1,
+      accepted: 0,
+      declined: 0,
+      expired: 0,
+      revoked: 0,
+    }),
+  };
 
   const service = new CustomerProfilesAdminService(
     customerProfilesRepository as never,
@@ -39,6 +49,7 @@ describe('CustomerProfilesAdminService', () => {
     billingNotificationPublisher as never,
     datevDebtorAccountsRepository as never,
     billingSearchIndexService as never,
+    offerProfileSummaryService as never,
   );
 
   const profile = {
@@ -132,6 +143,14 @@ describe('CustomerProfilesAdminService', () => {
     expect(result.numberScope).toBe('__shared__');
     expect(result.datevDebtorNumber).toBeNull();
     expect(result.customData).toEqual({ erpId: 'ERP-1' });
+    expect(result.offerCounts).toEqual({
+      draft: 0,
+      archived: 1,
+      accepted: 0,
+      declined: 0,
+      expired: 0,
+      revoked: 0,
+    });
   });
 
   it('getById includes datevDebtorNumber when DATEV debtor account exists', async () => {

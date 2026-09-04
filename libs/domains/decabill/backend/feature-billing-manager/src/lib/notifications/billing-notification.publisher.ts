@@ -3,6 +3,8 @@ import { getTenantIdOrDefault, NotificationDispatcherService } from '@forepath/s
 import { Injectable } from '@nestjs/common';
 
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import type { OfferEntity } from '../offers/entities/offer.entity';
+import type { OfferLineItemEntity } from '../offers/entities/offer-line-item.entity';
 import type { AddonEntity } from '../entities/addon.entity';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
 import type { SubscriptionAddonEntity } from '../entities/subscription-addon.entity';
@@ -142,6 +144,52 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
 
   publishInvoice(type: 'invoice.created' | 'invoice.issued' | 'invoice.voided', invoice: InvoiceEntity): void {
     this.publish(type, this.toInvoicePayload(invoice), invoice.userId);
+  }
+
+  publishOffer(
+    type:
+      | 'offer.created'
+      | 'offer.updated'
+      | 'offer.archived'
+      | 'offer.revoked'
+      | 'offer.accepted'
+      | 'offer.declined'
+      | 'offer.expired',
+    offer: OfferEntity,
+  ): void {
+    this.publish(type, this.toOfferPayload(offer), offer.userId);
+  }
+
+  publishOfferLineFulfilled(
+    offer: OfferEntity,
+    line: OfferLineItemEntity,
+    context: Record<string, unknown> = {},
+  ): void {
+    this.publish(
+      'offer.line.fulfilled',
+      {
+        offerId: offer.id,
+        offerNumber: offer.offerNumber ?? null,
+        lineId: line.id,
+        lineType: line.lineType,
+        ...context,
+      },
+      offer.userId,
+    );
+  }
+
+  publishOfferLineFulfillmentFailed(offer: OfferEntity, line: OfferLineItemEntity, message: string): void {
+    this.publish(
+      'offer.line.fulfillment_failed',
+      {
+        offerId: offer.id,
+        offerNumber: offer.offerNumber ?? null,
+        lineId: line.id,
+        lineType: line.lineType,
+        message,
+      },
+      offer.userId,
+    );
   }
 
   publishPayment(
@@ -563,6 +611,7 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
       id: invoice.id,
       subscriptionId: invoice.subscriptionId ?? null,
       projectId: invoice.projectId ?? null,
+      offerId: invoice.offerId ?? null,
       userId: invoice.userId,
       invoiceNumber: invoice.invoiceNumber ?? null,
       status: invoice.status,
@@ -572,6 +621,25 @@ export class BillingNotificationPublisher implements IIdentityNotificationPublis
       issuedAt: invoice.issuedAt?.toISOString() ?? null,
       voidedAt: invoice.voidedAt?.toISOString() ?? null,
       createdAt: invoice.createdAt.toISOString(),
+    };
+  }
+
+  private toOfferPayload(offer: OfferEntity): Record<string, unknown> {
+    return {
+      id: offer.id,
+      userId: offer.userId,
+      offerNumber: offer.offerNumber ?? null,
+      status: offer.status,
+      currency: offer.currency,
+      totalGross: Number(offer.totalGross),
+      expiresAt: offer.expiresAt?.toISOString() ?? null,
+      archivedAt: offer.archivedAt?.toISOString() ?? null,
+      acceptedAt: offer.acceptedAt?.toISOString() ?? null,
+      declinedAt: offer.declinedAt?.toISOString() ?? null,
+      expiredAt: offer.expiredAt?.toISOString() ?? null,
+      revokedAt: offer.revokedAt?.toISOString() ?? null,
+      createdAt: offer.createdAt.toISOString(),
+      updatedAt: offer.updatedAt.toISOString(),
     };
   }
 

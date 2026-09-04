@@ -29,6 +29,7 @@ import { PaymentOrchestrationService } from '../services/payment-orchestration.s
 import { SubscriptionService } from '../services/subscription.service';
 import { ensureAdmin, getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
 import { getMinCheckoutPaymentAmount } from '../constants/payment-amount.constants';
+import { OfferProfileSummaryService } from '../offers/services/offer-profile-summary.service';
 
 export class InvoicesSummaryResponseDto {
   openOverdueCount!: number;
@@ -36,6 +37,7 @@ export class InvoicesSummaryResponseDto {
   billingDayOfMonth!: number;
   unbilledTotal!: number;
   minCheckoutPaymentAmount!: number;
+  pendingOffersCount!: number;
 }
 
 @Controller('invoices')
@@ -48,6 +50,7 @@ export class InvoicesController {
     private readonly usersBillingDayRepository: UsersBillingDayRepository,
     private readonly paymentOrchestrationService: PaymentOrchestrationService,
     private readonly subscriptionsRepository: SubscriptionsRepository,
+    private readonly offerProfileSummaryService: OfferProfileSummaryService,
   ) {}
 
   @RequireScopes('invoices:read')
@@ -59,10 +62,11 @@ export class InvoicesController {
       throw new BadRequestException('User not authenticated');
     }
 
-    const [summary, billingDayOfMonth, unbilledTotal] = await Promise.all([
+    const [summary, billingDayOfMonth, unbilledTotal, offerCounts] = await Promise.all([
       this.invoicesRepository.findOpenOverdueSummaryByUserId(userInfo.userId),
       this.usersBillingDayRepository.getEffectiveBillingDayForUser(userInfo.userId),
       this.invoiceCreationService.getUnbilledTotalForUser(userInfo.userId),
+      this.offerProfileSummaryService.getCustomerCounts(userInfo.userId),
     ]);
 
     return {
@@ -71,6 +75,7 @@ export class InvoicesController {
       billingDayOfMonth,
       unbilledTotal,
       minCheckoutPaymentAmount: getMinCheckoutPaymentAmount(),
+      pendingOffersCount: offerCounts.pendingOffersCount,
     };
   }
 

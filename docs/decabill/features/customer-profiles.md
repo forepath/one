@@ -27,13 +27,13 @@ See [VAT and tax treatment](./vat-and-tax-treatment.md) for reverse-charge eligi
 
 ## Self-Service
 
-| Method | Path                                     | Purpose                         |
-| ------ | ---------------------------------------- | ------------------------------- |
-| GET    | `/customer-profile`                      | Retrieve current user's profile |
-| POST   | `/customer-profile`                      | Create or update profile        |
-| POST   | `/customer-profile/auto-billing/setup`   | Start payment-method setup      |
-| POST   | `/customer-profile/auto-billing/enable`  | Enable auto-billing             |
-| POST   | `/customer-profile/auto-billing/disable` | Disable auto-billing            |
+| Method | Path                                     | Purpose                                                         |
+| ------ | ---------------------------------------- | --------------------------------------------------------------- |
+| GET    | `/customer-profile`                      | Retrieve current user's profile (includes pending offer counts) |
+| POST   | `/customer-profile`                      | Create or update profile                                        |
+| POST   | `/customer-profile/auto-billing/setup`   | Start payment-method setup                                      |
+| POST   | `/customer-profile/auto-billing/enable`  | Enable auto-billing                                             |
+| POST   | `/customer-profile/auto-billing/disable` | Disable auto-billing                                            |
 
 The billing console exposes a customer profile page for authenticated users to complete or update billing details before ordering. Auto-billing controls live in the profile modal; see [Auto-Billing](./auto-billing.md).
 

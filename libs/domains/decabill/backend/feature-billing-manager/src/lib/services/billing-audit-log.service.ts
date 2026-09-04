@@ -16,11 +16,12 @@ export class BillingAuditLogService {
     level: 'info' | 'warn' | 'error';
     message: string;
     invoiceId?: string;
+    offerId?: string;
     userId?: string;
     correlationId?: string;
     context?: Record<string, unknown>;
   }): Promise<void> {
-    const { process, level, message, invoiceId, userId, correlationId, context } = params;
+    const { process, level, message, invoiceId, offerId, userId, correlationId, context } = params;
 
     if (level === 'error') {
       this.logger.error(`[${process}] ${message}`, context);
@@ -35,11 +36,25 @@ export class BillingAuditLogService {
       level,
       message,
       invoiceId,
+      offerId,
       userId,
       correlationId,
       tenantId: getTenantIdOrDefault(),
       context: context ?? {},
     });
+  }
+
+  async listForOffer(
+    offerId: string,
+    limit: number,
+    offset: number,
+  ): Promise<{ items: BillingAuditLogResponseDto[]; total: number }> {
+    const result = await this.auditLogsRepository.findByOfferId(offerId, limit, offset);
+
+    return {
+      items: result.items.map((row) => this.mapToResponse(row)),
+      total: result.total,
+    };
   }
 
   async listForInvoice(
@@ -75,6 +90,7 @@ export class BillingAuditLogService {
       level: entity.level,
       message: entity.message,
       invoiceId: entity.invoiceId,
+      offerId: entity.offerId,
       userId: entity.userId,
       context: entity.context ?? {},
       createdAt: entity.createdAt,

@@ -6,6 +6,8 @@ function asString(value: unknown): string {
 
 export const BILLING_EMAIL_SUBJECTS: EmailSubjectRegistry = {
   'invoice-issued': (ctx) => `Your invoice ${asString(ctx.invoiceNumber)} is ready`,
+  'offer-archived': (ctx) => `Your offer ${asString(ctx.offerNumber)} is ready`,
+  'offer-accepted-confirmation': (ctx) => `Offer ${asString(ctx.offerNumber)} accepted`,
   'invoice-voided': (ctx) => `Credit note ${asString(ctx.creditNoteNumber)} for invoice ${asString(ctx.invoiceNumber)}`,
   'invoice-partial-credit': (ctx) =>
     `Credit note ${asString(ctx.creditNoteNumber)} for invoice ${asString(ctx.invoiceNumber)}`,
@@ -34,6 +36,8 @@ export const BILLING_EMAIL_SUBJECTS: EmailSubjectRegistry = {
 
 export const BILLING_EMAIL_EVENTS = [
   'invoice.issued',
+  'offer.archived',
+  'offer.accepted',
   'invoice.voided',
   'invoice.partial_credit_issued',
   'subscription.renewal_reminder',

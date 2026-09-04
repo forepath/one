@@ -1062,6 +1062,8 @@ export interface CustomerProfileResponse {
   autoBillingEnabled?: boolean;
   hasPaymentMethodOnFile?: boolean;
   supportsAutoPayment?: boolean;
+  pendingOffersCount?: number;
+  actionRequiredOffersCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -1170,6 +1172,7 @@ export interface InvoicesSummaryResponse {
   unbilledTotal: number;
   /** Minimum balance due required for Checkout / payment-method charges. */
   minCheckoutPaymentAmount?: number;
+  pendingOffersCount?: number;
 }
 
 /** Catalog counts for the current user (independent of list pagination / search). */
@@ -1483,6 +1486,15 @@ export interface CreateAdminCustomerProfileDto extends CustomerProfileDto {
   userId: string;
 }
 
+export interface AdminOfferProfileCounts {
+  draft: number;
+  archived: number;
+  accepted: number;
+  declined: number;
+  expired: number;
+  revoked: number;
+}
+
 export interface AdminCustomerProfileDetail extends CustomerProfileResponse {
   userEmail?: string;
   isComplete: boolean;
@@ -1491,6 +1503,7 @@ export interface AdminCustomerProfileDetail extends CustomerProfileResponse {
   trustScore?: number;
   trustLevel?: CustomerTrustLevel;
   trustScoreUpdatedAt?: string;
+  offerCounts?: AdminOfferProfileCounts;
   /** Admin-only encrypted custom key/value map; never present on customer profile responses. */
   customData: Record<string, string>;
 }

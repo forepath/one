@@ -9,6 +9,7 @@ import { CloudInitConfigEntity } from '../entities/cloud-init-config.entity';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { DatevExportEntity } from '../entities/datev-export.entity';
 import { InvoiceEntity } from '../entities/invoice.entity';
+import { OfferEntity } from '../offers/entities/offer.entity';
 import { MeterEntity } from '../entities/meter.entity';
 import { PromotionEntity } from '../entities/promotion.entity';
 import { ServicePlanEntity } from '../entities/service-plan.entity';
@@ -28,6 +29,7 @@ import { SearchReindexJobHandler } from './search-reindex.job-handler';
     TypeOrmModule.forFeature([
       SubscriptionEntity,
       InvoiceEntity,
+      OfferEntity,
       ProjectEntity,
       ProjectTicketEntity,
       PromotionEntity,
