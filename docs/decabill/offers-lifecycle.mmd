@@ -1,0 +1,41 @@
+sequenceDiagram
+    participant Admin
+    participant AdminAPI as Admin Offers API
+    participant CustomerAPI as Customer Offers API
+    participant PDF as OfferPdfService
+    participant Email as BillingEmailPublisher
+    participant Customer
+    participant Fulfillment as OfferFulfillmentService
+    participant Jobs as BullMQ Jobs
+    participant Search as OpenSearch
+
+    Admin->>AdminAPI: POST draft (standard + plan + project lines)
+    AdminAPI-->>Admin: draft offer
+
+    Admin->>AdminAPI: POST :id/archive
+    AdminAPI->>PDF: generate eInvoice 330 PDF
+    AdminAPI->>Email: publishOfferArchived
+    AdminAPI->>Search: upsert offer document
+    AdminAPI-->>Admin: archived offer
+
+    Customer->>CustomerAPI: GET /pending
+    CustomerAPI-->>Customer: pending offers
+
+    Customer->>CustomerAPI: GET /:id + GET /:id/pdf
+    CustomerAPI-->>Customer: detail + PDF
+
+    alt Accept
+        Customer->>CustomerAPI: POST /:id/accept
+        CustomerAPI->>Fulfillment: fulfill immediate lines
+        Fulfillment->>Jobs: schedule deferred lines (scheduledAt)
+        CustomerAPI->>Email: publishOfferAcceptedConfirmation
+        CustomerAPI->>Search: upsert accepted offer
+        CustomerAPI-->>Customer: accepted offer
+    else Decline
+        Customer->>CustomerAPI: POST /:id/decline
+        CustomerAPI->>Search: upsert declined offer
+        CustomerAPI-->>Customer: declined offer
+    end
+
+    Note over Jobs: offer-expiration marks archived offers past expiresAt
+    Note over Admin,AdminAPI: revoke allowed only in draft or archived

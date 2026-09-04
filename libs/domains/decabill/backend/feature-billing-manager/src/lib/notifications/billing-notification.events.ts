@@ -104,6 +104,15 @@ export const BILLING_NOTIFICATION_EVENTS = [
   'search.reindex.completed',
   'search.reindex.failed',
   'search.document.sync_failed',
+  'offer.created',
+  'offer.updated',
+  'offer.archived',
+  'offer.revoked',
+  'offer.accepted',
+  'offer.declined',
+  'offer.expired',
+  'offer.line.fulfilled',
+  'offer.line.fulfillment_failed',
 ] as const;
 
 export type BillingNotificationEventType = (typeof BILLING_NOTIFICATION_EVENTS)[number];

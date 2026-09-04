@@ -4,6 +4,15 @@ import type { CustomerTrustLevel } from '../trust-score/trust-score.types';
 
 import { CustomerProfileDto } from './customer-profile.dto';
 
+export class AdminOfferProfileCountsDto {
+  draft!: number;
+  archived!: number;
+  accepted!: number;
+  declined!: number;
+  expired!: number;
+  revoked!: number;
+}
+
 export class CreateAdminCustomerProfileDto extends CustomerProfileDto {
   @IsUUID('4', { message: 'User ID must be a valid UUID' })
   userId!: string;
@@ -62,6 +71,7 @@ export class AdminCustomerProfileDetailDto extends CustomerProfileDto {
   trustScore?: number | null;
   trustLevel?: CustomerTrustLevel | null;
   trustScoreUpdatedAt?: Date | null;
+  offerCounts?: AdminOfferProfileCountsDto;
   customData!: Record<string, string>;
   createdAt!: Date;
   updatedAt!: Date;

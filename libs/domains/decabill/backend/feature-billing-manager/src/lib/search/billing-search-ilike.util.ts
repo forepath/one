@@ -105,6 +105,12 @@ const SEARCH_FIELD_COLUMNS: Partial<
     serviceTypeId: (a) => `CAST(${a}.service_type_id AS text)`,
     id: (a) => `CAST(${a}.id AS text)`,
   },
+  offers: {
+    offerNumber: (a) => `${a}.offer_number`,
+    status: (a) => `${a}.status::text`,
+    userId: (a) => `CAST(${a}.user_id AS text)`,
+    id: (a) => `CAST(${a}.id AS text)`,
+  },
 };
 
 /**

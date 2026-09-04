@@ -53,6 +53,10 @@ export const BillingJobName = {
   SEARCH_REINDEX_COORDINATOR: 'search-reindex.coordinator',
   SEARCH_REINDEX_UNIT: 'search-reindex.unit',
   SEARCH_INDEX_SYNC_UNIT: 'search-index-sync.unit',
+  OFFER_EXPIRATION_COORDINATOR: 'offer-expiration.coordinator',
+  OFFER_EXPIRATION_UNIT: 'offer-expiration.unit',
+  OFFER_FULFILLMENT_COORDINATOR: 'offer-fulfillment.coordinator',
+  OFFER_FULFILLMENT_UNIT: 'offer-fulfillment.unit',
 } as const;
 
 export type BillingJobName = (typeof BillingJobName)[keyof typeof BillingJobName];
@@ -239,6 +243,18 @@ export function getBillingRepeatableJobs(): BillingRepeatableJobDefinition[] {
     name: BillingJobName.SEARCH_REINDEX_COORDINATOR,
     coordinatorJobId: buildCoordinatorJobId('search-reindex'),
     everyMs: parseIntervalMs('SEARCH_REINDEX_INTERVAL', 900_000),
+  });
+
+  jobs.push({
+    name: BillingJobName.OFFER_EXPIRATION_COORDINATOR,
+    coordinatorJobId: buildCoordinatorJobId('offer-expiration'),
+    everyMs: parseIntervalMs('OFFER_EXPIRATION_SCHEDULER_INTERVAL', 3_600_000),
+  });
+
+  jobs.push({
+    name: BillingJobName.OFFER_FULFILLMENT_COORDINATOR,
+    coordinatorJobId: buildCoordinatorJobId('offer-fulfillment'),
+    everyMs: parseIntervalMs('OFFER_FULFILLMENT_SCHEDULER_INTERVAL', 60_000),
   });
 
   return jobs;

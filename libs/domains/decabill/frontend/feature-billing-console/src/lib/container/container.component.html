@@ -181,6 +181,19 @@
         <span class="small" i18n="@@featureContainer-promotions">Promotions</span>
       </a>
       <a
+        routerLink="/offers"
+        routerLinkActive="active"
+        class="sidebar__item position-relative"
+        i18n-title="@@featureContainer-offersTitle"
+        title="Offers"
+      >
+        <i class="bi bi-file-earmark-text me-1"></i>
+        <span class="small" i18n="@@featureContainer-offers">Offers</span>
+        @if (offersPendingBadge() > 0) {
+          <span class="notification-badge sidebar__item-badge" aria-hidden="true"></span>
+        }
+      </a>
+      <a
         routerLink="/invoices"
         routerLinkActive="active"
         class="sidebar__item"

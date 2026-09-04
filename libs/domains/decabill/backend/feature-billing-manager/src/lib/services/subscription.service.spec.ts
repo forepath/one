@@ -20,6 +20,7 @@ import { CloudInitConfigService } from './cloud-init-config.service';
 import { CustomerProfilesService } from './customer-profiles.service';
 import { SubscriptionService } from './subscription.service';
 import { BackordersRepository } from '../repositories/backorders.repository';
+import { SubscriptionOrderPreparationService } from '../offers/services/subscription-order-preparation.service';
 
 jest.mock('../utils/config-validation.utils', () => ({
   validateConfigSchema: jest.fn().mockReturnValue([]),
@@ -115,7 +116,23 @@ describe('SubscriptionService', () => {
     calculate: jest.fn().mockReturnValue({ totalPrice: 10 }),
   } as unknown as PricingService;
   const taxCalculationService = {
-    computeLines: jest.fn().mockReturnValue({ totalGross: 11.9 }),
+    computeLines: jest.fn().mockReturnValue({
+      subtotalNet: 10,
+      taxTotal: 1.9,
+      totalGross: 11.9,
+      lines: [
+        {
+          description: 'Subscription period',
+          quantity: 1,
+          unitPriceNet: 10,
+          taxCategory: 'standard',
+          taxRate: 19,
+          lineNet: 10,
+          lineTax: 1.9,
+          lineGross: 11.9,
+        },
+      ],
+    }),
   } as unknown as import('./tax-calculation.service').TaxCalculationService;
   const invoiceTaxContextService = {
     resolveForUser: jest.fn().mockResolvedValue({
@@ -179,6 +196,21 @@ describe('SubscriptionService', () => {
   const cloudInitDispatchService = {
     buildUserData: jest.fn().mockReturnValue('mock-user-data'),
   };
+  const providerRegistry = { getProvider: jest.fn().mockReturnValue(undefined) } as never;
+  const subscriptionOrderPreparationService = new SubscriptionOrderPreparationService(
+    customerProfilesService,
+    plansRepository,
+    typesRepository,
+    addonService as never,
+    availabilityService,
+    cloudInitConfigService,
+    providerServerTypesService,
+    pricingService,
+    taxCalculationService,
+    invoiceTaxContextService,
+    providerCatalogDispatchService,
+    providerRegistry,
+  );
   const service = new SubscriptionService(
     plansRepository,
     typesRepository,
@@ -213,7 +245,8 @@ describe('SubscriptionService', () => {
     { buildSubscriptionMeterSummaries: jest.fn().mockResolvedValue([]) } as never,
     { scheduleUpsert: jest.fn(), scheduleDelete: jest.fn() } as never,
     cloudInitDispatchService as never,
-    { getProvider: jest.fn().mockReturnValue(undefined) } as never,
+    providerRegistry,
+    subscriptionOrderPreparationService,
   );
 
   beforeEach(() => {

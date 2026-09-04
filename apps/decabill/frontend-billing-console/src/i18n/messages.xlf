@@ -5148,6 +5148,342 @@
       <trans-unit id="featureUpdates-dependencyUnknown" datatype="html">
         <source>Unknown</source>
         </trans-unit>
+      <trans-unit id="featureContainer-offersPage" datatype="html">
+        <source>Offers</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-offersTitle" datatype="html">
+        <source>Offers</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-offers" datatype="html">
+        <source>Offers</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminOffersPage" datatype="html">
+        <source>Offers</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminOffersTitle" datatype="html">
+        <source>Offers</source>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminOffers" datatype="html">
+        <source>Offers</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-title" datatype="html">
+        <source>Offers</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-mobilePending" datatype="html">
+        <source>Pending</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-mobileHistory" datatype="html">
+        <source>History</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-pendingCount" datatype="html">
+        <source>Pending offers</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-actionRequiredCount" datatype="html">
+        <source>Action required</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-acceptedCount" datatype="html">
+        <source>Accepted</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-historyCount" datatype="html">
+        <source>History</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-pendingList" datatype="html">
+        <source>Pending offers</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-searchPending" datatype="html">
+        <source>Search pending offers</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-loadingPending" datatype="html">
+        <source>Loading pending offers…</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-noPending" datatype="html">
+        <source>No pending offers.</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-historyList" datatype="html">
+        <source>Offer history</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-searchHistory" datatype="html">
+        <source>Search offer history</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-loadingHistory" datatype="html">
+        <source>Loading offer history…</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-noHistory" datatype="html">
+        <source>No offer history.</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-previewButtonTitle" datatype="html">
+        <source>Preview offer</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-downloadButtonTitle" datatype="html">
+        <source>Download PDF</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-previewTitle" datatype="html">
+        <source>Offer preview</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-loadingPreview" datatype="html">
+        <source>Loading offer…</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-expiresAt" datatype="html">
+        <source>Expires <x id="INTERPOLATION" equiv-text="{{ formatDate(detail.expiresAt) }}"/></source>
+      </trans-unit>
+      <trans-unit id="featureOffers-lineDescription" datatype="html">
+        <source>Description</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-lineQty" datatype="html">
+        <source>Qty</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-lineGross" datatype="html">
+        <source>Gross</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-downloadPdf" datatype="html">
+        <source>Download PDF</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-decline" datatype="html">
+        <source>Decline</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-accept" datatype="html">
+        <source>Accept</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-declineConfirmTitle" datatype="html">
+        <source>Decline offer?</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-declineConfirmBody" datatype="html">
+        <source>This offer will be marked as declined and removed from your pending list.</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-cancel" datatype="html">
+        <source>Cancel</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-declineConfirm" datatype="html">
+        <source>Decline offer</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusDraft" datatype="html">
+        <source>Draft</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusArchived" datatype="html">
+        <source>Pending response</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusAccepted" datatype="html">
+        <source>Accepted</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusDeclined" datatype="html">
+        <source>Declined</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusExpired" datatype="html">
+        <source>Expired</source>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusRevoked" datatype="html">
+        <source>Revoked</source>
+      </trans-unit>
+      <trans-unit id="featureBilling-offerStatusEmpty" datatype="html">
+        <source>Unknown</source>
+      </trans-unit>
+      <trans-unit id="featureBilling-offerStatusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-title" datatype="html">
+        <source>Offers</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-create" datatype="html">
+        <source>Create offer</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-mobileOverview" datatype="html">
+        <source>Overview</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-mobileOffers" datatype="html">
+        <source>Offers</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-draftCount" datatype="html">
+        <source>Draft</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-pendingCount" datatype="html">
+        <source>Pending</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-acceptedCount" datatype="html">
+        <source>Accepted</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-pendingGross" datatype="html">
+        <source>Pending gross</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-statisticsTitle" datatype="html">
+        <source>Statistics</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-listTitle" datatype="html">
+        <source>Offers</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-toggleFilters" datatype="html">
+        <source>Toggle filters</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-fromDate" datatype="html">
+        <source>From</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-toDate" datatype="html">
+        <source>To</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-groupBy" datatype="html">
+        <source>Group by</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-groupByDay" datatype="html">
+        <source>Day</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-groupByMonth" datatype="html">
+        <source>Month</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-customerFilter" datatype="html">
+        <source>Customer</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-applyFilters" datatype="html">
+        <source>Apply</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-noStatistics" datatype="html">
+        <source>No statistics for the selected period.</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-searchPlaceholder" datatype="html">
+        <source>Search offers</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-empty" datatype="html">
+        <source>No offers yet.</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-edit" datatype="html">
+        <source>Edit</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-audit" datatype="html">
+        <source>Audit log</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-archive" datatype="html">
+        <source>Send to customer</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-revoke" datatype="html">
+        <source>Revoke</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-delete" datatype="html">
+        <source>Delete</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-createTitle" datatype="html">
+        <source>Create offer</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-createSkeletonHint" datatype="html">
+        <source>Offer line-item editor will be wired when backend templates are finalized. Select a customer to create a draft shell.</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-customer" datatype="html">
+        <source>Customer</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-expiresAt" datatype="html">
+        <source>Expires at</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-cancel" datatype="html">
+        <source>Cancel</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-saveDraft" datatype="html">
+        <source>Save draft</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-editTitle" datatype="html">
+        <source>Edit offer</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-editSkeletonHint" datatype="html">
+        <source>Draft offer editor skeleton.</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-saveChanges" datatype="html">
+        <source>Save changes</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-deleteTitle" datatype="html">
+        <source>Delete draft offer?</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-deleteBody" datatype="html">
+        <source>This permanently deletes the draft offer.</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-deleteConfirm" datatype="html">
+        <source>Delete</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-auditTitle" datatype="html">
+        <source>Audit history</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-noAuditLogs" datatype="html">
+        <source>No audit entries.</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-loadMoreAudit" datatype="html">
+        <source>Load more</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-chartArchived" datatype="html">
+        <source>Archived</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-chartAccepted" datatype="html">
+        <source>Accepted</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-chartDeclined" datatype="html">
+        <source>Declined</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-chartTitle" datatype="html">
+        <source>Offer activity over time</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-currency" datatype="html">
+        <source>Currency</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-billToOpenPositions" datatype="html">
+        <source>Bill accepted charges to open positions</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineHeading" datatype="html">
+        <source>Line <x id="INTERPOLATION" equiv-text="{{ i + 1 }}"/></source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-removeLine" datatype="html">
+        <source>Remove</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineType" datatype="html">
+        <source>Line type</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineTypeStandard" datatype="html">
+        <source>Generic</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineTypeProject" datatype="html">
+        <source>Project template</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineTypePlan" datatype="html">
+        <source>Plan template</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineDescription" datatype="html">
+        <source>Description</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineQuantity" datatype="html">
+        <source>Quantity</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineUnitPriceNet" datatype="html">
+        <source>Unit price (net)</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineUnitLabel" datatype="html">
+        <source>Unit label</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineTaxCategory" datatype="html">
+        <source>Tax category</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-projectName" datatype="html">
+        <source>Project name</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-projectDescription" datatype="html">
+        <source>Project description</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-hourlyRateNet" datatype="html">
+        <source>Hourly rate (net)</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-targetHours" datatype="html">
+        <source>Target hours</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-plan" datatype="html">
+        <source>Service plan</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-loadingPlans" datatype="html">
+        <source>Loading plans…</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-selectPlan" datatype="html">
+        <source>Select a plan</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-promotionCode" datatype="html">
+        <source>Promotion code (optional)</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-scheduledAt" datatype="html">
+        <source>Scheduled at (optional)</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-addLine" datatype="html">
+        <source>Add line</source>
+      </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>
         </trans-unit>

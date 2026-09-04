@@ -6556,6 +6556,446 @@
         <source>Back to login</source>
         <target>Zurück zur Anmeldung</target>
       </trans-unit>
+      <trans-unit id="featureContainer-offersPage" datatype="html">
+        <source>Offers</source>
+        <target>Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-offersTitle" datatype="html">
+        <source>Offers</source>
+        <target>Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-offers" datatype="html">
+        <source>Offers</source>
+        <target>Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminOffersPage" datatype="html">
+        <source>Offers</source>
+        <target>Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminOffersTitle" datatype="html">
+        <source>Offers</source>
+        <target>Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminOffers" datatype="html">
+        <source>Offers</source>
+        <target>Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-title" datatype="html">
+        <source>Offers</source>
+        <target>Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-mobilePending" datatype="html">
+        <source>Pending</source>
+        <target>Ausstehend</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-mobileHistory" datatype="html">
+        <source>History</source>
+        <target>Verlauf</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-pendingCount" datatype="html">
+        <source>Pending offers</source>
+        <target>Ausstehende Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-actionRequiredCount" datatype="html">
+        <source>Action required</source>
+        <target>Aktion erforderlich</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-acceptedCount" datatype="html">
+        <source>Accepted</source>
+        <target>Angenommen</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-historyCount" datatype="html">
+        <source>History</source>
+        <target>Verlauf</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-pendingList" datatype="html">
+        <source>Pending offers</source>
+        <target>Ausstehende Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-searchPending" datatype="html">
+        <source>Search pending offers</source>
+        <target>Ausstehende Angebote suchen</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-loadingPending" datatype="html">
+        <source>Loading pending offers…</source>
+        <target>Ausstehende Angebote werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-noPending" datatype="html">
+        <source>No pending offers.</source>
+        <target>Keine ausstehenden Angebote.</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-historyList" datatype="html">
+        <source>Offer history</source>
+        <target>Angebotsverlauf</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-searchHistory" datatype="html">
+        <source>Search offer history</source>
+        <target>Angebotsverlauf suchen</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-loadingHistory" datatype="html">
+        <source>Loading offer history…</source>
+        <target>Angebotsverlauf wird geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-noHistory" datatype="html">
+        <source>No offer history yet.</source>
+        <target>Noch kein Angebotsverlauf.</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-previewButtonTitle" datatype="html">
+        <source>Preview offer</source>
+        <target>Angebot anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-downloadButtonTitle" datatype="html">
+        <source>Download PDF</source>
+        <target>PDF herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-previewTitle" datatype="html">
+        <source>Offer preview</source>
+        <target>Angebotsvorschau</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-loadingPreview" datatype="html">
+        <source>Loading offer…</source>
+        <target>Angebot wird geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-expiresAt" datatype="html">
+        <source>Expires</source>
+        <target>Läuft ab</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-lineDescription" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-lineQty" datatype="html">
+        <source>Qty</source>
+        <target>Menge</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-lineGross" datatype="html">
+        <source>Gross</source>
+        <target>Brutto</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-downloadPdf" datatype="html">
+        <source>Download PDF</source>
+        <target>PDF herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-decline" datatype="html">
+        <source>Decline</source>
+        <target>Ablehnen</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-accept" datatype="html">
+        <source>Accept</source>
+        <target>Annehmen</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-declineConfirmTitle" datatype="html">
+        <source>Decline offer?</source>
+        <target>Angebot ablehnen?</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-declineConfirmBody" datatype="html">
+        <source>This offer will be marked as declined.</source>
+        <target>Dieses Angebot wird als abgelehnt markiert.</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-declineConfirm" datatype="html">
+        <source>Decline offer</source>
+        <target>Angebot ablehnen</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusDraft" datatype="html">
+        <source>Draft</source>
+        <target>Entwurf</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusArchived" datatype="html">
+        <source>Pending</source>
+        <target>Ausstehend</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusAccepted" datatype="html">
+        <source>Accepted</source>
+        <target>Angenommen</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusDeclined" datatype="html">
+        <source>Declined</source>
+        <target>Abgelehnt</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusExpired" datatype="html">
+        <source>Expired</source>
+        <target>Abgelaufen</target>
+      </trans-unit>
+      <trans-unit id="featureOffers-statusRevoked" datatype="html">
+        <source>Revoked</source>
+        <target>Widerrufen</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-offerStatusEmpty" datatype="html">
+        <source>Unknown</source>
+        <target>Unbekannt</target>
+      </trans-unit>
+      <trans-unit id="featureBilling-offerStatusUnknown" datatype="html">
+        <source>Unknown (<x id="PH" equiv-text="status"/>)</source>
+        <target>Unbekannt (<x id="PH" equiv-text="status"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-title" datatype="html">
+        <source>Offers</source>
+        <target>Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-create" datatype="html">
+        <source>Create offer</source>
+        <target>Angebot erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-mobileOverview" datatype="html">
+        <source>Overview</source>
+        <target>Übersicht</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-mobileOffers" datatype="html">
+        <source>Offers</source>
+        <target>Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-draftCount" datatype="html">
+        <source>Draft</source>
+        <target>Entwurf</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-pendingCount" datatype="html">
+        <source>Pending</source>
+        <target>Ausstehend</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-acceptedCount" datatype="html">
+        <source>Accepted</source>
+        <target>Angenommen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-pendingGross" datatype="html">
+        <source>Pending gross</source>
+        <target>Ausstehend brutto</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-statisticsTitle" datatype="html">
+        <source>Statistics</source>
+        <target>Statistik</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-listTitle" datatype="html">
+        <source>Offers</source>
+        <target>Angebote</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-toggleFilters" datatype="html">
+        <source>Toggle filters</source>
+        <target>Filter ein-/ausblenden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-fromDate" datatype="html">
+        <source>From</source>
+        <target>Von</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-toDate" datatype="html">
+        <source>To</source>
+        <target>Bis</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-groupBy" datatype="html">
+        <source>Group by</source>
+        <target>Gruppieren nach</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-groupByDay" datatype="html">
+        <source>Day</source>
+        <target>Tag</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-groupByMonth" datatype="html">
+        <source>Month</source>
+        <target>Monat</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-customerFilter" datatype="html">
+        <source>Customer</source>
+        <target>Kunde</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-applyFilters" datatype="html">
+        <source>Apply filters</source>
+        <target>Filter anwenden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-noStatistics" datatype="html">
+        <source>No statistics for the selected period.</source>
+        <target>Keine Statistik für den gewählten Zeitraum.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-searchPlaceholder" datatype="html">
+        <source>Search offers</source>
+        <target>Angebote suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-empty" datatype="html">
+        <source>No offers yet.</source>
+        <target>Noch keine Angebote.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-edit" datatype="html">
+        <source>Edit</source>
+        <target>Bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-audit" datatype="html">
+        <source>Audit log</source>
+        <target>Audit-Protokoll</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-archive" datatype="html">
+        <source>Send to customer</source>
+        <target>An Kunden senden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-revoke" datatype="html">
+        <source>Revoke</source>
+        <target>Widerrufen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-delete" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-createTitle" datatype="html">
+        <source>Create offer</source>
+        <target>Angebot erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-customer" datatype="html">
+        <source>Customer</source>
+        <target>Kunde</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-expiresAt" datatype="html">
+        <source>Expires at</source>
+        <target>Läuft ab am</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-cancel" datatype="html">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-saveDraft" datatype="html">
+        <source>Save draft</source>
+        <target>Entwurf speichern</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-editTitle" datatype="html">
+        <source>Edit offer</source>
+        <target>Angebot bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-saveChanges" datatype="html">
+        <source>Save changes</source>
+        <target>Änderungen speichern</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-deleteTitle" datatype="html">
+        <source>Delete draft offer?</source>
+        <target>Entwurfsangebot löschen?</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-deleteBody" datatype="html">
+        <source>This permanently deletes the draft offer.</source>
+        <target>Dies löscht das Entwurfsangebot dauerhaft.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-deleteConfirm" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-auditTitle" datatype="html">
+        <source>Audit history</source>
+        <target>Audit-Verlauf</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-noAuditLogs" datatype="html">
+        <source>No audit entries.</source>
+        <target>Keine Audit-Einträge.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-loadMoreAudit" datatype="html">
+        <source>Load more</source>
+        <target>Mehr laden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-chartArchived" datatype="html">
+        <source>Archived</source>
+        <target>Archiviert</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-chartAccepted" datatype="html">
+        <source>Accepted</source>
+        <target>Angenommen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-chartDeclined" datatype="html">
+        <source>Declined</source>
+        <target>Abgelehnt</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-chartTitle" datatype="html">
+        <source>Offer activity over time</source>
+        <target>Angebotsaktivität im Zeitverlauf</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-currency" datatype="html">
+        <source>Currency</source>
+        <target>Währung</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-billToOpenPositions" datatype="html">
+        <source>Bill accepted charges to open positions</source>
+        <target>Angenommene Beträge offenen Posten zuordnen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineHeading" datatype="html">
+        <source>Line <x id="INTERPOLATION" equiv-text="{{ i + 1 }}"/></source>
+        <target>Position <x id="INTERPOLATION" equiv-text="{{ i + 1 }}"/></target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-removeLine" datatype="html">
+        <source>Remove</source>
+        <target>Entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineType" datatype="html">
+        <source>Line type</source>
+        <target>Positionstyp</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineTypeStandard" datatype="html">
+        <source>Generic</source>
+        <target>Generisch</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineTypeProject" datatype="html">
+        <source>Project template</source>
+        <target>Projektvorlage</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineTypePlan" datatype="html">
+        <source>Plan template</source>
+        <target>Tarifvorlage</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineDescription" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineQuantity" datatype="html">
+        <source>Quantity</source>
+        <target>Menge</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineUnitPriceNet" datatype="html">
+        <source>Unit price (net)</source>
+        <target>Einzelpreis (netto)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineUnitLabel" datatype="html">
+        <source>Unit label</source>
+        <target>Einheit</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-lineTaxCategory" datatype="html">
+        <source>Tax category</source>
+        <target>Steuerkategorie</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-projectName" datatype="html">
+        <source>Project name</source>
+        <target>Projektname</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-projectDescription" datatype="html">
+        <source>Project description</source>
+        <target>Projektbeschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-hourlyRateNet" datatype="html">
+        <source>Hourly rate (net)</source>
+        <target>Stundensatz (netto)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-targetHours" datatype="html">
+        <source>Target hours</source>
+        <target>Zielstunden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-plan" datatype="html">
+        <source>Service plan</source>
+        <target>Service-Tarif</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-loadingPlans" datatype="html">
+        <source>Loading plans…</source>
+        <target>Tarife werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-selectPlan" datatype="html">
+        <source>Select a plan</source>
+        <target>Tarif auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-promotionCode" datatype="html">
+        <source>Promotion code (optional)</source>
+        <target>Aktionscode (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-scheduledAt" datatype="html">
+        <source>Scheduled at (optional)</source>
+        <target>Geplant am (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-addLine" datatype="html">
+        <source>Add line</source>
+        <target>Position hinzufügen</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
