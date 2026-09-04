@@ -25,6 +25,8 @@ export class CustomerProfileResponseDto {
   autoBillingEnabled?: boolean;
   hasPaymentMethodOnFile?: boolean;
   supportsAutoPayment?: boolean;
+  pendingOffersCount?: number;
+  actionRequiredOffersCount?: number;
   createdAt!: Date;
   updatedAt!: Date;
 }

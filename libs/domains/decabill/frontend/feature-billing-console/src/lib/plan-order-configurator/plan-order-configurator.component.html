@@ -1,0 +1,427 @@
+@if (line.planId.trim()) {
+  @let plan = selectedPlan();
+
+  <div class="plan-order-configurator__main mt-1">
+    @if (addonsLoading) {
+      <div class="text-muted small d-flex align-items-center gap-2 mb-2">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span i18n="@@featureSubscriptions-loadingAddons">Loading addons…</span>
+      </div>
+    } @else if (addons.length > 0) {
+      <fieldset class="border rounded p-3 mb-3">
+        <legend class="fs-6 mb-2" i18n="@@featureSubscriptions-addons">Addons</legend>
+        @for (addon of addons; track addon.id) {
+          <div class="mb-2">
+            <div class="form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [id]="fieldId('Addon_' + addon.id)"
+                [checked]="isAddonSelected(addon.id)"
+                (change)="toggleAddon(addon.id, $any($event.target).checked)"
+                [disabled]="isAddonMandatory(addon.id)"
+              />
+              <label class="form-check-label w-100" [for]="fieldId('Addon_' + addon.id)">
+                <span class="d-flex justify-content-between gap-3">
+                  <span>
+                    @if (isAddonInvalid(addon.id)) {
+                      <i class="bi bi-exclamation-circle text-danger me-1" aria-hidden="true"></i>
+                    }
+                    {{ addon.name }}
+                    @if (addon.mandatory) {
+                      <span class="badge text-bg-secondary ms-1" i18n="@@featureSubscriptions-mandatoryAddonBadge"
+                        >Required</span
+                      >
+                    }
+                  </span>
+                  <span class="text-nowrap">{{ formatCurrencyAmount(addon.periodPrice) }}</span>
+                </span>
+              </label>
+            </div>
+          </div>
+        }
+      </fieldset>
+    }
+
+    @if (hasInfrastructureSection()) {
+      <div class="border rounded p-3 mb-3">
+        <h6 class="mb-3" i18n="@@featureSubscriptions-orderStepInfrastructure">Server & region</h6>
+        @if (hasProviderSelection()) {
+          <div class="mb-3">
+            <label [for]="fieldId('Provider')" class="form-label" i18n="@@featureSubscriptions-orderProvider"
+              >Provider</label
+            >
+            <select
+              [id]="fieldId('Provider')"
+              class="form-select"
+              [(ngModel)]="provisioningProvider"
+              (ngModelChange)="onProviderChange()"
+              [name]="fieldId('Provider')"
+            >
+              @for (providerId of providerOptions(); track providerId) {
+                <option [ngValue]="providerId">{{ providerLabel(providerId) }}</option>
+              }
+            </select>
+          </div>
+        }
+        @if (serverTypesLoading) {
+          <div class="text-muted small d-flex align-items-center gap-2 mb-2">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span>Loading server types…</span>
+          </div>
+        } @else if (serverTypeOptions.length > 0) {
+          <div class="mb-3">
+            <label [for]="fieldId('ServerType')" class="form-label">Server type</label>
+            <select
+              [id]="fieldId('ServerType')"
+              class="form-select"
+              [(ngModel)]="provisioningServerType"
+              (ngModelChange)="onServerTypeChange()"
+              [name]="fieldId('ServerType')"
+            >
+              @for (st of serverTypeOptions; track st.id) {
+                <option [ngValue]="st.id">{{ formatServerTypeOptionLabel(st) }}</option>
+              }
+            </select>
+          </div>
+        }
+        @if (geographyFieldKey && locationOptions.length > 0) {
+          <div>
+            <label [for]="fieldId('Location')" class="form-label">Region / location</label>
+            <select
+              [id]="fieldId('Location')"
+              class="form-select"
+              [(ngModel)]="provisioningLocation"
+              (ngModelChange)="onLocationChange()"
+              [name]="fieldId('Location')"
+            >
+              @for (opt of locationOptions; track opt) {
+                <option [ngValue]="opt">{{ formatLocationLabel(opt) }}</option>
+              }
+            </select>
+          </div>
+        }
+      </div>
+    }
+
+    @if (hasConfigurationSection()) {
+      <div class="border rounded p-3 mb-3">
+        <h6 class="mb-3" i18n="@@featureSubscriptions-cloudInitConfig">Instance configuration</h6>
+        @if (provisioningOptionsLoading) {
+          <div class="text-muted small d-flex align-items-center gap-2">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span i18n="@@featureSubscriptions-loadingProvisioningOptions">Loading provisioning options…</span>
+          </div>
+        } @else if (provisioningOptionsError) {
+          <div class="alert alert-danger py-2 mb-0 small" role="alert">
+            <span i18n="@@featureSubscriptions-provisioningOptionsError"
+              >Could not load provisioning options for this plan.</span
+            >
+          </div>
+        } @else {
+          @if (showProvisioningPicker()) {
+            <div class="mb-3">
+              <label
+                [for]="fieldId('ProvisioningOption')"
+                class="form-label"
+                i18n="@@featureSubscriptions-provisioningOption"
+                >Provisioning option</label
+              >
+              <select
+                [id]="fieldId('ProvisioningOption')"
+                class="form-select"
+                [ngModel]="provisioningOptionKey"
+                (ngModelChange)="onProvisioningOptionKeyChange($event)"
+                [name]="fieldId('ProvisioningOption')"
+              >
+                @for (option of provisioningOptions; track option.optionKey) {
+                  <option [ngValue]="option.optionKey">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+          }
+          @if (showCustomConfiguration()) {
+            @if (customOrderFieldsLoading) {
+              <div class="text-muted small d-flex align-items-center gap-2">
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span i18n="@@featureSubscriptions-loadingCustomOrderFields">Loading configuration fields…</span>
+              </div>
+            } @else if (customOrderFieldsError) {
+              <div class="alert alert-danger py-2 mb-0 small" role="alert">
+                <span i18n="@@featureSubscriptions-customOrderFieldsError"
+                  >Could not load configuration fields for this option.</span
+                >
+              </div>
+            } @else {
+              @for (field of customOrderFields; track field.key) {
+                <div class="mb-3">
+                  <label [for]="fieldId('Custom_' + field.key)" class="form-label">{{ field.label }}</label>
+                  <input
+                    [type]="isSecretOrderField(field) ? 'password' : 'text'"
+                    [id]="fieldId('Custom_' + field.key)"
+                    class="form-control"
+                    [(ngModel)]="customEnv[field.key]"
+                    (ngModelChange)="onIntegratedFieldChange()"
+                    [name]="fieldId('Custom_' + field.key)"
+                    [required]="field.required"
+                    [placeholder]="field.hasDefault ? fieldDefaultPlaceholder : ''"
+                  />
+                </div>
+              }
+            }
+          } @else if (showIntegratedConfiguration()) {
+            <div class="mb-3">
+              <label [for]="fieldId('AuthMethod')" class="form-label" i18n="@@featureSubscriptions-authMethod"
+                >Authentication method</label
+              >
+              <select
+                [id]="fieldId('AuthMethod')"
+                class="form-select"
+                [ngModel]="integratedConfig.authenticationMethod"
+                (ngModelChange)="onAuthMethodChange($event)"
+                [name]="fieldId('AuthMethod')"
+              >
+                @if (
+                  integratedConfig.service === 'agenstra-controller' || integratedConfig.service === 'decabill-billing'
+                ) {
+                  <option [ngValue]="'users'" i18n="@@featureSubscriptions-authUsers">Users</option>
+                }
+                <option [ngValue]="'api-key'" i18n="@@featureSubscriptions-authApiKey">API Key</option>
+                <option [ngValue]="'keycloak'" i18n="@@featureSubscriptions-authKeycloak">Keycloak</option>
+              </select>
+            </div>
+            @if (
+              integratedConfig.authenticationMethod === 'users' &&
+              (integratedConfig.service === 'agenstra-controller' || integratedConfig.service === 'decabill-billing')
+            ) {
+              <div class="form-check mb-3">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  [id]="fieldId('DisableSignup')"
+                  [(ngModel)]="integratedConfig.disableSignup"
+                  (ngModelChange)="onIntegratedFieldChange()"
+                  [name]="fieldId('DisableSignup')"
+                />
+                <label
+                  class="form-check-label"
+                  [for]="fieldId('DisableSignup')"
+                  i18n="@@featureSubscriptions-disableSignup"
+                  >Disable signup</label
+                >
+              </div>
+            }
+            @if (integratedConfig.authenticationMethod === 'api-key') {
+              <div class="mb-3">
+                <label [for]="fieldId('StaticApiKey')" class="form-label" i18n="@@featureSubscriptions-staticApiKey"
+                  >Static API Key</label
+                >
+                <input
+                  type="password"
+                  [id]="fieldId('StaticApiKey')"
+                  class="form-control"
+                  [(ngModel)]="integratedConfig.staticApiKey"
+                  (ngModelChange)="onIntegratedFieldChange()"
+                  [name]="fieldId('StaticApiKey')"
+                />
+              </div>
+            }
+            @if (integratedConfig.authenticationMethod === 'keycloak') {
+              <fieldset class="mb-3">
+                <legend class="form-label fs-6" i18n="@@featureSubscriptions-keycloakSection">Keycloak</legend>
+                <input
+                  type="url"
+                  class="form-control mb-2"
+                  [(ngModel)]="integratedConfig.keycloak.serverUrl"
+                  (ngModelChange)="onIntegratedFieldChange()"
+                  [name]="fieldId('KeycloakServerUrl')"
+                  placeholder="https://keycloak.example.com"
+                />
+                <input
+                  type="url"
+                  class="form-control mb-2"
+                  [(ngModel)]="integratedConfig.keycloak.authServerUrl"
+                  (ngModelChange)="onIntegratedFieldChange()"
+                  [name]="fieldId('KeycloakAuthServerUrl')"
+                  placeholder="https://keycloak.example.com/auth"
+                />
+                <div class="row g-2">
+                  <div class="col-md-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      [(ngModel)]="integratedConfig.keycloak.realm"
+                      (ngModelChange)="onIntegratedFieldChange()"
+                      [name]="fieldId('KeycloakRealm')"
+                      placeholder="realm"
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      [(ngModel)]="integratedConfig.keycloak.clientId"
+                      (ngModelChange)="onIntegratedFieldChange()"
+                      [name]="fieldId('KeycloakClientId')"
+                      placeholder="client-id"
+                    />
+                  </div>
+                </div>
+                <input
+                  type="password"
+                  class="form-control mt-2"
+                  [(ngModel)]="integratedConfig.keycloak.clientSecret"
+                  (ngModelChange)="onIntegratedFieldChange()"
+                  [name]="fieldId('KeycloakClientSecret')"
+                />
+              </fieldset>
+            }
+          }
+        }
+      </div>
+    }
+
+    @if (showInlinePriceCard()) {
+      <div class="plan-order-configurator__price-inline">
+        <ng-container [ngTemplateOutlet]="priceCard" />
+        @if (plan) {
+          <ng-container [ngTemplateOutlet]="termsCard" />
+        }
+      </div>
+    }
+
+    @for (addon of selectedAddonsWithConfigFields(); track addon.id) {
+      <div class="border rounded p-3 mb-3">
+        <h6 class="mb-3">{{ addon.name }}</h6>
+        @for (field of addon.orderFields; track field.key) {
+          <div class="mb-3" [class.mb-0]="$last">
+            <label [for]="fieldId('AddonConfig_' + addon.id + '_' + field.key)" class="form-label">{{
+              field.label
+            }}</label>
+            <input
+              [type]="isSecretOrderField(field) ? 'password' : 'text'"
+              [id]="fieldId('AddonConfig_' + addon.id + '_' + field.key)"
+              class="form-control"
+              [ngModel]="getAddonConfigValue(addon.id, field.key)"
+              (ngModelChange)="setAddonConfigValue(addon.id, field.key, $event)"
+              [name]="fieldId('AddonConfig_' + addon.id + '_' + field.key)"
+              [required]="field.required"
+            />
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <div
+    #floatingPriceCard
+    class="plan-order-configurator__price-floating"
+    [class.plan-order-configurator__price-floating--hidden]="showInlinePriceCard()"
+    [attr.aria-hidden]="showInlinePriceCard() ? 'true' : null"
+  >
+    <ng-container [ngTemplateOutlet]="priceCard" />
+    @if (plan) {
+      <ng-container [ngTemplateOutlet]="termsCard" />
+    }
+  </div>
+
+  <ng-template #priceCard>
+    <div class="card plan-order-configurator__price-card">
+      <div class="card-body">
+        <h6 class="mb-3 fw-semibold" i18n="@@featureSubscriptions-orderPriceTitle">Price</h6>
+        @if (pricingLoading) {
+          <div class="text-muted small d-flex align-items-center gap-2">
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span i18n="@@featureSubscriptions-loadingPrice">Loading price…</span>
+          </div>
+        } @else if (pricingPreview(); as pricing) {
+          <dl class="mb-0 small">
+            <div class="d-flex justify-content-between gap-3 border-bottom pb-2 mb-2">
+              <dt class="text-body-secondary fw-semibold" i18n="@@featureSubscriptions-productBase">
+                Product total (net)
+              </dt>
+              <dd class="mb-0 text-nowrap fw-semibold">{{ formatCurrencyAmount(pricing.totalPrice) }}</dd>
+            </div>
+            @for (addonLine of pricing.addonLines ?? []; track addonLine.addonId) {
+              <div class="d-flex justify-content-between gap-3">
+                <dt class="text-body-secondary fw-normal">
+                  @if (addonLine.invalid) {
+                    <i
+                      class="bi bi-exclamation-circle text-danger me-1"
+                      aria-hidden="true"
+                      [title]="invalidAddonLabel"
+                    ></i>
+                    <span class="visually-hidden">{{ invalidAddonLabel }}</span>
+                  }
+                  {{ addonLine.name }}
+                </dt>
+                <dd
+                  class="mb-2 text-nowrap fw-normal"
+                  [class.text-decoration-line-through]="addonLine.invalid === true"
+                  [class.text-body-secondary]="addonLine.invalid === true"
+                >
+                  {{ formatCurrencyAmount(addonLine.periodPrice) }}
+                </dd>
+              </div>
+            }
+            @if ((pricing.addonLines?.length ?? 0) > 0) {
+              <div class="d-flex justify-content-between gap-3 border-bottom pb-2 mb-2">
+                <dt class="text-body-secondary fw-semibold" i18n="@@featureSubscriptions-addonsTotal">Addons total</dt>
+                <dd class="mb-0 text-nowrap fw-semibold">
+                  {{ formatCurrencyAmount(pricing.addonsTotal ?? 0) }}
+                </dd>
+              </div>
+            }
+            <div class="d-flex justify-content-between gap-3">
+              <dt class="text-body-secondary fw-semibold" i18n="@@featureInvoices-subtotalNet">Subtotal (net)</dt>
+              <dd class="mb-2 text-nowrap fw-semibold">
+                {{ formatCurrencyAmount(pricing.grandTotal ?? pricing.totalPrice) }}
+              </dd>
+            </div>
+            <div class="d-flex justify-content-between gap-3">
+              <dt class="text-body-secondary fw-semibold">
+                <span i18n="@@featureInvoices-taxTotal">Tax total</span>
+                <span> ({{ pricing.taxRate | number: '1.0-1' }}%)</span>
+              </dt>
+              <dd class="mb-2 text-nowrap fw-semibold">{{ formatCurrencyAmount(pricing.taxTotal) }}</dd>
+            </div>
+            <div class="d-flex justify-content-between gap-3 border-top pt-2">
+              <dt class="text-body-secondary fw-semibold" i18n="@@featureInvoices-totalGross">Total</dt>
+              <dd class="mb-0 text-nowrap fw-semibold">{{ formatCurrencyAmount(pricing.totalGross) }}</dd>
+            </div>
+          </dl>
+        } @else {
+          <p class="text-muted small mb-0">-</p>
+        }
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #termsCard>
+    @if (plan; as selectedPlan) {
+      <div class="card bg-body border plan-order-configurator__terms-card mt-3">
+        <div class="card-body">
+          <h6 class="mb-3" i18n="@@featureSubscriptions-orderTermsTitle">Runtime & terms</h6>
+          <div class="text-body-secondary small">
+            <span i18n="@@featureSubscriptions-billingInterval">Runtime</span>
+            <strong class="ms-2"
+              >{{ selectedPlan.billingIntervalValue }} {{ selectedPlan.billingIntervalType }}(s)</strong
+            >
+          </div>
+          <div class="text-body-secondary small mt-2">
+            <span i18n="@@featureSubscriptions-minCommitment">Min. commitment</span>
+            <strong class="ms-2"
+              >{{ selectedPlan.minCommitmentDays }} <span i18n="@@featureSubscriptions-days">days</span></strong
+            >
+          </div>
+          <div class="text-body-secondary small mt-2">
+            <span i18n="@@featureSubscriptions-noticeDays">Notice period</span>
+            <strong class="ms-2"
+              >{{ selectedPlan.noticeDays }} <span i18n="@@featureSubscriptions-days">days</span></strong
+            >
+          </div>
+        </div>
+      </div>
+    }
+  </ng-template>
+}

@@ -15,6 +15,7 @@ export const BILLING_SEARCH_ENTITY_TYPES = [
   'milestones',
   'users',
   'backorders',
+  'offers',
 ] as const;
 
 export type BillingSearchEntityType = (typeof BILLING_SEARCH_ENTITY_TYPES)[number];
@@ -54,6 +55,7 @@ export const BILLING_SEARCH_FIELDS: Record<BillingSearchEntityType, string[]> = 
   milestones: ['name', 'description', 'projectId', 'id'],
   users: ['email', 'role', 'id'],
   backorders: ['status', 'failureReason', 'userId', 'planId', 'serviceTypeId', 'id'],
+  offers: ['offerNumber', 'status', 'userEmail', 'userId', 'id'],
 };
 
 export const BILLING_SEARCH_REINDEX_BATCH_SIZE = 100;

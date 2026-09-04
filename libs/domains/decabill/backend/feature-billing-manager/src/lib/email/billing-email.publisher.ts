@@ -8,6 +8,7 @@ import { UsersRepository } from '@forepath/identity/backend';
 
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import type { OfferEntity } from '../offers/entities/offer.entity';
 import type { SubscriptionEntity } from '../entities/subscription.entity';
 import { CustomerProfilesRepository } from '../repositories/customer-profiles.repository';
 
@@ -59,6 +60,66 @@ export class BillingEmailPublisher {
         ...(dueDateLabel ? { dueDateLabel } : {}),
       },
       attachments,
+    });
+  }
+
+  async publishOfferArchived(offer: OfferEntity, pdfStorageKey: string): Promise<void> {
+    if (!offer.offerNumber) {
+      this.logger.debug(`Offer ${offer.id} has no offer number, skipping offer email`);
+
+      return;
+    }
+
+    const profile = await this.customerProfilesRepository.findByUserId(offer.userId);
+    const to = await this.resolveRecipientEmail(offer.userId, profile);
+
+    if (!to) {
+      this.logger.warn(`No billing email found for user ${offer.userId}, skipping offer email`);
+
+      return;
+    }
+
+    const expiresAtLabel = offer.expiresAt ? this.formatDueDate(offer.expiresAt) : undefined;
+
+    await this.emailDispatcher.publish({
+      eventType: 'offer.archived',
+      scopeKey: getTenantIdOrDefault(),
+      to,
+      templateKey: 'offer-archived',
+      templateContext: {
+        recipientName: this.greeting(profile),
+        offerNumber: offer.offerNumber,
+        amountLabel: this.formatAmount(Number(offer.totalGross), offer.currency),
+        ...(expiresAtLabel ? { expiresAtLabel } : {}),
+      },
+      attachments: [{ storageKey: pdfStorageKey, filename: `${offer.offerNumber}.pdf` }],
+    });
+  }
+
+  async publishOfferAcceptedConfirmation(offer: OfferEntity): Promise<void> {
+    if (!offer.offerNumber) {
+      return;
+    }
+
+    const profile = await this.customerProfilesRepository.findByUserId(offer.userId);
+    const to = await this.resolveRecipientEmail(offer.userId, profile);
+
+    if (!to) {
+      this.logger.warn(`No billing email found for user ${offer.userId}, skipping offer acceptance email`);
+
+      return;
+    }
+
+    await this.emailDispatcher.publish({
+      eventType: 'offer.accepted',
+      scopeKey: getTenantIdOrDefault(),
+      to,
+      templateKey: 'offer-accepted-confirmation',
+      templateContext: {
+        recipientName: this.greeting(profile),
+        offerNumber: offer.offerNumber,
+        amountLabel: this.formatAmount(Number(offer.totalGross), offer.currency),
+      },
     });
   }
 

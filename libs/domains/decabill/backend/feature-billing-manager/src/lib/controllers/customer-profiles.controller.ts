@@ -7,6 +7,7 @@ import { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { PaymentProcessorFactory } from '../payment-processors/payment-processor.factory';
 import { CustomerProfilesService } from '../services/customer-profiles.service';
 import { getUserFromRequest, type RequestWithUser } from '../utils/billing-access.utils';
+import { OfferProfileSummaryService } from '../offers/services/offer-profile-summary.service';
 
 @Controller('customer-profile')
 @RequireScopes('customer_profile:write')
@@ -14,6 +15,7 @@ export class CustomerProfilesController {
   constructor(
     private readonly customerProfilesService: CustomerProfilesService,
     private readonly paymentProcessorFactory: PaymentProcessorFactory,
+    private readonly offerProfileSummaryService: OfferProfileSummaryService,
   ) {}
 
   @Get()
@@ -26,7 +28,7 @@ export class CustomerProfilesController {
 
     const profile = await this.customerProfilesService.getByUserId(userInfo.userId);
 
-    return profile ? this.mapToResponse(profile) : null;
+    return profile ? await this.mapToResponse(profile) : null;
   }
 
   @Post()
@@ -39,7 +41,7 @@ export class CustomerProfilesController {
 
     const profile = await this.customerProfilesService.upsert(userInfo.userId, dto);
 
-    return this.mapToResponse(profile);
+    return await this.mapToResponse(profile);
   }
 
   @Post('vat-id/revalidate')
@@ -52,10 +54,10 @@ export class CustomerProfilesController {
 
     const profile = await this.customerProfilesService.revalidateVatId(userInfo.userId);
 
-    return this.mapToResponse(profile);
+    return await this.mapToResponse(profile);
   }
 
-  private mapToResponse(row: CustomerProfileEntity): CustomerProfileResponseDto {
+  private async mapToResponse(row: CustomerProfileEntity): Promise<CustomerProfileResponseDto> {
     const processorType = process.env.BILLING_DEFAULT_PAYMENT_PROCESSOR ?? 'stripe';
     let supportsAutoPayment = false;
 
@@ -64,6 +66,8 @@ export class CustomerProfilesController {
     } catch {
       supportsAutoPayment = false;
     }
+
+    const offerCounts = await this.offerProfileSummaryService.getCustomerCounts(row.userId);
 
     return {
       id: row.id,
@@ -89,6 +93,8 @@ export class CustomerProfilesController {
       autoBillingEnabled: row.autoBillingEnabled ?? false,
       hasPaymentMethodOnFile: Boolean(row.defaultPaymentMethodExternalId),
       supportsAutoPayment,
+      pendingOffersCount: offerCounts.pendingOffersCount,
+      actionRequiredOffersCount: offerCounts.actionRequiredOffersCount,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

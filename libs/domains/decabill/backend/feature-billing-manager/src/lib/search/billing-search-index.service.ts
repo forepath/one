@@ -10,6 +10,7 @@ import { CloudInitConfigEntity } from '../entities/cloud-init-config.entity';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { DatevExportEntity } from '../entities/datev-export.entity';
 import { InvoiceEntity } from '../entities/invoice.entity';
+import { OfferEntity } from '../offers/entities/offer.entity';
 import { MeterEntity } from '../entities/meter.entity';
 import { PromotionEntity } from '../entities/promotion.entity';
 import { ServicePlanEntity } from '../entities/service-plan.entity';
@@ -28,6 +29,7 @@ import {
   mapCustomerProfileToSearchDocument,
   mapDatevExportToSearchDocument,
   mapInvoiceToSearchDocument,
+  mapOfferToSearchDocument,
   mapMeterToSearchDocument,
   mapMilestoneToSearchDocument,
   mapProjectToSearchDocument,
@@ -58,6 +60,8 @@ export class BillingSearchIndexService {
     private readonly subscriptionsRepository: Repository<SubscriptionEntity>,
     @InjectRepository(InvoiceEntity)
     private readonly invoicesRepository: Repository<InvoiceEntity>,
+    @InjectRepository(OfferEntity)
+    private readonly offersRepository: Repository<OfferEntity>,
     @InjectRepository(ProjectEntity)
     private readonly projectsRepository: Repository<ProjectEntity>,
     @InjectRepository(ProjectTicketEntity)
@@ -226,6 +230,7 @@ export class BillingSearchIndexService {
           projectId: { type: 'keyword' },
           number: { type: 'text', fields: { keyword: { type: 'keyword' } } },
           invoiceNumber: { type: 'text', fields: { keyword: { type: 'keyword' } } },
+          offerNumber: { type: 'text', fields: { keyword: { type: 'keyword' } } },
           subscriptionNumber: { type: 'text', fields: { keyword: { type: 'keyword' } } },
           name: { type: 'text' },
           title: { type: 'text' },
@@ -256,6 +261,8 @@ export class BillingSearchIndexService {
         return await this.loadSubscriptions(tenantId, offset, limit);
       case 'invoices':
         return await this.loadInvoices(tenantId, offset, limit);
+      case 'offers':
+        return await this.loadOffers(tenantId, offset, limit);
       case 'projects':
         return await this.loadProjects(tenantId, offset, limit);
       case 'tickets':
@@ -389,6 +396,24 @@ export class BillingSearchIndexService {
         userEmail: raw?.userEmail,
         subscriptionNumber: invoice.subscription?.number,
       });
+    });
+  }
+
+  private async loadOffers(tenantId: string, offset: number, limit: number): Promise<BillingSearchDocument[]> {
+    const rows = await this.offersRepository
+      .createQueryBuilder('offer')
+      .innerJoin(UserEntity, 'user', 'user.id = offer.user_id')
+      .addSelect('user.email', 'userEmail')
+      .where('user.tenant_id = :tenantId', { tenantId })
+      .orderBy('offer.createdAt', 'ASC')
+      .skip(offset)
+      .take(limit)
+      .getRawAndEntities();
+
+    return rows.entities.map((offer, index) => {
+      const raw = rows.raw[index] as { userEmail?: string };
+
+      return mapOfferToSearchDocument(offer, tenantId, { userEmail: raw?.userEmail });
     });
   }
 

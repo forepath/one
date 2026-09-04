@@ -9,6 +9,7 @@ import { InvoiceCreationService } from '../services/invoice-creation.service';
 import { InvoiceService } from '../services/invoice.service';
 import { PaymentOrchestrationService } from '../services/payment-orchestration.service';
 import { SubscriptionService } from '../services/subscription.service';
+import { OfferProfileSummaryService } from '../offers/services/offer-profile-summary.service';
 
 import { InvoicesController } from './invoices.controller';
 
@@ -44,6 +45,7 @@ describe('InvoicesController', () => {
   let paymentOrchestrationService: jest.Mocked<
     Pick<PaymentOrchestrationService, 'initiatePayment' | 'initiatePaymentForUser'>
   >;
+  let offerProfileSummaryService: jest.Mocked<Pick<OfferProfileSummaryService, 'getCustomerCounts'>>;
   const subscriptionId = '11111111-1111-4111-8111-111111111111';
   const invoiceRefId = '22222222-2222-4222-8222-222222222222';
   const userId = 'user-1';
@@ -90,6 +92,9 @@ describe('InvoicesController', () => {
       initiatePayment: jest.fn(),
       initiatePaymentForUser: jest.fn(),
     };
+    offerProfileSummaryService = {
+      getCustomerCounts: jest.fn().mockResolvedValue({ pendingOffersCount: 3, actionRequiredOffersCount: 3 }),
+    };
 
     const moduleRef = await Test.createTestingModule({
       controllers: [InvoicesController],
@@ -101,6 +106,7 @@ describe('InvoicesController', () => {
         { provide: SubscriptionService, useValue: subscriptionService },
         { provide: PaymentOrchestrationService, useValue: paymentOrchestrationService },
         { provide: SubscriptionsRepository, useValue: subscriptionsRepository },
+        { provide: OfferProfileSummaryService, useValue: offerProfileSummaryService },
       ],
     }).compile();
 
@@ -121,6 +127,7 @@ describe('InvoicesController', () => {
         billingDayOfMonth: 12,
         unbilledTotal: 10,
         minCheckoutPaymentAmount: 1,
+        pendingOffersCount: 3,
       });
     });
 

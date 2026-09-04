@@ -3530,6 +3530,122 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden
+  /offers/summary:
+    get:
+      tags: [Offers]
+      summary: Offer summary for current customer
+      description: Requires `offers:read` scope for PAT callers.
+      operationId: getOffersSummary
+      responses:
+        '200':
+          description: Pending and history counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OffersSummaryResponseDto'
+  /offers/pending:
+    get:
+      tags: [Offers]
+      summary: List pending offers for current customer
+      operationId: listPendingOffers
+      parameters:
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          description: Pending offers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerOfferListItemDto'
+  /offers/history:
+    get:
+      tags: [Offers]
+      summary: List offer history for current customer
+      operationId: listOfferHistory
+      parameters:
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          description: Offer history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerOfferListItemDto'
+  /offers/{offerRefId}:
+    get:
+      tags: [Offers]
+      summary: Get offer detail for current customer
+      operationId: getCustomerOfferDetail
+      parameters:
+        - name: offerRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Offer detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerOfferDetailResponseDto'
+  /offers/{offerRefId}/pdf:
+    get:
+      tags: [Offers]
+      summary: Download offer PDF
+      operationId: downloadCustomerOfferPdf
+      parameters:
+        - name: offerRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Offer PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+  /offers/{offerRefId}/accept:
+    post:
+      tags: [Offers]
+      summary: Accept offer
+      description: Requires `offers:write` scope for PAT callers.
+      operationId: acceptCustomerOffer
+      parameters:
+        - name: offerRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Accepted offer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerOfferDetailResponseDto'
+  /offers/{offerRefId}/decline:
+    post:
+      tags: [Offers]
+      summary: Decline offer
+      description: Requires `offers:write` scope for PAT callers.
+      operationId: declineCustomerOffer
+      parameters:
+        - name: offerRefId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Declined offer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerOfferDetailResponseDto'
   /webhooks/payments/stripe:
     post:
       summary: Stripe payment webhook
@@ -4768,6 +4884,189 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedPromotionRedemptionsResponseDto'
+  /admin/billing/offers:
+    get:
+      tags: [Admin Billing]
+      summary: List offers (admin)
+      operationId: listAdminOffers
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - $ref: '#/components/parameters/Search'
+        - name: userId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Paginated offers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAdminOffersResponseDto'
+    post:
+      tags: [Admin Billing]
+      summary: Create offer draft (admin)
+      operationId: createAdminOffer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAdminOfferDto'
+      responses:
+        '201':
+          description: Created offer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOfferDetailResponseDto'
+  /admin/billing/offers/statistics:
+    get:
+      tags: [Admin Billing]
+      summary: Offer statistics (admin)
+      operationId: getAdminOfferStatistics
+      parameters:
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+        - name: groupBy
+          in: query
+          schema: { type: string, enum: [day, month], default: day }
+        - name: userId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Offer KPIs and transition series
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OfferStatisticsResponseDto'
+  /admin/billing/offers/{id}:
+    get:
+      tags: [Admin Billing]
+      summary: Get offer (admin)
+      operationId: getAdminOffer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Offer detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOfferDetailResponseDto'
+    put:
+      tags: [Admin Billing]
+      summary: Update offer draft (admin)
+      operationId: updateAdminOffer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAdminOfferDto'
+      responses:
+        '200':
+          description: Updated offer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOfferDetailResponseDto'
+    delete:
+      tags: [Admin Billing]
+      summary: Delete offer draft (admin)
+      operationId: deleteAdminOffer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Offer deleted
+  /admin/billing/offers/{id}/archive:
+    post:
+      tags: [Admin Billing]
+      summary: Archive offer and send to customer (admin)
+      operationId: archiveAdminOffer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Archived offer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOfferDetailResponseDto'
+  /admin/billing/offers/{id}/revoke:
+    post:
+      tags: [Admin Billing]
+      summary: Revoke archived offer (admin)
+      operationId: revokeAdminOffer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Revoked offer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminOfferDetailResponseDto'
+  /admin/billing/offers/{id}/pdf:
+    get:
+      tags: [Admin Billing]
+      summary: Download offer PDF (admin)
+      operationId: downloadAdminOfferPdf
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Offer PDF
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+  /admin/billing/offers/{id}/audit-logs:
+    get:
+      tags: [Admin Billing]
+      summary: List audit logs for offer (admin)
+      operationId: listAdminOfferAuditLogs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: Paginated audit logs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBillingAuditLogsResponse'
   /admin/billing/customer-profiles:
     get:
       tags: [Admin Billing]
@@ -10261,6 +10560,156 @@ components:
         total: { type: integer }
         limit: { type: integer }
         offset: { type: integer }
+    OfferStandardLineDto:
+      type: object
+      required: [description, quantity, unitPriceNet]
+      properties:
+        description: { type: string }
+        quantity: { type: number, minimum: 0.0001 }
+        unitPriceNet: { type: number }
+        unitLabel: { type: string }
+        taxCategory: { type: string }
+        scheduledAt: { type: string, format: date-time }
+    OfferLineInputDto:
+      type: object
+      required: [lineType, payload]
+      properties:
+        lineType:
+          { type: string, enum: [standard, project_template, plan_template] }
+        payload:
+          type: object
+          additionalProperties: true
+    CreateAdminOfferDto:
+      type: object
+      required: [userId, lineItems]
+      properties:
+        userId: { type: string, format: uuid }
+        currency: { type: string }
+        expiresAt: { type: string, format: date-time }
+        billToOpenPositions: { type: boolean }
+        lineItems:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OfferLineInputDto'
+    UpdateAdminOfferDto:
+      allOf:
+        - $ref: '#/components/schemas/CreateAdminOfferDto'
+    AdminOfferLineResponseDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        position: { type: integer }
+        lineType:
+          { type: string, enum: [standard, project_template, plan_template] }
+        description: { type: string }
+        quantity: { type: number }
+        unitLabel: { type: string, nullable: true }
+        unitPriceNet: { type: number }
+        taxCategory: { type: string }
+        taxRate: { type: number }
+        lineNet: { type: number }
+        lineTax: { type: number }
+        lineGross: { type: number }
+        scheduledAt: { type: string, format: date-time, nullable: true }
+        fulfillmentStatus: { type: string }
+    AdminOfferListItemDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        userEmail: { type: string }
+        offerNumber: { type: string, nullable: true }
+        status:
+          {
+            type: string,
+            enum: [draft, archived, accepted, declined, expired, revoked],
+          }
+        currency: { type: string }
+        totalGross: { type: number }
+        expiresAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AdminOfferDetailResponseDto:
+      allOf:
+        - $ref: '#/components/schemas/AdminOfferListItemDto'
+        - type: object
+          properties:
+            subtotalNet: { type: number }
+            taxTotal: { type: number }
+            billToOpenPositions: { type: boolean }
+            lineItems:
+              type: array
+              items:
+                $ref: '#/components/schemas/AdminOfferLineResponseDto'
+    PaginatedAdminOffersResponseDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminOfferListItemDto'
+        total: { type: integer }
+        limit: { type: integer }
+        offset: { type: integer }
+    OfferStatisticsResponseDto:
+      type: object
+      properties:
+        draftCount: { type: integer }
+        pendingCount: { type: integer }
+        pendingGross: { type: number }
+        acceptedCount: { type: integer }
+        acceptedGross: { type: number }
+        declinedCount: { type: integer }
+        expiredCount: { type: integer }
+        revokedCount: { type: integer }
+        series:
+          type: array
+          items:
+            type: object
+            properties:
+              period: { type: string }
+              archivedCount: { type: integer }
+              acceptedCount: { type: integer }
+              declinedCount: { type: integer }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        groupBy: { type: string, enum: [day, month] }
+    OffersSummaryResponseDto:
+      type: object
+      properties:
+        pendingCount: { type: integer }
+        actionRequiredCount: { type: integer }
+        acceptedCount: { type: integer }
+        historyCount: { type: integer }
+    CustomerOfferListItemDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        offerNumber: { type: string, nullable: true }
+        status:
+          {
+            type: string,
+            enum: [draft, archived, accepted, declined, expired, revoked],
+          }
+        currency: { type: string }
+        totalGross: { type: number }
+        expiresAt: { type: string, format: date-time, nullable: true }
+        archivedAt: { type: string, format: date-time, nullable: true }
+        acceptedAt: { type: string, format: date-time, nullable: true }
+        declinedAt: { type: string, format: date-time, nullable: true }
+    CustomerOfferDetailResponseDto:
+      allOf:
+        - $ref: '#/components/schemas/CustomerOfferListItemDto'
+        - type: object
+          properties:
+            subtotalNet: { type: number }
+            taxTotal: { type: number }
+            billToOpenPositions: { type: boolean }
+            lineItems:
+              type: array
+              items:
+                $ref: '#/components/schemas/AdminOfferLineResponseDto'
     CreateAdminPromotionDto:
       type: object
       required:

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-02T15:52:04.159Z",
+  "generatedAt": "2026-09-02T19:31:42.201Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -2684,6 +2684,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-frontend-data-access-billing-console"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-projects.service.ts",
       "type": "service",
       "attrs": {
@@ -2778,6 +2787,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-frontend-data-access-billing-console"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-frontend-data-access-billing-console"
       }
@@ -2963,6 +2981,23 @@
           "admin-invoice-manager.facade.ts",
           "admin-invoice-manager.reducer.ts",
           "admin-invoice-manager.selectors.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-offers",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-offers",
+        "languageOrKind": "ts",
+        "projectName": "decabill-frontend-data-access-billing-console",
+        "sliceName": "admin-offers",
+        "memberFiles": [
+          "admin-offers.actions.ts",
+          "admin-offers.effects.ts",
+          "admin-offers.facade.ts",
+          "admin-offers.reducer.ts",
+          "admin-offers.selectors.ts"
         ]
       }
     },
@@ -3185,6 +3220,23 @@
           "meters.facade.ts",
           "meters.reducer.ts",
           "meters.selectors.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/offers",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/offers",
+        "languageOrKind": "ts",
+        "projectName": "decabill-frontend-data-access-billing-console",
+        "sliceName": "offers",
+        "memberFiles": [
+          "offers.actions.ts",
+          "offers.effects.ts",
+          "offers.facade.ts",
+          "offers.reducer.ts",
+          "offers.selectors.ts"
         ]
       }
     },
@@ -7448,6 +7500,186 @@
       "type": "module",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/decabill-otel.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/offers.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/offers.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/dto/offer.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/dto/offer.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/entities/offer-line-item.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/entities/offer-line-item.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/entities/offer-number-sequence.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/entities/offer-number-sequence.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/entities/offer.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/entities/offer.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-line-items.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-line-items.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-number-sequences.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-number-sequences.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "repository",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-expiration.job-handler.ts",
+      "type": "job",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-expiration.job-handler.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.job-handler.ts",
+      "type": "job",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.job-handler.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf-template.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf-template.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-profile-summary.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-profile-summary.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-statistics-query.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-statistics-query.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -11993,6 +12225,34 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/offer-accepted-confirmation",
+      "type": "email",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/offer-accepted-confirmation",
+        "languageOrKind": "template",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "templateName": "offer-accepted-confirmation",
+        "memberFiles": [
+          "offer-accepted-confirmation.template.html",
+          "offer-accepted-confirmation.template.txt"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/offer-archived",
+      "type": "email",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/offer-archived",
+        "languageOrKind": "template",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "templateName": "offer-archived",
+        "memberFiles": [
+          "offer-archived.template.html",
+          "offer-archived.template.txt"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/payment-failed",
       "type": "email",
       "attrs": {
@@ -13065,6 +13325,14 @@
       }
     },
     {
+      "id": "file:docs/decabill/features/offers.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/offers.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/decabill/features/opentelemetry.md",
       "type": "doc",
       "attrs": {
@@ -13214,6 +13482,14 @@
       "attrs": {
         "path": "docs/decabill/getting-started.md",
         "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/offers-lifecycle.mmd",
+      "type": "diagram",
+      "attrs": {
+        "path": "docs/decabill/offers-lifecycle.mmd",
+        "languageOrKind": "mmd"
       }
     },
     {
@@ -17151,6 +17427,83 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/offers/summary",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/offers/summary",
+        "operationId": "getOffersSummary",
+        "summary": "Offer summary for current customer",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/offers/pending",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/offers/pending",
+        "operationId": "listPendingOffers",
+        "summary": "List pending offers for current customer",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/offers/history",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/offers/history",
+        "operationId": "listOfferHistory",
+        "summary": "List offer history for current customer",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/offers/{offerRefId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/offers/{offerRefId}",
+        "operationId": "getCustomerOfferDetail",
+        "summary": "Get offer detail for current customer",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/offers/{offerRefId}/pdf",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/offers/{offerRefId}/pdf",
+        "operationId": "downloadCustomerOfferPdf",
+        "summary": "Download offer PDF",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/offers/{offerRefId}/accept",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/offers/{offerRefId}/accept",
+        "operationId": "acceptCustomerOffer",
+        "summary": "Accept offer",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/offers/{offerRefId}/decline",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/offers/{offerRefId}/decline",
+        "operationId": "declineCustomerOffer",
+        "summary": "Decline offer",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:POST:/webhooks/payments/stripe",
       "type": "endpoint",
       "attrs": {
@@ -17675,6 +18028,116 @@
         "pathOrChannel": "/admin/billing/promotions/{id}/redemptions",
         "operationId": "listAdminPromotionRedemptions",
         "summary": "List redemptions for a promotion (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/offers",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/offers",
+        "operationId": "listAdminOffers",
+        "summary": "List offers (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/offers",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/offers",
+        "operationId": "createAdminOffer",
+        "summary": "Create offer draft (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/offers/statistics",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/offers/statistics",
+        "operationId": "getAdminOfferStatistics",
+        "summary": "Offer statistics (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/offers/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/offers/{id}",
+        "operationId": "getAdminOffer",
+        "summary": "Get offer (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/admin/billing/offers/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/admin/billing/offers/{id}",
+        "operationId": "updateAdminOffer",
+        "summary": "Update offer draft (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/admin/billing/offers/{id}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/admin/billing/offers/{id}",
+        "operationId": "deleteAdminOffer",
+        "summary": "Delete offer draft (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/offers/{id}/archive",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/offers/{id}/archive",
+        "operationId": "archiveAdminOffer",
+        "summary": "Archive offer and send to customer (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/billing/offers/{id}/revoke",
+        "operationId": "revokeAdminOffer",
+        "summary": "Revoke archived offer (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/offers/{id}/pdf",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/offers/{id}/pdf",
+        "operationId": "downloadAdminOfferPdf",
+        "summary": "Download offer PDF (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/offers/{id}/audit-logs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/offers/{id}/audit-logs",
+        "operationId": "listAdminOfferAuditLogs",
+        "summary": "List audit logs for offer (admin)",
         "specKind": "openapi"
       }
     },
@@ -18983,6 +19446,87 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "milestone.updated",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:offer.accepted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "offer.accepted",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:offer.archived",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "offer.archived",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:offer.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "offer.created",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:offer.declined",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "offer.declined",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:offer.expired",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "offer.expired",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:offer.line.fulfilled",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "offer.line.fulfilled",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:offer.line.fulfillment_failed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "offer.line.fulfillment_failed",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:offer.revoked",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "offer.revoked",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:offer.updated",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "offer.updated",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -28479,6 +29023,96 @@
       }
     },
     {
+      "id": "concept:decabill-customer-offers",
+      "type": "concept",
+      "attrs": {
+        "title": "Customer offers",
+        "docPath": "docs/decabill/features/offers.md",
+        "sectionAnchor": "customer-offers",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-terminology",
+      "type": "concept",
+      "attrs": {
+        "title": "Terminology",
+        "docPath": "docs/decabill/features/offers.md",
+        "sectionAnchor": "terminology",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-lifecycle",
+      "type": "concept",
+      "attrs": {
+        "title": "Lifecycle",
+        "docPath": "docs/decabill/features/offers.md",
+        "sectionAnchor": "lifecycle",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-line-types",
+      "type": "concept",
+      "attrs": {
+        "title": "Line types",
+        "docPath": "docs/decabill/features/offers.md",
+        "sectionAnchor": "line-types",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-fulfillment",
+      "type": "concept",
+      "attrs": {
+        "title": "Fulfillment",
+        "docPath": "docs/decabill/features/offers.md",
+        "sectionAnchor": "fulfillment",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-pdf-and-e-invoice",
+      "type": "concept",
+      "attrs": {
+        "title": "PDF and e-invoice",
+        "docPath": "docs/decabill/features/offers.md",
+        "sectionAnchor": "pdf-and-e-invoice",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-notifications-and-email",
+      "type": "concept",
+      "attrs": {
+        "title": "Notifications and email",
+        "docPath": "docs/decabill/features/offers.md",
+        "sectionAnchor": "notifications-and-email",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-search",
+      "type": "concept",
+      "attrs": {
+        "title": "Search",
+        "docPath": "docs/decabill/features/offers.md",
+        "sectionAnchor": "search",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-audit",
+      "type": "concept",
+      "attrs": {
+        "title": "Audit",
+        "docPath": "docs/decabill/features/offers.md",
+        "sectionAnchor": "audit",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-application",
       "type": "concept",
       "attrs": {
@@ -33967,6 +34601,11 @@
     },
     {
       "from": "project:decabill-frontend-data-access-billing-console",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-data-access-billing-console",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-projects.service.ts",
       "type": "contains"
     },
@@ -34018,6 +34657,11 @@
     {
       "from": "project:decabill-frontend-data-access-billing-console",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-data-access-billing-console",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
       "type": "contains"
     },
     {
@@ -34102,6 +34746,11 @@
     },
     {
       "from": "project:decabill-frontend-data-access-billing-console",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-offers",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-data-access-billing-console",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-promotions",
       "type": "contains"
     },
@@ -34163,6 +34812,11 @@
     {
       "from": "project:decabill-frontend-data-access-billing-console",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/meters",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-data-access-billing-console",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/offers",
       "type": "contains"
     },
     {
@@ -36353,6 +37007,106 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/modules/decabill-otel.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/offers.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/dto/offer.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/entities/offer-line-item.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/entities/offer-number-sequence.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/entities/offer.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-line-items.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-number-sequences.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-expiration.job-handler.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.job-handler.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf-template.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-profile-summary.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-statistics-query.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
       "type": "contains"
     },
     {
@@ -38837,6 +39591,16 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/offer-accepted-confirmation",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/offer-archived",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/templates/payment-failed",
       "type": "contains"
     },
@@ -40832,6 +41596,41 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/offers/summary",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/offers/pending",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/offers/history",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/offers/{offerRefId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/offers/{offerRefId}/pdf",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/offers/{offerRefId}/accept",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/offers/{offerRefId}/decline",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/webhooks/payments/stripe",
       "type": "contains"
     },
@@ -41068,6 +41867,56 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/admin/billing/promotions/{id}/redemptions",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/offers",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/offers",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/offers/statistics",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/admin/billing/offers/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/admin/billing/offers/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/archive",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}/pdf",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}/audit-logs",
       "type": "contains"
     },
     {
@@ -41698,6 +42547,51 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:milestone.updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:offer.accepted",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:offer.archived",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:offer.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:offer.declined",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:offer.expired",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:offer.line.fulfilled",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:offer.line.fulfillment_failed",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:offer.revoked",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:offer.updated",
       "type": "contains"
     },
     {
@@ -48046,6 +48940,71 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-customer-offers",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-terminology",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-lifecycle",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-line-types",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-admin-api",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-customer-api",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-fulfillment",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-pdf-and-e-invoice",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-notifications-and-email",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-search",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-audit",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-ui",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
+      "to": "concept:decabill-related-documentation",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/decabill/features/opentelemetry.md",
       "to": "concept:decabill-opentelemetry",
       "type": "contains"
@@ -51502,6 +52461,106 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/offers",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/offers",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/statistics",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/offers/statistics",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:PUT:/admin/billing/offers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:PUT:/admin/billing/offers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/offers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/admin/billing/offers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/archive",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/archive",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}/audit-logs",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}/audit-logs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/customer-profiles",
       "type": "implements"
     },
@@ -52638,6 +53697,56 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/promotions/{id}/redemptions",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/statistics",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:PUT:/admin/billing/offers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/offers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/archive",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}/audit-logs",
       "type": "implements"
     },
     {
@@ -54058,6 +55167,126 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:GET:/usage/summary/{subscriptionId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/statistics",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:PUT:/admin/billing/offers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/offers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/archive",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}/audit-logs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/offers.controller.ts",
+      "to": "api:HTTP:GET:/offers/summary",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/offers/summary",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/offers.controller.ts",
+      "to": "api:HTTP:GET:/offers/pending",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/offers/pending",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/offers.controller.ts",
+      "to": "api:HTTP:GET:/offers/history",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/offers/history",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/offers.controller.ts",
+      "to": "api:HTTP:GET:/offers/{offerRefId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/offers/{offerRefId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/offers.controller.ts",
+      "to": "api:HTTP:GET:/offers/{offerRefId}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/offers/{offerRefId}/pdf",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/offers.controller.ts",
+      "to": "api:HTTP:POST:/offers/{offerRefId}/accept",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/offers/{offerRefId}/accept",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/offers.controller.ts",
+      "to": "api:HTTP:POST:/offers/{offerRefId}/decline",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/offers/{offerRefId}/decline",
       "type": "implements"
     },
     {
@@ -57556,6 +58785,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/customer-profiles.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-profile-summary.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/invoices.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice.service.ts",
       "type": "injects"
@@ -57588,6 +58822,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/invoices.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscriptions.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/invoices.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-profile-summary.service.ts",
       "type": "injects"
     },
     {
@@ -57833,6 +59072,326 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/gateways/billing-status.gateway.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/subscriptions.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-statistics-query.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/offers.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-line-items.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-number-sequences.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-calculation.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-tax-context.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/customer-profiles.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-issuer-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/search/billing-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-expiration.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-expiration.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-line-items.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-line-items.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/projects-admin.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-issuance.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/open-positions.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/e-invoice-xml.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/e-invoice-embed.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf-template.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-pdf-html-renderer.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+      "to": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-profile-summary.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-statistics-query.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-line-items.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-calculation.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-tax-context.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/search/billing-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-line-items.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/customer-profiles.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/search/billing-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/customer-profiles.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-plans.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/service-types.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/addon.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/availability.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/cloud-init-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/provider-server-types.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/pricing.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-calculation.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-tax-context.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/provider-catalog-dispatch.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/provider-registry.service.ts",
       "type": "injects"
     },
     {
@@ -58543,6 +60102,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/customer-profiles-admin.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/search/billing-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/customer-profiles-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-profile-summary.service.ts",
       "type": "injects"
     },
     {
@@ -60051,6 +61615,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/supplier-contracts.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/supplier-contracts.repository.ts",
       "type": "injects"
@@ -61026,6 +62595,16 @@
       "type": "injects"
     },
     {
+      "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-expiration.job-handler.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.job-handler.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/communication.module.ts",
       "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-contact-requests.controller.ts",
       "type": "provides"
@@ -61518,6 +63097,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-promotions.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/admin-offers.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/controllers/offers.controller.ts",
       "type": "provides"
     },
     {
@@ -62028,6 +63617,76 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/supplier-invoices-admin.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-line-items.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offer-number-sequences.repository.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/subscription-order-preparation.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-admin.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offers-customer.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-archive.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf-template.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-statistics-query.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-expiration.job-handler.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-fulfillment.job-handler.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-profile-summary.service.ts",
       "type": "provides"
     },
     {
@@ -63311,6 +64970,46 @@
       "type": "calls"
     },
     {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "to": "api:HTTP:PUT:/admin/billing/offers/{id}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "to": "api:HTTP:DELETE:/admin/billing/offers/{id}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/archive",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "to": "api:HTTP:POST:/admin/billing/offers/{id}/revoke",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/statistics",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "to": "api:HTTP:GET:/admin/billing/offers/{id}/audit-logs",
+      "type": "calls"
+    },
+    {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-projects.service.ts",
       "to": "api:HTTP:GET:/admin/billing/projects",
       "type": "calls"
@@ -63633,6 +65332,41 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
       "to": "api:HTTP:DELETE:/meters/{id}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
+      "to": "api:HTTP:GET:/offers/summary",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
+      "to": "api:HTTP:GET:/offers/pending",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
+      "to": "api:HTTP:GET:/offers/history",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
+      "to": "api:HTTP:GET:/offers/{offerRefId}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
+      "to": "api:HTTP:GET:/offers/{offerRefId}/pdf",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
+      "to": "api:HTTP:POST:/offers/{offerRefId}/accept",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
+      "to": "api:HTTP:POST:/offers/{offerRefId}/decline",
       "type": "calls"
     },
     {
@@ -64621,6 +66355,11 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-offers",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-offers.service.ts",
+      "type": "contains"
+    },
+    {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-promotions",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-promotions.service.ts",
       "type": "contains"
@@ -64663,6 +66402,11 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/meters",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/meters.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/offers",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
       "type": "contains"
     },
     {
@@ -64778,6 +66522,11 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/invoices",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/invoices.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/offers",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/offers.service.ts",
       "type": "injects"
     },
     {
@@ -67962,72 +69711,12 @@
     },
     {
       "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:GET:/customer-profile",
+      "to": "api:HTTP:GET:/admin/billing/offers",
       "type": "documents"
     },
     {
       "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:POST:/customer-profile",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:GET:/admin/billing/customer-profiles",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:POST:/admin/billing/customer-profiles",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:DELETE:/admin/billing/customer-profiles/{id}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:GET:/admin/billing/customer-profiles/{id}/trust-score",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-admin-api",
-      "to": "api:HTTP:POST:/admin/billing/customer-profiles/{id}/trust-score/recompute",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-customer-api",
-      "to": "api:HTTP:GET:/service-plans",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-customer-api",
-      "to": "api:HTTP:POST:/service-plans",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-customer-api",
-      "to": "api:HTTP:GET:/service-plans/{id}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-customer-api",
-      "to": "api:HTTP:POST:/service-plans/{id}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-customer-api",
-      "to": "api:HTTP:DELETE:/service-plans/{id}",
+      "to": "api:HTTP:POST:/admin/billing/offers",
       "type": "documents"
     },
     {
@@ -68038,26 +69727,6 @@
     {
       "from": "concept:decabill-customer-api",
       "to": "api:HTTP:POST:/addons",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-customer-api",
-      "to": "api:HTTP:GET:/service-plans/{id}/addons",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-customer-api",
-      "to": "api:HTTP:GET:/subscriptions",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-customer-api",
-      "to": "api:HTTP:POST:/subscriptions",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-customer-api",
-      "to": "api:HTTP:POST:/pricing/preview",
       "type": "documents"
     },
     {
@@ -69568,6 +71237,11 @@
     {
       "from": "concept:decabill-api-endpoints-summary",
       "to": "api:HTTP:POST:/admin/billing/invoices/{invoiceRefId}/issue",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-fulfillment",
+      "to": "api:HTTP:POST:/subscriptions",
       "type": "documents"
     },
     {
@@ -73042,6 +74716,11 @@
     },
     {
       "from": "file:docs/decabill/features/numbering.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/offers.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -77127,6 +78806,51 @@
     },
     {
       "from": "concept:decabill-operator-guidance",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-customer-offers",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-terminology",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-lifecycle",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-line-types",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-fulfillment",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-pdf-and-e-invoice",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-notifications-and-email",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-search",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-audit",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

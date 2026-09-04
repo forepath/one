@@ -39,6 +39,11 @@
           },
           {
             "glob": "*.template.html",
+            "input": "libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/templates",
+            "output": "templates"
+          },
+          {
+            "glob": "*.template.html",
             "input": "libs/domains/shared/backend/feature-notifications/src/lib/templates",
             "output": "templates"
           },

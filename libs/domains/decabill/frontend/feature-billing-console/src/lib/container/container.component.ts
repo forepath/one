@@ -5,6 +5,7 @@ import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/ro
 import {
   BillingCapabilitiesFacade,
   CustomerProfileFacade,
+  OffersFacade,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import {
   AuthenticationFacade,
@@ -46,6 +47,7 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
   private readonly authenticationFacade = inject(AuthenticationFacade);
   private readonly billingCapabilitiesFacade = inject(BillingCapabilitiesFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
+  private readonly offersFacade = inject(OffersFacade);
   private readonly adminUpdatesFacade = inject(AdminUpdatesFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -81,6 +83,7 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
             url.includes('/dashboard') ||
             url.includes('/subscriptions') ||
             url.includes('/promotions') ||
+            url.includes('/offers') ||
             url.includes('/invoices') ||
             url.includes('/projects') ||
             url.includes('/administration') ||
@@ -95,6 +98,7 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
         this.router.url.includes('/dashboard') ||
         this.router.url.includes('/subscriptions') ||
         this.router.url.includes('/promotions') ||
+        this.router.url.includes('/offers') ||
         this.router.url.includes('/invoices') ||
         this.router.url.includes('/projects') ||
         this.router.url.includes('/administration') ||
@@ -131,6 +135,7 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
   readonly canAccessAdministration$ = this.authenticationFacade.canAccessBillingAdministration$;
   readonly updatesAttentionBadge$ = this.adminUpdatesFacade.hasAttention$;
   readonly updatesAttentionBadge = toSignal(this.updatesAttentionBadge$, { initialValue: false });
+  readonly offersPendingBadge = toSignal(this.offersFacade.getPendingBadgeCount$(), { initialValue: 0 });
 
   readonly datevExportEnabled = toSignal(this.billingCapabilitiesFacade.datevExportEnabled$, {
     initialValue: false,
@@ -217,8 +222,10 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
       .subscribe((isAuthenticated) => {
         if (isAuthenticated) {
           this.customerProfileFacade.loadCustomerProfile();
+          this.offersFacade.loadOffersSummary({ silent: true });
         } else {
           this.customerProfileFacade.clearCustomerProfile();
+          this.offersFacade.clearOffers();
         }
       });
 
@@ -417,6 +424,13 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
         icon: 'bi-tag',
         title: $localize`:@@featureContainer-adminPromotionsTitle:Promotions`,
         label: $localize`:@@featureContainer-adminPromotions:Promotions`,
+      },
+      {
+        routerLink: ['/administration/offers'],
+        activePaths: ['/administration/offers'],
+        icon: 'bi-file-earmark-text',
+        title: $localize`:@@featureContainer-adminOffersTitle:Offers`,
+        label: $localize`:@@featureContainer-adminOffers:Offers`,
       },
       {
         routerLink: ['/updates'],

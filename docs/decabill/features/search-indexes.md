@@ -19,6 +19,8 @@ Summary KPI bars (subscriptions, overview, admin contracts) use dedicated summar
 
 Customer promotions active/history lists use `search` with SQL `ILIKE` on joined promotion fields (redemptions are not a separate OpenSearch entity).
 
+Admin and customer offer lists index `offers` documents (`offerNumber`, `status`, `userEmail`, `userId`, `id`) with the same OpenSearch + `ILIKE` fallback pattern. See [Offers](./offers.md).
+
 ## Configuration
 
 See [environment configuration](../deployment/environment-configuration.md) and [system requirements](../deployment/system-requirements.md) for `OPENSEARCH_*` and sizing.

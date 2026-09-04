@@ -1,0 +1,342 @@
+<div class="offers-container border-top d-flex flex-column h-100">
+  <div class="offers-header p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureOffers-title">Offers</h5>
+  </div>
+
+  <div class="d-flex align-items-center gap-0 d-md-none border-bottom btn-group-options">
+    @for (panel of mobilePanels; track panel) {
+      <button
+        type="button"
+        class="btn btn-sm btn-options"
+        [class.btn-outline-secondary]="mobilePanel() !== panel"
+        [class.btn-primary]="mobilePanel() === panel"
+        (click)="mobilePanel.set(panel)"
+      >
+        {{ mobilePanelLabel(panel) }}
+      </button>
+    }
+  </div>
+
+  <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
+    @if (offersError$ | async; as err) {
+      <div class="alert alert-danger mb-0 rounded-0 border-0 border-bottom" role="alert">{{ err }}</div>
+    }
+
+    <div class="customer-billing__summary-bar flex-shrink-0">
+      <div class="row g-0 customer-billing__summary-grid">
+        <div class="col-6 col-md-3">
+          <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--first">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureOffers-pendingCount">Pending offers</h6>
+              @if (offersSummaryLoading$ | async) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else if (offersSummary$ | async; as summary) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.pendingCount }}</p>
+              } @else {
+                <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--second">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureOffers-actionRequiredCount">
+                Action required
+              </h6>
+              @if (offersSummaryLoading$ | async) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else if (offersSummary$ | async; as summary) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.actionRequiredCount }}</p>
+              } @else {
+                <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--third">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureOffers-acceptedCount">Accepted</h6>
+              @if (offersSummaryLoading$ | async) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else if (offersSummary$ | async; as summary) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.acceptedCount }}</p>
+              } @else {
+                <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--fourth">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureOffers-historyCount">History</h6>
+              @if (offersSummaryLoading$ | async) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else if (offersSummary$ | async; as summary) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.historyCount }}</p>
+              } @else {
+                <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section__row flex-grow-1 min-h-0">
+      <div
+        class="section__column section__column--pending d-md-flex flex-column min-h-0 border-end"
+        [class.d-none]="mobilePanel() !== 'pending'"
+      >
+        <div class="customer-billing__lane card h-100 border-0 d-flex flex-column min-h-0">
+          <div class="card-header customer-billing__lane-header py-2 small fw-semibold flex-shrink-0">
+            <span i18n="@@featureOffers-pendingList">Pending offers</span>
+          </div>
+          <form class="lane-search" (ngSubmit)="$event.preventDefault()">
+            <label for="pendingOffersSearchInput" class="visually-hidden" i18n="@@featureOffers-searchPending">
+              Search pending offers
+            </label>
+            <div class="input-group search-input-container border-bottom">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input
+                id="pendingOffersSearchInput"
+                type="search"
+                class="form-control border-0 search-input"
+                placeholder="Search pending offers"
+                i18n-placeholder="@@featureOffers-searchPending"
+                [ngModel]="pendingSearch()"
+                (ngModelChange)="onPendingSearchChange($event)"
+                name="pendingOffersSearch"
+              />
+            </div>
+          </form>
+          <div class="customer-billing__lane-list list-group list-group-flush flex-grow-1">
+            @if (pendingListLoading$ | async) {
+              <div class="d-flex justify-content-center align-items-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden" i18n="@@featureOffers-loadingPending">Loading pending offers…</span>
+                </div>
+              </div>
+            } @else {
+              @if (pendingListError$ | async; as listErr) {
+                <div class="alert alert-warning m-3" role="alert">{{ listErr }}</div>
+              }
+              @if (pendingList().length === 0) {
+                <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+                  <p class="mb-0" i18n="@@featureOffers-noPending">No pending offers.</p>
+                </div>
+              } @else {
+                @for (offer of pendingList(); track offer.id) {
+                  <ng-container *ngTemplateOutlet="offerListItem; context: { $implicit: offer }"></ng-container>
+                }
+              }
+            }
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="section__column section__column--history d-md-flex flex-column min-h-0"
+        [class.d-none]="mobilePanel() !== 'history'"
+      >
+        <div class="customer-billing__lane card h-100 border-0 d-flex flex-column min-h-0">
+          <div class="card-header customer-billing__lane-header py-2 small fw-semibold flex-shrink-0">
+            <span i18n="@@featureOffers-historyList">Offer history</span>
+          </div>
+          <form class="lane-search" (ngSubmit)="$event.preventDefault()">
+            <label for="historyOffersSearchInput" class="visually-hidden" i18n="@@featureOffers-searchHistory">
+              Search offer history
+            </label>
+            <div class="input-group search-input-container border-bottom">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input
+                id="historyOffersSearchInput"
+                type="search"
+                class="form-control border-0 search-input"
+                placeholder="Search offer history"
+                i18n-placeholder="@@featureOffers-searchHistory"
+                [ngModel]="historySearch()"
+                (ngModelChange)="onHistorySearchChange($event)"
+                name="historyOffersSearch"
+              />
+            </div>
+          </form>
+          <div class="customer-billing__lane-list list-group list-group-flush flex-grow-1">
+            @if (historyListLoading$ | async) {
+              <div class="d-flex justify-content-center align-items-center p-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden" i18n="@@featureOffers-loadingHistory">Loading offer history…</span>
+                </div>
+              </div>
+            } @else {
+              @if (historyListError$ | async; as listErr) {
+                <div class="alert alert-warning m-3" role="alert">{{ listErr }}</div>
+              }
+              @if (historyList().length === 0) {
+                <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+                  <p class="mb-0" i18n="@@featureOffers-noHistory">No offer history.</p>
+                </div>
+              } @else {
+                @for (offer of historyList(); track offer.id) {
+                  <ng-container *ngTemplateOutlet="offerListItem; context: { $implicit: offer }"></ng-container>
+                }
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #offerListItem let-offer>
+  <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-2">
+    <div class="min-w-0 flex-grow-1">
+      <div class="fw-semibold mb-1">{{ offerDisplayTitle(offer) }}</div>
+      <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+        <span
+          class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded me-2"
+          [ngClass]="offerStatusBadgeClass(offer.status)"
+        >
+          {{ offerStatusLabel(offer.status) }}
+        </span>
+        <span class="me-2">
+          <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ offer.totalGross | number: '1.2-2' }}
+          {{ offer.currency }}
+        </span>
+        <span class="me-2">
+          <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(offer.expiresAt) }}
+        </span>
+      </div>
+    </div>
+    <div class="btn-group btn-group-sm flex-shrink-0" role="group">
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        (click)="openPreview(offer)"
+        title="Preview offer"
+        i18n-title="@@featureOffers-previewButtonTitle"
+      >
+        <i class="bi bi-eye" aria-hidden="true"></i>
+      </button>
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        (click)="downloadOfferPdf(offer)"
+        title="Download PDF"
+        i18n-title="@@featureOffers-downloadButtonTitle"
+      >
+        <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<div #previewOfferModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable offer-preview-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureOffers-previewTitle">Offer preview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (offerDetailsLoading$ | async) {
+          <div class="offer-preview-modal__loading">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span i18n="@@featureOffers-loadingPreview">Loading offer…</span>
+          </div>
+        } @else if (previewDetail$ | async; as detail) {
+          <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <div>
+              <div class="fw-semibold">{{ offerDisplayTitle(detail) }}</div>
+              <span
+                class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                [ngClass]="offerStatusBadgeClass(detail.status)"
+              >
+                {{ offerStatusLabel(detail.status) }}
+              </span>
+            </div>
+            <div class="text-end">
+              <div class="fw-bold">{{ detail.totalGross | number: '1.2-2' }} {{ detail.currency }}</div>
+              <div class="small text-muted" i18n="@@featureOffers-expiresAt">
+                Expires {{ formatDate(detail.expiresAt) }}
+              </div>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th i18n="@@featureOffers-lineDescription">Description</th>
+                  <th class="text-end" i18n="@@featureOffers-lineQty">Qty</th>
+                  <th class="text-end" i18n="@@featureOffers-lineGross">Gross</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (line of detail.lineItems; track line.id) {
+                  <tr>
+                    <td>{{ line.description }}</td>
+                    <td class="text-end">{{ line.quantity }}</td>
+                    <td class="text-end">{{ line.lineGross | number: '1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+      @if (previewDetail$ | async; as detail) {
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="downloadOfferPdf(detail)">
+            <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>
+            <span i18n="@@featureOffers-downloadPdf">Download PDF</span>
+          </button>
+          @if (previewCanRespond(detail)) {
+            <button
+              type="button"
+              class="btn btn-outline-danger"
+              [disabled]="(respondingOfferId$ | async) === detail.id"
+              (click)="openDeclineConfirm(detail.id)"
+              i18n="@@featureOffers-decline"
+            >
+              Decline
+            </button>
+            <button
+              type="button"
+              class="btn btn-success"
+              [disabled]="(respondingOfferId$ | async) === detail.id"
+              (click)="acceptOffer(detail.id)"
+              i18n="@@featureOffers-accept"
+            >
+              Accept
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<div #declineConfirmModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureOffers-declineConfirmTitle">Decline offer?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" i18n="@@featureOffers-declineConfirmBody">
+        This offer will be marked as declined and removed from your pending list.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" i18n="@@featureOffers-cancel">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmDecline()" i18n="@@featureOffers-declineConfirm">
+          Decline offer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

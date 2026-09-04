@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, input, model, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, input, model, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { AuthService, type UserResponseDto } from '@forepath/identity/frontend';
@@ -16,6 +16,7 @@ export class BillingAdminUserSelectComponent {
   /** Optional cache for resolving the selected user label (e.g. full user list on parent page). */
   readonly users = input<UserResponseDto[]>([]);
   readonly selectedUserId = model<string>('');
+  readonly size = input<'sm' | 'md'>('md');
   readonly disabled = input(false);
   readonly required = input(false);
   readonly inputId = input('billingAdminUserSelect');
@@ -31,17 +32,32 @@ export class BillingAdminUserSelectComponent {
   readonly suggestionsOpen = signal(false);
   readonly searchResults = signal<UserResponseDto[]>([]);
   readonly loading = signal(false);
+  private readonly pickedUser = signal<UserResponseDto | null>(null);
 
   readonly filteredUsers = computed(() => this.searchResults());
 
-  readonly selectedUser = computed(
-    () =>
-      this.users().find((user) => user.id === this.selectedUserId()) ??
-      this.searchResults().find((user) => user.id === this.selectedUserId()) ??
-      null,
-  );
+  readonly selectedUser = computed(() => {
+    const selectedUserId = this.selectedUserId();
+
+    if (!selectedUserId) {
+      return null;
+    }
+
+    return (
+      this.users().find((user) => user.id === selectedUserId) ??
+      (this.pickedUser()?.id === selectedUserId ? this.pickedUser() : null) ??
+      this.searchResults().find((user) => user.id === selectedUserId) ??
+      null
+    );
+  });
 
   constructor() {
+    effect(() => {
+      if (!this.selectedUserId()) {
+        this.pickedUser.set(null);
+      }
+    });
+
     this.searchQuery$
       .pipe(
         skip(1),
@@ -95,11 +111,15 @@ export class BillingAdminUserSelectComponent {
 
   pickUser(user: UserResponseDto, event: Event): void {
     event.preventDefault();
+    this.pickedUser.set(user);
     this.selectedUserId.set(user.id);
-    this.reset();
+    this.searchQuery.set('');
+    this.searchResults.set([]);
+    this.suggestionsOpen.set(false);
   }
 
   clearSelection(): void {
+    this.pickedUser.set(null);
     this.selectedUserId.set('');
     this.reset();
   }

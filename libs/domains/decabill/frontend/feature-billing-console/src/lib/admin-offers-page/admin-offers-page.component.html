@@ -1,0 +1,542 @@
+<div class="admin-offers-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminOffers-title">Offers</h5>
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      (click)="openCreateModal()"
+      [disabled]="(mutating$ | async) === true"
+      i18n-title="@@featureAdminOffers-create"
+      title="Create offer"
+    >
+      <i class="bi bi-plus" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="d-flex align-items-center gap-0 d-md-none border-bottom btn-group-options">
+    @for (panel of mobilePanels; track panel) {
+      <button
+        type="button"
+        class="btn btn-sm btn-options"
+        [class.btn-outline-secondary]="mobilePanel() !== panel"
+        [class.btn-primary]="mobilePanel() === panel"
+        (click)="mobilePanel.set(panel)"
+      >
+        {{ mobilePanelLabel(panel) }}
+      </button>
+    }
+  </div>
+
+  <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
+    @if (error$ | async; as err) {
+      <div class="alert alert-danger mb-0 rounded-0 border-0 border-bottom" role="alert">{{ err }}</div>
+    }
+
+    <div class="admin-offers__summary-bar flex-shrink-0">
+      <div class="row g-0 admin-offers__summary-grid">
+        <div class="col-6 col-md-3">
+          <div class="card h-100 rounded-0 admin-offers__summary-card admin-offers__summary-card--first">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminOffers-draftCount">Draft</h6>
+              @if (statisticsLoading$ | async) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else if (statistics$ | async; as stats) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ stats.draftCount }}</p>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card h-100 rounded-0 admin-offers__summary-card admin-offers__summary-card--second">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminOffers-pendingCount">Pending</h6>
+              @if (statisticsLoading$ | async) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else if (statistics$ | async; as stats) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ stats.pendingCount }}</p>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card h-100 rounded-0 admin-offers__summary-card admin-offers__summary-card--third">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminOffers-acceptedCount">Accepted</h6>
+              @if (statisticsLoading$ | async) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else if (statistics$ | async; as stats) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ stats.acceptedCount }}</p>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card h-100 rounded-0 admin-offers__summary-card admin-offers__summary-card--fourth">
+            <div class="card-body">
+              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminOffers-pendingGross">
+                Pending gross
+              </h6>
+              @if (statisticsLoading$ | async) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              } @else if (statistics$ | async; as stats) {
+                <p class="card-title mb-0 fs-4 fw-bold">{{ stats.pendingGross | number: '1.2-2' }}€</p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section__row flex-grow-1 min-h-0">
+      <div
+        class="section__column section__column--overview d-md-flex flex-column min-h-0 border-end"
+        [class.d-none]="mobilePanel() !== 'overview'"
+      >
+        @if (statisticsError$ | async; as statsErr) {
+          <div class="alert alert-danger mb-0 rounded-0 border-0 border-bottom" role="alert">{{ statsErr }}</div>
+        }
+
+        <div class="admin-offers__statistics-lane card flex-grow-1 border-0 d-flex flex-column min-h-0">
+          <div
+            class="card-header admin-offers__lane-header py-2 small fw-semibold d-flex justify-content-between align-items-center flex-shrink-0"
+          >
+            <span i18n="@@featureAdminOffers-statisticsTitle">Statistics</span>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              (click)="onToggleFilters()"
+              [attr.aria-expanded]="!filtersCollapsed()"
+              i18n-title="@@featureAdminOffers-toggleFilters"
+              title="Toggle filters"
+              i18n-aria-label="@@featureAdminOffers-toggleFilters"
+              aria-label="Toggle filters"
+            >
+              <i class="bi bi-funnel" aria-hidden="true"></i>
+              <i
+                class="bi ms-1"
+                [class.bi-chevron-down]="filtersCollapsed()"
+                [class.bi-chevron-up]="!filtersCollapsed()"
+                aria-hidden="true"
+              ></i>
+            </button>
+          </div>
+
+          @if (!filtersCollapsed()) {
+            <div class="border-bottom p-3 d-flex flex-wrap gap-3 align-items-end">
+              <div>
+                <label class="form-label small mb-1" for="offersFromDate" i18n="@@featureAdminOffers-fromDate"
+                  >From</label
+                >
+                <input
+                  id="offersFromDate"
+                  type="date"
+                  class="form-control form-control-sm"
+                  [ngModel]="fromDate()"
+                  (ngModelChange)="fromDate.set($event)"
+                  name="fromDate"
+                />
+              </div>
+              <div>
+                <label class="form-label small mb-1" for="offersToDate" i18n="@@featureAdminOffers-toDate">To</label>
+                <input
+                  id="offersToDate"
+                  type="date"
+                  class="form-control form-control-sm"
+                  [ngModel]="toDate()"
+                  (ngModelChange)="toDate.set($event)"
+                  name="toDate"
+                />
+              </div>
+              <div>
+                <label class="form-label small mb-1" for="offersGroupBy" i18n="@@featureAdminOffers-groupBy"
+                  >Group by</label
+                >
+                <select
+                  id="offersGroupBy"
+                  class="form-select form-select-sm"
+                  [ngModel]="groupBy()"
+                  (ngModelChange)="groupBy.set($event)"
+                  name="groupBy"
+                >
+                  <option value="day" i18n="@@featureAdminOffers-groupByDay">Day</option>
+                  <option value="month" i18n="@@featureAdminOffers-groupByMonth">Month</option>
+                </select>
+              </div>
+              <div class="flex-grow-1 min-w-0">
+                <label class="form-label small mb-1" i18n="@@featureAdminOffers-customerFilter">Customer</label>
+                <framework-billing-admin-user-select
+                  [(selectedUserId)]="filterUserId"
+                  [size]="'sm'"
+                ></framework-billing-admin-user-select>
+              </div>
+              <button
+                type="button"
+                class="btn btn-sm btn-primary"
+                (click)="onApplyFilters()"
+                i18n="@@featureAdminOffers-applyFilters"
+              >
+                Apply
+              </button>
+            </div>
+          }
+
+          <div class="admin-offers__statistics-body flex-grow-1 overflow-auto">
+            <div class="d-flex flex-column gap-3 p-3">
+              <div class="card">
+                <div class="card-body">
+                  @if (statisticsLoading$ | async) {
+                    <div class="text-center py-4">
+                      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    </div>
+                  } @else if (seriesChartOptions(); as chart) {
+                    <apx-chart
+                      [series]="chart.series"
+                      [chart]="chart.chart"
+                      [colors]="chart.colors"
+                      [stroke]="chart.stroke"
+                      [dataLabels]="chart.dataLabels"
+                      [legend]="chart.legend"
+                      [xaxis]="chart.xaxis"
+                      [yaxis]="chart.yaxis"
+                      [grid]="chart.grid"
+                      [title]="chart.title"
+                    ></apx-chart>
+                  } @else {
+                    <p class="text-muted small mb-0" i18n="@@featureAdminOffers-noStatistics">
+                      No statistics for the selected period.
+                    </p>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="section__column section__column--offers d-md-flex flex-column min-h-0"
+        [class.d-none]="mobilePanel() !== 'offers'"
+      >
+        <div class="admin-offers__offers-lane card flex-grow-1 border-0 d-flex flex-column min-h-0">
+          <div
+            class="card-header admin-offers__lane-header py-2 small fw-semibold d-flex justify-content-between align-items-center flex-shrink-0 d-none d-md-flex"
+          >
+            <span i18n="@@featureAdminOffers-listTitle">Offers</span>
+            <span class="btn btn-sm btn-outline-secondary invisible" aria-hidden="true">
+              <i class="bi bi-funnel" aria-hidden="true"></i>
+              <i class="bi bi-chevron-down ms-1" aria-hidden="true"></i>
+            </span>
+          </div>
+
+          <div class="input-group search-input-container border-bottom">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input
+              type="search"
+              class="form-control border-0 search-input"
+              placeholder="Search offers"
+              i18n-placeholder="@@featureAdminOffers-searchPlaceholder"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+              name="search"
+            />
+          </div>
+
+          <div class="flex-grow-1 overflow-auto min-h-0">
+            @if (loading$ | async) {
+              <div class="d-flex justify-content-center align-items-center p-4">
+                <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+              </div>
+            } @else if (offers().length === 0) {
+              <div class="d-flex justify-content-center align-items-center p-4 text-muted">
+                <p class="mb-0" i18n="@@featureAdminOffers-empty">No offers yet.</p>
+              </div>
+            } @else {
+              <div class="list-group list-group-flush">
+                @for (offer of offers(); track offer.id) {
+                  <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3">
+                    <div class="min-w-0 flex-grow-1">
+                      <div class="fw-semibold mb-1">{{ offer.offerNumber || offer.id }}</div>
+                      <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
+                        <span
+                          class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                          [ngClass]="offerStatusBadgeClass(offer.status)"
+                        >
+                          {{ offerStatusLabel(offer.status) }}
+                        </span>
+                        <span>{{ offer.userEmail || offer.userId }}</span>
+                        <span>{{ offer.totalGross | number: '1.2-2' }} {{ offer.currency }}</span>
+                        <span>{{ formatDate(offer.createdAt) }}</span>
+                      </div>
+                    </div>
+                    <div class="btn-group btn-group-sm flex-shrink-0" role="group">
+                      @if (canEditOffer(offer)) {
+                        <button
+                          type="button"
+                          class="btn btn-outline-primary"
+                          (click)="openEditModal(offer)"
+                          title="Edit"
+                          i18n-title="@@featureAdminOffers-edit"
+                        >
+                          <i class="bi bi-pencil" aria-hidden="true"></i>
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        (click)="openAuditHistory(offer)"
+                        title="Audit log"
+                        i18n-title="@@featureAdminOffers-audit"
+                      >
+                        <i class="bi bi-clock-history" aria-hidden="true"></i>
+                      </button>
+                      @if (canArchiveOffer(offer)) {
+                        <button
+                          type="button"
+                          class="btn btn-outline-success"
+                          (click)="archiveOffer(offer)"
+                          title="Send to customer"
+                          i18n-title="@@featureAdminOffers-archive"
+                        >
+                          <i class="bi bi-send" aria-hidden="true"></i>
+                        </button>
+                      }
+                      @if (canRevokeOffer(offer)) {
+                        <button
+                          type="button"
+                          class="btn btn-outline-warning"
+                          (click)="revokeOffer(offer)"
+                          title="Revoke"
+                          i18n-title="@@featureAdminOffers-revoke"
+                        >
+                          <i class="bi bi-slash-circle" aria-hidden="true"></i>
+                        </button>
+                      }
+                      @if (canDeleteOffer(offer)) {
+                        <button
+                          type="button"
+                          class="btn btn-outline-danger"
+                          (click)="openDeleteModal(offer)"
+                          title="Delete"
+                          i18n-title="@@featureAdminOffers-delete"
+                        >
+                          <i class="bi bi-trash" aria-hidden="true"></i>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminOffers-createTitle">Create offer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label" i18n="@@featureAdminOffers-customer">Customer</label>
+          <framework-billing-admin-user-select
+            #createOfferUserSelect
+            [(selectedUserId)]="createUserId"
+          ></framework-billing-admin-user-select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="createExpiresAt" i18n="@@featureAdminOffers-expiresAt">Expires at</label>
+          <input
+            id="createExpiresAt"
+            type="datetime-local"
+            class="form-control"
+            [(ngModel)]="createForm.expiresAt"
+            name="createExpiresAt"
+          />
+        </div>
+        <div class="form-check mb-3">
+          <input
+            id="createBillToOpenPositions"
+            type="checkbox"
+            class="form-check-input"
+            [(ngModel)]="createForm.billToOpenPositions"
+            name="createBillToOpenPositions"
+          />
+          <label
+            class="form-check-label"
+            for="createBillToOpenPositions"
+            i18n="@@featureAdminOffers-billToOpenPositions"
+          >
+            Bill accepted charges to open positions
+          </label>
+        </div>
+        <framework-admin-offer-line-editor
+          prefix="create"
+          [lines]="createLineItems"
+          [customerUserId]="createUserId"
+        ></framework-admin-offer-line-editor>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="!canSubmitCreate() || (mutating$ | async)"
+          (click)="submitCreate()"
+          i18n="@@featureAdminInvoices-create"
+        >
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminOffers-editTitle">Edit offer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (editDetailLoading) {
+          <div class="d-flex justify-content-center p-4">
+            <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+          </div>
+        } @else {
+          <div class="mb-3">
+            <label class="form-label" for="editExpiresAt" i18n="@@featureAdminOffers-expiresAt">Expires at</label>
+            <input
+              id="editExpiresAt"
+              type="datetime-local"
+              class="form-control"
+              [(ngModel)]="editForm.expiresAt"
+              name="editExpiresAt"
+            />
+          </div>
+          <div class="form-check mb-3">
+            <input
+              id="editBillToOpenPositions"
+              type="checkbox"
+              class="form-check-input"
+              [(ngModel)]="editForm.billToOpenPositions"
+              name="editBillToOpenPositions"
+            />
+            <label
+              class="form-check-label"
+              for="editBillToOpenPositions"
+              i18n="@@featureAdminOffers-billToOpenPositions"
+            >
+              Bill accepted charges to open positions
+            </label>
+          </div>
+          <framework-admin-offer-line-editor
+            prefix="edit"
+            [lines]="editLineItems"
+            [customerUserId]="editForm.userId"
+          ></framework-admin-offer-line-editor>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          data-bs-dismiss="modal"
+          i18n="@@featureAdminOffers-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="!canSubmitEdit() || (mutating$ | async)"
+          (click)="submitEdit()"
+          i18n="@@featureAdminOffers-saveChanges"
+        >
+          Save changes
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #deleteModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminOffers-deleteTitle">Delete draft offer?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" i18n="@@featureAdminOffers-deleteBody">This permanently deletes the draft offer.</div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          data-bs-dismiss="modal"
+          i18n="@@featureAdminOffers-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          [disabled]="mutating$ | async"
+          (click)="confirmDelete()"
+          i18n="@@featureAdminOffers-deleteConfirm"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div #auditHistoryModal class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" i18n="@@featureAdminOffers-auditTitle">Audit history</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (auditLogsError$ | async; as auditErr) {
+          <div class="alert alert-danger" role="alert">{{ auditErr }}</div>
+        }
+        @if (auditLogsLoading$ | async) {
+          <div class="d-flex justify-content-center p-4">
+            <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+          </div>
+        } @else if (selectedAuditLogs().length === 0) {
+          <p class="text-muted mb-0" i18n="@@featureAdminOffers-noAuditLogs">No audit entries.</p>
+        } @else {
+          <div class="list-group list-group-flush">
+            @for (entry of selectedAuditLogs(); track entry.id) {
+              <div class="list-group-item px-0">
+                <div class="fw-semibold">{{ entry.message }}</div>
+                <div class="small text-muted">{{ entry.process }} · {{ formatDate(entry.createdAt) }}</div>
+              </div>
+            }
+          </div>
+          @if (auditLogsHasMore()) {
+            <div class="text-center mt-3">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary"
+                [disabled]="auditLogsAppendLoading$ | async"
+                (click)="loadMoreAuditLogs()"
+                i18n="@@featureAdminOffers-loadMoreAudit"
+              >
+                Load more
+              </button>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+</div>

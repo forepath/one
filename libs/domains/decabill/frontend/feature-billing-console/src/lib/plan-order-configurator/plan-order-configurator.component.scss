@@ -1,0 +1,29 @@
+:host {
+  display: block;
+}
+
+.plan-order-configurator__price-inline {
+  margin-bottom: 0.75rem;
+
+  .plan-order-configurator__price-card,
+  .plan-order-configurator__terms-card {
+    box-shadow: none;
+  }
+}
+
+.plan-order-configurator__price-floating {
+  pointer-events: auto;
+
+  &--hidden {
+    display: none;
+  }
+}
+
+@media (min-width: 992px) {
+  .plan-order-configurator__price-floating:not(.plan-order-configurator__price-floating--hidden) {
+    .plan-order-configurator__price-card,
+    .plan-order-configurator__terms-card {
+      box-shadow: var(--bs-box-shadow);
+    }
+  }
+}
