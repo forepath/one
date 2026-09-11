@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.30.0](https://github.com/forepath/one/compare/v2.29.0...v2.30.0) (2026-09-11)
+
+
+### Features
+
+* **shared:** 2fa via email otp and totp ([#608](https://github.com/forepath/one/issues/608)) ([1f8e218](https://github.com/forepath/one/commit/1f8e21801d86d50fccbb5144cc75c7d9d2cc42e7))
+* **shared:** password change ([1ed1d3b](https://github.com/forepath/one/commit/1ed1d3bda8e8da8ba30f762e442f271d93c02b53))
+
 ## [2.29.0](https://github.com/forepath/one/compare/v2.28.4...v2.29.0) (2026-09-09)
 
 
