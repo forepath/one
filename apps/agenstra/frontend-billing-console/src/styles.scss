@@ -145,6 +145,7 @@ $agenstra-badge-text-bg-colors: primary, secondary, success, info, warning, dang
 @import 'bootstrap/scss/bootstrap-grid';
 @import 'bootstrap-icons/font/bootstrap-icons';
 @import '@fontsource-variable/plus-jakarta-sans/wght.css';
+@import '../../../../libs/domains/shared/frontend/util-cookie-consent/src/lib/cookie-consent.scss';
 @import 'monaco';
 @import '../../../../libs/domains/shared/frontend/scrollable-modal';
 @import '../../../../libs/domains/shared/frontend/sidebar-admin-popover';
