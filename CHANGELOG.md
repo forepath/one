@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.30.2](https://github.com/forepath/one/compare/v2.30.1...v2.30.2) (2026-09-11)
+
+
+### Bug Fixes
+
+* **shared:** missing portal cookieconsent styling ([#610](https://github.com/forepath/one/issues/610)) ([8456265](https://github.com/forepath/one/commit/84562655a7c38c00d2e64c78d7a156f7f84b2553))
+
 ## [2.30.1](https://github.com/forepath/one/compare/v2.30.0...v2.30.1) (2026-09-11)
 
 
