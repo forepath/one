@@ -238,6 +238,13 @@ services:
       <<: *backend-billing-manager-environment
       QUEUE_ROLE: worker
       QUEUE_BULL_BOARD_ENABLED: false
+    # No HTTP server for QUEUE_ROLE=worker — override image HEALTHCHECK that curls /api/health.
+    healthcheck:
+      test: ['CMD-SHELL', 'kill -0 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
       - billing_file_data:/data
       - ./provider-plugins:/var/lib/forepath/provider-plugins
@@ -264,6 +271,13 @@ services:
       <<: *backend-billing-manager-environment
       QUEUE_ROLE: scheduler
       QUEUE_BULL_BOARD_ENABLED: false
+    # No HTTP server for QUEUE_ROLE=scheduler — override image HEALTHCHECK that curls /api/health.
+    healthcheck:
+      test: ['CMD-SHELL', 'kill -0 1']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
       - billing_file_data:/data
       - ./provider-plugins:/var/lib/forepath/provider-plugins
