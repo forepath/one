@@ -231,21 +231,25 @@
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
       </trans-unit>
       <trans-unit id="featureAdminInvoices-create" datatype="html">
-        <source>Create</source>
+        <source> Create </source>
         <target>Erstellen</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminInvoices-save" datatype="html">
-        <source>Save</source>
+        <source> Save </source>
         <target>Speichern</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminInvoices-delete" datatype="html">
-        <source>Delete</source>
+        <source> Delete </source>
         <target>Löschen</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminInvoices-issue" datatype="html">
-        <source>Issue</source>
+        <source> Issue </source>
         <target>Ausstellen</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminInvoices-lineDescription" datatype="html">
         <source>Description</source>
         <target>Beschreibung</target>
@@ -291,21 +295,25 @@
         <target>Position hinzufügen</target>
       </trans-unit>
       <trans-unit id="featureProjectDetail-bill" datatype="html">
-        <source>Bill</source>
+        <source> Bill </source>
         <target>Abrechnen</target>
       </trans-unit>
+      
       <trans-unit id="featureProjectDetail-create" datatype="html">
-        <source>Create</source>
+        <source> Create </source>
         <target>Erstellen</target>
       </trans-unit>
+      
       <trans-unit id="featureProjectDetail-save" datatype="html">
-        <source>Save</source>
+        <source> Save </source>
         <target>Speichern</target>
       </trans-unit>
+      
       <trans-unit id="featureProjectDetail-delete" datatype="html">
-        <source>Delete</source>
+        <source> Delete </source>
         <target>Löschen</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminBilling-mobilePanelOverview" datatype="html">
         <source>Dashboard</source>
         <target>Dashboard</target>
@@ -331,9 +339,10 @@
         <target>Ausgaben</target>
       </trans-unit>
       <trans-unit id="featureAdminBilling-noExpenseSeries" datatype="html">
-        <source>No expense data for selected period.</source>
+        <source> No expense data for selected period. </source>
         <target>Keine Ausgabendaten für den gewählten Zeitraum.</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminBilling-chartProductTitle" datatype="html">
         <source>Turnover by product</source>
         <target>Umsatz nach Produkt</target>
@@ -379,9 +388,10 @@
         <target>Benutzerdefinierte Daten</target>
       </trans-unit>
       <trans-unit id="featureAdminProfiles-customDataHelp" datatype="html">
-        <source>Admin-only key/value pairs for linking this customer to external systems. Values are stored encrypted.</source>
+        <source> Admin-only key/value pairs for linking this customer to external systems. Values are stored encrypted. </source>
         <target>Nur für Administratoren sichtbare Schlüssel/Wert-Paare zur Verknüpfung dieses Kunden mit externen Systemen. Werte werden verschlüsselt gespeichert.</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminProfiles-customDataFor" datatype="html">
         <source>Custom data for</source>
         <target>Benutzerdefinierte Daten für</target>
@@ -415,9 +425,10 @@
         <target>Zeile hinzufügen</target>
       </trans-unit>
       <trans-unit id="featureAdminProfiles-customDataSave" datatype="html">
-        <source>Save</source>
+        <source> Save </source>
         <target>Speichern</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminProfiles-deleteButtonTitle" datatype="html">
         <source>Delete profile</source>
         <target>Profil löschen</target>
@@ -439,13 +450,15 @@
         <target>Berechnet:</target>
       </trans-unit>
       <trans-unit id="featureAdminProfiles-trustUnavailable" datatype="html">
-        <source>Trust details are currently unavailable.</source>
+        <source> Trust details are currently unavailable. </source>
         <target>Vertrauensdetails sind derzeit nicht verfügbar.</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminProfiles-trustRecompute" datatype="html">
-        <source>Recompute</source>
+        <source> Recompute </source>
         <target>Neu berechnen</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminProfiles-createTitle" datatype="html">
         <source>Create billing profile</source>
         <target>Abrechnungsprofil erstellen</target>
@@ -499,17 +512,19 @@
         <target>Verträge</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-summaryTotal" datatype="html">
-        <source>Contracts</source>
+        <source> Contracts </source>
         <target>Verträge</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminSubscriptions-summaryActive" datatype="html">
         <source>Active</source>
         <target>Aktiv</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-search" datatype="html">
-        <source>Search contracts</source>
+        <source> Search contracts </source>
         <target>Verträge durchsuchen</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminSubscriptions-searchPlaceholder" datatype="html">
         <source>Search by number, email, plan, or status</source>
         <target>Nach Nummer, E-Mail, Plan oder Status suchen</target>
@@ -920,9 +935,12 @@
       <trans-unit id="featureAddons-description" datatype="html"><source>Description</source><target>Beschreibung</target></trans-unit>
       <trans-unit id="featureAddons-implementationType" datatype="html"><source>Implementation type</source><target>Implementierungstyp</target></trans-unit>
       <trans-unit id="featureAddons-compatibleProviders" datatype="html"><source>Compatible providers</source><target>Kompatible Anbieter</target></trans-unit>
-      <trans-unit id="featureAddons-compatibleProvidersHelp" datatype="html"><source>Hold Ctrl/Cmd to select multiple. Leave empty for all addon-capable providers.</source><target>Mit Strg/Cmd mehrere auswählen. Für alle Add-on-fähigen Anbieter leer lassen.</target></trans-unit>
+      <trans-unit id="featureAddons-compatibleProvidersHelp" datatype="html">
+        <source> Hold Ctrl/Cmd to select multiple. Leave empty for all addon-capable providers. </source>
+        <target>Mit Strg/Cmd mehrere auswählen. Für alle Add-on-fähigen Anbieter leer lassen.</target>
+      </trans-unit>
       <trans-unit id="featureAddons-moduleKey" datatype="html"><source>Module key</source><target>Modulschlüssel</target></trans-unit>
-      <trans-unit id="featureAddons-scriptTemplate" datatype="html"><source>Cloud-init script template</source><target>Cloud-init-Skriptvorlage</target></trans-unit>
+      <trans-unit id="featureAddons-scriptTemplate" datatype="html"><source>Cloud-init provision script template</source><target>Cloud-init-Bereitstellungsskriptvorlage</target></trans-unit>
       <trans-unit id="featureAddons-basePrice" datatype="html"><source>Base price</source><target>Grundpreis</target></trans-unit>
       <trans-unit id="featureAddons-priceIntervalType" datatype="html"><source>Price interval</source><target>Preisintervall</target></trans-unit>
       <trans-unit id="featureAddons-priceIntervalValue" datatype="html"><source>Interval value</source><target>Intervallwert</target></trans-unit>
@@ -936,8 +954,14 @@
       <trans-unit id="featureAddons-cloudInitScript" datatype="html"><source>Cloud-init script</source><target>Cloud-init-Skript</target></trans-unit>
       <trans-unit id="featureAddons-free" datatype="html"><source>Free</source><target>Kostenlos</target></trans-unit>
       <trans-unit id="featureAddons-moduleDefaults" datatype="html"><source>Module defaults</source><target>Modul-Standardwerte</target></trans-unit>
-      <trans-unit id="featureAddons-moduleDefaultsHelp" datatype="html"><source>Defaults for module environment variables. Schema is defined by the registered module; leave blank when unused.</source><target>Standardwerte für Modul-Umgebungsvariablen. Das Schema kommt vom registrierten Modul; leer lassen, wenn ungenutzt.</target></trans-unit>
-      <trans-unit id="featureAddons-randomDefaultHint" datatype="html"><source>Uses a random default at provision time.</source><target>Verwendet bei der Bereitstellung einen zufälligen Standardwert.</target></trans-unit>
+      <trans-unit id="featureAddons-moduleDefaultsHelp" datatype="html">
+        <source> Defaults for module environment variables. Schema is defined by the registered module; leave blank when unused. </source>
+        <target>Standardwerte für Modul-Umgebungsvariablen. Das Schema kommt vom registrierten Modul; leer lassen, wenn ungenutzt.</target>
+      </trans-unit>
+      <trans-unit id="featureAddons-randomDefaultHint" datatype="html">
+        <source> Uses a random default at provision time. </source>
+        <target>Verwendet bei der Bereitstellung einen zufälligen Standardwert.</target>
+      </trans-unit>
       <trans-unit id="featureAddons-scriptEnvHint" datatype="html"><source>Use {{env.KEY}} placeholders in the script for configured environment variables.</source><target>Verwenden Sie {{env.KEY}}-Platzhalter im Skript für konfigurierte Umgebungsvariablen.</target></trans-unit>
       <trans-unit id="featureAddons-envVariables" datatype="html"><source>Environment variables</source><target>Umgebungsvariablen</target></trans-unit>
       <trans-unit id="featureAddons-addEnvVar" datatype="html"><source>Add line</source><target>Zeile hinzufügen</target></trans-unit>
@@ -959,18 +983,30 @@
       <trans-unit id="featureContainer-addonsTitle" datatype="html"><source>Addons</source><target>Add-ons</target></trans-unit>
       <trans-unit id="featureContainer-addons" datatype="html"><source>Addons</source><target>Add-ons</target></trans-unit>
       <trans-unit id="featureServicePlans-addons" datatype="html"><source>Customer-selectable addons</source><target>Vom Kunden auswählbare Add-ons</target></trans-unit>
-      <trans-unit id="featureServicePlans-addonsHelp" datatype="html"><source>Choose which addons customers may add when ordering this plan.</source><target>Wählen Sie, welche Add-ons Kunden bei der Bestellung dieses Plans hinzufügen dürfen.</target></trans-unit>
+      <trans-unit id="featureServicePlans-addonsHelp" datatype="html">
+        <source> Choose which addons customers may add when ordering this plan. </source>
+        <target>Wählen Sie, welche Add-ons Kunden bei der Bestellung dieses Plans hinzufügen dürfen.</target>
+      </trans-unit>
       <trans-unit id="featureServicePlans-mandatoryAddon" datatype="html"><source>Mandatory</source><target>Pflicht</target></trans-unit>
       <trans-unit id="featureServicePlans-mandatoryAddonHelp" datatype="html"><source>Customers cannot deselect this addon when ordering.</source><target>Kunden können dieses Add-on bei der Bestellung nicht abwählen.</target></trans-unit>
       <trans-unit id="featureSubscriptions-loadingAddons" datatype="html"><source>Loading addons…</source><target>Add-ons werden geladen…</target></trans-unit>
       <trans-unit id="featureSubscriptions-addons" datatype="html"><source>Addons</source><target>Add-ons</target></trans-unit>
       <trans-unit id="featureSubscriptions-addonConfigCardTitle" datatype="html"><source>Addon: <x id="addonName" equiv-text="addonName"/></source><target>Add-on: <x id="addonName" equiv-text="addonName"/></target></trans-unit>
-      <trans-unit id="featureSubscriptions-addonsTotal" datatype="html"><source>Addons total</source><target>Add-ons gesamt</target></trans-unit>
+      <trans-unit id="featureSubscriptions-addonsTotal" datatype="html">
+        <source> Addons total </source>
+        <target>Add-ons gesamt</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-mandatoryAddonBadge" datatype="html"><source>Required</source><target>Erforderlich</target></trans-unit>
       <trans-unit id="featureSubscriptions-mandatoryAddonHint" datatype="html"><source>Included with this plan and cannot be removed.</source><target>In diesem Plan enthalten und kann nicht entfernt werden.</target></trans-unit>
       <trans-unit id="featureSubscriptions-orderInvalidAddonLabel" datatype="html"><source>Not available for the selected provider</source><target>Für den gewählten Anbieter nicht verfügbar</target></trans-unit>
-      <trans-unit id="featureSubscriptions-orderInvalidAddonsHint" datatype="html"><source>Some selected addons are not available for the chosen provider and will be omitted from the order.</source><target>Einige ausgewählte Add-ons sind für den gewählten Anbieter nicht verfügbar und werden aus der Bestellung entfernt.</target></trans-unit>
-      <trans-unit id="featureSubscriptions-grandTotal" datatype="html"><source>Plan and addons</source><target>Plan und Add-ons</target></trans-unit>
+      <trans-unit id="featureSubscriptions-orderInvalidAddonsHint" datatype="html">
+        <source> Some selected addons are not available for the chosen provider and will be omitted from the order. </source>
+        <target>Einige ausgewählte Add-ons sind für den gewählten Anbieter nicht verfügbar und werden aus der Bestellung entfernt.</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-grandTotal" datatype="html">
+        <source> Plan and addons </source>
+        <target>Plan und Add-ons</target>
+      </trans-unit>
       <trans-unit id="featureSubscriptions-orderStepPlanAddons" datatype="html"><source>Plan &amp; addons</source><target>Plan &amp; Add-ons</target></trans-unit>
       <trans-unit id="featureCloudInitConfigs-title" datatype="html">
         <source>CloudInit Configs</source>
@@ -1169,29 +1205,35 @@
         <target>Lieferanten</target>
       </trans-unit>
       <trans-unit id="featureAdminBilling-customerTab" datatype="html">
-        <source>Customer</source>
+        <source> Customer </source>
         <target>Kunde</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminBilling-supplierTab" datatype="html">
-        <source>Supplier</source>
+        <source> Supplier </source>
         <target>Lieferant</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminBilling-supplierInvoiceCount" datatype="html">
-        <source>Supplier invoices</source>
+        <source> Supplier invoices </source>
         <target>Lieferantenrechnungen</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminBilling-supplierExpenseTotal" datatype="html">
-        <source>Total expenses</source>
+        <source> Total expenses </source>
         <target>Gesamtausgaben</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminBilling-supplierOpenCount" datatype="html">
-        <source>Open expenses</source>
+        <source> Open expenses </source>
         <target>Offene Ausgaben</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminBilling-supplierOpenTotal" datatype="html">
-        <source>Open total amount</source>
+        <source> Open total amount </source>
         <target>Offener Gesamtbetrag</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminBilling-supplierStatisticsTitle" datatype="html">
         <source>Expense statistics</source>
         <target>Ausgabenstatistik</target>
@@ -1285,17 +1327,20 @@
         <target>Noch nicht zugewiesen</target>
       </trans-unit>
       <trans-unit id="featureAdminSupplierProfiles-create" datatype="html">
-        <source>Create</source>
+        <source> Create </source>
         <target>Anlegen</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminSupplierProfiles-save" datatype="html">
-        <source>Save</source>
+        <source> Save </source>
         <target>Speichern</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminSupplierProfiles-delete" datatype="html">
-        <source>Delete</source>
+        <source> Delete </source>
         <target>Löschen</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminSupplierProfiles-deleteConfirm" datatype="html">
         <source>Delete this supplier profile?</source>
         <target>Dieses Lieferantenprofil löschen?</target>
@@ -1309,17 +1354,19 @@
         <target>Benutzerdefinierte Daten</target>
       </trans-unit>
       <trans-unit id="featureAdminSupplierProfiles-customDataHelp" datatype="html">
-        <source>Admin-only key/value pairs for linking this supplier to external systems. Values are stored encrypted.</source>
+        <source> Admin-only key/value pairs for linking this supplier to external systems. Values are stored encrypted. </source>
         <target>Nur für Admins sichtbare Schlüssel/Wert-Paare zur Verknüpfung mit externen Systemen. Werte werden verschlüsselt gespeichert.</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminSupplierProfiles-customDataFor" datatype="html">
         <source>Custom data for</source>
         <target>Benutzerdefinierte Daten für</target>
       </trans-unit>
       <trans-unit id="featureAdminSupplierProfiles-customDataEmpty" datatype="html">
-        <source>No custom data entries yet.</source>
+        <source> No custom data entries yet. </source>
         <target>Noch keine benutzerdefinierten Daten.</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminSupplierProfiles-customDataKeyPlaceholder" datatype="html">
         <source>Key</source>
         <target>Schlüssel</target>
@@ -1333,9 +1380,10 @@
         <target>Zeile hinzufügen</target>
       </trans-unit>
       <trans-unit id="featureAdminSupplierProfiles-customDataSave" datatype="html">
-        <source>Save</source>
+        <source> Save </source>
         <target>Speichern</target>
       </trans-unit>
+      
       <trans-unit id="featureAdminSupplierProfiles-firstName" datatype="html">
         <source>First name</source>
         <target>Vorname</target>
@@ -1505,9 +1553,10 @@
         <target>Abrechnung</target>
       </trans-unit>
       <trans-unit id="featureInvoices-paymentWaiting" datatype="html">
-        <source>Payment submitted. Waiting for confirmation from the payment provider…</source>
+        <source> Payment submitted. Waiting for confirmation from the payment provider… </source>
         <target>Zahlung übermittelt. Warte auf Bestätigung vom Zahlungsanbieter…</target>
       </trans-unit>
+      
       <trans-unit id="featureInvoices-paymentConfirmed" datatype="html">
         <source>Payment confirmed. Your invoice is marked as paid.</source>
         <target>Zahlung bestätigt. Ihre Rechnung ist als bezahlt markiert.</target>
@@ -1577,9 +1626,10 @@
         <target>Gutschrift herunterladen</target>
       </trans-unit>
       <trans-unit id="featureInvoices-previewTitle" datatype="html">
-        <source>Invoice preview</source>
+        <source> Invoice preview </source>
         <target>Rechnungsvorschau</target>
       </trans-unit>
+      
       <trans-unit id="featureInvoices-loadingDetails" datatype="html">
         <source>Loading invoice details…</source>
         <target>Rechnungsdetails werden geladen…</target>
@@ -1609,9 +1659,10 @@
         <target>Menge</target>
       </trans-unit>
       <trans-unit id="featureInvoices-lineUnitNet" datatype="html">
-        <source> Unit (net) </source>
+        <source>Unit (net)</source>
         <target> Stückpreis (netto) </target>
       </trans-unit>
+      
       <trans-unit id="featureInvoices-lineNet" datatype="html">
         <source>Net</source>
         <target>Netto</target>
@@ -1657,9 +1708,10 @@
         <target>Beschreibung</target>
       </trans-unit>
       <trans-unit id="featureInvoices-create" datatype="html">
-        <source>Create</source>
+        <source> Create </source>
         <target>Erstellen</target>
       </trans-unit>
+      
       <trans-unit id="featureInvoices-createInvoiceDisabledFinalized" datatype="html">
         <source>Subscription is finalized; no further invoices can be created.</source>
         <target>Das Abonnement ist abgeschlossen; es können keine weiteren Rechnungen erstellt werden.</target>
@@ -1761,9 +1813,10 @@
         <target>Standort</target>
       </trans-unit>
       <trans-unit id="featureServiceDetail-noServerInfo" datatype="html">
-        <source>Server details are not available yet.</source>
+        <source> Server details are not available yet. </source>
         <target>Serverdetails sind noch nicht verfügbar.</target>
       </trans-unit>
+      
       <trans-unit id="featureServiceDetail-tabsAria" datatype="html">
         <source>Service detail tabs</source>
         <target>Dienst-Detailregister</target>
@@ -1781,17 +1834,19 @@
         <target>Diese Registerkarte ist nicht verfügbar.</target>
       </trans-unit>
       <trans-unit id="featureContainerManager-containersTitle" datatype="html">
-        <source>Containers</source>
+        <source> Containers </source>
         <target>Container</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-searchPlaceholder" datatype="html">
         <source>Search containers</source>
         <target>Container suchen</target>
       </trans-unit>
       <trans-unit id="featureContainerManager-noSearchResults" datatype="html">
-        <source>No containers match your search.</source>
+        <source> No containers match your search. </source>
         <target>Keine Container entsprechen Ihrer Suche.</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-statusRunning" datatype="html">
         <source>Running</source>
         <target>Läuft</target>
@@ -1837,17 +1892,20 @@
         <target>Container werden geladen…</target>
       </trans-unit>
       <trans-unit id="featureContainerManager-noContainers" datatype="html">
-        <source>No containers found on this host.</source>
+        <source> No containers found on this host. </source>
         <target>Auf diesem Host wurden keine Container gefunden.</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-statsTitle" datatype="html">
-        <source>Resource usage</source>
+        <source> Resource usage </source>
         <target>Ressourcennutzung</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-selectContainerHint" datatype="html">
-        <source>Select a container to view resource history.</source>
+        <source> Select a container to view resource history. </source>
         <target>Wählen Sie einen Container aus, um den Ressourcenverlauf anzuzeigen.</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-loadingStats" datatype="html">
         <source>Loading resource history…</source>
         <target>Ressourcenverlauf wird geladen…</target>
@@ -1869,33 +1927,38 @@
         <target>Block-E/A</target>
       </trans-unit>
       <trans-unit id="featureContainerManager-noStatsHistory" datatype="html">
-        <source>No resource history is available for this container yet.</source>
+        <source> No resource history is available for this container yet. </source>
         <target>Für diesen Container ist noch kein Ressourcenverlauf verfügbar.</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-logsTitle" datatype="html">
         <source>Container logs</source>
         <target>Container-Protokolle</target>
       </trans-unit>
       <trans-unit id="featureContainerManager-selectContainerLogsHint" datatype="html">
-        <source>Select a container to stream logs.</source>
+        <source> Select a container to stream logs. </source>
         <target>Wählen Sie einen Container aus, um Protokolle zu streamen.</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-loadingLogs" datatype="html">
         <source>Loading logs…</source>
         <target>Protokolle werden geladen…</target>
       </trans-unit>
       <trans-unit id="featureContainerManager-noLogs" datatype="html">
-        <source>No log output is available for this container yet.</source>
+        <source> No log output is available for this container yet. </source>
         <target>Für diesen Container ist noch keine Protokollausgabe verfügbar.</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-logsTruncated" datatype="html">
-        <source>Showing the most recent log chunk; older lines were truncated.</source>
+        <source> Showing the most recent log chunk; older lines were truncated. </source>
         <target>Es wird der neueste Protokollausschnitt angezeigt; ältere Zeilen wurden gekürzt.</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-networkingTitle" datatype="html">
-        <source>Networking</source>
+        <source> Networking </source>
         <target>Netzwerk</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-networkMapNav" datatype="html">
         <source>Network map</source>
         <target>Netzwerkkarte</target>
@@ -1905,17 +1968,20 @@
         <target>Netzwerke werden geladen…</target>
       </trans-unit>
       <trans-unit id="featureContainerManager-noNetworks" datatype="html">
-        <source>No Docker networks were reported for this host.</source>
+        <source> No Docker networks were reported for this host. </source>
         <target>Für diesen Host wurden keine Docker-Netzwerke gemeldet.</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-topologyTitle" datatype="html">
-        <source>Container network topology</source>
+        <source> Container network topology </source>
         <target>Container-Netzwerktopologie</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-topologyHint" datatype="html">
-        <source>Hover a node for details · scroll to zoom · drag to pan</source>
+        <source> Hover a node for details · scroll to zoom · drag to pan </source>
         <target>Für Details über einen Knoten fahren · Scrollen zum Zoomen · Ziehen zum Verschieben</target>
       </trans-unit>
+      
       <trans-unit id="featureContainerManager-topologyImage" datatype="html">
         <source>Image</source>
         <target>Image</target>
@@ -2009,24 +2075,26 @@
         <target>Monat</target>
       </trans-unit>
       <trans-unit id="featureServiceDetail-applyFilters" datatype="html">
-        <source>Apply</source>
+        <source> Apply </source>
         <target>Anwenden</target>
       </trans-unit>
+      
       <trans-unit id="featureServiceDetail-resetFilters" datatype="html">
-        <source>Reset</source>
+        <source> Reset </source>
         <target>Zurücksetzen</target>
       </trans-unit>
+      
       <trans-unit id="featureServiceDetail-meterTotalLabel" datatype="html">
         <source>Total:</source>
         <target>Gesamt:</target>
       </trans-unit>
       <trans-unit id="featureServiceDetail-meterIncludedAllowance" datatype="html">
-        <source><x id="value" equiv-text="${summary.effectiveIncludedUsage}${unit}"/> included</source>
-        <target><x id="value" equiv-text="${summary.effectiveIncludedUsage}${unit}"/> enthalten</target>
+        <source><x id="PH" equiv-text="summary.effectiveIncludedUsage"/><x id="value" equiv-text="unit"/> included</source>
+        <target><x id="PH" equiv-text="summary.effectiveIncludedUsage"/><x id="value" equiv-text="unit"/> enthalten</target>
       </trans-unit>
       <trans-unit id="featureServiceDetail-meterBillableValue" datatype="html">
-        <source><x id="value" equiv-text="${summary.billableValue}${unit}"/> billable</source>
-        <target><x id="value" equiv-text="${summary.billableValue}${unit}"/> abrechenbar</target>
+        <source><x id="PH" equiv-text="summary.billableValue"/><x id="value" equiv-text="unit"/> billable</source>
+        <target><x id="PH" equiv-text="summary.billableValue"/><x id="value" equiv-text="unit"/> abrechenbar</target>
       </trans-unit>
       <trans-unit id="featureServiceDetail-customService" datatype="html">
         <source>Custom application</source>
@@ -2133,25 +2201,29 @@
         <target>SSH-Zugang gewährt</target>
       </trans-unit>
       <trans-unit id="featureOverview-sshAccessConfirmTitle" datatype="html">
-        <source>Reveal SSH access key?</source>
+        <source> Reveal SSH access key? </source>
         <target>SSH-Zugangsschlüssel anzeigen?</target>
       </trans-unit>
+      
       <trans-unit id="featureOverview-sshAccessConfirmBody" datatype="html">
         <source> Viewing the SSH access key for this service may limit technical support for that specific service. The key can only be retrieved once. After you continue, this action cannot be repeated. </source>
         <target> Das Anzeigen des SSH-Zugangsschlüssels für diesen Dienst kann den technischen Support für genau diesen Dienst einschränken. Der Schlüssel kann nur einmal abgerufen werden. Nach dem Fortfahren kann diese Aktion nicht wiederholt werden. </target>
       </trans-unit>
       <trans-unit id="featureOverview-sshAccessCancel" datatype="html">
-        <source>Cancel</source>
+        <source> Cancel </source>
         <target>Abbrechen</target>
       </trans-unit>
+      
       <trans-unit id="featureOverview-sshAccessConfirm" datatype="html">
-        <source>Reveal key</source>
+        <source> Reveal key </source>
         <target>Schlüssel anzeigen</target>
       </trans-unit>
+      
       <trans-unit id="featureOverview-sshAccessDisplayTitle" datatype="html">
-        <source>SSH access key</source>
+        <source> SSH access key </source>
         <target>SSH-Zugangsschlüssel</target>
       </trans-unit>
+      
       <trans-unit id="featureOverview-sshAccessDisplayHint" datatype="html">
         <source> Store this private key securely. It will not be shown again in the billing console. </source>
         <target> Bewahren Sie diesen privaten Schlüssel sicher auf. Er wird in der Billing-Konsole nicht erneut angezeigt. </target>
@@ -2169,9 +2241,10 @@
         <target>Kopiert</target>
       </trans-unit>
       <trans-unit id="featureOverview-sshAccessClose" datatype="html">
-        <source>Close</source>
+        <source> Close </source>
         <target>Schließen</target>
       </trans-unit>
+      
       <trans-unit id="featureOverview-sshAccessAlreadyRevealed" datatype="html">
         <source>The SSH access key has already been revealed for this service.</source>
         <target>Der SSH-Zugangsschlüssel wurde für diesen Dienst bereits angezeigt.</target>
@@ -2205,13 +2278,15 @@
         <target>Wird aktualisiert</target>
       </trans-unit>
       <trans-unit id="featureOverview-provisioningPendingHint" datatype="html">
-        <source>Your server is being set up. This usually takes less than a minute.</source>
+        <source> Your server is being set up. This usually takes less than a minute. </source>
         <target>Ihr Server wird eingerichtet. Das dauert in der Regel weniger als eine Minute.</target>
       </trans-unit>
+      
       <trans-unit id="featureOverview-provisioningFailedHint" datatype="html">
-        <source>Server setup did not complete. Check backorders or contact support if this persists.</source>
+        <source> Server setup did not complete. Check backorders or contact support if this persists. </source>
         <target>Die Servereinrichtung wurde nicht abgeschlossen. Prüfen Sie Rückstände oder kontaktieren Sie den Support, wenn das Problem bestehen bleibt.</target>
       </trans-unit>
+      
       <trans-unit id="featureServicePlans-title" datatype="html">
         <source>Service Plans</source>
         <target>Servicepläne</target>
@@ -2265,9 +2340,10 @@
         <target>Bestell-Highlights</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-addHighlight" datatype="html">
-        <source> Add line </source>
+        <source>Add line</source>
         <target>Zeile hinzufügen</target>
       </trans-unit>
+      
       <trans-unit id="featureServicePlans-orderingHighlightsHint" datatype="html">
         <source> Optional icon key and label text for the order page (in addition to the description). </source>
         <target>Optionales Symbol und Beschriftung für die Bestellseite (zusätzlich zur Beschreibung).</target>
@@ -2289,9 +2365,10 @@
         <target>Nach unten</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-removeHighlight" datatype="html">
-        <source> Remove </source>
+        <source>Remove</source>
         <target>Entfernen</target>
       </trans-unit>
+      
       <trans-unit id="featureServicePlans-billingIntervalType" datatype="html">
         <source>Interval type</source>
         <target>Intervalltyp</target>
@@ -2337,9 +2414,10 @@
         <target>Servertypen werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-chooseOption" datatype="html">
-        <source>Choose...</source>
+        <source> Choose... </source>
         <target>Auswählen...</target>
       </trans-unit>
+      
       <trans-unit id="featureServicePlans-provisioningOptions" datatype="html">
         <source>Customer-selectable options</source>
         <target>Vom Kunden wählbare Optionen</target>
@@ -2373,9 +2451,10 @@
         <target>Im Voraus abrechnen</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-billInAdvanceHelp" datatype="html">
-        <source>Charge the full period at its start (prepaid). Usage-based metering cannot be used with advance billing. Cancellation always takes effect at the end of the already-billed period.</source>
+        <source> Charge the full period at its start (prepaid). Usage-based metering cannot be used with advance billing. Cancellation always takes effect at the end of the already-billed period. </source>
         <target>Die volle Periode wird zu Beginn belastet (Prepaid). Nutzungsbasierte Abrechnung ist mit Vorausabrechnung nicht verfügbar. Eine Kündigung wirkt immer zum Ende der bereits abgerechneten Periode.</target>
       </trans-unit>
+      
       <trans-unit id="featureServicePlans-active" datatype="html">
         <source>Active</source>
         <target>Aktiv</target>
@@ -2409,9 +2488,10 @@
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-delete" datatype="html">
-        <source>Delete</source>
+        <source> Delete </source>
         <target>Löschen</target>
       </trans-unit>
+      
       <trans-unit id="featureBilling-planHighlightsSingular" datatype="html">
         <source>1 highlight</source>
         <target>1 Highlight</target>
@@ -2469,7 +2549,7 @@
         <target>Beschreibung</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-provider" datatype="html">
-        <source>Provider</source>
+        <source>Providers</source>
         <target>Anbieter</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-loadingProviders" datatype="html">
@@ -2505,9 +2585,10 @@
         <target>Ausblenden</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-providerDefaultsHelp" datatype="html">
-        <source>Overrides platform environment variables for this service type. Leave blank to use the environment default.</source>
+        <source> Overrides platform environment variables for this service type. Leave blank to use the environment default. </source>
         <target>Überschreibt Plattform-Umgebungsvariablen für diesen Service-Typ. Leer lassen, um die Umgebungs-Standardwerte zu verwenden.</target>
       </trans-unit>
+      
       <trans-unit id="featureServiceTypes-providerDefaultEnvPlaceholder" datatype="html">
         <source>Using environment default</source>
         <target>Umgebungs-Standardwert verwenden</target>
@@ -2537,9 +2618,10 @@
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
       </trans-unit>
       <trans-unit id="featureServiceTypes-delete" datatype="html">
-        <source>Delete</source>
+        <source> Delete </source>
         <target>Löschen</target>
       </trans-unit>
+      
       <trans-unit id="featureSubscriptions-title" datatype="html">
         <source>Plans &amp; Subscriptions</source>
         <target>Pläne &amp; Abonnements</target>
@@ -2697,9 +2779,10 @@
         <target>Benutzer</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-authApiKey" datatype="html">
-        <source>API Key</source>
+        <source> API Key </source>
         <target>API-Schlüssel</target>
       </trans-unit>
+      
       <trans-unit id="featureSubscriptions-authKeycloak" datatype="html">
         <source> Keycloak </source>
         <target>Keycloak</target>
@@ -2797,8 +2880,8 @@
         <target>Datenschutzerklärung</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-completeProfileToOrder" datatype="html">
-        <source>Complete your billing profile to place an order.</source>
-        <target>Vervollständigen Sie Ihr Rechnungsprofil, um zu bestellen.</target>
+        <source>Complete your billing profile to place an order</source>
+        <target>Vervollständigen Sie Ihr Rechnungsprofil, um zu bestellen</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-completeBillingDetails" datatype="html">
         <source>Complete billing details</source>
@@ -2817,25 +2900,28 @@
         <target>Bestellen</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-cancelSubscriptionTitle" datatype="html">
-        <source> Cancel subscription? </source>
+        <source>Cancel subscription?</source>
         <target>Abonnement kündigen?</target>
       </trans-unit>
+      
       <trans-unit id="featureSubscriptions-cancelSubscriptionConfirm" datatype="html">
         <source> Are you sure you want to cancel this subscription? It will remain active until the end of the current period. </source>
         <target>Dieses Abonnement wirklich kündigen? Es bleibt bis zum Ende der aktuellen Periode aktiv.</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-resumeSubscriptionTitle" datatype="html">
-        <source> Resume subscription? </source>
+        <source>Resume subscription?</source>
         <target>Abonnement fortsetzen?</target>
       </trans-unit>
+      
       <trans-unit id="featureSubscriptions-resumeSubscriptionConfirm" datatype="html">
         <source> Resume this subscription so it continues after the current period. </source>
         <target>Dieses Abonnement fortsetzen, damit es nach der aktuellen Periode weiterläuft.</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-resume" datatype="html">
-        <source>Resume</source>
+        <source> Resume </source>
         <target>Fortsetzen</target>
       </trans-unit>
+      
       <trans-unit id="featureSubscriptions-editProfileTitle" datatype="html">
         <source> Edit customer profile </source>
         <target>Kundenprofil bearbeiten</target>
@@ -2909,21 +2995,25 @@
         <target>Automatische Abrechnung</target>
         </trans-unit>
       <trans-unit id="featureSubscriptions-autoBillingHint" datatype="html">
-        <source>When enabled, open invoices are charged automatically. Manual payment is blocked until auto-payment succeeds or retries are exhausted.</source>
+        <source> When enabled, open invoices are charged automatically. Manual payment is blocked until auto-payment succeeds or retries are exhausted. </source>
         <target>Wenn aktiviert, werden offene Rechnungen automatisch belastet. Manuelle Zahlung ist gesperrt, bis die automatische Zahlung erfolgreich ist oder keine Wiederholungen mehr erfolgen.</target>
-        </trans-unit>
+      </trans-unit>
+        
       <trans-unit id="featureSubscriptions-autoBillingSetupWaiting" datatype="html">
-        <source>Payment method submitted. Waiting for confirmation from the payment provider…</source>
+        <source> Payment method submitted. Waiting for confirmation from the payment provider… </source>
         <target>Zahlungsmethode übermittelt. Warte auf Bestätigung vom Zahlungsanbieter…</target>
-        </trans-unit>
+      </trans-unit>
+        
       <trans-unit id="featureSubscriptions-autoBillingSetupConfirmed" datatype="html">
-        <source>Payment method confirmed and saved.</source>
+        <source> Payment method confirmed and saved. </source>
         <target>Zahlungsmethode bestätigt und gespeichert.</target>
-        </trans-unit>
+      </trans-unit>
+        
       <trans-unit id="featureSubscriptions-autoBillingSetupCanceled" datatype="html">
-        <source>Payment method setup was canceled.</source>
+        <source> Payment method setup was canceled. </source>
         <target>Einrichtung der Zahlungsmethode wurde abgebrochen.</target>
-        </trans-unit>
+      </trans-unit>
+        
       <trans-unit id="featureSubscriptions-paymentMethodStatus" datatype="html">
         <source>Payment method:</source>
         <target>Zahlungsmethode:</target>
@@ -2933,21 +3023,25 @@
         <target>Hinterlegt</target>
         </trans-unit>
       <trans-unit id="featureSubscriptions-addPaymentMethod" datatype="html">
-        <source>Add payment method</source>
+        <source> Add payment method </source>
         <target>Zahlungsmethode hinzufügen</target>
-        </trans-unit>
+      </trans-unit>
+        
       <trans-unit id="featureSubscriptions-enableAutoBilling" datatype="html">
-        <source>Enable auto-billing</source>
+        <source> Enable auto-billing </source>
         <target>Automatische Abrechnung aktivieren</target>
-        </trans-unit>
+      </trans-unit>
+        
       <trans-unit id="featureSubscriptions-disableAutoBilling" datatype="html">
-        <source>Disable auto-billing</source>
+        <source> Disable auto-billing </source>
         <target>Automatische Abrechnung deaktivieren</target>
-        </trans-unit>
+      </trans-unit>
+        
       <trans-unit id="featureSubscriptions-save" datatype="html">
-        <source>Save</source>
+        <source> Save </source>
         <target>Speichern</target>
       </trans-unit>
+      
       <trans-unit id="featureSubscriptions-mobilePanelSubscriptions" datatype="html">
         <source>Subscriptions</source>
         <target>Abonnements</target>
@@ -3041,13 +3135,15 @@
         <target>Gesetzlicher Widerruf</target>
       </trans-unit>
       <trans-unit id="featurePublicWithdrawal-formTitle" datatype="html">
-        <source>Withdrawal Request</source>
+        <source> Withdrawal Request </source>
         <target>Widerrufsantrag</target>
       </trans-unit>
+      
       <trans-unit id="featurePublicWithdrawal-addresseeTitle" datatype="html">
-        <source>Your withdrawal is addressed to</source>
+        <source> Your withdrawal is addressed to </source>
         <target>Ihr Widerruf ist gerichtet an</target>
       </trans-unit>
+      
       <trans-unit id="featurePublicWithdrawal-addresseeLoading" datatype="html">
         <source>Loading addressee...</source>
         <target>Empfänger wird geladen...</target>
@@ -3093,9 +3189,10 @@
         <target>Kundenname</target>
       </trans-unit>
       <trans-unit id="featurePublicWithdrawal-customerNameRequired" datatype="html">
-        <source>Customer name is required.</source>
+        <source> Customer name is required. </source>
         <target>Kundenname ist erforderlich.</target>
       </trans-unit>
+      
       <trans-unit id="featurePublicWithdrawal-emailFieldLabel" datatype="html">
         <source>Email</source>
         <target>E-Mail</target>
@@ -3117,17 +3214,19 @@
         <target>Bestellt am</target>
       </trans-unit>
       <trans-unit id="featurePublicWithdrawal-orderedOnRequired" datatype="html">
-        <source>Ordered on date is required.</source>
+        <source> Ordered on date is required. </source>
         <target>Bestelldatum ist erforderlich.</target>
       </trans-unit>
+      
       <trans-unit id="featurePublicWithdrawal-receivedOnLabel" datatype="html">
         <source>Received on (optional)</source>
         <target>Erhalten am (optional)</target>
       </trans-unit>
       <trans-unit id="featurePublicWithdrawal-receivedOnHelp" datatype="html">
-        <source>Required only if your service was already received or deployed.</source>
+        <source> Required only if your service was already received or deployed. </source>
         <target>Nur erforderlich, wenn Ihr Service bereits erhalten oder bereitgestellt wurde.</target>
       </trans-unit>
+      
       <trans-unit id="featurePublicWithdrawal-submitDetails" datatype="html">
         <source>Continue</source>
         <target>Weiter</target>
@@ -3157,21 +3256,24 @@
         <target>Fahren Sie fort, wo Sie aufgehört haben. Bitte bestätigen Sie Ihren Widerruf unten.</target>
       </trans-unit>
       <trans-unit id="featurePublicWithdrawal-acknowledgeLabel" datatype="html">
-        <source>I hereby withdraw from the contract for the subscription I provided in accordance with applicable statutory withdrawal rights.</source>
+        <source> I hereby withdraw from the contract for the subscription I provided in accordance with applicable statutory withdrawal rights. </source>
         <target>Hiermit widerrufe ich den Vertrag für das von mir angegebene Abonnement gemäß den geltenden gesetzlichen Widerrufsrechten.</target>
       </trans-unit>
+      
       <trans-unit id="featurePublicWithdrawal-acknowledgeRequired" datatype="html">
-        <source>You must confirm your withdrawal to continue.</source>
+        <source> You must confirm your withdrawal to continue. </source>
         <target>Sie müssen Ihren Widerruf bestätigen, um fortzufahren.</target>
       </trans-unit>
+      
       <trans-unit id="featurePublicWithdrawal-submitWithdrawal" datatype="html">
         <source>Submit withdrawal</source>
         <target>Widerruf absenden</target>
       </trans-unit>
       <trans-unit id="featurePublicWithdrawal-doneMessage" datatype="html">
-        <source>Your withdrawal request has been submitted successfully.</source>
+        <source> Your withdrawal request has been submitted successfully. </source>
         <target>Ihr Widerrufsantrag wurde erfolgreich übermittelt.</target>
       </trans-unit>
+      
       <trans-unit id="featurePublicWithdrawal-backToLogin" datatype="html">
         <source>Back to login</source>
         <target>Zurück zur Anmeldung</target>
@@ -3283,6 +3385,10 @@
       <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
         <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
         <target>Zeichen <x id="position" equiv-text="index + 1"/> von 6</target>
+      </trans-unit>
+      <trans-unit id="featureOtpInput-invalid" datatype="html">
+        <source>Invalid verification code</source>
+        <target>Ungültiger Bestätigungscode</target>
       </trans-unit>
       <trans-unit id="featureRegister-title" datatype="html">
         <source>Create an Account</source>
@@ -3713,10 +3819,8 @@
         <target> Benutzer löschen </target>
       </trans-unit>
       <trans-unit id="featureUserManager-deleteUserConfirm" datatype="html">
-        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/>? </source>
-        <target>Möchten Sie den Benutzer <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/> wirklich löschen?</target>
+        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
+        <target>Möchten Sie den Benutzer <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich löschen?</target>
       </trans-unit>
       <trans-unit id="featureUserManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -3759,9 +3863,10 @@
         <target>Token widerrufen</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-createTitle" datatype="html">
-        <source>Create personal access token</source>
+        <source> Create personal access token </source>
         <target>Persönliches Zugriffstoken erstellen</target>
       </trans-unit>
+      
       <trans-unit id="featureTokenManager-closeAriaLabel" datatype="html">
         <source>Close</source>
         <target>Schließen</target>
@@ -3771,9 +3876,10 @@
         <target>Tokenwert</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-plaintextHint" datatype="html">
-        <source>Copy this token now. It will not be shown again.</source>
+        <source> Copy this token now. It will not be shown again. </source>
         <target>Kopieren Sie dieses Token jetzt. Es wird nicht erneut angezeigt.</target>
       </trans-unit>
+      
       <trans-unit id="featureTokenManager-copied" datatype="html">
         <source>Copied</source>
         <target>Kopiert</target>
@@ -3783,9 +3889,10 @@
         <target>Kopieren</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-done" datatype="html">
-        <source>Done</source>
+        <source> Done </source>
         <target>Fertig</target>
       </trans-unit>
+      
       <trans-unit id="featureTokenManager-nameLabel" datatype="html">
         <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <target>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
@@ -3815,11 +3922,12 @@
         <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-revokeModalTitle" datatype="html">
-        <source>Revoke token</source>
+        <source> Revoke token </source>
         <target>Token widerrufen</target>
       </trans-unit>
+      
       <trans-unit id="featureTokenManager-revokeConfirm" datatype="html">
-        <source>Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>?</source>
+        <source> Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
         <target>Möchten Sie das Token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich widerrufen?</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-cannotUndo" datatype="html">
@@ -4499,9 +4607,10 @@
         <target>Leer lassen für rein statusbezogene Entfernung ohne SSH-Gegenskript.</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-productBase" datatype="html">
-        <source>Product total (net)</source>
+        <source> Product total (net) </source>
         <target>Produktgesamtbetrag (netto)</target>
       </trans-unit>
+      
       <trans-unit id="featureCloudInitConfigs-create" datatype="html">
         <source> Create </source>
         <target>Erstellen</target>
@@ -5303,25 +5412,28 @@
         <target>Geschätzte Preise</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-cancelAtPeriodEndHelp" datatype="html">
-        <source>Cancellation will be scheduled for the end of the current billing period. Unchecking this allows immediate cancellation mid-period.</source>
+        <source> Cancellation will be scheduled for the end of the current billing period. Unchecking this allows immediate cancellation mid-period. </source>
         <target>Die Kündigung wird zum Ende des aktuellen Abrechnungszeitraums geplant. Wenn Sie dies abwählen, ist eine sofortige Kündigung mitten im Zeitraum möglich.</target>
       </trans-unit>
+      
       <trans-unit id="featureServicePlans-autoRecalculatePriceDaily" datatype="html">
         <source>Automatic daily price recalculation</source>
         <target>Automatische tägliche Preisneuberechnung</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-autoRecalculatePriceDailyHelp" datatype="html">
-        <source>Opt in only when required for EU compliance. When enabled, the package price is recalculated nightly at midnight from the provider catalog. Checkout must disclose this and the statutory withdrawal restart when the price changes.</source>
+        <source> Opt in only when required for EU compliance. When enabled, the package price is recalculated nightly at midnight from the provider catalog. Checkout must disclose this and the statutory withdrawal restart when the price changes. </source>
         <target>Nur aktivieren, wenn es für EU-Konformität erforderlich ist. Wenn aktiviert, wird der Paketpreis jede Nacht um Mitternacht aus dem Anbieterkatalog neu berechnet. Der Checkout muss dies und den Neustart des gesetzlichen Widerrufsrechts bei Preisänderungen anzeigen.</target>
       </trans-unit>
+      
       <trans-unit id="featureServicePlans-migrateExistingSubscriptions" datatype="html">
         <source>Apply base price, margin, and VAT changes to existing subscriptions</source>
         <target>Basispreis-, Margen- und MwSt.-Änderungen auf bestehende Abonnements anwenden</target>
       </trans-unit>
       <trans-unit id="featureServicePlans-migrateExistingSubscriptionsHelp" datatype="html">
-        <source>When checked, changing base price, margins, or VAT rate queues a job that migrates eligible subscriptions (differential billing, statutory withdrawal restart, and customer email). Leave unchecked to update the catalog only for new orders.</source>
+        <source> When checked, changing base price, margins, or VAT rate queues a job that migrates eligible subscriptions (differential billing, statutory withdrawal restart, and customer email). Leave unchecked to update the catalog only for new orders. </source>
         <target>Wenn aktiviert, reiht eine Änderung von Basispreis, Margen oder MwSt.-Satz einen Job ein, der berechtigte Abonnements migriert (Differenzabrechnung, Neustart des gesetzlichen Widerrufsrechts und Kunden-E-Mail). Deaktiviert lassen, um nur den Katalog für neue Bestellungen zu aktualisieren.</target>
       </trans-unit>
+      
       <trans-unit id="featureServiceTypes-disallowStatutoryWithdrawal" datatype="html">
         <source>Disallow statutory withdrawal after provisioning</source>
         <target>Gesetzlichen Widerruf nach Bereitstellung ausschließen</target>
@@ -5343,9 +5455,10 @@
         <target>Bestellübersicht</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-orderSummaryMeters" datatype="html">
-        <source>Usage meters</source>
+        <source> Usage meters </source>
         <target>Nutzungszähler</target>
       </trans-unit>
+      
       <trans-unit id="featurePromotions-orderCodeLabel" datatype="html">
         <source>Promotion code (optional)</source>
         <target>Aktionscode (optional)</target>
@@ -5371,17 +5484,20 @@
         <target>Der gesetzliche Widerruf ist nur vor Bereitstellung des Dienstes möglich.</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyTitle" datatype="html">
-        <source>Automatic price adjustment</source>
+        <source> Automatic price adjustment </source>
         <target>Automatische Preisanpassung</target>
       </trans-unit>
+      
       <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyIntro" datatype="html">
-        <source>This plan may have its price adjusted automatically each day based on the provider catalog.</source>
+        <source> This plan may have its price adjusted automatically each day based on the provider catalog. </source>
         <target>Der Preis dieses Plans kann täglich automatisch anhand des Anbieterkatalogs angepasst werden.</target>
       </trans-unit>
+      
       <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyEmail" datatype="html">
-        <source>You will receive an email if the price changes.</source>
+        <source> You will receive an email if the price changes. </source>
         <target>Sie erhalten eine E-Mail, wenn sich der Preis ändert.</target>
       </trans-unit>
+      
       <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyWithdrawalPrefix" datatype="html">
         <source>From then on, you have</source>
         <target>Ab dann haben Sie</target>
@@ -5467,9 +5583,10 @@
         <target>Token bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-editModalTitle" datatype="html">
-        <source>Edit personal access token</source>
+        <source> Edit personal access token </source>
         <target>Persönlichen Zugriffstoken bearbeiten</target>
       </trans-unit>
+      
       <trans-unit id="featureTokenManager-update" datatype="html">
         <source>Update</source>
         <target>Aktualisieren</target>
@@ -5751,10 +5868,8 @@
         <target>Webhook löschen</target>
       </trans-unit>
       <trans-unit id="featureNotifications-deleteConfirm" datatype="html">
-        <source> Are you sure you want to delete the webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/>? </source>
-        <target> Möchten Sie den Webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/> wirklich löschen? </target>
+        <source> Are you sure you want to delete the webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
+        <target> Möchten Sie den Webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich löschen? </target>
       </trans-unit>
       <trans-unit id="featureNotifications-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -5813,9 +5928,10 @@
         <target>Payload</target>
       </trans-unit>
       <trans-unit id="featureNotifications-deliveryResponse" datatype="html">
-        <source>Response</source>
+        <source> Response </source>
         <target>Antwort</target>
       </trans-unit>
+      
       <trans-unit id="featureNotifications-moreDeliveries" datatype="html">
         <source> More deliveries exist than shown. </source>
         <target>Es gibt mehr Zustellungen als angezeigt.</target>
@@ -5845,9 +5961,10 @@
         <target>Updates</target>
       </trans-unit>
       <trans-unit id="featureUpdates-checkNow" datatype="html">
-        <source>Check now</source>
+        <source> Check now </source>
         <target>Jetzt prüfen</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-loading" datatype="html">
         <source>Loading updates...</source>
         <target>Updates werden geladen…</target>
@@ -5873,29 +5990,33 @@
         <target>Unbekannt</target>
       </trans-unit>
       <trans-unit id="featureUpdates-installedVersion" datatype="html">
-        <source>Installed version</source>
+        <source> Installed version </source>
         <target>Installierte Version</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-latestVersion" datatype="html">
-        <source>Latest version</source>
+        <source> Latest version </source>
         <target>Neueste Version</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-viewRelease" datatype="html">
         <source>View release</source>
         <target>Release anzeigen</target>
       </trans-unit>
       <trans-unit id="featureUpdates-frontendVersion" datatype="html">
-        <source>Frontend version</source>
+        <source> Frontend version </source>
         <target>Frontend-Version</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-lastCheck" datatype="html">
         <source>Last check</source>
         <target>Letzte Prüfung</target>
       </trans-unit>
       <trans-unit id="featureUpdates-instancesTitle" datatype="html">
-        <source>Service instances</source>
+        <source> Service instances </source>
         <target>Service-Instanzen</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-mobilePanelInstances" datatype="html">
         <source>Instances</source>
         <target>Instanzen</target>
@@ -5925,21 +6046,25 @@
         <target>Noch keine Service-Instanzen gemeldet.</target>
       </trans-unit>
       <trans-unit id="featureUpdates-changelogProduct" datatype="html">
-        <source>Product changelog</source>
+        <source> Product changelog </source>
         <target>Produkt-Changelog</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-changelogShared" datatype="html">
-        <source>Shared changelog</source>
+        <source> Shared changelog </source>
         <target>Geteiltes Changelog</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-noChangelogProduct" datatype="html">
-        <source>No product changelog entries.</source>
+        <source> No product changelog entries. </source>
         <target>Keine Einträge im Produkt-Changelog.</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-noChangelogShared" datatype="html">
-        <source>No shared changelog entries.</source>
+        <source> No shared changelog entries. </source>
         <target>Keine Einträge im geteilten Changelog.</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-dependencyHealthy" datatype="html">
         <source>Healthy</source>
         <target>Gesund</target>
@@ -6117,12 +6242,12 @@
         <target>Nutzungszähler</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-meterIncludedAllowance" datatype="html">
-        <source><x id="value" equiv-text="${summary.effectiveIncludedUsage}${unit}"/> included</source>
-        <target><x id="value" equiv-text="${summary.effectiveIncludedUsage}${unit}"/> enthalten</target>
+        <source><x id="PH" equiv-text="summary.effectiveIncludedUsage"/><x id="value" equiv-text="unit"/> included</source>
+        <target><x id="PH" equiv-text="summary.effectiveIncludedUsage"/><x id="value" equiv-text="unit"/> enthalten</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-meterBillableValue" datatype="html">
-        <source><x id="value" equiv-text="${summary.billableValue}${unit}"/> billable</source>
-        <target><x id="value" equiv-text="${summary.billableValue}${unit}"/> abrechenbar</target>
+        <source><x id="PH" equiv-text="summary.billableValue"/><x id="value" equiv-text="unit"/> billable</source>
+        <target><x id="PH" equiv-text="summary.billableValue"/><x id="value" equiv-text="unit"/> abrechenbar</target>
       </trans-unit>
       <trans-unit id="featureAdminSubscriptions-openServiceDetails" datatype="html">
         <source>Open details</source>
@@ -6243,6 +6368,10 @@
       <trans-unit id="featureContainer-updatesAttention" datatype="html">
         <source>Updates need attention</source>
         <target>Updates erfordern Aufmerksamkeit</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-securityAuthenticatorSuggested" datatype="html">
+        <source>Authenticator app is not enabled</source>
+        <target>Authenticator-App ist nicht aktiviert</target>
       </trans-unit>
       <trans-unit id="featureContainer-metersTitle" datatype="html">
         <source>Meters</source>
@@ -6533,12 +6662,12 @@
         <target>Nutzungszähler</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-meterIncludedAllowance" datatype="html">
-        <source><x id="value" equiv-text="${meter.effectiveIncludedUsage}${unit}"/> included</source>
-        <target><x id="value" equiv-text="${meter.effectiveIncludedUsage}${unit}"/> enthalten</target>
+        <source><x id="PH" equiv-text="meter.effectiveIncludedUsage"/><x id="value" equiv-text="unit"/> included</source>
+        <target><x id="PH" equiv-text="meter.effectiveIncludedUsage"/><x id="value" equiv-text="unit"/> enthalten</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-meterBillableValue" datatype="html">
-        <source><x id="value" equiv-text="${meter.billableValue}${unit}"/> billable</source>
-        <target><x id="value" equiv-text="${meter.billableValue}${unit}"/> abrechenbar</target>
+        <source><x id="PH" equiv-text="meter.billableValue"/><x id="value" equiv-text="unit"/> billable</source>
+        <target><x id="PH" equiv-text="meter.billableValue"/><x id="value" equiv-text="unit"/> abrechenbar</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-openServiceDetails" datatype="html">
         <source>Open details</source>
@@ -6555,6 +6684,374 @@
       <trans-unit id="featureRegister-backToLogin" datatype="html">
         <source>Back to login</source>
         <target>Zurück zur Anmeldung</target>
+      </trans-unit>
+          <trans-unit id="featureAdminBilling-paidAtHelp" datatype="html">
+        <source> Defaults to now. Change this if payment was received on a different date or time. </source>
+        <target> Standardmäßig jetzt. Ändern Sie dies, wenn die Zahlung zu einem anderen Zeitpunkt eingegangen ist. </target>
+      </trans-unit>
+      <trans-unit id="featureAdminBilling-paidAtLabel" datatype="html">
+        <source>Payment received at</source>
+        <target>Zahlungseingang</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-addressLine1" datatype="html">
+        <source>Address line 1</source>
+        <target>Adresszeile 1</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-addressLine2" datatype="html">
+        <source>Address line 2</source>
+        <target>Adresszeile 2</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-city" datatype="html">
+        <source>City</source>
+        <target>Stadt</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-company" datatype="html">
+        <source>Company</source>
+        <target>Unternehmen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-country" datatype="html">
+        <source>Country</source>
+        <target>Land</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-customerNumber" datatype="html">
+        <source>Customer number</source>
+        <target>Kundennummer</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-customerType" datatype="html">
+        <source>Customer type</source>
+        <target>Kundentyp</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-datevDebtorNotAssigned" datatype="html">
+        <source>Not assigned yet</source>
+        <target>Noch nicht zugewiesen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-datevDebtorNumber" datatype="html">
+        <source>DATEV debtor number</source>
+        <target>DATEV-Debitorennummer</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-email" datatype="html">
+        <source>Email</source>
+        <target>E-Mail</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-firstName" datatype="html">
+        <source>First name</source>
+        <target>Vorname</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-lastName" datatype="html">
+        <source>Last name</source>
+        <target>Nachname</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-phone" datatype="html">
+        <source>Phone</source>
+        <target>Telefon</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-postalCode" datatype="html">
+        <source>Postal code</source>
+        <target>Postleitzahl</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-state" datatype="html">
+        <source>State / Region</source>
+        <target>Bundesland / Region</target>
+      </trans-unit>
+      <trans-unit id="featureAdminProfiles-vatId" datatype="html">
+        <source>VAT ID</source>
+        <target>USt-IdNr.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-invoiceNumberOptional" datatype="html">
+        <source>Invoice number (optional)</source>
+        <target>Rechnungsnummer (optional)</target>
+      </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-invoiceNumberPlaceholder" datatype="html">
+        <source>Leave blank to auto-assign on archive</source>
+        <target>Leer lassen zur automatischen Vergabe beim Archivieren</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-login2faPage" datatype="html">
+        <source>Two-Factor Authentication</source>
+        <target>Zwei-Faktor-Authentifizierung</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-securityPage" datatype="html">
+        <source>Security Settings</source>
+        <target>Sicherheitseinstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-customerNumberAria" datatype="html">
+        <source>Customer number <x id="customerNumber" equiv-text="customerNumber"/></source>
+        <target>Kundennummer <x id="customerNumber" equiv-text="customerNumber"/></target>
+      </trans-unit>
+      <trans-unit id="featureContainer-security" datatype="html">
+        <source>Security</source>
+        <target>Sicherheit</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-securityTitle" datatype="html">
+        <source>Security</source>
+        <target>Sicherheit</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-authNotAvailable" datatype="html">
+        <source>Two-factor login is not available for this authentication method.</source>
+        <target>Zwei-Faktor-Anmeldung ist für diese Authentifizierungsmethode nicht verfügbar.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-cancel" datatype="html">
+        <source>Back to login</source>
+        <target>Zurück zur Anmeldung</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-codeLabel" datatype="html">
+        <source>Verification Code</source>
+        <target>Bestätigungscode</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-codePatternEmail" datatype="html">
+        <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
+        <target>Code muss genau 6 Zeichen sein (Großbuchstaben und Zahlen).</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-codePatternTotp" datatype="html">
+        <source>Code must be exactly 6 digits.</source>
+        <target>Code muss genau 6 Ziffern sein.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-codeRequired" datatype="html">
+        <source>Verification code is required.</source>
+        <target>Bestätigungscode ist erforderlich.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-description" datatype="html">
+        <source>Enter the verification code to finish signing in.</source>
+        <target>Geben Sie den Bestätigungscode ein, um die Anmeldung abzuschließen.</target>
+      </trans-unit>
+<trans-unit id="featureLogin2fa-emailHint" datatype="html">
+        <source>Enter the 6-character code we sent to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>.</source>
+        <target>Geben Sie den 6-zeichigen Code ein, den wir an <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> ein.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-formTitle" datatype="html">
+        <source>Verify Sign-In</source>
+        <target>Anmeldung bestätigen</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-returnToLogin" datatype="html">
+        <source>Return to login</source>
+        <target>Zurück zur Anmeldung</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-returnToLoginLink" datatype="html">
+        <source>Return to login</source>
+        <target>Zurück zur Anmeldung</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-sessionExpired" datatype="html">
+        <source>Your sign-in session expired. Please sign in again.</source>
+        <target>Ihre Anmeldesitzung ist abgelaufen. Bitte melden Sie sich erneut an.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-submit" datatype="html">
+        <source>Verify</source>
+        <target>Bestätigen</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-title" datatype="html">
+        <source>Two-Factor Authentication</source>
+        <target>Zwei-Faktor-Authentifizierung</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-totpHint" datatype="html">
+        <source>Enter the 6-digit code from your authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>.</source>
+        <target>Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App für <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> ein.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-verifying" datatype="html">
+        <source>Verifying...</source>
+        <target>Wird geprüft...</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-clientUnavailable" datatype="html">
+        <source>N/A</source>
+        <target>N/V</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-authNotAvailable" datatype="html">
+        <source> Two-factor authentication settings are only available for users authentication. </source>
+        <target> Zwei-Faktor-Authentifizierungseinstellungen sind nur für die Benutzer-Authentifizierung verfügbar. </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmDisableTotp" datatype="html">
+        <source> Disable authenticator </source>
+        <target> Authenticator deaktivieren </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmEmail" datatype="html">
+        <source>Confirm</source>
+        <target>Bestätigen</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmTotp" datatype="html">
+        <source> Confirm authenticator </source>
+        <target> Authenticator bestätigen </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-currentPasswordLabel" datatype="html">
+        <source>Current password</source>
+        <target>Aktuelles Passwort</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableEmail" datatype="html">
+        <source> Disable email 2FA </source>
+        <target> E-Mail-2FA deaktivieren </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableEmailPrompt" datatype="html">
+        <source> Disable email 2FA </source>
+        <target> E-Mail-2FA deaktivieren </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableTotp" datatype="html">
+        <source> Disable authenticator </source>
+        <target> Authenticator deaktivieren </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableTotpCodeLabel" datatype="html">
+        <source>Authenticator code to disable</source>
+        <target>Authenticator-Code zum Deaktivieren</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-disabled" datatype="html">
+        <source>Disabled</source>
+        <target>Deaktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailCodeLabel" datatype="html">
+        <source>Confirmation code</source>
+        <target>Bestätigungscode</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailDescription" datatype="html">
+        <source> Receive a one-time code by email when signing in. </source>
+        <target> Erhalten Sie bei der Anmeldung einen Einmalcode per E-Mail. </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailForcedHint" datatype="html">
+        <source>Email verification is required by our organization and cannot be turned off</source>
+        <target>E-Mail-Bestätigung ist von unserer Organisation vorgeschrieben und kann nicht deaktiviert werden</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailTitle" datatype="html">
+        <source>Email verification</source>
+        <target>E-Mail-Bestätigung</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-enableEmail" datatype="html">
+        <source> Enable email 2FA </source>
+        <target> E-Mail-2FA aktivieren </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-enabled" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-loading" datatype="html">
+        <source>Loading...</source>
+        <target>Wird geladen...</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-resendEmail" datatype="html">
+        <source> Resend code </source>
+        <target> Code erneut senden </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-secretLabel" datatype="html">
+        <source>Secret</source>
+        <target>Geheimnis</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-setupTotp" datatype="html">
+        <source> Set up authenticator </source>
+        <target> Authenticator einrichten </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-setupTotpPrompt" datatype="html">
+        <source> Set up authenticator </source>
+        <target> Authenticator einrichten </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-title" datatype="html">
+        <source>Security Settings</source>
+        <target>Sicherheitseinstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpConfirmLabel" datatype="html">
+        <source>Confirm with code</source>
+        <target>Mit Code bestätigen</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpDescription" datatype="html">
+        <source> Use an authenticator app (TOTP) as your preferred second factor. </source>
+        <target> Verwenden Sie eine Authenticator-App (TOTP) als bevorzugten zweiten Faktor. </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpDisabled" datatype="html">
+        <source>Disabled</source>
+        <target>Deaktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpEnabled" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpSetupHint" datatype="html">
+        <source> Scan the QR code with your authenticator app, or enter the secret manually. </source>
+        <target> Scannen Sie den QR-Code mit Ihrer Authenticator-App oder geben Sie das Geheimnis manuell ein. </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpTitle" datatype="html">
+        <source>Authenticator app</source>
+        <target>Authenticator-App</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-allowCustomerProviderSelection" datatype="html">
+        <source> Allow provider selection </source>
+        <target> Anbieterauswahl erlauben </target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-allowCustomerProviderSelectionHelp" datatype="html">
+        <source> Customers may choose a cloud provider from the selected options when ordering. </source>
+        <target> Kunden können beim Bestellen einen Cloud-Anbieter aus den ausgewählten Optionen wählen. </target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-allowedProviders" datatype="html">
+        <source>Allowed providers</source>
+        <target>Erlaubte Anbieter</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-allowedProvidersHelp" datatype="html">
+        <source> Hold Ctrl/Cmd to select. First selected is the default provider at checkout. </source>
+        <target> Mit Strg/Cmd auswählen. Der zuerst ausgewählte ist der Standardanbieter beim Checkout. </target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-geographyByProviderHelp" datatype="html">
+        <source> Choose a default location or region for each provider. </source>
+        <target> Wählen Sie einen Standardstandort oder eine Region für jeden Anbieter. </target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-pinnedProvider" datatype="html">
+        <source>Plan provider</source>
+        <target>Plan-Anbieter</target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-pinnedProviderHelp" datatype="html">
+        <source> Customers cannot choose a provider. This provider is used for all orders on this plan. </source>
+        <target> Kunden können keinen Anbieter wählen. Dieser Anbieter wird für alle Bestellungen dieses Plans verwendet. </target>
+      </trans-unit>
+      <trans-unit id="featureServicePlans-serverTypeByProviderHelp" datatype="html">
+        <source> Choose a default server type for each provider. Used when the customer picks that provider (or omits server type at checkout). </source>
+        <target> Wählen Sie einen Standard-Servertyp für jeden Anbieter. Wird verwendet, wenn der Kunde diesen Anbieter wählt (oder beim Checkout keinen Servertyp angibt). </target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-noneProvider" datatype="html">
+        <source>None</source>
+        <target>Keine</target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-providerDefaultsGroupIntro" datatype="html">
+        <source> Defaults for <x id="INTERPOLATION" equiv-text="{{ group.label }}"/> </source>
+        <target> Standardwerte für <x id="INTERPOLATION" equiv-text="{{ group.label }}"/> </target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-providersMultiHelp" datatype="html">
+        <source> Hold Ctrl/Cmd to select multiple compatible providers. First selected is primary. Choose None for no cloud provider. </source>
+        <target> Mit Strg/Cmd mehrere kompatible Anbieter auswählen. Der zuerst ausgewählte ist primär. Wählen Sie „Keine“ für keinen Cloud-Anbieter. </target>
+      </trans-unit>
+      <trans-unit id="featureServiceTypes-providersPrimaryPlusCount" datatype="html">
+        <source><x id="primary" equiv-text="primaryLabel"/> (+<x id="extraCount" equiv-text="extraCount"/>)</source>
+        <target><x id="primary" equiv-text="primaryLabel"/> (+<x id="extraCount" equiv-text="extraCount"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-customerNumber" datatype="html">
+        <source>Customer number</source>
+        <target>Kundennummer</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-orderProvider" datatype="html">
+        <source>Provider</source>
+        <target>Anbieter</target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-orderProviderHelp" datatype="html">
+        <source> Choose which cloud provider provisions this subscription. </source>
+        <target> Wählen Sie, welcher Cloud-Anbieter dieses Abonnement bereitstellt. </target>
+      </trans-unit>
+      <trans-unit id="featureSubscriptions-orderStepInfrastructure" datatype="html">
+        <source>Server &amp; region</source>
+        <target>Server &amp; Region</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-cancel" datatype="html">
+        <source> Cancel </source>
+        <target> Abbrechen </target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-clearTotpConfirm" datatype="html">
+        <source> Remove the authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToClearTotp.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? They can set up a new authenticator afterwards. </source>
+        <target> Möchten Sie die Authenticator-App für <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToClearTotp.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> entfernen? Anschließend kann ein neuer Authenticator eingerichtet werden. </target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-clearTotpModalTitle" datatype="html">
+        <source> Remove Authenticator </source>
+        <target> Authenticator entfernen </target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-removeAuthenticator" datatype="html">
+        <source> Remove authenticator </source>
+        <target> Authenticator entfernen </target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-removeAuthenticatorTitle" datatype="html">
+        <source>Remove authenticator</source>
+        <target>Authenticator entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-totpEnabled" datatype="html">
+        <source>Authenticator</source>
+        <target>Authenticator</target>
       </trans-unit>
     </body>
   </file>

@@ -21,6 +21,7 @@ export const environment: Environment = {
     */
     type: 'users',
     disableSignup: false,
+    disableForceLogin2fa: false,
     /*
     type: 'keycloak',
     authServerUrl: 'http://host.docker.internal:8380',

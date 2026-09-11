@@ -1,0 +1,19 @@
+sequenceDiagram
+  participant UI as LoginUI
+  participant API as AuthService
+  participant Mail as EmailDispatcher
+  UI->>API: POST /auth/login email+password
+  alt No factor required
+    Note over API: force OFF and no opt-in and no TOTP
+    API-->>UI: JWT
+  else TOTP enrolled
+    API-->>UI: 401 LOGIN_2FA_REQUIRED method totp
+    UI->>API: POST /auth/login email+password+code
+    API-->>UI: JWT
+  else Email factor required
+    Note over API: force ON or email opt-in
+    API->>Mail: login-2fa code
+    API-->>UI: 401 LOGIN_2FA_REQUIRED method email
+    UI->>API: POST /auth/login email+password+code
+    API-->>UI: JWT
+  end

@@ -7,6 +7,8 @@ import type {
   CreateUserDto,
   LoginResponse,
   RegisterResponse,
+  TotpSetup,
+  TwoFactorStatus,
   UpdateUserDto,
   UserResponseDto,
 } from '../state/authentication/authentication.types';
@@ -38,8 +40,48 @@ export class AuthService {
     return this.authEnvironment.apiUrl;
   }
 
-  login(email: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, { email, password });
+  login(email: string, password: string, code?: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, {
+      email,
+      password,
+      ...(code !== undefined && code !== '' ? { code } : {}),
+    });
+  }
+
+  getTwoFactorStatus(): Observable<TwoFactorStatus> {
+    return this.http.get<TwoFactorStatus>(`${this.apiUrl}/auth/2fa`);
+  }
+
+  enableEmail2fa(code?: string): Observable<{ message: string; pending?: boolean }> {
+    return this.http.post<{ message: string; pending?: boolean }>(`${this.apiUrl}/auth/2fa/email/enable`, {
+      ...(code !== undefined && code !== '' ? { code } : {}),
+    });
+  }
+
+  disableEmail2fa(currentPassword: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/auth/2fa/email`, {
+      body: { currentPassword },
+    });
+  }
+
+  setupTotp(currentPassword: string): Observable<TotpSetup> {
+    return this.http.post<TotpSetup>(`${this.apiUrl}/auth/2fa/totp/setup`, { currentPassword });
+  }
+
+  confirmTotp(code: string): Observable<{ message: string; access_token: string }> {
+    return this.http.post<{ message: string; access_token: string }>(`${this.apiUrl}/auth/2fa/totp/confirm`, {
+      code,
+    });
+  }
+
+  disableTotp(code: string): Observable<{ message: string; access_token: string }> {
+    return this.http.delete<{ message: string; access_token: string }>(`${this.apiUrl}/auth/2fa/totp`, {
+      body: { code },
+    });
+  }
+
+  adminClearUserTotp(userId: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/users/${userId}/2fa/totp`);
   }
 
   register(email: string, password: string): Observable<RegisterResponse> {

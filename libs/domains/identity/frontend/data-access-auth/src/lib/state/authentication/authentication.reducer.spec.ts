@@ -112,6 +112,24 @@ describe('authenticationReducer', () => {
       expect(newState.loading).toBe(false);
       expect(newState.isAuthenticated).toBe(false);
     });
+
+    it('should not set error when login2fa challenge is required', () => {
+      const state: AuthenticationState = {
+        ...initialAuthenticationState,
+        loading: true,
+        error: 'Previous error',
+      };
+      const newState = authenticationReducer(
+        state,
+        loginFailure({
+          error: 'Two-factor authentication required. Enter the verification code to continue.',
+          login2fa: { email: 'user@example.com', password: 'secret', method: 'email' },
+        }),
+      );
+
+      expect(newState.error).toBeNull();
+      expect(newState.loading).toBe(false);
+    });
   });
 
   describe('logout', () => {

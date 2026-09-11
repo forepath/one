@@ -1,13 +1,29 @@
 .otp-input {
+  width: fit-content;
+  max-width: 100%;
+
   .otp-digit {
+    width: 3.25rem;
+    flex: 0 0 3.25rem;
     font-size: 1.5rem;
     padding: 0.2rem !important;
     text-align: center;
     line-height: 1.5;
     box-sizing: border-box;
+    background-image: none !important;
 
     &:focus {
       z-index: 1;
     }
+  }
+
+  &__digits--invalid .otp-digit {
+    border-color: var(--bs-form-invalid-border-color, var(--bs-danger));
+  }
+
+  &__error-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+    flex-shrink: 0;
   }
 }

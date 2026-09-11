@@ -28,14 +28,16 @@ Complete reference for environment variables used in Decabill.
 
 ### Authentication
 
-| Variable                   | Description                                                                  |
-| -------------------------- | ---------------------------------------------------------------------------- |
-| `AUTHENTICATION_METHOD`    | Explicit: `api-key`, `keycloak`, or `users`. If unset, inferred (see DR-004) |
-| `STATIC_API_KEY`           | Static API key when using api-key mode                                       |
-| `STATIC_API_KEY_TENANT_ID` | Optional tenant bind for API key auth (see DR-002)                           |
-| `DISABLE_SIGNUP`           | When `true`, disables self-registration for users mode                       |
-| `JWT_SECRET`               | Required for users and keycloak modes (sessions / PAT exchange)              |
-| `KEYCLOAK_*`               | Keycloak URL, realm, client id/secret, token validation                      |
+| Variable                   | Description                                                                                                           |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `AUTHENTICATION_METHOD`    | Explicit: `api-key`, `keycloak`, or `users`. If unset, inferred (see DR-004)                                          |
+| `STATIC_API_KEY`           | Static API key when using api-key mode                                                                                |
+| `STATIC_API_KEY_TENANT_ID` | Optional tenant bind for API key auth (see DR-002)                                                                    |
+| `DISABLE_SIGNUP`           | When `true`, disables self-registration for users mode                                                                |
+| `DISABLE_FORCE_LOGIN_2FA`  | When `true`, login 2FA is opt-in only; when unset/`false`, every users-mode login requires email OTP or enrolled TOTP |
+| `PRODUCT_NAME`             | TOTP issuer label in authenticator apps (otpauth); defaults to `Forepath`                                             |
+| `JWT_SECRET`               | Required for users and keycloak modes (sessions / PAT exchange)                                                       |
+| `KEYCLOAK_*`               | Keycloak URL, realm, client id/secret, token validation                                                               |
 
 ### Multi-tenancy
 

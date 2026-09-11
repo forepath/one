@@ -656,54 +656,27 @@
       <trans-unit id="featureChat-deleteEnvironmentTitle" datatype="html">
         <source>Delete Environment</source>
         </trans-unit>
-      <trans-unit id="featureChat-chatHeader" datatype="html">
-        <source>Chat</source>
-        </trans-unit>
       <trans-unit id="featureChat-chatSessionSwitcherAria" datatype="html">
         <source>Chat sessions</source>
-      </trans-unit>
-      <trans-unit id="featureChat-chatSessionDefaultTitle" datatype="html">
-        <source>Chat</source>
-      </trans-unit>
-      <trans-unit id="featureChat-chatSessionPrimaryTitle" datatype="html">
-        <source>Primary</source>
-      </trans-unit>
-      <trans-unit id="featureChat-chatSessionUntitledTitle" datatype="html">
-        <source>Untitled chat</source>
-      </trans-unit>
+        </trans-unit>
       <trans-unit id="featureChat-chatSessionPrimaryBadge" datatype="html">
         <source>(primary)</source>
-      </trans-unit>
-      <trans-unit id="featureChat-renameChatSessionModalTitle" datatype="html">
-        <source>Rename Chat Session</source>
-      </trans-unit>
-      <trans-unit id="featureChat-renameChatSessionSave" datatype="html">
-        <source>Save</source>
-      </trans-unit>
+        </trans-unit>
       <trans-unit id="featureChat-renameChatSessionAria" datatype="html">
         <source>Rename chat session</source>
-      </trans-unit>
+        </trans-unit>
       <trans-unit id="featureChat-renameChatSessionTitle" datatype="html">
         <source>Rename</source>
-      </trans-unit>
-      <trans-unit id="featureChat-deleteChatSessionModalTitle" datatype="html">
-        <source>Delete Chat Session</source>
-      </trans-unit>
-      <trans-unit id="featureChat-deleteChatSessionConfirm" datatype="html">
-        <source>Are you sure you want to delete the chat session <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ chatSessionToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>?</source>
-      </trans-unit>
+        </trans-unit>
       <trans-unit id="featureChat-deleteChatSessionAria" datatype="html">
         <source>Delete chat session</source>
-      </trans-unit>
+        </trans-unit>
       <trans-unit id="featureChat-deleteChatSessionTitle" datatype="html">
         <source>Delete</source>
-      </trans-unit>
+        </trans-unit>
       <trans-unit id="featureChat-newChatSession" datatype="html">
-        <source>New chat</source>
-      </trans-unit>
-      <trans-unit id="featureChat-newChatSessionTitle" datatype="html">
-        <source>New chat</source>
-      </trans-unit>
+        <source> New chat </source>
+        </trans-unit>
       <trans-unit id="featureChat-startEnvironmentTitle" datatype="html">
         <source>Start environment</source>
         </trans-unit>
@@ -831,8 +804,7 @@
         <source> Delete Workspace </source>
         </trans-unit>
       <trans-unit id="featureChat-deleteWorkspaceConfirm" datatype="html">
-        <source> Are you sure you want to delete the workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-          &gt;"/>? </source>
+        <source> Are you sure you want to delete the workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
         </trans-unit>
       <trans-unit id="featureChat-provisionedServerDetected" datatype="html">
         <source>Provisioned Server Detected</source>
@@ -850,17 +822,28 @@
         <source> Delete Environment </source>
         </trans-unit>
       <trans-unit id="featureChat-deleteEnvironmentConfirm" datatype="html">
-        <source> Are you sure you want to delete the environment <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-          &gt;"/>? </source>
+        <source> Are you sure you want to delete the environment <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
+        </trans-unit>
+      <trans-unit id="featureChat-deleteChatSessionModalTitle" datatype="html">
+        <source> Delete Chat Session </source>
+        </trans-unit>
+      <trans-unit id="featureChat-deleteChatSessionConfirm" datatype="html">
+        <source> Are you sure you want to delete the chat session <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ chatSessionToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
+        </trans-unit>
+      <trans-unit id="featureChat-renameChatSessionModalTitle" datatype="html">
+        <source> Rename Chat Session </source>
+        </trans-unit>
+      <trans-unit id="featureChat-nameLabel" datatype="html">
+        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureChat-renameChatSessionSave" datatype="html">
+        <source>Save</source>
         </trans-unit>
       <trans-unit id="featureChat-existingWorkspace" datatype="html">
         <source> Existing Workspace </source>
         </trans-unit>
       <trans-unit id="featureChat-provisionServer" datatype="html">
         <source>Provision Server</source>
-        </trans-unit>
-      <trans-unit id="featureChat-nameLabel" datatype="html">
-        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         </trans-unit>
       <trans-unit id="featureChat-descriptionLabel" datatype="html">
         <source>Description</source>
@@ -1185,6 +1168,15 @@
       <trans-unit id="featureChat-contextToolbarEnvUnknownTitle" datatype="html">
         <source>Environment context unavailable</source>
         </trans-unit>
+      <trans-unit id="featureChat-chatSessionDefaultTitle" datatype="html">
+        <source>Chat</source>
+        </trans-unit>
+      <trans-unit id="featureChat-chatSessionPrimaryTitle" datatype="html">
+        <source>Primary</source>
+        </trans-unit>
+      <trans-unit id="featureChat-chatSessionUntitledTitle" datatype="html">
+        <source>Untitled chat</source>
+        </trans-unit>
       <trans-unit id="featureChat-hideFileTree" datatype="html">
         <source>Hide File Tree</source>
         </trans-unit>
@@ -1283,6 +1275,15 @@
         </trans-unit>
       <trans-unit id="featureContainer-languageSwitcherAriaLabel" datatype="html">
         <source>Select language</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-securityTitle" datatype="html">
+        <source>Security</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-security" datatype="html">
+        <source>Security</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-securityAuthenticatorSuggested" datatype="html">
+        <source>Authenticator app is not enabled</source>
         </trans-unit>
       <trans-unit id="featureContainer-toggleDarkMode" datatype="html">
         <source>Toggle dark mode</source>
@@ -1629,6 +1630,9 @@
       <trans-unit id="featureDeploymentRunsList-untitledRun" datatype="html">
         <source>Untitled Run</source>
         </trans-unit>
+      <trans-unit id="featureAgentConsole-notAvailable" datatype="html">
+        <source>N/A</source>
+        </trans-unit>
       <trans-unit id="featureContainerStats-cpuLabel" datatype="html">
         <source>CPU: </source>
         </trans-unit>
@@ -1714,8 +1718,7 @@
         <source>Override Newer Changes?</source>
         </trans-unit>
       <trans-unit id="featureFileEditor-overrideNewerMessage" datatype="html">
-        <source> You previously rejected external changes to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-          &gt;"/>. Saving now will override those newer changes. </source>
+        <source> You previously rejected external changes to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>. Saving now will override those newer changes. </source>
         </trans-unit>
       <trans-unit id="featureFileEditor-overrideNewerConfirm" datatype="html">
         <source>Are you sure you want to proceed?</source>
@@ -2494,17 +2497,17 @@
       <trans-unit id="featureTicketsBoard-searchLanePlaceholder" datatype="html">
         <source>Search tickets</source>
         </trans-unit>
-      <trans-unit id="featureTicketsBoard-automationEligibleTitle" datatype="html">
-        <source>Autonomous prototyping enabled</source>
-        </trans-unit>
-      <trans-unit id="featureTicketsBoard-subtaskCountTitle" datatype="html">
-        <source>Direct subtasks (done / total)</source>
-        </trans-unit>
       <trans-unit id="featureTicketsBoard-dropHere" datatype="html">
         <source> Drop tickets here </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-noMatchingTickets" datatype="html">
         <source> No matching tickets </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationEligibleTitle" datatype="html">
+        <source>Autonomous prototyping enabled</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-subtaskCountTitle" datatype="html">
+        <source>Direct subtasks (done / total)</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-modalLoadingTitle" datatype="html">
         <source>Ticket</source>
@@ -3059,6 +3062,9 @@
       <trans-unit id="featureAuth-loginPage" datatype="html">
         <source>Login</source>
         </trans-unit>
+      <trans-unit id="featureAuth-login2faPage" datatype="html">
+        <source>Two-Factor Authentication</source>
+        </trans-unit>
       <trans-unit id="featureAuth-registerPage" datatype="html">
         <source>Register</source>
         </trans-unit>
@@ -3079,6 +3085,57 @@
         </trans-unit>
       <trans-unit id="featureAuth-tokensPage" datatype="html">
         <source>Personal Access Tokens</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-securityPage" datatype="html">
+        <source>Security Settings</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-title" datatype="html">
+        <source>Two-Factor Authentication</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-description" datatype="html">
+        <source>Enter the verification code to finish signing in.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-formTitle" datatype="html">
+        <source>Verify Sign-In</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-authNotAvailable" datatype="html">
+        <source>Two-factor login is not available for this authentication method.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-returnToLogin" datatype="html">
+        <source>Return to login</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-sessionExpired" datatype="html">
+        <source>Your sign-in session expired. Please sign in again.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-returnToLoginLink" datatype="html">
+        <source>Return to login</source>
+        </trans-unit>
+<trans-unit id="featureLogin2fa-totpHint" datatype="html">
+        <source>Enter the 6-digit code from your authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-emailHint" datatype="html">
+        <source>Enter the 6-character code we sent to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-codeLabel" datatype="html">
+        <source>Verification Code</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-codeRequired" datatype="html">
+        <source>Verification code is required.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-codePatternTotp" datatype="html">
+        <source>Code must be exactly 6 digits.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-codePatternEmail" datatype="html">
+        <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-cancel" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-verifying" datatype="html">
+        <source>Verifying...</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-submit" datatype="html">
+        <source>Verify</source>
         </trans-unit>
       <trans-unit id="featureLogin-title" datatype="html">
         <source>Login</source>
@@ -3163,6 +3220,9 @@
         </trans-unit>
       <trans-unit id="identityLogoutConfirm-logoutAllSessionsHint" datatype="html">
         <source>For security, this ends every active session for your account.</source>
+        </trans-unit>
+      <trans-unit id="featureOtpInput-invalid" datatype="html">
+        <source>Invalid verification code</source>
         </trans-unit>
       <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
         <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
@@ -3410,6 +3470,90 @@
       <trans-unit id="featureResetPassword-submit" datatype="html">
         <source>Reset Password</source>
         </trans-unit>
+      <trans-unit id="featureSecuritySettings-title" datatype="html">
+        <source>Security Settings</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-authNotAvailable" datatype="html">
+        <source> Two-factor authentication settings are only available for users authentication. </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailTitle" datatype="html">
+        <source>Email verification</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailDescription" datatype="html">
+        <source> Receive a one-time code by email when signing in. </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-enabled" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-disabled" datatype="html">
+        <source>Disabled</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailForcedHint" datatype="html">
+        <source>Email verification is required by our organization and cannot be turned off</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-currentPasswordLabel" datatype="html">
+        <source>Current password</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableEmail" datatype="html">
+        <source> Disable email 2FA </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableEmailPrompt" datatype="html">
+        <source> Disable email 2FA </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailCodeLabel" datatype="html">
+        <source>Confirmation code</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmEmail" datatype="html">
+        <source>Confirm</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-resendEmail" datatype="html">
+        <source> Resend code </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-enableEmail" datatype="html">
+        <source> Enable email 2FA </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpTitle" datatype="html">
+        <source>Authenticator app</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpDescription" datatype="html">
+        <source> Use an authenticator app (TOTP) as your preferred second factor. </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpEnabled" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpDisabled" datatype="html">
+        <source>Disabled</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableTotpCodeLabel" datatype="html">
+        <source>Authenticator code to disable</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmDisableTotp" datatype="html">
+        <source> Disable authenticator </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableTotp" datatype="html">
+        <source> Disable authenticator </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpSetupHint" datatype="html">
+        <source> Scan the QR code with your authenticator app, or enter the secret manually. </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-secretLabel" datatype="html">
+        <source>Secret</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpConfirmLabel" datatype="html">
+        <source>Confirm with code</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmTotp" datatype="html">
+        <source> Confirm authenticator </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-setupTotp" datatype="html">
+        <source> Set up authenticator </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-setupTotpPrompt" datatype="html">
+        <source> Set up authenticator </source>
+        </trans-unit>
       <trans-unit id="featureTokenManager-title" datatype="html">
         <source>Personal Access Tokens</source>
         </trans-unit>
@@ -3489,8 +3633,7 @@
         <source> Revoke token </source>
         </trans-unit>
       <trans-unit id="featureTokenManager-revokeConfirm" datatype="html">
-        <source> Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/>? </source>
+        <source> Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
         </trans-unit>
       <trans-unit id="featureTokenManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -3524,6 +3667,12 @@
         </trans-unit>
       <trans-unit id="featureUserManager-pending" datatype="html">
         <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-totpEnabled" datatype="html">
+        <source>Authenticator</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-removeAuthenticatorTitle" datatype="html">
+        <source>Remove authenticator</source>
         </trans-unit>
       <trans-unit id="featureUserManager-unlockUserButtonTitle" datatype="html">
         <source>Unlock user</source>
@@ -3580,14 +3729,25 @@
         <source> Delete User </source>
         </trans-unit>
       <trans-unit id="featureUserManager-deleteUserConfirm" datatype="html">
-        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/>? </source>
+        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
         </trans-unit>
       <trans-unit id="featureUserManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-clearTotpModalTitle" datatype="html">
+        <source> Remove Authenticator </source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-clearTotpConfirm" datatype="html">
+        <source> Remove the authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToClearTotp.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? They can set up a new authenticator afterwards. </source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-removeAuthenticator" datatype="html">
+        <source> Remove authenticator </source>
         </trans-unit>
       <trans-unit id="featureDocsBreadcrumbs-documentation" datatype="html">
         <source>Documentation</source>
@@ -3875,8 +4035,7 @@
         <source> Delete webhook </source>
         </trans-unit>
       <trans-unit id="featureNotifications-deleteConfirm" datatype="html">
-        <source> Are you sure you want to delete the webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/>? </source>
+        <source> Are you sure you want to delete the webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
         </trans-unit>
       <trans-unit id="featureNotifications-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -3931,6 +4090,9 @@
         </trans-unit>
       <trans-unit id="featureNotifications-allClients" datatype="html">
         <source>All clients</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-clientUnavailable" datatype="html">
+        <source>N/A</source>
         </trans-unit>
       <trans-unit id="featureNotifications-disabled" datatype="html">
         <source>Disabled</source>

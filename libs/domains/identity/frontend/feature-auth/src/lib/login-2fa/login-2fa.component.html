@@ -1,0 +1,113 @@
+<section class="section__row" [class.section__row--marketing-hidden]="!showAuthMarketingPanel">
+  <div
+    class="section__column section__column--marketing d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
+  >
+    <div class="p-4" style="width: 700px; max-width: 100%">
+      <h1 class="display-5 fw-bold mb-3" i18n="@@featureLogin2fa-title">Two-Factor Authentication</h1>
+      <p class="lead mb-4" i18n="@@featureLogin2fa-description">Enter the verification code to finish signing in.</p>
+    </div>
+  </div>
+  <div class="section__column section__column--form section__column--scroll d-flex align-items-center">
+    <div class="p-4 my-auto" style="width: 500px; max-width: 100%">
+      <h2 class="section__column-title mb-4 text-end" i18n="@@featureLogin2fa-formTitle">Verify Sign-In</h2>
+
+      @if (!isUsersAuth) {
+        <div class="alert alert-info" role="alert">
+          <i class="bi bi-info-circle-fill me-2"></i>
+          <ng-container i18n="@@featureLogin2fa-authNotAvailable"
+            >Two-factor login is not available for this authentication method.</ng-container
+          >
+          <a routerLink="/login" class="alert-link" i18n="@@featureLogin2fa-returnToLogin">Return to login</a>
+        </div>
+      } @else if (missingPassword || !email) {
+        <div class="alert alert-warning" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          <ng-container i18n="@@featureLogin2fa-sessionExpired"
+            >Your sign-in session expired. Please sign in again.</ng-container
+          >
+          <a routerLink="/login" class="alert-link ms-1" i18n="@@featureLogin2fa-returnToLoginLink">Return to login</a>
+        </div>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
+          @if (error$ | async; as error) {
+            <div class="alert alert-danger" role="alert">
+              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+              <span>{{ error }}</span>
+            </div>
+          }
+
+          <p class="text-muted mb-3">
+            @if (isTotpMethod) {
+              <ng-container i18n="@@featureLogin2fa-totpHint"
+                >Enter the 6-digit code from your authenticator app for <strong>{{ email }}</strong
+                >.</ng-container
+              >
+            } @else {
+              <ng-container i18n="@@featureLogin2fa-emailHint"
+                >Enter the 6-character code we sent to <strong>{{ email }}</strong
+                >.</ng-container
+              >
+            }
+          </p>
+
+          <div class="border rounded-3 p-3 mb-3">
+            <label class="form-label" i18n="@@featureLogin2fa-codeLabel">Verification Code</label>
+            <identity-auth-otp-input
+              formControlName="code"
+              [invalid]="
+                (form.get('code')?.invalid &&
+                  form.get('code')?.touched &&
+                  ((form.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)) ??
+                false
+              "
+              [disabled]="(loading$ | async) ?? false"
+            />
+            @if (
+              form.get('code')?.invalid &&
+              form.get('code')?.touched &&
+              ((form.get('code')?.value?.length ?? 0) >= 6 || formSubmitted)
+            ) {
+              <div class="invalid-feedback d-block">
+                @if (form.get('code')?.errors?.['required']) {
+                  <ng-container i18n="@@featureLogin2fa-codeRequired">Verification code is required.</ng-container>
+                } @else if (form.get('code')?.errors?.['pattern']) {
+                  @if (isTotpMethod) {
+                    <ng-container i18n="@@featureLogin2fa-codePatternTotp">Code must be exactly 6 digits.</ng-container>
+                  } @else {
+                    <ng-container i18n="@@featureLogin2fa-codePatternEmail"
+                      >Code must be exactly 6 characters (uppercase letters and numbers).</ng-container
+                    >
+                  }
+                }
+              </div>
+            }
+          </div>
+
+          <div class="d-flex gap-2 justify-content-between align-items-center">
+            <button
+              type="button"
+              class="btn btn-link text-decoration-none small p-0"
+              (click)="onCancel()"
+              [disabled]="(loading$ | async) ?? false"
+            >
+              <i class="bi bi-arrow-left me-2"></i>
+              <span i18n="@@featureLogin2fa-cancel">Back to login</span>
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary d-flex align-items-center justify-content-center gap-1 w-auto"
+              [disabled]="form.invalid || ((loading$ | async) ?? false)"
+            >
+              @if ((loading$ | async) ?? false) {
+                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <span i18n="@@featureLogin2fa-verifying">Verifying...</span>
+              } @else {
+                <span i18n="@@featureLogin2fa-submit">Verify</span>
+              }
+            </button>
+          </div>
+        </form>
+      }
+    </div>
+  </div>
+</section>

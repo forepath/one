@@ -51,6 +51,19 @@ export const selectLockingUser = createSelector(selectAuthenticationState, (stat
 
 export const selectUnlockingUser = createSelector(selectAuthenticationState, (state) => state.unlockingUser);
 
+export const selectTwoFactorStatus = createSelector(selectAuthenticationState, (state) => state.twoFactorStatus);
+
+export const selectTwoFactorLoading = createSelector(selectAuthenticationState, (state) => state.twoFactorLoading);
+
+export const selectTwoFactorError = createSelector(selectAuthenticationState, (state) => state.twoFactorError);
+
+export const selectTwoFactorSuccessMessage = createSelector(
+  selectAuthenticationState,
+  (state) => state.twoFactorSuccessMessage,
+);
+
+export const selectTotpSetup = createSelector(selectAuthenticationState, (state) => state.totpSetup);
+
 export const selectIsAdmin = createSelector(selectUser, (user) => user?.role === 'admin');
 
 /**

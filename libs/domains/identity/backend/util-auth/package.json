@@ -14,6 +14,7 @@
     "express": "4.21.2",
     "typeorm": "0.3.27",
     "bcrypt": "6.0.0",
-    "@forepath/shared/backend/util-otel": "0.0.1"
+    "@forepath/shared/backend/util-otel": "0.0.1",
+    "@shared/backend/util-crypto": "0.0.1"
   }
 }

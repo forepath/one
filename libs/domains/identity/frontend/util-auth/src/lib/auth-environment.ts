@@ -22,6 +22,8 @@ export interface ApiKeyAuthenticationConfig {
 export interface UsersAuthenticationConfig {
   type: 'users';
   disableSignup?: boolean;
+  /** When true, mirrors backend DISABLE_FORCE_LOGIN_2FA (force login 2FA off). */
+  disableForceLogin2fa?: boolean;
 }
 
 export type AuthenticationConfig =

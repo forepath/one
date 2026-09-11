@@ -74,6 +74,7 @@ export interface AgentControllerCloudInitConfig {
         clientSecret: string;
       };
       disableSignup: boolean;
+      disableForceLogin2fa?: boolean;
     };
     encryption: {
       jwtSecret: string;
@@ -215,6 +216,7 @@ export function buildAgentControllerCloudInitConfigFromRequest(
       authentication: {
         authenticationMethod: (effectiveConfig.authenticationMethod as string) ?? 'users',
         disableSignup: (effectiveConfig.disableSignup as boolean) ?? false,
+        disableForceLogin2fa: (effectiveConfig.disableForceLogin2fa as boolean) ?? false,
         staticApiKey: (effectiveConfig.staticApiKey as string) ?? '',
         ...(keycloak && {
           keycloak: {
@@ -284,6 +286,7 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `DIGITALOCEAN_API_TOKEN: ${config.backend?.provisioning?.digitaloceanApiToken ?? ''}`,
     // Environment variables for disabling signup
     `DISABLE_SIGNUP: ${config.backend?.authentication?.disableSignup ?? 'false'}`,
+    `DISABLE_FORCE_LOGIN_2FA: ${config.backend?.authentication?.disableForceLogin2fa ?? 'false'}`,
     // Environment variables for encryption
     `ENCRYPTION_KEY: ${config.backend?.encryption?.encryptionKey ?? ''}`,
     // Environment variables for users authentication (when AUTHENTICATION_METHOD=users)

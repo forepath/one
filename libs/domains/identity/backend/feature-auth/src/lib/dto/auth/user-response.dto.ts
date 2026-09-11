@@ -6,6 +6,8 @@ export class UserResponseDto {
   role!: UserRole;
   emailConfirmedAt?: string;
   lockedAt?: string | null;
+  totpEnabled?: boolean;
+  email2faEnabled?: boolean;
   createdAt!: string;
   updatedAt!: string;
 }

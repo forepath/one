@@ -38,9 +38,135 @@ paths:
                 $ref: '#/components/schemas/LoginResponse'
         '401':
           description: |
-            Invalid credentials, account locked, or email not confirmed.
+            Invalid credentials, account locked, email not confirmed, or two-factor authentication required.
             When the password is valid but the email is not confirmed, the body includes
             `code: EMAIL_NOT_CONFIRMED` so the client can resume confirmation.
+            When a second factor is required, the body includes `code: LOGIN_2FA_REQUIRED` and
+            `method: email|totp`. Retry with the same email/password plus `code`.
+            When a submitted code is wrong or expired, the body includes `code: LOGIN_2FA_INVALID`
+            (show the message; do not treat as a fresh challenge).
+            When the login-2FA email cannot be sent, the API returns 503 instead of a challenge.
+  /auth/2fa:
+    get:
+      summary: Get current user two-factor status (users auth only)
+      operationId: getTwoFactorStatus
+      responses:
+        '200':
+          description: Two-factor status for the authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoFactorStatusDto'
+        '401':
+          description: Not authenticated
+  /auth/2fa/email/enable:
+    post:
+      summary: Enable email two-factor authentication (users auth only)
+      description: |
+        Without `code`, sends a verification email. With a valid `code`, enables email 2FA.
+      operationId: enableEmail2fa
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnableEmail2faDto'
+      responses:
+        '200':
+          description: Email 2FA pending confirmation or enabled
+        '400':
+          description: Invalid verification code
+        '401':
+          description: Not authenticated
+  /auth/2fa/email:
+    delete:
+      summary: Disable email two-factor authentication (users auth only)
+      description: Requires the account password (step-up) before disabling.
+      operationId: disableEmail2fa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrentPasswordDto'
+      responses:
+        '200':
+          description: Email 2FA disabled
+        '401':
+          description: Not authenticated or incorrect password
+  /auth/2fa/totp/setup:
+    post:
+      summary: Start authenticator (TOTP) enrollment (users auth only)
+      description: |
+        Generates a provisional TOTP secret. Requires the account password (step-up).
+        Rejected with 400 when authenticator is already enabled;
+        disable the current authenticator first (requires a valid TOTP code).
+      operationId: setupTotp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrentPasswordDto'
+      responses:
+        '200':
+          description: Provisional TOTP secret and otpauth URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TotpSetupResponseDto'
+        '400':
+          description: Authenticator already enabled
+        '401':
+          description: Not authenticated or incorrect password
+  /auth/2fa/totp/confirm:
+    post:
+      summary: Confirm authenticator enrollment with a TOTP code (users auth only)
+      description: |
+        Enables authenticator 2FA after setup (password step-up already completed on setup).
+        Invalidates existing sessions (token version bump) and returns a fresh interactive JWT.
+      operationId: confirmTotp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmTotpDto'
+      responses:
+        '200':
+          description: Authenticator enabled; returns a new access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePasswordResponse'
+        '400':
+          description: Invalid code, setup not started, or authenticator already enabled
+        '401':
+          description: Not authenticated
+  /auth/2fa/totp:
+    delete:
+      summary: Disable authenticator (requires current TOTP code)
+      description: |
+        Disables authenticator 2FA and invalidates existing sessions (token version bump).
+        Returns a fresh interactive JWT for the current session.
+      operationId: disableTotp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DisableTotpDto'
+      responses:
+        '200':
+          description: Authenticator disabled; returns a new access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePasswordResponse'
+        '400':
+          description: Invalid code or not enabled
+        '401':
+          description: Not authenticated
   /auth/token:
     post:
       summary: Exchange personal access token for machine JWT
@@ -483,6 +609,25 @@ paths:
                 $ref: '#/components/schemas/UserResponseDto'
         '400':
           description: Self-unlock is not allowed
+        '404':
+          description: User not found
+  /users/{id}/2fa/totp:
+    delete:
+      summary: Admin remove authenticator 2FA from a user
+      operationId: adminClearUserTotp
+      description: >
+        Clears the user's authenticator enrollment without requiring their TOTP code.
+        When force login 2FA is enabled, the user falls back to email OTP on next login.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Authenticator removed
         '404':
           description: User not found
   /filter-rules:
@@ -4916,6 +5061,63 @@ components:
           format: email
         password:
           type: string
+        code:
+          type: string
+          pattern: '^[A-Za-z0-9]{6}$'
+          description: Second-factor code (email OTP or TOTP) after LOGIN_2FA_REQUIRED
+    EnableEmail2faDto:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z0-9]{6}$'
+          description: Optional emailed verification code to complete enablement
+    ConfirmTotpDto:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          pattern: '^[0-9]{6}$'
+          description: 6-digit authenticator code
+    DisableTotpDto:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          pattern: '^[0-9]{6}$'
+          description: 6-digit authenticator code (possession proves step-up)
+    CurrentPasswordDto:
+      type: object
+      required: [currentPassword]
+      properties:
+        currentPassword:
+          type: string
+          description: Account password for step-up verification
+    TotpSetupResponseDto:
+      type: object
+      required: [secret, otpauthUrl]
+      properties:
+        secret:
+          type: string
+        otpauthUrl:
+          type: string
+    TwoFactorStatusDto:
+      type: object
+      required: [forceEnabled, emailEnabled, totpEnabled, method]
+      properties:
+        forceEnabled:
+          type: boolean
+        emailEnabled:
+          type: boolean
+        totpEnabled:
+          type: boolean
+        method:
+          type:
+            - string
+            - 'null'
+          enum: [email, totp, null]
     RegisterDto:
       type: object
       required: [email, password]
@@ -5128,6 +5330,12 @@ components:
             - string
             - 'null'
           format: date-time
+        totpEnabled:
+          type: boolean
+          description: Whether authenticator 2FA is enrolled
+        email2faEnabled:
+          type: boolean
+          description: Whether the user opted into email 2FA
         createdAt:
           type: string
           format: date-time

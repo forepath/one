@@ -64,6 +64,8 @@ Built-in user registration and authentication with JWT tokens. Suitable for stan
 AUTHENTICATION_METHOD=users
 JWT_SECRET=your-jwt-secret-key
 DISABLE_SIGNUP=false  # Set to true to disable self-registration
+DISABLE_FORCE_LOGIN_2FA=false  # Default: force email OTP (or TOTP if enrolled) on every login
+PRODUCT_NAME=Agenstra  # Issuer label on TOTP QR / authenticator entries (default: Forepath)
 ```
 
 **Features**:
@@ -72,6 +74,10 @@ DISABLE_SIGNUP=false  # Set to true to disable self-registration
 - Email confirmation with 6-character alphanumeric codes
 - Password reset functionality
 - JWT-based authentication
+- **Login 2FA** (forced by default): email OTP on every login unless an authenticator is enrolled; set `DISABLE_FORCE_LOGIN_2FA=true` to make 2FA opt-in only
+- Self-service authenticator (TOTP) and optional email 2FA under Security settings
+- TOTP QR / authenticator account name uses `PRODUCT_NAME` (falls back to `Forepath`) plus the user email
+- Admin can remove a user's authenticator (falls back to email OTP when force is on)
 - First registered user gets admin role
 - Admin user management (CRUD operations)
 - Optional signup disable for controlled onboarding

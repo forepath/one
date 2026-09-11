@@ -1,11 +1,26 @@
 import { Public } from '@forepath/identity/backend';
-import { BadRequestException, Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { Request } from 'express';
 
 import { RequirePasswordSession } from '../decorators/require-scopes.decorator';
 import { ChangePasswordDto } from '../dto/auth/change-password.dto';
 import { ConfirmEmailDto } from '../dto/auth/confirm-email.dto';
+import { ConfirmTotpDto } from '../dto/auth/confirm-totp.dto';
+import { CurrentPasswordDto } from '../dto/auth/current-password.dto';
+import { DisableTotpDto } from '../dto/auth/disable-totp.dto';
+import { EnableEmail2faDto } from '../dto/auth/enable-email-2fa.dto';
 import { LoginDto } from '../dto/auth/login.dto';
 import { LogoutDto } from '../dto/auth/logout.dto';
 import { RegisterDto } from '../dto/auth/register.dto';
@@ -30,7 +45,7 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.email, dto.password);
+    return this.authService.login(dto.email, dto.password, dto.code);
   }
 
   @Public()
@@ -58,6 +73,94 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto.email, dto.code, dto.newPassword);
+  }
+
+  @RequirePasswordSession()
+  @UseGuards(UsersAuthGuard)
+  @Get('2fa')
+  async getTwoFactorStatus(@Req() req: RequestWithUser) {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return this.authService.getTwoFactorStatus(userId);
+  }
+
+  @RequirePasswordSession()
+  @UseGuards(UsersAuthGuard)
+  @Throttle(AUTH_SECRET_THROTTLE)
+  @Post('2fa/email/enable')
+  @HttpCode(HttpStatus.OK)
+  async enableEmail2fa(@Body() dto: EnableEmail2faDto, @Req() req: RequestWithUser) {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return this.authService.beginOrConfirmEmail2fa(userId, dto.code);
+  }
+
+  @RequirePasswordSession()
+  @UseGuards(UsersAuthGuard)
+  @Throttle(AUTH_SECRET_THROTTLE)
+  @Delete('2fa/email')
+  @HttpCode(HttpStatus.OK)
+  async disableEmail2fa(@Body() dto: CurrentPasswordDto, @Req() req: RequestWithUser) {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return this.authService.disableEmail2fa(userId, dto.currentPassword);
+  }
+
+  @RequirePasswordSession()
+  @UseGuards(UsersAuthGuard)
+  @Throttle(AUTH_SECRET_THROTTLE)
+  @Post('2fa/totp/setup')
+  @HttpCode(HttpStatus.OK)
+  async setupTotp(@Body() dto: CurrentPasswordDto, @Req() req: RequestWithUser) {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return this.authService.setupTotp(userId, dto.currentPassword);
+  }
+
+  @RequirePasswordSession()
+  @UseGuards(UsersAuthGuard)
+  @Throttle(AUTH_SECRET_THROTTLE)
+  @Post('2fa/totp/confirm')
+  @HttpCode(HttpStatus.OK)
+  async confirmTotp(@Body() dto: ConfirmTotpDto, @Req() req: RequestWithUser) {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return this.authService.confirmTotp(userId, dto.code);
+  }
+
+  @RequirePasswordSession()
+  @UseGuards(UsersAuthGuard)
+  @Throttle(AUTH_SECRET_THROTTLE)
+  @Delete('2fa/totp')
+  @HttpCode(HttpStatus.OK)
+  async disableTotp(@Body() dto: DisableTotpDto, @Req() req: RequestWithUser) {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new BadRequestException('User not authenticated');
+    }
+
+    return this.authService.disableTotp(userId, dto.code);
   }
 
   @RequirePasswordSession()

@@ -1,33 +1,42 @@
 import { Route } from '@angular/router';
 import {
+  adminClearTotp$,
   AuthenticationFacade,
   authenticationReducer,
   changePassword$,
   checkAuthentication$,
   confirmEmail$,
   confirmEmailSuccessRedirect$,
+  confirmTotp$,
   createPersonalAccessToken$,
   createUser$,
   deleteUser$,
+  disableEmail2fa$,
+  disableTotp$,
+  enableEmail2fa$,
   loadPersonalAccessTokenScopes$,
   loadPersonalAccessTokens$,
+  loadTwoFactorStatus$,
   loadUsers$,
   loadUsersBatch$,
   lockUser$,
   login$,
   loginEmailNotConfirmedRedirect$,
   loginSuccessRedirect$,
+  loginTwoFactorRequiredRedirect$,
   logout$,
   logoutSuccessRedirect$,
   PersonalAccessTokensFacade,
   personalAccessTokensReducer,
   register$,
   registerSuccessRedirect$,
+  reloadTwoFactorStatusAfterMutation$,
   requestPasswordReset$,
   requestPasswordResetSuccessRedirect$,
   resetPassword$,
   resetPasswordSuccessRedirect$,
   revokePersonalAccessToken$,
+  setupTotp$,
   unlockUser$,
   updatePersonalAccessToken$,
   updateUser$,
@@ -43,10 +52,12 @@ import { loginGuard } from './guards/login.guard';
 import { patUiGuard } from './guards/pat-ui.guard';
 import { signupDisabledGuard } from './guards/signup-disabled.guard';
 import { IdentityLoginComponent } from './login/login.component';
+import { IdentityLogin2faComponent } from './login-2fa/login-2fa.component';
 import { IdentityRegisterComponent } from './register/register.component';
 import { IdentityRequestPasswordResetComponent } from './request-password-reset/request-password-reset.component';
 import { IdentityRequestPasswordResetConfirmationComponent } from './request-password-reset-confirmation/request-password-reset-confirmation.component';
 import { IdentityResetPasswordComponent } from './reset-password/reset-password.component';
+import { IdentitySecuritySettingsComponent } from './settings/security/security-settings.component';
 import { IdentityTokenManagerComponent } from './token-manager/token-manager.component';
 import { IdentityUserManagerComponent } from './user-manager/user-manager.component';
 
@@ -79,6 +90,12 @@ export const identityAuthRoutes: Route[] = [
     component: IdentityLoginComponent,
     canActivate: [loginGuard],
     title: () => buildPageTitle($localize`:@@featureAuth-loginPage:Login`),
+  },
+  {
+    path: 'login-2fa',
+    component: IdentityLogin2faComponent,
+    canActivate: [loginGuard],
+    title: () => buildPageTitle($localize`:@@featureAuth-login2faPage:Two-Factor Authentication`),
   },
   {
     path: 'register',
@@ -123,6 +140,12 @@ export const identityAuthRoutes: Route[] = [
     component: IdentityTokenManagerComponent,
     title: () => buildPageTitle($localize`:@@featureAuth-tokensPage:Personal Access Tokens`),
   },
+  {
+    path: 'settings/security',
+    canActivate: [authGuard],
+    component: IdentitySecuritySettingsComponent,
+    title: () => buildPageTitle($localize`:@@featureAuth-securityPage:Security Settings`),
+  },
 ];
 
 /**
@@ -158,6 +181,7 @@ export const identityAuthProviders = [
     login$,
     loginSuccessRedirect$,
     loginEmailNotConfirmedRedirect$,
+    loginTwoFactorRequiredRedirect$,
     register$,
     registerSuccessRedirect$,
     confirmEmail$,
@@ -177,6 +201,14 @@ export const identityAuthProviders = [
     deleteUser$,
     lockUser$,
     unlockUser$,
+    loadTwoFactorStatus$,
+    enableEmail2fa$,
+    disableEmail2fa$,
+    setupTotp$,
+    confirmTotp$,
+    disableTotp$,
+    adminClearTotp$,
+    reloadTwoFactorStatusAfterMutation$,
     loadPersonalAccessTokens$,
     loadPersonalAccessTokenScopes$,
     createPersonalAccessToken$,

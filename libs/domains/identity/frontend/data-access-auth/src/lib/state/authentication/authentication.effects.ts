@@ -5,12 +5,19 @@ import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT, jwtPayloadHasPatAmr, parseJwtPayload } from '@forepath/identity/frontend';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { KeycloakService } from 'keycloak-angular';
-import { catchError, from, map, of, switchMap, tap } from 'rxjs';
+import { catchError, filter, from, map, of, switchMap, tap } from 'rxjs';
 
-import { EMAIL_NOT_CONFIRMED_CODE } from '../../constants/auth-error.constants';
+import {
+  EMAIL_NOT_CONFIRMED_CODE,
+  LOGIN_2FA_REQUIRED_CODE,
+  PENDING_LOGIN_PASSWORD_STORAGE_KEY,
+} from '../../constants/auth-error.constants';
 import { AuthService, LOGIN_SUCCESS_REDIRECT_TARGET } from '../../services/auth.service';
 
 import {
+  adminClearTotp,
+  adminClearTotpFailure,
+  adminClearTotpSuccess,
   changePassword,
   changePasswordFailure,
   changePasswordSuccess,
@@ -20,15 +27,30 @@ import {
   confirmEmail,
   confirmEmailFailure,
   confirmEmailSuccess,
+  confirmTotp,
+  confirmTotpFailure,
+  confirmTotpSuccess,
   createUser,
   createUserFailure,
   createUserSuccess,
   deleteUser,
   deleteUserFailure,
   deleteUserSuccess,
+  disableEmail2fa,
+  disableEmail2faFailure,
+  disableEmail2faSuccess,
+  disableTotp,
+  disableTotpFailure,
+  disableTotpSuccess,
+  enableEmail2fa,
+  enableEmail2faFailure,
+  enableEmail2faSuccess,
   lockUser,
   lockUserFailure,
   lockUserSuccess,
+  loadTwoFactorStatus,
+  loadTwoFactorStatusFailure,
+  loadTwoFactorStatusSuccess,
   loadUsers,
   loadUsersBatch,
   loadUsersFailure,
@@ -48,6 +70,9 @@ import {
   resetPassword,
   resetPasswordFailure,
   resetPasswordSuccess,
+  setupTotp,
+  setupTotpFailure,
+  setupTotpSuccess,
   unlockUser,
   unlockUserFailure,
   unlockUserSuccess,
@@ -55,6 +80,7 @@ import {
   updateUserFailure,
   updateUserSuccess,
 } from './authentication.actions';
+import type { Login2faMethod } from './authentication.types';
 
 const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
 const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
@@ -147,6 +173,24 @@ function isEmailNotConfirmedError(error: unknown): boolean {
   return (error.error as { code?: unknown }).code === EMAIL_NOT_CONFIRMED_CODE;
 }
 
+function getLogin2faMethod(error: unknown): Login2faMethod | null {
+  if (!(error instanceof HttpErrorResponse) || !error.error || typeof error.error !== 'object') {
+    return null;
+  }
+
+  const body = error.error as { code?: unknown; method?: unknown };
+
+  if (body.code !== LOGIN_2FA_REQUIRED_CODE) {
+    return null;
+  }
+
+  if (body.method === 'email' || body.method === 'totp') {
+    return body.method;
+  }
+
+  return null;
+}
+
 export const login$ = createEffect(
   (
     actions$ = inject(Actions),
@@ -156,7 +200,7 @@ export const login$ = createEffect(
   ) => {
     return actions$.pipe(
       ofType(login),
-      switchMap(({ apiKey, email, password }) => {
+      switchMap(({ apiKey, email, password, code }) => {
         if (authEnvironment.authentication.type === 'api-key') {
           const keyToStore = apiKey || authEnvironment.authentication.apiKey;
 
@@ -177,8 +221,9 @@ export const login$ = createEffect(
         }
 
         if (authEnvironment.authentication.type === 'users' && authService && email && password) {
-          return authService.login(email, password).pipe(
+          return authService.login(email, password, code).pipe(
             map((res) => {
+              sessionStorage.removeItem(PENDING_LOGIN_PASSWORD_STORAGE_KEY);
               localStorage.setItem(USERS_JWT_STORAGE_KEY, res.access_token);
 
               return loginSuccess({
@@ -186,14 +231,27 @@ export const login$ = createEffect(
                 user: res.user,
               });
             }),
-            catchError((error) =>
-              of(
+            catchError((error) => {
+              const method = getLogin2faMethod(error);
+
+              if (method) {
+                sessionStorage.setItem(PENDING_LOGIN_PASSWORD_STORAGE_KEY, password);
+
+                return of(
+                  loginFailure({
+                    error: normalizeError(error),
+                    login2fa: { email, password, method },
+                  }),
+                );
+              }
+
+              return of(
                 loginFailure({
                   error: normalizeError(error),
                   confirmEmail: isEmailNotConfirmedError(error) ? email : undefined,
                 }),
-              ),
-            ),
+              );
+            }),
           );
         }
 
@@ -227,6 +285,24 @@ export const loginEmailNotConfirmedRedirect$ = createEffect(
 
         router.navigate(['/confirm-email'], {
           queryParams: { email: confirmEmail },
+        });
+      }),
+    );
+  },
+  { functional: true, dispatch: false },
+);
+
+export const loginTwoFactorRequiredRedirect$ = createEffect(
+  (actions$ = inject(Actions), router = inject(Router)) => {
+    return actions$.pipe(
+      ofType(loginFailure),
+      tap(({ login2fa }) => {
+        if (!login2fa) {
+          return;
+        }
+
+        router.navigate(['/login-2fa'], {
+          queryParams: { email: login2fa.email, method: login2fa.method },
         });
       }),
     );
@@ -671,6 +747,133 @@ export const unlockUser$ = createEffect(
           catchError((error) => of(unlockUserFailure({ error: normalizeError(error) }))),
         ),
       ),
+    );
+  },
+  { functional: true },
+);
+
+// --- Login 2FA self-service effects ---
+
+export const loadTwoFactorStatus$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(loadTwoFactorStatus),
+      switchMap(() =>
+        authService.getTwoFactorStatus().pipe(
+          map((status) => loadTwoFactorStatusSuccess({ status })),
+          catchError((error) => of(loadTwoFactorStatusFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const enableEmail2fa$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(enableEmail2fa),
+      switchMap(({ code }) =>
+        authService.enableEmail2fa(code).pipe(
+          map((res) => enableEmail2faSuccess({ message: res.message, pending: res.pending })),
+          catchError((error) => of(enableEmail2faFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const disableEmail2fa$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(disableEmail2fa),
+      switchMap(({ currentPassword }) =>
+        authService.disableEmail2fa(currentPassword).pipe(
+          map((res) => disableEmail2faSuccess({ message: res.message })),
+          catchError((error) => of(disableEmail2faFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const setupTotp$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(setupTotp),
+      switchMap(({ currentPassword }) =>
+        authService.setupTotp(currentPassword).pipe(
+          map((setup) => setupTotpSuccess({ setup })),
+          catchError((error) => of(setupTotpFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const confirmTotp$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(confirmTotp),
+      switchMap(({ code }) =>
+        authService.confirmTotp(code).pipe(
+          map((res) => {
+            localStorage.setItem(USERS_JWT_STORAGE_KEY, res.access_token);
+
+            return confirmTotpSuccess({ message: res.message });
+          }),
+          catchError((error) => of(confirmTotpFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const disableTotp$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(disableTotp),
+      switchMap(({ code }) =>
+        authService.disableTotp(code).pipe(
+          map((res) => {
+            localStorage.setItem(USERS_JWT_STORAGE_KEY, res.access_token);
+
+            return disableTotpSuccess({ message: res.message });
+          }),
+          catchError((error) => of(disableTotpFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const adminClearTotp$ = createEffect(
+  (actions$ = inject(Actions), authService = inject(AuthService)) => {
+    return actions$.pipe(
+      ofType(adminClearTotp),
+      switchMap(({ userId }) =>
+        authService.adminClearUserTotp(userId).pipe(
+          map((res) => adminClearTotpSuccess({ message: res.message, userId })),
+          catchError((error) => of(adminClearTotpFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+/** Reload 2FA status after successful self-service mutations (except pending email confirm). */
+export const reloadTwoFactorStatusAfterMutation$ = createEffect(
+  (actions$ = inject(Actions)) => {
+    return actions$.pipe(
+      ofType(enableEmail2faSuccess, disableEmail2faSuccess, confirmTotpSuccess, disableTotpSuccess),
+      filter((action) => !(action.type === enableEmail2faSuccess.type && action.pending === true)),
+      map(() => loadTwoFactorStatus()),
     );
   },
   { functional: true },

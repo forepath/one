@@ -87,7 +87,8 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
             url.includes('/users') ||
             url.includes('/webhooks') ||
             url.includes('/updates') ||
-            url.includes('/settings/tokens'),
+            url.includes('/settings/tokens') ||
+            url.includes('/settings/security'),
         ),
       ),
     {
@@ -101,7 +102,8 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
         this.router.url.includes('/users') ||
         this.router.url.includes('/webhooks') ||
         this.router.url.includes('/updates') ||
-        this.router.url.includes('/settings/tokens'),
+        this.router.url.includes('/settings/tokens') ||
+        this.router.url.includes('/settings/security'),
     },
   );
 
@@ -109,6 +111,13 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
    * Observable indicating whether the user is authenticated
    */
   readonly isAuthenticated$ = this.authenticationFacade.isAuthenticated$;
+
+  /**
+   * Show a header badge when authenticator (TOTP) is not enrolled (users auth only).
+   */
+  readonly showSecurityAuthenticatorBadge$ = this.authenticationFacade.twoFactorStatus$.pipe(
+    map((status) => status != null && !status.totpEnabled),
+  );
 
   /**
    * Logged-in user's customer number when a billing profile exists; otherwise null.
@@ -217,6 +226,10 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
       .subscribe((isAuthenticated) => {
         if (isAuthenticated) {
           this.customerProfileFacade.loadCustomerProfile();
+
+          if (this.isUsersAuth) {
+            this.authenticationFacade.loadTwoFactorStatus();
+          }
         } else {
           this.customerProfileFacade.clearCustomerProfile();
         }

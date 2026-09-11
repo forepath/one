@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import {
   AuthenticationFacade,
+  adminClearTotpSuccess,
   createUserSuccess,
   updateUserSuccess,
   UserRoleLabelPipe,
@@ -38,6 +39,9 @@ export class IdentityUserManagerComponent implements OnInit {
 
   @ViewChild('deleteUserModal', { static: false })
   private deleteUserModal!: ElementRef<HTMLDivElement>;
+
+  @ViewChild('clearTotpModal', { static: false })
+  private clearTotpModal!: ElementRef<HTMLDivElement>;
 
   readonly searchUserQuery = signal<string>('');
   readonly searchUserQuery$ = toObservable(this.searchUserQuery);
@@ -86,6 +90,7 @@ export class IdentityUserManagerComponent implements OnInit {
 
   userToEdit: UserResponseDto | null = null;
   userToDelete: UserResponseDto | null = null;
+  userToClearTotp: UserResponseDto | null = null;
 
   ngOnInit(): void {
     this.authFacade.loadUsers();
@@ -105,6 +110,12 @@ export class IdentityUserManagerComponent implements OnInit {
         this.userToEdit = null;
         this.authFacade.loadUsers();
       });
+
+    this.actions$.pipe(ofType(adminClearTotpSuccess), takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.hideModal(this.clearTotpModal);
+      this.userToClearTotp = null;
+      this.authFacade.loadUsers();
+    });
   }
 
   onAddUser(): void {
@@ -152,6 +163,11 @@ export class IdentityUserManagerComponent implements OnInit {
     this.showModal(this.deleteUserModal);
   }
 
+  onClearTotp(user: UserResponseDto): void {
+    this.userToClearTotp = user;
+    this.showModal(this.clearTotpModal);
+  }
+
   onLockUser(user: UserResponseDto): void {
     this.authFacade.lockUser(user.id);
   }
@@ -181,6 +197,17 @@ export class IdentityUserManagerComponent implements OnInit {
   cancelDeleteUser(): void {
     this.hideModal(this.deleteUserModal);
     this.userToDelete = null;
+  }
+
+  confirmClearTotp(): void {
+    if (this.userToClearTotp) {
+      this.authFacade.adminClearTotp(this.userToClearTotp.id);
+    }
+  }
+
+  cancelClearTotp(): void {
+    this.hideModal(this.clearTotpModal);
+    this.userToClearTotp = null;
   }
 
   formatDate(iso: string | undefined): string {

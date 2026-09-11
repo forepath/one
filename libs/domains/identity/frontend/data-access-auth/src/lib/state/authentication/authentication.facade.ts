@@ -3,20 +3,28 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
 import {
+  adminClearTotp,
   changePassword,
   checkAuthentication,
   clearError,
   clearSuccessMessage,
+  clearTwoFactorMessages,
   confirmEmail,
+  confirmTotp,
   createUser,
   deleteUser,
+  disableEmail2fa,
+  disableTotp,
+  enableEmail2fa,
   lockUser,
+  loadTwoFactorStatus,
   loadUsers,
   login,
   logout,
   register,
   requestPasswordReset,
   resetPassword,
+  setupTotp,
   unlockUser,
   updateUser,
 } from './authentication.actions';
@@ -37,6 +45,11 @@ import {
   selectRequestingPasswordReset,
   selectResettingPassword,
   selectSuccessMessage,
+  selectTotpSetup,
+  selectTwoFactorError,
+  selectTwoFactorLoading,
+  selectTwoFactorStatus,
+  selectTwoFactorSuccessMessage,
   selectUnlockingUser,
   selectUpdatingUser,
   selectUser,
@@ -44,7 +57,7 @@ import {
   selectUsersError,
   selectUsersLoading,
 } from './authentication.selectors';
-import type { CreateUserDto, UpdateUserDto, UserResponseDto } from './authentication.types';
+import type { CreateUserDto, TotpSetup, TwoFactorStatus, UpdateUserDto, UserResponseDto } from './authentication.types';
 
 @Injectable({
   providedIn: 'root',
@@ -79,8 +92,14 @@ export class AuthenticationFacade {
   readonly lockingUser$: Observable<boolean> = this.store.select(selectLockingUser);
   readonly unlockingUser$: Observable<boolean> = this.store.select(selectUnlockingUser);
 
-  login(apiKey?: string, email?: string, password?: string): void {
-    this.store.dispatch(login({ apiKey, email, password }));
+  readonly twoFactorStatus$: Observable<TwoFactorStatus | null> = this.store.select(selectTwoFactorStatus);
+  readonly twoFactorLoading$: Observable<boolean> = this.store.select(selectTwoFactorLoading);
+  readonly twoFactorError$: Observable<string | null> = this.store.select(selectTwoFactorError);
+  readonly twoFactorSuccessMessage$: Observable<string | null> = this.store.select(selectTwoFactorSuccessMessage);
+  readonly totpSetup$: Observable<TotpSetup | null> = this.store.select(selectTotpSetup);
+
+  login(apiKey?: string, email?: string, password?: string, code?: string): void {
+    this.store.dispatch(login({ apiKey, email, password, code }));
   }
 
   logout(invalidateAllSessions = false): void {
@@ -115,6 +134,38 @@ export class AuthenticationFacade {
         newPasswordConfirmation,
       }),
     );
+  }
+
+  loadTwoFactorStatus(): void {
+    this.store.dispatch(loadTwoFactorStatus());
+  }
+
+  enableEmail2fa(code?: string): void {
+    this.store.dispatch(enableEmail2fa({ code }));
+  }
+
+  disableEmail2fa(currentPassword: string): void {
+    this.store.dispatch(disableEmail2fa({ currentPassword }));
+  }
+
+  setupTotp(currentPassword: string): void {
+    this.store.dispatch(setupTotp({ currentPassword }));
+  }
+
+  confirmTotp(code: string): void {
+    this.store.dispatch(confirmTotp({ code }));
+  }
+
+  disableTotp(code: string): void {
+    this.store.dispatch(disableTotp({ code }));
+  }
+
+  adminClearTotp(userId: string): void {
+    this.store.dispatch(adminClearTotp({ userId }));
+  }
+
+  clearTwoFactorMessages(): void {
+    this.store.dispatch(clearTwoFactorMessages());
   }
 
   loadUsers(limit?: number, offset?: number): void {

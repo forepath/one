@@ -129,6 +129,10 @@ export const PRODUCT_FIELD_SERVICES: Record<string, IntegratedProductService[]> 
     IntegratedProvisioningService.DecabillBilling,
   ],
   disableSignup: [IntegratedProvisioningService.AgenstraController, IntegratedProvisioningService.DecabillBilling],
+  disableForceLogin2fa: [
+    IntegratedProvisioningService.AgenstraController,
+    IntegratedProvisioningService.DecabillBilling,
+  ],
   hetznerApiToken: [IntegratedProvisioningService.AgenstraController, IntegratedProvisioningService.DecabillBilling],
   digitaloceanApiToken: [
     IntegratedProvisioningService.AgenstraController,

@@ -39,6 +39,8 @@ Complete reference for all environment variables used in Agenstra.
 
 - `JWT_SECRET` - Secret for signing JWT tokens (required)
 - `DISABLE_SIGNUP` - When `true`, disables self-registration. The register endpoint returns 503 Service Unavailable. Use admin user creation for onboarding. (default: `false`)
+- `DISABLE_FORCE_LOGIN_2FA` - When `true`, login 2FA is not forced (users may still opt into email OTP or authenticator). When unset/`false`, every users-mode login requires email OTP or enrolled TOTP. (default: `false`)
+- `PRODUCT_NAME` - Display name used as the TOTP issuer in authenticator apps (otpauth label/issuer). Defaults to `Forepath` when unset.
 
 **Note for Backend Agent Manager**: When using Keycloak authentication, the JWT token must include the `agent_management` role to access agent-manager endpoints.
 

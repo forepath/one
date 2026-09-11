@@ -212,6 +212,12 @@
       <trans-unit id="featureAdminBilling-billNow" datatype="html">
         <source>Bill now</source>
         </trans-unit>
+      <trans-unit id="featureAdminBilling-customerTab" datatype="html">
+        <source> Customer </source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-supplierTab" datatype="html">
+        <source> Supplier </source>
+        </trans-unit>
       <trans-unit id="featureAdminBilling-activeSubscriptions" datatype="html">
         <source> Active subscriptions </source>
         </trans-unit>
@@ -235,12 +241,6 @@
         </trans-unit>
       <trans-unit id="featureAdminBilling-allUsers" datatype="html">
         <source>All users</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierFilter" datatype="html">
-        <source>Supplier</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-allSuppliers" datatype="html">
-        <source>All suppliers</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-fromDate" datatype="html">
         <source>From</source>
@@ -296,6 +296,9 @@
       <trans-unit id="featureAdminInvoices-deleteButtonTitle" datatype="html">
         <source>Delete draft</source>
         </trans-unit>
+      <trans-unit id="featureInvoices-previewButtonTitle" datatype="html">
+        <source>Preview invoice</source>
+        </trans-unit>
       <trans-unit id="featureAdminInvoices-voidButtonTitle" datatype="html">
         <source>Void invoice</source>
         </trans-unit>
@@ -317,6 +320,45 @@
       <trans-unit id="featureAdminInvoices-historyButtonTitle" datatype="html">
         <source>View history</source>
         </trans-unit>
+      <trans-unit id="featureAdminBilling-supplierInvoiceCount" datatype="html">
+        <source> Supplier invoices </source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-supplierOpenCount" datatype="html">
+        <source> Open expenses </source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-supplierOpenTotal" datatype="html">
+        <source> Open total amount </source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-supplierExpenseTotal" datatype="html">
+        <source> Total expenses </source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-supplierFilter" datatype="html">
+        <source>Supplier</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-allSuppliers" datatype="html">
+        <source>All suppliers</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-noExpenseSeries" datatype="html">
+        <source> No expense data for selected period. </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-searchPlaceholder" datatype="html">
+        <source>Search supplier invoices</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-empty" datatype="html">
+        <source>No supplier invoices found</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-issueDate" datatype="html">
+        <source>Issue date</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-dueDate" datatype="html">
+        <source>Due date</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-archiveButtonTitle" datatype="html">
+        <source>Archive expense</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-downloadButtonTitle" datatype="html">
+        <source>Download document</source>
+        </trans-unit>
       <trans-unit id="featureAdminBilling-billNowTitle" datatype="html">
         <source>Bill now</source>
         </trans-unit>
@@ -335,14 +377,14 @@
       <trans-unit id="featureAdminBilling-confirmActionTitle" datatype="html">
         <source>Confirm action</source>
         </trans-unit>
-      <trans-unit id="featureAdminBilling-reasonOptional" datatype="html">
-        <source>Reason (optional)</source>
-        </trans-unit>
       <trans-unit id="featureAdminBilling-paidAtLabel" datatype="html">
         <source>Payment received at</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-paidAtHelp" datatype="html">
-        <source>Defaults to now. Change this if payment was received on a different date or time.</source>
+        <source> Defaults to now. Change this if payment was received on a different date or time. </source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-reasonOptional" datatype="html">
+        <source>Reason (optional)</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-confirm" datatype="html">
         <source> Confirm </source>
@@ -353,8 +395,65 @@
       <trans-unit id="featureAdminBilling-noAuditLogs" datatype="html">
         <source>No audit entries.</source>
         </trans-unit>
+      <trans-unit id="featureInvoices-previewTitle" datatype="html">
+        <source> Invoice preview </source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-loadingDetails" datatype="html">
+        <source>Loading invoice details…</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-issuedAt" datatype="html">
+        <source>Issued</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-dueDate" datatype="html">
+        <source>Due date</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-currency" datatype="html">
+        <source>Currency</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-lineItems" datatype="html">
+        <source>Line items</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-lineDescription" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-lineQty" datatype="html">
+        <source>Qty</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-lineUnitNet" datatype="html">
+        <source>Unit (net)</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-lineNet" datatype="html">
+        <source>Net</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-lineTax" datatype="html">
+        <source>Tax</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-lineGross" datatype="html">
+        <source>Gross</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-taxBreakdown" datatype="html">
+        <source> Tax breakdown </source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-summary" datatype="html">
+        <source>Summary</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-subtotalNet" datatype="html">
+        <source>Subtotal (net)</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-taxTotal" datatype="html">
+        <source>Tax total</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-totalGross" datatype="html">
+        <source>Total</source>
+        </trans-unit>
+      <trans-unit id="featureInvoices-balanceDue" datatype="html">
+        <source>Balance due</source>
+        </trans-unit>
       <trans-unit id="featureAdminInvoices-createTitle" datatype="html">
         <source>Create manual invoice</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-invoiceType" datatype="html">
+        <source>Invoice type</source>
         </trans-unit>
       <trans-unit id="featureAdminInvoices-user" datatype="html">
         <source>User</source>
@@ -365,8 +464,23 @@
       <trans-unit id="featureAdminInvoices-selectUserFirst" datatype="html">
         <source>Select a user first</source>
         </trans-unit>
-      <trans-unit id="featureAdminInvoices-addLineItem" datatype="html">
-        <source>Add line item</source>
+      <trans-unit id="featureAdminSupplierInvoices-supplier" datatype="html">
+        <source>Supplier</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-contractOptional" datatype="html">
+        <source>Contract (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-invoiceNumberOptional" datatype="html">
+        <source>Invoice number (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-invoiceNumberPlaceholder" datatype="html">
+        <source>Leave blank to auto-assign on archive</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-documentOptional" datatype="html">
+        <source>Document (optional)</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierInvoices-parsingDocument" datatype="html">
+        <source>Parsing document...</source>
         </trans-unit>
       <trans-unit id="featureAdminInvoices-draftTotal" datatype="html">
         <source>Draft total</source>
@@ -376,6 +490,9 @@
         </trans-unit>
       <trans-unit id="featureAdminInvoices-editTitle" datatype="html">
         <source>Edit draft invoice</source>
+        </trans-unit>
+      <trans-unit id="featureAdminInvoices-addLineItem" datatype="html">
+        <source>Add line item</source>
         </trans-unit>
       <trans-unit id="featureAdminInvoices-save" datatype="html">
         <source> Save </source>
@@ -413,9 +530,6 @@
       <trans-unit id="featureAdminInvoices-lineTaxCategory" datatype="html">
         <source>VAT rate</source>
         </trans-unit>
-      <trans-unit id="featureAdminInvoices-lineTaxCategoryCustom" datatype="html">
-        <source>Custom</source>
-        </trans-unit>
       <trans-unit id="featureAdminInvoices-lineTaxRateCustom" datatype="html">
         <source>Rate (%)</source>
         </trans-unit>
@@ -425,26 +539,26 @@
       <trans-unit id="featureAdminInvoices-removeLine" datatype="html">
         <source>Remove line</source>
         </trans-unit>
+      <trans-unit id="featureAdminInvoices-lineTaxCategoryCustom" datatype="html">
+        <source>Custom</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-chartExpensesSeries" datatype="html">
+        <source>Expenses</source>
+        </trans-unit>
+      <trans-unit id="featureAdminBilling-chartExpensesTitle" datatype="html">
+        <source>Expenses over time</source>
+        </trans-unit>
       <trans-unit id="featureAdminBilling-mobilePanelOverview" datatype="html">
         <source>Dashboard</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-mobilePanelInvoices" datatype="html">
         <source>Invoices</source>
         </trans-unit>
-      <trans-unit id="featureAdminBilling-chartTurnoverTitle" datatype="html">
-        <source>Turnover over time</source>
-        </trans-unit>
       <trans-unit id="featureAdminBilling-chartTurnoverSeries" datatype="html">
         <source>Turnover</source>
         </trans-unit>
-      <trans-unit id="featureAdminBilling-chartExpensesTitle" datatype="html">
-        <source>Expenses over time</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-chartExpensesSeries" datatype="html">
-        <source>Expenses</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-noExpenseSeries" datatype="html">
-        <source>No expense data for selected period.</source>
+      <trans-unit id="featureAdminBilling-chartTurnoverTitle" datatype="html">
+        <source>Turnover over time</source>
         </trans-unit>
       <trans-unit id="featureAdminBilling-chartProductTitle" datatype="html">
         <source>Turnover by product</source>
@@ -512,48 +626,6 @@
       <trans-unit id="featureAdminProfiles-datevDebtorNumber" datatype="html">
         <source>DATEV debtor number</source>
         </trans-unit>
-      <trans-unit id="featureAdminProfiles-datevDebtorNotAssigned" datatype="html">
-        <source>Not assigned yet</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-firstName" datatype="html">
-        <source>First name</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-lastName" datatype="html">
-        <source>Last name</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-company" datatype="html">
-        <source>Company</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-customerType" datatype="html">
-        <source>Customer type</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-vatId" datatype="html">
-        <source>VAT ID</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-email" datatype="html">
-        <source>Email</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-addressLine1" datatype="html">
-        <source>Address line 1</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-addressLine2" datatype="html">
-        <source>Address line 2</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-postalCode" datatype="html">
-        <source>Postal code</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-city" datatype="html">
-        <source>City</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-state" datatype="html">
-        <source>State / Region</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-country" datatype="html">
-        <source>Country</source>
-        </trans-unit>
-      <trans-unit id="featureAdminProfiles-phone" datatype="html">
-        <source>Phone</source>
-        </trans-unit>
       <trans-unit id="featureAdminProfiles-save" datatype="html">
         <source> Save </source>
         </trans-unit>
@@ -602,13 +674,25 @@
       <trans-unit id="featureAdminProfiles-customDataSave" datatype="html">
         <source> Save </source>
         </trans-unit>
+      <trans-unit id="featureAdminProfiles-firstName" datatype="html">
+        <source>First name</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-lastName" datatype="html">
+        <source>Last name</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-company" datatype="html">
+        <source>Company</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-customerType" datatype="html">
+        <source>Customer type</source>
+        </trans-unit>
       <trans-unit id="featureBilling-customerTypeConsumer" datatype="html">
         <source>Consumer</source>
         </trans-unit>
       <trans-unit id="featureBilling-customerTypeBusiness" datatype="html">
         <source>Business</source>
         </trans-unit>
-      <trans-unit id="featureAdminProfiles-vatIdPlaceholder" datatype="html">
+      <trans-unit id="featureAdminProfiles-vatId" datatype="html">
         <source>VAT ID</source>
         </trans-unit>
       <trans-unit id="featureAdminProfiles-vatIdValidationStatus" datatype="html">
@@ -616,6 +700,33 @@
         </trans-unit>
       <trans-unit id="featureAdminProfiles-vatIdValidatedAt" datatype="html">
         <source>Validated at:</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-email" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-addressLine1" datatype="html">
+        <source>Address line 1</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-addressLine2" datatype="html">
+        <source>Address line 2</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-postalCode" datatype="html">
+        <source>Postal code</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-city" datatype="html">
+        <source>City</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-state" datatype="html">
+        <source>State / Region</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-country" datatype="html">
+        <source>Country</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-phone" datatype="html">
+        <source>Phone</source>
+        </trans-unit>
+      <trans-unit id="featureAdminProfiles-datevDebtorNotAssigned" datatype="html">
+        <source>Not assigned yet</source>
         </trans-unit>
       <trans-unit id="featureAdminDatevExports-title" datatype="html">
         <source>DATEV exports</source>
@@ -902,12 +1013,6 @@
       <trans-unit id="featureAdminSubscriptions-usageMeters" datatype="html">
         <source>Usage meters</source>
         </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-meterIncludedAllowance" datatype="html">
-        <source><x id="value" equiv-text="${summary.effectiveIncludedUsage}${unit}"/> included</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSubscriptions-meterBillableValue" datatype="html">
-        <source><x id="value" equiv-text="${summary.billableValue}${unit}"/> billable</source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-cancelSubscriptionTitle" datatype="html">
         <source>Cancel subscription?</source>
         </trans-unit>
@@ -1013,6 +1118,135 @@
       <trans-unit id="featureSubscriptions-resume" datatype="html">
         <source> Resume </source>
         </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-meterIncludedAllowance" datatype="html">
+        <source><x id="PH" equiv-text="summary.effectiveIncludedUsage"/><x id="value" equiv-text="unit"/> included</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSubscriptions-meterBillableValue" datatype="html">
+        <source><x id="PH" equiv-text="summary.billableValue"/><x id="value" equiv-text="unit"/> billable</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-title" datatype="html">
+        <source>Supplier Profiles</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-add" datatype="html">
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-searchPlaceholder" datatype="html">
+        <source>Search supplier profiles</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-empty" datatype="html">
+        <source>No supplier profiles found</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-profileActionsAria" datatype="html">
+        <source>Supplier profile actions</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-customDataButtonTitle" datatype="html">
+        <source>Edit custom data</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-editButtonTitle" datatype="html">
+        <source>Edit profile</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-deleteButtonTitle" datatype="html">
+        <source>Delete profile</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-createTitle" datatype="html">
+        <source>Create supplier profile</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-create" datatype="html">
+        <source> Create </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-editTitle" datatype="html">
+        <source>Edit supplier profile</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-supplierNumber" datatype="html">
+        <source>Supplier number</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-datevCreditorNumber" datatype="html">
+        <source>DATEV creditor number</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-save" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-deleteTitle" datatype="html">
+        <source>Delete supplier profile</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-deleteConfirm" datatype="html">
+        <source>Delete this supplier profile?</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-cannotUndo" datatype="html">
+        <source>This action cannot be undone.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-delete" datatype="html">
+        <source> Delete </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-customDataTitle" datatype="html">
+        <source>Custom data</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-customDataHelp" datatype="html">
+        <source> Admin-only key/value pairs for linking this supplier to external systems. Values are stored encrypted. </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-customDataFor" datatype="html">
+        <source>Custom data for</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-customDataAdd" datatype="html">
+        <source>Add line</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-customDataEmpty" datatype="html">
+        <source> No custom data entries yet. </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-customDataKeyPlaceholder" datatype="html">
+        <source>Key</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-customDataValuePlaceholder" datatype="html">
+        <source>Value</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-customDataSave" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-firstName" datatype="html">
+        <source>First name</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-lastName" datatype="html">
+        <source>Last name</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-company" datatype="html">
+        <source>Company</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-customerType" datatype="html">
+        <source>Type</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-vatId" datatype="html">
+        <source>VAT ID</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-vatIdValidationStatus" datatype="html">
+        <source>VAT ID validation</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-email" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-addressLine1" datatype="html">
+        <source>Address line 1</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-addressLine2" datatype="html">
+        <source>Address line 2</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-postalCode" datatype="html">
+        <source>Postal code</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-city" datatype="html">
+        <source>City</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-state" datatype="html">
+        <source>State / Region</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-country" datatype="html">
+        <source>Country</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-phone" datatype="html">
+        <source>Phone</source>
+        </trans-unit>
+      <trans-unit id="featureAdminSupplierProfiles-datevCreditorNotAssigned" datatype="html">
+        <source>Not assigned yet</source>
+        </trans-unit>
       <trans-unit id="featureBillingAdminSubscriptionSelect-clearSelectionAria" datatype="html">
         <source>Clear selected subscription</source>
         </trans-unit>
@@ -1024,6 +1258,27 @@
         </trans-unit>
       <trans-unit id="featureBillingAdminSubscriptionSelect-loadingPlaceholder" datatype="html">
         <source>Loading subscriptions...</source>
+        </trans-unit>
+      <trans-unit id="featureBillingAdminSupplierContractSelect-clearSelectionAria" datatype="html">
+        <source>Clear selected contract</source>
+        </trans-unit>
+      <trans-unit id="featureBillingAdminSupplierContractSelect-noContracts" datatype="html">
+        <source>No contracts found.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingAdminSupplierContractSelect-placeholder" datatype="html">
+        <source>Search contract number</source>
+        </trans-unit>
+      <trans-unit id="featureBillingAdminSupplierContractSelect-loadingPlaceholder" datatype="html">
+        <source>Select a supplier first</source>
+        </trans-unit>
+      <trans-unit id="featureBillingAdminSupplierSelect-clearSelectionAria" datatype="html">
+        <source>Clear selected supplier</source>
+        </trans-unit>
+      <trans-unit id="featureBillingAdminSupplierSelect-noSuppliers" datatype="html">
+        <source>No suppliers found.</source>
+        </trans-unit>
+      <trans-unit id="featureBillingAdminSupplierSelect-placeholder" datatype="html">
+        <source>Search by name, number, or email</source>
         </trans-unit>
       <trans-unit id="featureBillingAdminUserSelect-clearSelectionAria" datatype="html">
         <source>Clear selected user</source>
@@ -1101,9 +1356,6 @@
         <source>DATEV Exports</source>
         </trans-unit>
       <trans-unit id="featureBilling-countryNotAvailable" datatype="html">
-        <source>N/A</source>
-        </trans-unit>
-      <trans-unit id="featureBilling-notAvailable" datatype="html">
         <source>N/A</source>
         </trans-unit>
       <trans-unit id="featureMeters-aggregatorMax" datatype="html">
@@ -1346,6 +1598,9 @@
       <trans-unit id="featureBilling-triggeredBySystem" datatype="html">
         <source>System</source>
         </trans-unit>
+      <trans-unit id="featureBilling-notAvailable" datatype="html">
+        <source>N/A</source>
+        </trans-unit>
       <trans-unit id="featureCloudInitConfigs-title" datatype="html">
         <source>CloudInit Configs</source>
         </trans-unit>
@@ -1427,11 +1682,17 @@
       <trans-unit id="featureContainer-loadingFile" datatype="html">
         <source>Loading file...</source>
         </trans-unit>
+      <trans-unit id="featureContainer-securityTitle" datatype="html">
+        <source>Security</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-security" datatype="html">
+        <source>Security</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-securityAuthenticatorSuggested" datatype="html">
+        <source>Authenticator app is not enabled</source>
+        </trans-unit>
       <trans-unit id="featureContainer-languageSwitcherAriaLabel" datatype="html">
         <source>Select language</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-customerNumberAria" datatype="html">
-        <source>Customer number <x id="customerNumber" equiv-text="customerNumber"/></source>
         </trans-unit>
       <trans-unit id="featureContainer-toggleDarkMode" datatype="html">
         <source>Toggle dark mode</source>
@@ -1486,6 +1747,9 @@
         </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
+        </trans-unit>
+      <trans-unit id="featureContainer-customerNumberAria" datatype="html">
+        <source>Customer number <x id="customerNumber" equiv-text="customerNumber"/></source>
         </trans-unit>
       <trans-unit id="featureContainer-serviceTypesTitle" datatype="html">
         <source>Providers</source>
@@ -1559,234 +1823,6 @@
       <trans-unit id="featureContainer-adminSupplierProfiles" datatype="html">
         <source>Suppliers</source>
         </trans-unit>
-      <trans-unit id="featureAdminBilling-customerTab" datatype="html">
-        <source>Customer</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierTab" datatype="html">
-        <source>Supplier</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierInvoiceCount" datatype="html">
-        <source>Supplier invoices</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierExpenseTotal" datatype="html">
-        <source>Total expenses</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierOpenCount" datatype="html">
-        <source>Open expenses</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierOpenTotal" datatype="html">
-        <source>Open total amount</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierStatisticsTitle" datatype="html">
-        <source>Expense statistics</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierStatusBreakdown" datatype="html">
-        <source>By status</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierStatDraft" datatype="html">
-        <source>Draft</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierStatOpen" datatype="html">
-        <source>Open</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierStatPaid" datatype="html">
-        <source>Paid</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierStatArchivedTotal" datatype="html">
-        <source>Archived total</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierStatsHint" datatype="html">
-        <source>Product and country charts are not available for supplier expenses.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierNoStats" datatype="html">
-        <source>No expense statistics available.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminBilling-supplierInvoicesTitle" datatype="html">
-        <source>Supplier invoices</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-title" datatype="html">
-        <source>Supplier Profiles</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-add" datatype="html">
-        <source>Add</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-searchPlaceholder" datatype="html">
-        <source>Search supplier profiles</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-empty" datatype="html">
-        <source>No supplier profiles found</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-profileActionsAria" datatype="html">
-        <source>Supplier profile actions</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-customDataButtonTitle" datatype="html">
-        <source>Edit custom data</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-editButtonTitle" datatype="html">
-        <source>Edit profile</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-deleteButtonTitle" datatype="html">
-        <source>Delete profile</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-createTitle" datatype="html">
-        <source>Create supplier profile</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-editTitle" datatype="html">
-        <source>Edit supplier profile</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-deleteTitle" datatype="html">
-        <source>Delete supplier profile</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-supplierNumber" datatype="html">
-        <source>Supplier number</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-datevCreditorNumber" datatype="html">
-        <source>DATEV creditor number</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-datevCreditorNotAssigned" datatype="html">
-        <source>Not assigned yet</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-create" datatype="html">
-        <source>Create</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-save" datatype="html">
-        <source>Save</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-delete" datatype="html">
-        <source>Delete</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-deleteConfirm" datatype="html">
-        <source>Delete this supplier profile?</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-cannotUndo" datatype="html">
-        <source>This action cannot be undone.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-customDataTitle" datatype="html">
-        <source>Custom data</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-customDataHelp" datatype="html">
-        <source>Admin-only key/value pairs for linking this supplier to external systems. Values are stored encrypted.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-customDataFor" datatype="html">
-        <source>Custom data for</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-customDataEmpty" datatype="html">
-        <source>No custom data entries yet.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-customDataKeyPlaceholder" datatype="html">
-        <source>Key</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-customDataValuePlaceholder" datatype="html">
-        <source>Value</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-customDataAdd" datatype="html">
-        <source>Add line</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-customDataSave" datatype="html">
-        <source>Save</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-firstName" datatype="html">
-        <source>First name</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-lastName" datatype="html">
-        <source>Last name</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-company" datatype="html">
-        <source>Company</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-customerType" datatype="html">
-        <source>Type</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-vatId" datatype="html">
-        <source>VAT ID</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-vatIdValidationStatus" datatype="html">
-        <source>VAT ID validation</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-email" datatype="html">
-        <source>Email</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-addressLine1" datatype="html">
-        <source>Address line 1</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-addressLine2" datatype="html">
-        <source>Address line 2</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-postalCode" datatype="html">
-        <source>Postal code</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-city" datatype="html">
-        <source>City</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-state" datatype="html">
-        <source>State / Region</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-country" datatype="html">
-        <source>Country</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierProfiles-phone" datatype="html">
-        <source>Phone</source>
-        </trans-unit>
-      <trans-unit id="featureBillingAdminSupplierSelect-placeholder" datatype="html">
-        <source>Search by name, number, or email</source>
-        </trans-unit>
-      <trans-unit id="featureBillingAdminSupplierSelect-clearSelectionAria" datatype="html">
-        <source>Clear selected supplier</source>
-        </trans-unit>
-      <trans-unit id="featureBillingAdminSupplierSelect-noSuppliers" datatype="html">
-        <source>No suppliers found.</source>
-        </trans-unit>
-      <trans-unit id="featureBillingAdminSupplierContractSelect-placeholder" datatype="html">
-        <source>Search contract number</source>
-        </trans-unit>
-      <trans-unit id="featureBillingAdminSupplierContractSelect-loadingPlaceholder" datatype="html">
-        <source>Select a supplier first</source>
-        </trans-unit>
-      <trans-unit id="featureBillingAdminSupplierContractSelect-clearSelectionAria" datatype="html">
-        <source>Clear selected contract</source>
-        </trans-unit>
-      <trans-unit id="featureBillingAdminSupplierContractSelect-noContracts" datatype="html">
-        <source>No contracts found.</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-searchPlaceholder" datatype="html">
-        <source>Search supplier invoices</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-empty" datatype="html">
-        <source>No supplier invoices found</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-supplier" datatype="html">
-        <source>Supplier</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-contractOptional" datatype="html">
-        <source>Contract (optional)</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-invoiceNumberOptional" datatype="html">
-        <source>Invoice number (optional)</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-invoiceNumberPlaceholder" datatype="html">
-        <source>Leave blank to auto-assign on archive</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-issueDate" datatype="html">
-        <source>Issue date</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-dueDate" datatype="html">
-        <source>Due date</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-documentOptional" datatype="html">
-        <source>Document (optional)</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-parsingDocument" datatype="html">
-        <source>Parsing document...</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-archiveButtonTitle" datatype="html">
-        <source>Archive expense</source>
-        </trans-unit>
-      <trans-unit id="featureAdminSupplierInvoices-downloadButtonTitle" datatype="html">
-        <source>Download document</source>
-        </trans-unit>
-      <trans-unit id="featureAdminInvoices-invoiceType" datatype="html">
-        <source>Invoice type</source>
-        </trans-unit>
       <trans-unit id="featureContainer-adminProjectsTitle" datatype="html">
         <source>Projects</source>
         </trans-unit>
@@ -1859,9 +1895,6 @@
       <trans-unit id="featureInvoices-invoiceActionsAria" datatype="html">
         <source>Invoice actions</source>
         </trans-unit>
-      <trans-unit id="featureInvoices-previewButtonTitle" datatype="html">
-        <source>Preview invoice</source>
-        </trans-unit>
       <trans-unit id="featureInvoices-downloadButtonTitle" datatype="html">
         <source>Download PDF</source>
         </trans-unit>
@@ -1870,60 +1903,6 @@
         </trans-unit>
       <trans-unit id="featureInvoices-downloadTimeReportButtonTitle" datatype="html">
         <source>Download time report</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-previewTitle" datatype="html">
-        <source>Invoice preview</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-loadingDetails" datatype="html">
-        <source>Loading invoice details…</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-issuedAt" datatype="html">
-        <source>Issued</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-dueDate" datatype="html">
-        <source>Due date</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-currency" datatype="html">
-        <source>Currency</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-lineItems" datatype="html">
-        <source>Line items</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-lineDescription" datatype="html">
-        <source>Description</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-lineQty" datatype="html">
-        <source>Qty</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-lineUnitNet" datatype="html">
-        <source> Unit (net) </source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-lineNet" datatype="html">
-        <source>Net</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-lineTax" datatype="html">
-        <source>Tax</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-lineGross" datatype="html">
-        <source>Gross</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-taxBreakdown" datatype="html">
-        <source> Tax breakdown </source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-summary" datatype="html">
-        <source>Summary</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-subtotalNet" datatype="html">
-        <source>Subtotal (net)</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-taxTotal" datatype="html">
-        <source>Tax total</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-totalGross" datatype="html">
-        <source>Total</source>
-        </trans-unit>
-      <trans-unit id="featureInvoices-balanceDue" datatype="html">
-        <source>Balance due</source>
         </trans-unit>
       <trans-unit id="featureInvoices-createTitle" datatype="html">
         <source>Create invoice</source>
@@ -2180,14 +2159,14 @@
       <trans-unit id="featureProjectBoard-searchLanePlaceholder" datatype="html">
         <source>Search tickets</source>
         </trans-unit>
-      <trans-unit id="featureProjectBoard-subtaskCountTitle" datatype="html">
-        <source>Direct subtasks (done / total)</source>
-        </trans-unit>
       <trans-unit id="featureProjectBoard-dropHere" datatype="html">
         <source> Drop tickets here </source>
         </trans-unit>
       <trans-unit id="featureProjectBoard-noMatchingTickets" datatype="html">
         <source> No matching tickets </source>
+        </trans-unit>
+      <trans-unit id="featureProjectBoard-subtaskCountTitle" datatype="html">
+        <source>Direct subtasks (done / total)</source>
         </trans-unit>
       <trans-unit id="featureProjectBoard-modalLoadingTitle" datatype="html">
         <source>Ticket</source>
@@ -2847,6 +2826,9 @@
       <trans-unit id="featureServiceDetail-loading" datatype="html">
         <source>Loading service…</source>
         </trans-unit>
+      <trans-unit id="featureServiceDetail-tabsAria" datatype="html">
+        <source>Service detail tabs</source>
+        </trans-unit>
       <trans-unit id="featureServiceDetail-serviceType" datatype="html">
         <source>Service type</source>
         </trans-unit>
@@ -2904,11 +2886,8 @@
       <trans-unit id="featureServiceDetail-meterTotalLabel" datatype="html">
         <source>Total:</source>
         </trans-unit>
-      <trans-unit id="featureServiceDetail-meterIncludedAllowance" datatype="html">
-        <source><x id="value" equiv-text="${summary.effectiveIncludedUsage}${unit}"/> included</source>
-        </trans-unit>
-      <trans-unit id="featureServiceDetail-meterBillableValue" datatype="html">
-        <source><x id="value" equiv-text="${summary.billableValue}${unit}"/> billable</source>
+      <trans-unit id="featureServiceDetail-unknownTab" datatype="html">
+        <source>This tab is not available.</source>
         </trans-unit>
       <trans-unit id="featureServiceDetail-serviceInfoTitle" datatype="html">
         <source>Service info</source>
@@ -2918,6 +2897,9 @@
         </trans-unit>
       <trans-unit id="featureServiceDetail-clearNameAria" datatype="html">
         <source>Clear display name draft</source>
+        </trans-unit>
+      <trans-unit id="featureServiceDetail-tabDetails" datatype="html">
+        <source>Details</source>
         </trans-unit>
       <trans-unit id="featureServiceDetail-serverStatusOnline" datatype="html">
         <source>Online</source>
@@ -2931,68 +2913,41 @@
       <trans-unit id="featureServiceDetail-customService" datatype="html">
         <source>Custom application</source>
         </trans-unit>
-      <trans-unit id="featureServiceDetail-tabsAria" datatype="html">
-        <source>Service detail tabs</source>
+      <trans-unit id="featureServiceDetail-meterIncludedAllowance" datatype="html">
+        <source><x id="PH" equiv-text="summary.effectiveIncludedUsage"/><x id="value" equiv-text="unit"/> included</source>
         </trans-unit>
-      <trans-unit id="featureServiceDetail-tabDetails" datatype="html">
-        <source>Details</source>
-        </trans-unit>
-      <trans-unit id="featureServiceDetail-tabContainerManager" datatype="html">
-        <source>Container Manager</source>
-        </trans-unit>
-      <trans-unit id="featureServiceDetail-unknownTab" datatype="html">
-        <source>This tab is not available.</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-containersTitle" datatype="html">
-        <source>Containers</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-searchPlaceholder" datatype="html">
-        <source>Search containers</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-noSearchResults" datatype="html">
-        <source>No containers match your search.</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-statusRunning" datatype="html">
-        <source>Running</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-statusRestarting" datatype="html">
-        <source>Restarting</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-statusPaused" datatype="html">
-        <source>Paused</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-statusStopped" datatype="html">
-        <source>Stopped</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-statusUnknown" datatype="html">
-        <source>Unknown</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-showSidebar" datatype="html">
-        <source>Containers</source>
+      <trans-unit id="featureServiceDetail-meterBillableValue" datatype="html">
+        <source><x id="PH" equiv-text="summary.billableValue"/><x id="value" equiv-text="unit"/> billable</source>
         </trans-unit>
       <trans-unit id="featureContainerManager-hideSidebar" datatype="html">
         <source>Hide panel</source>
         </trans-unit>
-      <trans-unit id="featureContainerManager-closeSidebar" datatype="html">
-        <source>Close containers panel</source>
+      <trans-unit id="featureContainerManager-showSidebar" datatype="html">
+        <source>Containers</source>
         </trans-unit>
-      <trans-unit id="featureContainerManager-sidebarLabel" datatype="html">
-        <source>Containers and networking</source>
+      <trans-unit id="featureContainerManager-networkingTitle" datatype="html">
+        <source> Networking </source>
         </trans-unit>
       <trans-unit id="featureContainerManager-collectedAt" datatype="html">
         <source>Collected</source>
         </trans-unit>
-      <trans-unit id="featureContainerManager-loadingContainers" datatype="html">
-        <source>Loading containers…</source>
+      <trans-unit id="featureContainerManager-loadingNetworks" datatype="html">
+        <source>Loading networks…</source>
         </trans-unit>
-      <trans-unit id="featureContainerManager-noContainers" datatype="html">
-        <source>No containers found on this host.</source>
+      <trans-unit id="featureContainerManager-noNetworks" datatype="html">
+        <source> No Docker networks were reported for this host. </source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-topologyTitle" datatype="html">
+        <source> Container network topology </source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-topologyHint" datatype="html">
+        <source> Hover a node for details · scroll to zoom · drag to pan </source>
         </trans-unit>
       <trans-unit id="featureContainerManager-statsTitle" datatype="html">
-        <source>Resource usage</source>
+        <source> Resource usage </source>
         </trans-unit>
       <trans-unit id="featureContainerManager-selectContainerHint" datatype="html">
-        <source>Select a container to view resource history.</source>
+        <source> Select a container to view resource history. </source>
         </trans-unit>
       <trans-unit id="featureContainerManager-loadingStats" datatype="html">
         <source>Loading resource history…</source>
@@ -3010,46 +2965,85 @@
         <source>Block I/O</source>
         </trans-unit>
       <trans-unit id="featureContainerManager-noStatsHistory" datatype="html">
-        <source>No resource history is available for this container yet.</source>
+        <source> No resource history is available for this container yet. </source>
         </trans-unit>
       <trans-unit id="featureContainerManager-logsTitle" datatype="html">
         <source>Container logs</source>
         </trans-unit>
       <trans-unit id="featureContainerManager-selectContainerLogsHint" datatype="html">
-        <source>Select a container to stream logs.</source>
+        <source> Select a container to stream logs. </source>
         </trans-unit>
       <trans-unit id="featureContainerManager-loadingLogs" datatype="html">
         <source>Loading logs…</source>
         </trans-unit>
       <trans-unit id="featureContainerManager-noLogs" datatype="html">
-        <source>No log output is available for this container yet.</source>
+        <source> No log output is available for this container yet. </source>
         </trans-unit>
       <trans-unit id="featureContainerManager-logsTruncated" datatype="html">
-        <source>Showing the most recent log chunk; older lines were truncated.</source>
+        <source> Showing the most recent log chunk; older lines were truncated. </source>
         </trans-unit>
-      <trans-unit id="featureContainerManager-networkingTitle" datatype="html">
-        <source>Networking</source>
+      <trans-unit id="featureContainerManager-closeSidebar" datatype="html">
+        <source>Close containers panel</source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-sidebarLabel" datatype="html">
+        <source>Containers and networking</source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-containersTitle" datatype="html">
+        <source> Containers </source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-searchPlaceholder" datatype="html">
+        <source>Search containers</source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-loadingContainers" datatype="html">
+        <source>Loading containers…</source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-noContainers" datatype="html">
+        <source> No containers found on this host. </source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-noSearchResults" datatype="html">
+        <source> No containers match your search. </source>
         </trans-unit>
       <trans-unit id="featureContainerManager-networkMapNav" datatype="html">
         <source>Network map</source>
         </trans-unit>
-      <trans-unit id="featureContainerManager-loadingNetworks" datatype="html">
-        <source>Loading networks…</source>
+      <trans-unit id="featureContainerManager-statusRunning" datatype="html">
+        <source>Running</source>
         </trans-unit>
-      <trans-unit id="featureContainerManager-noNetworks" datatype="html">
-        <source>No Docker networks were reported for this host.</source>
+      <trans-unit id="featureContainerManager-statusRestarting" datatype="html">
+        <source>Restarting</source>
         </trans-unit>
-      <trans-unit id="featureContainerManager-topologyTitle" datatype="html">
-        <source>Container network topology</source>
+      <trans-unit id="featureContainerManager-statusPaused" datatype="html">
+        <source>Paused</source>
         </trans-unit>
-      <trans-unit id="featureContainerManager-topologyHint" datatype="html">
-        <source>Hover a node for details · scroll to zoom · drag to pan</source>
+      <trans-unit id="featureContainerManager-statusStopped" datatype="html">
+        <source>Stopped</source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-statusUnknown" datatype="html">
+        <source>Unknown</source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-cpuSeries" datatype="html">
+        <source>CPU %</source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-cpuHistoryTitle" datatype="html">
+        <source>CPU</source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-memorySeries" datatype="html">
+        <source>Memory</source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-memoryHistoryTitle" datatype="html">
+        <source>Memory</source>
         </trans-unit>
       <trans-unit id="featureContainerManager-topologyImage" datatype="html">
         <source>Image</source>
         </trans-unit>
       <trans-unit id="featureContainerManager-topologyStatus" datatype="html">
         <source>Status</source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-topologyAddresses" datatype="html">
+        <source>Addresses</source>
+        </trans-unit>
+      <trans-unit id="featureContainerManager-topologyRoutes" datatype="html">
+        <source>Routes</source>
         </trans-unit>
       <trans-unit id="featureContainerManager-topologyLinks" datatype="html">
         <source>Links</source>
@@ -3074,24 +3068,6 @@
         </trans-unit>
       <trans-unit id="featureContainerManager-topologyKindInternet" datatype="html">
         <source>Internet</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-topologyAddresses" datatype="html">
-        <source>Addresses</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-topologyRoutes" datatype="html">
-        <source>Routes</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-cpuSeries" datatype="html">
-        <source>CPU %</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-memorySeries" datatype="html">
-        <source>Memory</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-cpuHistoryTitle" datatype="html">
-        <source>CPU</source>
-        </trans-unit>
-      <trans-unit id="featureContainerManager-memoryHistoryTitle" datatype="html">
-        <source>Memory</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-title" datatype="html">
         <source>Service Plans</source>
@@ -3189,14 +3165,38 @@
       <trans-unit id="featureServicePlans-estimatedPrice" datatype="html">
         <source>Estimated price</source>
         </trans-unit>
+      <trans-unit id="featureServicePlans-allowCustomerProviderSelection" datatype="html">
+        <source> Allow provider selection </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-allowCustomerProviderSelectionHelp" datatype="html">
+        <source> Customers may choose a cloud provider from the selected options when ordering. </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-allowedProviders" datatype="html">
+        <source>Allowed providers</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-allowedProvidersHelp" datatype="html">
+        <source> Hold Ctrl/Cmd to select. First selected is the default provider at checkout. </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-pinnedProvider" datatype="html">
+        <source>Plan provider</source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-pinnedProviderHelp" datatype="html">
+        <source> Customers cannot choose a provider. This provider is used for all orders on this plan. </source>
+        </trans-unit>
       <trans-unit id="featureServicePlans-providerConfigDefaults" datatype="html">
         <source>Provider default config</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-loadingServerTypes" datatype="html">
         <source>Loading server types...</source>
         </trans-unit>
+      <trans-unit id="featureServicePlans-serverTypeByProviderHelp" datatype="html">
+        <source> Choose a default server type for each provider. Used when the customer picks that provider (or omits server type at checkout). </source>
+        </trans-unit>
       <trans-unit id="featureServicePlans-chooseOption" datatype="html">
-        <source>Choose...</source>
+        <source> Choose... </source>
+        </trans-unit>
+      <trans-unit id="featureServicePlans-geographyByProviderHelp" datatype="html">
+        <source> Choose a default location or region for each provider. </source>
         </trans-unit>
       <trans-unit id="featureServicePlans-provisioningOptions" datatype="html">
         <source>Customer-selectable options</source>
@@ -3239,30 +3239,6 @@
         </trans-unit>
       <trans-unit id="featureServicePlans-autoRecalculatePriceDailyHelp" datatype="html">
         <source> Opt in only when required for EU compliance. When enabled, the package price is recalculated nightly at midnight from the provider catalog. Checkout must disclose this and the statutory withdrawal restart when the price changes. </source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-allowCustomerProviderSelection" datatype="html">
-        <source>Allow provider selection</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-allowCustomerProviderSelectionHelp" datatype="html">
-        <source>Customers may choose a cloud provider from the selected options when ordering.</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-allowedProviders" datatype="html">
-        <source>Allowed providers</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-allowedProvidersHelp" datatype="html">
-        <source>Hold Ctrl/Cmd to select. First selected is the default provider at checkout.</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-pinnedProvider" datatype="html">
-        <source>Plan provider</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-pinnedProviderHelp" datatype="html">
-        <source>Customers cannot choose a provider. This provider is used for all orders on this plan.</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-serverTypeByProviderHelp" datatype="html">
-        <source>Choose a default server type for each provider. Used when the customer picks that provider (or omits server type at checkout).</source>
-        </trans-unit>
-      <trans-unit id="featureServicePlans-geographyByProviderHelp" datatype="html">
-        <source>Choose a default location or region for each provider.</source>
         </trans-unit>
       <trans-unit id="featureServicePlans-active" datatype="html">
         <source>Active</source>
@@ -3402,20 +3378,14 @@
       <trans-unit id="featureServiceTypes-provider" datatype="html">
         <source>Providers</source>
         </trans-unit>
+      <trans-unit id="featureServiceTypes-loadingProviders" datatype="html">
+        <source> Loading providers... </source>
+        </trans-unit>
       <trans-unit id="featureServiceTypes-noneProvider" datatype="html">
         <source>None</source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-providersMultiHelp" datatype="html">
-        <source>Hold Ctrl/Cmd to select multiple compatible providers. First selected is primary. Choose None for no cloud provider.</source>
-        </trans-unit>
-      <trans-unit id="featureServiceTypes-providersPrimaryPlusCount" datatype="html">
-        <source><x id="PH" equiv-text="primary"/> (+<x id="PH_1" equiv-text="extraCount"/>)</source>
-        </trans-unit>
-      <trans-unit id="featureServiceTypes-loadingProviders" datatype="html">
-        <source> Loading providers... </source>
-        </trans-unit>
-      <trans-unit id="featureServiceTypes-chooseProvider" datatype="html">
-        <source>Choose a provider</source>
+        <source> Hold Ctrl/Cmd to select multiple compatible providers. First selected is primary. Choose None for no cloud provider. </source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-providerPlaceholder" datatype="html">
         <source>e.g. hetzner</source>
@@ -3430,7 +3400,7 @@
         <source> Overrides platform environment variables for this service type. Leave blank to use the environment default. </source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-providerDefaultsGroupIntro" datatype="html">
-        <source>Defaults for <x id="INTERPOLATION" equiv-text="{{ group.label }}"/></source>
+        <source> Defaults for <x id="INTERPOLATION" equiv-text="{{ group.label }}"/> </source>
         </trans-unit>
       <trans-unit id="featureServiceTypes-providerDefaultEnvPlaceholder" datatype="html">
         <source>Using environment default</source>
@@ -3516,6 +3486,9 @@
       <trans-unit id="featureServiceTypes-hideProviderDefaults" datatype="html">
         <source>Hide</source>
         </trans-unit>
+      <trans-unit id="featureServiceTypes-providersPrimaryPlusCount" datatype="html">
+        <source><x id="primary" equiv-text="primaryLabel"/> (+<x id="extraCount" equiv-text="extraCount"/>)</source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-title" datatype="html">
         <source>Plans &amp; Subscriptions</source>
         </trans-unit>
@@ -3530,9 +3503,6 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-customerProfile" datatype="html">
         <source> Billing profile </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-customerNumber" datatype="html">
-        <source>Customer number</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-editProfileButtonTitle" datatype="html">
         <source>Edit billing profile</source>
@@ -3582,12 +3552,6 @@
       <trans-unit id="featureSubscriptions-usageMeters" datatype="html">
         <source>Usage meters</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-meterIncludedAllowance" datatype="html">
-        <source><x id="value" equiv-text="${meter.effectiveIncludedUsage}${unit}"/> included</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-meterBillableValue" datatype="html">
-        <source><x id="value" equiv-text="${meter.billableValue}${unit}"/> billable</source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-backorderActionsAria" datatype="html">
         <source>Backorder actions</source>
         </trans-unit>
@@ -3627,11 +3591,8 @@
       <trans-unit id="featureSubscriptions-mandatoryAddonHint" datatype="html">
         <source>Included with this plan and cannot be removed.</source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-orderInvalidAddonLabel" datatype="html">
-        <source>Not available for the selected provider</source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-orderInvalidAddonsHint" datatype="html">
-        <source>Some selected addons are not available for the chosen provider and will be omitted from the order.</source>
+        <source> Some selected addons are not available for the chosen provider and will be omitted from the order. </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-planMeters" datatype="html">
         <source> Plan usage meters </source>
@@ -3653,6 +3614,12 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-autoRecalculatePriceDailyWithdrawalSuffix" datatype="html">
         <source>days to withdraw without negative impact.</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-orderProvider" datatype="html">
+        <source>Provider</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-orderProviderHelp" datatype="html">
+        <source> Choose which cloud provider provisions this subscription. </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-cloudInitConfig" datatype="html">
         <source>Instance configuration</source>
@@ -3930,6 +3897,9 @@
       <trans-unit id="featureSubscriptions-editProfileHint" datatype="html">
         <source> First name, last name, email, address line 1, city and country are required for invoicing. </source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-customerNumber" datatype="html">
+        <source>Customer number</source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-firstName" datatype="html">
         <source>First name</source>
         </trans-unit>
@@ -4008,11 +3978,20 @@
       <trans-unit id="featureSubscriptions-save" datatype="html">
         <source> Save </source>
         </trans-unit>
+      <trans-unit id="featureSubscriptions-orderInvalidAddonLabel" datatype="html">
+        <source>Not available for the selected provider</source>
+        </trans-unit>
       <trans-unit id="featureSubscriptions-mobilePanelSubscriptions" datatype="html">
         <source>Subscriptions</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-mobilePanelBackorders" datatype="html">
         <source>Backorders</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-meterIncludedAllowance" datatype="html">
+        <source><x id="PH" equiv-text="meter.effectiveIncludedUsage"/><x id="value" equiv-text="unit"/> included</source>
+        </trans-unit>
+      <trans-unit id="featureSubscriptions-meterBillableValue" datatype="html">
+        <source><x id="PH" equiv-text="meter.billableValue"/><x id="value" equiv-text="unit"/> billable</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-addonConfigCardTitle" datatype="html">
         <source>Addon: <x id="addonName" equiv-text="addonName"/></source>
@@ -4022,12 +4001,6 @@
         </trans-unit>
       <trans-unit id="featureSubscriptions-orderStepInfrastructure" datatype="html">
         <source>Server &amp; region</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-orderProvider" datatype="html">
-        <source>Provider</source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-orderProviderHelp" datatype="html">
-        <source>Choose which cloud provider provisions this subscription.</source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-configChangeStepServerType" datatype="html">
         <source>Server type</source>
@@ -4122,6 +4095,9 @@
       <trans-unit id="featureAuth-loginPage" datatype="html">
         <source>Login</source>
         </trans-unit>
+      <trans-unit id="featureAuth-login2faPage" datatype="html">
+        <source>Two-Factor Authentication</source>
+        </trans-unit>
       <trans-unit id="featureAuth-registerPage" datatype="html">
         <source>Register</source>
         </trans-unit>
@@ -4142,6 +4118,57 @@
         </trans-unit>
       <trans-unit id="featureAuth-tokensPage" datatype="html">
         <source>Personal Access Tokens</source>
+        </trans-unit>
+      <trans-unit id="featureAuth-securityPage" datatype="html">
+        <source>Security Settings</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-title" datatype="html">
+        <source>Two-Factor Authentication</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-description" datatype="html">
+        <source>Enter the verification code to finish signing in.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-formTitle" datatype="html">
+        <source>Verify Sign-In</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-authNotAvailable" datatype="html">
+        <source>Two-factor login is not available for this authentication method.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-returnToLogin" datatype="html">
+        <source>Return to login</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-sessionExpired" datatype="html">
+        <source>Your sign-in session expired. Please sign in again.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-returnToLoginLink" datatype="html">
+        <source>Return to login</source>
+        </trans-unit>
+<trans-unit id="featureLogin2fa-totpHint" datatype="html">
+        <source>Enter the 6-digit code from your authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-emailHint" datatype="html">
+        <source>Enter the 6-character code we sent to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-codeLabel" datatype="html">
+        <source>Verification Code</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-codeRequired" datatype="html">
+        <source>Verification code is required.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-codePatternTotp" datatype="html">
+        <source>Code must be exactly 6 digits.</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-codePatternEmail" datatype="html">
+        <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-cancel" datatype="html">
+        <source>Back to login</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-verifying" datatype="html">
+        <source>Verifying...</source>
+        </trans-unit>
+      <trans-unit id="featureLogin2fa-submit" datatype="html">
+        <source>Verify</source>
         </trans-unit>
       <trans-unit id="featureLogin-title" datatype="html">
         <source>Login</source>
@@ -4226,6 +4253,9 @@
         </trans-unit>
       <trans-unit id="identityLogoutConfirm-logoutAllSessionsHint" datatype="html">
         <source>For security, this ends every active session for your account.</source>
+        </trans-unit>
+      <trans-unit id="featureOtpInput-invalid" datatype="html">
+        <source>Invalid verification code</source>
         </trans-unit>
       <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
         <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
@@ -4473,6 +4503,90 @@
       <trans-unit id="featureResetPassword-submit" datatype="html">
         <source>Reset Password</source>
         </trans-unit>
+      <trans-unit id="featureSecuritySettings-title" datatype="html">
+        <source>Security Settings</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-authNotAvailable" datatype="html">
+        <source> Two-factor authentication settings are only available for users authentication. </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-loading" datatype="html">
+        <source>Loading...</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailTitle" datatype="html">
+        <source>Email verification</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailDescription" datatype="html">
+        <source> Receive a one-time code by email when signing in. </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-enabled" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-disabled" datatype="html">
+        <source>Disabled</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailForcedHint" datatype="html">
+        <source>Email verification is required by our organization and cannot be turned off</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-currentPasswordLabel" datatype="html">
+        <source>Current password</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableEmail" datatype="html">
+        <source> Disable email 2FA </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableEmailPrompt" datatype="html">
+        <source> Disable email 2FA </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailCodeLabel" datatype="html">
+        <source>Confirmation code</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmEmail" datatype="html">
+        <source>Confirm</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-resendEmail" datatype="html">
+        <source> Resend code </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-enableEmail" datatype="html">
+        <source> Enable email 2FA </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpTitle" datatype="html">
+        <source>Authenticator app</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpDescription" datatype="html">
+        <source> Use an authenticator app (TOTP) as your preferred second factor. </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpEnabled" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpDisabled" datatype="html">
+        <source>Disabled</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableTotpCodeLabel" datatype="html">
+        <source>Authenticator code to disable</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmDisableTotp" datatype="html">
+        <source> Disable authenticator </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableTotp" datatype="html">
+        <source> Disable authenticator </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpSetupHint" datatype="html">
+        <source> Scan the QR code with your authenticator app, or enter the secret manually. </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-secretLabel" datatype="html">
+        <source>Secret</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpConfirmLabel" datatype="html">
+        <source>Confirm with code</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmTotp" datatype="html">
+        <source> Confirm authenticator </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-setupTotp" datatype="html">
+        <source> Set up authenticator </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-setupTotpPrompt" datatype="html">
+        <source> Set up authenticator </source>
+        </trans-unit>
       <trans-unit id="featureTokenManager-title" datatype="html">
         <source>Personal Access Tokens</source>
         </trans-unit>
@@ -4552,8 +4666,7 @@
         <source> Revoke token </source>
         </trans-unit>
       <trans-unit id="featureTokenManager-revokeConfirm" datatype="html">
-        <source> Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/>? </source>
+        <source> Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
         </trans-unit>
       <trans-unit id="featureTokenManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -4587,6 +4700,12 @@
         </trans-unit>
       <trans-unit id="featureUserManager-pending" datatype="html">
         <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-totpEnabled" datatype="html">
+        <source>Authenticator</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-removeAuthenticatorTitle" datatype="html">
+        <source>Remove authenticator</source>
         </trans-unit>
       <trans-unit id="featureUserManager-unlockUserButtonTitle" datatype="html">
         <source>Unlock user</source>
@@ -4643,14 +4762,25 @@
         <source> Delete User </source>
         </trans-unit>
       <trans-unit id="featureUserManager-deleteUserConfirm" datatype="html">
-        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/>? </source>
+        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
         </trans-unit>
       <trans-unit id="featureUserManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
         </trans-unit>
       <trans-unit id="featureUserManager-delete" datatype="html">
         <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-clearTotpModalTitle" datatype="html">
+        <source> Remove Authenticator </source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-clearTotpConfirm" datatype="html">
+        <source> Remove the authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToClearTotp.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? They can set up a new authenticator afterwards. </source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-cancel" datatype="html">
+        <source> Cancel </source>
+        </trans-unit>
+      <trans-unit id="featureUserManager-removeAuthenticator" datatype="html">
+        <source> Remove authenticator </source>
         </trans-unit>
       <trans-unit id="featureDocsBreadcrumbs-documentation" datatype="html">
         <source>Documentation</source>
@@ -4938,8 +5068,7 @@
         <source> Delete webhook </source>
         </trans-unit>
       <trans-unit id="featureNotifications-deleteConfirm" datatype="html">
-        <source> Are you sure you want to delete the webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/>? </source>
+        <source> Are you sure you want to delete the webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
         </trans-unit>
       <trans-unit id="featureNotifications-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -4994,6 +5123,9 @@
         </trans-unit>
       <trans-unit id="featureNotifications-allClients" datatype="html">
         <source>All clients</source>
+        </trans-unit>
+      <trans-unit id="featureNotifications-clientUnavailable" datatype="html">
+        <source>N/A</source>
         </trans-unit>
       <trans-unit id="featureNotifications-disabled" datatype="html">
         <source>Disabled</source>

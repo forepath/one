@@ -223,4 +223,24 @@ describe('UsersService', () => {
       }),
     );
   });
+
+  it('clears TOTP fields and invalidates sessions on admin clearTotp', async () => {
+    mockUsersRepository.findByIdForTenant.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      totpSecret: 'SECRET',
+      totpEnabledAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    mockUsersRepository.update.mockResolvedValue({});
+    mockUsersRepository.incrementTokenVersion.mockResolvedValue(2);
+
+    const result = await service.clearTotp('user-1');
+
+    expect(mockUsersRepository.update).toHaveBeenCalledWith('user-1', {
+      totpSecret: null,
+      totpEnabledAt: null,
+    });
+    expect(mockUsersRepository.incrementTokenVersion).toHaveBeenCalledWith('user-1');
+    expect(result.message).toContain('removed');
+  });
 });

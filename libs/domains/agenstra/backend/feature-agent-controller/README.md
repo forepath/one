@@ -703,6 +703,8 @@ nx test agenstra-backend-feature-agent-controller --coverage
 - `AUTHENTICATION_METHOD` - Authentication method: `api-key`, `keycloak`, or `users` (default: inferred from `STATIC_API_KEY`)
 - `STATIC_API_KEY` - Static API key (required when `AUTHENTICATION_METHOD=api-key`)
 - `JWT_SECRET` - JWT signing secret (required when `AUTHENTICATION_METHOD=users`)
+- `DISABLE_FORCE_LOGIN_2FA` - When `true`, login 2FA is opt-in only (default: `false`, force email OTP / TOTP)
+- `PRODUCT_NAME` - TOTP issuer label in authenticator apps (default: `Forepath`)
 - `WEBSOCKET_PORT` - Port for WebSocket gateway (default: `8081`)
 - `CLIENTS_REMOTE_WS_PORT` - Default WebSocket port for remote agent-manager services (default: `8080`, can be overridden per client via `agentWsPort`)
 - `KEYCLOAK_AUTH_SERVER_URL` - Keycloak server URL (required when `AUTHENTICATION_METHOD=keycloak`)

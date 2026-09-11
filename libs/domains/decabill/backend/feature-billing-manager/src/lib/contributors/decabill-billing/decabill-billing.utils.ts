@@ -73,6 +73,7 @@ export interface DecabillBillingCloudInitConfig {
         clientSecret: string;
       };
       disableSignup: boolean;
+      disableForceLogin2fa?: boolean;
     };
     encryption: {
       jwtSecret: string;
@@ -147,6 +148,7 @@ export function buildDecabillBillingCloudInitConfigFromRequest(
       authentication: {
         authenticationMethod: (effectiveConfig.authenticationMethod as string) ?? 'users',
         disableSignup: (effectiveConfig.disableSignup as boolean) ?? false,
+        disableForceLogin2fa: (effectiveConfig.disableForceLogin2fa as boolean) ?? false,
         staticApiKey: (effectiveConfig.staticApiKey as string) ?? '',
         ...(keycloak && {
           keycloak: {
@@ -203,6 +205,7 @@ export function buildDecabillBillingCloudInitUserData(config: DecabillBillingClo
     `HETZNER_API_TOKEN: ${config.backend?.provisioning?.hetznerApiToken ?? ''}`,
     `DIGITALOCEAN_API_TOKEN: ${config.backend?.provisioning?.digitaloceanApiToken ?? ''}`,
     `DISABLE_SIGNUP: ${config.backend?.authentication?.disableSignup ?? 'false'}`,
+    `DISABLE_FORCE_LOGIN_2FA: ${config.backend?.authentication?.disableForceLogin2fa ?? 'false'}`,
     `ENCRYPTION_KEY: ${config.backend?.encryption?.encryptionKey ?? ''}`,
     `JWT_SECRET: ${config.backend?.encryption?.jwtSecret ?? ''}`,
     `SMTP_HOST: ${config.backend?.smtp?.host ?? 'mailhog'}`,

@@ -1,0 +1,9 @@
+Login verification
+
+Use the following code to finish signing in:
+
+{{code}}
+
+Enter this code on the login verification page. The code expires shortly.
+
+If you did not try to sign in, you can ignore this email. Your password was not changed.

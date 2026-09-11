@@ -1,16 +1,23 @@
 import { createAction, props } from '@ngrx/store';
 
-import type { CreateUserDto, UpdateUserDto, UserResponseDto } from './authentication.types';
+import type {
+  CreateUserDto,
+  Login2faMethod,
+  TotpSetup,
+  TwoFactorStatus,
+  UpdateUserDto,
+  UserResponseDto,
+} from './authentication.types';
 
 /**
  * Unified login action - works for API key, Keycloak, and users authentication
  * For API key: pass the apiKey in the payload
  * For Keycloak: apiKey/email/password ignored, KeycloakService handles it
- * For users: pass email and password
+ * For users: pass email and password (optional code for login 2FA)
  */
 export const login = createAction(
   '[Authentication] Login',
-  props<{ apiKey?: string; email?: string; password?: string }>(),
+  props<{ apiKey?: string; email?: string; password?: string; code?: string }>(),
 );
 
 export const loginSuccess = createAction(
@@ -20,7 +27,11 @@ export const loginSuccess = createAction(
 
 export const loginFailure = createAction(
   '[Authentication] Login Failure',
-  props<{ error: string; confirmEmail?: string }>(),
+  props<{
+    error: string;
+    confirmEmail?: string;
+    login2fa?: { email: string; password: string; method: Login2faMethod };
+  }>(),
 );
 
 export const clearError = createAction('[Authentication] Clear Error');
@@ -104,6 +115,76 @@ export const changePasswordFailure = createAction(
 );
 
 export const clearSuccessMessage = createAction('[Authentication] Clear Success Message');
+
+// --- Login 2FA self-service ---
+
+export const loadTwoFactorStatus = createAction('[Authentication] Load Two Factor Status');
+
+export const loadTwoFactorStatusSuccess = createAction(
+  '[Authentication] Load Two Factor Status Success',
+  props<{ status: TwoFactorStatus }>(),
+);
+
+export const loadTwoFactorStatusFailure = createAction(
+  '[Authentication] Load Two Factor Status Failure',
+  props<{ error: string }>(),
+);
+
+export const enableEmail2fa = createAction('[Authentication] Enable Email 2FA', props<{ code?: string }>());
+
+export const enableEmail2faSuccess = createAction(
+  '[Authentication] Enable Email 2FA Success',
+  props<{ message: string; pending?: boolean }>(),
+);
+
+export const enableEmail2faFailure = createAction(
+  '[Authentication] Enable Email 2FA Failure',
+  props<{ error: string }>(),
+);
+
+export const disableEmail2fa = createAction('[Authentication] Disable Email 2FA', props<{ currentPassword: string }>());
+
+export const disableEmail2faSuccess = createAction(
+  '[Authentication] Disable Email 2FA Success',
+  props<{ message: string }>(),
+);
+
+export const disableEmail2faFailure = createAction(
+  '[Authentication] Disable Email 2FA Failure',
+  props<{ error: string }>(),
+);
+
+export const setupTotp = createAction('[Authentication] Setup TOTP', props<{ currentPassword: string }>());
+
+export const setupTotpSuccess = createAction('[Authentication] Setup TOTP Success', props<{ setup: TotpSetup }>());
+
+export const setupTotpFailure = createAction('[Authentication] Setup TOTP Failure', props<{ error: string }>());
+
+export const confirmTotp = createAction('[Authentication] Confirm TOTP', props<{ code: string }>());
+
+export const confirmTotpSuccess = createAction('[Authentication] Confirm TOTP Success', props<{ message: string }>());
+
+export const confirmTotpFailure = createAction('[Authentication] Confirm TOTP Failure', props<{ error: string }>());
+
+export const disableTotp = createAction('[Authentication] Disable TOTP', props<{ code: string }>());
+
+export const disableTotpSuccess = createAction('[Authentication] Disable TOTP Success', props<{ message: string }>());
+
+export const disableTotpFailure = createAction('[Authentication] Disable TOTP Failure', props<{ error: string }>());
+
+export const clearTwoFactorMessages = createAction('[Authentication] Clear Two Factor Messages');
+
+export const adminClearTotp = createAction('[Authentication] Admin Clear TOTP', props<{ userId: string }>());
+
+export const adminClearTotpSuccess = createAction(
+  '[Authentication] Admin Clear TOTP Success',
+  props<{ message: string; userId: string }>(),
+);
+
+export const adminClearTotpFailure = createAction(
+  '[Authentication] Admin Clear TOTP Failure',
+  props<{ error: string }>(),
+);
 
 // --- Admin users management ---
 

@@ -1,0 +1,22 @@
+flowchart TD
+  Start[POST /auth/login] --> Lock{Account locked?}
+  Lock -->|yes| Locked[401 locked]
+  Lock -->|no| Pwd{Password valid?}
+  Pwd -->|no| BadCreds[401 invalid credentials]
+  Pwd -->|yes| Confirmed{Email confirmed?}
+  Confirmed -->|no| Confirm[401 EMAIL_NOT_CONFIRMED]
+  Confirmed -->|yes| Totp{TOTP enrolled?}
+  Totp -->|yes| TotpCode{code present?}
+  TotpCode -->|no| ChallengeTotp[401 LOGIN_2FA_REQUIRED method totp]
+  TotpCode -->|yes| VerifyTotp{TOTP valid?}
+  VerifyTotp -->|no| InvalidTotp[401 LOGIN_2FA_INVALID method totp]
+  VerifyTotp -->|yes| Jwt[200 JWT]
+  Totp -->|no| Force{Force ON or email 2FA opted in?}
+  Force -->|no| Jwt
+  Force -->|yes| EmailCode{code present?}
+  EmailCode -->|no| Send[Send login-2fa email]
+  Send -->|ok| ChallengeEmail[401 LOGIN_2FA_REQUIRED method email]
+  Send -->|fail| Unavailable[503 email unavailable]
+  EmailCode -->|yes| VerifyEmail{Email OTP valid?}
+  VerifyEmail -->|no| InvalidEmail[401 LOGIN_2FA_INVALID method email]
+  VerifyEmail -->|yes| Jwt
