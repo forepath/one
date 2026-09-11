@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.30.1](https://github.com/forepath/one/compare/v2.30.0...v2.30.1) (2026-09-11)
+
+
+### Bug Fixes
+
+* **shared:** security settings alert positioning ([#609](https://github.com/forepath/one/issues/609)) ([f3c3a28](https://github.com/forepath/one/commit/f3c3a28a69188d4e447e3e3f07470053898eb55f))
+
 ## [2.30.0](https://github.com/forepath/one/compare/v2.29.0...v2.30.0) (2026-09-11)
 
 
