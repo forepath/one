@@ -5,9 +5,9 @@
 export const IDENTITY_EMAIL_DISPATCHER = Symbol('IDENTITY_EMAIL_DISPATCHER');
 
 export interface IdentityEmailPublishInput {
-  eventType: 'user.email_confirmation_requested' | 'user.password_reset_requested';
+  eventType: 'user.email_confirmation_requested' | 'user.password_reset_requested' | 'user.login_2fa_requested';
   to: string;
-  templateKey: 'email-confirmation' | 'password-reset';
+  templateKey: 'email-confirmation' | 'password-reset' | 'login-2fa';
   templateContext: Record<string, unknown>;
 }
 

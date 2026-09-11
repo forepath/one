@@ -1,0 +1,253 @@
+<div class="security-settings-container border-top d-flex flex-column h-100">
+  <div class="p-3 border-bottom bg-body-tertiary">
+    <h5 class="mb-0 fw-semibold" i18n="@@featureSecuritySettings-title">Security Settings</h5>
+  </div>
+
+  <div class="flex-grow-1 overflow-auto">
+    @if (!isUsersAuth) {
+      <div
+        class="alert alert-info mb-0 rounded-0 border-0 border-bottom"
+        role="alert"
+        i18n="@@featureSecuritySettings-authNotAvailable"
+      >
+        Two-factor authentication settings are only available for users authentication.
+      </div>
+    } @else {
+      @if (error(); as errorMessage) {
+        <div class="alert alert-danger mb-0 rounded-0 border-0 border-bottom" role="alert">{{ errorMessage }}</div>
+      }
+
+      @if (successMessage(); as message) {
+        <div class="alert alert-success mb-0 rounded-0 border-0 border-bottom" role="alert">{{ message }}</div>
+      }
+
+      @if (loading() && !status()) {
+        <div class="d-flex justify-content-center align-items-center p-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden" i18n="@@featureSecuritySettings-loading">Loading...</span>
+          </div>
+        </div>
+      } @else if (status(); as twoFactorStatus) {
+        <div class="list-group list-group-flush">
+          <div class="list-group-item border-bottom py-3">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+              <div class="min-w-0 flex-grow-1">
+                <div class="fw-semibold mb-1" i18n="@@featureSecuritySettings-emailTitle">Email verification</div>
+                <p class="text-muted small mb-0" i18n="@@featureSecuritySettings-emailDescription">
+                  Receive a one-time code by email when signing in.
+                </p>
+              </div>
+              @if (twoFactorStatus.forceEnabled || twoFactorStatus.emailEnabled) {
+                <span class="badge text-bg-success flex-shrink-0" i18n="@@featureSecuritySettings-enabled"
+                  >Enabled</span
+                >
+              } @else {
+                <span class="badge text-bg-secondary flex-shrink-0" i18n="@@featureSecuritySettings-disabled"
+                  >Disabled</span
+                >
+              }
+            </div>
+
+            @if (twoFactorStatus.forceEnabled) {
+              <span class="badge text-bg-warning text-wrap text-start mt-3 d-inline-flex align-items-center gap-2">
+                <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                <span i18n="@@featureSecuritySettings-emailForcedHint"
+                  >Email verification is required by our organization and cannot be turned off</span
+                >
+              </span>
+            } @else if (twoFactorStatus.emailEnabled) {
+              @if (showDisableEmail()) {
+                <form [formGroup]="emailDisableForm" (ngSubmit)="onDisableEmail2fa()" class="border rounded-3 p-3 mt-3">
+                  <label class="form-label" i18n="@@featureSecuritySettings-currentPasswordLabel"
+                    >Current password</label
+                  >
+                  <input
+                    type="password"
+                    class="form-control"
+                    formControlName="currentPassword"
+                    autocomplete="current-password"
+                    [disabled]="loading()"
+                  />
+                  <div class="d-flex gap-2 mt-3">
+                    <button
+                      type="submit"
+                      class="btn btn-danger"
+                      [disabled]="emailDisableForm.invalid || loading()"
+                      i18n="@@featureSecuritySettings-disableEmail"
+                    >
+                      Disable email 2FA
+                    </button>
+                  </div>
+                </form>
+              } @else {
+                <button
+                  type="button"
+                  class="btn btn-outline-danger mt-3"
+                  (click)="onShowDisableEmail()"
+                  [disabled]="loading()"
+                  i18n="@@featureSecuritySettings-disableEmailPrompt"
+                >
+                  Disable email 2FA
+                </button>
+              }
+            } @else if (email2faPending()) {
+              <form [formGroup]="emailConfirmForm" (ngSubmit)="onConfirmEmail2fa()" class="border rounded-3 p-3 mt-3">
+                <label class="form-label" i18n="@@featureSecuritySettings-emailCodeLabel">Confirmation code</label>
+                <identity-auth-otp-input
+                  formControlName="code"
+                  [invalid]="(emailConfirmForm.get('code')?.invalid && emailConfirmForm.get('code')?.touched) ?? false"
+                  [disabled]="loading()"
+                />
+                <div class="d-flex gap-2 mt-2">
+                  <button type="submit" class="btn btn-primary" [disabled]="emailConfirmForm.invalid || loading()">
+                    <span i18n="@@featureSecuritySettings-confirmEmail">Confirm</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    (click)="onEnableEmail2fa()"
+                    [disabled]="loading()"
+                    i18n="@@featureSecuritySettings-resendEmail"
+                  >
+                    Resend code
+                  </button>
+                </div>
+              </form>
+            } @else {
+              <button
+                type="button"
+                class="btn btn-outline-primary mt-3"
+                (click)="onEnableEmail2fa()"
+                [disabled]="loading()"
+                i18n="@@featureSecuritySettings-enableEmail"
+              >
+                Enable email 2FA
+              </button>
+            }
+          </div>
+
+          <div class="list-group-item border-bottom py-3">
+            <div class="d-flex justify-content-between align-items-start gap-3">
+              <div class="min-w-0 flex-grow-1">
+                <div class="fw-semibold mb-1" i18n="@@featureSecuritySettings-totpTitle">Authenticator app</div>
+                <p class="text-muted small mb-0" i18n="@@featureSecuritySettings-totpDescription">
+                  Use an authenticator app (TOTP) as your preferred second factor.
+                </p>
+              </div>
+              @if (twoFactorStatus.totpEnabled) {
+                <span class="badge text-bg-success flex-shrink-0" i18n="@@featureSecuritySettings-totpEnabled"
+                  >Enabled</span
+                >
+              } @else {
+                <span class="badge text-bg-secondary flex-shrink-0" i18n="@@featureSecuritySettings-totpDisabled"
+                  >Disabled</span
+                >
+              }
+            </div>
+
+            @if (twoFactorStatus.totpEnabled) {
+              @if (showDisableTotp()) {
+                <form [formGroup]="totpDisableForm" (ngSubmit)="onDisableTotp()" class="border rounded-3 p-3 mt-3">
+                  <label class="form-label" i18n="@@featureSecuritySettings-disableTotpCodeLabel"
+                    >Authenticator code to disable</label
+                  >
+                  <identity-auth-otp-input
+                    formControlName="code"
+                    [invalid]="(totpDisableForm.get('code')?.invalid && totpDisableForm.get('code')?.touched) ?? false"
+                    [disabled]="loading()"
+                  />
+                  <div class="d-flex gap-2 mt-3">
+                    <button
+                      type="submit"
+                      class="btn btn-danger"
+                      [disabled]="totpDisableForm.invalid || loading()"
+                      i18n="@@featureSecuritySettings-confirmDisableTotp"
+                    >
+                      Disable authenticator
+                    </button>
+                  </div>
+                </form>
+              } @else {
+                <button
+                  type="button"
+                  class="btn btn-outline-danger mt-3"
+                  (click)="onShowDisableTotp()"
+                  [disabled]="loading()"
+                  i18n="@@featureSecuritySettings-disableTotp"
+                >
+                  Disable authenticator
+                </button>
+              }
+            } @else if (totpSetup(); as setup) {
+              <div class="border rounded-3 p-3 mt-3">
+                <p class="small mb-2" i18n="@@featureSecuritySettings-totpSetupHint">
+                  Scan the QR code with your authenticator app, or enter the secret manually.
+                </p>
+                @if (qrDataUrl(); as qr) {
+                  <img
+                    [src]="qr"
+                    alt="Authenticator QR code"
+                    class="totp-qr mb-2 border rounded"
+                    width="200"
+                    height="200"
+                  />
+                }
+                <div class="mb-3">
+                  <label class="form-label" i18n="@@featureSecuritySettings-secretLabel">Secret</label>
+                  <code class="d-block user-select-all p-2 bg-body-tertiary rounded">{{ setup.secret }}</code>
+                </div>
+                <form [formGroup]="totpConfirmForm" (ngSubmit)="onConfirmTotp()">
+                  <label class="form-label" i18n="@@featureSecuritySettings-totpConfirmLabel">Confirm with code</label>
+                  <identity-auth-otp-input
+                    formControlName="code"
+                    [invalid]="(totpConfirmForm.get('code')?.invalid && totpConfirmForm.get('code')?.touched) ?? false"
+                    [disabled]="loading()"
+                  />
+                  <button
+                    type="submit"
+                    class="btn btn-primary mt-3"
+                    [disabled]="totpConfirmForm.invalid || loading()"
+                    i18n="@@featureSecuritySettings-confirmTotp"
+                  >
+                    Confirm authenticator
+                  </button>
+                </form>
+              </div>
+            } @else if (showSetupTotp()) {
+              <form [formGroup]="totpSetupForm" (ngSubmit)="onSetupTotp()" class="border rounded-3 p-3 mt-3">
+                <label class="form-label" i18n="@@featureSecuritySettings-currentPasswordLabel">Current password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  formControlName="currentPassword"
+                  autocomplete="current-password"
+                  [disabled]="loading()"
+                />
+                <div class="mt-3">
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    [disabled]="totpSetupForm.invalid || loading()"
+                    i18n="@@featureSecuritySettings-setupTotp"
+                  >
+                    Set up authenticator
+                  </button>
+                </div>
+              </form>
+            } @else {
+              <button
+                type="button"
+                class="btn btn-outline-primary mt-3"
+                (click)="onShowSetupTotp()"
+                [disabled]="loading()"
+                i18n="@@featureSecuritySettings-setupTotpPrompt"
+              >
+                Set up authenticator
+              </button>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

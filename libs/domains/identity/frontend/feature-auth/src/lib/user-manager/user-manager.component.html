@@ -84,11 +84,28 @@
                         ><ng-container i18n="@@featureUserManager-pending">Pending</ng-container></span
                       >
                     }
+                    @if (user.totpEnabled) {
+                      <span class="text-primary"
+                        ><i class="bi bi-shield-lock-fill me-1"></i
+                        ><ng-container i18n="@@featureUserManager-totpEnabled">Authenticator</ng-container></span
+                      >
+                    }
                   </div>
                   {{ formatDate(user.createdAt) }}
                 </div>
               </div>
               <div class="btn-group btn-group-sm">
+                @if (user.totpEnabled) {
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    (click)="onClearTotp(user)"
+                    i18n-title="@@featureUserManager-removeAuthenticatorTitle"
+                    title="Remove authenticator"
+                  >
+                    <i class="bi bi-shield-x"></i>
+                  </button>
+                }
                 @if (user.lockedAt) {
                   <button
                     type="button"
@@ -372,6 +389,60 @@
             <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
           }
           <span i18n="@@featureUserManager-delete">Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Remove Authenticator Confirmation Modal -->
+<div
+  class="modal fade"
+  id="clearTotpModal"
+  tabindex="-1"
+  aria-labelledby="clearTotpModalLabel"
+  aria-hidden="true"
+  #clearTotpModal
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="clearTotpModalLabel" i18n="@@featureUserManager-clearTotpModalTitle">
+          Remove Authenticator
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          (click)="cancelClearTotp()"
+          i18n-aria-label="@@featureUserManager-closeAriaLabel"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        @if (userToClearTotp) {
+          <p i18n="@@featureUserManager-clearTotpConfirm">
+            Remove the authenticator app for <strong>{{ userToClearTotp.email }}</strong
+            >? They can set up a new authenticator afterwards.
+          </p>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          (click)="cancelClearTotp()"
+          i18n="@@featureUserManager-cancel"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="confirmClearTotp()"
+          i18n="@@featureUserManager-removeAuthenticator"
+        >
+          Remove authenticator
         </button>
       </div>
     </div>

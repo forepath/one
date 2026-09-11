@@ -20,10 +20,21 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
-import { EMAIL_NOT_CONFIRMED_CODE, EMAIL_NOT_CONFIRMED_MESSAGE } from '../constants/auth-error.constants';
+import {
+  EMAIL_NOT_CONFIRMED_CODE,
+  EMAIL_NOT_CONFIRMED_MESSAGE,
+  LOGIN_2FA_INVALID_CODE,
+  LOGIN_2FA_INVALID_MESSAGE,
+  LOGIN_2FA_REQUIRED_CODE,
+  LOGIN_2FA_REQUIRED_MESSAGE,
+  isForceLogin2faEnabled,
+  type Login2faMethod,
+} from '../constants/auth-error.constants';
 import { DUMMY_PAT_BCRYPT_HASH, PAT_TOKEN_PREFIX } from '../constants/pat.constants';
+import { TwoFactorStatusDto } from '../dto/auth/two-factor-status.dto';
 import { RevokedUserTokensRepository } from '../repositories/revoked-user-tokens.repository';
 import { UsersRepository } from '../repositories/users.repository';
+import { buildTotpOtpauthUrl, createTotpSecret, verifyTotpCode } from '../utils/totp.utils';
 
 import { PersonalAccessTokenService } from './personal-access-token.service';
 import { UsersService } from './users.service';
@@ -36,6 +47,7 @@ export interface LogoutOptions {
 
 const JWT_EXPIRES_IN = '7d';
 const PASSWORD_RESET_TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
+const LOGIN_2FA_EMAIL_TOKEN_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 
 export interface LoginResponse {
   access_token: string;
@@ -76,7 +88,7 @@ export class AuthService {
     private readonly emailDispatcher: IIdentityEmailDispatcher | null,
   ) {}
 
-  async login(email: string, password: string): Promise<LoginResponse> {
+  async login(email: string, password: string, code?: string): Promise<LoginResponse> {
     // PATs must use POST /auth/token — never accept them on interactive login.
     if (password.startsWith(PAT_TOKEN_PREFIX)) {
       await this.usersService.validatePassword(password, DUMMY_PAT_BCRYPT_HASH);
@@ -110,11 +122,156 @@ export class AuthService {
       });
     }
 
+    await this.enforceLogin2fa(user, code);
+
     const accessToken = this.generateToken(user, { amr: 'pwd' });
 
     return {
       access_token: accessToken,
       user: { id: user.id, email: user.email, role: user.role },
+    };
+  }
+
+  async getTwoFactorStatus(userId: string): Promise<TwoFactorStatusDto> {
+    const user = await this.usersRepository.findByIdOrThrow(userId);
+    const totpEnabled = Boolean(user.totpEnabledAt && user.totpSecret);
+    const emailEnabled = Boolean(user.email2faEnabledAt);
+    const forceEnabled = isForceLogin2faEnabled();
+    let method: Login2faMethod | null = null;
+
+    if (totpEnabled) {
+      method = 'totp';
+    } else if (forceEnabled || emailEnabled) {
+      method = 'email';
+    }
+
+    return {
+      forceEnabled,
+      emailEnabled,
+      totpEnabled,
+      method,
+    };
+  }
+
+  async beginOrConfirmEmail2fa(userId: string, code?: string): Promise<{ message: string; pending?: boolean }> {
+    let user = await this.usersRepository.findByIdOrThrow(userId);
+
+    if (user.email2faEnabledAt) {
+      return { message: 'Email two-factor authentication is already enabled.' };
+    }
+
+    if (!code) {
+      await this.issueLogin2faEmailCode(user);
+
+      return {
+        message: 'A verification code was sent to your email. Submit it to enable email two-factor authentication.',
+        pending: true,
+      };
+    }
+
+    user = await this.usersRepository.findByIdOrThrow(userId);
+    await this.verifyLogin2faEmailCode(user, code);
+    await this.usersRepository.update(user.id, {
+      email2faEnabledAt: new Date(),
+      login2faEmailToken: null,
+      login2faEmailTokenExpiresAt: null,
+    });
+
+    return { message: 'Email two-factor authentication enabled.' };
+  }
+
+  async disableEmail2fa(userId: string, currentPassword: string): Promise<{ message: string }> {
+    const user = await this.usersRepository.findByIdOrThrow(userId);
+
+    if (isForceLogin2faEnabled()) {
+      throw new BadRequestException(
+        'Email two-factor authentication is required by our organization and cannot be disabled.',
+      );
+    }
+
+    await this.assertCurrentPassword(user, currentPassword);
+
+    await this.usersRepository.update(user.id, {
+      email2faEnabledAt: null,
+      login2faEmailToken: null,
+      login2faEmailTokenExpiresAt: null,
+    });
+
+    return { message: 'Email two-factor authentication disabled.' };
+  }
+
+  async setupTotp(userId: string, currentPassword: string): Promise<{ secret: string; otpauthUrl: string }> {
+    const user = await this.usersRepository.findByIdOrThrow(userId);
+
+    await this.assertCurrentPassword(user, currentPassword);
+
+    if (user.totpEnabledAt) {
+      throw new BadRequestException(
+        'Authenticator two-factor authentication is already enabled. Disable it before setting up a new authenticator.',
+      );
+    }
+
+    const secret = createTotpSecret();
+    const issuer = process.env.PRODUCT_NAME?.trim() || 'Forepath';
+
+    await this.usersRepository.update(user.id, {
+      totpSecret: secret,
+      totpEnabledAt: null,
+    });
+
+    return {
+      secret,
+      otpauthUrl: buildTotpOtpauthUrl(secret, user.email, issuer),
+    };
+  }
+
+  async confirmTotp(userId: string, code: string): Promise<{ message: string; access_token: string }> {
+    const user = await this.usersRepository.findByIdOrThrow(userId);
+
+    if (!user.totpSecret) {
+      throw new BadRequestException('Authenticator setup has not been started.');
+    }
+
+    if (user.totpEnabledAt) {
+      throw new BadRequestException('Authenticator two-factor authentication is already enabled.');
+    }
+
+    const valid = await verifyTotpCode(code, user.totpSecret);
+
+    if (!valid) {
+      throw new BadRequestException('Invalid authenticator code');
+    }
+
+    await this.usersRepository.update(user.id, { totpEnabledAt: new Date() });
+    await this.invalidateAllSessions(user.id);
+    const updatedUser = await this.usersRepository.findByIdOrThrow(userId);
+
+    return {
+      message: 'Authenticator two-factor authentication enabled.',
+      access_token: this.generateToken(updatedUser, { amr: 'pwd' }),
+    };
+  }
+
+  async disableTotp(userId: string, code: string): Promise<{ message: string; access_token: string }> {
+    const user = await this.usersRepository.findByIdOrThrow(userId);
+
+    if (!user.totpEnabledAt || !user.totpSecret) {
+      throw new BadRequestException('Authenticator two-factor authentication is not enabled.');
+    }
+
+    const valid = await verifyTotpCode(code, user.totpSecret);
+
+    if (!valid) {
+      throw new BadRequestException('Invalid authenticator code');
+    }
+
+    await this.clearTotpFields(user.id);
+    await this.invalidateAllSessions(user.id);
+    const updatedUser = await this.usersRepository.findByIdOrThrow(userId);
+
+    return {
+      message: 'Authenticator two-factor authentication disabled.',
+      access_token: this.generateToken(updatedUser, { amr: 'pwd' }),
     };
   }
 
@@ -297,6 +454,138 @@ export class AuthService {
 
   async invalidateAllSessions(userId: string): Promise<number> {
     return this.usersRepository.incrementTokenVersion(userId);
+  }
+
+  private async assertCurrentPassword(user: UserEntity, currentPassword: string): Promise<void> {
+    if (!user.passwordHash) {
+      throw new BadRequestException('This account uses external authentication. Password verification is unavailable.');
+    }
+
+    const valid = await this.usersService.validatePassword(currentPassword, user.passwordHash);
+
+    if (!valid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+  }
+
+  private async enforceLogin2fa(user: UserEntity, code?: string): Promise<void> {
+    const totpEnabled = Boolean(user.totpEnabledAt && user.totpSecret);
+    const forceEnabled = isForceLogin2faEnabled();
+    const emailEnabled = Boolean(user.email2faEnabledAt);
+    const emailRequired = forceEnabled || emailEnabled;
+
+    if (!totpEnabled && !emailRequired) {
+      return;
+    }
+
+    if (totpEnabled) {
+      if (!code) {
+        this.throwLogin2faRequired('totp');
+      }
+
+      const valid = await verifyTotpCode(code, user.totpSecret as string);
+
+      if (!valid) {
+        this.throwLogin2faInvalid('totp');
+      }
+
+      return;
+    }
+
+    if (!code) {
+      await this.issueLogin2faEmailCode(user);
+      this.throwLogin2faRequired('email');
+    }
+
+    await this.verifyLogin2faEmailCode(user, code);
+    await this.usersRepository.update(user.id, {
+      login2faEmailToken: null,
+      login2faEmailTokenExpiresAt: null,
+    });
+  }
+
+  private throwLogin2faRequired(method: Login2faMethod): never {
+    throw new UnauthorizedException({
+      message: LOGIN_2FA_REQUIRED_MESSAGE,
+      code: LOGIN_2FA_REQUIRED_CODE,
+      method,
+    });
+  }
+
+  private throwLogin2faInvalid(method: Login2faMethod, message: string = LOGIN_2FA_INVALID_MESSAGE): never {
+    throw new UnauthorizedException({
+      message,
+      code: LOGIN_2FA_INVALID_CODE,
+      method,
+    });
+  }
+
+  private async issueLogin2faEmailCode(user: UserEntity): Promise<void> {
+    if (!this.emailDispatcher) {
+      throw new ServiceUnavailableException(
+        'Two-factor email verification is temporarily unavailable. Please try again later.',
+      );
+    }
+
+    const { code, hash } = createConfirmationCode();
+    const codeHash = await hash;
+    const expiresAt = new Date(Date.now() + LOGIN_2FA_EMAIL_TOKEN_EXPIRY_MS);
+
+    await this.usersRepository.update(user.id, {
+      login2faEmailToken: codeHash,
+      login2faEmailTokenExpiresAt: expiresAt,
+    });
+
+    // Keep in-memory copy for subsequent verify in the same request path when needed.
+    user.login2faEmailToken = codeHash;
+    user.login2faEmailTokenExpiresAt = expiresAt;
+
+    try {
+      await this.emailDispatcher.publishEmail({
+        eventType: 'user.login_2fa_requested',
+        to: user.email,
+        templateKey: 'login-2fa',
+        templateContext: { code },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'email enqueue failed';
+
+      this.logger.error(`Failed to enqueue login 2FA email: ${message}`);
+
+      await this.usersRepository.update(user.id, {
+        login2faEmailToken: null,
+        login2faEmailTokenExpiresAt: null,
+      });
+      user.login2faEmailToken = null;
+      user.login2faEmailTokenExpiresAt = null;
+
+      throw new ServiceUnavailableException(
+        'Two-factor email verification is temporarily unavailable. Please try again later.',
+      );
+    }
+  }
+
+  private async verifyLogin2faEmailCode(user: UserEntity, code: string): Promise<void> {
+    if (!user.login2faEmailToken) {
+      this.throwLogin2faInvalid('email');
+    }
+
+    if (!user.login2faEmailTokenExpiresAt || user.login2faEmailTokenExpiresAt < new Date()) {
+      this.throwLogin2faInvalid('email', 'Verification code has expired. Sign in again to receive a new code.');
+    }
+
+    const valid = await validateConfirmationCode(code.toUpperCase(), user.login2faEmailToken);
+
+    if (!valid) {
+      this.throwLogin2faInvalid('email');
+    }
+  }
+
+  private async clearTotpFields(userId: string): Promise<void> {
+    await this.usersRepository.update(userId, {
+      totpSecret: null,
+      totpEnabledAt: null,
+    });
   }
 
   private generateToken(user: UserEntity, options: GenerateTokenOptions): string {

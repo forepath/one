@@ -12,7 +12,8 @@
   },
   "authentication": {
     "type": "users",
-    "disableSignup": false
+    "disableSignup": false,
+    "disableForceLogin2fa": false
   },
   "cookieConsent": {
     "domain": ".decabill.com",

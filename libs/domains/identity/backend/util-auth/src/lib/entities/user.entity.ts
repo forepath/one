@@ -1,3 +1,4 @@
+import { createAes256GcmTransformer } from '@shared/backend/util-crypto';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 /**
@@ -54,6 +55,35 @@ export class UserEntity {
 
   @Column({ type: 'varchar', length: 255, name: 'keycloak_sub', nullable: true })
   keycloakSub?: string;
+
+  /**
+   * Base32 TOTP secret while pending enrollment or enabled.
+   * Stored encrypted at rest (AES-256-GCM); decrypted transparently via transformer.
+   * Legacy plaintext values (pre-encryption) are still readable by the transformer.
+   */
+  @Column({
+    type: 'varchar',
+    length: 2048,
+    name: 'totp_secret',
+    nullable: true,
+    transformer: createAes256GcmTransformer(),
+  })
+  totpSecret?: string | null;
+
+  /** Set when authenticator 2FA is confirmed once; null means not enrolled. */
+  @Column({ type: 'timestamp', name: 'totp_enabled_at', nullable: true })
+  totpEnabledAt?: Date | null;
+
+  /** Set when the user opts into email 2FA (force path does not require this). */
+  @Column({ type: 'timestamp', name: 'email_2fa_enabled_at', nullable: true })
+  email2faEnabledAt?: Date | null;
+
+  /** Bcrypt hash of the current login email OTP. */
+  @Column({ type: 'varchar', length: 255, name: 'login_2fa_email_token', nullable: true })
+  login2faEmailToken?: string | null;
+
+  @Column({ type: 'timestamp', name: 'login_2fa_email_token_expires_at', nullable: true })
+  login2faEmailTokenExpiresAt?: Date | null;
 
   /**
    * Day of month (1-28) when the user is billed for open positions. Null means use registration day (createdAt), capped at 28.

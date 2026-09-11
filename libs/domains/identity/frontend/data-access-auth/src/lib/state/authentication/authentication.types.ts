@@ -24,12 +24,28 @@ export interface RegisterResponse {
   emailConfirmed: boolean;
 }
 
+export type Login2faMethod = 'email' | 'totp';
+
+export interface TwoFactorStatus {
+  forceEnabled: boolean;
+  emailEnabled: boolean;
+  totpEnabled: boolean;
+  method: Login2faMethod | null;
+}
+
+export interface TotpSetup {
+  secret: string;
+  otpauthUrl: string;
+}
+
 export interface UserResponseDto {
   id: string;
   email: string;
   role: UserRole;
   emailConfirmedAt?: string | null;
   lockedAt?: string | null;
+  totpEnabled?: boolean;
+  email2faEnabled?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -73,4 +89,10 @@ export interface AuthenticationState {
   deletingUser: boolean;
   lockingUser: boolean;
   unlockingUser: boolean;
+  // Login 2FA self-service
+  twoFactorStatus: TwoFactorStatus | null;
+  twoFactorLoading: boolean;
+  twoFactorError: string | null;
+  twoFactorSuccessMessage: string | null;
+  totpSetup: TotpSetup | null;
 }

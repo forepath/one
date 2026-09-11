@@ -43,6 +43,20 @@ describe('AuthService', () => {
     req.flush(response);
   });
 
+  it('login includes optional code when provided', (done) => {
+    const response = { access_token: 'token', user: { id: '1', email: 'a@b.com', role: 'user' } };
+
+    service.login('a@b.com', 'secret', 'ABC123').subscribe((result) => {
+      expect(result).toEqual(response);
+      done();
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/auth/login`);
+
+    expect(req.request.body).toEqual({ email: 'a@b.com', password: 'secret', code: 'ABC123' });
+    req.flush(response);
+  });
+
   it('register posts credentials to /auth/register', (done) => {
     service.register('a@b.com', 'secret').subscribe(() => done());
 

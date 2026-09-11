@@ -1,19 +1,25 @@
-<div class="otp-input d-flex gap-1" (paste)="onPaste($event)" (focusout)="onBlur($event)">
-  @for (i of digits; track i) {
-    <input
-      #digitInput
-      type="text"
-      inputmode="text"
-      pattern="[A-Z0-9]*"
-      maxlength="1"
-      autocomplete="one-time-code"
-      class="form-control text-center otp-digit flex-1 w-100"
-      [class.is-invalid]="invalid()"
-      [attr.aria-label]="getAriaLabel(i)"
-      [value]="getDigit(i)"
-      (input)="onInput($event, i)"
-      (keydown)="onKeydown($event, i)"
-      [readonly]="disabled()"
-    />
+<div class="otp-input d-flex align-items-center gap-2" (paste)="onPaste($event)" (focusout)="onBlur($event)">
+  <div class="otp-input__digits d-flex gap-1" [class.otp-input__digits--invalid]="invalid()">
+    @for (i of digits; track i) {
+      <input
+        #digitInput
+        type="text"
+        inputmode="text"
+        pattern="[A-Z0-9]*"
+        maxlength="1"
+        autocomplete="one-time-code"
+        class="form-control text-center otp-digit"
+        [attr.aria-invalid]="invalid()"
+        [attr.aria-label]="getAriaLabel(i)"
+        [value]="getDigit(i)"
+        (input)="onInput($event, i)"
+        (keydown)="onKeydown($event, i)"
+        [readonly]="disabled()"
+      />
+    }
+  </div>
+  @if (invalid()) {
+    <i class="bi bi-exclamation-circle text-danger otp-input__error-icon" aria-hidden="true"></i>
+    <span class="visually-hidden" i18n="@@featureOtpInput-invalid">Invalid verification code</span>
   }
 </div>

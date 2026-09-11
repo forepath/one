@@ -73,6 +73,12 @@ export class UsersController {
     return this.usersService.unlockUser(id, req?.user?.id);
   }
 
+  @Delete(':id/2fa/totp')
+  @HttpCode(HttpStatus.OK)
+  async clearTotp(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return this.usersService.clearTotp(id);
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(

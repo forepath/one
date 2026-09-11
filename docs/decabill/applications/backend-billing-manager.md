@@ -106,11 +106,11 @@ Volumes include `billing_file_data` mounted at `/data` (with `invoices/` and `da
 
 Configure one method via `AUTHENTICATION_METHOD`:
 
-| Method     | Key variables                  | Console pairing                                |
-| ---------- | ------------------------------ | ---------------------------------------------- |
-| `api-key`  | `STATIC_API_KEY`               | Automation; no dashboard WebSocket user stream |
-| `keycloak` | `KEYCLOAK_*`                   | OAuth login in console                         |
-| `users`    | `JWT_SECRET`, `DISABLE_SIGNUP` | Built-in register and login                    |
+| Method     | Key variables                                                             | Console pairing                                                                       |
+| ---------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `api-key`  | `STATIC_API_KEY`                                                          | Automation; no dashboard WebSocket user stream                                        |
+| `keycloak` | `KEYCLOAK_*`                                                              | OAuth login in console                                                                |
+| `users`    | `JWT_SECRET`, `DISABLE_SIGNUP`, `DISABLE_FORCE_LOGIN_2FA`, `PRODUCT_NAME` | Built-in register and login; `PRODUCT_NAME` sets the TOTP issuer (default `Forepath`) |
 
 Optional `STATIC_API_KEY_TENANT_ID` binds API key auth to one tenant.
 

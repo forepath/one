@@ -32,6 +32,25 @@
           {{ customerNumber }}
         </span>
       }
+      @if (isUsersAuth && (isAuthenticated$ | async)) {
+        <a
+          routerLink="/settings/security"
+          routerLinkActive="active"
+          class="btn btn-link text-white text-decoration-none p-2 position-relative"
+          i18n-title="@@featureContainer-securityTitle"
+          title="Security"
+          i18n-aria-label="@@featureContainer-security"
+          aria-label="Security"
+        >
+          <i class="bi bi-shield-lock" aria-hidden="true"></i>
+          @if (showSecurityAuthenticatorBadge$ | async) {
+            <span class="notification-badge notification-badge--security-warning" aria-hidden="true"></span>
+            <span class="visually-hidden" i18n="@@featureContainer-securityAuthenticatorSuggested"
+              >Authenticator app is not enabled</span
+            >
+          }
+        </a>
+      }
       <!-- Language Switcher -->
       <div class="dropdown me-1">
         <button
@@ -97,6 +116,25 @@
       >
         {{ customerNumber }}
       </span>
+    }
+    @if (isUsersAuth && (isAuthenticated$ | async)) {
+      <a
+        routerLink="/settings/security"
+        routerLinkActive="active"
+        class="btn btn-link text-white text-decoration-none p-2 position-relative"
+        i18n-title="@@featureContainer-securityTitle"
+        title="Security"
+        i18n-aria-label="@@featureContainer-security"
+        aria-label="Security"
+      >
+        <i class="bi bi-shield-lock" aria-hidden="true"></i>
+        @if (showSecurityAuthenticatorBadge$ | async) {
+          <span class="notification-badge notification-badge--security-warning" aria-hidden="true"></span>
+          <span class="visually-hidden" i18n="@@featureContainer-securityAuthenticatorSuggested"
+            >Authenticator app is not enabled</span
+          >
+        }
+      </a>
     }
     <div class="dropdown">
       <button

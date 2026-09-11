@@ -1,6 +1,7 @@
 // Components
 export { IdentityConfirmEmailComponent } from './lib/confirm-email/confirm-email.component';
 export { IdentityLoginComponent } from './lib/login/login.component';
+export { IdentityLogin2faComponent } from './lib/login-2fa/login-2fa.component';
 export { IdentityOtpInputComponent } from './lib/otp-input/otp-input.component';
 export { IdentityRegisterComponent } from './lib/register/register.component';
 export { IdentityRequestPasswordResetConfirmationComponent } from './lib/request-password-reset-confirmation/request-password-reset-confirmation.component';
@@ -8,6 +9,7 @@ export { IdentityRequestPasswordResetComponent } from './lib/request-password-re
 export { IdentityResetPasswordComponent } from './lib/reset-password/reset-password.component';
 export { IdentityLogoutConfirmModalComponent } from './lib/logout-confirm/logout-confirm-modal.component';
 export type { LogoutConfirmResult } from './lib/logout-confirm/logout-confirm-modal.component';
+export { IdentitySecuritySettingsComponent } from './lib/settings/security/security-settings.component';
 export { IdentityTokenManagerComponent } from './lib/token-manager/token-manager.component';
 export { IdentityUserManagerComponent } from './lib/user-manager/user-manager.component';
 

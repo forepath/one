@@ -18,6 +18,7 @@ export const environment: Environment = {
   authentication: {
     type: 'users',
     disableSignup: false,
+    disableForceLogin2fa: false,
   },
   authMarketing: decabillAuthMarketing,
   chatModelOptions: {

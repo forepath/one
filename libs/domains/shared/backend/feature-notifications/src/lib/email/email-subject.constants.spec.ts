@@ -5,5 +5,6 @@ describe('IDENTITY_EMAIL_SUBJECTS', () => {
   it('resolves confirmation and reset subjects', () => {
     expect(resolveEmailSubject(IDENTITY_EMAIL_SUBJECTS, 'email-confirmation', {})).toBe('Confirm your email');
     expect(resolveEmailSubject(IDENTITY_EMAIL_SUBJECTS, 'password-reset', {})).toBe('Reset your password');
+    expect(resolveEmailSubject(IDENTITY_EMAIL_SUBJECTS, 'login-2fa', {})).toBe('Your login verification code');
   });
 });

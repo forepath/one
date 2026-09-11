@@ -87,7 +87,8 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
               url.includes('/tickets') ||
               url.includes('/imports') ||
               url.includes('/knowledge') ||
-              url.includes('/settings/tokens')) &&
+              url.includes('/settings/tokens') ||
+              url.includes('/settings/security')) &&
             !url.includes('/editor') &&
             !url.includes('/config') &&
             !url.includes('/deployments'),
@@ -104,7 +105,8 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
           this.router.url.includes('/tickets') ||
           this.router.url.includes('/imports') ||
           this.router.url.includes('/knowledge') ||
-          this.router.url.includes('/settings/tokens')) &&
+          this.router.url.includes('/settings/tokens') ||
+          this.router.url.includes('/settings/security')) &&
         !this.router.url.includes('/editor') &&
         !this.router.url.includes('/config') &&
         !this.router.url.includes('/deployments'),
@@ -116,6 +118,13 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
    */
   readonly isAuthenticated$ = this.authenticationFacade.isAuthenticated$;
   readonly spacesAttentionBadge$ = this.notificationsFacade.spacesAttentionBadge$;
+
+  /**
+   * Show a header badge when authenticator (TOTP) is not enrolled (users auth only).
+   */
+  readonly showSecurityAuthenticatorBadge$ = this.authenticationFacade.twoFactorStatus$.pipe(
+    map((status) => status != null && !status.totpEnabled),
+  );
   readonly updatesAttentionBadge$ = this.adminUpdatesFacade.hasAttention$;
   readonly updatesAttentionBadge = toSignal(this.updatesAttentionBadge$, { initialValue: false });
 
@@ -217,6 +226,10 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
       .subscribe((isAuthenticated) => {
         if (isAuthenticated) {
           this.notificationsFacade.connectSocket();
+
+          if (this.isUsersAuth) {
+            this.authenticationFacade.loadTwoFactorStatus();
+          }
         } else {
           this.notificationsFacade.disconnectSocket();
         }

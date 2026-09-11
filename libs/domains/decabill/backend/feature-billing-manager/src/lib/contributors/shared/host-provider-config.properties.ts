@@ -19,6 +19,10 @@ export const HOST_PROVIDER_CONFIG_PROPERTIES: Record<string, Record<string, unkn
     description: 'Static API key (required when authenticationMethod is api-key)',
   },
   disableSignup: { type: 'boolean', description: 'Whether to disable user signup' },
+  disableForceLogin2fa: {
+    type: 'boolean',
+    description: 'When true, do not force login 2FA; users may still opt in',
+  },
   smtp: {
     type: 'object',
     description: 'SMTP configuration for email',

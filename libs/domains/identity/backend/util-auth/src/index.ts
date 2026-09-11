@@ -38,3 +38,5 @@ export * from './lib/migrations/1770550000000_AddTenantIdToUsers';
 export * from './lib/migrations/1775000000000_AddUserTokenVersion';
 export * from './lib/migrations/1775000000001_CreateRevokedUserTokensTable';
 export * from './lib/migrations/1776100000000_CreateUserPersonalAccessTokensTable';
+export * from './lib/migrations/1778000000000_AddUserLogin2faColumns';
+export * from './lib/migrations/1778000000001_EncryptUserTotpSecretColumn';

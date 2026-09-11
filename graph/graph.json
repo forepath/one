@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-05T11:26:27.519Z",
+  "generatedAt": "2026-09-10T20:40:49.446Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -988,6 +988,7 @@
         "name": "shared-backend-util-crypto",
         "root": "libs/domains/shared/backend/util-crypto",
         "tags": [
+          "npm:private",
           "domain:shared",
           "scope:backend",
           "type:util"
@@ -995,6 +996,7 @@
         "type": "lib",
         "targets": [
           "lint",
+          "build",
           "test"
         ],
         "domain": "shared",
@@ -2603,6 +2605,24 @@
       }
     },
     {
+      "id": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-content-reports.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-content-reports.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "forepath-backend-feature-communication-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-vulnerability-reports.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-vulnerability-reports.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "forepath-backend-feature-communication-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/contact-request-response.dto.ts",
       "type": "dto",
       "attrs": {
@@ -2612,10 +2632,46 @@
       }
     },
     {
+      "id": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/content-report-response.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/content-report-response.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "forepath-backend-feature-communication-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/create-contact-request.dto.ts",
       "type": "dto",
       "attrs": {
         "path": "libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/create-contact-request.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "forepath-backend-feature-communication-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/create-content-report.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/create-content-report.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "forepath-backend-feature-communication-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/create-vulnerability-report.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/create-vulnerability-report.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "forepath-backend-feature-communication-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/vulnerability-report-response.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/vulnerability-report-response.dto.ts",
         "languageOrKind": "ts",
         "projectName": "forepath-backend-feature-communication-manager"
       }
@@ -2643,6 +2699,24 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/forepath/backend/feature-communication-manager/src/lib/services/contact-request.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "forepath-backend-feature-communication-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/content-report.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/forepath/backend/feature-communication-manager/src/lib/services/content-report.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "forepath-backend-feature-communication-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/vulnerability-report.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/forepath/backend/feature-communication-manager/src/lib/services/vulnerability-report.service.ts",
         "languageOrKind": "ts",
         "projectName": "forepath-backend-feature-communication-manager"
       }
@@ -5691,6 +5765,24 @@
       }
     },
     {
+      "id": "file:libs/domains/shared/frontend/data-access-communication/src/lib/services/content-report.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-communication/src/lib/services/content-report.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-frontend-data-access-communication"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/data-access-communication/src/lib/services/vulnerability-report.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-communication/src/lib/services/vulnerability-report.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "shared-frontend-data-access-communication"
+      }
+    },
+    {
       "id": "file:libs/domains/shared/frontend/data-access-communication/src/lib/state/contact-request",
       "type": "state",
       "attrs": {
@@ -5704,6 +5796,40 @@
           "contact-request.facade.ts",
           "contact-request.reducer.ts",
           "contact-request.selectors.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/data-access-communication/src/lib/state/content-report",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-communication/src/lib/state/content-report",
+        "languageOrKind": "ts",
+        "projectName": "shared-frontend-data-access-communication",
+        "sliceName": "content-report",
+        "memberFiles": [
+          "content-report.actions.ts",
+          "content-report.effects.ts",
+          "content-report.facade.ts",
+          "content-report.reducer.ts",
+          "content-report.selectors.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/data-access-communication/src/lib/state/vulnerability-report",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/data-access-communication/src/lib/state/vulnerability-report",
+        "languageOrKind": "ts",
+        "projectName": "shared-frontend-data-access-communication",
+        "sliceName": "vulnerability-report",
+        "memberFiles": [
+          "vulnerability-report.actions.ts",
+          "vulnerability-report.effects.ts",
+          "vulnerability-report.facade.ts",
+          "vulnerability-report.reducer.ts",
+          "vulnerability-report.selectors.ts"
         ]
       }
     },
@@ -11067,6 +11193,24 @@
       }
     },
     {
+      "id": "file:libs/domains/identity/backend/feature-auth/docs/login-2fa.mmd",
+      "type": "diagram",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/docs/login-2fa.mmd",
+        "languageOrKind": "mmd",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/docs/sequence-login-2fa.mmd",
+      "type": "diagram",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/docs/sequence-login-2fa.mmd",
+        "languageOrKind": "mmd",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
       "id": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
       "type": "controller",
       "attrs": {
@@ -11130,10 +11274,46 @@
       }
     },
     {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/confirm-totp.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/dto/auth/confirm-totp.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
       "id": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/create-user.dto.ts",
       "type": "dto",
       "attrs": {
         "path": "libs/domains/identity/backend/feature-auth/src/lib/dto/auth/create-user.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/current-password.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/dto/auth/current-password.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/disable-totp.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/dto/auth/disable-totp.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/enable-email-2fa.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/dto/auth/enable-email-2fa.dto.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-feature-auth"
       }
@@ -11188,6 +11368,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/identity/backend/feature-auth/src/lib/dto/auth/reset-password.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "identity-backend-feature-auth"
+      }
+    },
+    {
+      "id": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/two-factor-status.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/identity/backend/feature-auth/src/lib/dto/auth/two-factor-status.dto.ts",
         "languageOrKind": "ts",
         "projectName": "identity-backend-feature-auth"
       }
@@ -12199,6 +12388,20 @@
         "memberFiles": [
           "email-confirmation.template.html",
           "email-confirmation.template.txt"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/backend/feature-notifications/src/lib/templates/login-2fa",
+      "type": "email",
+      "attrs": {
+        "path": "libs/domains/shared/backend/feature-notifications/src/lib/templates/login-2fa",
+        "languageOrKind": "template",
+        "projectName": "shared-backend-feature-notifications",
+        "templateName": "login-2fa",
+        "memberFiles": [
+          "login-2fa.template.html",
+          "login-2fa.template.txt"
         ]
       }
     },
@@ -13383,6 +13586,28 @@
       }
     },
     {
+      "id": "api:HTTP:POST:/public/vulnerability-reports",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/public/vulnerability-reports",
+        "operationId": "submitPublicVulnerabilityReport",
+        "summary": "Submit a public vulnerability report",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/public/content-reports",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/public/content-reports",
+        "operationId": "submitPublicContentReport",
+        "summary": "Submit a public DSA or TCO content report",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/otel/metrics",
       "type": "endpoint",
       "attrs": {
@@ -13720,6 +13945,72 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/auth/2fa",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/auth/2fa",
+        "operationId": "getTwoFactorStatus",
+        "summary": "Get current user two-factor status (users auth only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/auth/2fa/email/enable",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/auth/2fa/email/enable",
+        "operationId": "enableEmail2fa",
+        "summary": "Enable email two-factor authentication (users auth only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/auth/2fa/email",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/auth/2fa/email",
+        "operationId": "disableEmail2fa",
+        "summary": "Disable email two-factor authentication (users auth only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/auth/2fa/totp/setup",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/auth/2fa/totp/setup",
+        "operationId": "setupTotp",
+        "summary": "Start authenticator (TOTP) enrollment (users auth only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/auth/2fa/totp/confirm",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/auth/2fa/totp/confirm",
+        "operationId": "confirmTotp",
+        "summary": "Confirm authenticator enrollment with a TOTP code (users auth only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/auth/2fa/totp",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/auth/2fa/totp",
+        "operationId": "disableTotp",
+        "summary": "Disable authenticator (requires current TOTP code)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:POST:/auth/token",
       "type": "endpoint",
       "attrs": {
@@ -13947,6 +14238,17 @@
         "pathOrChannel": "/users/{id}/unlock",
         "operationId": "unlockUser",
         "summary": "Unlock user account (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/users/{id}/2fa/totp",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/users/{id}/2fa/totp",
+        "operationId": "adminClearUserTotp",
+        "summary": "Admin remove authenticator 2FA from a user",
         "specKind": "openapi"
       }
     },
@@ -24549,6 +24851,16 @@
       }
     },
     {
+      "id": "concept:agenstra-coordinated-vulnerability-disclosure-policy",
+      "type": "concept",
+      "attrs": {
+        "title": "Coordinated vulnerability disclosure policy",
+        "docPath": "docs/agenstra/security/vulnerability-reporting-and-artifacts.md",
+        "sectionAnchor": "coordinated-vulnerability-disclosure-policy",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-supported-versions-and-security-updates",
       "type": "concept",
       "attrs": {
@@ -30329,6 +30641,16 @@
       }
     },
     {
+      "id": "concept:decabill-coordinated-vulnerability-disclosure-policy",
+      "type": "concept",
+      "attrs": {
+        "title": "Coordinated vulnerability disclosure policy",
+        "docPath": "docs/decabill/security/vulnerability-reporting-and-artifacts.md",
+        "sectionAnchor": "coordinated-vulnerability-disclosure-policy",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-supported-versions-and-security-updates",
       "type": "concept",
       "attrs": {
@@ -31202,6 +31524,11 @@
     },
     {
       "from": "project:forepath-frontend-feature-landingpage",
+      "to": "project:shared-frontend-data-access-communication",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:forepath-frontend-feature-landingpage",
       "to": "project:shared-frontend-feature-landingpage",
       "type": "depends_on"
     },
@@ -31363,6 +31690,11 @@
     {
       "from": "project:identity-backend-util-auth",
       "to": "project:shared-backend-util-otel",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:identity-backend-util-auth",
+      "to": "project:shared-backend-util-crypto",
       "type": "depends_on"
     },
     {
@@ -33922,12 +34254,42 @@
     },
     {
       "from": "project:forepath-backend-feature-communication-manager",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-content-reports.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:forepath-backend-feature-communication-manager",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-vulnerability-reports.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:forepath-backend-feature-communication-manager",
       "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/contact-request-response.dto.ts",
       "type": "contains"
     },
     {
       "from": "project:forepath-backend-feature-communication-manager",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/content-report-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:forepath-backend-feature-communication-manager",
       "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/create-contact-request.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:forepath-backend-feature-communication-manager",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/create-content-report.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:forepath-backend-feature-communication-manager",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/create-vulnerability-report.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:forepath-backend-feature-communication-manager",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/dto/vulnerability-report-response.dto.ts",
       "type": "contains"
     },
     {
@@ -33943,6 +34305,16 @@
     {
       "from": "project:forepath-backend-feature-communication-manager",
       "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/contact-request.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:forepath-backend-feature-communication-manager",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/content-report.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:forepath-backend-feature-communication-manager",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/vulnerability-report.service.ts",
       "type": "contains"
     },
     {
@@ -35387,7 +35759,27 @@
     },
     {
       "from": "project:shared-frontend-data-access-communication",
+      "to": "file:libs/domains/shared/frontend/data-access-communication/src/lib/services/content-report.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-data-access-communication",
+      "to": "file:libs/domains/shared/frontend/data-access-communication/src/lib/services/vulnerability-report.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-data-access-communication",
       "to": "file:libs/domains/shared/frontend/data-access-communication/src/lib/state/contact-request",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-data-access-communication",
+      "to": "file:libs/domains/shared/frontend/data-access-communication/src/lib/state/content-report",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-data-access-communication",
+      "to": "file:libs/domains/shared/frontend/data-access-communication/src/lib/state/vulnerability-report",
       "type": "contains"
     },
     {
@@ -38342,6 +38734,16 @@
     },
     {
       "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/docs/login-2fa.mmd",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/docs/sequence-login-2fa.mmd",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
       "type": "contains"
     },
@@ -38377,7 +38779,27 @@
     },
     {
       "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/confirm-totp.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/create-user.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/current-password.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/disable-totp.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/enable-email-2fa.dto.ts",
       "type": "contains"
     },
     {
@@ -38408,6 +38830,11 @@
     {
       "from": "project:identity-backend-feature-auth",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/reset-password.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/dto/auth/two-factor-status.dto.ts",
       "type": "contains"
     },
     {
@@ -38912,6 +39339,11 @@
     },
     {
       "from": "project:shared-backend-feature-notifications",
+      "to": "file:libs/domains/shared/backend/feature-notifications/src/lib/templates/login-2fa",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-feature-notifications",
       "to": "file:libs/domains/shared/backend/feature-notifications/src/lib/templates/password-reset",
       "type": "contains"
     },
@@ -38923,6 +39355,16 @@
     {
       "from": "file:libs/domains/forepath/backend/feature-communication-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/public/contact-requests",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/forepath/backend/feature-communication-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/public/vulnerability-reports",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/forepath/backend/feature-communication-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/public/content-reports",
       "type": "contains"
     },
     {
@@ -39112,6 +39554,36 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/auth/2fa",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/2fa/email/enable",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/auth/2fa/email",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/2fa/totp/setup",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/2fa/totp/confirm",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/auth/2fa/totp",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/auth/token",
       "type": "contains"
     },
@@ -39213,6 +39685,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/users/{id}/unlock",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/users/{id}/2fa/totp",
       "type": "contains"
     },
     {
@@ -40482,6 +40959,36 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/auth/2fa",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/2fa/email/enable",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/auth/2fa/email",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/2fa/totp/setup",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/auth/2fa/totp/confirm",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/auth/2fa/totp",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/auth/token",
       "type": "contains"
     },
@@ -40538,6 +41045,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:DELETE:/auth/tokens/{id}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/users/{id}/2fa/totp",
       "type": "contains"
     },
     {
@@ -45442,6 +45954,11 @@
     },
     {
       "from": "file:docs/agenstra/security/vulnerability-reporting-and-artifacts.md",
+      "to": "concept:agenstra-coordinated-vulnerability-disclosure-policy",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/security/vulnerability-reporting-and-artifacts.md",
       "to": "concept:agenstra-supported-versions-and-security-updates",
       "type": "contains"
     },
@@ -49337,6 +49854,11 @@
     },
     {
       "from": "file:docs/decabill/security/vulnerability-reporting-and-artifacts.md",
+      "to": "concept:decabill-coordinated-vulnerability-disclosure-policy",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/security/vulnerability-reporting-and-artifacts.md",
       "to": "concept:decabill-supported-versions-and-security-updates",
       "type": "contains"
     },
@@ -49608,6 +50130,26 @@
     {
       "from": "project:forepath-backend-feature-communication-manager",
       "to": "api:HTTP:POST:/public/contact-requests",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-content-reports.controller.ts",
+      "to": "api:HTTP:POST:/public/content-reports",
+      "type": "implements"
+    },
+    {
+      "from": "project:forepath-backend-feature-communication-manager",
+      "to": "api:HTTP:POST:/public/content-reports",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-vulnerability-reports.controller.ts",
+      "to": "api:HTTP:POST:/public/vulnerability-reports",
+      "type": "implements"
+    },
+    {
+      "from": "project:forepath-backend-feature-communication-manager",
+      "to": "api:HTTP:POST:/public/vulnerability-reports",
       "type": "implements"
     },
     {
@@ -55317,6 +55859,66 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:GET:/auth/2fa",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:GET:/auth/2fa",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/2fa/email/enable",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:POST:/auth/2fa/email/enable",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/2fa/email",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:DELETE:/auth/2fa/email",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/2fa/totp/setup",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:POST:/auth/2fa/totp/setup",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:POST:/auth/2fa/totp/confirm",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:POST:/auth/2fa/totp/confirm",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/2fa/totp",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:DELETE:/auth/2fa/totp",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/auth.controller.ts",
       "to": "api:HTTP:POST:/auth/token",
       "type": "implements"
     },
@@ -55442,6 +56044,36 @@
     },
     {
       "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:GET:/auth/2fa",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/2fa/email/enable",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/2fa/email",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/2fa/totp/setup",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:POST:/auth/2fa/totp/confirm",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
+      "to": "api:HTTP:DELETE:/auth/2fa/totp",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/pat-token-exchange.controller.ts",
       "to": "api:HTTP:POST:/auth/token",
       "type": "implements"
     },
@@ -55588,6 +56220,16 @@
     {
       "from": "project:identity-backend-feature-auth",
       "to": "api:HTTP:POST:/users/{id}/unlock",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/identity/backend/feature-auth/src/lib/controllers/users.controller.ts",
+      "to": "api:HTTP:DELETE:/users/{id}/2fa/totp",
+      "type": "implements"
+    },
+    {
+      "from": "project:identity-backend-feature-auth",
+      "to": "api:HTTP:DELETE:/users/{id}/2fa/totp",
       "type": "implements"
     },
     {
@@ -56406,7 +57048,27 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-content-reports.controller.ts",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/content-report.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-vulnerability-reports.controller.ts",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/vulnerability-report.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/contact-request.service.ts",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/chatwoot-api.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/content-report.service.ts",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/chatwoot-api.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/vulnerability-report.service.ts",
       "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/chatwoot-api.service.ts",
       "type": "injects"
     },
@@ -61032,12 +61694,32 @@
     },
     {
       "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/communication.module.ts",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-vulnerability-reports.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/communication.module.ts",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-content-reports.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/communication.module.ts",
       "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/chatwoot-api.service.ts",
       "type": "provides"
     },
     {
       "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/communication.module.ts",
       "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/contact-request.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/communication.module.ts",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/vulnerability-report.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/communication.module.ts",
+      "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/content-report.service.ts",
       "type": "provides"
     },
     {
@@ -64507,6 +65189,41 @@
     },
     {
       "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
+      "to": "api:HTTP:GET:/auth/2fa",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
+      "to": "api:HTTP:POST:/auth/2fa/email/enable",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
+      "to": "api:HTTP:DELETE:/auth/2fa/email",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
+      "to": "api:HTTP:POST:/auth/2fa/totp/setup",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
+      "to": "api:HTTP:POST:/auth/2fa/totp/confirm",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
+      "to": "api:HTTP:DELETE:/auth/2fa/totp",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
+      "to": "api:HTTP:DELETE:/users/{id}/2fa/totp",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
       "to": "api:HTTP:POST:/auth/register",
       "type": "calls"
     },
@@ -64773,6 +65490,16 @@
     {
       "from": "file:libs/domains/shared/frontend/data-access-communication/src/lib/state/contact-request",
       "to": "file:libs/domains/shared/frontend/data-access-communication/src/lib/services/contact-request.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/shared/frontend/data-access-communication/src/lib/state/content-report",
+      "to": "file:libs/domains/shared/frontend/data-access-communication/src/lib/services/content-report.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/shared/frontend/data-access-communication/src/lib/state/vulnerability-report",
+      "to": "file:libs/domains/shared/frontend/data-access-communication/src/lib/services/vulnerability-report.service.ts",
       "type": "contains"
     },
     {
@@ -66701,6 +67428,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-continuous-scanning-ci",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-continuous-scanning-ci",
+      "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-desktop-release-integrity",
       "to": "project:agenstra-native-agent-console",
       "type": "documents"
@@ -67298,6 +68035,11 @@
     {
       "from": "concept:decabill-frontend",
       "to": "api:HTTP:GET:/public/withdrawal/addressee",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-backend-billing-manager",
+      "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
     },
     {
@@ -71396,6 +72138,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-continuous-scanning-ci",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-continuous-scanning-ci",
+      "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-connection-issues",
       "to": "project:decabill-backend-billing-manager",
       "type": "documents"
@@ -75171,6 +75923,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-coordinated-vulnerability-disclosure-policy",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-supported-versions-and-security-updates",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -78057,6 +78814,11 @@
     },
     {
       "from": "concept:decabill-vulnerability-reporting-and-artifacts",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-coordinated-vulnerability-disclosure-policy",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

@@ -48,6 +48,7 @@ import {
   login$,
   loginEmailNotConfirmedRedirect$,
   loginSuccessRedirect$,
+  loginTwoFactorRequiredRedirect$,
   logout$,
   logoutSuccessRedirect$,
   registerSuccessRedirect$,
@@ -311,6 +312,83 @@ describe('AuthenticationEffects', () => {
 
         login$(actions$, mockAuthEnvironment, null, mockAuthService as any).subscribe((result) => {
           expect(result).toEqual(outcome);
+          done();
+        });
+      });
+
+      it('should include login2fa on loginFailure when LOGIN_2FA_REQUIRED', (done) => {
+        Object.defineProperty(window, 'sessionStorage', {
+          value: {
+            getItem: jest.fn(),
+            setItem: jest.fn(),
+            removeItem: jest.fn(),
+            clear: jest.fn(),
+          },
+          writable: true,
+        });
+
+        const action = login({ email: 'user@example.com', password: 'password123' });
+        const outcome = loginFailure({
+          error: 'Two-factor authentication required. Enter the verification code to continue.',
+          login2fa: { email: 'user@example.com', password: 'password123', method: 'email' },
+        });
+
+        actions$ = of(action);
+        mockAuthService.login.mockReturnValue(
+          throwError(
+            () =>
+              new HttpErrorResponse({
+                status: 401,
+                error: {
+                  message: 'Two-factor authentication required. Enter the verification code to continue.',
+                  code: 'LOGIN_2FA_REQUIRED',
+                  method: 'email',
+                },
+              }),
+          ),
+        );
+
+        login$(actions$, mockAuthEnvironment, null, mockAuthService as any).subscribe((result) => {
+          expect(result).toEqual(outcome);
+          expect(window.sessionStorage.setItem).toHaveBeenCalledWith('identity-pending-login-password', 'password123');
+          done();
+        });
+      });
+
+      it('should keep a plain loginFailure when LOGIN_2FA_INVALID is returned', (done) => {
+        Object.defineProperty(window, 'sessionStorage', {
+          value: {
+            getItem: jest.fn(),
+            setItem: jest.fn(),
+            removeItem: jest.fn(),
+            clear: jest.fn(),
+          },
+          writable: true,
+        });
+
+        const action = login({ email: 'user@example.com', password: 'password123', code: '000000' });
+        const outcome = loginFailure({
+          error: 'Invalid verification code. Please try again.',
+        });
+
+        actions$ = of(action);
+        mockAuthService.login.mockReturnValue(
+          throwError(
+            () =>
+              new HttpErrorResponse({
+                status: 401,
+                error: {
+                  message: 'Invalid verification code. Please try again.',
+                  code: 'LOGIN_2FA_INVALID',
+                  method: 'totp',
+                },
+              }),
+          ),
+        );
+
+        login$(actions$, mockAuthEnvironment, null, mockAuthService as any).subscribe((result) => {
+          expect(result).toEqual(outcome);
+          expect(window.sessionStorage.setItem).not.toHaveBeenCalled();
           done();
         });
       });
@@ -902,6 +980,45 @@ describe('AuthenticationEffects', () => {
 
       TestBed.runInInjectionContext(() => {
         loginEmailNotConfirmedRedirect$(actions$, mockRouter as any).subscribe({
+          complete: () => {
+            expect(mockRouter.navigate).not.toHaveBeenCalled();
+            done();
+          },
+        });
+      });
+    });
+  });
+
+  describe('loginTwoFactorRequiredRedirect$', () => {
+    it('should navigate to /login-2fa when loginFailure includes login2fa', (done) => {
+      const action = loginFailure({
+        error: 'Two-factor authentication required. Enter the verification code to continue.',
+        login2fa: { email: 'test@example.com', password: 'secret', method: 'totp' },
+      });
+
+      actions$ = of(action);
+      mockRouter.navigate = jest.fn().mockResolvedValue(true);
+
+      TestBed.runInInjectionContext(() => {
+        loginTwoFactorRequiredRedirect$(actions$, mockRouter as any).subscribe({
+          complete: () => {
+            expect(mockRouter.navigate).toHaveBeenCalledWith(['/login-2fa'], {
+              queryParams: { email: 'test@example.com', method: 'totp' },
+            });
+            done();
+          },
+        });
+      });
+    });
+
+    it('should not navigate when loginFailure has no login2fa', (done) => {
+      const action = loginFailure({ error: 'Invalid email or password' });
+
+      actions$ = of(action);
+      mockRouter.navigate = jest.fn().mockResolvedValue(true);
+
+      TestBed.runInInjectionContext(() => {
+        loginTwoFactorRequiredRedirect$(actions$, mockRouter as any).subscribe({
           complete: () => {
             expect(mockRouter.navigate).not.toHaveBeenCalled();
             done();

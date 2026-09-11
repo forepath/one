@@ -48,6 +48,8 @@ export class UsersService {
       role: user.role,
       emailConfirmedAt: user.emailConfirmedAt?.toISOString(),
       lockedAt: user.lockedAt?.toISOString() ?? null,
+      totpEnabled: Boolean(user.totpEnabledAt && user.totpSecret),
+      email2faEnabled: Boolean(user.email2faEnabledAt),
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     };
@@ -231,6 +233,22 @@ export class UsersService {
     const updated = await this.usersRepository.update(targetUserId, { lockedAt: null });
 
     return this.mapToResponseDto(updated);
+  }
+
+  async clearTotp(targetUserId: string): Promise<{ message: string }> {
+    const user = await this.usersRepository.findByIdForTenant(targetUserId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.usersRepository.update(user.id, {
+      totpSecret: null,
+      totpEnabledAt: null,
+    });
+    await this.usersRepository.incrementTokenVersion(user.id);
+
+    return { message: 'Authenticator two-factor authentication removed for user.' };
   }
 
   async validatePassword(plainPassword: string, hash: string): Promise<boolean> {

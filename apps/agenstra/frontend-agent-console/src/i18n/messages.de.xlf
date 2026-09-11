@@ -31,9 +31,10 @@
         <target> Atlassian-Import (Jira &amp; Confluence) </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-refresh" datatype="html">
-        <source> Refresh </source>
+        <source>Refresh</source>
         <target> Aktualisieren </target>
       </trans-unit>
+      
       <trans-unit id="featureAtlassianImportAdmin-dismiss" datatype="html">
         <source> Dismiss </source>
         <target> Ausblenden </target>
@@ -1038,10 +1039,8 @@
         <target>Arbeitsbereich löschen</target>
       </trans-unit>
       <trans-unit id="featureChat-deleteWorkspaceConfirm" datatype="html">
-        <source> Are you sure you want to delete the workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-          &gt;"/>? </source>
-        <target>Möchten Sie den Workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-          &gt;"/> wirklich löschen?</target>
+        <source> Are you sure you want to delete the workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
+        <target>Möchten Sie den Workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich löschen?</target>
       </trans-unit>
       <trans-unit id="featureChat-provisionedServerDetected" datatype="html">
         <source>Provisioned Server Detected</source>
@@ -1064,10 +1063,8 @@
         <target>Umgebung löschen</target>
       </trans-unit>
       <trans-unit id="featureChat-deleteEnvironmentConfirm" datatype="html">
-        <source> Are you sure you want to delete the environment <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-          &gt;"/>? </source>
-        <target>Möchten Sie die Umgebung <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-          &gt;"/> wirklich löschen?</target>
+        <source> Are you sure you want to delete the environment <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
+        <target>Möchten Sie die Umgebung <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich löschen?</target>
       </trans-unit>
       <trans-unit id="featureChat-existingWorkspace" datatype="html">
         <source> Existing Workspace </source>
@@ -1166,8 +1163,8 @@
 -----END OPENSSH PRIVATE KEY-----</target>
       </trans-unit>
       <trans-unit id="featureChat-createWorkspace" datatype="html">
-        <source>Create Workspace</source>
-        <target>Arbeitsbereich erstellen</target>
+        <source>Create</source>
+        <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureChat-agentTypeLabel" datatype="html">
         <source>Agent Type</source>
@@ -1274,24 +1271,26 @@
         <target>Diese Funktionen ignorieren teilweise die internen Berechtigungen und können es Benutzern erlauben, die Dateien des Agenten-Containers ohne Einschränkungen zu ändern.</target>
       </trans-unit>
       <trans-unit id="featureChat-createVirtualWorkspaceLabel" datatype="html">
-        <source>Create Virtual Workspace (VNC)</source>
+        <source> Create Virtual Workspace (VNC) </source>
         <target>Virtuellen Workspace erstellen (VNC)</target>
       </trans-unit>
+      
       <trans-unit id="featureChat-createVirtualWorkspaceHint" datatype="html">
         <source>Enable VNC access to the environment&apos;s virtual workspace. Defaults to disabled.</source>
         <target>VNC-Zugang zum virtuellen Workspace der Umgebung aktivieren. Standardmäßig deaktiviert.</target>
       </trans-unit>
       <trans-unit id="featureChat-createSshConnectionLabel" datatype="html">
-        <source>Create SSH Connection</source>
+        <source> Create SSH Connection </source>
         <target>SSH-Verbindung erstellen</target>
       </trans-unit>
+      
       <trans-unit id="featureChat-createSshConnectionHint" datatype="html">
         <source>Enable SSH access to the environment container. Defaults to disabled.</source>
         <target>SSH-Zugang zum Umgebungscontainer aktivieren. Standardmäßig deaktiviert.</target>
       </trans-unit>
       <trans-unit id="featureChat-createEnvironment" datatype="html">
-        <source>Create Environment</source>
-        <target>Umgebung erstellen</target>
+        <source>Create</source>
+        <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureChat-updateWorkspaceTitle" datatype="html">
         <source> Update Workspace </source>
@@ -1310,16 +1309,16 @@
         <target>8080</target>
       </trans-unit>
       <trans-unit id="featureChat-updateWorkspace" datatype="html">
-        <source>Update Workspace</source>
-        <target>Arbeitsbereich aktualisieren</target>
+        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureChat-updateEnvironmentTitle" datatype="html">
         <source> Update Environment </source>
         <target> Umgebung aktualisieren </target>
       </trans-unit>
       <trans-unit id="featureChat-updateEnvironment" datatype="html">
-        <source>Update Environment</source>
-        <target>Umgebung aktualisieren</target>
+        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureChat-manageWorkspaceConfiguration" datatype="html">
         <source> Manage Workspace Configuration </source>
@@ -1725,6 +1724,10 @@
         <source>Updates need attention</source>
         <target>Updates erfordern Aufmerksamkeit</target>
       </trans-unit>
+      <trans-unit id="featureContainer-securityAuthenticatorSuggested" datatype="html">
+        <source>Authenticator app is not enabled</source>
+        <target>Authenticator-App ist nicht aktiviert</target>
+      </trans-unit>
       <trans-unit id="featureContainer-ariaLabelRole" datatype="html">
         <source>Role <x id="role" equiv-text="role"/></source>
         <target>Rolle <x id="role" equiv-text="role"/></target>
@@ -1830,9 +1833,10 @@
         <target>Keine Deployment-Konfiguration gefunden. Erstellen Sie eine, um zu beginnen.</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-createConfigButton" datatype="html">
-        <source>Create Configuration</source>
+        <source> Create Configuration </source>
         <target>Konfiguration erstellen</target>
       </trans-unit>
+      
       <trans-unit id="featureDeploymentConfig-closeAriaLabel" datatype="html">
         <source>Close</source>
         <target>Schließen</target>
@@ -2190,10 +2194,8 @@
         <target>Neuere Änderungen überschreiben?</target>
       </trans-unit>
       <trans-unit id="featureFileEditor-overrideNewerMessage" datatype="html">
-        <source> You previously rejected external changes to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-          &gt;"/>. Saving now will override those newer changes. </source>
-        <target>Sie haben externe Änderungen an <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-          &gt;"/> zuvor abgelehnt. Wenn Sie jetzt speichern, überschreiben Sie diese neueren Änderungen.</target>
+        <source> You previously rejected external changes to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>. Saving now will override those newer changes. </source>
+        <target>Sie haben externe Änderungen an <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> zuvor abgelehnt. Wenn Sie jetzt speichern, überschreiben Sie diese neueren Änderungen.</target>
       </trans-unit>
       <trans-unit id="featureFileEditor-overrideNewerConfirm" datatype="html">
         <source>Are you sure you want to proceed?</source>
@@ -2276,17 +2278,19 @@
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
       </trans-unit>
       <trans-unit id="featureFileTree-delete" datatype="html">
-        <source>Delete</source>
+        <source> Delete </source>
         <target>Löschen</target>
       </trans-unit>
+      
       <trans-unit id="featureFileTree-newNameLabel" datatype="html">
         <source>New Name</source>
         <target>Neuer Name</target>
       </trans-unit>
       <trans-unit id="featureFileTree-rename" datatype="html">
-        <source>Rename</source>
+        <source> Rename </source>
         <target>Umbenennen</target>
       </trans-unit>
+      
       <trans-unit id="featureFileTree-destinationPathLabel" datatype="html">
         <source>Destination Path</source>
         <target>Zielpfad</target>
@@ -2300,9 +2304,10 @@
         <target>Verwenden Sie '.' für das Stammverzeichnis oder geben Sie einen relativen Pfad wie 'ordner' oder 'ordner/unterordner' ein</target>
       </trans-unit>
       <trans-unit id="featureFileTree-move" datatype="html">
-        <source>Move</source>
+        <source> Move </source>
         <target>Verschieben</target>
       </trans-unit>
+      
       <trans-unit id="featureFileTree-enterFileName" datatype="html">
         <source>Enter file name...</source>
         <target>Dateiname eingeben...</target>
@@ -2612,9 +2617,10 @@
         <target>Klicken Sie auf &quot;Neu&quot;, um eine Terminal-Sitzung zu erstellen</target>
       </trans-unit>
       <trans-unit id="featureTerminal-newTerminalButton" datatype="html">
-        <source>Create Terminal</source>
+        <source> Create Terminal </source>
         <target>Terminal erstellen</target>
       </trans-unit>
+      
       <trans-unit id="featureKnowledgeBoard-title" datatype="html">
         <source>Knowledge</source>
         <target>Wissen</target>
@@ -3320,9 +3326,10 @@
         <target>Beschreiben Sie das Ticket. Änderungen werden gespeichert, wenn Sie das Feld verlassen.</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-addSubtask" datatype="html">
-        <source> Add subtask </source>
+        <source>Add subtask</source>
         <target>Unteraufgabe hinzufügen</target>
       </trans-unit>
+      
       <trans-unit id="featureTicketsBoard-subtasksHeading" datatype="html">
         <source>Subtasks</source>
         <target>Unteraufgaben</target>
@@ -3696,9 +3703,10 @@
         <target>Priorität</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-create" datatype="html">
-        <source>Create</source>
+        <source> Create </source>
         <target>Anlegen</target>
       </trans-unit>
+      
       <trans-unit id="featureTicketsBoard-globalSearchTitle" datatype="html">
         <source> Search tickets </source>
         <target>Tickets durchsuchen</target>
@@ -4070,6 +4078,10 @@
       <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
         <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
         <target>Zeichen <x id="position" equiv-text="index + 1"/> von 6</target>
+      </trans-unit>
+      <trans-unit id="featureOtpInput-invalid" datatype="html">
+        <source>Invalid verification code</source>
+        <target>Ungültiger Bestätigungscode</target>
       </trans-unit>
       <trans-unit id="featureRegister-title" datatype="html">
         <source>Create an Account</source>
@@ -4504,10 +4516,8 @@
         <target> Benutzer löschen </target>
       </trans-unit>
       <trans-unit id="featureUserManager-deleteUserConfirm" datatype="html">
-        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/>? </source>
-        <target>Möchten Sie den Benutzer <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/> wirklich löschen?</target>
+        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
+        <target>Möchten Sie den Benutzer <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich löschen?</target>
       </trans-unit>
       <trans-unit id="featureUserManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -4550,9 +4560,10 @@
         <target>Token widerrufen</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-createTitle" datatype="html">
-        <source>Create personal access token</source>
+        <source> Create personal access token </source>
         <target>Persönliches Zugriffstoken erstellen</target>
       </trans-unit>
+      
       <trans-unit id="featureTokenManager-closeAriaLabel" datatype="html">
         <source>Close</source>
         <target>Schließen</target>
@@ -4562,9 +4573,10 @@
         <target>Tokenwert</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-plaintextHint" datatype="html">
-        <source>Copy this token now. It will not be shown again.</source>
+        <source> Copy this token now. It will not be shown again. </source>
         <target>Kopieren Sie dieses Token jetzt. Es wird nicht erneut angezeigt.</target>
       </trans-unit>
+      
       <trans-unit id="featureTokenManager-copied" datatype="html">
         <source>Copied</source>
         <target>Kopiert</target>
@@ -4574,9 +4586,10 @@
         <target>Kopieren</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-done" datatype="html">
-        <source>Done</source>
+        <source> Done </source>
         <target>Fertig</target>
       </trans-unit>
+      
       <trans-unit id="featureTokenManager-nameLabel" datatype="html">
         <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <target>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
@@ -4606,11 +4619,12 @@
         <target>Erstellen</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-revokeModalTitle" datatype="html">
-        <source>Revoke token</source>
+        <source> Revoke token </source>
         <target>Token widerrufen</target>
       </trans-unit>
+      
       <trans-unit id="featureTokenManager-revokeConfirm" datatype="html">
-        <source>Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>?</source>
+        <source> Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
         <target>Möchten Sie das Token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich widerrufen?</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-cannotUndo" datatype="html">
@@ -4850,9 +4864,10 @@
         <target>Token bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-editModalTitle" datatype="html">
-        <source>Edit personal access token</source>
+        <source> Edit personal access token </source>
         <target>Persönlichen Zugriffstoken bearbeiten</target>
       </trans-unit>
+      
       <trans-unit id="featureTokenManager-update" datatype="html">
         <source>Update</source>
         <target>Aktualisieren</target>
@@ -5134,10 +5149,8 @@
         <target>Webhook löschen</target>
       </trans-unit>
       <trans-unit id="featureNotifications-deleteConfirm" datatype="html">
-        <source> Are you sure you want to delete the webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/>? </source>
-        <target> Möchten Sie den Webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
-            &gt;"/> wirklich löschen? </target>
+        <source> Are you sure you want to delete the webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
+        <target> Möchten Sie den Webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich löschen? </target>
       </trans-unit>
       <trans-unit id="featureNotifications-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -5196,9 +5209,10 @@
         <target>Payload</target>
       </trans-unit>
       <trans-unit id="featureNotifications-deliveryResponse" datatype="html">
-        <source>Response</source>
+        <source> Response </source>
         <target>Antwort</target>
       </trans-unit>
+      
       <trans-unit id="featureNotifications-moreDeliveries" datatype="html">
         <source> More deliveries exist than shown. </source>
         <target>Es gibt mehr Zustellungen als angezeigt.</target>
@@ -5228,9 +5242,10 @@
         <target>Updates</target>
       </trans-unit>
       <trans-unit id="featureUpdates-checkNow" datatype="html">
-        <source>Check now</source>
+        <source> Check now </source>
         <target>Jetzt prüfen</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-loading" datatype="html">
         <source>Loading updates...</source>
         <target>Updates werden geladen…</target>
@@ -5256,29 +5271,33 @@
         <target>Unbekannt</target>
       </trans-unit>
       <trans-unit id="featureUpdates-installedVersion" datatype="html">
-        <source>Installed version</source>
+        <source> Installed version </source>
         <target>Installierte Version</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-latestVersion" datatype="html">
-        <source>Latest version</source>
+        <source> Latest version </source>
         <target>Neueste Version</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-viewRelease" datatype="html">
         <source>View release</source>
         <target>Release anzeigen</target>
       </trans-unit>
       <trans-unit id="featureUpdates-frontendVersion" datatype="html">
-        <source>Frontend version</source>
+        <source> Frontend version </source>
         <target>Frontend-Version</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-lastCheck" datatype="html">
         <source>Last check</source>
         <target>Letzte Prüfung</target>
       </trans-unit>
       <trans-unit id="featureUpdates-instancesTitle" datatype="html">
-        <source>Service instances</source>
+        <source> Service instances </source>
         <target>Service-Instanzen</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-mobilePanelInstances" datatype="html">
         <source>Instances</source>
         <target>Instanzen</target>
@@ -5308,21 +5327,25 @@
         <target>Noch keine Service-Instanzen gemeldet.</target>
       </trans-unit>
       <trans-unit id="featureUpdates-changelogProduct" datatype="html">
-        <source>Product changelog</source>
+        <source> Product changelog </source>
         <target>Produkt-Changelog</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-changelogShared" datatype="html">
-        <source>Shared changelog</source>
+        <source> Shared changelog </source>
         <target>Geteiltes Changelog</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-noChangelogProduct" datatype="html">
-        <source>No product changelog entries.</source>
+        <source> No product changelog entries. </source>
         <target>Keine Einträge im Produkt-Changelog.</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-noChangelogShared" datatype="html">
-        <source>No shared changelog entries.</source>
+        <source> No shared changelog entries. </source>
         <target>Keine Einträge im geteilten Changelog.</target>
       </trans-unit>
+      
       <trans-unit id="featureUpdates-dependencyHealthy" datatype="html">
         <source>Healthy</source>
         <target>Gesund</target>
@@ -5414,6 +5437,286 @@
       <trans-unit id="featureUpdates-categoryBreakingChanges" datatype="html">
         <source>Breaking changes</source>
         <target>Breaking Changes</target>
+      </trans-unit>
+          <trans-unit id="featureAgentConsole-notAvailable" datatype="html">
+        <source>N/A</source>
+        <target>N/V</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-login2faPage" datatype="html">
+        <source>Two-Factor Authentication</source>
+        <target>Zwei-Faktor-Authentifizierung</target>
+      </trans-unit>
+      <trans-unit id="featureAuth-securityPage" datatype="html">
+        <source>Security Settings</source>
+        <target>Sicherheitseinstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-chatSessionDefaultTitle" datatype="html">
+        <source>Chat</source>
+        <target>Chat</target>
+      </trans-unit>
+      <trans-unit id="featureChat-chatSessionPrimaryBadge" datatype="html">
+        <source>(primary)</source>
+        <target>(primär)</target>
+      </trans-unit>
+      <trans-unit id="featureChat-chatSessionPrimaryTitle" datatype="html">
+        <source>Primary</source>
+        <target>Primär</target>
+      </trans-unit>
+      <trans-unit id="featureChat-chatSessionSwitcherAria" datatype="html">
+        <source>Chat sessions</source>
+        <target>Chat-Sitzungen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-chatSessionUntitledTitle" datatype="html">
+        <source>Untitled chat</source>
+        <target>Unbenannter Chat</target>
+      </trans-unit>
+      <trans-unit id="featureChat-deleteChatSessionAria" datatype="html">
+        <source>Delete chat session</source>
+        <target>Chat-Sitzung löschen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-deleteChatSessionConfirm" datatype="html">
+        <source> Are you sure you want to delete the chat session <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ chatSessionToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
+        <target> Möchten Sie die Chat-Sitzung <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ chatSessionToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich löschen? </target>
+      </trans-unit>
+      <trans-unit id="featureChat-deleteChatSessionModalTitle" datatype="html">
+        <source> Delete Chat Session </source>
+        <target> Chat-Sitzung löschen </target>
+      </trans-unit>
+      <trans-unit id="featureChat-deleteChatSessionTitle" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-newChatSession" datatype="html">
+        <source> New chat </source>
+        <target> Neuer Chat </target>
+      </trans-unit>
+      <trans-unit id="featureChat-renameChatSessionAria" datatype="html">
+        <source>Rename chat session</source>
+        <target>Chat-Sitzung umbenennen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-renameChatSessionModalTitle" datatype="html">
+        <source> Rename Chat Session </source>
+        <target> Chat-Sitzung umbenennen </target>
+      </trans-unit>
+      <trans-unit id="featureChat-renameChatSessionSave" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureChat-renameChatSessionTitle" datatype="html">
+        <source>Rename</source>
+        <target>Umbenennen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-security" datatype="html">
+        <source>Security</source>
+        <target>Sicherheit</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-securityTitle" datatype="html">
+        <source>Security</source>
+        <target>Sicherheit</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-authNotAvailable" datatype="html">
+        <source>Two-factor login is not available for this authentication method.</source>
+        <target>Zwei-Faktor-Anmeldung ist für diese Authentifizierungsmethode nicht verfügbar.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-cancel" datatype="html">
+        <source>Back to login</source>
+        <target>Zurück zur Anmeldung</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-codeLabel" datatype="html">
+        <source>Verification Code</source>
+        <target>Bestätigungscode</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-codePatternEmail" datatype="html">
+        <source>Code must be exactly 6 characters (uppercase letters and numbers).</source>
+        <target>Code muss genau 6 Zeichen sein (Großbuchstaben und Zahlen).</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-codePatternTotp" datatype="html">
+        <source>Code must be exactly 6 digits.</source>
+        <target>Code muss genau 6 Ziffern sein.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-codeRequired" datatype="html">
+        <source>Verification code is required.</source>
+        <target>Bestätigungscode ist erforderlich.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-description" datatype="html">
+        <source>Enter the verification code to finish signing in.</source>
+        <target>Geben Sie den Bestätigungscode ein, um die Anmeldung abzuschließen.</target>
+      </trans-unit>
+<trans-unit id="featureLogin2fa-emailHint" datatype="html">
+        <source>Enter the 6-character code we sent to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>.</source>
+        <target>Geben Sie den 6-zeichigen Code ein, den wir an <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> ein.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-formTitle" datatype="html">
+        <source>Verify Sign-In</source>
+        <target>Anmeldung bestätigen</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-returnToLogin" datatype="html">
+        <source>Return to login</source>
+        <target>Zurück zur Anmeldung</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-returnToLoginLink" datatype="html">
+        <source>Return to login</source>
+        <target>Zurück zur Anmeldung</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-sessionExpired" datatype="html">
+        <source>Your sign-in session expired. Please sign in again.</source>
+        <target>Ihre Anmeldesitzung ist abgelaufen. Bitte melden Sie sich erneut an.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-submit" datatype="html">
+        <source>Verify</source>
+        <target>Bestätigen</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-title" datatype="html">
+        <source>Two-Factor Authentication</source>
+        <target>Zwei-Faktor-Authentifizierung</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-totpHint" datatype="html">
+        <source>Enter the 6-digit code from your authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>.</source>
+        <target>Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App für <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> ein.</target>
+      </trans-unit>
+      <trans-unit id="featureLogin2fa-verifying" datatype="html">
+        <source>Verifying...</source>
+        <target>Wird geprüft...</target>
+      </trans-unit>
+      <trans-unit id="featureNotifications-clientUnavailable" datatype="html">
+        <source>N/A</source>
+        <target>N/V</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-authNotAvailable" datatype="html">
+        <source> Two-factor authentication settings are only available for users authentication. </source>
+        <target> Zwei-Faktor-Authentifizierungseinstellungen sind nur für die Benutzer-Authentifizierung verfügbar. </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmDisableTotp" datatype="html">
+        <source> Disable authenticator </source>
+        <target> Authenticator deaktivieren </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmEmail" datatype="html">
+        <source>Confirm</source>
+        <target>Bestätigen</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmTotp" datatype="html">
+        <source> Confirm authenticator </source>
+        <target> Authenticator bestätigen </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-currentPasswordLabel" datatype="html">
+        <source>Current password</source>
+        <target>Aktuelles Passwort</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableEmail" datatype="html">
+        <source> Disable email 2FA </source>
+        <target> E-Mail-2FA deaktivieren </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableEmailPrompt" datatype="html">
+        <source> Disable email 2FA </source>
+        <target> E-Mail-2FA deaktivieren </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableTotp" datatype="html">
+        <source> Disable authenticator </source>
+        <target> Authenticator deaktivieren </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-disableTotpCodeLabel" datatype="html">
+        <source>Authenticator code to disable</source>
+        <target>Authenticator-Code zum Deaktivieren</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-disabled" datatype="html">
+        <source>Disabled</source>
+        <target>Deaktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailCodeLabel" datatype="html">
+        <source>Confirmation code</source>
+        <target>Bestätigungscode</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailDescription" datatype="html">
+        <source> Receive a one-time code by email when signing in. </source>
+        <target> Erhalten Sie bei der Anmeldung einen Einmalcode per E-Mail. </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailForcedHint" datatype="html">
+        <source>Email verification is required by our organization and cannot be turned off</source>
+        <target>E-Mail-Bestätigung ist von unserer Organisation vorgeschrieben und kann nicht deaktiviert werden</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-emailTitle" datatype="html">
+        <source>Email verification</source>
+        <target>E-Mail-Bestätigung</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-enableEmail" datatype="html">
+        <source> Enable email 2FA </source>
+        <target> E-Mail-2FA aktivieren </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-enabled" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-loading" datatype="html">
+        <source>Loading...</source>
+        <target>Wird geladen...</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-resendEmail" datatype="html">
+        <source> Resend code </source>
+        <target> Code erneut senden </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-secretLabel" datatype="html">
+        <source>Secret</source>
+        <target>Geheimnis</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-setupTotp" datatype="html">
+        <source> Set up authenticator </source>
+        <target> Authenticator einrichten </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-setupTotpPrompt" datatype="html">
+        <source> Set up authenticator </source>
+        <target> Authenticator einrichten </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-title" datatype="html">
+        <source>Security Settings</source>
+        <target>Sicherheitseinstellungen</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpConfirmLabel" datatype="html">
+        <source>Confirm with code</source>
+        <target>Mit Code bestätigen</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpDescription" datatype="html">
+        <source> Use an authenticator app (TOTP) as your preferred second factor. </source>
+        <target> Verwenden Sie eine Authenticator-App (TOTP) als bevorzugten zweiten Faktor. </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpDisabled" datatype="html">
+        <source>Disabled</source>
+        <target>Deaktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpEnabled" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpSetupHint" datatype="html">
+        <source> Scan the QR code with your authenticator app, or enter the secret manually. </source>
+        <target> Scannen Sie den QR-Code mit Ihrer Authenticator-App oder geben Sie das Geheimnis manuell ein. </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-totpTitle" datatype="html">
+        <source>Authenticator app</source>
+        <target>Authenticator-App</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-cancel" datatype="html">
+        <source> Cancel </source>
+        <target> Abbrechen </target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-clearTotpConfirm" datatype="html">
+        <source> Remove the authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToClearTotp.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? They can set up a new authenticator afterwards. </source>
+        <target> Möchten Sie die Authenticator-App für <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToClearTotp.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> entfernen? Anschließend kann ein neuer Authenticator eingerichtet werden. </target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-clearTotpModalTitle" datatype="html">
+        <source> Remove Authenticator </source>
+        <target> Authenticator entfernen </target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-removeAuthenticator" datatype="html">
+        <source> Remove authenticator </source>
+        <target> Authenticator entfernen </target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-removeAuthenticatorTitle" datatype="html">
+        <source>Remove authenticator</source>
+        <target>Authenticator entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-totpEnabled" datatype="html">
+        <source>Authenticator</source>
+        <target>Authenticator</target>
       </trans-unit>
     </body>
   </file>

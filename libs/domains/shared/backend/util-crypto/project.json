@@ -5,6 +5,16 @@
   "projectType": "library",
   "tags": ["domain:shared", "scope:backend", "type:util"],
   "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/domains/shared/backend/util-crypto",
+        "main": "libs/domains/shared/backend/util-crypto/src/index.ts",
+        "tsConfig": "libs/domains/shared/backend/util-crypto/tsconfig.lib.json",
+        "assets": ["libs/domains/shared/backend/util-crypto/*.md"]
+      }
+    },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],

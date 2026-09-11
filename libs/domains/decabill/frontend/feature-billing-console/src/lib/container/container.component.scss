@@ -127,6 +127,15 @@
   right: 0.25rem;
 }
 
+.notification-badge--security-warning {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background-color: var(--bs-warning);
+  top: 0.35rem;
+  right: 0.1rem;
+}
+
 .sidebar-admin-popover__tile-badge {
   top: 0.35rem;
   right: 0.35rem;

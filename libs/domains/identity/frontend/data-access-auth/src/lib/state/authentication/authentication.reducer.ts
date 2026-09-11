@@ -1,6 +1,9 @@
 import { createReducer, on } from '@ngrx/store';
 
 import {
+  adminClearTotp,
+  adminClearTotpFailure,
+  adminClearTotpSuccess,
   changePassword,
   changePasswordFailure,
   changePasswordSuccess,
@@ -9,18 +12,34 @@ import {
   checkAuthenticationSuccess,
   clearError,
   clearSuccessMessage,
+  clearTwoFactorMessages,
   confirmEmail,
   confirmEmailFailure,
   confirmEmailSuccess,
+  confirmTotp,
+  confirmTotpFailure,
+  confirmTotpSuccess,
   createUser,
   createUserFailure,
   createUserSuccess,
   deleteUser,
   deleteUserFailure,
   deleteUserSuccess,
+  disableEmail2fa,
+  disableEmail2faFailure,
+  disableEmail2faSuccess,
+  disableTotp,
+  disableTotpFailure,
+  disableTotpSuccess,
+  enableEmail2fa,
+  enableEmail2faFailure,
+  enableEmail2faSuccess,
   lockUser,
   lockUserFailure,
   lockUserSuccess,
+  loadTwoFactorStatus,
+  loadTwoFactorStatusFailure,
+  loadTwoFactorStatusSuccess,
   loadUsers,
   loadUsersBatch,
   loadUsersFailure,
@@ -40,6 +59,9 @@ import {
   resetPassword,
   resetPasswordFailure,
   resetPasswordSuccess,
+  setupTotp,
+  setupTotpFailure,
+  setupTotpSuccess,
   unlockUser,
   unlockUserFailure,
   unlockUserSuccess,
@@ -74,6 +96,11 @@ export const initialAuthenticationState: AuthenticationState = {
   deletingUser: false,
   lockingUser: false,
   unlockingUser: false,
+  twoFactorStatus: null,
+  twoFactorLoading: false,
+  twoFactorError: null,
+  twoFactorSuccessMessage: null,
+  totpSetup: null,
 };
 
 export const authenticationReducer = createReducer(
@@ -86,6 +113,11 @@ export const authenticationReducer = createReducer(
   on(clearError, (state) => ({
     ...state,
     error: null,
+  })),
+  on(clearTwoFactorMessages, (state) => ({
+    ...state,
+    twoFactorError: null,
+    twoFactorSuccessMessage: null,
   })),
   on(login, (state) => ({
     ...state,
@@ -101,10 +133,11 @@ export const authenticationReducer = createReducer(
     loading: false,
     error: null,
   })),
-  on(loginFailure, (state, { error }) => ({
+  on(loginFailure, (state, { error, login2fa }) => ({
     ...state,
     loading: false,
-    error,
+    // 2FA challenge is expected flow, not a user-facing failure
+    error: login2fa ? null : error,
   })),
   // Logout
   on(logout, (state) => ({
@@ -222,6 +255,125 @@ export const authenticationReducer = createReducer(
     ...state,
     changingPassword: false,
     error,
+  })),
+  // Login 2FA self-service
+  on(loadTwoFactorStatus, (state) => ({
+    ...state,
+    twoFactorLoading: true,
+    twoFactorError: null,
+  })),
+  on(loadTwoFactorStatusSuccess, (state, { status }) => ({
+    ...state,
+    twoFactorStatus: status,
+    twoFactorLoading: false,
+    twoFactorError: null,
+  })),
+  on(loadTwoFactorStatusFailure, (state, { error }) => ({
+    ...state,
+    twoFactorLoading: false,
+    twoFactorError: error,
+  })),
+  on(enableEmail2fa, (state) => ({
+    ...state,
+    twoFactorLoading: true,
+    twoFactorError: null,
+    twoFactorSuccessMessage: null,
+  })),
+  on(enableEmail2faSuccess, (state, { message }) => ({
+    ...state,
+    twoFactorLoading: false,
+    twoFactorError: null,
+    twoFactorSuccessMessage: message,
+  })),
+  on(enableEmail2faFailure, (state, { error }) => ({
+    ...state,
+    twoFactorLoading: false,
+    twoFactorError: error,
+  })),
+  on(disableEmail2fa, (state) => ({
+    ...state,
+    twoFactorLoading: true,
+    twoFactorError: null,
+    twoFactorSuccessMessage: null,
+  })),
+  on(disableEmail2faSuccess, (state, { message }) => ({
+    ...state,
+    twoFactorLoading: false,
+    twoFactorError: null,
+    twoFactorSuccessMessage: message,
+  })),
+  on(disableEmail2faFailure, (state, { error }) => ({
+    ...state,
+    twoFactorLoading: false,
+    twoFactorError: error,
+  })),
+  on(setupTotp, (state) => ({
+    ...state,
+    twoFactorLoading: true,
+    twoFactorError: null,
+    twoFactorSuccessMessage: null,
+    totpSetup: null,
+  })),
+  on(setupTotpSuccess, (state, { setup }) => ({
+    ...state,
+    twoFactorLoading: false,
+    twoFactorError: null,
+    totpSetup: setup,
+  })),
+  on(setupTotpFailure, (state, { error }) => ({
+    ...state,
+    twoFactorLoading: false,
+    twoFactorError: error,
+  })),
+  on(confirmTotp, (state) => ({
+    ...state,
+    twoFactorLoading: true,
+    twoFactorError: null,
+    twoFactorSuccessMessage: null,
+  })),
+  on(confirmTotpSuccess, (state, { message }) => ({
+    ...state,
+    twoFactorLoading: false,
+    twoFactorError: null,
+    twoFactorSuccessMessage: message,
+    totpSetup: null,
+  })),
+  on(confirmTotpFailure, (state, { error }) => ({
+    ...state,
+    twoFactorLoading: false,
+    twoFactorError: error,
+  })),
+  on(disableTotp, (state) => ({
+    ...state,
+    twoFactorLoading: true,
+    twoFactorError: null,
+    twoFactorSuccessMessage: null,
+  })),
+  on(disableTotpSuccess, (state, { message }) => ({
+    ...state,
+    twoFactorLoading: false,
+    twoFactorError: null,
+    twoFactorSuccessMessage: message,
+  })),
+  on(disableTotpFailure, (state, { error }) => ({
+    ...state,
+    twoFactorLoading: false,
+    twoFactorError: error,
+  })),
+  on(adminClearTotp, (state) => ({
+    ...state,
+    twoFactorLoading: true,
+    usersError: null,
+  })),
+  on(adminClearTotpSuccess, (state, { userId }) => ({
+    ...state,
+    twoFactorLoading: false,
+    users: state.users.map((u) => (u.id === userId ? { ...u, totpEnabled: false } : u)),
+  })),
+  on(adminClearTotpFailure, (state, { error }) => ({
+    ...state,
+    twoFactorLoading: false,
+    usersError: error,
   })),
   // Admin: Load Users
   on(loadUsers, (state) => ({

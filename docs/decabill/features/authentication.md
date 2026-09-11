@@ -66,6 +66,8 @@ Built-in user registration and authentication with JWT tokens.
 AUTHENTICATION_METHOD=users
 JWT_SECRET=your-jwt-secret-key
 DISABLE_SIGNUP=false
+DISABLE_FORCE_LOGIN_2FA=false
+PRODUCT_NAME=Decabill  # Issuer label on TOTP QR / authenticator entries (default: Forepath)
 ```
 
 **Features**:
@@ -74,6 +76,9 @@ DISABLE_SIGNUP=false
 - Email confirmation with 6-character alphanumeric codes
 - Password reset functionality
 - JWT-based authentication (7-day expiry)
+- **Login 2FA** (forced by default): email OTP unless authenticator enrolled; set `DISABLE_FORCE_LOGIN_2FA=true` for opt-in only
+- Self-service authenticator / email 2FA; admins can remove authenticator enrollment
+- TOTP QR / authenticator account name uses `PRODUCT_NAME` (falls back to `Forepath`) plus the user email
 - First registered user gets admin role
 - Admin user management (CRUD, lock, unlock)
 - Optional signup disable for controlled onboarding

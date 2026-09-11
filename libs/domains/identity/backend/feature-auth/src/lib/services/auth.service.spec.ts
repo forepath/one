@@ -1,5 +1,7 @@
 import { UserRole } from '@forepath/identity/backend';
-import { UnauthorizedException } from '@nestjs/common';
+import { ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+
+import * as totpUtils from '../utils/totp.utils';
 
 import { AuthService } from './auth.service';
 
@@ -32,6 +34,7 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
     mockEmailDispatcher.publishEmail.mockResolvedValue(undefined);
     service = new AuthService(
       mockUsersRepository as any,
@@ -59,7 +62,8 @@ describe('AuthService', () => {
     );
   });
 
-  it('returns token for unlocked confirmed user with valid password', async () => {
+  it('returns token for unlocked confirmed user with valid password when force 2FA is disabled', async () => {
+    process.env.DISABLE_FORCE_LOGIN_2FA = 'true';
     mockUsersRepository.findByEmail.mockResolvedValue({
       id: 'user-2',
       email: 'active@example.com',
@@ -85,6 +89,101 @@ describe('AuthService', () => {
       access_token: 'jwt-token',
       user: { id: 'user-2', email: 'active@example.com', role: UserRole.ADMIN },
     });
+    delete process.env.DISABLE_FORCE_LOGIN_2FA;
+  });
+
+  it('challenges with email 2FA when force is enabled and no code is provided', async () => {
+    delete process.env.DISABLE_FORCE_LOGIN_2FA;
+    mockUsersRepository.findByEmail.mockResolvedValue({
+      id: 'user-2fa',
+      email: 'twofa@example.com',
+      role: UserRole.USER,
+      emailConfirmedAt: new Date('2026-01-01T00:00:00.000Z'),
+      lockedAt: null,
+      passwordHash: '$2b$12$hash',
+      tokenVersion: 0,
+    });
+    mockUsersService.validatePassword.mockResolvedValue(true);
+    mockUsersRepository.update.mockResolvedValue({});
+
+    try {
+      await service.login('twofa@example.com', 'password123');
+      fail('expected UnauthorizedException');
+    } catch (error) {
+      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect((error as UnauthorizedException).getResponse()).toEqual(
+        expect.objectContaining({
+          code: 'LOGIN_2FA_REQUIRED',
+          method: 'email',
+        }),
+      );
+    }
+
+    expect(mockEmailDispatcher.publishEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventType: 'user.login_2fa_requested',
+        templateKey: 'login-2fa',
+      }),
+    );
+    expect(mockJwtService.sign).not.toHaveBeenCalled();
+  });
+
+  it('rejects invalid TOTP with LOGIN_2FA_INVALID instead of a fresh challenge', async () => {
+    delete process.env.DISABLE_FORCE_LOGIN_2FA;
+    jest.spyOn(totpUtils, 'verifyTotpCode').mockResolvedValue(false);
+    mockUsersRepository.findByEmail.mockResolvedValue({
+      id: 'user-totp',
+      email: 'totp@example.com',
+      role: UserRole.USER,
+      emailConfirmedAt: new Date('2026-01-01T00:00:00.000Z'),
+      lockedAt: null,
+      passwordHash: '$2b$12$hash',
+      tokenVersion: 0,
+      totpSecret: 'JBSWY3DPEHPK3PXP',
+      totpEnabledAt: new Date('2026-01-02T00:00:00.000Z'),
+    });
+    mockUsersService.validatePassword.mockResolvedValue(true);
+
+    try {
+      await service.login('totp@example.com', 'password123', '000000');
+      fail('expected UnauthorizedException');
+    } catch (error) {
+      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect((error as UnauthorizedException).getResponse()).toEqual(
+        expect.objectContaining({
+          code: 'LOGIN_2FA_INVALID',
+          method: 'totp',
+        }),
+      );
+    }
+
+    expect(mockJwtService.sign).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when login 2FA email cannot be published', async () => {
+    delete process.env.DISABLE_FORCE_LOGIN_2FA;
+    mockUsersRepository.findByEmail.mockResolvedValue({
+      id: 'user-2fa',
+      email: 'twofa@example.com',
+      role: UserRole.USER,
+      emailConfirmedAt: new Date('2026-01-01T00:00:00.000Z'),
+      lockedAt: null,
+      passwordHash: '$2b$12$hash',
+      tokenVersion: 0,
+    });
+    mockUsersService.validatePassword.mockResolvedValue(true);
+    mockUsersRepository.update.mockResolvedValue({});
+    mockEmailDispatcher.publishEmail.mockRejectedValue(new Error('smtp down'));
+
+    await expect(service.login('twofa@example.com', 'password123')).rejects.toThrow(ServiceUnavailableException);
+    expect(mockUsersRepository.update).toHaveBeenCalledWith(
+      'user-2fa',
+      expect.objectContaining({
+        login2faEmailToken: null,
+        login2faEmailTokenExpiresAt: null,
+      }),
+    );
+    expect(mockJwtService.sign).not.toHaveBeenCalled();
   });
 
   it('rejects personal access token secrets on interactive login', async () => {
@@ -148,6 +247,7 @@ describe('AuthService', () => {
   });
 
   it('includes token version and jwtid when signing login tokens', async () => {
+    process.env.DISABLE_FORCE_LOGIN_2FA = 'true';
     mockUsersRepository.findByEmail.mockResolvedValue({
       id: 'user-2',
       email: 'active@example.com',
@@ -165,6 +265,7 @@ describe('AuthService', () => {
       expect.objectContaining({ tv: 3 }),
       expect.objectContaining({ jwtid: expect.any(String) }),
     );
+    delete process.env.DISABLE_FORCE_LOGIN_2FA;
   });
 
   it('revokes only the current session by default on logout', async () => {
@@ -301,5 +402,90 @@ describe('AuthService', () => {
 
     expect(mockEmailDispatcher.publishEmail).not.toHaveBeenCalled();
     expect(result.message).toContain('password reset code');
+  });
+
+  it('rejects TOTP setup when authenticator is already enabled', async () => {
+    mockUsersRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      passwordHash: '$2b$12$hash',
+      totpSecret: 'EXISTINGSECRET',
+      totpEnabledAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    mockUsersService.validatePassword.mockResolvedValue(true);
+
+    await expect(service.setupTotp('user-1', 'password123')).rejects.toThrow(
+      'Authenticator two-factor authentication is already enabled',
+    );
+    expect(mockUsersRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects TOTP setup when current password is incorrect', async () => {
+    mockUsersRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      passwordHash: '$2b$12$hash',
+      totpSecret: null,
+      totpEnabledAt: null,
+    });
+    mockUsersService.validatePassword.mockResolvedValue(false);
+
+    await expect(service.setupTotp('user-1', 'wrong')).rejects.toThrow('Current password is incorrect');
+    expect(mockUsersRepository.update).not.toHaveBeenCalled();
+  });
+
+  it('allows TOTP setup when not yet enabled and stores a provisional secret', async () => {
+    mockUsersRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      passwordHash: '$2b$12$hash',
+      totpSecret: null,
+      totpEnabledAt: null,
+    });
+    mockUsersService.validatePassword.mockResolvedValue(true);
+    mockUsersRepository.update.mockResolvedValue(undefined);
+
+    const result = await service.setupTotp('user-1', 'password123');
+
+    expect(result.secret).toEqual(expect.any(String));
+    expect(result.otpauthUrl).toContain('otpauth://totp/');
+    expect(mockUsersRepository.update).toHaveBeenCalledWith(
+      'user-1',
+      expect.objectContaining({
+        totpSecret: result.secret,
+        totpEnabledAt: null,
+      }),
+    );
+  });
+
+  it('rejects email 2FA disable when current password is incorrect', async () => {
+    process.env.DISABLE_FORCE_LOGIN_2FA = 'true';
+    mockUsersRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      passwordHash: '$2b$12$hash',
+      email2faEnabledAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+    mockUsersService.validatePassword.mockResolvedValue(false);
+
+    await expect(service.disableEmail2fa('user-1', 'wrong')).rejects.toThrow('Current password is incorrect');
+    expect(mockUsersRepository.update).not.toHaveBeenCalled();
+    delete process.env.DISABLE_FORCE_LOGIN_2FA;
+  });
+
+  it('rejects email 2FA disable when force login 2FA is enabled', async () => {
+    delete process.env.DISABLE_FORCE_LOGIN_2FA;
+    mockUsersRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'user-1',
+      email: 'user@example.com',
+      passwordHash: '$2b$12$hash',
+      email2faEnabledAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+
+    await expect(service.disableEmail2fa('user-1', 'password123')).rejects.toThrow(
+      'Email two-factor authentication is required by our organization',
+    );
+    expect(mockUsersService.validatePassword).not.toHaveBeenCalled();
+    expect(mockUsersRepository.update).not.toHaveBeenCalled();
   });
 });

@@ -775,9 +775,8 @@
       <trans-unit id="featureForepathLegalContentReport-reportCta" datatype="html">
         <source> Report illegal content </source>
         </trans-unit>
-
       <trans-unit id="featureForepathLegalContentReport-whichTitle" datatype="html">
-        <source>Which mechanism to use</source>
+        <source> Which mechanism to use </source>
         </trans-unit>
       <trans-unit id="featureForepathLegalContentReport-whichIntro" datatype="html">
         <source> Choose the mechanism that matches your role and the nature of your submission. Public reporters of alleged illegal content use the DSA notice. Competent authorities issuing a binding terrorist-content removal order use the TCO contact point. </source>
@@ -866,14 +865,8 @@
       <trans-unit id="featureForepathLegalContentReport-formNameRequired" datatype="html">
         <source> Name is required. </source>
         </trans-unit>
-      <trans-unit id="featureForepathLegalContentReport-formNameAnonymousPlaceholder" datatype="html">
-        <source>Waived</source>
-        </trans-unit>
       <trans-unit id="featureForepathLegalContentReport-formEmailLabel" datatype="html">
         <source>Email</source>
-        </trans-unit>
-      <trans-unit id="featureForepathLegalContentReport-formEmailAnonymousPlaceholder" datatype="html">
-        <source>Waived</source>
         </trans-unit>
       <trans-unit id="featureForepathLegalContentReport-formEmailRequired" datatype="html">
         <source> Email is required. </source>
@@ -949,6 +942,12 @@
         </trans-unit>
       <trans-unit id="featureForepathLegalContentReport-formSubmit" datatype="html">
         <source> Submit report </source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formNameAnonymousPlaceholder" datatype="html">
+        <source>Waived</source>
+        </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-formEmailAnonymousPlaceholder" datatype="html">
+        <source>Waived</source>
         </trans-unit>
       <trans-unit id="featureForepathLegalContentReport-metaTitle" datatype="html">
         <source>Content Report :: ForePath</source>
@@ -1324,7 +1323,7 @@
         <source> Entrepreneurs are not entitled to a statutory withdrawal right unless individually agreed. </source>
         </trans-unit>
       <trans-unit id="featureForepathLegal-websiteTitle" datatype="html">
-        <source> Use of ForePath Websites </source>
+        <source>Use of ForePath Websites</source>
         </trans-unit>
       <trans-unit id="featureForepathLegal-websiteDesc1" datatype="html">
         <source> You may access and use our public websites for lawful informational and communication purposes. You must not disrupt the websites, attempt unauthorized access to our systems, scrape or overload infrastructure without authorization, or misuse contact and reporting forms. </source>
@@ -1348,7 +1347,7 @@
         <source> Where we create work product under an engagement, we grant you the rights of use required for the intended contractual purpose unless the order states a different license. We retain our pre-existing tools, methods, know-how, and materials. </source>
         </trans-unit>
       <trans-unit id="featureForepathLegal-supportTitle" datatype="html">
-        <source> Support and Individual Services </source>
+        <source>Support and Individual Services</source>
         </trans-unit>
       <trans-unit id="featureForepathLegal-supportDesc1" datatype="html">
         <source> Support channels (e.g., email, telephone, chat, or Microsoft Teams) and response targets depend on the purchased engagement or enterprise agreement. Any uptime percentage or SLA applies only if and as expressly agreed in writing; otherwise statutory remedies remain unaffected. </source>
@@ -1456,10 +1455,10 @@
         <source>Terms of Service :: ForePath</source>
         </trans-unit>
       <trans-unit id="featureForepathLegalTerms-metaDescription" datatype="html">
-        <source> Terms governing use of ForePath websites, consulting services, and related professional offerings from IPvX UG (haftungsbeschränkt). </source>
+        <source>Terms governing use of ForePath websites, consulting services, and related professional offerings from IPvX UG (haftungsbeschränkt).</source>
         </trans-unit>
       <trans-unit id="featureForepathLegalTerms-metaKeywords" datatype="html">
-        <source> ForePath, terms of service, consulting, IPvX </source>
+        <source>ForePath, terms of service, consulting, IPvX</source>
         </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-title" datatype="html">
         <source> Vulnerability Disclosure Policy </source>
