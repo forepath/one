@@ -63,6 +63,7 @@ export class BillingAuditLogResponseDto {
   level!: string;
   message!: string;
   invoiceId?: string;
+  offerId?: string;
   userId?: string;
   context!: Record<string, unknown>;
   createdAt!: Date;
