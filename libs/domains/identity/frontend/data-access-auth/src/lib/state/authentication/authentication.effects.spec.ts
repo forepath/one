@@ -572,7 +572,7 @@ describe('AuthenticationEffects', () => {
         newPassword: 'new',
         newPasswordConfirmation: 'new',
       });
-      const outcome = changePasswordSuccess();
+      const outcome = changePasswordSuccess({ message: 'Password changed successfully.' });
 
       actions$ = of(action);
 

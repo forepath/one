@@ -240,20 +240,28 @@ export const authenticationReducer = createReducer(
     resettingPassword: false,
     error,
   })),
-  // Change Password
+  // Change Password (security settings; surfaces via twoFactor* messages)
   on(changePassword, (state) => ({
     ...state,
     changingPassword: true,
+    twoFactorLoading: true,
+    twoFactorError: null,
+    twoFactorSuccessMessage: null,
     error: null,
   })),
-  on(changePasswordSuccess, (state) => ({
+  on(changePasswordSuccess, (state, { message }) => ({
     ...state,
     changingPassword: false,
+    twoFactorLoading: false,
+    twoFactorSuccessMessage: message,
+    twoFactorError: null,
     error: null,
   })),
   on(changePasswordFailure, (state, { error }) => ({
     ...state,
     changingPassword: false,
+    twoFactorLoading: false,
+    twoFactorError: error,
     error,
   })),
   // Login 2FA self-service

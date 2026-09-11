@@ -107,7 +107,10 @@ export const changePassword = createAction(
   props<{ currentPassword: string; newPassword: string; newPasswordConfirmation: string }>(),
 );
 
-export const changePasswordSuccess = createAction('[Authentication] Change Password Success');
+export const changePasswordSuccess = createAction(
+  '[Authentication] Change Password Success',
+  props<{ message: string }>(),
+);
 
 export const changePasswordFailure = createAction(
   '[Authentication] Change Password Failure',

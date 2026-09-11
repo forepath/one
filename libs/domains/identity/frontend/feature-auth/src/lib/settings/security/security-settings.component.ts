@@ -1,10 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import {
   AuthenticationFacade,
+  changePasswordSuccess,
   confirmTotpSuccess,
   disableTotpSuccess,
   enableEmail2faSuccess,
@@ -16,6 +24,17 @@ import QRCode from 'qrcode';
 import { filter } from 'rxjs/operators';
 
 import { IdentityOtpInputComponent } from '../../otp-input/otp-input.component';
+
+function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
+  const newPassword = control.get('newPassword')?.value;
+  const confirmation = control.get('newPasswordConfirmation')?.value;
+
+  if (!newPassword || !confirmation || newPassword === confirmation) {
+    return null;
+  }
+
+  return { passwordsMismatch: true };
+}
 
 @Component({
   selector: 'identity-auth-security-settings',
@@ -44,12 +63,14 @@ export class IdentitySecuritySettingsComponent implements OnInit {
   readonly showDisableTotp = signal(false);
   readonly showDisableEmail = signal(false);
   readonly showSetupTotp = signal(false);
+  readonly showChangePassword = signal(false);
 
   emailConfirmForm!: FormGroup;
   emailDisableForm!: FormGroup;
   totpSetupForm!: FormGroup;
   totpConfirmForm!: FormGroup;
   totpDisableForm!: FormGroup;
+  changePasswordForm!: FormGroup;
 
   get isUsersAuth(): boolean {
     return this.environment.authentication.type === 'users';
@@ -71,6 +92,14 @@ export class IdentitySecuritySettingsComponent implements OnInit {
     this.totpDisableForm = this.fb.group({
       code: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
     });
+    this.changePasswordForm = this.fb.group(
+      {
+        currentPassword: ['', [Validators.required]],
+        newPassword: ['', [Validators.required, Validators.minLength(8)]],
+        newPasswordConfirmation: ['', [Validators.required, Validators.minLength(8)]],
+      },
+      { validators: passwordsMatchValidator },
+    );
 
     if (this.isUsersAuth) {
       this.authFacade.loadTwoFactorStatus();
@@ -99,6 +128,15 @@ export class IdentitySecuritySettingsComponent implements OnInit {
     this.actions$.pipe(ofType(disableTotpSuccess), takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.showDisableTotp.set(false);
       this.totpDisableForm.reset({ code: '' });
+    });
+
+    this.actions$.pipe(ofType(changePasswordSuccess), takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.showChangePassword.set(false);
+      this.changePasswordForm.reset({
+        currentPassword: '',
+        newPassword: '',
+        newPasswordConfirmation: '',
+      });
     });
 
     this.authFacade.totpSetup$
@@ -157,6 +195,26 @@ export class IdentitySecuritySettingsComponent implements OnInit {
     this.showDisableEmail.set(false);
     this.email2faPending.set(false);
     this.emailDisableForm.reset({ currentPassword: '' });
+  }
+
+  onShowChangePassword(): void {
+    this.showChangePassword.set(true);
+    this.authFacade.clearTwoFactorMessages();
+  }
+
+  onChangePassword(): void {
+    if (this.changePasswordForm.invalid) {
+      this.changePasswordForm.markAllAsTouched();
+
+      return;
+    }
+
+    const currentPassword = String(this.changePasswordForm.get('currentPassword')?.value ?? '');
+    const newPassword = String(this.changePasswordForm.get('newPassword')?.value ?? '');
+    const newPasswordConfirmation = String(this.changePasswordForm.get('newPasswordConfirmation')?.value ?? '');
+
+    this.authFacade.clearTwoFactorMessages();
+    this.authFacade.changePassword(currentPassword, newPassword, newPasswordConfirmation);
   }
 
   onShowSetupTotp(): void {

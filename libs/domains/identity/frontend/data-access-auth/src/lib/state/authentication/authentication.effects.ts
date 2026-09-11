@@ -607,7 +607,7 @@ export const changePassword$ = createEffect(
           map((response) => {
             localStorage.setItem(USERS_JWT_STORAGE_KEY, response.access_token);
 
-            return changePasswordSuccess();
+            return changePasswordSuccess({ message: response.message });
           }),
           catchError((error) => of(changePasswordFailure({ error: normalizeError(error) }))),
         ),

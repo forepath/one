@@ -78,6 +78,7 @@ PRODUCT_NAME=Decabill  # Issuer label on TOTP QR / authenticator entries (defaul
 - JWT-based authentication (7-day expiry)
 - **Login 2FA** (forced by default): email OTP unless authenticator enrolled; set `DISABLE_FORCE_LOGIN_2FA=true` for opt-in only
 - Self-service authenticator / email 2FA; admins can remove authenticator enrollment
+- Self-service password change under Security settings (current password, new password, confirmation; own account only)
 - TOTP QR / authenticator account name uses `PRODUCT_NAME` (falls back to `Forepath`) plus the user email
 - First registered user gets admin role
 - Admin user management (CRUD, lock, unlock)

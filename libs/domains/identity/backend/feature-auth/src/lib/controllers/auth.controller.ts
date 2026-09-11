@@ -165,6 +165,7 @@ export class AuthController {
 
   @RequirePasswordSession()
   @UseGuards(UsersAuthGuard)
+  @Throttle(AUTH_SECRET_THROTTLE)
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
   async changePassword(@Body() dto: ChangePasswordDto, @Req() req: RequestWithUser) {

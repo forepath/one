@@ -6905,6 +6905,38 @@
         <source>Email verification is required by our organization and cannot be turned off</source>
         <target>E-Mail-Bestätigung ist von unserer Organisation vorgeschrieben und kann nicht deaktiviert werden</target>
       </trans-unit>
+      <trans-unit id="featureSecuritySettings-passwordTitle" datatype="html">
+        <source>Password</source>
+        <target>Passwort</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-passwordDescription" datatype="html">
+        <source> Change the password used to sign in to your account. </source>
+        <target> Ändern Sie das Passwort, mit dem Sie sich anmelden. </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-newPasswordLabel" datatype="html">
+        <source>New password</source>
+        <target>Neues Passwort</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmPasswordLabel" datatype="html">
+        <source>Confirm new password</source>
+        <target>Neues Passwort bestätigen</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-newPasswordMinLength" datatype="html">
+        <source>Password must be at least 8 characters long.</source>
+        <target>Das Passwort muss mindestens 8 Zeichen lang sein.</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-passwordsMismatch" datatype="html">
+        <source>New password and confirmation do not match.</source>
+        <target>Neues Passwort und Bestätigung stimmen nicht überein.</target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-changePassword" datatype="html">
+        <source> Change password </source>
+        <target> Passwort ändern </target>
+      </trans-unit>
+      <trans-unit id="featureSecuritySettings-changePasswordPrompt" datatype="html">
+        <source> Change password </source>
+        <target> Passwort ändern </target>
+      </trans-unit>
       <trans-unit id="featureSecuritySettings-emailTitle" datatype="html">
         <source>Email verification</source>
         <target>E-Mail-Bestätigung</target>

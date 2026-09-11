@@ -4512,6 +4512,30 @@
       <trans-unit id="featureSecuritySettings-loading" datatype="html">
         <source>Loading...</source>
         </trans-unit>
+      <trans-unit id="featureSecuritySettings-passwordTitle" datatype="html">
+        <source>Password</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-passwordDescription" datatype="html">
+        <source> Change the password used to sign in to your account. </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-newPasswordLabel" datatype="html">
+        <source>New password</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-confirmPasswordLabel" datatype="html">
+        <source>Confirm new password</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-newPasswordMinLength" datatype="html">
+        <source>Password must be at least 8 characters long.</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-passwordsMismatch" datatype="html">
+        <source>New password and confirmation do not match.</source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-changePassword" datatype="html">
+        <source> Change password </source>
+        </trans-unit>
+      <trans-unit id="featureSecuritySettings-changePasswordPrompt" datatype="html">
+        <source> Change password </source>
+        </trans-unit>
       <trans-unit id="featureSecuritySettings-emailTitle" datatype="html">
         <source>Email verification</source>
         </trans-unit>

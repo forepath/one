@@ -415,17 +415,13 @@ export class AuthService {
       throw new BadRequestException('New password and confirmation do not match');
     }
 
+    if (newPassword === currentPassword) {
+      throw new BadRequestException('New password must be different from the current password');
+    }
+
     const user = await this.usersRepository.findByIdOrThrow(userId);
 
-    if (!user.passwordHash) {
-      throw new BadRequestException('This account uses external authentication. Cannot change password here.');
-    }
-
-    const valid = await this.usersService.validatePassword(currentPassword, user.passwordHash);
-
-    if (!valid) {
-      throw new UnauthorizedException('Current password is incorrect');
-    }
+    await this.assertCurrentPassword(user, currentPassword);
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
 

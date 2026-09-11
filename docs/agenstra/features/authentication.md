@@ -76,6 +76,7 @@ PRODUCT_NAME=Agenstra  # Issuer label on TOTP QR / authenticator entries (defaul
 - JWT-based authentication
 - **Login 2FA** (forced by default): email OTP on every login unless an authenticator is enrolled; set `DISABLE_FORCE_LOGIN_2FA=true` to make 2FA opt-in only
 - Self-service authenticator (TOTP) and optional email 2FA under Security settings
+- Self-service password change under Security settings (current password, new password, confirmation; own account only)
 - TOTP QR / authenticator account name uses `PRODUCT_NAME` (falls back to `Forepath`) plus the user email
 - Admin can remove a user's authenticator (falls back to email OTP when force is on)
 - First registered user gets admin role

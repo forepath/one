@@ -313,6 +313,34 @@ describe('AuthService', () => {
     });
   });
 
+  it('rejects changePassword when confirmation does not match', async () => {
+    await expect(service.changePassword('user-1', 'old-pass', 'new-pass', 'other-pass')).rejects.toThrow(
+      'New password and confirmation do not match',
+    );
+    expect(mockUsersRepository.findByIdOrThrow).not.toHaveBeenCalled();
+  });
+
+  it('rejects changePassword when new password equals current password', async () => {
+    await expect(service.changePassword('user-1', 'same-pass', 'same-pass', 'same-pass')).rejects.toThrow(
+      'New password must be different from the current password',
+    );
+    expect(mockUsersRepository.findByIdOrThrow).not.toHaveBeenCalled();
+  });
+
+  it('rejects changePassword when current password is incorrect', async () => {
+    mockUsersRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'user-1',
+      email: 'a@b.com',
+      role: UserRole.USER,
+      passwordHash: '$2b$12$hash',
+    });
+    mockUsersService.validatePassword.mockResolvedValue(false);
+
+    await expect(service.changePassword('user-1', 'wrong', 'new-pass', 'new-pass')).rejects.toThrow(
+      'Current password is incorrect',
+    );
+  });
+
   it('invalidates all sessions via invalidateAllSessions', async () => {
     mockUsersRepository.incrementTokenVersion.mockResolvedValue(1);
 
