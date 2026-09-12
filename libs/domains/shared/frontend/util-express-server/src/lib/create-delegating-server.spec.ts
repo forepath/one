@@ -153,6 +153,8 @@ describe('create-delegating-server', () => {
         expect(home.status).toBe(200);
         expect(home.body).toContain('en-home');
         expect(String(home.headers['cache-control'])).toContain('must-revalidate');
+        expect(String(home.headers['etag'])).toMatch(/^"sha256-/);
+        expect(home.headers['last-modified']).toBeTruthy();
 
         const pricing = await httpGet(port, '/en/pricing');
         expect(pricing.status).toBe(200);
@@ -161,7 +163,16 @@ describe('create-delegating-server', () => {
         const asset = await httpGet(port, '/en/app.js');
         expect(asset.status).toBe(200);
         expect(asset.body).toContain('console.log');
-        expect(String(asset.headers['cache-control'])).toContain('31536000');
+        expect(String(asset.headers['cache-control'])).toBe('public, max-age=31536000, immutable');
+        expect(String(asset.headers['etag'])).toMatch(/^"sha256-/);
+        expect(asset.headers['last-modified']).toBeTruthy();
+
+        const revalidated = await httpGet(port, '/en/app.js', {
+          'if-none-match': String(asset.headers['etag']),
+        });
+        expect(revalidated.status).toBe(304);
+        expect(revalidated.body).toBe('');
+        expect(String(revalidated.headers['etag'])).toBe(String(asset.headers['etag']));
       } finally {
         await closeServer(handle.server);
       }

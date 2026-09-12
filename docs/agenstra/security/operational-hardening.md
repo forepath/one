@@ -73,7 +73,7 @@ When **`CONFIG`** points to a remote JSON URL, Express servers validate fetches 
 - Production: **HTTPS** unless **`CONFIG_ALLOW_INSECURE_HTTP=true`**; **`CONFIG_ALLOWED_HOSTS`** required when `CONFIG` is set.
 - Timeout, max bytes, JSON object shape, content-type, redirect blocking, optional key count/depth limits.
 - DNS check against private/loopback resolution (skippable via **`CONFIG_SKIP_DNS_CHECK`** in exceptional cases).
-- Response **`Cache-Control`**: for example `private, max-age=60, stale-while-revalidate=300` in production on success; `no-store` on proxy errors.
+- Response **`Cache-Control`**: for example `public, max-age=60, stale-while-revalidate=300` in production on success (deployment-scoped, not per-user); `no-store` on proxy errors. Paths without a cacheable file extension (such as `/config`) may still need a CDN Cache Rule to become edge-eligible.
 
 **`CONFIG_ALLOWED_HOSTS`** supports **`*`** to explicitly allow **any host**. That choice increases risk if **`CONFIG`** points to an attacker-controlled origin; prefer explicit host allowlists in production.
 

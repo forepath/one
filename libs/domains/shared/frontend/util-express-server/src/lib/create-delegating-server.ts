@@ -1,12 +1,12 @@
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
-import { dirname, extname, join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { stripLocalePrefixFromPath } from './localized-browser-dist';
 import {
+  createCachedStaticFile,
   getCachedStaticFile,
-  getContentTypeForStaticPath,
   isSourceMapPath,
   warmStaticMemoryCache,
   writeCachedStaticFileToNodeResponse,
@@ -119,25 +119,20 @@ export function resolveLocaleFromRequest(
   return defaultLocale;
 }
 
-function sendStaticFile(res: ServerResponse, filePath: string): void {
+function sendStaticFile(res: ServerResponse, filePath: string, req?: IncomingMessage): void {
   const cached = getCachedStaticFile(filePath);
 
   if (cached) {
-    writeCachedStaticFileToNodeResponse(res, cached);
+    writeCachedStaticFileToNodeResponse(res, cached, req);
 
     return;
   }
 
   const stat = statSync(filePath);
-  const isHtml = extname(filePath).toLowerCase() === '.html';
+  const body = readFileSync(filePath);
+  const diskCached = createCachedStaticFile(filePath, body, stat.mtimeMs);
 
-  res.writeHead(200, {
-    'Content-Type': getContentTypeForStaticPath(filePath),
-    'Content-Length': stat.size,
-    'Cache-Control': isHtml ? 'public, max-age=0, must-revalidate' : 'public, max-age=31536000',
-  });
-
-  createReadStream(filePath).pipe(res);
+  writeCachedStaticFileToNodeResponse(res, diskCached, req);
 }
 
 export const defaultLoadLocaleServerModule: LocaleServerModuleLoader = async (serverPath) => {
@@ -221,7 +216,7 @@ export function createDelegatingServer(options: CreateDelegatingServerOptions): 
         : resolveLocalizedStaticFilePath(browserLocaleRoot, pathnameForLocale);
 
       if (staticFilePath) {
-        sendStaticFile(res, staticFilePath);
+        sendStaticFile(res, staticFilePath, req);
 
         return;
       }

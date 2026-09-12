@@ -17,10 +17,18 @@ export {
 export { buildSsrAllowedHosts } from './lib/ssr-allowed-hosts';
 export { resolveLocalizedBrowserDistFolder, stripLocalePrefixFromPath } from './lib/localized-browser-dist';
 export {
+  buildStaticCacheHeaders,
+  buildStaticCacheHeadersFor304,
   clearStaticMemoryCache,
+  computeStrongContentEtag,
+  createCachedStaticFile,
   createMemoryStaticMiddleware,
+  formatHttpDate,
   getCachedStaticFile,
   getContentTypeForStaticPath,
+  getStaticCacheControlHeader,
+  isHtmlStaticPath,
+  isNotModified,
   isSourceMapPath,
   isStaticMemoryCacheEnabled,
   resolveStaticPathAgainstRoot,
@@ -29,6 +37,9 @@ export {
   writeCachedStaticFileToNodeResponse,
   type CachedStaticFile,
   type MemoryStaticMiddlewareOptions,
+  type StaticCacheHeaderMap,
+  type StaticCacheHeaderOptions,
+  type StaticCacheRequestHeaders,
   type StaticMemoryCacheIndex,
   type StaticMemoryCacheStats,
 } from './lib/static-memory-cache';

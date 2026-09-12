@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import { extname, join, relative, resolve, sep } from 'node:path';
 
@@ -8,6 +9,8 @@ export interface CachedStaticFile {
   contentType: string;
   mtimeMs: number;
   absolutePath: string;
+  /** Strong content-based ETag, including surrounding quotes (e.g. `"sha256-…"`). */
+  etag: string;
 }
 
 export interface StaticMemoryCacheStats {
@@ -25,9 +28,24 @@ export interface MemoryStaticMiddlewareOptions {
   root: string;
   /** When a directory is requested, try this index file. Default: 'index.html'. */
   index?: StaticMemoryCacheIndex;
-  /** Long-cache assets vs revalidate HTML. Default: true (1y for non-HTML). */
+  /** Long-cache fingerprinted assets with `immutable`. Default: true. */
   immutableAssets?: boolean;
 }
+
+export interface StaticCacheHeaderOptions {
+  /** When true (default), non-HTML responses include `immutable`. */
+  immutableAssets?: boolean;
+}
+
+/** Minimal request surface for conditional GET / HEAD. */
+export type StaticCacheRequestHeaders = {
+  headers?: {
+    'if-none-match'?: string | string[];
+    'if-modified-since'?: string | string[];
+  };
+};
+
+export type StaticCacheHeaderMap = Record<string, string | number>;
 
 const CONTENT_TYPES: Readonly<Record<string, string>> = {
   '.html': 'text/html; charset=utf-8',
@@ -50,6 +68,8 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
   '.xml': 'application/xml',
   '.wasm': 'application/wasm',
 };
+
+const ONE_YEAR_SECONDS = 31536000;
 
 /** Process-wide absolute-path → buffer cache populated by {@link warmStaticMemoryCache}. */
 const staticMemoryCache = new Map<string, CachedStaticFile>();
@@ -76,17 +96,145 @@ export function isSourceMapPath(filePath: string): boolean {
   return extname(filePath).toLowerCase() === '.map';
 }
 
+export function isHtmlStaticPath(filePath: string): boolean {
+  return extname(filePath).toLowerCase() === '.html';
+}
+
+/**
+ * Strong ETag from file bytes so validators stay stable across pods/replicas
+ * (unlike inode/mtime weak ETags from express.static defaults).
+ */
+export function computeStrongContentEtag(body: Buffer): string {
+  const digest = createHash('sha256').update(body).digest('base64url');
+
+  return `"sha256-${digest}"`;
+}
+
+export function formatHttpDate(mtimeMs: number): string {
+  return new Date(mtimeMs).toUTCString();
+}
+
+export function getStaticCacheControlHeader(absolutePath: string, options: StaticCacheHeaderOptions = {}): string {
+  if (isHtmlStaticPath(absolutePath)) {
+    return 'public, max-age=0, must-revalidate';
+  }
+
+  const immutable = options.immutableAssets !== false;
+
+  return immutable ? `public, max-age=${ONE_YEAR_SECONDS}, immutable` : `public, max-age=${ONE_YEAR_SECONDS}`;
+}
+
+function headerValue(raw: string | string[] | undefined): string | undefined {
+  if (raw === undefined) {
+    return undefined;
+  }
+
+  return Array.isArray(raw) ? raw[0] : raw;
+}
+
+/**
+ * Returns true when the client already has a fresh representation
+ * (`If-None-Match` / `If-Modified-Since`).
+ */
+export function isNotModified(req: StaticCacheRequestHeaders, etag: string, mtimeMs: number): boolean {
+  const ifNoneMatch = headerValue(req.headers?.['if-none-match']);
+
+  if (ifNoneMatch) {
+    if (ifNoneMatch.trim() === '*') {
+      return true;
+    }
+
+    const candidates = ifNoneMatch.split(',').map((value) => value.trim());
+
+    return candidates.some((candidate) => {
+      const normalized = candidate.startsWith('W/') ? candidate.slice(2).trim() : candidate;
+
+      return normalized === etag;
+    });
+  }
+
+  const ifModifiedSince = headerValue(req.headers?.['if-modified-since']);
+
+  if (!ifModifiedSince) {
+    return false;
+  }
+
+  const sinceMs = Date.parse(ifModifiedSince);
+
+  if (Number.isNaN(sinceMs)) {
+    return false;
+  }
+
+  // HTTP dates have 1s resolution; truncate mtime the same way.
+  return Math.floor(mtimeMs / 1000) <= Math.floor(sinceMs / 1000);
+}
+
+export function buildStaticCacheHeaders(
+  cached: Pick<CachedStaticFile, 'absolutePath' | 'contentType' | 'body' | 'etag' | 'mtimeMs'>,
+  options: StaticCacheHeaderOptions = {},
+): StaticCacheHeaderMap {
+  return {
+    'Content-Type': cached.contentType,
+    'Content-Length': cached.body.byteLength,
+    'Cache-Control': getStaticCacheControlHeader(cached.absolutePath, options),
+    ETag: cached.etag,
+    'Last-Modified': formatHttpDate(cached.mtimeMs),
+  };
+}
+
+export function buildStaticCacheHeadersFor304(
+  cached: Pick<CachedStaticFile, 'absolutePath' | 'etag' | 'mtimeMs'>,
+  options: StaticCacheHeaderOptions = {},
+): StaticCacheHeaderMap {
+  return {
+    'Cache-Control': getStaticCacheControlHeader(cached.absolutePath, options),
+    ETag: cached.etag,
+    'Last-Modified': formatHttpDate(cached.mtimeMs),
+  };
+}
+
 export function getCachedStaticFile(absolutePath: string): CachedStaticFile | null {
   return staticMemoryCache.get(resolve(absolutePath)) ?? null;
 }
 
-export function sendCachedStaticFile(res: Response, cached: CachedStaticFile): void {
-  const isHtml = extname(cached.absolutePath).toLowerCase() === '.html';
+export function createCachedStaticFile(absolutePath: string, body: Buffer, mtimeMs: number): CachedStaticFile {
+  const resolved = resolve(absolutePath);
+
+  return {
+    body,
+    contentType: getContentTypeForStaticPath(resolved),
+    mtimeMs,
+    absolutePath: resolved,
+    etag: computeStrongContentEtag(body),
+  };
+}
+
+export function sendCachedStaticFile(
+  res: Response,
+  cached: CachedStaticFile,
+  req?: StaticCacheRequestHeaders,
+  options: StaticCacheHeaderOptions = {},
+): void {
+  if (req && isNotModified(req, cached.etag, cached.mtimeMs)) {
+    res.status(304);
+    const headers = buildStaticCacheHeadersFor304(cached, options);
+
+    for (const [name, value] of Object.entries(headers)) {
+      res.setHeader(name, value);
+    }
+
+    res.end();
+
+    return;
+  }
 
   res.status(200);
-  res.setHeader('Content-Type', cached.contentType);
-  res.setHeader('Content-Length', cached.body.byteLength);
-  res.setHeader('Cache-Control', isHtml ? 'public, max-age=0, must-revalidate' : 'public, max-age=31536000');
+  const headers = buildStaticCacheHeaders(cached, options);
+
+  for (const [name, value] of Object.entries(headers)) {
+    res.setHeader(name, value);
+  }
+
   res.end(cached.body);
 }
 
@@ -94,16 +242,19 @@ export function sendCachedStaticFile(res: Response, cached: CachedStaticFile): v
  * Sends a Node `http.ServerResponse` from a cached file (delegating server).
  */
 export function writeCachedStaticFileToNodeResponse(
-  res: { writeHead: (code: number, headers: Record<string, string | number>) => void; end: (body?: Buffer) => void },
+  res: { writeHead: (code: number, headers: StaticCacheHeaderMap) => void; end: (body?: Buffer) => void },
   cached: CachedStaticFile,
+  req?: StaticCacheRequestHeaders,
+  options: StaticCacheHeaderOptions = {},
 ): void {
-  const isHtml = extname(cached.absolutePath).toLowerCase() === '.html';
+  if (req && isNotModified(req, cached.etag, cached.mtimeMs)) {
+    res.writeHead(304, buildStaticCacheHeadersFor304(cached, options));
+    res.end();
 
-  res.writeHead(200, {
-    'Content-Type': cached.contentType,
-    'Content-Length': cached.body.byteLength,
-    'Cache-Control': isHtml ? 'public, max-age=0, must-revalidate' : 'public, max-age=31536000',
-  });
+    return;
+  }
+
+  res.writeHead(200, buildStaticCacheHeaders(cached, options));
   res.end(cached.body);
 }
 
@@ -140,13 +291,9 @@ async function walkAndWarm(dir: string, stats: { files: number; bytes: number; s
     try {
       const [body, fileStat] = await Promise.all([fs.readFile(absolutePath), fs.stat(absolutePath)]);
       const resolved = resolve(absolutePath);
+      const cached = createCachedStaticFile(resolved, body, fileStat.mtimeMs);
 
-      staticMemoryCache.set(resolved, {
-        body,
-        contentType: getContentTypeForStaticPath(resolved),
-        mtimeMs: fileStat.mtimeMs,
-        absolutePath: resolved,
-      });
+      staticMemoryCache.set(resolved, cached);
       stats.files += 1;
       stats.bytes += body.byteLength;
     } catch (error: unknown) {
@@ -276,6 +423,9 @@ export function resolveStaticPathAgainstRoot(
 export function createMemoryStaticMiddleware(options: MemoryStaticMiddlewareOptions): RequestHandler {
   const root = resolve(options.root);
   const index: StaticMemoryCacheIndex = options.index === false ? false : (options.index ?? 'index.html');
+  const headerOptions: StaticCacheHeaderOptions = {
+    immutableAssets: options.immutableAssets,
+  };
 
   return (req: Request, res: Response, next: NextFunction) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -308,17 +458,28 @@ export function createMemoryStaticMiddleware(options: MemoryStaticMiddlewareOpti
     }
 
     if (req.method === 'HEAD') {
-      const isHtml = extname(cached.absolutePath).toLowerCase() === '.html';
+      if (isNotModified(req, cached.etag, cached.mtimeMs)) {
+        res.status(304);
+        const headers = buildStaticCacheHeadersFor304(cached, headerOptions);
+
+        for (const [name, value] of Object.entries(headers)) {
+          res.setHeader(name, value);
+        }
+
+        return res.end();
+      }
 
       res.status(200);
-      res.setHeader('Content-Type', cached.contentType);
-      res.setHeader('Content-Length', cached.body.byteLength);
-      res.setHeader('Cache-Control', isHtml ? 'public, max-age=0, must-revalidate' : 'public, max-age=31536000');
+      const headers = buildStaticCacheHeaders(cached, headerOptions);
+
+      for (const [name, value] of Object.entries(headers)) {
+        res.setHeader(name, value);
+      }
 
       return res.end();
     }
 
-    sendCachedStaticFile(res, cached);
+    sendCachedStaticFile(res, cached, req, headerOptions);
   };
 }
 
