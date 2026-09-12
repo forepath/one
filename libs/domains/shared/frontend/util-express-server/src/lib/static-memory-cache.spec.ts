@@ -136,7 +136,7 @@ describe('static-memory-cache', () => {
   });
 
   describe('writeCachedStaticFileToNodeResponse', () => {
-    it('writes HTML and non-HTML cache headers', async () => {
+    it('writes HTML and non-HTML cache headers with validators', async () => {
       await warmStaticMemoryCache([root], {});
 
       const htmlCached = getCachedStaticFile(join(root, 'index.html'));
@@ -144,6 +144,9 @@ describe('static-memory-cache', () => {
 
       expect(htmlCached).not.toBeNull();
       expect(jsCached).not.toBeNull();
+      expect(htmlCached!.etag).toMatch(/^"sha256-/);
+      expect(jsCached!.etag).toMatch(/^"sha256-/);
+      expect(jsCached!.etag).not.toBe(htmlCached!.etag);
 
       const htmlHeaders: Record<string, string | number> = {};
       let htmlBody: Buffer | undefined;
@@ -159,6 +162,8 @@ describe('static-memory-cache', () => {
         htmlCached!,
       );
       expect(htmlHeaders['Cache-Control']).toContain('must-revalidate');
+      expect(htmlHeaders['ETag']).toBe(htmlCached!.etag);
+      expect(htmlHeaders['Last-Modified']).toBeTruthy();
       expect(String(htmlBody)).toContain('home');
 
       const jsHeaders: Record<string, string | number> = {};
@@ -173,7 +178,51 @@ describe('static-memory-cache', () => {
         },
         jsCached!,
       );
-      expect(jsHeaders['Cache-Control']).toContain('31536000');
+      expect(jsHeaders['Cache-Control']).toBe('public, max-age=31536000, immutable');
+      expect(jsHeaders['ETag']).toBe(jsCached!.etag);
+      expect(jsHeaders['Last-Modified']).toBeTruthy();
+    });
+
+    it('returns 304 when If-None-Match matches', async () => {
+      await warmStaticMemoryCache([root], {});
+      const jsCached = getCachedStaticFile(join(root, 'app.js'));
+
+      expect(jsCached).not.toBeNull();
+
+      let status = 0;
+      const headers: Record<string, string | number> = {};
+      let body: Buffer | undefined;
+
+      writeCachedStaticFileToNodeResponse(
+        {
+          writeHead(code, responseHeaders) {
+            status = code;
+            Object.assign(headers, responseHeaders);
+          },
+          end(chunk) {
+            body = chunk;
+          },
+        },
+        jsCached!,
+        { headers: { 'if-none-match': jsCached!.etag } },
+      );
+
+      expect(status).toBe(304);
+      expect(body).toBeUndefined();
+      expect(headers['ETag']).toBe(jsCached!.etag);
+      expect(headers['Cache-Control']).toContain('immutable');
+      expect(headers['Content-Length']).toBeUndefined();
+    });
+
+    it('keeps a stable ETag for identical bytes across warms', async () => {
+      await warmStaticMemoryCache([root], {});
+      const first = getCachedStaticFile(join(root, 'app.js'))!.etag;
+
+      clearStaticMemoryCache();
+      await warmStaticMemoryCache([root], {});
+      const second = getCachedStaticFile(join(root, 'app.js'))!.etag;
+
+      expect(second).toBe(first);
     });
   });
 
@@ -252,7 +301,7 @@ describe('static-memory-cache', () => {
     it('serves from memory on cache hit', async () => {
       await warmStaticMemoryCache([root], {});
       const middleware = createMemoryStaticMiddleware({ root, index: 'index.html' });
-      const req = { method: 'GET', path: '/' } as Request;
+      const req = { method: 'GET', path: '/', headers: {} } as Request;
       const res = mockRes();
       const next = jest.fn() as NextFunction;
 
@@ -262,6 +311,24 @@ describe('static-memory-cache', () => {
       expect(res.statusCode).toBe(200);
       expect(String(res.body)).toContain('home');
       expect(res.headers['content-type']).toContain('text/html');
+      expect(res.headers['etag']).toMatch(/^"sha256-/);
+      expect(res.headers['cache-control']).toContain('must-revalidate');
+    });
+
+    it('returns 304 for matching If-None-Match on assets', async () => {
+      await warmStaticMemoryCache([root], {});
+      const cached = getCachedStaticFile(join(root, 'app.js'));
+      const middleware = createMemoryStaticMiddleware({ root, index: false });
+      const res = mockRes();
+      const next = jest.fn() as NextFunction;
+
+      middleware({ method: 'GET', path: '/app.js', headers: { 'if-none-match': cached!.etag } } as Request, res, next);
+
+      expect(next).not.toHaveBeenCalled();
+      expect(res.statusCode).toBe(304);
+      expect(res.body).toBeUndefined();
+      expect(res.headers['etag']).toBe(cached!.etag);
+      expect(res.headers['cache-control']).toContain('immutable');
     });
 
     it('returns 404 for .map requests', async () => {

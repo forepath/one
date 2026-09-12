@@ -15,7 +15,7 @@ describe('applyRuntimeConfigResponseCacheHeaders', () => {
 
     applyRuntimeConfigResponseCacheHeaders(res, 'success', { NODE_ENV: 'production' });
 
-    expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'private, max-age=60, stale-while-revalidate=300');
+    expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
   });
 
   it('sets private no-cache for success outside production', () => {

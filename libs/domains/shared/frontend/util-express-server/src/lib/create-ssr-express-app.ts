@@ -10,6 +10,7 @@ import { createSecurityHeadersMiddleware } from './security-headers';
 import { buildSsrAllowedHosts } from './ssr-allowed-hosts';
 import {
   createMemoryStaticMiddleware,
+  getStaticCacheControlHeader,
   warmStaticMemoryCache,
   type StaticMemoryCacheStats,
 } from './static-memory-cache';
@@ -44,7 +45,12 @@ export function createSsrExpressApp(options: CreateSsrExpressAppOptions): SsrExp
   });
   const diskStaticMiddleware = express.static(browserDistFolder, {
     maxAge: '1y',
+    immutable: true,
     index: 'index.html',
+    setHeaders(res, filePath) {
+      // Override serve-static defaults so HTML stays revalidate-only and assets stay immutable.
+      res.setHeader('Cache-Control', getStaticCacheControlHeader(filePath));
+    },
   });
   const commonEngine = new CommonEngine({
     allowedHosts: buildSsrAllowedHosts(apexDomains),
@@ -81,7 +87,10 @@ export function createSsrExpressApp(options: CreateSsrExpressAppOptions): SsrExp
         publicPath: browserDistFolder,
         providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
       })
-      .then((html: string) => res.send(html))
+      .then((html: string) => {
+        res.setHeader('Cache-Control', getStaticCacheControlHeader('index.html'));
+        res.send(html);
+      })
       .catch((err: unknown) => next(err));
   });
 

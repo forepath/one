@@ -1,11 +1,13 @@
-import { existsSync, readdirSync, statSync } from 'fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 import {
+  createCachedStaticFile,
   createMemoryStaticMiddleware,
   createSecurityHeadersMiddleware,
   getCachedStaticFile,
+  getStaticCacheControlHeader,
   registerRuntimeConfigEndpoint,
   sendCachedStaticFile,
   warmStaticMemoryCache,
@@ -158,16 +160,33 @@ function getLocalePath(locale: string): string {
   return join(baseDistPath, DEFAULT_LOCALE);
 }
 
-function sendFileFromCacheOrDisk(res: express.Response, absolutePath: string): void {
+function sendFileFromCacheOrDisk(res: express.Response, absolutePath: string, req?: express.Request): void {
   const cached = getCachedStaticFile(absolutePath);
 
   if (cached) {
-    sendCachedStaticFile(res, cached);
+    sendCachedStaticFile(res, cached, req);
 
     return;
   }
 
-  res.sendFile(resolve(absolutePath));
+  const resolvedPath = resolve(absolutePath);
+  const stat = statSync(resolvedPath);
+  const body = readFileSync(resolvedPath);
+  const diskCached = createCachedStaticFile(resolvedPath, body, stat.mtimeMs);
+
+  sendCachedStaticFile(res, diskCached, req);
+}
+
+function createDiskStaticMiddleware(root: string): express.RequestHandler {
+  return express.static(root, {
+    maxAge: '1y',
+    immutable: true,
+    index: false,
+    fallthrough: true,
+    setHeaders(res, filePath) {
+      res.setHeader('Cache-Control', getStaticCacheControlHeader(filePath));
+    },
+  });
 }
 
 // Middleware to handle Monaco Editor CSS imports as JavaScript modules
@@ -264,7 +283,7 @@ for (const locale of AVAILABLE_LOCALES) {
       index: false,
     }),
   );
-  app.use(`/${locale}`, express.static(localePath, { index: false, fallthrough: true }));
+  app.use(`/${locale}`, createDiskStaticMiddleware(localePath));
 }
 
 // Also serve from root for default locale (backward compatibility and direct access)
@@ -276,7 +295,7 @@ app.use(
     index: false,
   }),
 );
-app.use(express.static(defaultLocalePath, { index: false, fallthrough: true }));
+app.use(createDiskStaticMiddleware(defaultLocalePath));
 
 // Never publish source maps
 app.get(/\.map$/i, (_req, res) => {
@@ -304,7 +323,7 @@ app.use((req, res, next) => {
       const filePath = join(localePath, pathWithoutLocale + '.js');
 
       if (getCachedStaticFile(filePath) || existsSync(filePath)) {
-        return sendFileFromCacheOrDisk(res, filePath);
+        return sendFileFromCacheOrDisk(res, filePath, req);
       }
     } else {
       // Root path (no locale prefix)
@@ -312,7 +331,7 @@ app.use((req, res, next) => {
       const filePath = join(localePath, req.path + '.js');
 
       if (getCachedStaticFile(filePath) || existsSync(filePath)) {
-        return sendFileFromCacheOrDisk(res, filePath);
+        return sendFileFromCacheOrDisk(res, filePath, req);
       }
     }
   }
@@ -340,7 +359,7 @@ app.get('*', (req, res) => {
     return;
   }
 
-  sendFileFromCacheOrDisk(res, indexPath);
+  sendFileFromCacheOrDisk(res, indexPath, req);
 });
 
 warmStaticMemoryCache([baseDistPath])
