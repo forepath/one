@@ -152,23 +152,42 @@ export class PortalHomeComponent implements OnInit {
   }
 
   billingIntervalSuffix(plan: PublicServicePlanOffering): string {
-    if (plan.billingIntervalType === 'month' && plan.billingIntervalValue === 1) {
-      return $localize`:@@featureDecabillHome-planPriceMonth:/month`;
+    const value = plan.billingIntervalValue;
+    const type = plan.billingIntervalType;
+
+    if (type === 'month' && value === 1) {
+      return $localize`:@@featureDecabillHome-planPriceMonth:/ month`;
     }
 
-    if (plan.billingIntervalType === 'year' && plan.billingIntervalValue === 1) {
-      return $localize`:@@featureDecabillHome-planPriceYear:/year`;
+    if (type === 'year' && value === 1) {
+      return $localize`:@@featureDecabillHome-planPriceYear:/ year`;
     }
 
-    if (plan.billingIntervalType === 'hour') {
-      return $localize`:@@featureDecabillHome-planPriceHour:/hour`;
+    if (type === 'hour' && value === 1) {
+      return $localize`:@@featureDecabillHome-planPriceHour:/ hour`;
     }
 
-    if (plan.billingIntervalType === 'day') {
-      return $localize`:@@featureDecabillHome-planPriceDay:/day`;
+    if (type === 'day' && value === 1) {
+      return $localize`:@@featureDecabillHome-planPriceDay:/ day`;
     }
 
-    return ` / ${plan.billingIntervalValue} ${plan.billingIntervalType}`;
+    if (type === 'month') {
+      return $localize`:@@featureDecabillHome-planPriceMonths:/ ${value}:intervalValue: months`;
+    }
+
+    if (type === 'hour') {
+      return $localize`:@@featureDecabillHome-planPriceHours:/ ${value}:intervalValue: hours`;
+    }
+
+    if (type === 'day') {
+      return $localize`:@@featureDecabillHome-planPriceDays:/ ${value}:intervalValue: days`;
+    }
+
+    if (type === 'year') {
+      return $localize`:@@featureDecabillHome-planPriceYears:/ ${value}:intervalValue: years`;
+    }
+
+    return ` / ${value} ${type}`;
   }
 
   formatPublicOfferingPrice = formatPublicOfferingPrice;

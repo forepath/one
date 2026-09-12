@@ -219,7 +219,7 @@
         <source>From</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-heroPriceUnit" datatype="html">
-        <source>/month</source>
+        <source>/ month</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-heroPriceUnavailable" datatype="html">
         <source>Not available</source>
@@ -372,13 +372,28 @@
         <source>Agenstra Cloud, Agenstra, AI agent platform, AI control plane, AI governance, AI observability, managed SaaS, agentic systems</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-planPriceMonth" datatype="html">
-        <source>/month</source>
+        <source>/ month</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-planPriceHour" datatype="html">
-        <source>/hour</source>
+        <source>/ hour</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-planPriceDay" datatype="html">
-        <source>/day</source>
+        <source>/ day</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceYear" datatype="html">
+        <source>/ year</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceMonths" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> months</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceHours" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> hours</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceDays" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> days</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceYears" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> years</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-codeium-metaTitle" datatype="html">
         <source>Codeium &amp; Windsurf vs Agenstra :: Agenstra</source>
@@ -2436,7 +2451,7 @@
         <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>99.9% uptime SLA<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> for reliable operation at scale</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-cloudPriceUnit" datatype="html">
-        <source>/month</source>
+        <source>/ month</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-ctaTitle" datatype="html">
         <source>Ready to get started with Agenstra?</source>

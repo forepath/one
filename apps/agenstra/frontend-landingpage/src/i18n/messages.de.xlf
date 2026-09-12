@@ -291,8 +291,8 @@
         <target> Ab </target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-heroPriceUnit" datatype="html">
-        <source>/month</source>
-        <target> /Monat </target>
+        <source>/ month</source>
+        <target>/ Monat</target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-heroPriceUnavailable" datatype="html">
         <source>Not available</source>
@@ -495,16 +495,36 @@
         <target>Agenstra Cloud, Agenstra, KI-Agentenplattform, KI-Control-Plane, KI-Governance, KI-Beobachtbarkeit, verwaltetes SaaS, agentenbasierte Systeme</target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-planPriceMonth" datatype="html">
-        <source>/month</source>
-        <target> /Monat </target>
+        <source>/ month</source>
+        <target>/ Monat</target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-planPriceHour" datatype="html">
-        <source>/hour</source>
-        <target> /Stunde </target>
+        <source>/ hour</source>
+        <target>/ Stunde</target>
       </trans-unit>
       <trans-unit id="featurePortalCloud-planPriceDay" datatype="html">
-        <source>/day</source>
-        <target> /Tag </target>
+        <source>/ day</source>
+        <target>/ Tag</target>
+      </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceYear" datatype="html">
+        <source>/ year</source>
+        <target>/ Jahr</target>
+      </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceMonths" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> months</source>
+        <target>/ <x id="intervalValue" equiv-text="value"/> Monate</target>
+      </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceHours" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> hours</source>
+        <target>/ <x id="intervalValue" equiv-text="value"/> Stunden</target>
+      </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceDays" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> days</source>
+        <target>/ <x id="intervalValue" equiv-text="value"/> Tage</target>
+      </trans-unit>
+      <trans-unit id="featurePortalCloud-planPriceYears" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> years</source>
+        <target>/ <x id="intervalValue" equiv-text="value"/> Jahre</target>
       </trans-unit>
       <trans-unit id="featurePortalComparison-codeium-metaTitle" datatype="html">
         <source>Codeium &amp; Windsurf vs Agenstra :: Agenstra</source>
@@ -3251,8 +3271,8 @@
         <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>99,9 % Verfügbarkeits-SLA<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> für zuverlässigen Betrieb im großen Maßstab</target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-cloudPriceUnit" datatype="html">
-        <source>/month</source>
-        <target> /Monat </target>
+        <source>/ month</source>
+        <target>/ Monat</target>
       </trans-unit>
       <trans-unit id="featurePortalPricing-ctaTitle" datatype="html">
         <source>Ready to get started with Agenstra?</source>

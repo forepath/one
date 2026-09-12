@@ -138,19 +138,42 @@ export class PortalCloudComponent implements OnInit, AfterViewInit {
   }
 
   billingIntervalSuffix(plan: PublicServicePlanOffering): string {
-    if (plan.billingIntervalType === 'month' && plan.billingIntervalValue === 1) {
-      return $localize`:@@featurePortalCloud-planPriceMonth:/month`;
+    const value = plan.billingIntervalValue;
+    const type = plan.billingIntervalType;
+
+    if (type === 'month' && value === 1) {
+      return $localize`:@@featurePortalCloud-planPriceMonth:/ month`;
     }
 
-    if (plan.billingIntervalType === 'hour') {
-      return $localize`:@@featurePortalCloud-planPriceHour:/hour`;
+    if (type === 'hour' && value === 1) {
+      return $localize`:@@featurePortalCloud-planPriceHour:/ hour`;
     }
 
-    if (plan.billingIntervalType === 'day') {
-      return $localize`:@@featurePortalCloud-planPriceDay:/day`;
+    if (type === 'day' && value === 1) {
+      return $localize`:@@featurePortalCloud-planPriceDay:/ day`;
     }
 
-    return ` / ${plan.billingIntervalValue} ${plan.billingIntervalType}`;
+    if (type === 'year' && value === 1) {
+      return $localize`:@@featurePortalCloud-planPriceYear:/ year`;
+    }
+
+    if (type === 'month') {
+      return $localize`:@@featurePortalCloud-planPriceMonths:/ ${value}:intervalValue: months`;
+    }
+
+    if (type === 'hour') {
+      return $localize`:@@featurePortalCloud-planPriceHours:/ ${value}:intervalValue: hours`;
+    }
+
+    if (type === 'day') {
+      return $localize`:@@featurePortalCloud-planPriceDays:/ ${value}:intervalValue: days`;
+    }
+
+    if (type === 'year') {
+      return $localize`:@@featurePortalCloud-planPriceYears:/ ${value}:intervalValue: years`;
+    }
+
+    return ` / ${value} ${type}`;
   }
 
   formatPublicOfferingPrice = formatPublicOfferingPrice;

@@ -1244,20 +1244,36 @@
         <target state="translated">Decabill, agency billing, digital products, SaaS billing, hosting billing, invoicing, Stripe, ZUGFeRD, multi-tenant</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-planPriceMonth" datatype="html">
-        <source>/month</source>
-        <target state="translated">/month</target>
+        <source>/ month</source>
+        <target state="translated">/ Monat</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-planPriceHour" datatype="html">
-        <source>/hour</source>
-        <target state="translated">/hour</target>
+        <source>/ hour</source>
+        <target state="translated">/ Stunde</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-planPriceDay" datatype="html">
-        <source>/day</source>
-        <target state="translated">/day</target>
+        <source>/ day</source>
+        <target state="translated">/ Tag</target>
       </trans-unit>
       <trans-unit id="featureDecabillHome-planPriceYear" datatype="html">
-        <source>/year</source>
-        <target state="translated">/Jahr</target>
+        <source>/ year</source>
+        <target state="translated">/ Jahr</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceMonths" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> months</source>
+        <target state="translated">/ <x id="intervalValue" equiv-text="value"/> Monate</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceHours" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> hours</source>
+        <target state="translated">/ <x id="intervalValue" equiv-text="value"/> Stunden</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceDays" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> days</source>
+        <target state="translated">/ <x id="intervalValue" equiv-text="value"/> Tage</target>
+      </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceYears" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> years</source>
+        <target state="translated">/ <x id="intervalValue" equiv-text="value"/> Jahre</target>
       </trans-unit>
       <trans-unit id="featureDecabillLegalDisclosure-title" datatype="html">
         <source> Legal Disclosure </source>
@@ -2223,8 +2239,8 @@
         <target state="translated">Ab</target>
       </trans-unit>
       <trans-unit id="featureDecabillPricing-cloudPriceUnit" datatype="html">
-        <source>/month</source>
-        <target state="translated">/Monat</target>
+        <source>/ month</source>
+        <target state="translated">/ Monat</target>
       </trans-unit>
       <trans-unit id="featureDecabillPricing-cloudPriceUnavailable" datatype="html">
         <source>Not available</source>
