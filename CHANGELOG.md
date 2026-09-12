@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.31.1](https://github.com/forepath/one/compare/v2.31.0...v2.31.1) (2026-09-12)
+
+
+### Bug Fixes
+
+* **shared:** expressjs content caching ([#614](https://github.com/forepath/one/issues/614)) ([f41505b](https://github.com/forepath/one/commit/f41505bd48e5eb2ac2f7e446393fe1ce91ee08f4))
+
 ## [2.31.0](https://github.com/forepath/one/compare/v2.30.2...v2.31.0) (2026-09-12)
 
 
