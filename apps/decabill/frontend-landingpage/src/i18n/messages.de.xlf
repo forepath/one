@@ -2354,6 +2354,10 @@
         <source>Contact</source>
         <target state="translated">Kontakt</target>
       </trans-unit>
+      <trans-unit id="sharedFeatureLandingpagePortal-footerLink" datatype="html">
+        <source>Portal</source>
+        <target state="translated">Portal</target>
+      </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-detailsAriaLabel" datatype="html">
         <source>Contact information</source>
         <target state="translated">Kontaktinformationen</target>
