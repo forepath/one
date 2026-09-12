@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.31.0](https://github.com/forepath/one/compare/v2.30.2...v2.31.0) (2026-09-12)
+
+
+### Features
+
+* **shared:** landingpage portal links ([#611](https://github.com/forepath/one/issues/611)) ([89f33ae](https://github.com/forepath/one/commit/89f33aee7cb86d53d8a5d8adcb23faca4c2d1e8e))
+
+
+### Bug Fixes
+
+* **shared:** missing landingpage interval suffixes ([#612](https://github.com/forepath/one/issues/612)) ([d04feee](https://github.com/forepath/one/commit/d04feeeb7ff2da597174bdc04d897e535df9d3ec))
+
 ## [2.30.2](https://github.com/forepath/one/compare/v2.30.1...v2.30.2) (2026-09-11)
 
 
