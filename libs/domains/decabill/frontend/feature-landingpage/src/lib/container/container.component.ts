@@ -40,6 +40,10 @@ export class PortalContainerComponent {
   private readonly locale = inject(LOCALE_ID);
   private readonly router = inject(Router);
 
+  readonly portalUrl = this.environment.production
+    ? `${this.environment.billing.frontendUrl}/${this.locale}`
+    : this.environment.billing.frontendUrl;
+
   readonly withdrawalUrl = this.environment.production
     ? `${this.environment.billing.frontendUrl}/${this.locale}/withdrawal`
     : `${this.environment.billing.frontendUrl}/withdrawal`;

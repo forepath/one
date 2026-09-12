@@ -395,6 +395,9 @@
       <trans-unit id="sharedFeatureLandingpageContact-footerLink" datatype="html">
         <source>Contact</source>
         </trans-unit>
+      <trans-unit id="sharedFeatureLandingpagePortal-footerLink" datatype="html">
+        <source>Portal</source>
+        </trans-unit>
       <trans-unit id="featureForepath-footerLegal" datatype="html">
         <source>Legal</source>
         </trans-unit>
