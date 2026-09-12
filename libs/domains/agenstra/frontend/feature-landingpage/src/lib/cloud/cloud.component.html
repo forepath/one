@@ -21,7 +21,7 @@
               @if (cheapestOffering(); as cloudPlan) {
                 @if (formatPublicOfferingPrice(cloudPlan); as price) {
                   {{ price.prefix }}€{{ price.amount | number: '1.2-2'
-                  }}<span class="fs-6 hero-lead fw-normal" i18n="@@featurePortalCloud-heroPriceUnit">/month</span>
+                  }}<span class="fs-6 hero-lead fw-normal" i18n="@@featurePortalCloud-heroPriceUnit">/ month</span>
                 }
               } @else {
                 <span class="hero-lead fs-6 fw-normal" i18n="@@featurePortalCloud-heroPriceUnavailable"

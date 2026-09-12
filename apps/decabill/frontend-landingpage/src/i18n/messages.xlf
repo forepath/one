@@ -939,16 +939,28 @@
         <source>Decabill, agency billing, digital products, SaaS billing, hosting billing, multi-tenant, NestJS, invoicing, Stripe, ZUGFeRD</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-planPriceMonth" datatype="html">
-        <source>/month</source>
+        <source>/ month</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-planPriceYear" datatype="html">
-        <source>/year</source>
+        <source>/ year</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-planPriceHour" datatype="html">
-        <source>/hour</source>
+        <source>/ hour</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-planPriceDay" datatype="html">
-        <source>/day</source>
+        <source>/ day</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceMonths" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> months</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceHours" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> hours</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceDays" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> days</source>
+        </trans-unit>
+      <trans-unit id="featureDecabillHome-planPriceYears" datatype="html">
+        <source>/ <x id="intervalValue" equiv-text="value"/> years</source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalDisclosure-title" datatype="html">
         <source> Legal Disclosure </source>
@@ -1671,7 +1683,7 @@
         <source>Starting at</source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-cloudPriceUnit" datatype="html">
-        <source>/month</source>
+        <source>/ month</source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-cloudPriceUnavailable" datatype="html">
         <source>Not available</source>
