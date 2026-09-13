@@ -32,6 +32,30 @@ Origin headers alone are not always enough for edge eligibility:
 3. **`GET /config`:** Success uses a short **public** TTL (`max-age=60, stale-while-revalidate=300`), but `/config` has no extension. Add a Cache Rule for `URI Path equals "/config"` → Eligible for cache, honor origin headers. Errors remain `no-store`.
 4. After deploy, verify with `cf-cache-status` on a hashed bundle, HTML/`index`, `/config`, and an extensionless Monaco URL.
 
+## Inline runtime config (SPA + SSR bootstrap)
+
+Express serves warm `CONFIG` inlined into HTML as:
+
+```html
+<script type="application/json" id="runtime-config">
+  …
+</script>
+```
+
+`loadRuntimeEnvironment()` in `@forepath/shared/frontend/util-configuration` prefers that payload and skips `GET /config` when present. `/config` remains the HTTP API and fallback.
+
+| Surface                        | Inject path                                                 |
+| ------------------------------ | ----------------------------------------------------------- |
+| Billing / agent consoles       | `sendIndexHtmlWithRuntimeConfig` on SPA `index.html`        |
+| Landings / docs (prerender)    | Memory-static HTML transform + delegating-server HTML sends |
+| Landings / docs (SSR fallback) | `sendHtmlStringWithRuntimeConfig` after CommonEngine render |
+
+- Inject uses the in-process CONFIG success-cache (`CONFIG_CACHE_TTL_MS`, default `60000`). Consoles, SSR `warmStaticCache()`, and the delegating front warm CONFIG at listen.
+- Injected HTML bytes change when CONFIG changes → content ETag changes → `must-revalidate` clients/proxies pick up new config without a separate critical-path `/config` RTT.
+- After CONFIG changes behind a CDN, purge HTML (and/or `/config`) if the edge still serves a stale shell.
+
+Helpers: `injectRuntimeConfigIntoHtml`, `sendIndexHtmlWithRuntimeConfig`, `transformCachedFileWithRuntimeConfig`, `warmRuntimeConfigCache` in [`runtime-config-html.ts`](src/lib/runtime-config-html.ts).
+
 ## Tests
 
 ```bash

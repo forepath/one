@@ -153,6 +153,7 @@ describe('create-delegating-server', () => {
         const home = await httpGet(port, '/');
         expect(home.status).toBe(200);
         expect(home.body).toContain('en-home');
+        expect(home.body).toContain('id="runtime-config"');
         expect(String(home.headers['cache-control'])).toContain('must-revalidate');
         expect(String(home.headers['etag'])).toMatch(/^"sha256-/);
         expect(home.headers['last-modified']).toBeTruthy();

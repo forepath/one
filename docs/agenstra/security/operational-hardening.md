@@ -74,6 +74,8 @@ When **`CONFIG`** points to a remote JSON URL, Express servers validate fetches 
 - Timeout, max bytes, JSON object shape, content-type, redirect blocking, optional key count/depth limits.
 - DNS check against private/loopback resolution (skippable via **`CONFIG_SKIP_DNS_CHECK`** in exceptional cases).
 - Response **`Cache-Control`**: for example `public, max-age=60, stale-while-revalidate=300` in production on success (deployment-scoped, not per-user); `no-store` on proxy errors. Paths without a cacheable file extension (such as `/config`) may still need a CDN Cache Rule to become edge-eligible.
+- Console SPA shells also **inline** warm CONFIG into `index.html` (`#runtime-config`) so bootstrap does not wait on `GET /config`. HTML ETag revalidation busts stale injects; purge HTML and/or `/config` after CONFIG changes if the CDN retains a stale shell.
+- Landing and docs Express paths (prerender memory-static, delegating front, and CommonEngine SSR) use the same inline inject so all CONFIG consumers share the bootstrap path.
 
 **`CONFIG_ALLOWED_HOSTS`** supports **`*`** to explicitly allow **any host**. That choice increases risk if **`CONFIG`** points to an attacker-controlled origin; prefer explicit host allowlists in production.
 

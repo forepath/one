@@ -245,16 +245,17 @@ See **[Background Jobs](./background-jobs.md)** for queue roles and job names.
 
 ### Runtime Configuration (`CONFIG`)
 
-| Variable                     | Description                                                                      |
-| ---------------------------- | -------------------------------------------------------------------------------- |
-| `CONFIG`                     | URL to remote JSON merged at runtime via `/config`                               |
-| `CONFIG_ALLOWED_HOSTS`       | Hostname allowlist for `CONFIG`. **Required in production** when `CONFIG` is set |
-| `CONFIG_ALLOW_INSECURE_HTTP` | Allow `http://` CONFIG URLs in production when `true` (default `false`)          |
-| `CONFIG_ALLOW_INTERNAL_HOST` | Allow private/loopback CONFIG targets when `true` (default `false`)              |
-| `CONFIG_FETCH_TIMEOUT_MS`    | Fetch timeout (default `10000`)                                                  |
-| `CONFIG_FETCH_MAX_BYTES`     | Max response size (default `262144`)                                             |
-| `CONFIG_JSON_MAX_DEPTH`      | Max JSON depth (default `12`)                                                    |
-| `CONFIG_JSON_MAX_KEYS`       | Max JSON keys (default `512`)                                                    |
+| Variable                     | Description                                                                                                                                |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `CONFIG`                     | URL to remote JSON merged at runtime via `/config`                                                                                         |
+| `CONFIG_ALLOWED_HOSTS`       | Hostname allowlist for `CONFIG`. **Required in production** when `CONFIG` is set                                                           |
+| `CONFIG_ALLOW_INSECURE_HTTP` | Allow `http://` CONFIG URLs in production when `true` (default `false`)                                                                    |
+| `CONFIG_ALLOW_INTERNAL_HOST` | Allow private/loopback CONFIG targets when `true` (default `false`)                                                                        |
+| `CONFIG_FETCH_TIMEOUT_MS`    | Fetch timeout (default `10000`)                                                                                                            |
+| `CONFIG_FETCH_MAX_BYTES`     | Max response size (default `262144`)                                                                                                       |
+| `CONFIG_JSON_MAX_DEPTH`      | Max JSON depth (default `12`)                                                                                                              |
+| `CONFIG_JSON_MAX_KEYS`       | Max JSON keys (default `512`)                                                                                                              |
+| `CONFIG_CACHE_TTL_MS`        | In-process CONFIG success-cache TTL in ms (default `60000`; `0` disables). Also used when injecting warm config into console `index.html`. |
 
 ### Content Security Policy (Express)
 

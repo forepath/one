@@ -61,6 +61,8 @@ When **`CONFIG`** points to a remote JSON URL, Express servers validate fetches 
 - Production: **HTTPS** unless **`CONFIG_ALLOW_INSECURE_HTTP=true`**; **`CONFIG_ALLOWED_HOSTS`** required when `CONFIG` is set.
 - Timeout, max bytes, JSON object shape, content-type, redirect blocking, optional key count/depth limits.
 - DNS check against private/loopback resolution (skippable via **`CONFIG_SKIP_DNS_CHECK`** in exceptional cases).
+- Console SPA shells **inline** warm CONFIG into `index.html` (`#runtime-config`) so bootstrap can skip a critical-path `GET /config`. After CONFIG changes, purge HTML and/or `/config` if a CDN retains a stale shell.
+- Landing and docs Express paths (prerender, delegating front, SSR) use the same inline inject.
 
 **`CONFIG_ALLOWED_HOSTS`** supports **`*`** to explicitly allow **any host**. Prefer explicit host allowlists in production.
 

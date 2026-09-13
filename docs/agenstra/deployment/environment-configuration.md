@@ -234,6 +234,7 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 - `CONFIG_FETCH_MAX_BYTES` - Maximum response size in bytes (default: `262144` = 256 KiB, min: `1024`, max: `2097152` = 2 MiB)
 - `CONFIG_JSON_MAX_DEPTH` - Maximum JSON traversal depth for key counting (default: `12`, min: `1`, max: `32`)
 - `CONFIG_JSON_MAX_KEYS` - Maximum total JSON keys across all objects/arrays up to `CONFIG_JSON_MAX_DEPTH` (default: `512`, min: `1`, max: `10000`)
+- `CONFIG_CACHE_TTL_MS` - In-process success-cache TTL for upstream CONFIG fetches (default: `60000`; set `0` to disable). Used by `GET /config` and by console `index.html` inject (`#runtime-config`) so SPA bootstrap can avoid a separate `/config` RTT when HTML already carries warm JSON.
 
 ### Content Security Policy (Express)
 

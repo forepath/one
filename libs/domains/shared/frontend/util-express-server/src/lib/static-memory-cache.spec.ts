@@ -8,6 +8,7 @@ import type { NextFunction, Request, Response } from 'express';
 import {
   __getStaticMemoryCacheSizeForTests,
   clearStaticMemoryCache,
+  createCachedStaticFile,
   createMemoryStaticMiddleware,
   getCachedStaticFile,
   getStaticCacheControlHeader,
@@ -380,6 +381,25 @@ describe('static-memory-cache', () => {
       expect(res.headers['content-type']).toContain('text/html');
       expect(res.headers['etag']).toMatch(/^"sha256-/);
       expect(res.headers['cache-control']).toContain('must-revalidate');
+    });
+
+    it('applies transformCachedFile before send', async () => {
+      await warmStaticMemoryCache([root], {});
+      const middleware = createMemoryStaticMiddleware({
+        root,
+        index: 'index.html',
+        transformCachedFile: (cached) =>
+          createCachedStaticFile(cached.absolutePath, Buffer.from('<html>transformed</html>', 'utf8'), cached.mtimeMs),
+      });
+      const res = mockRes();
+      const next = jest.fn() as NextFunction;
+
+      middleware({ method: 'GET', path: '/', headers: {} } as Request, res, next);
+
+      await new Promise((resolve) => setImmediate(resolve));
+
+      expect(next).not.toHaveBeenCalled();
+      expect(String(res.body)).toContain('transformed');
     });
 
     it('returns 304 for matching If-None-Match on assets', async () => {
