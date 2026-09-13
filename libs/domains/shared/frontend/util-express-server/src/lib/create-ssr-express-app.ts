@@ -44,11 +44,10 @@ export function createSsrExpressApp(options: CreateSsrExpressAppOptions): SsrExp
     index: 'index.html',
   });
   const diskStaticMiddleware = express.static(browserDistFolder, {
-    maxAge: '1y',
-    immutable: true,
+    maxAge: 0,
     index: 'index.html',
     setHeaders(res, filePath) {
-      // Override serve-static defaults so HTML stays revalidate-only and assets stay immutable.
+      // Override serve-static defaults so HTML/stable URLs revalidate and hashed assets stay immutable.
       res.setHeader('Cache-Control', getStaticCacheControlHeader(filePath));
     },
   });

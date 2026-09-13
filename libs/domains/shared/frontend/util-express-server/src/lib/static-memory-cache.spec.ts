@@ -10,6 +10,8 @@ import {
   clearStaticMemoryCache,
   createMemoryStaticMiddleware,
   getCachedStaticFile,
+  getStaticCacheControlHeader,
+  isFingerprintedAssetPath,
   isStaticMemoryCacheEnabled,
   resolveStaticPathAgainstRoot,
   warmStaticMemoryCache,
@@ -25,6 +27,7 @@ describe('static-memory-cache', () => {
     mkdirSync(join(root, 'nested'), { recursive: true });
     writeFileSync(join(root, 'index.html'), '<html>home</html>');
     writeFileSync(join(root, 'app.js'), 'console.log(1)');
+    writeFileSync(join(root, 'main-ABCDEFGH.js'), 'console.log("hashed")');
     writeFileSync(join(root, 'app.js.map'), '{"version":3}');
     writeFileSync(join(root, 'nested', 'page.html'), '<html>page</html>');
   });
@@ -53,9 +56,10 @@ describe('static-memory-cache', () => {
 
       expect(stats.enabled).toBe(true);
       expect(stats.skippedMaps).toBe(1);
-      expect(stats.files).toBe(3);
+      expect(stats.files).toBe(4);
       expect(getCachedStaticFile(join(root, 'index.html'))?.body.toString()).toContain('home');
       expect(getCachedStaticFile(join(root, 'app.js'))).not.toBeNull();
+      expect(getCachedStaticFile(join(root, 'main-ABCDEFGH.js'))).not.toBeNull();
       expect(getCachedStaticFile(join(root, 'app.js.map'))).toBeNull();
       expect(getCachedStaticFile(join(root, 'nested', 'page.html'))).not.toBeNull();
     });
@@ -77,7 +81,7 @@ describe('static-memory-cache', () => {
 
       expect(warn).toHaveBeenCalledWith(expect.stringContaining('root not found'));
       expect(warn).toHaveBeenCalledWith(expect.stringContaining('root is not a directory'));
-      expect(stats.files).toBe(3);
+      expect(stats.files).toBe(4);
       expect(log).toHaveBeenCalledWith(expect.stringContaining('Static memory cache warmed'));
     });
 
@@ -110,7 +114,7 @@ describe('static-memory-cache', () => {
       try {
         const stats = await warmStaticMemoryCache([root], {});
 
-        expect(stats.files).toBe(3);
+        expect(stats.files).toBe(4);
         expect(warn).toHaveBeenCalledWith(expect.stringContaining('failed to load'));
       } finally {
         chmodSync(blocked, 0o600);
@@ -130,8 +134,26 @@ describe('static-memory-cache', () => {
 
       const stats = await warmStaticMemoryCache([root], {});
 
-      expect(stats.files).toBe(3);
+      expect(stats.files).toBe(4);
       expect(getCachedStaticFile(fifoPath)).toBeNull();
+    });
+  });
+
+  describe('isFingerprintedAssetPath / getStaticCacheControlHeader', () => {
+    it('detects Angular-style content hashes and reserves immutable for those only', () => {
+      expect(isFingerprintedAssetPath('main-ABCDEFGH.js')).toBe(true);
+      expect(isFingerprintedAssetPath('styles-5INURABD.css')).toBe(true);
+      expect(isFingerprintedAssetPath('logo.a1b2c3d4e5.png')).toBe(true);
+      expect(isFingerprintedAssetPath('app.js')).toBe(false);
+      expect(isFingerprintedAssetPath('assets/monaco/esm/vs/editor/editor.main.js')).toBe(false);
+      expect(isFingerprintedAssetPath('index.html')).toBe(false);
+
+      expect(getStaticCacheControlHeader('index.html')).toBe('public, max-age=0, must-revalidate');
+      expect(getStaticCacheControlHeader('app.js')).toBe('public, max-age=0, must-revalidate');
+      expect(getStaticCacheControlHeader('main-ABCDEFGH.js')).toBe('public, max-age=31536000, immutable');
+      expect(getStaticCacheControlHeader('main-ABCDEFGH.js', { immutableAssets: false })).toBe(
+        'public, max-age=31536000',
+      );
     });
   });
 
@@ -140,13 +162,16 @@ describe('static-memory-cache', () => {
       await warmStaticMemoryCache([root], {});
 
       const htmlCached = getCachedStaticFile(join(root, 'index.html'));
-      const jsCached = getCachedStaticFile(join(root, 'app.js'));
+      const stableJs = getCachedStaticFile(join(root, 'app.js'));
+      const hashedJs = getCachedStaticFile(join(root, 'main-ABCDEFGH.js'));
 
       expect(htmlCached).not.toBeNull();
-      expect(jsCached).not.toBeNull();
+      expect(stableJs).not.toBeNull();
+      expect(hashedJs).not.toBeNull();
       expect(htmlCached!.etag).toMatch(/^"sha256-/);
-      expect(jsCached!.etag).toMatch(/^"sha256-/);
-      expect(jsCached!.etag).not.toBe(htmlCached!.etag);
+      expect(stableJs!.etag).toMatch(/^"sha256-/);
+      expect(hashedJs!.etag).toMatch(/^"sha256-/);
+      expect(stableJs!.etag).not.toBe(htmlCached!.etag);
 
       const htmlHeaders: Record<string, string | number> = {};
       let htmlBody: Buffer | undefined;
@@ -166,26 +191,41 @@ describe('static-memory-cache', () => {
       expect(htmlHeaders['Last-Modified']).toBeTruthy();
       expect(String(htmlBody)).toContain('home');
 
-      const jsHeaders: Record<string, string | number> = {};
+      const stableHeaders: Record<string, string | number> = {};
       writeCachedStaticFileToNodeResponse(
         {
           writeHead(_code, headers) {
-            Object.assign(jsHeaders, headers);
+            Object.assign(stableHeaders, headers);
           },
           end() {
             return;
           },
         },
-        jsCached!,
+        stableJs!,
       );
-      expect(jsHeaders['Cache-Control']).toBe('public, max-age=31536000, immutable');
-      expect(jsHeaders['ETag']).toBe(jsCached!.etag);
-      expect(jsHeaders['Last-Modified']).toBeTruthy();
+      expect(stableHeaders['Cache-Control']).toBe('public, max-age=0, must-revalidate');
+      expect(stableHeaders['ETag']).toBe(stableJs!.etag);
+
+      const hashedHeaders: Record<string, string | number> = {};
+      writeCachedStaticFileToNodeResponse(
+        {
+          writeHead(_code, headers) {
+            Object.assign(hashedHeaders, headers);
+          },
+          end() {
+            return;
+          },
+        },
+        hashedJs!,
+      );
+      expect(hashedHeaders['Cache-Control']).toBe('public, max-age=31536000, immutable');
+      expect(hashedHeaders['ETag']).toBe(hashedJs!.etag);
+      expect(hashedHeaders['Last-Modified']).toBeTruthy();
     });
 
     it('returns 304 when If-None-Match matches', async () => {
       await warmStaticMemoryCache([root], {});
-      const jsCached = getCachedStaticFile(join(root, 'app.js'));
+      const jsCached = getCachedStaticFile(join(root, 'main-ABCDEFGH.js'));
 
       expect(jsCached).not.toBeNull();
 
@@ -212,6 +252,33 @@ describe('static-memory-cache', () => {
       expect(headers['ETag']).toBe(jsCached!.etag);
       expect(headers['Cache-Control']).toContain('immutable');
       expect(headers['Content-Length']).toBeUndefined();
+    });
+
+    it('changes ETag when bytes at the same path change so proxies can revalidate', async () => {
+      await warmStaticMemoryCache([root], {});
+      const before = getCachedStaticFile(join(root, 'app.js'))!;
+
+      writeFileSync(join(root, 'app.js'), 'console.log("deployed")');
+      clearStaticMemoryCache();
+      await warmStaticMemoryCache([root], {});
+      const after = getCachedStaticFile(join(root, 'app.js'))!;
+
+      expect(after.etag).not.toBe(before.etag);
+
+      let status = 0;
+      writeCachedStaticFileToNodeResponse(
+        {
+          writeHead(code) {
+            status = code;
+          },
+          end() {
+            return;
+          },
+        },
+        after,
+        { headers: { 'if-none-match': before.etag } },
+      );
+      expect(status).toBe(200);
     });
 
     it('keeps a stable ETag for identical bytes across warms', async () => {
@@ -317,12 +384,20 @@ describe('static-memory-cache', () => {
 
     it('returns 304 for matching If-None-Match on assets', async () => {
       await warmStaticMemoryCache([root], {});
-      const cached = getCachedStaticFile(join(root, 'app.js'));
+      const cached = getCachedStaticFile(join(root, 'main-ABCDEFGH.js'));
       const middleware = createMemoryStaticMiddleware({ root, index: false });
       const res = mockRes();
       const next = jest.fn() as NextFunction;
 
-      middleware({ method: 'GET', path: '/app.js', headers: { 'if-none-match': cached!.etag } } as Request, res, next);
+      middleware(
+        {
+          method: 'GET',
+          path: '/main-ABCDEFGH.js',
+          headers: { 'if-none-match': cached!.etag },
+        } as Request,
+        res,
+        next,
+      );
 
       expect(next).not.toHaveBeenCalled();
       expect(res.statusCode).toBe(304);

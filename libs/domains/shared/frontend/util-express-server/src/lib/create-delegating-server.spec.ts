@@ -84,6 +84,7 @@ describe('create-delegating-server', () => {
     mkdirSync(join(serverRoot, 'browser', 'de'), { recursive: true });
     writeFileSync(join(serverRoot, 'browser', 'en', 'index.html'), '<html>en-home</html>');
     writeFileSync(join(serverRoot, 'browser', 'en', 'app.js'), 'console.log("en")');
+    writeFileSync(join(serverRoot, 'browser', 'en', 'main-ABCDEFGH.js'), 'console.log("hashed")');
     writeFileSync(join(serverRoot, 'browser', 'en', 'about.html'), '<html>about</html>');
     mkdirSync(join(serverRoot, 'browser', 'en', 'pricing'), { recursive: true });
     writeFileSync(join(serverRoot, 'browser', 'en', 'pricing', 'index.html'), '<html>pricing</html>');
@@ -163,9 +164,13 @@ describe('create-delegating-server', () => {
         const asset = await httpGet(port, '/en/app.js');
         expect(asset.status).toBe(200);
         expect(asset.body).toContain('console.log');
-        expect(String(asset.headers['cache-control'])).toBe('public, max-age=31536000, immutable');
+        expect(String(asset.headers['cache-control'])).toBe('public, max-age=0, must-revalidate');
         expect(String(asset.headers['etag'])).toMatch(/^"sha256-/);
         expect(asset.headers['last-modified']).toBeTruthy();
+
+        const hashed = await httpGet(port, '/en/main-ABCDEFGH.js');
+        expect(hashed.status).toBe(200);
+        expect(String(hashed.headers['cache-control'])).toBe('public, max-age=31536000, immutable');
 
         const revalidated = await httpGet(port, '/en/app.js', {
           'if-none-match': String(asset.headers['etag']),
@@ -173,6 +178,55 @@ describe('create-delegating-server', () => {
         expect(revalidated.status).toBe(304);
         expect(revalidated.body).toBe('');
         expect(String(revalidated.headers['etag'])).toBe(String(asset.headers['etag']));
+      } finally {
+        await closeServer(handle.server);
+      }
+    });
+
+    it('lets proxies discover content changes at stable URLs after a deploy', async () => {
+      writeFileSync(join(serverRoot, 'browser', 'en', 'monaco-editor.js'), '/* monaco v1 */');
+
+      const handle = createDelegatingServer({
+        serverRoot,
+        availableLocales: ['en'],
+        defaultLocale: 'en',
+        port: 0,
+        loadLocaleServerModule: createLocaleLoader({ en: enHandler }),
+      });
+
+      await handle.listen();
+      const address = handle.server.address();
+      const port = typeof address === 'object' && address ? address.port : 0;
+
+      try {
+        const htmlBefore = await httpGet(port, '/');
+        const monacoBefore = await httpGet(port, '/en/monaco-editor.js');
+        const htmlEtag = String(htmlBefore.headers['etag']);
+        const monacoEtag = String(monacoBefore.headers['etag']);
+
+        expect(String(monacoBefore.headers['cache-control'])).toBe('public, max-age=0, must-revalidate');
+
+        // Simulate a deploy that keeps the same URL for HTML/Monaco but changes bytes,
+        // and introduces a new fingerprinted bundle name.
+        writeFileSync(join(serverRoot, 'browser', 'en', 'index.html'), '<html>en-home-v2</html>');
+        writeFileSync(join(serverRoot, 'browser', 'en', 'monaco-editor.js'), '/* monaco v2 patched */');
+        writeFileSync(join(serverRoot, 'browser', 'en', 'main-NEWHASH2.js'), 'console.log("v2")');
+        clearStaticMemoryCache();
+        await warmStaticMemoryCache([join(serverRoot, 'browser')]);
+
+        const htmlAfter = await httpGet(port, '/', { 'if-none-match': htmlEtag });
+        expect(htmlAfter.status).toBe(200);
+        expect(htmlAfter.body).toContain('en-home-v2');
+        expect(String(htmlAfter.headers['etag'])).not.toBe(htmlEtag);
+
+        const monacoAfter = await httpGet(port, '/en/monaco-editor.js', { 'if-none-match': monacoEtag });
+        expect(monacoAfter.status).toBe(200);
+        expect(monacoAfter.body).toContain('v2 patched');
+        expect(String(monacoAfter.headers['etag'])).not.toBe(monacoEtag);
+
+        const newHashed = await httpGet(port, '/en/main-NEWHASH2.js');
+        expect(newHashed.status).toBe(200);
+        expect(String(newHashed.headers['cache-control'])).toBe('public, max-age=31536000, immutable');
       } finally {
         await closeServer(handle.server);
       }

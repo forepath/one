@@ -28,6 +28,7 @@ export {
   getContentTypeForStaticPath,
   getStaticCacheControlHeader,
   isHtmlStaticPath,
+  isFingerprintedAssetPath,
   isNotModified,
   isSourceMapPath,
   isStaticMemoryCacheEnabled,

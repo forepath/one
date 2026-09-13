@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
-import { extname, join, relative, resolve, sep } from 'node:path';
+import { basename, extname, join, relative, resolve, sep } from 'node:path';
 
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
@@ -28,12 +28,18 @@ export interface MemoryStaticMiddlewareOptions {
   root: string;
   /** When a directory is requested, try this index file. Default: 'index.html'. */
   index?: StaticMemoryCacheIndex;
-  /** Long-cache fingerprinted assets with `immutable`. Default: true. */
+  /**
+   * When true (default), fingerprinted non-HTML assets get `immutable`.
+   * Stable URLs (Monaco, favicons, …) never get `immutable` so deploys revalidate.
+   */
   immutableAssets?: boolean;
 }
 
 export interface StaticCacheHeaderOptions {
-  /** When true (default), non-HTML responses include `immutable`. */
+  /**
+   * When true (default), fingerprinted non-HTML responses include `immutable`.
+   * Non-fingerprinted assets always revalidate regardless of this flag.
+   */
   immutableAssets?: boolean;
 }
 
@@ -71,6 +77,14 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
 
 const ONE_YEAR_SECONDS = 31536000;
 
+/**
+ * Detect Angular/webpack content hashes in filenames so long-lived `immutable`
+ * caching is only applied when a deploy changes the URL (safe cache bust).
+ * Examples: `main-ABCDEFGH.js`, `styles-5INURABD.css`, `logo.a1b2c3d4.png`.
+ */
+const FINGERPRINT_DASH_HASH = /-[A-Za-z0-9]{8,}\.[^.]+$/;
+const FINGERPRINT_DOT_HASH = /\.[a-f0-9]{8,}\.[^.]+$/i;
+
 /** Process-wide absolute-path → buffer cache populated by {@link warmStaticMemoryCache}. */
 const staticMemoryCache = new Map<string, CachedStaticFile>();
 
@@ -100,6 +114,12 @@ export function isHtmlStaticPath(filePath: string): boolean {
   return extname(filePath).toLowerCase() === '.html';
 }
 
+export function isFingerprintedAssetPath(filePath: string): boolean {
+  const name = basename(filePath);
+
+  return FINGERPRINT_DASH_HASH.test(name) || FINGERPRINT_DOT_HASH.test(name);
+}
+
 /**
  * Strong ETag from file bytes so validators stay stable across pods/replicas
  * (unlike inode/mtime weak ETags from express.static defaults).
@@ -114,8 +134,14 @@ export function formatHttpDate(mtimeMs: number): string {
   return new Date(mtimeMs).toUTCString();
 }
 
+/**
+ * Cache-Control policy for CDN/proxy + browser:
+ * - HTML / non-fingerprinted assets: always revalidate (ETag/Last-Modified → cheap 304).
+ *   Same URL after a deploy gets a new ETag so proxies learn content changed.
+ * - Fingerprinted assets: long-lived + optional `immutable` (URL changes on rebuild).
+ */
 export function getStaticCacheControlHeader(absolutePath: string, options: StaticCacheHeaderOptions = {}): string {
-  if (isHtmlStaticPath(absolutePath)) {
+  if (isHtmlStaticPath(absolutePath) || !isFingerprintedAssetPath(absolutePath)) {
     return 'public, max-age=0, must-revalidate';
   }
 

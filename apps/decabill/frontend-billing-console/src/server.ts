@@ -179,11 +179,11 @@ function sendFileFromCacheOrDisk(res: express.Response, absolutePath: string, re
 
 function createDiskStaticMiddleware(root: string): express.RequestHandler {
   return express.static(root, {
-    maxAge: '1y',
-    immutable: true,
+    maxAge: 0,
     index: false,
     fallthrough: true,
     setHeaders(res, filePath) {
+      // Own Cache-Control entirely (fingerprinted → long/immutable; else revalidate).
       res.setHeader('Cache-Control', getStaticCacheControlHeader(filePath));
     },
   });
