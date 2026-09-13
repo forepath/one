@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.31.3](https://github.com/forepath/one/compare/v2.31.2...v2.31.3) (2026-09-13)
+
+
+### Bug Fixes
+
+* **shared:** navigation popover autoclose ([#616](https://github.com/forepath/one/issues/616)) ([af91f7a](https://github.com/forepath/one/commit/af91f7a7435d7ff3f095615daa205ceb7cb2f8a7))
+* **shared:** user session invalidation improvements ([#617](https://github.com/forepath/one/issues/617)) ([90e94d5](https://github.com/forepath/one/commit/90e94d5f58040120a10162377fa0affbc967f580))
+
 ## [2.31.2](https://github.com/forepath/one/compare/v2.31.1...v2.31.2) (2026-09-13)
 
 
