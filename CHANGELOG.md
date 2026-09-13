@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.31.2](https://github.com/forepath/one/compare/v2.31.1...v2.31.2) (2026-09-13)
+
+
+### Bug Fixes
+
+* **shared:** fingerprint gated cache policy ([a889e73](https://github.com/forepath/one/commit/a889e73bf1b32b8288eef5c21a1483b3aac6f8aa))
+* **shared:** remote config caching improvements ([#615](https://github.com/forepath/one/issues/615)) ([6f2348b](https://github.com/forepath/one/commit/6f2348be5c8ed0c33bd92a814246f4c76871e095))
+
 ## [2.31.1](https://github.com/forepath/one/compare/v2.31.0...v2.31.1) (2026-09-12)
 
 
