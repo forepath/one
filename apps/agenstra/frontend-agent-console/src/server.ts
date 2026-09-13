@@ -10,6 +10,8 @@ import {
   getStaticCacheControlHeader,
   registerRuntimeConfigEndpoint,
   sendCachedStaticFile,
+  sendIndexHtmlWithRuntimeConfig,
+  warmRuntimeConfigCache,
   warmStaticMemoryCache,
 } from '@forepath/shared/frontend/util-express-server';
 import express from 'express';
@@ -359,11 +361,12 @@ app.get('*', (req, res) => {
     return;
   }
 
-  sendFileFromCacheOrDisk(res, indexPath, req);
+  void sendIndexHtmlWithRuntimeConfig(res, indexPath, req);
 });
 
 warmStaticMemoryCache([baseDistPath])
-  .then(() => {
+  .then(async () => {
+    await warmRuntimeConfigCache();
     app.listen(port, '0.0.0.0', () => {
       console.log(`🚀 Express server running on http://localhost:${port}`);
       console.log(`📦 Serving files from: ${baseDistPath}`);

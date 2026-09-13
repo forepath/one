@@ -3,7 +3,12 @@ import { TestBed } from '@angular/core/testing';
 
 import { environment } from './environment';
 import { Environment } from './environment.interface';
-import { ENVIRONMENT, loadRuntimeEnvironment, RUNTIME_CONFIG_CLIENT_FETCH_TIMEOUT_MS } from './environment.token';
+import {
+  ENVIRONMENT,
+  RUNTIME_CONFIG_ELEMENT_ID,
+  loadRuntimeEnvironment,
+  RUNTIME_CONFIG_CLIENT_FETCH_TIMEOUT_MS,
+} from './environment.token';
 
 describe('environment.token', () => {
   describe('ENVIRONMENT', () => {
@@ -27,10 +32,47 @@ describe('environment.token', () => {
     beforeEach(() => {
       // Mock fetch globally
       global.fetch = jest.fn();
+      document.body.replaceChildren();
     });
 
     afterEach(() => {
       jest.restoreAllMocks();
+      document.body.replaceChildren();
+    });
+
+    it('prefers inlined #runtime-config and skips fetch', async () => {
+      const script = document.createElement('script');
+
+      script.type = 'application/json';
+      script.id = RUNTIME_CONFIG_ELEMENT_ID;
+      script.textContent = JSON.stringify({
+        billing: { frontendUrl: 'http://inline-billing:4500' },
+      });
+      document.body.appendChild(script);
+
+      const result = await loadRuntimeEnvironment();
+
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(result.billing.frontendUrl).toBe('http://inline-billing:4500');
+      expect(result.billing.restApiUrl).toBe(environment.billing.restApiUrl);
+    });
+
+    it('falls back to fetch when inline JSON is invalid', async () => {
+      const script = document.createElement('script');
+
+      script.type = 'application/json';
+      script.id = RUNTIME_CONFIG_ELEMENT_ID;
+      script.textContent = '{not-json';
+      document.body.appendChild(script);
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: async () => ({}),
+      });
+
+      await loadRuntimeEnvironment();
+
+      expect(global.fetch).toHaveBeenCalled();
     });
 
     it('should return environment when fetch fails', async () => {

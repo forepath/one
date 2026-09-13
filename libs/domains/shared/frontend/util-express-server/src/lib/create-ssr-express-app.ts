@@ -5,6 +5,11 @@ import { CommonEngine } from '@angular/ssr/node';
 import express, { type Express, type NextFunction, type Request, type Response } from 'express';
 
 import { resolveLocalizedBrowserDistFolder } from './localized-browser-dist';
+import {
+  sendHtmlStringWithRuntimeConfig,
+  transformCachedFileWithRuntimeConfig,
+  warmRuntimeConfigCache,
+} from './runtime-config-html';
 import { registerRuntimeConfigEndpoint } from './runtime-config-route';
 import { createSecurityHeadersMiddleware } from './security-headers';
 import { buildSsrAllowedHosts } from './ssr-allowed-hosts';
@@ -33,6 +38,7 @@ export interface SsrExpressAppHandle {
 /**
  * Creates an Express app that serves localized prerender output from the
  * start-time memory cache first, then falls back to Angular CommonEngine SSR.
+ * HTML responses (prerender + SSR) inline warm `CONFIG` for client bootstrap.
  */
 export function createSsrExpressApp(options: CreateSsrExpressAppOptions): SsrExpressAppHandle {
   const { apexDomains, bootstrap, serverDistFolder, shouldBypassStatic } = options;
@@ -42,6 +48,7 @@ export function createSsrExpressApp(options: CreateSsrExpressAppOptions): SsrExp
   const memoryStaticMiddleware = createMemoryStaticMiddleware({
     root: browserDistFolder,
     index: 'index.html',
+    transformCachedFile: transformCachedFileWithRuntimeConfig,
   });
   const diskStaticMiddleware = express.static(browserDistFolder, {
     maxAge: 0,
@@ -86,16 +93,19 @@ export function createSsrExpressApp(options: CreateSsrExpressAppOptions): SsrExp
         publicPath: browserDistFolder,
         providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
       })
-      .then((html: string) => {
-        res.setHeader('Cache-Control', getStaticCacheControlHeader('index.html'));
-        res.send(html);
-      })
+      .then((html: string) => sendHtmlStringWithRuntimeConfig(res, `ssr:${originalUrl}`, html, Date.now(), req))
       .catch((err: unknown) => next(err));
   });
 
   return {
     app,
     browserDistFolder,
-    warmStaticCache: () => warmStaticMemoryCache([browserDistFolder]),
+    warmStaticCache: async () => {
+      const stats = await warmStaticMemoryCache([browserDistFolder]);
+
+      await warmRuntimeConfigCache();
+
+      return stats;
+    },
   };
 }

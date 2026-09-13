@@ -3,10 +3,12 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { writeHtmlFileWithRuntimeConfigToNodeResponse, warmRuntimeConfigCache } from './runtime-config-html';
 import { stripLocalePrefixFromPath } from './localized-browser-dist';
 import {
   createCachedStaticFile,
   getCachedStaticFile,
+  isHtmlStaticPath,
   isSourceMapPath,
   warmStaticMemoryCache,
   writeCachedStaticFileToNodeResponse,
@@ -120,6 +122,18 @@ export function resolveLocaleFromRequest(
 }
 
 function sendStaticFile(res: ServerResponse, filePath: string, req?: IncomingMessage): void {
+  if (isHtmlStaticPath(filePath)) {
+    void writeHtmlFileWithRuntimeConfigToNodeResponse(res, filePath, req).catch((error: unknown) => {
+      console.error('Failed to send HTML with runtime config:', error);
+      if (!res.headersSent) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Internal Server Error');
+      }
+    });
+
+    return;
+  }
+
   const cached = getCachedStaticFile(filePath);
 
   if (cached) {
@@ -242,6 +256,7 @@ export function createDelegatingServer(options: CreateDelegatingServerOptions): 
     server,
     listen: async () => {
       await warmStaticMemoryCache([join(serverRoot, 'browser')]);
+      await warmRuntimeConfigCache();
       localeServers = await loadLocaleServers(serverRoot, availableLocales, loadLocaleServerModule);
 
       await new Promise<void>((resolveListen, rejectListen) => {

@@ -33,6 +33,11 @@ export interface MemoryStaticMiddlewareOptions {
    * Stable URLs (Monaco, favicons, …) never get `immutable` so deploys revalidate.
    */
   immutableAssets?: boolean;
+  /**
+   * Optional async transform applied before send (e.g. inline runtime CONFIG into HTML).
+   * Used for both GET and HEAD so ETags stay aligned.
+   */
+  transformCachedFile?: (cached: CachedStaticFile) => CachedStaticFile | Promise<CachedStaticFile>;
 }
 
 export interface StaticCacheHeaderOptions {
@@ -452,6 +457,7 @@ export function createMemoryStaticMiddleware(options: MemoryStaticMiddlewareOpti
   const headerOptions: StaticCacheHeaderOptions = {
     immutableAssets: options.immutableAssets,
   };
+  const transformCachedFile = options.transformCachedFile;
 
   return (req: Request, res: Response, next: NextFunction) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -483,29 +489,45 @@ export function createMemoryStaticMiddleware(options: MemoryStaticMiddlewareOpti
       return next();
     }
 
-    if (req.method === 'HEAD') {
-      if (isNotModified(req, cached.etag, cached.mtimeMs)) {
-        res.status(304);
-        const headers = buildStaticCacheHeadersFor304(cached, headerOptions);
+    const sendTransformed = (file: CachedStaticFile): void => {
+      if (req.method === 'HEAD') {
+        if (isNotModified(req, file.etag, file.mtimeMs)) {
+          res.status(304);
+          const headers = buildStaticCacheHeadersFor304(file, headerOptions);
+
+          for (const [name, value] of Object.entries(headers)) {
+            res.setHeader(name, value);
+          }
+
+          res.end();
+
+          return;
+        }
+
+        res.status(200);
+        const headers = buildStaticCacheHeaders(file, headerOptions);
 
         for (const [name, value] of Object.entries(headers)) {
           res.setHeader(name, value);
         }
 
-        return res.end();
+        res.end();
+
+        return;
       }
 
-      res.status(200);
-      const headers = buildStaticCacheHeaders(cached, headerOptions);
+      sendCachedStaticFile(res, file, req, headerOptions);
+    };
 
-      for (const [name, value] of Object.entries(headers)) {
-        res.setHeader(name, value);
-      }
+    if (!transformCachedFile) {
+      sendTransformed(cached);
 
-      return res.end();
+      return;
     }
 
-    sendCachedStaticFile(res, cached, req, headerOptions);
+    void Promise.resolve(transformCachedFile(cached))
+      .then(sendTransformed)
+      .catch((error: unknown) => next(error));
   };
 }
 

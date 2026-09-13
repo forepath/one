@@ -8,6 +8,19 @@ export {
   type RuntimeConfigRouteLogger,
 } from './lib/runtime-config-route';
 export {
+  RUNTIME_CONFIG_ELEMENT_ID,
+  escapeJsonForHtmlScript,
+  injectRuntimeConfigIntoHtml,
+  resolveRuntimeConfigJsonForHtml,
+  buildHtmlCachedFileWithRuntimeConfig,
+  transformCachedFileWithRuntimeConfig,
+  sendIndexHtmlWithRuntimeConfig,
+  sendHtmlStringWithRuntimeConfig,
+  writeHtmlFileWithRuntimeConfigToNodeResponse,
+  warmRuntimeConfigCache,
+  type RuntimeConfigHtmlLogger,
+} from './lib/runtime-config-html';
+export {
   createSecurityHeadersMiddleware,
   parseCspConnectSrcExtra,
   parseCspExtraOrigins,
