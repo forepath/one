@@ -172,6 +172,11 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
   );
 
   private adminPopover: BootstrapPopoverInstance | null = null;
+  private adminPopoverTrigger: HTMLElement | null = null;
+
+  private readonly onAdminPopoverDocumentClick = (event: Event): void => {
+    this.hideAdminPopoverOnOutsideClick(event);
+  };
 
   @ViewChild('adminNavTrigger') set adminNavTrigger(ref: ElementRef<HTMLElement> | undefined) {
     this.onAdminNavTriggerReady(ref);
@@ -322,11 +327,37 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
     trigger.addEventListener('show.bs.popover', () => {
       this.adminPopover?.setContent({ '.popover-body': buildBody() });
     });
+
+    this.adminPopoverTrigger = trigger;
+    // Bootstrap click popovers do not dismiss when clicking outside the tip.
+    document.addEventListener('click', this.onAdminPopoverDocumentClick, true);
   }
 
   private disposeAdminPopover(): void {
+    document.removeEventListener('click', this.onAdminPopoverDocumentClick, true);
     this.adminPopover?.dispose();
     this.adminPopover = null;
+    this.adminPopoverTrigger = null;
+  }
+
+  private hideAdminPopoverOnOutsideClick(event: Event): void {
+    const popoverEl = document.querySelector('.sidebar-admin-popover.show');
+
+    if (!this.adminPopover || !popoverEl) {
+      return;
+    }
+
+    const target = event.target;
+
+    if (!(target instanceof Node)) {
+      return;
+    }
+
+    if (this.adminPopoverTrigger?.contains(target) || popoverEl.contains(target)) {
+      return;
+    }
+
+    this.adminPopover.hide();
   }
 
   private buildAdminNavGrid(): HTMLElement {
