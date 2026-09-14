@@ -13,6 +13,7 @@ import {
   type CachedStaticFile,
   createCachedStaticFile,
   getCachedStaticFile,
+  HTML_CONTENT_TYPE,
   isHtmlStaticPath,
   sendCachedStaticFile,
   type StaticCacheRequestHeaders,
@@ -75,7 +76,9 @@ export async function buildHtmlCachedFileWithRuntimeConfig(
     configJson,
   );
 
-  return createCachedStaticFile(absolutePath, Buffer.from(injectedHtml, 'utf8'), mtimeMs);
+  // Always text/html: SSR cache keys like `ssr:/path` have no `.html` extension, and
+  // deriving MIME from the path would yield application/octet-stream (browser download).
+  return createCachedStaticFile(absolutePath, Buffer.from(injectedHtml, 'utf8'), mtimeMs, HTML_CONTENT_TYPE);
 }
 
 /**
