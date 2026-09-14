@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.31.4](https://github.com/forepath/one/compare/v2.31.3...v2.31.4) (2026-09-14)
+
+
+### Bug Fixes
+
+* **shared:** expressjs response mime type ([#619](https://github.com/forepath/one/issues/619)) ([cea1203](https://github.com/forepath/one/commit/cea120383d900aa34af31cda927f51430c1da164))
+
 ## [2.31.3](https://github.com/forepath/one/compare/v2.31.2...v2.31.3) (2026-09-13)
 
 
