@@ -12,6 +12,7 @@ import {
   escapeJsonForHtmlScript,
   injectRuntimeConfigIntoHtml,
   resolveRuntimeConfigJsonForHtml,
+  sendHtmlStringWithRuntimeConfig,
   sendIndexHtmlWithRuntimeConfig,
 } from './runtime-config-html';
 
@@ -160,6 +161,7 @@ describe('runtime-config-html', () => {
       await sendIndexHtmlWithRuntimeConfig(res, indexPath, { headers: {} });
 
       expect(res.statusCode).toBe(200);
+      expect(String(res.headers['content-type'])).toBe('text/html; charset=utf-8');
       expect(String(res.headers['cache-control'])).toContain('must-revalidate');
       expect(res.headers['etag']).toBeDefined();
 
@@ -202,6 +204,28 @@ describe('runtime-config-html', () => {
 
       expect(first.headers['etag']).not.toBe(second.headers['etag']);
       expect(String(second.body)).toContain('https://changed.example');
+    });
+  });
+
+  describe('sendHtmlStringWithRuntimeConfig', () => {
+    beforeEach(() => {
+      mockedFetchRuntimeConfigFromEnv.mockResolvedValue({
+        kind: 'ok',
+        value: { billing: { frontendUrl: 'https://ssr.example' } },
+      });
+    });
+
+    it('sends text/html even when the cache key has no .html extension', async () => {
+      const res = mockRes();
+      const html = '<html><head><title>ssr</title></head><body><app-root></app-root></body></html>';
+
+      // Mirrors create-ssr-express-app cache keys before the .html suffix fix.
+      await sendHtmlStringWithRuntimeConfig(res, 'ssr:/pricing', html, Date.now(), { headers: {} });
+
+      expect(res.statusCode).toBe(200);
+      expect(String(res.headers['content-type'])).toBe('text/html; charset=utf-8');
+      expect(String(res.body)).toContain('https://ssr.example');
+      expect(String(res.body)).toContain(`id="${RUNTIME_CONFIG_ELEMENT_ID}"`);
     });
   });
 });

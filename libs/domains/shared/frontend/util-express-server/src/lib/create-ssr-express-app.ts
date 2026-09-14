@@ -93,7 +93,7 @@ export function createSsrExpressApp(options: CreateSsrExpressAppOptions): SsrExp
         publicPath: browserDistFolder,
         providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
       })
-      .then((html: string) => sendHtmlStringWithRuntimeConfig(res, `ssr:${originalUrl}`, html, Date.now(), req))
+      .then((html: string) => sendHtmlStringWithRuntimeConfig(res, `ssr:${originalUrl}.html`, html, Date.now(), req))
       .catch((err: unknown) => next(err));
   });
 

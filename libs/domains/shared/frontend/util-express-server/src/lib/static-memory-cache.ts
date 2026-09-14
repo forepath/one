@@ -58,8 +58,11 @@ export type StaticCacheRequestHeaders = {
 
 export type StaticCacheHeaderMap = Record<string, string | number>;
 
+/** HTML document responses (prerender, SSR, SPA shells). */
+export const HTML_CONTENT_TYPE = 'text/html; charset=utf-8';
+
 const CONTENT_TYPES: Readonly<Record<string, string>> = {
-  '.html': 'text/html; charset=utf-8',
+  '.html': HTML_CONTENT_TYPE,
   '.css': 'text/css; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
   '.mjs': 'application/javascript; charset=utf-8',
@@ -228,12 +231,17 @@ export function getCachedStaticFile(absolutePath: string): CachedStaticFile | nu
   return staticMemoryCache.get(resolve(absolutePath)) ?? null;
 }
 
-export function createCachedStaticFile(absolutePath: string, body: Buffer, mtimeMs: number): CachedStaticFile {
+export function createCachedStaticFile(
+  absolutePath: string,
+  body: Buffer,
+  mtimeMs: number,
+  contentType?: string,
+): CachedStaticFile {
   const resolved = resolve(absolutePath);
 
   return {
     body,
-    contentType: getContentTypeForStaticPath(resolved),
+    contentType: contentType ?? getContentTypeForStaticPath(resolved),
     mtimeMs,
     absolutePath: resolved,
     etag: computeStrongContentEtag(body),

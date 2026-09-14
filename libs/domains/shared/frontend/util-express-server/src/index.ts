@@ -40,6 +40,7 @@ export {
   getCachedStaticFile,
   getContentTypeForStaticPath,
   getStaticCacheControlHeader,
+  HTML_CONTENT_TYPE,
   isHtmlStaticPath,
   isFingerprintedAssetPath,
   isNotModified,
