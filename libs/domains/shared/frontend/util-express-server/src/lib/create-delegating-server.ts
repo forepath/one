@@ -29,10 +29,29 @@ export interface CreateDelegatingServerOptions {
   port?: number | string;
   shouldBypassStatic?: (pathname: string) => boolean;
   /**
+   * When set, `GET /` returns HTTP 301 to `/{locale}{rootRedirectPath}` instead of
+   * serving the locale `index.html` (docs: `'/docs'`, landings: `'/'`).
+   * Exact pathname `/` only; unset preserves current behavior.
+   */
+  rootRedirectPath?: string;
+  /**
    * Optional override for loading locale `server.mjs` modules (tests).
    * Defaults to a dynamic `import()` of the file URL.
    */
   loadLocaleServerModule?: LocaleServerModuleLoader;
+}
+
+/**
+ * Builds `Location` for a bare-host root redirect (`/` → `/{locale}/…`).
+ * `rootRedirectPath: '/'` yields `/{locale}/`; `'/docs'` yields `/{locale}/docs`.
+ */
+export function buildRootRedirectLocation(locale: string, rootRedirectPath: string, search = ''): string {
+  const path =
+    rootRedirectPath === '/'
+      ? `/${locale}/`
+      : `/${locale}${rootRedirectPath.startsWith('/') ? rootRedirectPath : `/${rootRedirectPath}`}`;
+
+  return `${path}${search}`;
 }
 
 export interface DelegatingServerHandle {
@@ -197,7 +216,7 @@ export function createDelegatingServer(options: CreateDelegatingServerOptions): 
   const availableLocales = options.availableLocales ?? ['en', 'de'];
   const defaultLocale = options.defaultLocale ?? 'en';
   const port = options.port ?? process.env['PORT'] ?? 4000;
-  const { serverRoot, shouldBypassStatic } = options;
+  const { serverRoot, shouldBypassStatic, rootRedirectPath } = options;
   const loadLocaleServerModule = options.loadLocaleServerModule ?? defaultLoadLocaleServerModule;
   let localeServers = new Map<string, LocaleExpressHandler>();
 
@@ -207,6 +226,17 @@ export function createDelegatingServer(options: CreateDelegatingServerOptions): 
 
       if (isSourceMapPath(requestUrl.pathname)) {
         res.writeHead(404);
+        res.end();
+
+        return;
+      }
+
+      if (requestUrl.pathname === '/' && rootRedirectPath) {
+        const redirectLocale = resolveLocaleFromRequest(req, availableLocales, defaultLocale);
+
+        res.writeHead(301, {
+          Location: buildRootRedirectLocation(redirectLocale, rootRedirectPath, requestUrl.search),
+        });
         res.end();
 
         return;
