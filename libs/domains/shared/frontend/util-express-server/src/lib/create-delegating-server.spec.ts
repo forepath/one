@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import {
+  buildRootRedirectLocation,
   createDelegatingServer,
   defaultLoadLocaleServerModule,
   resolveLocaleFromRequest,
@@ -88,6 +89,11 @@ describe('create-delegating-server', () => {
     writeFileSync(join(serverRoot, 'browser', 'en', 'about.html'), '<html>about</html>');
     mkdirSync(join(serverRoot, 'browser', 'en', 'pricing'), { recursive: true });
     writeFileSync(join(serverRoot, 'browser', 'en', 'pricing', 'index.html'), '<html>pricing</html>');
+    mkdirSync(join(serverRoot, 'browser', 'en', 'docs'), { recursive: true });
+    writeFileSync(join(serverRoot, 'browser', 'en', 'docs', 'index.html'), '<html>en-docs</html>');
+    mkdirSync(join(serverRoot, 'browser', 'de', 'docs'), { recursive: true });
+    writeFileSync(join(serverRoot, 'browser', 'de', 'index.html'), '<html>de-home</html>');
+    writeFileSync(join(serverRoot, 'browser', 'de', 'docs', 'index.html'), '<html>de-docs</html>');
     mkdirSync(join(serverRoot, 'en'), { recursive: true });
     mkdirSync(join(serverRoot, 'de'), { recursive: true });
     writeFileSync(join(serverRoot, 'en', 'server.mjs'), '// placeholder for existsSync\n');
@@ -124,6 +130,15 @@ describe('create-delegating-server', () => {
       expect(
         resolveLocaleFromRequest({ url: '/pricing', headers: { host: 'localhost' } } as never, ['en', 'de'], 'en'),
       ).toBe('en');
+    });
+  });
+
+  describe('buildRootRedirectLocation', () => {
+    it('normalizes landing and docs redirect targets', () => {
+      expect(buildRootRedirectLocation('en', '/')).toBe('/en/');
+      expect(buildRootRedirectLocation('de', '/docs')).toBe('/de/docs');
+      expect(buildRootRedirectLocation('en', '/docs', '?utm=x')).toBe('/en/docs?utm=x');
+      expect(buildRootRedirectLocation('en', '/', '?utm=x')).toBe('/en/?utm=x');
     });
   });
 
@@ -472,6 +487,86 @@ describe('create-delegating-server', () => {
         } else {
           process.env['PORT'] = previousPort;
         }
+      }
+    });
+
+    it('301-redirects bare / to /{locale}/docs when rootRedirectPath is /docs', async () => {
+      const handle = createDelegatingServer({
+        serverRoot,
+        availableLocales: ['en', 'de'],
+        defaultLocale: 'en',
+        port: 0,
+        rootRedirectPath: '/docs',
+        loadLocaleServerModule: createLocaleLoader({ en: enHandler, de: deHandler }),
+      });
+
+      await handle.listen();
+      const address = handle.server.address();
+      const port = typeof address === 'object' && address ? address.port : 0;
+
+      try {
+        const root = await httpGet(port, '/');
+        expect(root.status).toBe(301);
+        expect(root.headers['location']).toBe('/en/docs');
+        expect(root.body).toBe('');
+
+        const withQuery = await httpGet(port, '/?utm=x');
+        expect(withQuery.status).toBe(301);
+        expect(withQuery.headers['location']).toBe('/en/docs?utm=x');
+
+        const deRoot = await httpGet(port, '/', { 'accept-language': 'de' });
+        expect(deRoot.status).toBe(301);
+        expect(deRoot.headers['location']).toBe('/de/docs');
+
+        const docsHome = await httpGet(port, '/en/docs');
+        expect(docsHome.status).toBe(200);
+        expect(docsHome.body).toContain('en-docs');
+
+        const about = await httpGet(port, '/en/about');
+        expect(about.status).toBe(200);
+        expect(about.body).toContain('about');
+      } finally {
+        await closeServer(handle.server);
+      }
+    });
+
+    it('301-redirects bare / to /{locale}/ when rootRedirectPath is /', async () => {
+      const handle = createDelegatingServer({
+        serverRoot,
+        availableLocales: ['en', 'de'],
+        defaultLocale: 'en',
+        port: 0,
+        rootRedirectPath: '/',
+        loadLocaleServerModule: createLocaleLoader({ en: enHandler, de: deHandler }),
+      });
+
+      await handle.listen();
+      const address = handle.server.address();
+      const port = typeof address === 'object' && address ? address.port : 0;
+
+      try {
+        const root = await httpGet(port, '/');
+        expect(root.status).toBe(301);
+        expect(root.headers['location']).toBe('/en/');
+        expect(root.body).toBe('');
+
+        const withQuery = await httpGet(port, '/?utm=x');
+        expect(withQuery.status).toBe(301);
+        expect(withQuery.headers['location']).toBe('/en/?utm=x');
+
+        const deRoot = await httpGet(port, '/', { 'accept-language': 'de' });
+        expect(deRoot.status).toBe(301);
+        expect(deRoot.headers['location']).toBe('/de/');
+
+        const localeHome = await httpGet(port, '/en/');
+        expect(localeHome.status).toBe(200);
+        expect(localeHome.body).toContain('en-home');
+
+        const deHome = await httpGet(port, '/de/');
+        expect(deHome.status).toBe(200);
+        expect(deHome.body).toContain('de-home');
+      } finally {
+        await closeServer(handle.server);
       }
     });
   });

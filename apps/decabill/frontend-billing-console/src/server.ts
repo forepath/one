@@ -3,6 +3,7 @@ import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 import {
+  buildRootRedirectLocation,
   createCachedStaticFile,
   createMemoryStaticMiddleware,
   createSecurityHeadersMiddleware,
@@ -356,6 +357,14 @@ app.get('*', (req, res) => {
   }
 
   if (!getLocaleFromPath(req)) {
+    const requestUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+
+    if (requestUrl.pathname === '/') {
+      res.redirect(301, buildRootRedirectLocation(locale, '/', requestUrl.search));
+
+      return;
+    }
+
     res.redirect(302, `/${locale}${req.url}`);
 
     return;
