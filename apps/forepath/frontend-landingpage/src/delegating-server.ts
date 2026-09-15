@@ -8,6 +8,7 @@ startDelegatingServerFromImportMetaUrl(import.meta.url, {
   availableLocales: ['en', 'de'],
   defaultLocale: process.env['DEFAULT_LOCALE'] || 'en',
   shouldBypassStatic,
+  rootRedirectPath: '/',
 });
 
 export default undefined;

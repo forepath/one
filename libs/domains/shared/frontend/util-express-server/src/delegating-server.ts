@@ -1,6 +1,7 @@
 // Delegating server entry — import from
 // `@forepath/shared/frontend/util-express-server/delegating-server` (no Angular SSR).
 export {
+  buildRootRedirectLocation,
   createDelegatingServer,
   resolveLocaleFromRequest,
   resolveLocalizedStaticFilePath,
