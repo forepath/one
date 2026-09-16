@@ -440,7 +440,7 @@
       </trans-unit>
       <trans-unit id="featureForepathHome-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Practical engineering<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for teams that ship and operate with confidence </source>
-        <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Praxisnahe Technik<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> für Teams, die zuverlässig liefern und betreiben</target>
+        <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Skalierbare Technologie<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> für Teams, die zuverlässige Lösungen entwickeln</target>
       </trans-unit>
       <trans-unit id="featureForepathHome-heroLead" datatype="html">
         <source> ForePath partners with organizations to modernize infrastructure, deliver software, and adopt AI without trading away control, clarity, or long-term maintainability. </source>
