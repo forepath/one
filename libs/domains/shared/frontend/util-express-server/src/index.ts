@@ -29,6 +29,7 @@ export {
 } from './lib/security-headers';
 export { buildSsrAllowedHosts } from './lib/ssr-allowed-hosts';
 export { resolveLocalizedBrowserDistFolder, stripLocalePrefixFromPath } from './lib/localized-browser-dist';
+export { buildRootRedirectLocation } from './lib/create-delegating-server';
 export {
   buildStaticCacheHeaders,
   buildStaticCacheHeadersFor304,
