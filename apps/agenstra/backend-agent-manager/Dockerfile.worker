@@ -25,6 +25,7 @@ ENV PATH="/home/agenstra/.local/bin:/home/agenstra/.opencode/bin:/home/agenstra/
 WORKDIR /app
 
 RUN apt-get update && \
+    apt-get upgrade -y --no-install-recommends && \
     apt-get install -y --no-install-recommends \
     curl \
     bash \

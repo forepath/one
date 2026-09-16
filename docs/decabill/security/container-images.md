@@ -37,6 +37,7 @@ Source: `apps/decabill/backend-billing-manager/Dockerfile.api`
 - **No Docker socket mount** (billing does not orchestrate agent containers on the host)
 - Secrets (database, Stripe, `ENCRYPTION_KEY`, `STATIC_API_KEY`, cloud API tokens) are supplied at **deploy time**, not as default `ENV` in the image
 - **`VERSION`** is baked at image build time (`ARG`/`ENV`, `--build-arg VERSION=$VERSION`). Release sets it from semantic-release (`release.yml` after `needs: publish`). Runtime `VERSION` / `APP_VERSION` may override
+- Debian base images run `apt-get upgrade` during the build (and again after Playwright OS deps) so packages such as `perl-base` pick up Debian security fixes that are newer than the published `debian:trixie-slim` snapshot
 
 ### Volumes (typical compose)
 
