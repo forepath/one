@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.31.5](https://github.com/forepath/one/compare/v2.31.4...v2.31.5) (2026-09-16)
+
+
+### Bug Fixes
+
+* **shared:** email confirmation race condition ([#624](https://github.com/forepath/one/issues/624)) ([7041f1b](https://github.com/forepath/one/commit/7041f1bcd56783e5b184d99fa872b21bc02ed2f3))
+
+
+### Chores
+
+* modify german forepath tagline ([#623](https://github.com/forepath/one/issues/623)) ([3d70794](https://github.com/forepath/one/commit/3d70794bbd19d2fe33c3a8a739429e4d11a4b5b5))
+
 ## [2.31.4](https://github.com/forepath/one/compare/v2.31.3...v2.31.4) (2026-09-14)
 
 
