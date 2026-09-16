@@ -171,11 +171,15 @@ export class AuthService {
 
     user = await this.usersRepository.findByIdOrThrow(userId);
     await this.verifyLogin2faEmailCode(user, code);
-    await this.usersRepository.update(user.id, {
+
+    const expectedTokenHash = user.login2faEmailToken as string;
+    const consumed = await this.usersRepository.consumeLogin2faEmailToken(user.id, expectedTokenHash, {
       email2faEnabledAt: new Date(),
-      login2faEmailToken: null,
-      login2faEmailTokenExpiresAt: null,
     });
+
+    if (!consumed) {
+      this.throwLogin2faInvalid('email');
+    }
 
     return { message: 'Email two-factor authentication enabled.' };
   }
@@ -326,16 +330,18 @@ export class AuthService {
       throw new BadRequestException('Invalid or expired confirmation code');
     }
 
-    const valid = await validateConfirmationCode(code, user.emailConfirmationToken);
+    const expectedTokenHash = user.emailConfirmationToken;
+    const valid = await validateConfirmationCode(code, expectedTokenHash);
 
     if (!valid) {
       throw new BadRequestException('Invalid or expired confirmation code');
     }
 
-    await this.usersRepository.update(user.id, {
-      emailConfirmedAt: new Date(),
-      emailConfirmationToken: undefined,
-    });
+    const consumed = await this.usersRepository.consumeEmailConfirmationToken(user.id, expectedTokenHash);
+
+    if (!consumed) {
+      throw new BadRequestException('Invalid or expired confirmation code');
+    }
 
     return { message: 'Email confirmed successfully. You can now log in.' };
   }
@@ -387,19 +393,20 @@ export class AuthService {
       throw new BadRequestException('Reset code has expired');
     }
 
-    const valid = await validateConfirmationCode(code, user.passwordResetToken);
+    const expectedTokenHash = user.passwordResetToken;
+    const valid = await validateConfirmationCode(code, expectedTokenHash);
 
     if (!valid) {
       throw new BadRequestException('Invalid or expired reset code');
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
+    const consumed = await this.usersRepository.consumePasswordResetToken(user.id, expectedTokenHash, passwordHash);
 
-    await this.usersRepository.update(user.id, {
-      passwordHash,
-      passwordResetToken: undefined,
-      passwordResetTokenExpiresAt: undefined,
-    });
+    if (!consumed) {
+      throw new BadRequestException('Invalid or expired reset code');
+    }
+
     await this.invalidateAllSessions(user.id);
 
     return { message: 'Password reset successfully. You can now log in with your new password.' };
@@ -494,10 +501,13 @@ export class AuthService {
     }
 
     await this.verifyLogin2faEmailCode(user, code);
-    await this.usersRepository.update(user.id, {
-      login2faEmailToken: null,
-      login2faEmailTokenExpiresAt: null,
-    });
+
+    const expectedTokenHash = user.login2faEmailToken as string;
+    const consumed = await this.usersRepository.consumeLogin2faEmailToken(user.id, expectedTokenHash);
+
+    if (!consumed) {
+      this.throwLogin2faInvalid('email');
+    }
   }
 
   private throwLogin2faRequired(method: Login2faMethod): never {

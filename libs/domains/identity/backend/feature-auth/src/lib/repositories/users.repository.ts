@@ -123,6 +123,72 @@ export class UsersRepository {
 
     return Number(tokenVersion);
   }
+
+  /**
+   * Atomically set a new password and clear the reset token when the stored hash still matches.
+   * Returns false when another request already consumed the token (or it expired).
+   */
+  async consumePasswordResetToken(id: string, expectedTokenHash: string, passwordHash: string): Promise<boolean> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .update(UserEntity)
+      .set({
+        passwordHash,
+        passwordResetToken: () => 'NULL',
+        passwordResetTokenExpiresAt: () => 'NULL',
+      })
+      .where('id = :id', { id })
+      .andWhere('password_reset_token = :expectedTokenHash', { expectedTokenHash })
+      .andWhere('password_reset_token_expires_at >= :now', { now: new Date() })
+      .execute();
+
+    return (result.affected ?? 0) === 1;
+  }
+
+  /**
+   * Atomically confirm email and clear the confirmation token when the stored hash still matches.
+   * Returns false when another request already consumed the token.
+   */
+  async consumeEmailConfirmationToken(id: string, expectedTokenHash: string): Promise<boolean> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .update(UserEntity)
+      .set({
+        emailConfirmedAt: new Date(),
+        emailConfirmationToken: () => 'NULL',
+      })
+      .where('id = :id', { id })
+      .andWhere('email_confirmation_token = :expectedTokenHash', { expectedTokenHash })
+      .execute();
+
+    return (result.affected ?? 0) === 1;
+  }
+
+  /**
+   * Atomically clear the login email 2FA token when the stored hash still matches.
+   * Optionally applies extra SET fields (e.g. email2faEnabledAt when enabling).
+   * Returns false when another request already consumed the token (or it expired).
+   */
+  async consumeLogin2faEmailToken(
+    id: string,
+    expectedTokenHash: string,
+    extraSet: Partial<Pick<UserEntity, 'email2faEnabledAt'>> = {},
+  ): Promise<boolean> {
+    const result = await this.repository
+      .createQueryBuilder()
+      .update(UserEntity)
+      .set({
+        ...extraSet,
+        login2faEmailToken: () => 'NULL',
+        login2faEmailTokenExpiresAt: () => 'NULL',
+      })
+      .where('id = :id', { id })
+      .andWhere('login_2fa_email_token = :expectedTokenHash', { expectedTokenHash })
+      .andWhere('login_2fa_email_token_expires_at >= :now', { now: new Date() })
+      .execute();
+
+    return (result.affected ?? 0) === 1;
+  }
 }
 
 export { DEFAULT_TENANT };
