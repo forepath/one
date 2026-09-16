@@ -71,10 +71,10 @@ PRODUCT_NAME=Agenstra  # Issuer label on TOTP QR / authenticator entries (defaul
 **Features**:
 
 - User registration with email/password
-- Email confirmation with 6-character alphanumeric codes
-- Password reset functionality
+- Email confirmation with 6-character alphanumeric codes (consumed atomically; single-use under concurrency)
+- Password reset functionality (reset codes consumed atomically; single-use under concurrency)
 - JWT-based authentication
-- **Login 2FA** (forced by default): email OTP on every login unless an authenticator is enrolled; set `DISABLE_FORCE_LOGIN_2FA=true` to make 2FA opt-in only
+- **Login 2FA** (forced by default): email OTP on every login unless an authenticator is enrolled; set `DISABLE_FORCE_LOGIN_2FA=true` to make 2FA opt-in only. Email OTP codes are consumed atomically (single-use under concurrency).
 - Self-service authenticator (TOTP) and optional email 2FA under Security settings
 - Self-service password change under Security settings (current password, new password, confirmation; own account only)
 - TOTP QR / authenticator account name uses `PRODUCT_NAME` (falls back to `Forepath`) plus the user email
@@ -115,7 +115,7 @@ Updating a token changes **name** and **scopes** only; the secret is never rotat
 
 1. User receives confirmation code via email (6-character alphanumeric: uppercase letters and numbers)
 2. User enters email and code on confirmation page
-3. System validates code and confirms email
+3. System validates the code and consumes it atomically (only one concurrent confirmation can succeed)
 4. User can now log in
 
 If the confirmation page was closed before the code was entered, the confirmation email explains how to continue: sign in again with the same email address (the app returns to the confirmation page), or open `/confirm-email` and enter the email address with the code manually.
@@ -136,7 +136,7 @@ When credentials are valid but the email is not confirmed yet, login returns `40
 1. User requests password reset with email
 2. System sends 6-character alphanumeric reset code via email
 3. User enters email, code, and new password
-4. System validates code and updates password
+4. System validates the code and consumes it atomically while updating the password (only one concurrent reset can succeed)
 5. User can log in with new password
 
 ## Disabling Signup

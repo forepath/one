@@ -20,6 +20,7 @@ ENV VERSION=${VERSION}
 WORKDIR /app
 
 RUN apt-get update && \
+    apt-get upgrade -y --no-install-recommends && \
     apt-get install -y --no-install-recommends \
     curl \
     bash \

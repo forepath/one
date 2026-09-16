@@ -73,10 +73,10 @@ PRODUCT_NAME=Decabill  # Issuer label on TOTP QR / authenticator entries (defaul
 **Features**:
 
 - User registration with email and password
-- Email confirmation with 6-character alphanumeric codes
-- Password reset functionality
+- Email confirmation with 6-character alphanumeric codes (consumed atomically; single-use under concurrency)
+- Password reset functionality (reset codes consumed atomically; single-use under concurrency)
 - JWT-based authentication (7-day expiry)
-- **Login 2FA** (forced by default): email OTP unless authenticator enrolled; set `DISABLE_FORCE_LOGIN_2FA=true` for opt-in only
+- **Login 2FA** (forced by default): email OTP unless authenticator enrolled; set `DISABLE_FORCE_LOGIN_2FA=true` for opt-in only. Email OTP codes are consumed atomically (single-use under concurrency).
 - Self-service authenticator / email 2FA; admins can remove authenticator enrollment
 - Self-service password change under Security settings (current password, new password, confirmation; own account only)
 - TOTP QR / authenticator account name uses `PRODUCT_NAME` (falls back to `Forepath`) plus the user email
@@ -116,7 +116,7 @@ Updating a token changes **name** and **scopes** only; the secret is never rotat
 
 1. User receives confirmation code via email
 2. User submits email and code on the confirmation page
-3. System validates code and confirms email
+3. System validates the code and consumes it atomically (only one concurrent confirmation can succeed)
 4. User can log in
 
 If the confirmation page was closed before the code was entered, the confirmation email explains how to continue: sign in again with the same email address (the app returns to the confirmation page), or open `/confirm-email` and enter the email address with the code manually.
@@ -136,7 +136,7 @@ When credentials are valid but the email is not confirmed yet, login returns `40
 1. User requests password reset with email
 2. System sends 6-character alphanumeric reset code via email
 3. User submits email, code, and new password
-4. System validates code and updates password
+4. System validates the code and consumes it atomically while updating the password (only one concurrent reset can succeed)
 
 ## Disabling Signup
 

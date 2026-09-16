@@ -1,5 +1,6 @@
-import { UserRole } from '@forepath/identity/backend';
+import { UserRole, createConfirmationCode, validateConfirmationCode } from '@forepath/identity/backend';
 import { ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 import * as totpUtils from '../utils/totp.utils';
 
@@ -13,6 +14,9 @@ describe('AuthService', () => {
     countByTenant: jest.fn(),
     findByIdOrThrow: jest.fn(),
     incrementTokenVersion: jest.fn(),
+    consumePasswordResetToken: jest.fn(),
+    consumeEmailConfirmationToken: jest.fn(),
+    consumeLogin2faEmailToken: jest.fn(),
   };
   const mockRevokedUserTokensRepository = {
     revoke: jest.fn(),
@@ -515,5 +519,188 @@ describe('AuthService', () => {
     );
     expect(mockUsersService.validatePassword).not.toHaveBeenCalled();
     expect(mockUsersRepository.update).not.toHaveBeenCalled();
+  });
+
+  describe('atomic confirmation-code consume', () => {
+    async function issueCode(): Promise<{ code: string; tokenHash: string }> {
+      const { code, hash } = createConfirmationCode();
+      const tokenHash = await hash;
+      const valid = await validateConfirmationCode(code, tokenHash);
+
+      expect(valid).toBe(true);
+
+      return { code, tokenHash };
+    }
+
+    it('resets password when consumePasswordResetToken succeeds', async () => {
+      const { code, tokenHash } = await issueCode();
+
+      mockUsersRepository.findByEmail.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        passwordResetToken: tokenHash,
+        passwordResetTokenExpiresAt: new Date(Date.now() + 60_000),
+      });
+      jest.spyOn(bcrypt, 'hash').mockResolvedValue('$2b$12$newpassword' as never);
+      mockUsersRepository.consumePasswordResetToken.mockResolvedValue(true);
+      mockUsersRepository.incrementTokenVersion.mockResolvedValue(1);
+
+      const result = await service.resetPassword('user@example.com', code, 'new-password');
+
+      expect(mockUsersRepository.consumePasswordResetToken).toHaveBeenCalledWith(
+        'user-1',
+        tokenHash,
+        '$2b$12$newpassword',
+      );
+      expect(mockUsersRepository.incrementTokenVersion).toHaveBeenCalledWith('user-1');
+      expect(result.message).toContain('Password reset successfully');
+    });
+
+    it('rejects password reset when consumePasswordResetToken loses the race', async () => {
+      const { code, tokenHash } = await issueCode();
+
+      mockUsersRepository.findByEmail.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        passwordResetToken: tokenHash,
+        passwordResetTokenExpiresAt: new Date(Date.now() + 60_000),
+      });
+      jest.spyOn(bcrypt, 'hash').mockResolvedValue('$2b$12$newpassword' as never);
+      mockUsersRepository.consumePasswordResetToken.mockResolvedValue(false);
+
+      await expect(service.resetPassword('user@example.com', code, 'new-password')).rejects.toThrow(
+        'Invalid or expired reset code',
+      );
+      expect(mockUsersRepository.consumePasswordResetToken).toHaveBeenCalled();
+      expect(mockUsersRepository.incrementTokenVersion).not.toHaveBeenCalled();
+    });
+
+    it('confirms email when consumeEmailConfirmationToken succeeds', async () => {
+      const { code, tokenHash } = await issueCode();
+
+      mockUsersRepository.findByEmail.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        emailConfirmationToken: tokenHash,
+      });
+      mockUsersRepository.consumeEmailConfirmationToken.mockResolvedValue(true);
+
+      const result = await service.confirmEmail('user@example.com', code);
+
+      expect(mockUsersRepository.consumeEmailConfirmationToken).toHaveBeenCalledWith('user-1', tokenHash);
+      expect(result.message).toContain('Email confirmed successfully');
+    });
+
+    it('rejects email confirm when consumeEmailConfirmationToken loses the race', async () => {
+      const { code, tokenHash } = await issueCode();
+
+      mockUsersRepository.findByEmail.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        emailConfirmationToken: tokenHash,
+      });
+      mockUsersRepository.consumeEmailConfirmationToken.mockResolvedValue(false);
+
+      await expect(service.confirmEmail('user@example.com', code)).rejects.toThrow(
+        'Invalid or expired confirmation code',
+      );
+      expect(mockUsersRepository.consumeEmailConfirmationToken).toHaveBeenCalled();
+    });
+
+    it('enables email 2FA when consumeLogin2faEmailToken succeeds', async () => {
+      const { code, tokenHash } = await issueCode();
+
+      mockUsersRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        email2faEnabledAt: null,
+        login2faEmailToken: tokenHash,
+        login2faEmailTokenExpiresAt: new Date(Date.now() + 60_000),
+      });
+      mockUsersRepository.consumeLogin2faEmailToken.mockResolvedValue(true);
+
+      const result = await service.beginOrConfirmEmail2fa('user-1', code);
+
+      expect(mockUsersRepository.consumeLogin2faEmailToken).toHaveBeenCalledWith(
+        'user-1',
+        tokenHash,
+        expect.objectContaining({ email2faEnabledAt: expect.any(Date) }),
+      );
+      expect(result.message).toContain('Email two-factor authentication enabled');
+    });
+
+    it('rejects email 2FA enable when consumeLogin2faEmailToken loses the race', async () => {
+      const { code, tokenHash } = await issueCode();
+
+      mockUsersRepository.findByIdOrThrow.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        email2faEnabledAt: null,
+        login2faEmailToken: tokenHash,
+        login2faEmailTokenExpiresAt: new Date(Date.now() + 60_000),
+      });
+      mockUsersRepository.consumeLogin2faEmailToken.mockResolvedValue(false);
+
+      await expect(service.beginOrConfirmEmail2fa('user-1', code)).rejects.toThrow(UnauthorizedException);
+      expect(mockUsersRepository.consumeLogin2faEmailToken).toHaveBeenCalled();
+    });
+
+    it('consumes login email 2FA token on successful login', async () => {
+      delete process.env.DISABLE_FORCE_LOGIN_2FA;
+      const { code, tokenHash } = await issueCode();
+
+      mockUsersRepository.findByEmail.mockResolvedValue({
+        id: 'user-2fa',
+        email: 'twofa@example.com',
+        role: UserRole.USER,
+        emailConfirmedAt: new Date('2026-01-01T00:00:00.000Z'),
+        lockedAt: null,
+        passwordHash: '$2b$12$hash',
+        tokenVersion: 0,
+        login2faEmailToken: tokenHash,
+        login2faEmailTokenExpiresAt: new Date(Date.now() + 60_000),
+      });
+      mockUsersService.validatePassword.mockResolvedValue(true);
+      mockUsersRepository.consumeLogin2faEmailToken.mockResolvedValue(true);
+
+      const result = await service.login('twofa@example.com', 'password123', code);
+
+      expect(mockUsersRepository.consumeLogin2faEmailToken).toHaveBeenCalledWith('user-2fa', tokenHash);
+      expect(result.access_token).toBe('jwt-token');
+    });
+
+    it('rejects login when login email 2FA consume loses the race', async () => {
+      delete process.env.DISABLE_FORCE_LOGIN_2FA;
+      const { code, tokenHash } = await issueCode();
+
+      mockUsersRepository.findByEmail.mockResolvedValue({
+        id: 'user-2fa',
+        email: 'twofa@example.com',
+        role: UserRole.USER,
+        emailConfirmedAt: new Date('2026-01-01T00:00:00.000Z'),
+        lockedAt: null,
+        passwordHash: '$2b$12$hash',
+        tokenVersion: 0,
+        login2faEmailToken: tokenHash,
+        login2faEmailTokenExpiresAt: new Date(Date.now() + 60_000),
+      });
+      mockUsersService.validatePassword.mockResolvedValue(true);
+      mockUsersRepository.consumeLogin2faEmailToken.mockResolvedValue(false);
+
+      try {
+        await service.login('twofa@example.com', 'password123', code);
+        fail('expected UnauthorizedException');
+      } catch (error) {
+        expect(error).toBeInstanceOf(UnauthorizedException);
+        expect((error as UnauthorizedException).getResponse()).toEqual(
+          expect.objectContaining({
+            code: 'LOGIN_2FA_INVALID',
+            method: 'email',
+          }),
+        );
+      }
+
+      expect(mockJwtService.sign).not.toHaveBeenCalled();
+    });
   });
 });
