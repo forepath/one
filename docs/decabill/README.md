@@ -76,13 +76,6 @@ Public security and compliance-oriented documentation:
 
 Billing Manager HTTP OpenAPI and WebSocket AsyncAPI specifications.
 
-### [AI Agents Context](./ai-agents/README.md)
-
-AI coding assistant guides for Decabill:
-
-- Workspace `.agenstra` context (rules, commands, skills, agents, MCP, agentctx, knowledge graph)
-- Decabill project map and graph recipes
-
 ### [Troubleshooting](./troubleshooting/README.md)
 
 Problem-solving guides:

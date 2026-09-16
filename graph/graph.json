@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-12T13:09:36.493Z",
+  "generatedAt": "2026-09-15T06:35:06.350Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -12925,70 +12925,6 @@
       }
     },
     {
-      "id": "file:docs/decabill/ai-agents/README.md",
-      "type": "doc",
-      "attrs": {
-        "path": "docs/decabill/ai-agents/README.md",
-        "languageOrKind": "md"
-      }
-    },
-    {
-      "id": "file:docs/decabill/ai-agents/agentctx.md",
-      "type": "doc",
-      "attrs": {
-        "path": "docs/decabill/ai-agents/agentctx.md",
-        "languageOrKind": "md"
-      }
-    },
-    {
-      "id": "file:docs/decabill/ai-agents/agents.md",
-      "type": "doc",
-      "attrs": {
-        "path": "docs/decabill/ai-agents/agents.md",
-        "languageOrKind": "md"
-      }
-    },
-    {
-      "id": "file:docs/decabill/ai-agents/commands.md",
-      "type": "doc",
-      "attrs": {
-        "path": "docs/decabill/ai-agents/commands.md",
-        "languageOrKind": "md"
-      }
-    },
-    {
-      "id": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "type": "doc",
-      "attrs": {
-        "path": "docs/decabill/ai-agents/knowledge-graph.md",
-        "languageOrKind": "md"
-      }
-    },
-    {
-      "id": "file:docs/decabill/ai-agents/mcp-definitions.md",
-      "type": "doc",
-      "attrs": {
-        "path": "docs/decabill/ai-agents/mcp-definitions.md",
-        "languageOrKind": "md"
-      }
-    },
-    {
-      "id": "file:docs/decabill/ai-agents/rules.md",
-      "type": "doc",
-      "attrs": {
-        "path": "docs/decabill/ai-agents/rules.md",
-        "languageOrKind": "md"
-      }
-    },
-    {
-      "id": "file:docs/decabill/ai-agents/skills.md",
-      "type": "doc",
-      "attrs": {
-        "path": "docs/decabill/ai-agents/skills.md",
-        "languageOrKind": "md"
-      }
-    },
-    {
       "id": "file:docs/decabill/api-reference/README.md",
       "type": "doc",
       "attrs": {
@@ -25310,516 +25246,6 @@
       }
     },
     {
-      "id": "concept:decabill-ai-agents-context-agenstra",
-      "type": "concept",
-      "attrs": {
-        "title": "AI Agents Context (.agenstra)",
-        "docPath": "docs/decabill/ai-agents/README.md",
-        "sectionAnchor": "ai-agents-context-agenstra",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-overview",
-      "type": "concept",
-      "attrs": {
-        "title": "Overview",
-        "docPath": "docs/decabill/ai-agents/README.md",
-        "sectionAnchor": "overview",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-directory-structure",
-      "type": "concept",
-      "attrs": {
-        "title": "Directory Structure",
-        "docPath": "docs/decabill/ai-agents/README.md",
-        "sectionAnchor": "directory-structure",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-components",
-      "type": "concept",
-      "attrs": {
-        "title": "Components",
-        "docPath": "docs/decabill/ai-agents/README.md",
-        "sectionAnchor": "components",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-generating-tool-configs",
-      "type": "concept",
-      "attrs": {
-        "title": "Generating tool configs",
-        "docPath": "docs/decabill/ai-agents/README.md",
-        "sectionAnchor": "generating-tool-configs",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-decabill-product-snapshot",
-      "type": "concept",
-      "attrs": {
-        "title": "Decabill product snapshot",
-        "docPath": "docs/decabill/ai-agents/README.md",
-        "sectionAnchor": "decabill-product-snapshot",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-how-agents-should-work-on-decabill",
-      "type": "concept",
-      "attrs": {
-        "title": "How agents should work on Decabill",
-        "docPath": "docs/decabill/ai-agents/README.md",
-        "sectionAnchor": "how-agents-should-work-on-decabill",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-related-documentation",
-      "type": "concept",
-      "attrs": {
-        "title": "Related documentation",
-        "docPath": "docs/decabill/ai-agents/README.md",
-        "sectionAnchor": "related-documentation",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-agentctx",
-      "type": "concept",
-      "attrs": {
-        "title": "AgentCTX",
-        "docPath": "docs/decabill/ai-agents/agentctx.md",
-        "sectionAnchor": "agentctx",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-purpose",
-      "type": "concept",
-      "attrs": {
-        "title": "Purpose",
-        "docPath": "docs/decabill/ai-agents/agentctx.md",
-        "sectionAnchor": "purpose",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-installation",
-      "type": "concept",
-      "attrs": {
-        "title": "Installation",
-        "docPath": "docs/decabill/ai-agents/agentctx.md",
-        "sectionAnchor": "installation",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-usage",
-      "type": "concept",
-      "attrs": {
-        "title": "Usage",
-        "docPath": "docs/decabill/ai-agents/agentctx.md",
-        "sectionAnchor": "usage",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-agents-and-subagents",
-      "type": "concept",
-      "attrs": {
-        "title": "Agents and Subagents",
-        "docPath": "docs/decabill/ai-agents/agents.md",
-        "sectionAnchor": "agents-and-subagents",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-structure",
-      "type": "concept",
-      "attrs": {
-        "title": "Structure",
-        "docPath": "docs/decabill/ai-agents/agents.md",
-        "sectionAnchor": "structure",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-frontmatter-properties-read-by-the-reader",
-      "type": "concept",
-      "attrs": {
-        "title": "Frontmatter (properties read by the reader)",
-        "docPath": "docs/decabill/ai-agents/agents.md",
-        "sectionAnchor": "frontmatter-properties-read-by-the-reader",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-example-primary-agent",
-      "type": "concept",
-      "attrs": {
-        "title": "Example (primary agent)",
-        "docPath": "docs/decabill/ai-agents/agents.md",
-        "sectionAnchor": "example-primary-agent",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-example-subagent",
-      "type": "concept",
-      "attrs": {
-        "title": "Example (subagent)",
-        "docPath": "docs/decabill/ai-agents/agents.md",
-        "sectionAnchor": "example-subagent",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-output-by-tool",
-      "type": "concept",
-      "attrs": {
-        "title": "Output by tool",
-        "docPath": "docs/decabill/ai-agents/agents.md",
-        "sectionAnchor": "output-by-tool",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-commands",
-      "type": "concept",
-      "attrs": {
-        "title": "Commands",
-        "docPath": "docs/decabill/ai-agents/commands.md",
-        "sectionAnchor": "commands",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-example",
-      "type": "concept",
-      "attrs": {
-        "title": "Example",
-        "docPath": "docs/decabill/ai-agents/commands.md",
-        "sectionAnchor": "example",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-knowledge-graph",
-      "type": "concept",
-      "attrs": {
-        "title": "Knowledge Graph",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "knowledge-graph",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-why-it-exists",
-      "type": "concept",
-      "attrs": {
-        "title": "Why it exists",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "why-it-exists",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-how-to-generate",
-      "type": "concept",
-      "attrs": {
-        "title": "How to generate",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "how-to-generate",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-schema-overview",
-      "type": "concept",
-      "attrs": {
-        "title": "Schema overview",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "schema-overview",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-using-the-graph-with-ai-tools",
-      "type": "concept",
-      "attrs": {
-        "title": "Using the graph with AI tools",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "using-the-graph-with-ai-tools",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
-      "type": "concept",
-      "attrs": {
-        "title": "or: node tools/graph/mcp-run.cjs  # builds dist if missing, then starts MCP",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-security",
-      "type": "concept",
-      "attrs": {
-        "title": "Security",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "security",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-implementation",
-      "type": "concept",
-      "attrs": {
-        "title": "Implementation",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "implementation",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-decabill-specific-recipes",
-      "type": "concept",
-      "attrs": {
-        "title": "Decabill-specific recipes",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "decabill-specific-recipes",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-why-decabill-specific-notes",
-      "type": "concept",
-      "attrs": {
-        "title": "Why Decabill-specific notes",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "why-decabill-specific-notes",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-prefer-mcp-tools",
-      "type": "concept",
-      "attrs": {
-        "title": "Prefer MCP tools",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "prefer-mcp-tools",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-recipes-for-decabill",
-      "type": "concept",
-      "attrs": {
-        "title": "Recipes for Decabill",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "recipes-for-decabill",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-or",
-      "type": "concept",
-      "attrs": {
-        "title": "or",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "or",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-approximate-surface-size-orientation",
-      "type": "concept",
-      "attrs": {
-        "title": "Approximate surface size (orientation)",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "approximate-surface-size-orientation",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-after-graph-tool-changes",
-      "type": "concept",
-      "attrs": {
-        "title": "After graph tool changes",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "after-graph-tool-changes",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-or-node-tools-graph-mcp-run-cjs",
-      "type": "concept",
-      "attrs": {
-        "title": "or: node tools/graph/mcp-run.cjs",
-        "docPath": "docs/decabill/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "or-node-tools-graph-mcp-run-cjs",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-mcp-definitions",
-      "type": "concept",
-      "attrs": {
-        "title": "MCP Definitions",
-        "docPath": "docs/decabill/ai-agents/mcp-definitions.md",
-        "sectionAnchor": "mcp-definitions",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-schema-properties-read-by-the-reader",
-      "type": "concept",
-      "attrs": {
-        "title": "Schema (properties read by the reader)",
-        "docPath": "docs/decabill/ai-agents/mcp-definitions.md",
-        "sectionAnchor": "schema-properties-read-by-the-reader",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-example-local",
-      "type": "concept",
-      "attrs": {
-        "title": "Example (local)",
-        "docPath": "docs/decabill/ai-agents/mcp-definitions.md",
-        "sectionAnchor": "example-local",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-rules",
-      "type": "concept",
-      "attrs": {
-        "title": "Rules",
-        "docPath": "docs/decabill/ai-agents/rules.md",
-        "sectionAnchor": "rules",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-frontmatter-metadata",
-      "type": "concept",
-      "attrs": {
-        "title": "Frontmatter (metadata)",
-        "docPath": "docs/decabill/ai-agents/rules.md",
-        "sectionAnchor": "frontmatter-metadata",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-content-guidelines",
-      "type": "concept",
-      "attrs": {
-        "title": "Content guidelines",
-        "docPath": "docs/decabill/ai-agents/rules.md",
-        "sectionAnchor": "content-guidelines",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-examples",
-      "type": "concept",
-      "attrs": {
-        "title": "Examples",
-        "docPath": "docs/decabill/ai-agents/rules.md",
-        "sectionAnchor": "examples",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-coding-standards",
-      "type": "concept",
-      "attrs": {
-        "title": "Coding Standards",
-        "docPath": "docs/decabill/ai-agents/rules.md",
-        "sectionAnchor": "coding-standards",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-conventions",
-      "type": "concept",
-      "attrs": {
-        "title": "Conventions",
-        "docPath": "docs/decabill/ai-agents/rules.md",
-        "sectionAnchor": "conventions",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-project-conventions",
-      "type": "concept",
-      "attrs": {
-        "title": "Project Conventions",
-        "docPath": "docs/decabill/ai-agents/rules.md",
-        "sectionAnchor": "project-conventions",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-typescript-standards",
-      "type": "concept",
-      "attrs": {
-        "title": "TypeScript Standards",
-        "docPath": "docs/decabill/ai-agents/rules.md",
-        "sectionAnchor": "typescript-standards",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-skills",
-      "type": "concept",
-      "attrs": {
-        "title": "Skills",
-        "docPath": "docs/decabill/ai-agents/skills.md",
-        "sectionAnchor": "skills",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-design-patterns",
-      "type": "concept",
-      "attrs": {
-        "title": "Design Patterns",
-        "docPath": "docs/decabill/ai-agents/skills.md",
-        "sectionAnchor": "design-patterns",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-factory-pattern",
-      "type": "concept",
-      "attrs": {
-        "title": "Factory Pattern",
-        "docPath": "docs/decabill/ai-agents/skills.md",
-        "sectionAnchor": "factory-pattern",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-mcp-package-skills",
-      "type": "concept",
-      "attrs": {
-        "title": "MCP package skills",
-        "docPath": "docs/decabill/ai-agents/skills.md",
-        "sectionAnchor": "mcp-package-skills",
-        "domain": "decabill"
-      }
-    },
-    {
       "id": "concept:decabill-api-reference",
       "type": "concept",
       "attrs": {
@@ -25870,12 +25296,32 @@
       }
     },
     {
+      "id": "concept:decabill-related-documentation",
+      "type": "concept",
+      "attrs": {
+        "title": "Related documentation",
+        "docPath": "docs/decabill/api-reference/README.md",
+        "sectionAnchor": "related-documentation",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-applications-documentation",
       "type": "concept",
       "attrs": {
         "title": "Applications Documentation",
         "docPath": "docs/decabill/applications/README.md",
         "sectionAnchor": "applications-documentation",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-overview",
+      "type": "concept",
+      "attrs": {
+        "title": "Overview",
+        "docPath": "docs/decabill/applications/README.md",
+        "sectionAnchor": "overview",
         "domain": "decabill"
       }
     },
@@ -25946,6 +25392,16 @@
         "title": "Backend Billing Manager",
         "docPath": "docs/decabill/applications/backend-billing-manager.md",
         "sectionAnchor": "backend-billing-manager",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-purpose",
+      "type": "concept",
+      "attrs": {
+        "title": "Purpose",
+        "docPath": "docs/decabill/applications/backend-billing-manager.md",
+        "sectionAnchor": "purpose",
         "domain": "decabill"
       }
     },
@@ -26236,6 +25692,16 @@
         "title": "Architecture Principles",
         "docPath": "docs/decabill/architecture/README.md",
         "sectionAnchor": "architecture-principles",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-components",
+      "type": "concept",
+      "attrs": {
+        "title": "Components",
+        "docPath": "docs/decabill/architecture/components.md",
+        "sectionAnchor": "components",
         "domain": "decabill"
       }
     },
@@ -26796,6 +26262,16 @@
         "title": "Local Development",
         "docPath": "docs/decabill/deployment/local-development.md",
         "sectionAnchor": "local-development",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-installation",
+      "type": "concept",
+      "attrs": {
+        "title": "Installation",
+        "docPath": "docs/decabill/deployment/local-development.md",
+        "sectionAnchor": "installation",
         "domain": "decabill"
       }
     },
@@ -28046,6 +27522,16 @@
         "title": "SSH collection",
         "docPath": "docs/decabill/features/container-manager.md",
         "sectionAnchor": "ssh-collection",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-security",
+      "type": "concept",
+      "attrs": {
+        "title": "Security",
+        "docPath": "docs/decabill/features/container-manager.md",
+        "sectionAnchor": "security",
         "domain": "decabill"
       }
     },
@@ -46239,381 +45725,6 @@
     {
       "from": "file:docs/decabill/README.md",
       "to": "concept:decabill-licensing",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/README.md",
-      "to": "concept:decabill-ai-agents-context-agenstra",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/README.md",
-      "to": "concept:decabill-overview",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/README.md",
-      "to": "concept:decabill-directory-structure",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/README.md",
-      "to": "concept:decabill-components",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/README.md",
-      "to": "concept:decabill-generating-tool-configs",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/README.md",
-      "to": "concept:decabill-decabill-product-snapshot",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/README.md",
-      "to": "concept:decabill-how-agents-should-work-on-decabill",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/README.md",
-      "to": "concept:decabill-related-documentation",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agentctx.md",
-      "to": "concept:decabill-agentctx",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agentctx.md",
-      "to": "concept:decabill-purpose",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agentctx.md",
-      "to": "concept:decabill-installation",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agentctx.md",
-      "to": "concept:decabill-usage",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agentctx.md",
-      "to": "concept:decabill-related-documentation",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agents.md",
-      "to": "concept:decabill-agents-and-subagents",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agents.md",
-      "to": "concept:decabill-purpose",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agents.md",
-      "to": "concept:decabill-structure",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agents.md",
-      "to": "concept:decabill-frontmatter-properties-read-by-the-reader",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agents.md",
-      "to": "concept:decabill-example-primary-agent",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agents.md",
-      "to": "concept:decabill-example-subagent",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agents.md",
-      "to": "concept:decabill-output-by-tool",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agents.md",
-      "to": "concept:decabill-related-documentation",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/commands.md",
-      "to": "concept:decabill-commands",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/commands.md",
-      "to": "concept:decabill-purpose",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/commands.md",
-      "to": "concept:decabill-structure",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/commands.md",
-      "to": "concept:decabill-frontmatter-properties-read-by-the-reader",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/commands.md",
-      "to": "concept:decabill-example",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/commands.md",
-      "to": "concept:decabill-output-by-tool",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/commands.md",
-      "to": "concept:decabill-related-documentation",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-knowledge-graph",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-why-it-exists",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-how-to-generate",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-schema-overview",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-using-the-graph-with-ai-tools",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-security",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-implementation",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-decabill-specific-recipes",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-why-decabill-specific-notes",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-prefer-mcp-tools",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-recipes-for-decabill",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-or",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-approximate-surface-size-orientation",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-after-graph-tool-changes",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-or-node-tools-graph-mcp-run-cjs",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "concept:decabill-related-documentation",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/mcp-definitions.md",
-      "to": "concept:decabill-mcp-definitions",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/mcp-definitions.md",
-      "to": "concept:decabill-purpose",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/mcp-definitions.md",
-      "to": "concept:decabill-structure",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/mcp-definitions.md",
-      "to": "concept:decabill-schema-properties-read-by-the-reader",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/mcp-definitions.md",
-      "to": "concept:decabill-example-local",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/mcp-definitions.md",
-      "to": "concept:decabill-output-by-tool",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/mcp-definitions.md",
-      "to": "concept:decabill-related-documentation",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "concept:decabill-rules",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "concept:decabill-purpose",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "concept:decabill-structure",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "concept:decabill-frontmatter-metadata",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "concept:decabill-content-guidelines",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "concept:decabill-examples",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "concept:decabill-coding-standards",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "concept:decabill-conventions",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "concept:decabill-project-conventions",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "concept:decabill-typescript-standards",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "concept:decabill-output-by-tool",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "concept:decabill-related-documentation",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/skills.md",
-      "to": "concept:decabill-skills",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/skills.md",
-      "to": "concept:decabill-purpose",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/skills.md",
-      "to": "concept:decabill-structure",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/skills.md",
-      "to": "concept:decabill-frontmatter-metadata",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/skills.md",
-      "to": "concept:decabill-content-guidelines",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/skills.md",
-      "to": "concept:decabill-example",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/skills.md",
-      "to": "concept:decabill-design-patterns",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/skills.md",
-      "to": "concept:decabill-factory-pattern",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/skills.md",
-      "to": "concept:decabill-output-by-tool",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/skills.md",
-      "to": "concept:decabill-mcp-package-skills",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/skills.md",
-      "to": "concept:decabill-related-documentation",
       "type": "contains"
     },
     {
@@ -67517,341 +66628,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-decabill-product-snapshot",
-      "to": "project:decabill-frontend-data-access-billing-console",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-decabill-product-snapshot",
-      "to": "project:decabill-frontend-feature-billing-console",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-decabill-product-snapshot",
-      "to": "project:decabill-backend-feature-billing-manager",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-decabill-product-snapshot",
-      "to": "project:decabill-frontend-feature-landingpage",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-decabill-product-snapshot",
-      "to": "project:decabill-frontend-data-access-portal",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-decabill-product-snapshot",
-      "to": "project:decabill-frontend-billing-console",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-decabill-product-snapshot",
-      "to": "project:decabill-backend-billing-manager",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-decabill-product-snapshot",
-      "to": "project:decabill-frontend-landingpage",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-decabill-product-snapshot",
-      "to": "project:decabill-frontend-docs",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-how-agents-should-work-on-decabill",
-      "to": "project:decabill-frontend-billing-console",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-how-agents-should-work-on-decabill",
-      "to": "project:decabill-backend-billing-manager",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-how-agents-should-work-on-decabill",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-how-agents-should-work-on-decabill",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-usage",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-usage",
-      "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-agents-and-subagents",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-agents-and-subagents",
-      "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-structure",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-structure",
-      "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-frontmatter-properties-read-by-the-reader",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-frontmatter-properties-read-by-the-reader",
-      "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-example-primary-agent",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-example-primary-agent",
-      "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-example-subagent",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-example-subagent",
-      "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-output-by-tool",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-output-by-tool",
-      "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-knowledge-graph",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-knowledge-graph",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-why-it-exists",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-why-it-exists",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-how-to-generate",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-how-to-generate",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-schema-overview",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-schema-overview",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-using-the-graph-with-ai-tools",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-using-the-graph-with-ai-tools",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-security",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-security",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-implementation",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-implementation",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-decabill-specific-recipes",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-decabill-specific-recipes",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-why-decabill-specific-notes",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-why-decabill-specific-notes",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-prefer-mcp-tools",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-prefer-mcp-tools",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-recipes-for-decabill",
-      "to": "project:decabill-frontend-data-access-billing-console",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-recipes-for-decabill",
-      "to": "project:decabill-frontend-feature-billing-console",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-recipes-for-decabill",
-      "to": "project:decabill-backend-feature-billing-manager",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-recipes-for-decabill",
-      "to": "project:decabill-frontend-billing-console",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-recipes-for-decabill",
-      "to": "project:decabill-backend-billing-manager",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-recipes-for-decabill",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-recipes-for-decabill",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-or",
-      "to": "project:decabill-backend-feature-billing-manager",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-or",
-      "to": "project:decabill-backend-billing-manager",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-or",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-or",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-approximate-surface-size-orientation",
-      "to": "project:decabill-backend-feature-billing-manager",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-approximate-surface-size-orientation",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-approximate-surface-size-orientation",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-after-graph-tool-changes",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-after-graph-tool-changes",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-or-node-tools-graph-mcp-run-cjs",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-or-node-tools-graph-mcp-run-cjs",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
       "from": "concept:decabill-api-reference",
       "to": "api:HTTP:GET:/otel/metrics",
       "type": "documents"
@@ -73597,46 +72373,6 @@
       "type": "belongs_to"
     },
     {
-      "from": "file:docs/decabill/ai-agents/README.md",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agentctx.md",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/agents.md",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/commands.md",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/knowledge-graph.md",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/mcp-definitions.md",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/rules.md",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "file:docs/decabill/ai-agents/skills.md",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
       "from": "file:docs/decabill/api-reference/README.md",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -76162,261 +74898,6 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-ai-agents-context-agenstra",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-overview",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-directory-structure",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-components",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-generating-tool-configs",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-decabill-product-snapshot",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-how-agents-should-work-on-decabill",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-related-documentation",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-agentctx",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-purpose",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-installation",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-usage",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-agents-and-subagents",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-structure",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-frontmatter-properties-read-by-the-reader",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-example-primary-agent",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-example-subagent",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-output-by-tool",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-commands",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-example",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-knowledge-graph",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-why-it-exists",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-how-to-generate",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-schema-overview",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-using-the-graph-with-ai-tools",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-security",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-implementation",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-decabill-specific-recipes",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-why-decabill-specific-notes",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-prefer-mcp-tools",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-recipes-for-decabill",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-or",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-approximate-surface-size-orientation",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-after-graph-tool-changes",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-or-node-tools-graph-mcp-run-cjs",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-mcp-definitions",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-schema-properties-read-by-the-reader",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-example-local",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-rules",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-frontmatter-metadata",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-content-guidelines",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-examples",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-coding-standards",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-conventions",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-project-conventions",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-typescript-standards",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-skills",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-design-patterns",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-factory-pattern",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-mcp-package-skills",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
       "from": "concept:decabill-api-reference",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -76442,7 +74923,17 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-related-documentation",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-applications-documentation",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-overview",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -76478,6 +74969,11 @@
     },
     {
       "from": "concept:decabill-backend-billing-manager",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-purpose",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -76623,6 +75119,11 @@
     },
     {
       "from": "concept:decabill-architecture-principles",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-components",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -76903,6 +75404,11 @@
     },
     {
       "from": "concept:decabill-local-development",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-installation",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -77528,6 +76034,11 @@
     },
     {
       "from": "concept:decabill-ssh-collection",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-security",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
