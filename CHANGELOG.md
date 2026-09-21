@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.32.0](https://github.com/forepath/one/compare/v2.31.5...v2.32.0) (2026-09-21)
+
+
+### Features
+
+* **decabill:** customer offers ([#588](https://github.com/forepath/one/issues/588)) ([7d8822f](https://github.com/forepath/one/commit/7d8822f1fee1379cb59355d534556e00e8a1d1fe))
+
+
+### Bug Fixes
+
+* **decabill:** agenstra ai-agents documentation bleed ([#620](https://github.com/forepath/one/issues/620)) ([491a292](https://github.com/forepath/one/commit/491a292e80e22b40d0442f9bbecd4538226b0247))
+* **keycloak:** dynamic config values upon container start ([#599](https://github.com/forepath/one/issues/599)) ([bcb1499](https://github.com/forepath/one/commit/bcb1499d84177d8481bad8947224fbcb1c9da686))
+
 ## [2.31.5](https://github.com/forepath/one/compare/v2.31.4...v2.31.5) (2026-09-16)
 
 
