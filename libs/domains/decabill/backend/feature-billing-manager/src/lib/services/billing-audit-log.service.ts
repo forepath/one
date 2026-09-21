@@ -11,16 +11,21 @@ export class BillingAuditLogService {
 
   constructor(private readonly auditLogsRepository: BillingAuditLogsRepository) {}
 
+  /** Matches `billing_audit_logs.correlation_id` varchar(64). */
+  private static readonly CORRELATION_ID_MAX_LENGTH = 64;
+
   async log(params: {
     process: string;
     level: 'info' | 'warn' | 'error';
     message: string;
     invoiceId?: string;
+    offerId?: string;
     userId?: string;
     correlationId?: string;
     context?: Record<string, unknown>;
   }): Promise<void> {
-    const { process, level, message, invoiceId, userId, correlationId, context } = params;
+    const { process, level, message, invoiceId, offerId, userId, context } = params;
+    const correlationId = this.clampCorrelationId(params.correlationId);
 
     if (level === 'error') {
       this.logger.error(`[${process}] ${message}`, context);
@@ -35,11 +40,42 @@ export class BillingAuditLogService {
       level,
       message,
       invoiceId,
+      offerId,
       userId,
       correlationId,
       tenantId: getTenantIdOrDefault(),
       context: context ?? {},
     });
+  }
+
+  private clampCorrelationId(correlationId?: string): string | undefined {
+    if (!correlationId) {
+      return undefined;
+    }
+
+    if (correlationId.length <= BillingAuditLogService.CORRELATION_ID_MAX_LENGTH) {
+      return correlationId;
+    }
+
+    this.logger.warn(
+      `Audit correlationId exceeds ${BillingAuditLogService.CORRELATION_ID_MAX_LENGTH} chars; truncating`,
+      { length: correlationId.length },
+    );
+
+    return correlationId.slice(0, BillingAuditLogService.CORRELATION_ID_MAX_LENGTH);
+  }
+
+  async listForOffer(
+    offerId: string,
+    limit: number,
+    offset: number,
+  ): Promise<{ items: BillingAuditLogResponseDto[]; total: number }> {
+    const result = await this.auditLogsRepository.findByOfferId(offerId, limit, offset);
+
+    return {
+      items: result.items.map((row) => this.mapToResponse(row)),
+      total: result.total,
+    };
   }
 
   async listForInvoice(
@@ -75,6 +111,7 @@ export class BillingAuditLogService {
       level: entity.level,
       message: entity.message,
       invoiceId: entity.invoiceId,
+      offerId: entity.offerId,
       userId: entity.userId,
       context: entity.context ?? {},
       createdAt: entity.createdAt,

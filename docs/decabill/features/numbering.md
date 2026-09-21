@@ -24,6 +24,7 @@ Credit notes and void documents derive their document numbers from the invoice n
 | Customer       | `CUS-{nnnnnn}`        | Six-digit pad; allocated once on billing profile create                             |
 | Supplier       | `SUP-{nnnnnn}`        | Six-digit pad; allocated once on supplier profile create                            |
 | Supplier inv   | `SINV-{year}-{nnnnn}` | Yearly counter; five-digit pad; allocated at issue                                  |
+| Offer          | `OFF-{year}-{nnnnn}`  | Yearly counter; five-digit pad; allocated at archive (see [Offers](./offers.md))    |
 | DATEV debtor   | integer               | Allocated within tenant DATEV range (`debtorAccountStart`–`debtorAccountEnd`)       |
 | DATEV creditor | integer               | Allocated within (`creditorAccountStart`–`creditorAccountEnd`, default 70000–99999) |
 

@@ -14,6 +14,9 @@ export class BillingAuditLogEntity {
   @Column({ type: 'uuid', nullable: true, name: 'invoice_id' })
   invoiceId?: string;
 
+  @Column({ type: 'uuid', nullable: true, name: 'offer_id' })
+  offerId?: string;
+
   @Column({ type: 'uuid', nullable: true, name: 'user_id' })
   userId?: string;
 

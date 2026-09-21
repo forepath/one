@@ -1,0 +1,9 @@
+Offer accepted
+
+Dear {{recipientName}},
+
+Thank you for accepting offer {{offerNumber}}.
+
+Total amount: {{amountLabel}}
+
+We will process the included services according to the offer terms.

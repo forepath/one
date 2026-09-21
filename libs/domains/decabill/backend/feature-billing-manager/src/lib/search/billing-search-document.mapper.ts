@@ -6,6 +6,7 @@ import type { CloudInitConfigEntity } from '../entities/cloud-init-config.entity
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { DatevExportEntity } from '../entities/datev-export.entity';
 import type { InvoiceEntity } from '../entities/invoice.entity';
+import type { OfferEntity } from '../offers/entities/offer.entity';
 import type { MeterEntity } from '../entities/meter.entity';
 import type { PromotionEntity } from '../entities/promotion.entity';
 import type { ServicePlanEntity } from '../entities/service-plan.entity';
@@ -78,7 +79,21 @@ export function mapInvoiceToSearchDocument(
     userId: text(invoice.userId),
     subscriptionId: text(invoice.subscriptionId),
     projectId: text(invoice.projectId),
+    offerId: text(invoice.offerId),
     subscriptionNumber: text(extras?.subscriptionNumber ?? undefined),
+    userEmail: text(extras?.userEmail ?? undefined),
+  });
+}
+
+export function mapOfferToSearchDocument(
+  offer: OfferEntity,
+  tenantId: string,
+  extras?: { userEmail?: string | null },
+): BillingSearchDocument {
+  return baseDoc('offers', offer.id, tenantId, {
+    offerNumber: text(offer.offerNumber),
+    status: text(offer.status),
+    userId: text(offer.userId),
     userEmail: text(extras?.userEmail ?? undefined),
   });
 }

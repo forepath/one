@@ -7,6 +7,7 @@ export * from './lib/types/suppliers.types';
 export * from './lib/types/promotions.types';
 export * from './lib/types/projects.types';
 export * from './lib/types/config-change.types';
+export * from './lib/types/offers.types';
 
 // Utils
 export * from './lib/utils/server-info-provider.utils';
@@ -44,6 +45,8 @@ export * from './lib/services/admin-supplier-profiles.service';
 export * from './lib/services/admin-supplier-invoices.service';
 export * from './lib/services/promotions.service';
 export * from './lib/services/admin-promotions.service';
+export * from './lib/services/offers.service';
+export * from './lib/services/admin-offers.service';
 export * from './lib/services/usage.service';
 export * from './lib/services/subscription-items.service';
 export * from './lib/services/container-manager.service';
@@ -215,6 +218,20 @@ export * from './lib/state/admin-promotions/admin-promotions.effects';
 export * from './lib/state/admin-promotions/admin-promotions.facade';
 export * from './lib/state/admin-promotions/admin-promotions.reducer';
 export * from './lib/state/admin-promotions/admin-promotions.selectors';
+
+// Offers State
+export * from './lib/state/offers/offers.actions';
+export * from './lib/state/offers/offers.effects';
+export * from './lib/state/offers/offers.facade';
+export * from './lib/state/offers/offers.reducer';
+export * from './lib/state/offers/offers.selectors';
+
+// Admin Offers State
+export * from './lib/state/admin-offers/admin-offers.actions';
+export * from './lib/state/admin-offers/admin-offers.effects';
+export * from './lib/state/admin-offers/admin-offers.facade';
+export * from './lib/state/admin-offers/admin-offers.reducer';
+export * from './lib/state/admin-offers/admin-offers.selectors';
 
 // Billing Capabilities State
 export * from './lib/state/billing-capabilities/billing-capabilities.actions';

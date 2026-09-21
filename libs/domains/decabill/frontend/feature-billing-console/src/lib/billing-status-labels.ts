@@ -565,4 +565,51 @@ export function getProviderDisplayName(
   return provider?.displayName?.trim() || getUnavailableLabel();
 }
 
+export function getOfferStatusLabel(status: string | null | undefined): string {
+  if (status == null || status === '') {
+    return $localize`:@@featureBilling-offerStatusEmpty:Unknown`;
+  }
+
+  switch (status) {
+    case 'draft':
+      return $localize`:@@featureOffers-statusDraft:Draft`;
+    case 'archived':
+      return $localize`:@@featureOffers-statusArchived:Pending response`;
+    case 'accepted':
+      return $localize`:@@featureOffers-statusAccepted:Accepted`;
+    case 'declined':
+      return $localize`:@@featureOffers-statusDeclined:Declined`;
+    case 'expired':
+      return $localize`:@@featureOffers-statusExpired:Expired`;
+    case 'revoked':
+      return $localize`:@@featureOffers-statusRevoked:Revoked`;
+    default:
+      return $localize`:@@featureBilling-offerStatusUnknown:Unknown (${status})`;
+  }
+}
+
+/** Status chip modifier paired with global `.info-badge` base classes. */
+export function getOfferStatusBadgeClass(status: string | null | undefined): string {
+  switch (status) {
+    case 'draft':
+      return 'billing-admin__chip--status-draft';
+    case 'archived':
+      return 'billing-admin__chip--status-issued';
+    case 'accepted':
+      return 'billing-admin__chip--status-paid';
+    case 'declined':
+      return 'billing-admin__chip--status-void';
+    case 'expired':
+      return 'billing-admin__chip--status-overdue';
+    case 'revoked':
+      return 'billing-admin__chip--status-unknown';
+    default:
+      return 'billing-admin__chip--status-unknown';
+  }
+}
+
+export function canCustomerRespondToOffer(status: string | null | undefined): boolean {
+  return status === 'archived';
+}
+
 export { getCountryDisplayName };

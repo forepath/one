@@ -19,6 +19,8 @@ export const BILLING_PAT_SCOPES = [
   'usage:write',
   'promotions:read',
   'promotions:write',
+  'offers:read',
+  'offers:write',
   'projects:read',
   'projects:write',
   'tickets:read',

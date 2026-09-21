@@ -46,6 +46,7 @@ Events are published from the **billing** service after successful mutations.
 ### Billing and subscriptions
 
 - `invoice.created`, `invoice.issued`, `invoice.voided`
+- `offer.created`, `offer.updated`, `offer.archived`, `offer.revoked`, `offer.accepted`, `offer.declined`, `offer.expired`, `offer.line.fulfilled`, `offer.line.fulfillment_failed` (see [Offers](./offers.md))
 - `invoice.tax_mode_applied` (non-domestic tax modes at issue time)
 - `payment.initiated`, `payment.succeeded`, `payment.failed`
 - `payment.auto.initiated`, `payment.auto.retry_scheduled`, `payment.auto.exhausted`

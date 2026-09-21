@@ -16,6 +16,8 @@ import {
   SearchReindexJobHandler,
   type SearchIndexSyncUnitPayload,
   type SearchReindexUnitPayload,
+  OfferExpirationJobHandler,
+  OfferFulfillmentJobHandler,
   SubscriptionBillingJobHandler,
   SubscriptionConfigChangeJobHandler,
   SubscriptionExpirationJobHandler,
@@ -87,6 +89,8 @@ export class BillingJobsProcessor extends WorkerHost {
     private readonly emailDeliveryService: EmailDeliveryService,
     private readonly updateCheckService: UpdateCheckService,
     private readonly searchReindexJobHandler: SearchReindexJobHandler,
+    private readonly offerExpiration: OfferExpirationJobHandler,
+    private readonly offerFulfillment: OfferFulfillmentJobHandler,
   ) {
     super();
   }
@@ -152,6 +156,12 @@ export class BillingJobsProcessor extends WorkerHost {
         break;
       case BillingJobName.SEARCH_REINDEX_COORDINATOR:
         await this.runSearchReindexCoordinator();
+        break;
+      case BillingJobName.OFFER_EXPIRATION_COORDINATOR:
+        await this.runOfferExpirationCoordinator();
+        break;
+      case BillingJobName.OFFER_FULFILLMENT_COORDINATOR:
+        await this.runOfferFulfillmentCoordinator();
         break;
       case BillingJobName.UPDATE_CHECK:
       case UPDATE_CHECK_JOB_NAME:
@@ -259,6 +269,15 @@ export class BillingJobsProcessor extends WorkerHost {
               break;
             case BillingJobName.SEARCH_INDEX_SYNC_UNIT:
               await this.searchReindexJobHandler.processSyncUnit(job.data as SearchIndexSyncUnitPayload);
+              break;
+            case BillingJobName.OFFER_EXPIRATION_UNIT:
+              await this.offerExpiration.expireOffer((job.data as { offerId: string }).offerId);
+              break;
+            case BillingJobName.OFFER_FULFILLMENT_UNIT:
+              await this.offerFulfillment.processLine(
+                (job.data as { offerId: string; lineItemId: string }).offerId,
+                (job.data as { offerId: string; lineItemId: string }).lineItemId,
+              );
               break;
             default:
               this.logger.warn(`Unknown billing job name: ${job.name}`);
@@ -859,6 +878,38 @@ export class BillingJobsProcessor extends WorkerHost {
       triggeredBy: data.triggeredBy,
       scope: data.scope,
       requestId: data.requestId,
+    });
+  }
+
+  private async runOfferExpirationCoordinator(): Promise<void> {
+    await this.forEachConfiguredTenant(async (tenantId) => {
+      const offerIds = await this.offerExpiration.findExpiredOfferIds();
+
+      for (const offerId of offerIds) {
+        await this.enqueueBillingUnitJob({
+          queue: this.billingQueue,
+          jobName: BillingJobName.OFFER_EXPIRATION_UNIT,
+          payload: { offerId, tenantId },
+          jobIdNamespace: 'offer-expiration:offer',
+          jobIdParts: [tenantId, offerId],
+        });
+      }
+    });
+  }
+
+  private async runOfferFulfillmentCoordinator(): Promise<void> {
+    await this.forEachConfiguredTenant(async (tenantId) => {
+      const dueLines = await this.offerFulfillment.findDueLineIds();
+
+      for (const { offerId, lineItemId } of dueLines) {
+        await this.enqueueBillingUnitJob({
+          queue: this.billingQueue,
+          jobName: BillingJobName.OFFER_FULFILLMENT_UNIT,
+          payload: { offerId, lineItemId, tenantId },
+          jobIdNamespace: 'offer-fulfillment:line',
+          jobIdParts: [tenantId, offerId, lineItemId],
+        });
+      }
     });
   }
 }

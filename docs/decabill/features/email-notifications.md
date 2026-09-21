@@ -35,6 +35,8 @@ If no company name is resolved, header and footer are omitted. On Decabill, leav
 | Event                                  | Template                               | Trigger                                                                |
 | -------------------------------------- | -------------------------------------- | ---------------------------------------------------------------------- |
 | `invoice.issued`                       | `invoice-issued`                       | Invoice issuance / project billing                                     |
+| `offer.archived`                       | `offer-archived`                       | Offer sent to customer (PDF attachment)                                |
+| `offer.accepted`                       | `offer-accepted-confirmation`          | Customer accepted offer                                                |
 | `invoice.voided`                       | `invoice-voided`                       | Invoice void                                                           |
 | `invoice.partial_credit_issued`        | `invoice-partial-credit`               | Statutory withdrawal credit                                            |
 | `subscription.created`                 | `subscription-created`                 | Order confirmation on subscribe                                        |

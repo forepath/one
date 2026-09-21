@@ -14,45 +14,11 @@ import { SubscriptionNumberSequencesRepository } from '../repositories/subscript
 import { SubscriptionsRepository } from '../repositories/subscriptions.repository';
 import { CloudInitDispatchService } from './cloud-init-dispatch.service';
 import { normalizeCloudInitService } from '../utils/cloud-init/cloud-init-dispatch.utils';
-import { CloudInitServiceType } from '../utils/cloud-init/integrated-provisioning-service';
-import {
-  applyResolvedProvisioningSelectionToConfig,
-  resolveOrderProvisioningSelection,
-} from '../utils/cloud-init/plan-provisioning-options.utils';
-import { validateConfigSchema } from '../utils/config-validation.utils';
-import {
-  mirrorGeographyInConfig,
-  readRequestedGeography,
-  resolveDefaultGeographyForProvider,
-  resolveProvisioningRegion,
-  stripGeographyByProviderFromConfig,
-  stripGeographyFromRequestedConfig,
-} from '../utils/provider-location.utils';
-import {
-  assertServerTypeAllowed,
-  normalizeAllowedServerTypes,
-  resolveDefaultServerTypeForProvider,
-  stripServerTypeByProviderFromConfig,
-  stripServerTypeFromRequestedConfig,
-} from '../utils/provider-server-type.utils';
-import {
-  assertProviderAllowed,
-  resolveEffectiveProvider,
-  resolveItemProvider,
-  resolvePlanAllowedProviders,
-  resolveServiceTypeAllowedProviders,
-  stripProviderFromRequestedConfig,
-} from '../utils/provider-selection.utils';
-import {
-  BILLING_BASE_PRICE_CONFIG_KEY,
-  buildBackorderRequestedConfigSnapshot,
-  resolvePeriodTotalPrice,
-  resolveServerTypePriceMonthly,
-} from '../utils/server-type-billing.utils';
-import { getProvisioningCredentials, normalizeStoredProviderDefaults } from '../utils/provider-env-defaults.utils';
+import { mirrorGeographyInConfig, resolveProvisioningRegion } from '../utils/provider-location.utils';
+import { resolveItemProvider } from '../utils/provider-selection.utils';
+import { buildBackorderRequestedConfigSnapshot, resolvePeriodTotalPrice } from '../utils/server-type-billing.utils';
+import { getProvisioningCredentials } from '../utils/provider-env-defaults.utils';
 import { generateSshKeyPair } from '../utils/ssh-key.utils';
-import { assertAddonConfigsMatchSelection } from '../utils/addon-config.utils';
-import { mergeOrderAddonIds, parsePlanAllowedAddonIds } from '../utils/plan-addons.utils';
 import { mapSubscriptionItemToResponse } from '../utils/subscription-item-response.utils';
 
 import { AddonService } from './addon.service';
@@ -85,6 +51,10 @@ import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.s
 import { SubscriptionPeriodChargeService } from './subscription-period-charge.service';
 import { convertAddonPriceToPlanPeriod } from '../utils/addon-pricing.util';
 import { MeterBillingService } from './meter-billing.service';
+import {
+  SubscriptionOrderPreparationService,
+  type PreparedPlanOrderContext,
+} from '../offers/services/subscription-order-preparation.service';
 
 const PROVISIONING_SSH_USER = 'root';
 const PROVISIONING_SSH_PORT = 22;
@@ -133,6 +103,7 @@ export class SubscriptionService {
     private readonly billingSearchIndexService: BillingSearchIndexService,
     private readonly cloudInitDispatchService: CloudInitDispatchService,
     private readonly providerRegistry: ProviderRegistryService,
+    private readonly subscriptionOrderPreparationService: SubscriptionOrderPreparationService,
   ) {}
 
   async createSubscription(
@@ -145,206 +116,66 @@ export class SubscriptionService {
     addonIds?: string[],
     addonConfigs?: Record<string, Record<string, string>>,
   ) {
-    const profile = await this.customerProfilesService.getByUserId(userId);
-
-    if (!this.customerProfilesService.isProfileComplete(profile)) {
-      throw new BadRequestException(
-        'Customer billing profile must be complete before ordering. Please complete your profile.',
-      );
-    }
-
-    const plan = await this.servicePlansRepository.findByIdOrThrow(planId);
-
-    if (!plan.serviceTypeId) {
-      return this.createSubscriptionWithoutServiceType(
-        userId,
-        plan,
+    const prepared = await this.subscriptionOrderPreparationService.prepareForUser(
+      userId,
+      {
+        planId,
+        requestedConfig,
+        addonIds,
+        addonConfigs,
         autoBackorder,
         promotionCode,
         promotionBenefitStartsAt,
-        addonIds,
-      );
-    }
-
-    const serviceType = await this.serviceTypesRepository.findByIdOrThrow(plan.serviceTypeId);
-    const selectedAddonIds = mergeOrderAddonIds(addonIds, plan.providerConfigDefaults);
-    const { compatible: selectedAddons } = await this.addonService.resolveOrderAddonSelection(
-      plan.serviceTypeId,
-      parsePlanAllowedAddonIds(plan.providerConfigDefaults),
-      selectedAddonIds,
-      requestedConfig,
-      plan,
+      },
+      { throwOnUnavailable: !autoBackorder },
     );
-    const compatibleAddonIds = new Set(selectedAddons.map((addon) => addon.id));
-    const filteredAddonConfigs =
-      addonConfigs == null
-        ? undefined
-        : Object.fromEntries(Object.entries(addonConfigs).filter(([addonId]) => compatibleAddonIds.has(addonId)));
 
-    assertAddonConfigsMatchSelection([...compatibleAddonIds], filteredAddonConfigs);
-    const allowCustomerLocationSelection = plan.allowCustomerLocationSelection === true;
-    const allowCustomerServerTypeSelection = plan.allowCustomerServerTypeSelection === true;
-    const allowCustomerProviderSelection = plan.allowCustomerProviderSelection === true;
-    let sanitizedRequested = allowCustomerLocationSelection
-      ? { ...(requestedConfig ?? {}) }
-      : stripGeographyFromRequestedConfig(requestedConfig);
-    sanitizedRequested = allowCustomerServerTypeSelection
-      ? sanitizedRequested
-      : stripServerTypeFromRequestedConfig(sanitizedRequested);
-    sanitizedRequested = allowCustomerProviderSelection
-      ? sanitizedRequested
-      : stripProviderFromRequestedConfig(sanitizedRequested);
-    const baseConfig = plan.providerConfigDefaults ?? {};
-    const effectiveConfig: Record<string, unknown> = {
-      ...(baseConfig || {}),
-      ...sanitizedRequested,
-    };
+    return this.createSubscriptionFromPrepared(userId, prepared, {
+      autoBackorder,
+      promotionCode,
+      promotionBenefitStartsAt,
+    });
+  }
 
-    stripServerTypeByProviderFromConfig(effectiveConfig);
-    stripGeographyByProviderFromConfig(effectiveConfig);
+  async createSubscriptionFromPrepared(
+    userId: string,
+    prepared: PreparedPlanOrderContext,
+    options?: {
+      autoBackorder?: boolean;
+      promotionCode?: string;
+      promotionBenefitStartsAt?: string;
+    },
+  ): Promise<SubscriptionEntity> {
+    const autoBackorder = options?.autoBackorder ?? false;
+    const promotionCode = options?.promotionCode;
+    const promotionBenefitStartsAt = options?.promotionBenefitStartsAt;
 
-    try {
-      const selection = resolveOrderProvisioningSelection(baseConfig, sanitizedRequested);
-
-      applyResolvedProvisioningSelectionToConfig(effectiveConfig, selection);
-    } catch (error) {
-      throw new BadRequestException((error as Error).message);
+    if (prepared.billingOnly) {
+      return this.createSubscriptionWithoutServiceType(userId, prepared, promotionCode, promotionBenefitStartsAt);
     }
 
-    if (allowCustomerProviderSelection) {
-      const requestedProvider =
-        typeof sanitizedRequested['provider'] === 'string' ? sanitizedRequested['provider'].trim() : '';
-
-      if (requestedProvider) {
-        const allowedError = assertProviderAllowed(requestedProvider, resolvePlanAllowedProviders(plan, serviceType));
-
-        if (allowedError) {
-          throw new BadRequestException(allowedError);
-        }
-      }
-    }
-
-    const provider = resolveEffectiveProvider(serviceType, plan, sanitizedRequested);
-    const primaryForProvisioningCheck = resolveServiceTypeAllowedProviders(serviceType)[0] ?? undefined;
-
-    if (!provider && this.providerCatalogDispatchService.requiresProvisioning(primaryForProvisioningCheck)) {
-      throw new BadRequestException('provider could not be resolved for this service type');
-    }
-
-    if (provider) {
-      effectiveConfig.provider = provider;
-    }
-
-    if (this.providerCatalogDispatchService.requiresProvisioning(provider ?? undefined)) {
-      const planDefaultGeo = resolveDefaultGeographyForProvider(baseConfig, provider);
-      const requestedGeo = readRequestedGeography(sanitizedRequested);
-      const geography = allowCustomerLocationSelection
-        ? requestedGeo || planDefaultGeo || resolveProvisioningRegion({}, provider!)
-        : planDefaultGeo || resolveProvisioningRegion({}, provider!);
-
-      mirrorGeographyInConfig(effectiveConfig, geography);
-    }
-
-    const schemaForValidation =
-      (provider ? this.providerRegistry.getProvider(provider)?.configSchema : undefined) ?? serviceType.configSchema;
-    const validationErrors = validateConfigSchema(schemaForValidation, effectiveConfig);
-
-    if (validationErrors.length > 0) {
-      throw new BadRequestException(validationErrors.join('; '));
-    }
-
-    if (this.providerCatalogDispatchService.requiresProvisioning(provider ?? undefined)) {
-      const planDefaultServerType = resolveDefaultServerTypeForProvider(baseConfig, provider);
-      const requestedServerType =
-        typeof sanitizedRequested['serverType'] === 'string' ? sanitizedRequested['serverType'].trim() : '';
-
-      if (allowCustomerServerTypeSelection) {
-        const allowed = normalizeAllowedServerTypes(plan.allowedServerTypes);
-        const resolvedServerType = String(
-          requestedServerType || planDefaultServerType || (provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11'),
-        );
-        const serverTypeError = assertServerTypeAllowed(resolvedServerType, allowed);
-
-        if (serverTypeError) {
-          throw new BadRequestException(serverTypeError);
-        }
-
-        effectiveConfig.serverType = resolvedServerType.trim();
-      } else {
-        effectiveConfig.serverType = planDefaultServerType ?? (provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11');
-      }
-    }
-
-    const service = normalizeCloudInitService(effectiveConfig.service as string | undefined);
-
-    if (
-      service === CloudInitServiceType.AgenstraManager &&
-      (effectiveConfig.authenticationMethod as string) === 'users'
-    ) {
-      effectiveConfig.authenticationMethod = 'api-key';
-    }
-
-    let customTemplate;
-    let resolvedCustomEnv: Record<string, string> | undefined;
-
-    if (service === 'custom') {
-      const cloudInitConfigId = effectiveConfig.cloudInitConfigId as string | undefined;
-
-      if (!cloudInitConfigId?.trim()) {
-        throw new BadRequestException('cloudInitConfigId is required when service is custom');
+    if (prepared.availability && !prepared.availability.isAvailable) {
+      if (autoBackorder) {
+        await this.backorderService.create({
+          userId,
+          serviceTypeId: prepared.plan.serviceTypeId!,
+          planId: prepared.plan.id,
+          requestedConfigSnapshot: buildBackorderRequestedConfigSnapshot(
+            prepared.sanitizedRequested,
+            prepared.effectiveConfig,
+          ),
+          providerErrors: { reason: prepared.availability.reason },
+          preferredAlternatives: prepared.availability.alternatives ?? {},
+        });
       }
 
-      customTemplate = await this.cloudInitConfigService.findByIdForProvisioning(cloudInitConfigId.trim());
-      const requestedEnv = (sanitizedRequested?.['env'] ?? effectiveConfig['env']) as
-        | Record<string, unknown>
-        | undefined;
-
-      resolvedCustomEnv = this.cloudInitConfigService.resolveEnvironmentVariables(customTemplate, requestedEnv);
-      effectiveConfig.env = resolvedCustomEnv;
+      throw new BadRequestException(prepared.availability.reason || 'Configuration not available');
     }
 
-    const providerDefaults = normalizeStoredProviderDefaults(serviceType.providerDefaults);
-
-    if (provider && this.providerCatalogDispatchService.requiresProvisioning(provider)) {
-      const region = resolveProvisioningRegion(effectiveConfig, provider);
-      const serverType =
-        (effectiveConfig.serverType as string | undefined) ?? (provider === 'digital-ocean' ? 's-1vcpu-1gb' : 'cx11');
-
-      if (allowCustomerServerTypeSelection) {
-        const billingBasePrice = await resolveServerTypePriceMonthly(
-          this.providerServerTypesService,
-          provider,
-          serverType,
-          providerDefaults,
-        );
-
-        if (billingBasePrice != null) {
-          effectiveConfig[BILLING_BASE_PRICE_CONFIG_KEY] = billingBasePrice;
-        }
-      }
-
-      const availability = await this.availabilityService.checkAvailability(
-        provider,
-        region,
-        serverType,
-        providerDefaults,
-      );
-
-      if (!availability.isAvailable) {
-        if (autoBackorder) {
-          await this.backorderService.create({
-            userId,
-            serviceTypeId: plan.serviceTypeId,
-            planId,
-            requestedConfigSnapshot: buildBackorderRequestedConfigSnapshot(sanitizedRequested, effectiveConfig),
-            providerErrors: { reason: availability.reason },
-            preferredAlternatives: availability.alternatives ?? {},
-          });
-        }
-
-        throw new BadRequestException(availability.reason || 'Configuration not available');
-      }
-    }
+    const plan = prepared.plan;
+    const selectedAddons = prepared.selectedAddons;
+    const filteredAddonConfigs = prepared.addonConfigs;
+    const effectiveConfig = prepared.effectiveConfig;
 
     const schedule = this.billingScheduleService.calculateSchedule(
       plan.billingIntervalType as BillingIntervalType,
@@ -354,7 +185,7 @@ export class SubscriptionService {
     const allocatedNumber = await this.subscriptionNumberSequencesRepository.nextSubscriptionNumber();
     const subscription = await this.subscriptionsRepository.create({
       userId,
-      planId,
+      planId: plan.id,
       number: allocatedNumber.number,
       numberScope: allocatedNumber.numberScope,
       status: SubscriptionStatus.ACTIVE,
@@ -434,21 +265,11 @@ export class SubscriptionService {
    */
   private async createSubscriptionWithoutServiceType(
     userId: string,
-    plan: ServicePlanEntity,
-    autoBackorder: boolean,
+    prepared: PreparedPlanOrderContext,
     promotionCode?: string,
     promotionBenefitStartsAt?: string,
-    addonIds?: string[],
   ) {
-    const selectedAddonIds = [...new Set((addonIds ?? []).filter(Boolean))];
-
-    if (selectedAddonIds.length > 0) {
-      throw new BadRequestException('Addons are not supported for plans without a service type');
-    }
-
-    if (autoBackorder) {
-      throw new BadRequestException('Backorders are not supported for plans without a service type');
-    }
+    const plan = prepared.plan;
 
     const schedule = this.billingScheduleService.calculateSchedule(
       plan.billingIntervalType as BillingIntervalType,

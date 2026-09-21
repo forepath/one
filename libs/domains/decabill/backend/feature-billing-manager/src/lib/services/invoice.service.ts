@@ -43,6 +43,7 @@ export interface CreateInvoiceDraftParams {
   lineInputs: LineItemInput[];
   currency?: string;
   promotionApplications?: InvoicePromotionApplicationDraft[];
+  offerId?: string;
 }
 
 @Injectable()
@@ -88,6 +89,7 @@ export class InvoiceService {
       subscriptionId: params.subscriptionId,
       projectId: params.projectId,
       userId: params.userId,
+      offerId: params.offerId,
       status: InvoiceStatus.DRAFT,
       currency: params.currency ?? 'EUR',
       subtotalNet: totals.subtotalNet,

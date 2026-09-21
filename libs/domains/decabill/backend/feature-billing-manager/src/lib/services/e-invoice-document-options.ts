@@ -1,4 +1,4 @@
-export type EInvoiceDocumentTypeCode = '380' | '325' | '381';
+export type EInvoiceDocumentTypeCode = '380' | '325' | '330' | '381';
 
 export interface EInvoiceDocumentOptions {
   typeCode: EInvoiceDocumentTypeCode;
@@ -81,6 +81,22 @@ export function buildZeroBalancePromotionalInvoiceDocumentOptions(invoice: {
     documentId: invoice.invoiceNumber ?? invoice.id,
     issueDate: invoice.issuedAt ?? invoice.createdAt,
     duePayableAmount: 0,
+    includePaymentMeans: false,
+  };
+}
+
+export function buildOfferDocumentOptions(offer: {
+  offerNumber?: string | null;
+  id: string;
+  archivedAt?: Date | null;
+  createdAt: Date;
+  totalGross: number;
+}): EInvoiceDocumentOptions {
+  return {
+    typeCode: '330',
+    documentId: offer.offerNumber ?? offer.id,
+    issueDate: offer.archivedAt ?? offer.createdAt,
+    duePayableAmount: Number(offer.totalGross),
     includePaymentMeans: false,
   };
 }

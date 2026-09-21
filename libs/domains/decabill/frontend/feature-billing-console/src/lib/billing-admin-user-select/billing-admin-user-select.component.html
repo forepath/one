@@ -21,6 +21,7 @@
         [id]="inputId()"
         type="text"
         class="form-control"
+        [class.form-control-sm]="size() === 'sm'"
         autocomplete="off"
         [disabled]="disabled()"
         [ngModel]="searchQuery()"
