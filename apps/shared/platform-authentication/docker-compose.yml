@@ -5,16 +5,16 @@ services:
     depends_on:
       - db
     environment:
-      KC_DB: postgres
-      KC_DB_URL_HOST: db
-      KC_DB_USERNAME: postgres
-      KC_DB_PASSWORD: postgres
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-      KC_HOSTNAME_STRICT: 'false'
-      KC_HOSTNAME_STRICT_HTTPS: 'false'
-      KC_HOSTNAME: 'host.docker.internal'
-      KC_HTTP_RELATIVE_PATH: /
+      KC_DB: ${KC_DB:-postgres}
+      KC_DB_URL_HOST: ${KC_DB_URL_HOST:-db}
+      KC_DB_USERNAME: ${KC_DB_USERNAME:-postgres}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD:-postgres}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD:-admin}
+      KC_HOSTNAME_STRICT: ${KC_HOSTNAME_STRICT:-false}
+      KC_HOSTNAME_STRICT_HTTPS: ${KC_HOSTNAME_STRICT_HTTPS:-false}
+      KC_HOSTNAME: ${KC_HOSTNAME:-host.docker.internal}
+      KC_HTTP_RELATIVE_PATH: ${KC_HTTP_RELATIVE_PATH:-/}
     ports:
       - '8380:8080'
     networks:
@@ -26,9 +26,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: keycloak
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-keycloak}
     networks:
       - platform-authentication-network
     restart: unless-stopped
