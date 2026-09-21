@@ -22,6 +22,7 @@ import { CustomerTrustScoreService } from '../trust-score/customer-trust-score.s
 import { getRequiredTenantId } from '../utils/tenant-query.utils';
 
 import { CustomerProfilesService } from './customer-profiles.service';
+import { OfferProfileSummaryService } from '../offers/services/offer-profile-summary.service';
 
 @Injectable()
 export class CustomerProfilesAdminService {
@@ -35,6 +36,7 @@ export class CustomerProfilesAdminService {
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly datevDebtorAccountsRepository: DatevDebtorAccountsRepository,
     private readonly billingSearchIndexService: BillingSearchIndexService,
+    private readonly offerProfileSummaryService: OfferProfileSummaryService,
   ) {}
 
   async list(limit: number, offset: number, search?: string): Promise<PaginatedAdminCustomerProfilesResponseDto> {
@@ -73,7 +75,7 @@ export class CustomerProfilesAdminService {
       profile.userId,
     );
 
-    return this.mapDetail(profile, user?.email, debtor?.debtorNumber ?? null);
+    return await this.mapDetail(profile, user?.email, debtor?.debtorNumber ?? null);
   }
 
   async getTrustScore(id: string): Promise<CustomerTrustScoreResponseDto> {
@@ -323,11 +325,13 @@ export class CustomerProfilesAdminService {
     };
   }
 
-  private mapDetail(
+  private async mapDetail(
     profile: CustomerProfileEntity,
     userEmail?: string,
     datevDebtorNumber: number | null = null,
-  ): AdminCustomerProfileDetailDto {
+  ): Promise<AdminCustomerProfileDetailDto> {
+    const offerCounts = await this.offerProfileSummaryService.getAdminCountsByStatus(profile.userId);
+
     return {
       ...this.mapResponse(profile),
       numberScope: profile.numberScope,
@@ -337,6 +341,7 @@ export class CustomerProfilesAdminService {
       trustScore: profile.trustScore,
       trustLevel: profile.trustLevel,
       trustScoreUpdatedAt: profile.trustScoreUpdatedAt,
+      offerCounts,
       customData: this.normalizeCustomData(profile.customData),
     };
   }

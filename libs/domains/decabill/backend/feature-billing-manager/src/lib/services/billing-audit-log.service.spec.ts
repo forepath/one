@@ -44,6 +44,24 @@ describe('BillingAuditLogService', () => {
     expect(auditLogsRepository.create).toHaveBeenCalledWith(expect.objectContaining({ context: {}, level: 'warn' }));
   });
 
+  it('truncates correlationId to the database column length', async () => {
+    const tooLong = `offer-fulfillment:${'a'.repeat(36)}:${'b'.repeat(36)}`;
+
+    await service.log({
+      process: 'offer.line.scheduled',
+      level: 'info',
+      message: 'Scheduled',
+      correlationId: tooLong,
+    });
+
+    expect(tooLong.length).toBeGreaterThan(64);
+    expect(auditLogsRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        correlationId: tooLong.slice(0, 64),
+      }),
+    );
+  });
+
   it('listForInvoice maps repository rows', async () => {
     auditLogsRepository.findByInvoiceId.mockResolvedValue({
       items: [

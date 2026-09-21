@@ -1,0 +1,84 @@
+<div
+  class="p-3 rounded border"
+  [class.bg-body-tertiary]="!isPrimary"
+  [class.bg-primary]="isPrimary"
+  [class.text-white]="isPrimary"
+  [class.border-primary]="isPrimary"
+>
+  @if (loading) {
+    <div class="small d-flex align-items-center gap-2" [class.text-muted]="!isPrimary">
+      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+      <span i18n="@@featureSubscriptions-loadingPrice">Loading price…</span>
+    </div>
+  } @else if (summary; as totals) {
+    <dl class="mb-0 small">
+      @for (row of leadingRows; track $index) {
+        <div
+          class="d-flex justify-content-between gap-3"
+          [class.border-bottom]="row.borderBottom === true"
+          [class.border-white]="isPrimary && row.borderBottom === true"
+          [class.border-opacity-25]="isPrimary && row.borderBottom === true"
+          [class.pb-2]="row.borderBottom === true"
+          [class.mb-2]="row.borderBottom === true"
+        >
+          <dt
+            [class.text-body-secondary]="!isPrimary"
+            [class.fw-semibold]="row.strong === true"
+            [class.fw-normal]="row.strong !== true"
+          >
+            @if (row.invalid === true) {
+              <i
+                class="bi bi-exclamation-circle me-1"
+                [class.text-danger]="!isPrimary"
+                [class.text-warning]="isPrimary"
+                aria-hidden="true"
+                [attr.title]="row.invalidLabel || null"
+              ></i>
+              @if (row.invalidLabel) {
+                <span class="visually-hidden">{{ row.invalidLabel }}</span>
+              }
+            }
+            {{ row.label }}
+          </dt>
+          <dd
+            class="text-nowrap"
+            [class.mb-0]="row.borderBottom === true"
+            [class.mb-2]="row.borderBottom !== true"
+            [class.fw-semibold]="row.strong === true"
+            [class.fw-normal]="row.strong !== true"
+            [class.text-decoration-line-through]="row.invalid === true"
+            [class.text-body-secondary]="!isPrimary && row.invalid === true"
+            [class.opacity-75]="isPrimary && row.invalid === true"
+          >
+            {{ formatAmount(row.amount) }}
+          </dd>
+        </div>
+      }
+      <div class="d-flex justify-content-between gap-3">
+        <dt class="fw-semibold" [class.text-body-secondary]="!isPrimary" i18n="@@featureInvoices-subtotalNet">
+          Subtotal (net)
+        </dt>
+        <dd class="mb-2 text-nowrap fw-semibold">{{ formatAmount(totals.subtotalNet) }}</dd>
+      </div>
+      @for (tax of totals.taxRows; track tax.taxRate) {
+        <div class="d-flex justify-content-between gap-3">
+          <dt class="fw-semibold" [class.text-body-secondary]="!isPrimary">
+            <span i18n="@@featureInvoices-taxTotal">Tax total</span>
+            <span> ({{ tax.taxRate | number: '1.0-1' }}%)</span>
+          </dt>
+          <dd class="mb-2 text-nowrap fw-semibold">{{ formatAmount(tax.taxAmount) }}</dd>
+        </div>
+      }
+      <div
+        class="d-flex justify-content-between gap-3 border-top pt-2"
+        [class.border-white]="isPrimary"
+        [class.border-opacity-25]="isPrimary"
+      >
+        <dt class="fw-semibold" [class.text-body-secondary]="!isPrimary" i18n="@@featureInvoices-totalGross">Total</dt>
+        <dd class="mb-0 text-nowrap fw-semibold">{{ formatAmount(totals.totalGross) }}</dd>
+      </div>
+    </dl>
+  } @else {
+    <p class="small mb-0" [class.text-muted]="!isPrimary">—</p>
+  }
+</div>

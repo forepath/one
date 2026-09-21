@@ -33,6 +33,21 @@ export class BillingAuditLogsRepository {
     return { items, total };
   }
 
+  async findByOfferId(
+    offerId: string,
+    limit: number,
+    offset: number,
+  ): Promise<{ items: BillingAuditLogEntity[]; total: number }> {
+    const [items, total] = await this.repository.findAndCount({
+      where: { offerId, tenantId: getRequiredTenantId() },
+      order: { createdAt: 'DESC' },
+      take: limit,
+      skip: offset,
+    });
+
+    return { items, total };
+  }
+
   async findBySupplierInvoiceId(
     supplierInvoiceId: string,
     limit: number,

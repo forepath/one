@@ -28,6 +28,9 @@ export class InvoiceEntity {
   @Column({ type: 'uuid', name: 'project_id', nullable: true })
   projectId?: string;
 
+  @Column({ type: 'uuid', name: 'offer_id', nullable: true })
+  offerId?: string;
+
   @ManyToOne(() => ProjectEntity, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'project_id' })
   project?: ProjectEntity;

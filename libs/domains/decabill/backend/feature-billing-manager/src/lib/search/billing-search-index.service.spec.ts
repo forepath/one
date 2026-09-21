@@ -9,6 +9,7 @@ import { CloudInitConfigEntity } from '../entities/cloud-init-config.entity';
 import { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import { DatevExportEntity } from '../entities/datev-export.entity';
 import { InvoiceEntity } from '../entities/invoice.entity';
+import { OfferEntity } from '../offers/entities/offer.entity';
 import { MeterEntity } from '../entities/meter.entity';
 import { PromotionEntity } from '../entities/promotion.entity';
 import { ServicePlanEntity } from '../entities/service-plan.entity';
@@ -52,6 +53,7 @@ describe('BillingSearchIndexService', () => {
         { provide: OpenSearchService, useValue: openSearch },
         { provide: getRepositoryToken(SubscriptionEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(InvoiceEntity), useValue: emptyRepo },
+        { provide: getRepositoryToken(OfferEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(ProjectEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(ProjectTicketEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(PromotionEntity), useValue: emptyRepo },

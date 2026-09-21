@@ -495,7 +495,7 @@
 </div>
 
 <div #billTimeModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" i18n="@@featureProjectDetail-billTimeTitle">Bill unbilled time</h5>
@@ -681,77 +681,80 @@
 </div>
 
 <ng-template #billTimeLineItem let-line="line" let-i="index" let-itemCount="itemCount">
-  <div class="border rounded p-2 mb-2">
-    <label class="form-label" [for]="'billTimeLineDesc' + i" i18n="@@featureAdminInvoices-lineDescription"
-      >Description</label
-    >
-    <input
-      class="form-control mb-2"
-      [id]="'billTimeLineDesc' + i"
-      [(ngModel)]="line.description"
-      [name]="'billTimeDesc' + i"
-    />
-    <div class="row g-2">
-      <div class="col-sm-6">
-        <label class="form-label" [for]="'billTimeLineQty' + i" i18n="@@featureAdminInvoices-lineQuantity"
-          >Quantity</label
-        >
-        <input
-          type="number"
-          class="form-control"
-          [id]="'billTimeLineQty' + i"
-          [(ngModel)]="line.quantity"
-          [name]="'billTimeQty' + i"
-          min="0.0001"
-          step="any"
-        />
-      </div>
-      <div class="col-sm-6">
-        <label class="form-label" [for]="'billTimeLinePrice' + i" i18n="@@featureAdminInvoices-lineUnitPriceNet"
-          >Unit price (net)</label
-        >
-        <input
-          type="number"
-          class="form-control"
-          [id]="'billTimeLinePrice' + i"
-          [(ngModel)]="line.unitPriceNet"
-          [name]="'billTimePrice' + i"
-          min="0"
-          step="any"
-        />
-      </div>
-    </div>
-    <div class="mt-2">
-      <span class="form-label d-block" i18n="@@featureAdminInvoices-lineTaxCategory">VAT rate</span>
-      @for (option of taxCategoryOptions(); track option.value) {
-        <div class="form-check form-check-inline">
+  <div class="mb-2">
+    <div class="border rounded p-2">
+      <label class="form-label" [for]="'billTimeLineDesc' + i" i18n="@@featureAdminInvoices-lineDescription"
+        >Description</label
+      >
+      <input
+        class="form-control mb-2"
+        [id]="'billTimeLineDesc' + i"
+        [(ngModel)]="line.description"
+        [name]="'billTimeDesc' + i"
+      />
+      <div class="row g-2">
+        <div class="col-sm-6">
+          <label class="form-label" [for]="'billTimeLineQty' + i" i18n="@@featureAdminInvoices-lineQuantity"
+            >Quantity</label
+          >
           <input
-            type="radio"
-            class="form-check-input"
-            [name]="'billTimeTax' + i"
-            [id]="'billTimeTax' + i + '_' + option.value"
-            [value]="option.value"
-            [checked]="line.taxCategory === option.value"
-            (change)="line.taxCategory = option.value"
+            type="number"
+            class="form-control"
+            [id]="'billTimeLineQty' + i"
+            [(ngModel)]="line.quantity"
+            [name]="'billTimeQty' + i"
+            min="0.0001"
+            step="any"
           />
-          <label class="form-check-label" [attr.for]="'billTimeTax' + i + '_' + option.value">{{ option.label }}</label>
         </div>
-      }
+        <div class="col-sm-6">
+          <label class="form-label" [for]="'billTimeLinePrice' + i" i18n="@@featureAdminInvoices-lineUnitPriceNet"
+            >Unit price (net)</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            [id]="'billTimeLinePrice' + i"
+            [(ngModel)]="line.unitPriceNet"
+            [name]="'billTimePrice' + i"
+            min="0"
+            step="any"
+          />
+        </div>
+      </div>
+      <div class="mt-2">
+        <span class="form-label d-block" i18n="@@featureAdminInvoices-lineTaxCategory">VAT rate</span>
+        @for (option of taxCategoryOptions(); track option.value) {
+          <div class="form-check form-check-inline">
+            <input
+              type="radio"
+              class="form-check-input"
+              [name]="'billTimeTax' + i"
+              [id]="'billTimeTax' + i + '_' + option.value"
+              [value]="option.value"
+              [checked]="line.taxCategory === option.value"
+              (change)="line.taxCategory = option.value"
+            />
+            <label class="form-check-label" [attr.for]="'billTimeTax' + i + '_' + option.value">{{
+              option.label
+            }}</label>
+          </div>
+        }
+      </div>
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-danger mt-2"
+        (click)="removeBillTimeLineItem(i)"
+        title="Remove line"
+        i18n-title="@@featureAdminInvoices-removeLine"
+        aria-label="Remove line"
+        i18n-aria-label="@@featureAdminInvoices-removeLine"
+      >
+        <i class="bi bi-trash" aria-hidden="true"></i>
+      </button>
     </div>
-    <p class="small text-body-secondary mb-0 mt-2">
-      <span i18n="@@featureAdminInvoices-lineTotal">Line total</span>:
-      <strong class="ms-1">{{ formatBillTimeLineTotal(line) }}</strong>
-    </p>
-    <button
-      type="button"
-      class="btn btn-sm btn-outline-danger mt-2"
-      (click)="removeBillTimeLineItem(i)"
-      title="Remove line"
-      i18n-title="@@featureAdminInvoices-removeLine"
-      aria-label="Remove line"
-      i18n-aria-label="@@featureAdminInvoices-removeLine"
-    >
-      <i class="bi bi-trash" aria-hidden="true"></i>
-    </button>
+    <div class="mt-1">
+      <framework-pricing-totals-summary [summary]="billTimeLineSummary(line)"></framework-pricing-totals-summary>
+    </div>
   </div>
 </ng-template>

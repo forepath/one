@@ -30,6 +30,8 @@ import {
   getProjectTimeEntryBillingStatusTextClass,
   isProjectTimeEntryBilled,
 } from '../billing-status-labels';
+import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
+import { buildPricingTotalsSummary, type PricingTotalsSummary } from '../pricing-totals-summary/pricing-totals.util';
 import { ProjectBoardComponent } from '../project-board/project-board.component';
 import { ProjectMilestonesPanelComponent } from '../project-milestones-panel/project-milestones-panel.component';
 import {
@@ -59,6 +61,7 @@ interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
     ProjectBoardComponent,
     ProjectMilestonesPanelComponent,
     BillingAdminSubscriptionSelectComponent,
+    PricingTotalsSummaryComponent,
   ],
   templateUrl: './project-detail-page.component.html',
   styleUrls: ['./project-detail-page.component.scss'],
@@ -371,18 +374,23 @@ export class ProjectDetailPageComponent implements OnInit {
     this.projectsFacade.billProjectTime(this.projectId, dto);
   }
 
-  formatBillTimeLineTotal(line: BillTimeFormLineItem): string {
+  billTimeLineSummary(line: BillTimeFormLineItem): PricingTotalsSummary | null {
     const quantity = Number(line.quantity);
     const unitPriceNet = Number(line.unitPriceNet);
 
     if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(unitPriceNet) || unitPriceNet < 0) {
-      return '—';
+      return null;
     }
 
     const taxRate = rateForTaxCategory(this.taxRates(), line.taxCategory ?? 'standard');
     const totals = computeLineTotalsFromRate(quantity, unitPriceNet, taxRate);
 
-    return `€${totals.gross.toFixed(2)} gross (${totals.taxRate}% VAT)`;
+    return buildPricingTotalsSummary({
+      net: totals.net,
+      tax: totals.tax,
+      taxRate: totals.taxRate,
+      gross: totals.gross,
+    });
   }
 
   addBillTimeLineItem(): void {

@@ -55,6 +55,12 @@ import { BillingAdminSupplierSelectComponent } from '../billing-admin-supplier-s
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
 import { getInvoiceStatusBadgeClass, getInvoiceStatusLabel, getUnavailableLabel } from '../billing-status-labels';
 import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
+import {
+  aggregatePricingTotalsSummaries,
+  buildPricingTotalsSummary,
+  type PricingTotalsSummary,
+} from '../pricing-totals-summary/pricing-totals.util';
 
 const FILTERS_STORAGE_KEY = 'billing-console-admin-billing-filters';
 
@@ -135,6 +141,7 @@ type AdminBillingPerspective = 'customer' | 'supplier';
     BillingAdminSupplierContractSelectComponent,
     InfiniteScrollDirective,
     ListAppendFooterComponent,
+    PricingTotalsSummaryComponent,
   ],
   providers: [DatePipe],
   templateUrl: './admin-billing-page.component.html',
@@ -1023,20 +1030,23 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(payload));
   }
 
-  formatLineItemTotal(line: InvoiceFormLineItem | SupplierInvoiceFormLineItem): string {
+  lineItemSummary(line: InvoiceFormLineItem | SupplierInvoiceFormLineItem): PricingTotalsSummary | null {
     const totals = this.computeLineItemTotals(line);
 
-    if (!totals) return '—';
+    if (!totals) {
+      return null;
+    }
 
-    return `€${this.formatPrice(totals.net)} + €${this.formatPrice(totals.tax)} VAT (${totals.taxRate}%) = €${this.formatPrice(totals.gross)}`;
+    return buildPricingTotalsSummary({
+      net: totals.net,
+      tax: totals.tax,
+      taxRate: totals.taxRate,
+      gross: totals.gross,
+    });
   }
 
-  formatDraftTotals(items: Array<InvoiceFormLineItem | SupplierInvoiceFormLineItem>): string {
-    const totals = this.computeDraftTotals(items);
-
-    if (!totals) return '—';
-
-    return `€${this.formatPrice(totals.net)} net + €${this.formatPrice(totals.tax)} VAT = €${this.formatPrice(totals.gross)} gross`;
+  draftTotalsSummary(items: Array<InvoiceFormLineItem | SupplierInvoiceFormLineItem>): PricingTotalsSummary | null {
+    return aggregatePricingTotalsSummaries(items.map((item) => this.lineItemSummary(item)));
   }
 
   private emptyLineItem(): InvoiceFormLineItem {
@@ -1177,34 +1187,6 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
         next: (preview) => this.taxRates.set(preview.rates),
         error: () => undefined,
       });
-  }
-
-  private computeDraftTotals(
-    items: Array<InvoiceFormLineItem | SupplierInvoiceFormLineItem>,
-  ): { net: number; tax: number; gross: number } | null {
-    let net = 0;
-    let tax = 0;
-
-    for (const item of items) {
-      const lineTotals = this.computeLineItemTotals(item);
-
-      if (!lineTotals) {
-        return null;
-      }
-
-      net += lineTotals.net;
-      tax += lineTotals.tax;
-    }
-
-    return {
-      net: Math.round(net * 100) / 100,
-      tax: Math.round(tax * 100) / 100,
-      gross: Math.round((net + tax) * 100) / 100,
-    };
-  }
-
-  private formatPrice(value: number): string {
-    return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   private resetCreateForm(): void {

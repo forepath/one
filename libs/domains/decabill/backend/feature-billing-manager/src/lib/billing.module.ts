@@ -142,6 +142,25 @@ import { SubscriptionItemEntity } from './entities/subscription-item.entity';
 import { SupplierProfileEntity } from './entities/supplier-profile.entity';
 import { SupplierContractEntity } from './entities/supplier-contract.entity';
 import { SupplierInvoiceEntity } from './entities/supplier-invoice.entity';
+import { OfferEntity } from './offers/entities/offer.entity';
+import { OfferLineItemEntity } from './offers/entities/offer-line-item.entity';
+import { OfferNumberSequenceEntity } from './offers/entities/offer-number-sequence.entity';
+import { OffersRepository } from './offers/repositories/offers.repository';
+import { OfferLineItemsRepository } from './offers/repositories/offer-line-items.repository';
+import { OfferNumberSequencesRepository } from './offers/repositories/offer-number-sequences.repository';
+import { AdminOffersController } from './offers/controllers/admin-offers.controller';
+import { OffersController } from './offers/controllers/offers.controller';
+import { OffersAdminService } from './offers/services/offers-admin.service';
+import { OffersCustomerService } from './offers/services/offers-customer.service';
+import { OfferArchiveService } from './offers/services/offer-archive.service';
+import { OfferPdfService } from './offers/services/offer-pdf.service';
+import { OfferPdfTemplateService } from './offers/services/offer-pdf-template.service';
+import { OfferFulfillmentService } from './offers/services/offer-fulfillment.service';
+import { OfferStatisticsQueryService } from './offers/services/offer-statistics-query.service';
+import { OfferExpirationJobHandler } from './offers/services/offer-expiration.job-handler';
+import { OfferFulfillmentJobHandler } from './offers/services/offer-fulfillment.job-handler';
+import { OfferProfileSummaryService } from './offers/services/offer-profile-summary.service';
+import { SubscriptionOrderPreparationService } from './offers/services/subscription-order-preparation.service';
 import { SupplierInvoiceLineItemEntity } from './entities/supplier-invoice-line-item.entity';
 import { SupplierNumberSequenceEntity } from './entities/supplier-number-sequence.entity';
 import { SupplierInvoiceNumberSequenceEntity } from './entities/supplier-invoice-number-sequence.entity';
@@ -385,6 +404,9 @@ const authMethod = getAuthenticationMethod();
       SupplierProfileEntity,
       SupplierContractEntity,
       SupplierInvoiceEntity,
+      OfferEntity,
+      OfferLineItemEntity,
+      OfferNumberSequenceEntity,
       SupplierInvoiceLineItemEntity,
       SupplierNumberSequenceEntity,
       SupplierInvoiceNumberSequenceEntity,
@@ -417,6 +439,8 @@ const authMethod = getAuthenticationMethod();
     InvoicesController,
     PromotionsController,
     AdminPromotionsController,
+    AdminOffersController,
+    OffersController,
     AdminBillingController,
     AdminSubscriptionItemsController,
     AdminSubscriptionMetersController,
@@ -585,6 +609,20 @@ const authMethod = getAuthenticationMethod();
     SupplierProfilesAdminService,
     SupplierContractsService,
     SupplierInvoicesAdminService,
+    OffersRepository,
+    OfferLineItemsRepository,
+    OfferNumberSequencesRepository,
+    SubscriptionOrderPreparationService,
+    OffersAdminService,
+    OffersCustomerService,
+    OfferArchiveService,
+    OfferPdfService,
+    OfferPdfTemplateService,
+    OfferFulfillmentService,
+    OfferStatisticsQueryService,
+    OfferExpirationJobHandler,
+    OfferFulfillmentJobHandler,
+    OfferProfileSummaryService,
     SupplierInvoicePdfService,
     EInvoiceInboundParseService,
     ProjectsService,
@@ -731,6 +769,8 @@ const authMethod = getAuthenticationMethod();
     ContributorMigrationService,
     SubscriptionRenewalReminderJobHandler,
     OpenPositionInvoiceJobHandler,
+    OfferExpirationJobHandler,
+    OfferFulfillmentJobHandler,
     SubscriptionItemUpdateJobHandler,
     EmailService,
     AvailabilitySnapshotsRepository,

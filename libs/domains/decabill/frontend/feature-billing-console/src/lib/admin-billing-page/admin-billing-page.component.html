@@ -177,7 +177,7 @@
                 <div class="row g-3 mb-0">
                   <div class="col-12">
                     <label class="form-label small" for="adminBillingUser" i18n="@@featureAdminBilling-userFilter"
-                      >User</label
+                      >Customer</label
                     >
                     <select
                       id="adminBillingUser"
@@ -185,7 +185,7 @@
                       [ngModel]="selectedUserId()"
                       (ngModelChange)="selectedUserId.set($event)"
                     >
-                      <option [ngValue]="null" i18n="@@featureAdminBilling-allUsers">All users</option>
+                      <option [ngValue]="null" i18n="@@featureAdminBilling-allUsers">All customers</option>
                       @for (user of users(); track user.id) {
                         <option [ngValue]="user.id">{{ user.email }}</option>
                       }
@@ -369,10 +369,7 @@
                 }
                 @if (invoices().length === 0) {
                   <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-                    <div class="text-center">
-                      <i class="bi bi-receipt fs-1 d-block mb-2"></i>
-                      <p class="mb-0" i18n="@@featureAdminInvoices-empty">No invoices found</p>
-                    </div>
+                    <p class="mb-0" i18n="@@featureAdminInvoices-empty">No invoices found</p>
                   </div>
                 } @else {
                   @for (invoice of invoices(); track invoice.id) {
@@ -998,7 +995,7 @@
             (change)="billNowScope.set('all')"
           />
           <label class="form-check-label" for="billNowAll" i18n="@@featureAdminBilling-billNowAll"
-            >All users with unbilled positions</label
+            >All customers with unbilled positions</label
           >
         </div>
         <div class="form-check mb-3">
@@ -1011,7 +1008,7 @@
             (change)="billNowScope.set('user')"
           />
           <label class="form-check-label" for="billNowUser" i18n="@@featureAdminBilling-billNowUser"
-            >Specific user</label
+            >Specific customer</label
           >
         </div>
         @if (billNowScope() === 'user') {
@@ -1029,7 +1026,7 @@
         @if (billNowResult$ | async; as result) {
           <div class="alert alert-info mt-3 mb-0" role="status">
             <span i18n="@@featureAdminBilling-billNowResult"
-              >Billing queued for {{ result.userCount }} user(s). Request ID: {{ result.requestId }}.</span
+              >Billing queued for {{ result.userCount }} customer(s). Request ID: {{ result.requestId }}.</span
             >
           </div>
         }
@@ -1149,7 +1146,7 @@
   aria-labelledby="adminPreviewInvoiceModalLabel"
   aria-hidden="true"
 >
-  <div class="modal-dialog modal-xl modal-dialog-scrollable invoice-preview-modal">
+  <div class="modal-dialog modal-xl invoice-preview-modal">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="adminPreviewInvoiceModalLabel" i18n="@@featureInvoices-previewTitle">
@@ -1280,7 +1277,7 @@
 </div>
 
 <div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" i18n="@@featureAdminInvoices-createTitle">Create manual invoice</h5>
@@ -1319,7 +1316,7 @@
 
         @if (createInvoiceType === 'customer') {
           <div class="mb-3">
-            <label class="form-label" for="createInvoiceUser" i18n="@@featureAdminInvoices-user">User</label>
+            <label class="form-label" for="createInvoiceUser" i18n="@@featureAdminInvoices-user">Customer</label>
             <framework-billing-admin-user-select
               #createInvoiceUserSelect
               inputId="createInvoiceUser"
@@ -1340,7 +1337,7 @@
                 class="form-control"
                 disabled
                 i18n-placeholder="@@featureAdminInvoices-selectUserFirst"
-                placeholder="Select a user first"
+                placeholder="Select a customer first"
               />
             } @else {
               <framework-billing-admin-subscription-select
@@ -1469,30 +1466,30 @@
             <i class="bi bi-plus" aria-hidden="true"></i>
           </button>
         }
-        <p class="small text-body-secondary mb-0 mt-3">
-          <span i18n="@@featureAdminInvoices-draftTotal">Draft total</span>:
-          <strong class="ms-1">{{
-            formatDraftTotals(createInvoiceType === 'supplier' ? createSupplierLineItems : createLineItems)
-          }}</strong>
-        </p>
       </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitCreate()"
-          [disabled]="(invoicesCreating$ | async) === true || (supplierInvoicesCreating$ | async) === true"
-          i18n="@@featureAdminInvoices-create"
-        >
-          Create
-        </button>
+      <div class="modal-footer flex-column align-items-stretch gap-3">
+        <framework-pricing-totals-summary
+          variant="primary"
+          [summary]="draftTotalsSummary(createInvoiceType === 'supplier' ? createSupplierLineItems : createLineItems)"
+        ></framework-pricing-totals-summary>
+        <div class="d-flex justify-content-end w-100">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="submitCreate()"
+            [disabled]="(invoicesCreating$ | async) === true || (supplierInvoicesCreating$ | async) === true"
+            i18n="@@featureAdminInvoices-create"
+          >
+            Create
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" i18n="@@featureAdminInvoices-editTitle">Edit draft invoice</h5>
@@ -1572,10 +1569,6 @@
           <button type="button" class="btn btn-sm btn-outline-secondary" (click)="addLineItem('editSupplier')">
             <i class="bi bi-plus" aria-hidden="true"></i>
           </button>
-          <p class="small text-body-secondary mb-0 mt-3">
-            <span i18n="@@featureAdminInvoices-draftTotal">Draft total</span>:
-            <strong class="ms-1">{{ formatDraftTotals(editSupplierLineItems) }}</strong>
-          </p>
         } @else {
           @for (line of editLineItems; track $index; let i = $index) {
             <ng-container
@@ -1596,22 +1589,24 @@
           >
             <i class="bi bi-plus" aria-hidden="true"></i>
           </button>
-          <p class="small text-body-secondary mb-0 mt-3">
-            <span i18n="@@featureAdminInvoices-draftTotal">Draft total</span>:
-            <strong class="ms-1">{{ formatDraftTotals(editLineItems) }}</strong>
-          </p>
         }
       </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitEdit()"
-          [disabled]="(invoicesUpdating$ | async) === true || (supplierInvoicesUpdating$ | async) === true"
-          i18n="@@featureAdminInvoices-save"
-        >
-          Save
-        </button>
+      <div class="modal-footer flex-column align-items-stretch gap-3">
+        <framework-pricing-totals-summary
+          variant="primary"
+          [summary]="draftTotalsSummary(editSupplierInvoiceId ? editSupplierLineItems : editLineItems)"
+        ></framework-pricing-totals-summary>
+        <div class="d-flex justify-content-end w-100">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="submitEdit()"
+            [disabled]="(invoicesUpdating$ | async) === true || (supplierInvoicesUpdating$ | async) === true"
+            i18n="@@featureAdminInvoices-save"
+          >
+            Save
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -1727,99 +1722,103 @@
   let-target="target"
   let-itemCount="itemCount"
 >
-  <div class="border rounded p-2 mb-2">
-    <label class="form-label" [for]="prefix + 'LineDesc' + i" i18n="@@featureAdminInvoices-lineDescription"
-      >Description</label
-    >
-    <input
-      class="form-control mb-2"
-      [id]="prefix + 'LineDesc' + i"
-      [(ngModel)]="line.description"
-      [name]="prefix + 'Desc' + i"
-    />
-    <div class="row g-2">
-      <div class="col-sm-6">
-        <label class="form-label" [for]="prefix + 'LineQty' + i" i18n="@@featureAdminInvoices-lineQuantity"
-          >Quantity</label
-        >
-        <input
-          type="number"
-          class="form-control"
-          [id]="prefix + 'LineQty' + i"
-          [(ngModel)]="line.quantity"
-          [name]="prefix + 'Qty' + i"
-          min="0.0001"
-          step="any"
-        />
-      </div>
-      <div class="col-sm-6">
-        <label class="form-label" [for]="prefix + 'LinePrice' + i" i18n="@@featureAdminInvoices-lineUnitPriceNet"
-          >Unit price (net)</label
-        >
-        <input
-          type="number"
-          class="form-control"
-          [id]="prefix + 'LinePrice' + i"
-          [(ngModel)]="line.unitPriceNet"
-          [name]="prefix + 'Price' + i"
-          min="0"
-          step="any"
-        />
-      </div>
-    </div>
-    <div class="mt-2">
-      <span class="form-label d-block" i18n="@@featureAdminInvoices-lineTaxCategory">VAT rate</span>
-      @for (option of taxOptionsForTarget(target); track option.value) {
-        <div class="form-check form-check-inline">
-          <input
-            type="radio"
-            class="form-check-input"
-            [name]="prefix + 'Tax' + i"
-            [id]="prefix + 'Tax' + i + '_' + option.value"
-            [value]="option.value"
-            [checked]="line.taxCategory === option.value"
-            (change)="onTaxCategoryChange(line, option.value)"
-          />
-          <label class="form-check-label" [attr.for]="prefix + 'Tax' + i + '_' + option.value">{{
-            option.label
-          }}</label>
-        </div>
-      }
-      @if (isCustomTaxLine(line)) {
-        <div class="row g-2 mt-2">
-          <div class="col-sm-6">
-            <label class="form-label" [for]="prefix + 'LineTaxRate' + i" i18n="@@featureAdminInvoices-lineTaxRateCustom"
-              >Rate (%)</label
-            >
-            <input
-              type="number"
-              class="form-control"
-              [id]="prefix + 'LineTaxRate' + i"
-              [(ngModel)]="line.taxRate"
-              [name]="prefix + 'TaxRate' + i"
-              min="0"
-              step="any"
-            />
-          </div>
-        </div>
-      }
-    </div>
-    <p class="small text-body-secondary mb-0 mt-2">
-      <span i18n="@@featureAdminInvoices-lineTotal">Line total</span>:
-      <strong class="ms-1">{{ formatLineItemTotal(line) }}</strong>
-    </p>
-    @if (itemCount > 1) {
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-danger mt-2"
-        (click)="removeLineItem(target, i)"
-        title="Remove line"
-        i18n-title="@@featureAdminInvoices-removeLine"
-        aria-label="Remove line"
-        i18n-aria-label="@@featureAdminInvoices-removeLine"
+  <div class="mb-3">
+    <div class="border rounded p-3">
+      <label class="form-label" [for]="prefix + 'LineDesc' + i" i18n="@@featureAdminInvoices-lineDescription"
+        >Description</label
       >
-        <i class="bi bi-trash" aria-hidden="true"></i>
-      </button>
-    }
+      <input
+        class="form-control mb-2"
+        [id]="prefix + 'LineDesc' + i"
+        [(ngModel)]="line.description"
+        [name]="prefix + 'Desc' + i"
+      />
+      <div class="row g-2">
+        <div class="col-sm-6">
+          <label class="form-label" [for]="prefix + 'LineQty' + i" i18n="@@featureAdminInvoices-lineQuantity"
+            >Quantity</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            [id]="prefix + 'LineQty' + i"
+            [(ngModel)]="line.quantity"
+            [name]="prefix + 'Qty' + i"
+            min="0.0001"
+            step="any"
+          />
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label" [for]="prefix + 'LinePrice' + i" i18n="@@featureAdminInvoices-lineUnitPriceNet"
+            >Unit price (net)</label
+          >
+          <input
+            type="number"
+            class="form-control"
+            [id]="prefix + 'LinePrice' + i"
+            [(ngModel)]="line.unitPriceNet"
+            [name]="prefix + 'Price' + i"
+            min="0"
+            step="any"
+          />
+        </div>
+      </div>
+      <div class="mt-2">
+        <span class="form-label d-block" i18n="@@featureAdminInvoices-lineTaxCategory">VAT rate</span>
+        @for (option of taxOptionsForTarget(target); track option.value) {
+          <div class="form-check form-check-inline">
+            <input
+              type="radio"
+              class="form-check-input"
+              [name]="prefix + 'Tax' + i"
+              [id]="prefix + 'Tax' + i + '_' + option.value"
+              [value]="option.value"
+              [checked]="line.taxCategory === option.value"
+              (change)="onTaxCategoryChange(line, option.value)"
+            />
+            <label class="form-check-label" [attr.for]="prefix + 'Tax' + i + '_' + option.value">{{
+              option.label
+            }}</label>
+          </div>
+        }
+        @if (isCustomTaxLine(line)) {
+          <div class="row g-2 mt-2">
+            <div class="col-sm-6">
+              <label
+                class="form-label"
+                [for]="prefix + 'LineTaxRate' + i"
+                i18n="@@featureAdminInvoices-lineTaxRateCustom"
+                >Rate (%)</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                [id]="prefix + 'LineTaxRate' + i"
+                [(ngModel)]="line.taxRate"
+                [name]="prefix + 'TaxRate' + i"
+                min="0"
+                step="any"
+              />
+            </div>
+          </div>
+        }
+      </div>
+      @if (itemCount > 1) {
+        <button
+          type="button"
+          class="btn btn-sm btn-outline-danger mt-2"
+          (click)="removeLineItem(target, i)"
+          title="Remove line"
+          i18n-title="@@featureAdminInvoices-removeLine"
+          aria-label="Remove line"
+          i18n-aria-label="@@featureAdminInvoices-removeLine"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </button>
+      }
+    </div>
+    <div class="mt-1">
+      <framework-pricing-totals-summary [summary]="lineItemSummary(line)"></framework-pricing-totals-summary>
+    </div>
   </div>
 </ng-template>
