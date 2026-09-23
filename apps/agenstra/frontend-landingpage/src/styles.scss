@@ -6,6 +6,9 @@
 @import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/chrome';
 @import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/badge-tint';
 
+// Landing: white cards on tertiary bands (shared console palette leaves $card-bg → body-bg).
+$card-bg: #ffffff;
+
 @import 'bootstrap/scss/bootstrap';
 @import '../../../../libs/domains/shared/frontend/ui-components/styles';
 @import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/extras';
