@@ -11,28 +11,15 @@
 @import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/extras';
 @import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/decabill/extras';
 
-// Dark hero secondary CTAs: soft offset from bg-dark, white label (same as primary).
-#hero {
-  .cta-btn.btn-dark,
-  .home-cta-btn.btn-dark {
-    --bs-btn-color: #fff;
-    --bs-btn-bg: var(--bs-dark-alt);
-    --bs-btn-border-color: var(--bs-dark-alt);
-    --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: color-mix(in srgb, var(--bs-dark-alt) 88%, var(--bs-white));
-    --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-dark-alt) 88%, var(--bs-white));
-    --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: color-mix(in srgb, var(--bs-dark-alt) 80%, var(--bs-white));
-    --bs-btn-active-border-color: color-mix(in srgb, var(--bs-dark-alt) 80%, var(--bs-white));
-    --bs-btn-disabled-color: #fff;
-    --bs-btn-disabled-bg: var(--bs-dark-alt);
-    --bs-btn-disabled-border-color: var(--bs-dark-alt);
-  }
-}
-
 @import 'bootstrap/scss/bootstrap-grid';
 @import 'bootstrap-icons/font/bootstrap-icons';
 @import '@fontsource-variable/plus-jakarta-sans/wght.css';
+
+:root {
+  // Shared console palette darkened tertiary; landing banding stays at main's lighter wash.
+  --bs-tertiary-bg: #{mix($primary, #f9f8fc, 1.5%)};
+  --bs-tertiary-bg-rgb: #{to-rgb(mix($primary, #f9f8fc, 1.5%))};
+}
 
 .status-badge {
   width: 1.125rem;

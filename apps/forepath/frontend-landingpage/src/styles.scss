@@ -30,6 +30,9 @@ body {
   --grid-section-padding-y: 2rem;
   --grid-section-padding-y-lg: 4rem;
   --forepath-topbar-height: 0px;
+  // Shared console palette darkened tertiary; landing banding stays at main's lighter wash.
+  --bs-tertiary-bg: #{mix($primary, #f9f8fc, 1.5%)};
+  --bs-tertiary-bg-rgb: #{to-rgb(mix($primary, #f9f8fc, 1.5%))};
 }
 
 @media (min-width: 576px) {

@@ -19,6 +19,9 @@ html[data-fpc-brand='forepath'] {
   --bs-success-dark: color-mix(in srgb, var(--bs-success) 80%, black);
   --bs-body-bg-alt: #faf9fd;
   --bs-dark-alt: #262828;
+  --fpc-btn-hero-dark-bg: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);
+  --fpc-btn-hero-dark-hover: color-mix(in srgb, var(--bs-tertiary-bg) 62%, #000);
+  --fpc-btn-hero-dark-active: color-mix(in srgb, var(--bs-tertiary-bg) 54%, #000);
 
   &[data-bs-theme='dark'] {
     @include fpc-brand-dark-vars;

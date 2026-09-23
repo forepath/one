@@ -42,6 +42,10 @@ export type FpcButtonType = 'button' | 'submit' | 'reset';
  * `size="xl"` is the landing/marketing CTA scale (above Bootstrap `lg`). Extra classes that must
  * land on the native `.btn` (e.g. `rounded-3`) go through `btnClass`.
  *
+ * Marketing CTA tones (on `size="xl"`): inside `#cta` / `#fit`, `variant="primary"` is slightly
+ * darkened; inside `#hero`, `variant="dark"` uses a soft offset (`--fpc-btn-hero-dark-*`, brand-
+ * overridable). These live on the button so page SCSS does not need to pierce encapsulation.
+ *
  * When content includes `fpc-badge`, the inner control is flush (no Bootstrap button padding) so
  * the badge owns the visual size — use this for clickable chips (workspace switchers, etc.).
  */
@@ -125,7 +129,7 @@ export class FpcButtonComponent {
     } else if (size === 'xs') {
       classes.push('btn-sm', 'fpc-button__btn--xs');
     } else if (size === 'xl') {
-      // Keep `cta-btn` so landing page context SCSS (#cta / #hero) still matches.
+      // `cta-btn` kept for any residual global landing hooks; tones live in button SCSS.
       classes.push('fpc-button__btn--xl', 'cta-btn');
     }
 

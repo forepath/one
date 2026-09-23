@@ -12,7 +12,7 @@ const meta: Meta<FpcButtonComponent> = {
 
 **When not to:** Prefer host \`routerLink\` / \`queryParams\` on \`fpc-button\` for in-app navigation (parent imports \`RouterLink\`; the button activates it from the inner control). Use \`href\` for external URLs (activation navigates; \`target="_blank"\` opens a new tab).
 
-**Pairs with:** \`fpc-modal\` footers, \`fpc-input-group\` suffixes, empty-state CTAs, landing heroes / \`#cta\` bands.`,
+**Pairs with:** \`fpc-modal\` footers, \`fpc-input-group\` suffixes, empty-state CTAs, landing heroes / \`#cta\` bands (\`size="xl"\` auto-applies darkened primary in \`#cta\`/\`#fit\` and soft dark in \`#hero\`).`,
       },
     },
   },
@@ -112,6 +112,30 @@ export const MarketingCta: Story = {
     template: `<fpc-button [variant]="variant" [size]="size" [btnClass]="btnClass">
             <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Get Started Free
         </fpc-button>`,
+  }),
+};
+
+export const MarketingCtaBand: Story = {
+  render: () => ({
+    template: `<section id="cta" class="p-4 bg-primary rounded-3">
+            <div class="d-flex gap-3 flex-wrap">
+                <fpc-button variant="primary" size="xl" btnClass="rounded-3">
+                    <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Get started
+                </fpc-button>
+                <fpc-button variant="primary" size="xl" btnClass="rounded-3">Talk to the team</fpc-button>
+            </div>
+        </section>`,
+  }),
+};
+
+export const MarketingCtaHeroDark: Story = {
+  render: () => ({
+    template: `<section id="hero" class="p-4 bg-dark rounded-3">
+            <div class="d-flex gap-3 flex-wrap">
+                <fpc-button variant="primary" size="xl" btnClass="rounded-3">Get started</fpc-button>
+                <fpc-button variant="dark" size="xl" btnClass="rounded-3">View tour</fpc-button>
+            </div>
+        </section>`,
   }),
 };
 

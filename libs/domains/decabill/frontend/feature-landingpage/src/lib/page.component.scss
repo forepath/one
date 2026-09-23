@@ -192,47 +192,7 @@ section {
   max-height: 16px;
 }
 
-// Marketing CTA sizing lives on `fpc-button` (`size="xl"` → `.fpc-button__btn--xl` / `.cta-btn`).
-// Context color overrides below still target `.cta-btn.btn-*` on the native control.
-
-// Pre-footer CTA bands: slightly darkened primary (subtle, same idea as hero contrast).
-#cta,
-#fit {
-  .cta-btn.btn-primary,
-  .home-cta-btn.btn-primary {
-    --bs-btn-color: #fff;
-    --bs-btn-bg: color-mix(in srgb, var(--bs-primary) 88%, #000);
-    --bs-btn-border-color: color-mix(in srgb, var(--bs-primary) 88%, #000);
-    --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary) 80%, #000);
-    --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-primary) 80%, #000);
-    --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: color-mix(in srgb, var(--bs-primary) 74%, #000);
-    --bs-btn-active-border-color: color-mix(in srgb, var(--bs-primary) 74%, #000);
-    --bs-btn-disabled-color: #fff;
-    --bs-btn-disabled-bg: color-mix(in srgb, var(--bs-primary) 88%, #000);
-    --bs-btn-disabled-border-color: color-mix(in srgb, var(--bs-primary) 88%, #000);
-  }
-}
-
-// Hero contrast CTAs on dark bands: soft offset from bg-dark (--bs-dark-alt), white label text.
-#hero {
-  .cta-btn.btn-dark,
-  .home-cta-btn.btn-dark {
-    --bs-btn-color: #fff;
-    --bs-btn-bg: var(--bs-dark-alt);
-    --bs-btn-border-color: var(--bs-dark-alt);
-    --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: color-mix(in srgb, var(--bs-dark-alt) 88%, var(--bs-white));
-    --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-dark-alt) 88%, var(--bs-white));
-    --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: color-mix(in srgb, var(--bs-dark-alt) 80%, var(--bs-white));
-    --bs-btn-active-border-color: color-mix(in srgb, var(--bs-dark-alt) 80%, var(--bs-white));
-    --bs-btn-disabled-color: #fff;
-    --bs-btn-disabled-bg: var(--bs-dark-alt);
-    --bs-btn-disabled-border-color: var(--bs-dark-alt);
-  }
-}
+// Marketing CTA sizing + #cta/#fit/#hero tones live on `fpc-button` (`size="xl"`).
 
 .bento-badge {
   position: relative;

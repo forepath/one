@@ -2,4 +2,8 @@
 
 :root {
   --bs-body-bg-alt: #faf9fd;
+  // Hero secondary CTAs: soft charcoal from tertiary surface (not --bs-dark-alt).
+  --fpc-btn-hero-dark-bg: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);
+  --fpc-btn-hero-dark-hover: color-mix(in srgb, var(--bs-tertiary-bg) 62%, #000);
+  --fpc-btn-hero-dark-active: color-mix(in srgb, var(--bs-tertiary-bg) 54%, #000);
 }

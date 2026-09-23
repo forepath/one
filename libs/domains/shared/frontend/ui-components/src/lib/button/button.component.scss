@@ -88,6 +88,46 @@
   }
 }
 
+// CTA band / fit panel: slightly darkened primary (lives on the button — parent page SCSS
+// cannot pierce encapsulation to the inner `.btn`).
+:host-context(#cta) .fpc-button__btn--xl.btn-primary,
+:host-context(#fit) .fpc-button__btn--xl.btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: color-mix(in srgb, var(--bs-primary) 88%, #000);
+  --bs-btn-border-color: color-mix(in srgb, var(--bs-primary) 88%, #000);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary) 80%, #000);
+  --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-primary) 80%, #000);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: color-mix(in srgb, var(--bs-primary) 74%, #000);
+  --bs-btn-active-border-color: color-mix(in srgb, var(--bs-primary) 74%, #000);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: color-mix(in srgb, var(--bs-primary) 88%, #000);
+  --bs-btn-disabled-border-color: color-mix(in srgb, var(--bs-primary) 88%, #000);
+}
+
+// Hero secondary CTAs: soft offset from dark bands. Brands override --fpc-btn-hero-dark-*.
+:host {
+  --fpc-btn-hero-dark-bg: var(--bs-dark-alt);
+  --fpc-btn-hero-dark-hover: color-mix(in srgb, var(--bs-dark-alt) 88%, var(--bs-white));
+  --fpc-btn-hero-dark-active: color-mix(in srgb, var(--bs-dark-alt) 80%, var(--bs-white));
+}
+
+:host-context(#hero) .fpc-button__btn--xl.btn-dark {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--fpc-btn-hero-dark-bg);
+  --bs-btn-border-color: var(--fpc-btn-hero-dark-bg);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--fpc-btn-hero-dark-hover);
+  --bs-btn-hover-border-color: var(--fpc-btn-hero-dark-hover);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--fpc-btn-hero-dark-active);
+  --bs-btn-active-border-color: var(--fpc-btn-hero-dark-active);
+  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-bg: var(--fpc-btn-hero-dark-bg);
+  --bs-btn-disabled-border-color: var(--fpc-btn-hero-dark-bg);
+}
+
 .fpc-button__btn--icon {
   aspect-ratio: 1 / 1;
   padding: 0;
