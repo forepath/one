@@ -24,23 +24,8 @@
 /* Flex item with flex-grow + overflow needs min-height:0 or it expands past the column instead of scrolling */
 .knowledge-tree-scroll {
   min-height: 0;
-}
-
-.search-input-container {
-  position: relative;
-
-  i {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-  }
-}
-
-.search-input {
-  padding-left: 0;
-  box-shadow: none;
+  display: flex;
+  flex-direction: column;
 }
 
 .tree-node {
@@ -56,12 +41,12 @@
     background-color: var(--bs-secondary-bg);
   }
 
-  .btn-group {
+  fpc-button-group {
     opacity: 0;
     transition: opacity 0.15s ease-in-out;
   }
 
-  &:hover .btn-group {
+  &:hover fpc-button-group {
     opacity: 1;
   }
 }

@@ -43,6 +43,22 @@ import {
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import type { Environment } from '@forepath/shared/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcCollapsibleFilterPanelComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcLaneHeaderComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSpinnerComponent,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+} from '@forepath/shared/frontend/ui-components';
 import type { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexTitleSubtitle, ApexXAxis } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import {
@@ -122,15 +138,35 @@ function isDashboardUrl(url: string | null | undefined): boolean {
 @Component({
   selector: 'framework-service-detail-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, NgApexchartsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    NgApexchartsModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcCollapsibleFilterPanelComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcLaneHeaderComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSpinnerComponent,
+    FpcTabComponent,
+    FpcTabGroupComponent,
+  ],
   providers: [DatePipe],
   templateUrl: './service-detail-page.component.html',
   styleUrls: ['./service-detail-page.component.scss'],
 })
 export class ServiceDetailPageComponent implements OnInit {
   private readonly titleInputRef = viewChild<ElementRef<HTMLInputElement>>('titleInput');
-  private readonly sshAccessConfirmModal = viewChild<ElementRef<HTMLDivElement>>('sshAccessConfirmModal');
-  private readonly sshAccessDisplayModal = viewChild<ElementRef<HTMLDivElement>>('sshAccessDisplayModal');
+
+  readonly sshAccessConfirmModalOpen = signal(false);
+  readonly sshAccessDisplayModalOpen = signal(false);
 
   readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -149,9 +185,9 @@ export class ServiceDetailPageComponent implements OnInit {
   readonly isAdminView = signal(false);
   readonly backTarget = signal<ServiceDetailBackTarget>('dashboard');
   readonly activeTabId = signal(DETAILS_TAB_ID);
-  readonly mobilePanels: ServiceDetailMobilePanel[] = ['info', 'meters'];
   readonly mobilePanel = signal<ServiceDetailMobilePanel>('info');
   readonly filtersCollapsed = signal(true);
+  readonly filtersPanelTitle = $localize`:@@featureServiceDetail-filters:Filters`;
   readonly fromDate = signal('');
   readonly toDate = signal('');
   readonly groupBy = signal<'day' | 'month'>('day');
@@ -184,6 +220,7 @@ export class ServiceDetailPageComponent implements OnInit {
   readonly sortedTabs = computed(() => sortServiceDetailTabs(this.detail()?.tabs));
   readonly showServiceTabs = computed(() => this.sortedTabs().length > 1);
   readonly isDetailsTabActive = computed(() => isDetailsTab(this.activeTabId()));
+  readonly tabsAriaLabel = $localize`:@@featureServiceDetail-tabsAria:Service detail tabs`;
   readonly addonTabComponent = computed(() => {
     const tabId = this.activeTabId();
 
@@ -416,6 +453,20 @@ export class ServiceDetailPageComponent implements OnInit {
     );
   }
 
+  onServiceTabChange(tabId: string | null): void {
+    if (!tabId) {
+      return;
+    }
+
+    this.setTab(tabId);
+  }
+
+  onMobilePanelTabChange(tabId: string | null): void {
+    if (tabId === 'info' || tabId === 'meters') {
+      this.mobilePanel.set(tabId);
+    }
+  }
+
   tabLabel(tab: ServiceDetailTabDto): string {
     return resolveServiceDetailTabLabel(tab, $localize`:@@featureServiceDetail-tabDetails:Details`);
   }
@@ -583,11 +634,7 @@ export class ServiceDetailPageComponent implements OnInit {
     this.sshRevealError.set(null);
     this.sshRevealLoading.set(false);
     this.revealedSshPrivateKey.set(null);
-    const modal = this.sshAccessConfirmModal();
-
-    if (modal) {
-      showBillingModal(modal);
-    }
+    showBillingModal(this.sshAccessConfirmModalOpen);
   }
 
   confirmSshAccessReveal(): void {
@@ -615,16 +662,8 @@ export class ServiceDetailPageComponent implements OnInit {
           this.serverInfoFacade.markSshAccessGranted(this.subscriptionId);
           this.revealedSshPrivateKey.set(response.privateKey);
           this.sshAccessKeyCopied.set(false);
-          const confirmModal = this.sshAccessConfirmModal();
-          const displayModal = this.sshAccessDisplayModal();
-
-          if (confirmModal) {
-            hideBillingModal(confirmModal);
-          }
-
-          if (displayModal) {
-            showBillingModal(displayModal);
-          }
+          hideBillingModal(this.sshAccessConfirmModalOpen);
+          showBillingModal(this.sshAccessDisplayModalOpen);
         },
         error: (error: unknown) => {
           const status =
@@ -646,11 +685,7 @@ export class ServiceDetailPageComponent implements OnInit {
   closeSshAccessDisplay(): void {
     this.revealedSshPrivateKey.set(null);
     this.sshAccessKeyCopied.set(false);
-    const displayModal = this.sshAccessDisplayModal();
-
-    if (displayModal) {
-      hideBillingModal(displayModal);
-    }
+    hideBillingModal(this.sshAccessDisplayModalOpen);
   }
 
   async copySshPrivateKey(): Promise<void> {
@@ -673,7 +708,8 @@ export class ServiceDetailPageComponent implements OnInit {
     this.titleEditing.set(true);
     afterNextRender(
       () => {
-        this.titleInputRef()?.nativeElement?.focus();
+        this.titleInputRef()?.nativeElement?.querySelector('input')?.focus() ??
+          this.titleInputRef()?.nativeElement?.focus();
       },
       { injector: this.injector },
     );
@@ -716,12 +752,13 @@ export class ServiceDetailPageComponent implements OnInit {
     this.titleEditing.set(false);
   }
 
-  onToggleFilters(): void {
-    this.filtersCollapsed.update((value) => !value);
+  onFiltersOpenChange(open: boolean): void {
+    this.filtersCollapsed.set(!open);
     this.persistFilters();
   }
 
   onApplyFilters(): void {
+    this.filtersCollapsed.set(true);
     this.persistFilters();
     this.facade.applyHistoryFilters(
       {
@@ -739,6 +776,7 @@ export class ServiceDetailPageComponent implements OnInit {
     this.fromDate.set(defaults.from);
     this.toDate.set(defaults.to);
     this.groupBy.set(defaults.groupBy);
+    this.filtersCollapsed.set(true);
     this.persistFilters();
     this.facade.resetHistoryFilters(this.isAdminView());
   }

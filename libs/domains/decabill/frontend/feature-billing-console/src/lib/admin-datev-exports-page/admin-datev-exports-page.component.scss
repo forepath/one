@@ -1,19 +1,13 @@
-@import '../admin-list-page.scss';
-
-.admin-datev-exports {
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
   min-height: 0;
+  overflow: hidden;
 }
 
-.btn-group-options {
-  > .btn-options {
-    border-radius: 0;
-    border-top: 0;
-    border-bottom: 0;
-    border-left: 0;
-    flex: 1 1 auto;
-
-    &:last-child {
-      border-right: 0;
-    }
-  }
+.admin-datev-exports {
+  flex: 1 1 0;
+  min-height: 0;
 }

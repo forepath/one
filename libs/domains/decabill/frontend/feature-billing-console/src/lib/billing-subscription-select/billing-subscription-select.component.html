@@ -1,0 +1,49 @@
+<div class="billing-subscription-select">
+  @if (selectedSubscription(); as subscription) {
+    <fpc-badge variant="info" color="secondary" class="billing-subscription-select__chip">
+      <span class="text-truncate">{{ subscriptionPrimaryLabel(subscription) }}</span>
+      <button
+        type="button"
+        class="btn-close billing-subscription-select__clear"
+        [disabled]="disabled()"
+        (click)="clearSelection()"
+        i18n-aria-label="@@featureBillingSubscriptionSelect-clearSelectionAria"
+        aria-label="Clear selected subscription"
+      ></button>
+    </fpc-badge>
+  } @else {
+    <fpc-typeahead-select
+      [inputId]="inputId()"
+      [listboxId]="inputId() + '-listbox'"
+      [placeholder]="placeholder()"
+      [disabled]="disabled()"
+      [openOnFocus]="showSuggestionsOnFocus()"
+      [query]="searchQuery()"
+      (queryChange)="onSearchChange($event)"
+      [open]="suggestionsOpen()"
+      (openChange)="suggestionsOpen.set($event)"
+      (cleared)="reset()"
+    >
+      <div fpcTypeaheadSuggestions>
+        @if (filteredSubscriptions().length > 0) {
+          @for (subscription of filteredSubscriptions(); track subscription.id) {
+            <button
+              type="button"
+              class="dropdown-item py-2 text-start"
+              (mousedown)="pickSubscription(subscription, $event)"
+            >
+              <span class="d-block small fw-medium text-truncate">{{ subscriptionPrimaryLabel(subscription) }}</span>
+              <span class="d-block text-muted small text-truncate">
+                {{ subscriptionPlanLabel(subscription) }} · {{ subscriptionStatusLabel(subscription.status) }}
+              </span>
+            </button>
+          }
+        } @else if (searchQuery().trim()) {
+          <span class="dropdown-item-text text-muted small" i18n="@@featureBillingSubscriptionSelect-noSubscriptions"
+            >No subscriptions found.</span
+          >
+        }
+      </div>
+    </fpc-typeahead-select>
+  }
+</div>

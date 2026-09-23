@@ -1,5 +1,5 @@
 <div class="docs-search-page">
-  <h1 i18n="@@featureDocsSearchPage-title">Search Documentation</h1>
+  <fpc-page-header [title]="pageTitle" icon="search" class="mb-4" />
 
   <div class="mb-4">
     <framework-docs-search />
@@ -7,28 +7,21 @@
 
   @if (loading()) {
     <div class="d-flex justify-content-center align-items-center p-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden" i18n="@@featureDocsSearchPage-loading">Loading...</span>
-      </div>
+      <fpc-spinner variant="primary" i18n-label="@@featureDocsSearchPage-loading" label="Loading..." />
     </div>
   } @else if (searchQuery() && searchResults().length === 0) {
-    <div class="alert alert-info" role="alert">
-      <i class="bi bi-info-circle me-2"></i>
-      <span i18n="@@featureDocsSearchPage-noResultsFor">No results found for "{{ searchQuery() }}"</span>
-    </div>
+    <fpc-empty-state icon="search" message="No search results" i18n-message="@@featureDocsSearchPage-noResultsFor" />
   } @else if (searchResults().length > 0) {
     <div class="search-results">
       <p class="text-muted mb-3">
         {{ getResultsCountMessage(searchResults().length, searchQuery()) }}
       </p>
 
-      <div class="list-group">
+      <fpc-list [ariaLabel]="resultsAriaLabel">
         @for (result of searchResults(); track result.entry.path) {
-          <div class="list-group-item list-group-item-action" (click)="onResultClick(result)">
-            <div class="d-flex w-100 justify-content-between">
-              <h5 class="mb-1">{{ result.entry.title }}</h5>
-              <small class="text-muted">{{ result.score }}</small>
-            </div>
+          <fpc-list-item [clickable]="true" (selected)="onResultClick(result)">
+            <span fpcListItemTitle>{{ result.entry.title }}</span>
+            <small fpcListItemMeta class="text-muted">{{ result.score }}</small>
             @if (result.entry.summary) {
               <p class="mb-1">{{ result.entry.summary }}</p>
             }
@@ -40,14 +33,11 @@
                 }
               </div>
             }
-          </div>
+          </fpc-list-item>
         }
-      </div>
+      </fpc-list>
     </div>
   } @else {
-    <div class="alert alert-secondary" role="alert">
-      <i class="bi bi-search me-2"></i>
-      <span i18n="@@featureDocsSearchPage-enterQueryHint">Enter a search query above to find documentation.</span>
-    </div>
+    <fpc-empty-state icon="search" [message]="enterQueryHint" />
   }
 </div>

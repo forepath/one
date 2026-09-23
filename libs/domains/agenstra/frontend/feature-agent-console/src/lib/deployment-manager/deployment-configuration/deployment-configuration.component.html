@@ -3,9 +3,12 @@
     <!-- Loading State -->
     <div class="d-flex justify-content-center align-items-center flex-grow-1 p-4">
       <div class="text-center">
-        <div class="spinner-border text-primary mb-3" role="status">
-          <span class="visually-hidden" i18n="@@featureDeploymentConfig-loadingConfig">Loading configuration...</span>
-        </div>
+        <fpc-spinner
+          class="mb-3"
+          variant="primary"
+          i18n-label="@@featureDeploymentConfig-loadingConfig"
+          label="Loading configuration..."
+        />
         <p class="text-muted small mb-0" i18n="@@featureDeploymentConfig-loadingMessage">
           Loading deployment configuration...
         </p>
@@ -18,31 +21,30 @@
         <div class="card-body">
           <h6 class="card-title d-flex align-items-center justify-content-between">
             <span i18n="@@featureDeploymentConfig-configurationLabel">Configuration</span>
-            <div class="btn-group btn-group-sm" role="group">
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-primary"
-                (click)="onShowConfigurationForm()"
+            <fpc-button-group size="sm">
+              <fpc-button
+                variant="warning"
+                size="sm"
+                [iconOnly]="true"
+                (clicked)="onShowConfigurationForm()"
                 i18n-title="@@featureDeploymentConfig-editConfigTitle"
                 title="Edit Configuration"
               >
                 <i class="bi bi-pencil"></i>
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-danger"
-                (click)="onOpenDeleteConfigurationConfirm()"
-                [disabled]="deletingConfiguration$ | async"
+              </fpc-button>
+              <fpc-button
+                variant="danger"
+                size="sm"
+                [iconOnly]="true"
+                [loading]="(deletingConfiguration$ | async) === true"
+                [disabled]="!!(deletingConfiguration$ | async)"
+                (clicked)="onOpenDeleteConfigurationConfirm()"
                 i18n-title="@@featureDeploymentConfig-deleteConfigTitle"
                 title="Delete Configuration"
               >
-                @if (deletingConfiguration$ | async) {
-                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                } @else {
-                  <i class="bi bi-trash"></i>
-                }
-              </button>
-            </div>
+                <i class="bi bi-trash"></i>
+              </fpc-button>
+            </fpc-button-group>
           </h6>
           <dl class="row mb-0">
             <dt class="col-sm-4" i18n="@@featureDeploymentConfig-providerLabel">Provider</dt>
@@ -67,15 +69,14 @@
       <h6 class="fw-semibold mb-2" i18n="@@featureDeploymentConfig-repositoryHeader">Repository</h6>
       @if (loadingRepositories$ | async) {
         <div class="d-flex justify-content-center p-3">
-          <div class="spinner-border spinner-border-sm text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
+          <fpc-spinner size="sm" variant="primary" label="Loading..." />
         </div>
       } @else if (repositories().length === 0) {
         <p class="text-muted small mb-0" i18n="@@featureDeploymentConfig-noRepositories">No repositories available</p>
       } @else {
-        <select
-          class="form-select form-select-sm"
+        <fpc-form-control
+          controlType="select"
+          size="sm"
           [ngModel]="selectedRepositoryId() || ''"
           (ngModelChange)="onSelectRepository($event)"
         >
@@ -83,7 +84,7 @@
           @for (repo of repositories(); track repo.id) {
             <option [value]="repo.id">{{ repo.name }}</option>
           }
-        </select>
+        </fpc-form-control>
       }
     </div>
 
@@ -93,15 +94,14 @@
         <h6 class="fw-semibold mb-2" i18n="@@featureDeploymentConfig-branchHeader">Branch</h6>
         @if (loadingBranches$ | async) {
           <div class="d-flex justify-content-center p-3">
-            <div class="spinner-border spinner-border-sm text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
+            <fpc-spinner size="sm" variant="primary" label="Loading..." />
           </div>
         } @else if (branches().length === 0) {
           <p class="text-muted small mb-0" i18n="@@featureDeploymentConfig-noBranches">No branches available</p>
         } @else {
-          <select
-            class="form-select form-select-sm"
+          <fpc-form-control
+            controlType="select"
+            size="sm"
             [ngModel]="selectedBranch() || ''"
             (ngModelChange)="onSelectBranch($event)"
           >
@@ -109,7 +109,7 @@
             @for (branch of branches(); track branch.name) {
               <option [value]="branch.name">{{ branch.name }}</option>
             }
-          </select>
+          </fpc-form-control>
         }
       </div>
     }
@@ -120,15 +120,15 @@
         <h6 class="fw-semibold mb-2" i18n="@@featureDeploymentConfig-workflowHeader">Workflow</h6>
         @if (loadingWorkflows$ | async) {
           <div class="d-flex justify-content-center p-3">
-            <div class="spinner-border spinner-border-sm text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
+            <fpc-spinner size="sm" variant="primary" label="Loading..." />
           </div>
         } @else if (workflows().length === 0) {
           <p class="text-muted small mb-0" i18n="@@featureDeploymentConfig-noWorkflows">No workflows available</p>
         } @else {
-          <select
-            class="form-select form-select-sm mb-2"
+          <fpc-form-control
+            controlType="select"
+            size="sm"
+            class="mb-2"
             [ngModel]="selectedWorkflowId() || ''"
             (ngModelChange)="onSelectWorkflow($event)"
           >
@@ -136,7 +136,7 @@
             @for (workflow of workflows(); track workflow.id) {
               <option [value]="workflow.id">{{ workflow.name }}</option>
             }
-          </select>
+          </fpc-form-control>
 
           <!-- Workflow Inputs -->
           @if (showWorkflowInputs()) {
@@ -145,282 +145,202 @@
                 >Workflow Inputs (optional)</label
               >
               @for (input of workflowInputsEntries(); track input.key) {
-                <div class="input-group input-group-sm mb-2">
-                  <input
-                    type="text"
-                    class="form-control"
+                <fpc-input-group size="sm" class="mb-2">
+                  <fpc-form-control
+                    size="sm"
                     [placeholder]="input.key"
                     [value]="input.value"
-                    (input)="onUpdateWorkflowInput(input.key, $any($event.target).value)"
+                    (valueChange)="onUpdateWorkflowInput(input.key, $event)"
                   />
-                  <button
-                    type="button"
-                    class="btn btn-outline-danger"
-                    (click)="onRemoveWorkflowInput(input.key)"
+                  <fpc-button
+                    fpcInputGroupSuffix
+                    variant="danger"
+                    size="sm"
+                    [iconOnly]="true"
+                    (clicked)="onRemoveWorkflowInput(input.key)"
                     i18n-title="@@featureDeploymentConfig-removeInputTitle"
                     title="Remove input"
                   >
                     <i class="bi bi-x"></i>
-                  </button>
-                </div>
+                  </fpc-button>
+                </fpc-input-group>
               }
-              <button type="button" class="btn btn-sm btn-outline-secondary w-100" (click)="onAddWorkflowInput()">
+              <fpc-button variant="dark" size="sm" [block]="true" (clicked)="onAddWorkflowInput()">
                 <i class="bi bi-plus me-1"></i><span i18n="@@featureDeploymentConfig-addInputButton">Add Input</span>
-              </button>
+              </fpc-button>
             </div>
           }
 
           <!-- Trigger Workflow Button -->
           @if (canTriggerWorkflow()) {
-            <button
-              type="button"
-              class="btn btn-sm btn-primary w-100 mt-2"
-              (click)="onTriggerWorkflowClick()"
-              [disabled]="triggeringWorkflow$ | async"
+            <fpc-button
+              variant="primary"
+              size="sm"
+              class="w-100 mt-2"
+              [block]="true"
+              [loading]="(triggeringWorkflow$ | async) === true"
+              [disabled]="!!(triggeringWorkflow$ | async)"
+              (clicked)="onTriggerWorkflowClick()"
             >
-              @if (triggeringWorkflow$ | async) {
-                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-              } @else {
-                <i class="bi bi-play-fill me-1"></i>
-              }
+              <i class="bi bi-play-fill me-1"></i>
               <span i18n="@@featureDeploymentConfig-triggerWorkflowButton">Trigger Workflow</span>
-            </button>
+            </fpc-button>
           }
         }
       </div>
     }
   } @else {
-    <!-- No Configuration - Show Form -->
-    <div class="p-3">
-      <div class="alert alert-info">
-        <i class="bi bi-info-circle me-2"></i>
-        <span i18n="@@featureDeploymentConfig-noConfigMessage"
-          >No deployment configuration found. Create one to get started.</span
-        >
-      </div>
-      <button
-        type="button"
-        class="btn btn-primary w-100"
-        (click)="onShowConfigurationForm()"
+    <fpc-empty-state
+      icon="gear"
+      message="No deployment configuration yet"
+      i18n-message="@@featureDeploymentConfig-noConfigMessage"
+    >
+      <fpc-button
+        fpcEmptyStateActions
+        variant="primary"
+        (clicked)="onShowConfigurationForm()"
         i18n="@@featureDeploymentConfig-createConfigButton"
       >
         Create Configuration
-      </button>
-    </div>
+      </fpc-button>
+    </fpc-empty-state>
   }
 
-  <!-- Configuration Form Modal -->
-  <div
-    class="modal fade"
-    id="configurationModal"
-    tabindex="-1"
-    aria-labelledby="configurationModalLabel"
-    aria-hidden="true"
-    #configurationModal
+  <fpc-modal
+    [(open)]="configurationModalOpen"
+    [title]="getModalTitle()"
+    [closable]="!(creatingConfiguration$ | async) && !(updatingConfiguration$ | async)"
+    (closed)="onCancelConfigurationForm()"
   >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="configurationModalLabel">
-            {{ getModalTitle() }}
-          </h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            (click)="onCancelConfigurationForm()"
-            i18n-aria-label="@@featureDeploymentConfig-closeAriaLabel"
-            aria-label="Close"
-            [disabled]="(creatingConfiguration$ | async) || (updatingConfiguration$ | async)"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <form>
-            <div class="mb-3">
-              <label for="providerType" class="form-label" i18n="@@featureDeploymentConfig-providerTypeLabel"
-                >Provider Type</label
-              >
-              <select
-                class="form-select"
-                id="providerType"
-                [value]="providerType()"
-                (change)="providerType.set($any($event.target).value)"
-                [disabled]="hasConfiguration()"
-              >
-                <option value="github" i18n="@@featureDeploymentConfig-githubOption">GitHub Actions</option>
-                <option value="gitlab" i18n="@@featureDeploymentConfig-gitlabOption">GitLab CI/CD</option>
-              </select>
-            </div>
+    <form>
+      <fpc-form-field
+        forId="providerType"
+        i18n-label="@@featureDeploymentConfig-providerTypeLabel"
+        label="Provider Type"
+      >
+        <fpc-form-control
+          controlType="select"
+          controlId="providerType"
+          [value]="providerType()"
+          (valueChange)="providerType.set($any($event))"
+          [disabled]="hasConfiguration()"
+        >
+          <option value="github" i18n="@@featureDeploymentConfig-githubOption">GitHub Actions</option>
+          <option value="gitlab" i18n="@@featureDeploymentConfig-gitlabOption">GitLab CI/CD</option>
+        </fpc-form-control>
+      </fpc-form-field>
 
-            <div class="mb-3">
-              <label for="repositoryId" class="form-label" i18n="@@featureDeploymentConfig-repositoryIdLabel"
-                >Repository ID</label
-              >
-              <input
-                type="text"
-                class="form-control"
-                id="repositoryId"
-                [value]="repositoryId()"
-                (input)="repositoryId.set($any($event.target).value)"
-                i18n-placeholder="@@featureDeploymentConfig-repoPlaceholder"
-                placeholder="owner/repo"
-                required
-              />
-              <small class="form-text text-muted" i18n="@@featureDeploymentConfig-repositoryIdHint"
-                >Format: owner/repository-name</small
-              >
-            </div>
+      <fpc-form-field
+        forId="repositoryId"
+        i18n-label="@@featureDeploymentConfig-repositoryIdLabel"
+        label="Repository ID"
+      >
+        <fpc-form-control
+          controlId="repositoryId"
+          [value]="repositoryId()"
+          (valueChange)="repositoryId.set($event)"
+          i18n-placeholder="@@featureDeploymentConfig-repoPlaceholder"
+          placeholder="owner/repo"
+          required
+        />
+        <span fpcFormFieldHint i18n="@@featureDeploymentConfig-repositoryIdHint">Format: owner/repository-name</span>
+      </fpc-form-field>
 
-            <div class="mb-3">
-              <label for="defaultBranch" class="form-label" i18n="@@featureDeploymentConfig-defaultBranchFormLabel"
-                >Default Branch (optional)</label
-              >
-              <input
-                type="text"
-                class="form-control"
-                id="defaultBranch"
-                [value]="defaultBranch()"
-                (input)="defaultBranch.set($any($event.target).value)"
-                i18n-placeholder="@@featureDeploymentConfig-branchPlaceholder"
-                placeholder="main"
-              />
-            </div>
+      <fpc-form-field
+        forId="defaultBranch"
+        i18n-label="@@featureDeploymentConfig-defaultBranchFormLabel"
+        label="Default Branch (optional)"
+      >
+        <fpc-form-control
+          controlId="defaultBranch"
+          [value]="defaultBranch()"
+          (valueChange)="defaultBranch.set($event)"
+          i18n-placeholder="@@featureDeploymentConfig-branchPlaceholder"
+          placeholder="main"
+        />
+      </fpc-form-field>
 
-            <div class="mb-3">
-              <label for="workflowId" class="form-label" i18n="@@featureDeploymentConfig-workflowIdLabel"
-                >Workflow ID (optional)</label
-              >
-              <input
-                type="text"
-                class="form-control"
-                id="workflowId"
-                [value]="workflowId()"
-                (input)="workflowId.set($any($event.target).value)"
-                i18n-placeholder="@@featureDeploymentConfig-workflowPlaceholder"
-                placeholder="workflow.yml"
-              />
-            </div>
+      <fpc-form-field
+        forId="workflowId"
+        i18n-label="@@featureDeploymentConfig-workflowIdLabel"
+        label="Workflow ID (optional)"
+      >
+        <fpc-form-control
+          controlId="workflowId"
+          [value]="workflowId()"
+          (valueChange)="workflowId.set($event)"
+          i18n-placeholder="@@featureDeploymentConfig-workflowPlaceholder"
+          placeholder="workflow.yml"
+        />
+      </fpc-form-field>
 
-            @if (providerType() === 'gitlab') {
-              <div class="mb-3">
-                <label for="providerBaseUrl" class="form-label" i18n="@@featureDeploymentConfig-gitlabBaseUrlLabel"
-                  >GitLab Base URL (optional)</label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="providerBaseUrl"
-                  [value]="providerBaseUrl()"
-                  (input)="providerBaseUrl.set($any($event.target).value)"
-                  i18n-placeholder="@@featureDeploymentConfig-gitlabUrlPlaceholder"
-                  placeholder="https://gitlab.com"
-                />
-                <small class="form-text text-muted" i18n="@@featureDeploymentConfig-gitlabBaseUrlHint"
-                  >Leave empty for GitLab.com</small
-                >
-              </div>
-            }
+      @if (providerType() === 'gitlab') {
+        <fpc-form-field
+          forId="providerBaseUrl"
+          i18n-label="@@featureDeploymentConfig-gitlabBaseUrlLabel"
+          label="GitLab Base URL (optional)"
+        >
+          <fpc-form-control
+            controlId="providerBaseUrl"
+            [value]="providerBaseUrl()"
+            (valueChange)="providerBaseUrl.set($event)"
+            i18n-placeholder="@@featureDeploymentConfig-gitlabUrlPlaceholder"
+            placeholder="https://gitlab.com"
+          />
+          <span fpcFormFieldHint i18n="@@featureDeploymentConfig-gitlabBaseUrlHint">Leave empty for GitLab.com</span>
+        </fpc-form-field>
+      }
 
-            <div class="mb-3">
-              <label for="providerToken" class="form-label">
-                {{ getTokenLabel() }}
-              </label>
-              <input
-                type="password"
-                class="form-control"
-                id="providerToken"
-                [value]="providerToken()"
-                (input)="providerToken.set($any($event.target).value)"
-                [placeholder]="getTokenPlaceholder()"
-                [required]="!hasConfiguration()"
-              />
-              <small class="form-text text-muted">
-                {{ getTokenHint() }}
-              </small>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="onSaveConfiguration()"
-            [disabled]="(creatingConfiguration$ | async) || (updatingConfiguration$ | async) || !repositoryId()"
-          >
-            @if ((creatingConfiguration$ | async) || (updatingConfiguration$ | async)) {
-              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-            }
-            @if (hasConfiguration()) {
-              <span i18n="@@featureDeploymentConfig-save">Save</span>
-            } @else {
-              <span i18n="@@featureDeploymentConfig-create">Create</span>
-            }
-          </button>
-        </div>
-      </div>
+      <fpc-form-field forId="providerToken" [label]="getTokenLabel()">
+        <fpc-form-control
+          controlId="providerToken"
+          inputType="password"
+          [value]="providerToken()"
+          (valueChange)="providerToken.set($event)"
+          [placeholder]="getTokenPlaceholder()"
+          [required]="!hasConfiguration()"
+        />
+        <span fpcFormFieldHint>{{ getTokenHint() }}</span>
+      </fpc-form-field>
+    </form>
+    <div *fpcModalFooter>
+      <fpc-button
+        variant="primary"
+        [loading]="(creatingConfiguration$ | async) === true || (updatingConfiguration$ | async) === true"
+        [disabled]="!!(creatingConfiguration$ | async) || !!(updatingConfiguration$ | async) || !repositoryId()"
+        (clicked)="onSaveConfiguration()"
+      >
+        @if (hasConfiguration()) {
+          <span i18n="@@featureDeploymentConfig-save">Save</span>
+        } @else {
+          <span i18n="@@featureDeploymentConfig-create">Create</span>
+        }
+      </fpc-button>
     </div>
-  </div>
+  </fpc-modal>
 
   <!-- Error Display (404 errors are hidden since we have a "Create Configuration" button) -->
   @if (filteredError(); as error) {
-    <div class="alert alert-danger m-3" role="alert">
-      <i class="bi bi-exclamation-triangle me-2"></i>
-      {{ error }}
-    </div>
+    <fpc-alert class="m-3" variant="danger" [message]="error" />
   }
 
-  <!-- Delete configuration confirmation -->
-  <div
-    class="modal fade"
-    id="deleteConfigurationConfirmModal"
-    tabindex="-1"
-    aria-labelledby="deleteConfigurationConfirmModalLabel"
-    aria-hidden="true"
-    #deleteConfigurationConfirmModal
-    data-bs-backdrop="static"
+  <fpc-confirm-dialog
+    [(open)]="deleteConfigurationConfirmModalOpen"
+    i18n-title="@@featureDeploymentConfig-deleteConfirmModalTitle"
+    title="Delete deployment configuration"
+    i18n-confirmLabel="@@featureDeploymentConfig-delete"
+    confirmLabel="Delete"
+    [danger]="true"
+    [busy]="(deletingConfiguration$ | async) === true"
+    (confirmed)="confirmDeleteConfiguration()"
+    (cancelled)="onCancelDeleteConfigurationConfirm()"
   >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2
-            class="modal-title h5"
-            id="deleteConfigurationConfirmModalLabel"
-            i18n="@@featureDeploymentConfig-deleteConfirmModalTitle"
-          >
-            Delete deployment configuration
-          </h2>
-          <button
-            type="button"
-            class="btn-close"
-            aria-label="Close"
-            i18n-aria-label="@@featureDeploymentConfig-closeAriaLabel"
-            [disabled]="deletingConfiguration$ | async"
-            (click)="onCancelDeleteConfigurationConfirm()"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <p i18n="@@featureDeploymentConfig-deleteConfirmModalBody">
-            Are you sure you want to delete this deployment configuration?
-          </p>
-          <p class="text-danger mb-0">
-            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-            <span i18n="@@featureDeploymentConfig-deleteConfirmCannotUndo">This action cannot be undone.</span>
-          </p>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="confirmDeleteConfiguration()"
-            [disabled]="deletingConfiguration$ | async"
-          >
-            @if (deletingConfiguration$ | async) {
-              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-            }
-            <span i18n="@@featureDeploymentConfig-delete">Delete</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+    <p i18n="@@featureDeploymentConfig-deleteConfirmModalBody">
+      Are you sure you want to delete this deployment configuration?
+    </p>
+    <p class="text-danger mb-0">
+      <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+      <span i18n="@@featureDeploymentConfig-deleteConfirmCannotUndo">This action cannot be undone.</span>
+    </p>
+  </fpc-confirm-dialog>
 </div>

@@ -1,77 +1,64 @@
-<div class="deployment-runs-list-container d-flex flex-column h-100">
+<div class="deployment-runs-list-container d-flex flex-column flex-grow-1 min-h-0">
   @if (loadingRuns$ | async) {
     <div class="d-flex justify-content-center align-items-center p-4">
-      <div class="spinner-border spinner-border-sm text-primary" role="status">
-        <span class="visually-hidden" i18n="@@featureDeploymentRunsList-loadingRuns">Loading runs...</span>
-      </div>
+      <fpc-spinner
+        size="sm"
+        variant="primary"
+        i18n-label="@@featureDeploymentRunsList-loadingRuns"
+        label="Loading runs..."
+      />
     </div>
   } @else {
-    <form #searchRunsForm="ngForm">
-      <div class="input-group search-input-container border-bottom">
-        <i class="bi bi-search"></i>
-        <input
-          type="text"
-          class="form-control border-0 search-input"
-          i18n-placeholder="@@featureDeploymentRunsList-searchPlaceholder"
-          placeholder="Search deployment runs"
-          name="search"
-          [(ngModel)]="searchRunsQuery"
-          required
-        />
-      </div>
-    </form>
-    <div class="flex-grow-1 overflow-auto">
+    <fpc-search-field
+      class="border-bottom flex-shrink-0"
+      name="search"
+      [bordered]="false"
+      i18n-placeholder="@@featureDeploymentRunsList-searchPlaceholder"
+      placeholder="Search deployment runs"
+      [(value)]="searchRunsQuery"
+    />
+    <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
       @if (!hasRuns()) {
-        <div class="d-flex justify-content-center align-items-center p-4">
-          <div class="text-center text-muted">
-            <i class="bi bi-inbox fs-4 d-block mb-2"></i>
-            <p class="mb-0 small" i18n="@@featureDeploymentRunsList-noRunsFound">No deployment runs found</p>
-          </div>
-        </div>
+        @if (searchRunsQuery().trim()) {
+          <fpc-empty-state
+            size="sm"
+            icon="search"
+            message="No search results"
+            i18n-message="@@featureDeploymentRunsList-noSearchResults"
+          />
+        } @else {
+          <fpc-empty-state
+            size="sm"
+            message="No deployment runs yet"
+            i18n-message="@@featureDeploymentRunsList-noRunsFound"
+          />
+        }
       } @else {
-        <div class="list-group list-group-flush">
+        <fpc-list [flush]="true">
           @for (run of filteredRuns(); track run.id) {
-            <div
-              class="list-group-item rounded-0 border-0 border-bottom d-flex align-items-center"
-              [class.active]="selectedRunId() === run.id"
-            >
-              <button
-                type="button"
-                class="list-group-item-action border-0 bg-transparent flex-grow-1 text-start p-0"
-                (click)="onRunClick(run.id)"
-              >
-                <div class="d-flex flex-column">
-                  <div class="d-flex justify-content-between align-items-center mb-1">
-                    <strong class="text-truncate me-2">{{ getRunDisplayName(run.runName) }}</strong>
-                    <span class="badge" [ngClass]="getStatusBadgeClass(run.status)" [title]="run.status">
-                      <i class="bi" [ngClass]="getStatusIcon(run.status)"></i>
-                      {{ run.status }}
-                    </span>
-                  </div>
-                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                    <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
-                      <i class="bi bi-git me-1"></i>
-                      {{ run.ref }}
-                    </small>
-                    <small class="info-badge text-muted mt-1 bg-body-tertiary py-1 px-2 rounded">
-                      <i class="bi bi-clock me-1"></i>
-                      {{ formatDate(run.createdAt) }}
-                    </small>
-                  </div>
-                </div>
-              </button>
-            </div>
+            <fpc-list-item [active]="selectedRunId() === run.id" [clickable]="true" (selected)="onRunClick(run.id)">
+              <div fpcListItemTitle class="d-flex justify-content-between align-items-center gap-2">
+                <strong class="text-truncate me-2">{{ getRunDisplayName(run.runName) }}</strong>
+                <fpc-badge class="flex-shrink-0" [color]="getStatusBadgeColor(run.status)" [attr.title]="run.status">
+                  <i class="bi" [ngClass]="getStatusIcon(run.status)"></i>
+                  {{ run.status }}
+                </fpc-badge>
+              </div>
+              <div fpcListItemMeta class="small d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                <span class="me-2"> <i class="bi bi-git me-1" aria-hidden="true"></i>{{ run.ref }} </span>
+                <span class="me-2">
+                  <i class="bi bi-clock me-1" aria-hidden="true"></i>{{ formatDate(run.createdAt) }}
+                </span>
+              </div>
+            </fpc-list-item>
           }
-        </div>
+        </fpc-list>
       }
     </div>
   }
 
   <!-- Error Display (404 errors are hidden since empty state is handled by hasRuns check) -->
   @if (filteredError(); as error) {
-    <div class="alert alert-danger m-3" role="alert">
-      <i class="bi bi-exclamation-triangle me-2"></i>
-      {{ error }}
-    </div>
+    <fpc-alert class="m-3" variant="danger" [message]="error" />
   }
 </div>

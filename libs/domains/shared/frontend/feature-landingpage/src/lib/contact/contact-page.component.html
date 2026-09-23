@@ -42,102 +42,120 @@
           >
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label" for="contact-name" i18n="@@sharedFeatureLandingpageContact-nameLabel"
-                  >Name</label
-                >
-                <input
-                  id="contact-name"
-                  type="text"
-                  class="form-control bg-white"
-                  formControlName="name"
-                  autocomplete="name"
+                <fpc-form-field
+                  forId="contact-name"
+                  i18n-label="@@sharedFeatureLandingpageContact-nameLabel"
+                  label="Name"
                   required
-                  [class.is-invalid]="form.controls.name.touched && form.controls.name.invalid"
-                />
-                @if (form.controls.name.touched && form.controls.name.hasError('required')) {
-                  <div class="invalid-feedback" i18n="@@sharedFeatureLandingpageContact-nameRequired">
-                    Name is required.
-                  </div>
-                }
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="contact-email" i18n="@@sharedFeatureLandingpageContact-emailLabel"
-                  >Email</label
                 >
-                <input
-                  id="contact-email"
-                  type="email"
-                  class="form-control bg-white"
-                  formControlName="email"
-                  autocomplete="email"
-                  required
-                  [class.is-invalid]="form.controls.email.touched && form.controls.email.invalid"
-                />
-                @if (form.controls.email.touched && form.controls.email.hasError('required')) {
-                  <div class="invalid-feedback" i18n="@@sharedFeatureLandingpageContact-emailRequired">
-                    Email is required.
-                  </div>
-                }
-                @if (form.controls.email.touched && form.controls.email.hasError('email')) {
-                  <div class="invalid-feedback" i18n="@@sharedFeatureLandingpageContact-emailInvalid">
-                    Enter a valid email address.
-                  </div>
-                }
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="contact-phone" i18n="@@sharedFeatureLandingpageContact-phoneLabel"
-                  >Phone <span class="text-muted fw-normal">(optional)</span></label
-                >
-                <input
-                  id="contact-phone"
-                  type="tel"
-                  class="form-control bg-white"
-                  formControlName="phone"
-                  autocomplete="tel"
-                />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="contact-company" i18n="@@sharedFeatureLandingpageContact-companyLabel"
-                  >Company <span class="text-muted fw-normal">(optional)</span></label
-                >
-                <input
-                  id="contact-company"
-                  type="text"
-                  class="form-control bg-white"
-                  formControlName="company"
-                  autocomplete="organization"
-                />
-              </div>
-              <div class="col-12">
-                <label class="form-label" for="contact-message" i18n="@@sharedFeatureLandingpageContact-messageLabel"
-                  >Message</label
-                >
-                <textarea
-                  id="contact-message"
-                  class="form-control bg-white"
-                  formControlName="message"
-                  rows="6"
-                  required
-                  [class.is-invalid]="form.controls.message.touched && form.controls.message.invalid"
-                ></textarea>
-                @if (form.controls.message.touched && form.controls.message.hasError('required')) {
-                  <div class="invalid-feedback" i18n="@@sharedFeatureLandingpageContact-messageRequired">
-                    Message is required.
-                  </div>
-                }
-              </div>
-              <div class="col-12">
-                <div class="d-flex align-items-start gap-2">
-                  <input
-                    id="contact-privacy"
-                    type="checkbox"
-                    class="form-check-input flex-shrink-0 mt-1"
-                    formControlName="privacyPolicyAccepted"
-                    [class.is-invalid]="
-                      form.controls.privacyPolicyAccepted.touched && form.controls.privacyPolicyAccepted.invalid
-                    "
+                  <fpc-form-control
+                    controlId="contact-name"
+                    formControlName="name"
+                    autocomplete="name"
+                    controlClass="bg-white"
+                    required
+                    [invalid]="form.controls.name.touched && form.controls.name.invalid"
                   />
-                  <label class="form-check-label mb-0" for="contact-privacy">
+                  @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+                    <div fpcFormFieldError i18n="@@sharedFeatureLandingpageContact-nameRequired">Name is required.</div>
+                  }
+                </fpc-form-field>
+              </div>
+              <div class="col-md-6">
+                <fpc-form-field
+                  forId="contact-email"
+                  i18n-label="@@sharedFeatureLandingpageContact-emailLabel"
+                  label="Email"
+                  required
+                >
+                  <fpc-form-control
+                    controlId="contact-email"
+                    inputType="email"
+                    formControlName="email"
+                    autocomplete="email"
+                    controlClass="bg-white"
+                    required
+                    [invalid]="form.controls.email.touched && form.controls.email.invalid"
+                  />
+                  @if (form.controls.email.touched && form.controls.email.invalid) {
+                    <div fpcFormFieldError>
+                      @if (form.controls.email.hasError('required')) {
+                        <ng-container i18n="@@sharedFeatureLandingpageContact-emailRequired"
+                          >Email is required.</ng-container
+                        >
+                      } @else if (form.controls.email.hasError('email')) {
+                        <ng-container i18n="@@sharedFeatureLandingpageContact-emailInvalid"
+                          >Enter a valid email address.</ng-container
+                        >
+                      }
+                    </div>
+                  }
+                </fpc-form-field>
+              </div>
+              <div class="col-md-6">
+                <fpc-form-field
+                  forId="contact-phone"
+                  i18n-label="@@sharedFeatureLandingpageContact-phoneLabel"
+                  label="Phone (optional)"
+                >
+                  <fpc-form-control
+                    controlId="contact-phone"
+                    inputType="tel"
+                    formControlName="phone"
+                    autocomplete="tel"
+                    controlClass="bg-white"
+                  />
+                </fpc-form-field>
+              </div>
+              <div class="col-md-6">
+                <fpc-form-field
+                  forId="contact-company"
+                  i18n-label="@@sharedFeatureLandingpageContact-companyLabel"
+                  label="Company (optional)"
+                >
+                  <fpc-form-control
+                    controlId="contact-company"
+                    formControlName="company"
+                    autocomplete="organization"
+                    controlClass="bg-white"
+                  />
+                </fpc-form-field>
+              </div>
+              <div class="col-12">
+                <fpc-form-field
+                  forId="contact-message"
+                  i18n-label="@@sharedFeatureLandingpageContact-messageLabel"
+                  label="Message"
+                  required
+                >
+                  <fpc-form-control
+                    controlId="contact-message"
+                    controlType="textarea"
+                    formControlName="message"
+                    [rows]="6"
+                    controlClass="bg-white"
+                    required
+                    [invalid]="form.controls.message.touched && form.controls.message.invalid"
+                  />
+                  @if (form.controls.message.touched && form.controls.message.hasError('required')) {
+                    <div fpcFormFieldError i18n="@@sharedFeatureLandingpageContact-messageRequired">
+                      Message is required.
+                    </div>
+                  }
+                </fpc-form-field>
+              </div>
+              <div class="col-12">
+                <fpc-form-check
+                  checkId="contact-privacy"
+                  formControlName="privacyPolicyAccepted"
+                  [invalid]="form.controls.privacyPolicyAccepted.touched && form.controls.privacyPolicyAccepted.invalid"
+                  [inputClass]="
+                    form.controls.privacyPolicyAccepted.touched && form.controls.privacyPolicyAccepted.invalid
+                      ? 'is-invalid'
+                      : null
+                  "
+                >
+                  <label class="form-check-label" for="contact-privacy">
                     <span i18n="@@sharedFeatureLandingpageContact-privacyAcceptPrefix">I accept the</span>&nbsp;<a
                       routerLink="/legal/privacy"
                       target="_blank"
@@ -147,7 +165,7 @@
                       >Privacy Policy</a
                     >.
                   </label>
-                </div>
+                </fpc-form-check>
                 @if (
                   form.controls.privacyPolicyAccepted.touched &&
                   form.controls.privacyPolicyAccepted.hasError('required')
@@ -168,22 +186,22 @@
               </div>
               @if (error$ | async; as error) {
                 <div class="col-12">
-                  <div class="alert alert-danger mb-0" role="alert">{{ error }}</div>
+                  <fpc-alert variant="danger" [showIcon]="false" [message]="error" />
                 </div>
               }
               <div class="col-12 d-grid d-md-flex justify-content-md-end">
-                <button
+                <fpc-button
                   type="submit"
-                  class="btn btn-primary"
-                  [disabled]="form.invalid || !turnstileToken() || (submitting$ | async)"
+                  variant="primary"
+                  [disabled]="form.invalid || !turnstileToken()"
+                  [loading]="(submitting$ | async) ?? false"
                 >
                   @if (submitting$ | async) {
-                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                     <span i18n="@@sharedFeatureLandingpageContact-submitting">Sending…</span>
                   } @else {
                     <span i18n="@@sharedFeatureLandingpageContact-submit">Send message</span>
                   }
-                </button>
+                </fpc-button>
               </div>
             </div>
           </form>

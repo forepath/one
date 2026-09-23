@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, input, NgZone, OnDestroy, output, signal } from '@angular/core';
+import { FpcButtonComponent, FpcButtonGroupComponent } from '@forepath/shared/frontend/ui-components';
 import type { editor } from 'monaco-editor';
 import * as monaco from 'monaco-editor';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
@@ -10,7 +11,7 @@ import { ThemeService } from '../theme.service';
 @Component({
   selector: 'framework-monaco-editor-wrapper',
   standalone: true,
-  imports: [CommonModule, MonacoEditorModule],
+  imports: [CommonModule, MonacoEditorModule, FpcButtonComponent, FpcButtonGroupComponent],
   templateUrl: './monaco-editor-wrapper.component.html',
   styleUrls: ['./monaco-editor-wrapper.component.scss'],
 })

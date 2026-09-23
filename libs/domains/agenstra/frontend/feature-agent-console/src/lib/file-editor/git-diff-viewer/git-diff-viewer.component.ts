@@ -15,6 +15,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { VcsFacade } from '@forepath/agenstra/frontend/data-access-agent-console';
+import { FpcSpinnerComponent } from '@forepath/shared/frontend/ui-components';
 import type { editor } from 'monaco-editor';
 import * as monaco from 'monaco-editor';
 
@@ -33,7 +34,7 @@ function base64ToUtf8(base64: string): string {
 
 @Component({
   selector: 'framework-git-diff-viewer',
-  imports: [CommonModule],
+  imports: [CommonModule, FpcSpinnerComponent],
   templateUrl: './git-diff-viewer.component.html',
   styleUrls: ['./git-diff-viewer.component.scss'],
   standalone: true,

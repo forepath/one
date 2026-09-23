@@ -121,20 +121,20 @@
     cursor: grabbing;
   }
 
-  .btn-group {
+  fpc-button-group {
     opacity: 0;
     transition: opacity 0.15s ease-in-out;
   }
 
   &:hover {
-    .btn-group {
+    fpc-button-group {
       opacity: 1;
     }
   }
 
   &.dragging {
     cursor: grabbing;
-    .btn-group {
+    fpc-button-group {
       opacity: 0;
     }
   }
@@ -179,7 +179,8 @@
   }
 }
 
-.btn-outline-primary.active {
+.btn-primary.active,
+fpc-button.active .fpc-button__btn.btn-primary {
   background-color: var(--bs-primary);
   border-color: var(--bs-primary);
   color: white;
@@ -187,6 +188,18 @@
   &:hover {
     background-color: var(--bs-primary-border-subtle);
     border-color: var(--bs-primary-border-subtle);
+    color: white;
+  }
+}
+
+fpc-button.active .fpc-button__btn.btn-secondary {
+  background-color: var(--bs-secondary);
+  border-color: var(--bs-secondary);
+  color: white;
+
+  &:hover {
+    background-color: var(--bs-secondary-border-subtle);
+    border-color: var(--bs-secondary-border-subtle);
     color: white;
   }
 }
@@ -256,10 +269,8 @@
     background-color: transparent; // Hide the colored dot when spinner is shown
   }
 
-  // Spinner styling
-  .spinner-border {
+  // Spinner styling (fpc-spinner host; border animation inherits currentColor)
+  fpc-spinner {
     color: var(--bs-body-color);
-    border-color: currentColor;
-    border-right-color: transparent;
   }
 }

@@ -1,0 +1,21 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.fpc-breadcrumb-item__text,
+.fpc-breadcrumb-item__link {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fpc-breadcrumb-item__link {
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: none;
+  }
+}

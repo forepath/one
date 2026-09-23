@@ -1,0 +1,41 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 0;
+}
+
+.fpc-board-lane__header {
+  flex: 0 0 auto;
+}
+
+.fpc-board-lane__search {
+  flex: 0 0 auto;
+  background: var(--bs-tertiary-bg);
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.fpc-board-lane__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.fpc-board-lane__body--scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.fpc-board-lane__footer {
+  flex: 0 0 auto;
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+// Empty slots must not contribute borders or padding to the lane.
+.fpc-board-lane__header:empty,
+.fpc-board-lane__search:empty,
+.fpc-board-lane__footer:empty {
+  display: none;
+}

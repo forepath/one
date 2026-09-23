@@ -11,4 +11,4 @@ export * from './data-access-notifications/src';
 export * from './feature-notifications/src';
 export * from './data-access-updates/src';
 export * from './feature-updates/src';
-export * from './ui-lists/src';
+export * from './ui-components/src';

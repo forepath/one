@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, inject, input, model, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import {
   AdminBillingService,
   type SubscriptionResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import { FpcBadgeComponent, FpcTypeaheadSelectComponent } from '@forepath/shared/frontend/ui-components';
 import { catchError, debounceTime, distinctUntilChanged, map, of, skip, switchMap, tap } from 'rxjs';
 
 import { getSubscriptionStatusLabel } from '../billing-status-labels';
@@ -17,7 +17,7 @@ import {
 @Component({
   selector: 'framework-billing-admin-subscription-select',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FpcBadgeComponent, FpcTypeaheadSelectComponent],
   templateUrl: './billing-admin-subscription-select.component.html',
   styleUrls: ['../billing-admin-user-select/billing-admin-user-select.component.scss'],
 })
@@ -54,7 +54,7 @@ export class BillingAdminSubscriptionSelectComponent {
       null,
   );
 
-  readonly isInputDisabled = computed(() => this.disabled() || this.loading() || this.searchLoading());
+  readonly isInputDisabled = computed(() => this.disabled() || this.loading());
 
   constructor() {
     this.searchQuery$
@@ -95,6 +95,7 @@ export class BillingAdminSubscriptionSelectComponent {
     this.searchQuery.set('');
     this.searchResults.set([]);
     this.suggestionsOpen.set(false);
+    this.searchLoading.set(false);
   }
 
   subscriptionPrimaryLabel(subscription: SubscriptionResponse): string {
@@ -111,22 +112,22 @@ export class BillingAdminSubscriptionSelectComponent {
 
   onSearchChange(value: string): void {
     this.searchQuery.set(value);
+    const term = value.trim();
 
-    if (value.trim().length > 0 || this.showSuggestionsOnFocus()) {
+    if (term.length > 0 || this.showSuggestionsOnFocus()) {
       this.suggestionsOpen.set(true);
+      if (term.length > 0) {
+        this.searchLoading.set(true);
+        this.searchResults.set([]);
+      } else {
+        this.searchLoading.set(false);
+        this.searchResults.set([]);
+      }
+    } else {
+      this.suggestionsOpen.set(false);
+      this.searchLoading.set(false);
+      this.searchResults.set([]);
     }
-  }
-
-  onSearchFocus(): void {
-    const hasQuery = this.searchQuery().trim().length > 0;
-
-    if ((hasQuery || this.showSuggestionsOnFocus()) && this.filteredSubscriptions().length > 0) {
-      this.suggestionsOpen.set(true);
-    }
-  }
-
-  onSearchBlur(): void {
-    setTimeout(() => this.suggestionsOpen.set(false), 180);
   }
 
   pickSubscription(subscription: SubscriptionResponse, event: Event): void {

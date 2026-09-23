@@ -9,22 +9,20 @@
       <!-- Configuration Section -->
       @if (configurationVisible()) {
         <div class="deployment-configuration-wrapper flex-shrink-0 border-end">
-          <div class="p-3 border-bottom bg-body-tertiary">
-            <div class="d-flex align-items-center justify-content-between">
-              <h5 class="mb-0 fw-semibold" i18n="@@featureDeploymentManager-configurationHeader">
-                Deployment Configuration
-              </h5>
-              <button
-                type="button"
-                class="btn btn-sm btn-secondary d-block d-md-none"
-                (click)="configurationVisible.set(false)"
-                i18n-title="@@featureDeploymentManager-closeConfigurationTitle"
-                title="Close Configuration"
-              >
-                <i class="bi bi-x"></i>
-              </button>
-            </div>
-          </div>
+          <fpc-page-header [title]="configurationHeaderTitle">
+            <fpc-button
+              fpcPageHeaderActions
+              class="d-block d-md-none"
+              variant="dark"
+              size="sm"
+              [iconOnly]="true"
+              [title]="closeConfigurationTitle"
+              [ariaLabel]="closeConfigurationTitle"
+              (clicked)="configurationVisible.set(false)"
+            >
+              <i class="bi bi-x" aria-hidden="true"></i>
+            </fpc-button>
+          </fpc-page-header>
           <div class="flex-grow-1 overflow-auto">
             <framework-deployment-configuration
               [clientId]="clientId()!"
@@ -43,36 +41,33 @@
       <!-- Runs List Section -->
       @if (runsListVisible()) {
         <div class="deployment-runs-wrapper flex-shrink-0">
-          <div class="p-3 border-bottom bg-body-tertiary flex-shrink-0">
-            <div class="d-flex align-items-center justify-content-between">
-              <h5 class="mb-0 fw-semibold" i18n="@@featureDeploymentManager-runsHeader">Deployment Runs</h5>
-              <div class="d-flex align-items-center gap-2">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-primary"
-                  (click)="onRefreshRuns()"
-                  [disabled]="loadingRuns$ | async"
-                  i18n-title="@@featureDeploymentManager-refreshRunsTitle"
-                  title="Refresh Runs"
-                >
-                  @if (loadingRuns$ | async) {
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                  } @else {
-                    <i class="bi bi-arrow-clockwise"></i>
-                  }
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-secondary d-block d-md-none"
-                  (click)="runsListVisible.set(false)"
-                  i18n-title="@@featureDeploymentManager-closeRunsTitle"
-                  title="Close Runs List"
-                >
-                  <i class="bi bi-x"></i>
-                </button>
-              </div>
-            </div>
-          </div>
+          <fpc-page-header [title]="runsHeaderTitle">
+            <fpc-button
+              fpcPageHeaderActions
+              variant="dark"
+              size="sm"
+              [iconOnly]="true"
+              [loading]="(loadingRuns$ | async) === true"
+              [disabled]="!!(loadingRuns$ | async)"
+              [title]="refreshRunsTitle"
+              [ariaLabel]="refreshRunsTitle"
+              (clicked)="onRefreshRuns()"
+            >
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              fpcPageHeaderActions
+              class="d-block d-md-none"
+              variant="dark"
+              size="sm"
+              [iconOnly]="true"
+              [title]="closeRunsTitle"
+              [ariaLabel]="closeRunsTitle"
+              (clicked)="runsListVisible.set(false)"
+            >
+              <i class="bi bi-x" aria-hidden="true"></i>
+            </fpc-button>
+          </fpc-page-header>
           <div class="flex-grow-1 overflow-auto" style="min-height: 0">
             <framework-deployment-runs-list
               [clientId]="clientId()!"
@@ -99,20 +94,19 @@
   <div class="deployment-content flex-grow-1 d-flex flex-column">
     @if (runDetailsVisible() && selectedRunSignal()) {
       <div class="deployment-run-details-wrapper flex-grow-1 d-flex flex-column">
-        <div class="p-3 border-bottom bg-body-tertiary flex-shrink-0">
-          <div class="d-flex align-items-center justify-content-between">
-            <h5 class="mb-0 fw-semibold" i18n="@@featureDeploymentManager-runDetailsHeader">Run Details</h5>
-            <button
-              type="button"
-              class="btn btn-sm btn-secondary"
-              (click)="onCloseRunDetails()"
-              i18n-title="@@featureDeploymentManager-closeRunDetailsTitle"
-              title="Close Run Details"
-            >
-              <i class="bi bi-x"></i>
-            </button>
-          </div>
-        </div>
+        <fpc-page-header [title]="runDetailsHeaderTitle">
+          <fpc-button
+            fpcPageHeaderActions
+            variant="dark"
+            size="sm"
+            [iconOnly]="true"
+            [title]="closeRunDetailsTitle"
+            [ariaLabel]="closeRunDetailsTitle"
+            (clicked)="onCloseRunDetails()"
+          >
+            <i class="bi bi-x" aria-hidden="true"></i>
+          </fpc-button>
+        </fpc-page-header>
         <div class="flex-grow-1 overflow-auto" style="min-height: 0">
           <framework-deployment-run-details
             [clientId]="clientId()!"
@@ -122,15 +116,11 @@
         </div>
       </div>
     } @else {
-      <div class="d-flex justify-content-center align-items-center h-100 bg-body-secondary">
-        <div class="text-center text-muted p-4">
-          <i class="bi bi-rocket-takeoff fs-1 d-block mb-3"></i>
-          <p class="mb-0" i18n="@@featureDeploymentManager-noRunSelected">No run selected</p>
-          <small class="text-muted" i18n="@@featureDeploymentManager-selectRunHint"
-            >Select a run from the list to view details</small
-          >
-        </div>
-      </div>
+      <fpc-empty-state
+        icon="rocket-takeoff"
+        message="No run selected yet"
+        i18n-message="@@featureDeploymentManager-noRunSelected"
+      />
     }
   </div>
 </div>

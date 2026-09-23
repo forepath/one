@@ -19,11 +19,22 @@ import {
   IDENTITY_AUTH_ENVIRONMENT,
   type TotpSetup,
 } from '@forepath/identity/frontend';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcLabelComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcOtpInputComponent,
+  FpcPageHeaderComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 import QRCode from 'qrcode';
 import { filter } from 'rxjs/operators';
-
-import { IdentityOtpInputComponent } from '../../otp-input/otp-input.component';
 
 function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
   const newPassword = control.get('newPassword')?.value;
@@ -38,7 +49,21 @@ function passwordsMatchValidator(control: AbstractControl): ValidationErrors | n
 
 @Component({
   selector: 'identity-auth-security-settings',
-  imports: [CommonModule, ReactiveFormsModule, IdentityOtpInputComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcLabelComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcOtpInputComponent,
+    FpcPageHeaderComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './security-settings.component.html',
   styleUrls: ['./security-settings.component.scss'],
   standalone: true,
@@ -49,6 +74,10 @@ export class IdentitySecuritySettingsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly actions$ = inject(Actions);
+
+  readonly pageTitle = $localize`:@@featureSecuritySettings-title:Security Settings`;
+  readonly loadingLabel = $localize`:@@featureSecuritySettings-loading:Loading...`;
+  readonly authNotAvailableMessage = $localize`:@@featureSecuritySettings-authNotAvailable:Two-factor authentication settings are only available for users authentication.`;
 
   readonly status = toSignal(this.authFacade.twoFactorStatus$, { initialValue: null });
   readonly loading = toSignal(this.authFacade.twoFactorLoading$, { initialValue: false });

@@ -8,8 +8,8 @@
         <p class="text-muted mb-4" i18n="@@featureForepathBlogPost-notFoundBody">
           This article may have been moved or is no longer published.
         </p>
-        <a routerLink="/blog" class="btn btn-primary rounded-3" i18n="@@featureForepathBlogPost-notFoundCta"
-          >Browse all posts</a
+        <fpc-button routerLink="/blog" class="rounded-3" variant="primary" i18n="@@featureForepathBlogPost-notFoundCta"
+          >Browse all posts</fpc-button
         >
       </div>
     } @else if (errorMessage()) {
@@ -97,7 +97,7 @@
           <ul class="blog-post__tags list-unstyled d-flex flex-wrap gap-2 mt-5 mb-0">
             @for (tag of displayTags(currentPost); track tag.id) {
               <li>
-                <span class="blog-card__tag small">{{ tag.name }}</span>
+                <fpc-badge variant="marketing" color="primary" class="small">{{ tag.name }}</fpc-badge>
               </li>
             }
           </ul>

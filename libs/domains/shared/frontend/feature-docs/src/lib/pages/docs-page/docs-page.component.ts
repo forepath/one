@@ -3,6 +3,7 @@ import { Component, DestroyRef, effect, inject, LOCALE_ID, OnInit, PLATFORM_ID, 
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
+import { FpcAlertComponent, FpcSpinnerComponent } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { DocMetadata, NavigationNode } from '@forepath/shared/frontend/util-docs-parser';
 import {
@@ -22,7 +23,15 @@ import { getDocsMetaDescriptionFallback, getDocsMetaKeywords } from '../../utils
 
 @Component({
   selector: 'framework-docs-page',
-  imports: [CommonModule, RouterModule, DocsBreadcrumbsComponent, DocsContentComponent, DocsTableOfContentsComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    DocsBreadcrumbsComponent,
+    DocsContentComponent,
+    DocsTableOfContentsComponent,
+    FpcSpinnerComponent,
+    FpcAlertComponent,
+  ],
   templateUrl: './docs-page.component.html',
   styleUrls: ['./docs-page.component.scss'],
   standalone: true,

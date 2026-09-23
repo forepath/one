@@ -1,0 +1,86 @@
+{
+  "name": "shared-frontend-ui-components",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/shared/frontend/ui-components/src",
+  "prefix": "fpc",
+  "projectType": "library",
+  "tags": ["domain:shared", "scope:frontend", "type:ui"],
+  "targets": {
+    "build": {
+      "executor": "@nx/angular:ng-packagr-lite",
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
+      "options": {
+        "project": "libs/domains/shared/frontend/ui-components/ng-package.json",
+        "tsConfig": "libs/domains/shared/frontend/ui-components/tsconfig.lib.json"
+      },
+      "configurations": {
+        "production": {
+          "tsConfig": "libs/domains/shared/frontend/ui-components/tsconfig.lib.prod.json"
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/shared/frontend/ui-components/jest.config.cts",
+        "tsConfig": "libs/domains/shared/frontend/ui-components/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "storybook": {
+      "executor": "@storybook/angular:start-storybook",
+      "options": {
+        "port": 4400,
+        "configDir": "libs/domains/shared/frontend/ui-components/.storybook",
+        "browserTarget": "shared-frontend-ui-components:build-storybook",
+        "compodoc": false,
+        "styles": [
+          "node_modules/bootstrap/dist/css/bootstrap.min.css",
+          "node_modules/bootstrap-icons/font/bootstrap-icons.css",
+          "node_modules/@fontsource-variable/plus-jakarta-sans/wght.css",
+          "libs/domains/shared/frontend/ui-components/.storybook/preview-fonts.scss",
+          "libs/domains/shared/frontend/ui-components/.storybook/preview-docs.scss",
+          "libs/domains/shared/frontend/ui-components/.storybook/brands/decabill.scss",
+          "libs/domains/shared/frontend/ui-components/.storybook/brands/agenstra.scss",
+          "libs/domains/shared/frontend/ui-components/.storybook/brands/forepath.scss",
+          "libs/domains/shared/frontend/ui-components/styles/index.scss"
+        ]
+      },
+      "configurations": {
+        "ci": {
+          "quiet": true
+        }
+      }
+    },
+    "build-storybook": {
+      "executor": "@storybook/angular:build-storybook",
+      "outputs": ["{options.outputDir}"],
+      "options": {
+        "outputDir": "dist/storybook/shared-frontend-ui-components",
+        "configDir": "libs/domains/shared/frontend/ui-components/.storybook",
+        "browserTarget": "shared-frontend-ui-components:build-storybook",
+        "compodoc": false,
+        "styles": [
+          "node_modules/bootstrap/dist/css/bootstrap.min.css",
+          "node_modules/bootstrap-icons/font/bootstrap-icons.css",
+          "node_modules/@fontsource-variable/plus-jakarta-sans/wght.css",
+          "libs/domains/shared/frontend/ui-components/.storybook/preview-fonts.scss",
+          "libs/domains/shared/frontend/ui-components/.storybook/preview-docs.scss",
+          "libs/domains/shared/frontend/ui-components/.storybook/brands/decabill.scss",
+          "libs/domains/shared/frontend/ui-components/.storybook/brands/agenstra.scss",
+          "libs/domains/shared/frontend/ui-components/.storybook/brands/forepath.scss",
+          "libs/domains/shared/frontend/ui-components/styles/index.scss"
+        ]
+      },
+      "configurations": {
+        "ci": {
+          "quiet": true
+        }
+      }
+    }
+  }
+}

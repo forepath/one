@@ -1,0 +1,44 @@
+<div class="agent-select">
+  @if (selectedAgent(); as agent) {
+    <fpc-badge variant="info" color="secondary" class="agent-select__chip">
+      <span class="text-truncate">{{ agent.name }}</span>
+      <button
+        type="button"
+        class="btn-close agent-select__clear"
+        [disabled]="disabled()"
+        (click)="clearSelection()"
+        i18n-aria-label="@@featureAgentSelect-clearSelectionAria"
+        aria-label="Clear selected agent"
+      ></button>
+    </fpc-badge>
+  } @else {
+    <fpc-typeahead-select
+      [inputId]="inputId()"
+      [listboxId]="inputId() + '-listbox'"
+      [size]="size()"
+      [placeholder]="placeholder()"
+      [disabled]="disabled() || !clientId().trim()"
+      [required]="required()"
+      [loading]="loading()"
+      [openOnFocus]="showSuggestionsOnFocus()"
+      [query]="searchQuery()"
+      (queryChange)="onSearchChange($event)"
+      [open]="suggestionsOpen()"
+      (openChange)="suggestionsOpen.set($event)"
+      (cleared)="reset()"
+    >
+      <div fpcTypeaheadSuggestions>
+        @if (filteredAgents().length > 0) {
+          @for (agent of filteredAgents(); track agent.id) {
+            <button type="button" class="dropdown-item py-2 text-start" (mousedown)="pickAgent(agent, $event)">
+              <span class="d-block small fw-medium text-truncate">{{ agent.name }}</span>
+              <span class="d-block font-monospace text-muted small text-truncate">{{ agent.id }}</span>
+            </button>
+          }
+        } @else if (searchQuery().trim() && !loading()) {
+          <span class="dropdown-item-text text-muted small" i18n="@@featureAgentSelect-noAgents">No agents found.</span>
+        }
+      </div>
+    </fpc-typeahead-select>
+  }
+</div>

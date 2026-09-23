@@ -1,311 +1,269 @@
-<div
-  class="modal fade"
-  id="gitBranchModal"
-  tabindex="-1"
-  aria-labelledby="gitBranchModalLabel"
-  aria-hidden="true"
-  #branchModal
->
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="gitBranchModalLabel">
-          <i class="bi bi-diagram-3 me-2"></i><span i18n="@@featureGitBranchModal-header">Git Branches</span>
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          i18n-aria-label="@@featureGitBranchModal-closeAriaLabel"
-          aria-label="Close"
-          (click)="onClose()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <!-- Current Branch - Show immediately (doesn't depend on branches list) -->
-        @if (currentBranch$ | async; as currentBranch) {
-          <div class="mb-3">
-            <label class="form-label fw-semibold" i18n="@@featureGitBranchModal-currentBranchLabel"
-              >Current Branch</label
-            >
-            <div class="input-group">
-              <span class="input-group-text bg-primary text-white">
-                <i class="bi bi-check-circle-fill"></i>
-              </span>
-              <input type="text" class="form-control" [value]="currentBranch" readonly />
-            </div>
-          </div>
+<fpc-modal [(open)]="modalOpen" size="lg" (closed)="onClose()">
+  <span fpcModalTitle>
+    <i class="bi bi-diagram-3 me-2"></i><span i18n="@@featureGitBranchModal-header">Git Branches</span>
+  </span>
+  <!-- Current Branch - Show immediately (doesn't depend on branches list) -->
+  @if (currentBranch$ | async; as currentBranch) {
+    <fpc-form-field
+      forId="gitCurrentBranch"
+      i18n-label="@@featureGitBranchModal-currentBranchLabel"
+      label="Current Branch"
+    >
+      <fpc-input-group>
+        <span fpcInputGroupPrefix class="input-group-text bg-primary text-white">
+          <i class="bi bi-check-circle-fill"></i>
+        </span>
+        <fpc-form-control controlId="gitCurrentBranch" [value]="currentBranch" [readOnly]="true" />
+      </fpc-input-group>
+    </fpc-form-field>
+  }
+
+  <!-- Quick Switch - Allows manual branch checkout before lists load -->
+  <fpc-form-field
+    forId="gitQuickSwitch"
+    i18n-label="@@featureGitBranchModal-quickSwitchLabel"
+    label="Quick Switch to Branch"
+  >
+    <span fpcFormFieldHint i18n="@@featureGitBranchModal-quickSwitchHint">
+      Enter the name (e.g. <code>feature/new-ui</code>) or a remote ref (e.g. <code>origin/feature/new-ui</code>).
+    </span>
+    <fpc-input-group size="sm">
+      <fpc-form-control
+        controlId="gitQuickSwitch"
+        size="sm"
+        i18n-placeholder="@@featureGitBranchModal-branchNamePlaceholder"
+        placeholder="Enter branch name or remote ref"
+        [(ngModel)]="manualSwitchBranchName"
+        (keydown.enter)="onManualSwitchBranch()"
+        [disabled]="!!(switchingBranch$ | async)"
+      />
+      <fpc-button
+        fpcInputGroupSuffix
+        variant="primary"
+        size="sm"
+        (clicked)="onManualSwitchBranch()"
+        [disabled]="!manualSwitchBranchName().trim() || !!(switchingBranch$ | async)"
+        [loading]="manualSwitchInProgress()"
+      >
+        @if (!manualSwitchInProgress()) {
+          <i class="bi bi-arrow-repeat"></i>
+          <span class="ms-1" i18n="@@featureGitBranchModal-switchButton">Switch</span>
         }
+      </fpc-button>
+    </fpc-input-group>
+  </fpc-form-field>
 
-        <!-- Quick Switch - Allows manual branch checkout before lists load -->
-        <div class="mb-3">
-          <label class="form-label fw-semibold" i18n="@@featureGitBranchModal-quickSwitchLabel"
-            >Quick Switch to Branch</label
-          >
-          <small class="text-muted d-block mb-2" i18n="@@featureGitBranchModal-quickSwitchHint">
-            Enter the name (e.g. <code>feature/new-ui</code>) or a remote ref (e.g.
-            <code>origin/feature/new-ui</code>).</small
-          >
-          <div class="input-group input-group-sm">
-            <input
-              type="text"
-              class="form-control"
-              i18n-placeholder="@@featureGitBranchModal-branchNamePlaceholder"
-              placeholder="Enter branch name or remote ref"
-              [(ngModel)]="manualSwitchBranchName"
-              (keydown.enter)="onManualSwitchBranch()"
-              [disabled]="!!(switchingBranch$ | async)"
-            />
-            <button
-              class="btn btn-outline-primary"
-              type="button"
-              (click)="onManualSwitchBranch()"
-              [disabled]="!manualSwitchBranchName().trim() || !!(switchingBranch$ | async)"
-            >
-              @if (manualSwitchInProgress()) {
-                <span class="spinner-border spinner-border-sm" role="status"></span>
-              } @else {
-                <i class="bi bi-arrow-repeat"></i>
-                <span class="ms-1" i18n="@@featureGitBranchModal-switchButton">Switch</span>
-              }
-            </button>
+  <!-- Local Branches - Show immediately, loading state only for the list -->
+  <div class="mb-3">
+    <label class="form-label fw-semibold" i18n="@@featureGitBranchModal-localBranchesLabel">Local Branches</label>
+    <fpc-list [flush]="true" style="max-height: 300px; overflow-y: auto">
+      @if (loadingBranches$ | async) {
+        <fpc-list-item>
+          <div fpcListItemTitle class="text-center text-muted py-2">
+            <fpc-spinner class="me-2" size="sm" variant="primary" />
+            <span i18n="@@featureGitBranchModal-loadingBranches">Loading branches...</span>
           </div>
-        </div>
-
-        <!-- Local Branches - Show immediately, loading state only for the list -->
-        <div class="mb-3">
-          <label class="form-label fw-semibold" i18n="@@featureGitBranchModal-localBranchesLabel">Local Branches</label>
-          <div class="list-group" style="max-height: 300px; overflow-y: auto">
-            @if (loadingBranches$ | async) {
-              <div class="list-group-item text-center text-muted py-3">
-                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
-                  <span class="visually-hidden" i18n="@@featureGitBranchModal-loadingBranches"
-                    >Loading branches...</span
-                  >
-                </div>
-                <span i18n="@@featureGitBranchModal-loadingBranches">Loading branches...</span>
+        </fpc-list-item>
+      } @else {
+        @if (localBranches$ | async; as localBranches) {
+          @if (localBranches.length === 0) {
+            <fpc-list-item>
+              <div fpcListItemTitle class="text-muted text-center" i18n="@@featureGitBranchModal-noLocalBranches">
+                No local branches
               </div>
-            } @else {
-              @if (localBranches$ | async; as localBranches) {
-                @if (localBranches.length === 0) {
-                  <div class="list-group-item text-muted text-center" i18n="@@featureGitBranchModal-noLocalBranches">
-                    No local branches
-                  </div>
-                } @else {
-                  @for (branch of localBranches; track branch.name) {
-                    <div
-                      class="list-group-item d-flex justify-content-between align-items-center"
-                      [class.active]="branch.isCurrent"
-                    >
-                      <div class="flex-grow-1">
-                        <div class="d-flex align-items-center gap-2">
-                          @if (branch.isCurrent) {
-                            <i class="bi bi-check-circle-fill text-primary"></i>
-                          }
-                          <span class="fw-semibold">{{ branch.name }}</span>
-                          @if (branch.aheadCount && branch.aheadCount > 0) {
-                            <span class="badge bg-success">+{{ branch.aheadCount }}</span>
-                          }
-                          @if (branch.behindCount && branch.behindCount > 0) {
-                            <span class="badge bg-warning">-{{ branch.behindCount }}</span>
-                          }
-                        </div>
-                        @if (branch.message) {
-                          <small class="text-muted d-block mt-1">{{ branch.message }}</small>
-                        }
-                      </div>
-                      <div class="btn-group btn-group-sm" role="group">
-                        @if (!branch.isCurrent) {
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-outline-primary"
-                            (click)="onSwitchBranch(branch)"
-                            [disabled]="switchingBranch() === branch.name || (switchingBranch$ | async)"
-                            i18n-title="@@featureGitBranchModal-switchToBranchTitle"
-                            title="Switch to this branch"
-                          >
-                            @if (switchingBranch() === branch.name) {
-                              <span class="spinner-border spinner-border-sm" role="status"></span>
-                            } @else {
-                              <i class="bi bi-arrow-right-circle"></i>
-                            }
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-outline-danger"
-                            (click)="onDeleteBranch(branch)"
-                            [disabled]="deletingBranch() === branch.name || (deletingBranch$ | async)"
-                            i18n-title="@@featureGitBranchModal-deleteBranchTitle"
-                            title="Delete branch"
-                          >
-                            @if (deletingBranch() === branch.name) {
-                              <span class="spinner-border spinner-border-sm" role="status"></span>
-                            } @else {
-                              <i class="bi bi-trash"></i>
-                            }
-                          </button>
-                        }
-                      </div>
-                    </div>
-                  }
-                }
-              }
-            }
-          </div>
-        </div>
-
-        <!-- Remote Branches - Show immediately, loading state only for the list -->
-        <div class="mb-3">
-          <label class="form-label fw-semibold" i18n="@@featureGitBranchModal-remoteBranchesLabel"
-            >Remote Branches</label
-          >
-          <div class="list-group" style="max-height: 200px; overflow-y: auto">
-            @if (loadingBranches$ | async) {
-              <div class="list-group-item text-center text-muted py-3">
-                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
-                  <span class="visually-hidden" i18n="@@featureGitBranchModal-loadingBranches"
-                    >Loading branches...</span
-                  >
-                </div>
-                <span i18n="@@featureGitBranchModal-loadingBranches">Loading branches...</span>
-              </div>
-            } @else {
-              @if (remoteBranches$ | async; as remoteBranches) {
-                @if (remoteBranches.length === 0) {
-                  <div class="list-group-item text-muted text-center" i18n="@@featureGitBranchModal-noRemoteBranches">
-                    No remote branches
-                  </div>
-                } @else {
-                  @for (branch of remoteBranches; track branch.ref) {
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                      <div class="flex-grow-1">
-                        <div class="d-flex align-items-center gap-2">
-                          <i class="bi bi-cloud text-muted"></i>
-                          <span>{{ branch.name }}</span>
-                          @if (branch.remote) {
-                            <small class="text-muted">({{ branch.remote }})</small>
-                          }
-                        </div>
-                        @if (branch.message) {
-                          <small class="text-muted d-block mt-1">{{ branch.message }}</small>
-                        }
-                      </div>
-                      <div class="btn-group btn-group-sm" role="group">
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-primary"
-                          (click)="onSwitchBranch(branch)"
-                          [disabled]="switchingBranch() === branch.name || (switchingBranch$ | async)"
-                          i18n-title="@@featureGitBranchModal-checkoutRemoteTitle"
-                          title="Checkout and create local tracking branch"
-                        >
-                          @if (switchingBranch() === branch.name) {
-                            <span class="spinner-border spinner-border-sm" role="status"></span>
-                          } @else {
-                            <i class="bi bi-download"></i>
-                            <span class="ms-1" i18n="@@featureGitBranchModal-checkoutButton">Checkout</span>
-                          }
-                        </button>
-                      </div>
-                    </div>
-                  }
-                }
-              }
-            }
-          </div>
-        </div>
-
-        <!-- Create New Branch - Show immediately (doesn't depend on branches list) -->
-        <div class="border-top pt-3">
-          <label class="form-label fw-semibold" i18n="@@featureGitBranchModal-createBranchLabel"
-            >Create New Branch</label
-          >
-          <div class="mb-2">
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                id="useConventionalPrefix"
-                [(ngModel)]="useConventionalPrefix"
-              />
-              <label
-                class="form-check-label"
-                for="useConventionalPrefix"
-                i18n="@@featureGitBranchModal-conventionalPrefixLabel"
-              >
-                Use conventional commit prefix (feat/, fix/, chore/, etc.)
-              </label>
-            </div>
-          </div>
-          @if (useConventionalPrefix()) {
-            <div class="row mb-2">
-              <div class="col-md-4">
-                <label for="conventionalType" class="form-label" i18n="@@featureGitBranchModal-typeLabel">Type</label>
-                <select class="form-select form-select-sm" id="conventionalType" [(ngModel)]="conventionalType">
-                  <option value="feat">feat</option>
-                  <option value="fix">fix</option>
-                  <option value="chore">chore</option>
-                  <option value="docs">docs</option>
-                  <option value="style">style</option>
-                  <option value="refactor">refactor</option>
-                  <option value="test">test</option>
-                  <option value="perf">perf</option>
-                </select>
-              </div>
-              <div class="col-md-8">
-                <label for="customBranchName" class="form-label" i18n="@@featureGitBranchModal-branchNameLabel"
-                  >Branch Name</label
-                >
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">{{ conventionalType() }}/</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="customBranchName"
-                    [(ngModel)]="customBranchName"
-                    i18n-placeholder="@@featureGitBranchModal-branchNamePlaceholderShort"
-                    placeholder="branch-name"
-                    (keydown.enter)="onCreateBranch()"
-                  />
-                </div>
-              </div>
-            </div>
+            </fpc-list-item>
           } @else {
-            <div class="mb-2">
-              <label for="customBranchNameFull" class="form-label" i18n="@@featureGitBranchModal-branchNameLabel"
-                >Branch Name</label
-              >
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                id="customBranchNameFull"
+            @for (branch of localBranches; track branch.name) {
+              <fpc-list-item [active]="branch.isCurrent">
+                <div fpcListItemTitle class="d-flex align-items-center gap-2">
+                  @if (branch.isCurrent) {
+                    <i class="bi bi-check-circle-fill text-primary"></i>
+                  }
+                  <span class="fw-semibold">{{ branch.name }}</span>
+                  @if (branch.aheadCount && branch.aheadCount > 0) {
+                    <fpc-badge color="success">+{{ branch.aheadCount }}</fpc-badge>
+                  }
+                  @if (branch.behindCount && branch.behindCount > 0) {
+                    <fpc-badge color="warning">-{{ branch.behindCount }}</fpc-badge>
+                  }
+                </div>
+                @if (branch.message) {
+                  <div fpcListItemMeta class="small">{{ branch.message }}</div>
+                }
+                @if (!branch.isCurrent) {
+                  <fpc-button-group fpcListItemActions size="sm">
+                    <fpc-button
+                      variant="dark"
+                      size="sm"
+                      iconOnly
+                      (clicked)="onSwitchBranch(branch)"
+                      [disabled]="switchingBranch() === branch.name || (switchingBranch$ | async)"
+                      [loading]="switchingBranch() === branch.name"
+                      i18n-title="@@featureGitBranchModal-switchToBranchTitle"
+                      title="Switch to this branch"
+                    >
+                      <i class="bi bi-arrow-right-circle"></i>
+                    </fpc-button>
+                    <fpc-button
+                      variant="danger"
+                      size="sm"
+                      iconOnly
+                      (clicked)="onDeleteBranch(branch)"
+                      [disabled]="deletingBranch() === branch.name || (deletingBranch$ | async)"
+                      [loading]="deletingBranch() === branch.name"
+                      i18n-title="@@featureGitBranchModal-deleteBranchTitle"
+                      title="Delete branch"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </fpc-button>
+                  </fpc-button-group>
+                }
+              </fpc-list-item>
+            }
+          }
+        }
+      }
+    </fpc-list>
+  </div>
+
+  <!-- Remote Branches - Show immediately, loading state only for the list -->
+  <div class="mb-3">
+    <label class="form-label fw-semibold" i18n="@@featureGitBranchModal-remoteBranchesLabel">Remote Branches</label>
+    <fpc-list [flush]="true" style="max-height: 200px; overflow-y: auto">
+      @if (loadingBranches$ | async) {
+        <fpc-list-item>
+          <div fpcListItemTitle class="text-center text-muted py-2">
+            <fpc-spinner class="me-2" size="sm" variant="primary" />
+            <span i18n="@@featureGitBranchModal-loadingBranches">Loading branches...</span>
+          </div>
+        </fpc-list-item>
+      } @else {
+        @if (remoteBranches$ | async; as remoteBranches) {
+          @if (remoteBranches.length === 0) {
+            <fpc-list-item>
+              <div fpcListItemTitle class="text-muted text-center" i18n="@@featureGitBranchModal-noRemoteBranches">
+                No remote branches
+              </div>
+            </fpc-list-item>
+          } @else {
+            @for (branch of remoteBranches; track branch.ref) {
+              <fpc-list-item>
+                <div fpcListItemTitle class="d-flex align-items-center gap-2">
+                  <i class="bi bi-cloud text-muted"></i>
+                  <span>{{ branch.name }}</span>
+                  @if (branch.remote) {
+                    <small class="text-muted">({{ branch.remote }})</small>
+                  }
+                </div>
+                @if (branch.message) {
+                  <div fpcListItemMeta class="small">{{ branch.message }}</div>
+                }
+                <div fpcListItemActions>
+                  <fpc-button
+                    variant="dark"
+                    size="sm"
+                    (clicked)="onSwitchBranch(branch)"
+                    [disabled]="switchingBranch() === branch.name || (switchingBranch$ | async)"
+                    [loading]="switchingBranch() === branch.name"
+                    i18n-title="@@featureGitBranchModal-checkoutRemoteTitle"
+                    title="Checkout and create local tracking branch"
+                  >
+                    <i class="bi bi-download"></i>
+                    <span class="ms-1" i18n="@@featureGitBranchModal-checkoutButton">Checkout</span>
+                  </fpc-button>
+                </div>
+              </fpc-list-item>
+            }
+          }
+        }
+      }
+    </fpc-list>
+  </div>
+
+  <!-- Create New Branch - Show immediately (doesn't depend on branches list) -->
+  <div class="border-top pt-3">
+    <label class="form-label fw-semibold" i18n="@@featureGitBranchModal-createBranchLabel">Create New Branch</label>
+    <div class="mb-2">
+      <fpc-form-check
+        checkId="useConventionalPrefix"
+        [checked]="useConventionalPrefix()"
+        (checkedChange)="useConventionalPrefix.set($event)"
+        i18n-label="@@featureGitBranchModal-conventionalPrefixLabel"
+        label="Use conventional commit prefix (feat/, fix/, chore/, etc.)"
+      />
+    </div>
+    @if (useConventionalPrefix()) {
+      <div class="row g-2">
+        <div class="col-md-4">
+          <fpc-form-field forId="conventionalType" i18n-label="@@featureGitBranchModal-typeLabel" label="Type">
+            <fpc-form-control
+              controlType="select"
+              controlId="conventionalType"
+              size="sm"
+              [(ngModel)]="conventionalType"
+            >
+              <option value="feat">feat</option>
+              <option value="fix">fix</option>
+              <option value="chore">chore</option>
+              <option value="docs">docs</option>
+              <option value="style">style</option>
+              <option value="refactor">refactor</option>
+              <option value="test">test</option>
+              <option value="perf">perf</option>
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        <div class="col-md-8">
+          <fpc-form-field
+            forId="customBranchName"
+            i18n-label="@@featureGitBranchModal-branchNameLabel"
+            label="Branch Name"
+          >
+            <fpc-input-group size="sm">
+              <span fpcInputGroupPrefix class="input-group-text">{{ conventionalType() }}/</span>
+              <fpc-form-control
+                controlId="customBranchName"
+                size="sm"
                 [(ngModel)]="customBranchName"
-                i18n-placeholder="@@featureGitBranchModal-enterBranchNamePlaceholder"
-                placeholder="Enter branch name"
+                i18n-placeholder="@@featureGitBranchModal-branchNamePlaceholderShort"
+                placeholder="branch-name"
                 (keydown.enter)="onCreateBranch()"
               />
-            </div>
-          }
-          <div class="d-flex align-items-center gap-2">
-            <button
-              type="button"
-              class="btn btn-sm btn-primary"
-              (click)="onCreateBranch()"
-              [disabled]="!customBranchName().trim() || (creatingBranch$ | async)"
-            >
-              @if (creatingBranch$ | async) {
-                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-              }
-              <span i18n="@@featureGitBranchModal-createBranchButton">Create Branch</span>
-            </button>
-            @if (branchName()) {
-              <small class="text-muted" i18n="@@featureGitBranchModal-willCreateLabel">
-                Will create: <code>{{ branchName() }}</code></small
-              >
-            }
-          </div>
+            </fpc-input-group>
+          </fpc-form-field>
         </div>
       </div>
+    } @else {
+      <fpc-form-field
+        forId="customBranchNameFull"
+        i18n-label="@@featureGitBranchModal-branchNameLabel"
+        label="Branch Name"
+      >
+        <fpc-form-control
+          controlId="customBranchNameFull"
+          size="sm"
+          [(ngModel)]="customBranchName"
+          i18n-placeholder="@@featureGitBranchModal-enterBranchNamePlaceholder"
+          placeholder="Enter branch name"
+          (keydown.enter)="onCreateBranch()"
+        />
+      </fpc-form-field>
+    }
+    <div class="d-flex align-items-center gap-2">
+      <fpc-button
+        variant="primary"
+        size="sm"
+        (clicked)="onCreateBranch()"
+        [disabled]="!customBranchName().trim() || (creatingBranch$ | async)"
+        [loading]="(creatingBranch$ | async) === true"
+      >
+        <span i18n="@@featureGitBranchModal-createBranchButton">Create Branch</span>
+      </fpc-button>
+      @if (branchName()) {
+        <small class="text-muted" i18n="@@featureGitBranchModal-willCreateLabel">
+          Will create: <code>{{ branchName() }}</code></small
+        >
+      }
     </div>
   </div>
-</div>
+</fpc-modal>

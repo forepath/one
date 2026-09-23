@@ -4,6 +4,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
+import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 export interface ForepathProduct {
   id: string;
@@ -17,7 +18,7 @@ export interface ForepathProduct {
 
 @Component({
   selector: 'framework-forepath-one',
-  imports: [CommonModule, RouterModule],
+  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule],
   styleUrls: ['./one.component.scss'],
   templateUrl: './one.component.html',
   standalone: true,

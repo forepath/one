@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
@@ -9,21 +9,22 @@ import {
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { IdentityLogoutConfirmModalComponent, IDENTITY_AUTH_ENVIRONMENT } from '@forepath/identity/frontend';
 import { AdminUpdatesFacade } from '@forepath/shared/frontend/data-access-updates';
+import {
+  FpcButtonComponent,
+  FpcTopBarComponent,
+  FpcLanguageSwitcherComponent,
+  FpcLoadingOverlayComponent,
+  FpcNotificationIndicatorComponent,
+  FpcSectionContainerComponent,
+  FpcSidebarComponent,
+  FpcSidebarPopoverComponent,
+  FpcThemeSwitcherComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { LocaleService } from '@forepath/shared/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { combineLatest, filter, map, startWith } from 'rxjs';
 
 import { ThemeService } from '../theme.service';
-
-interface BootstrapPopoverInstance {
-  dispose(): void;
-  hide(): void;
-  setContent(content: Record<string, string | Element | null | (() => string)>): void;
-}
-
-interface BootstrapPopoverConstructor {
-  getOrCreateInstance(element: Element, options?: Record<string, unknown>): BootstrapPopoverInstance;
-}
 
 interface AdminNavItem {
   activePaths: string[];
@@ -34,18 +35,27 @@ interface AdminNavItem {
   title: string;
 }
 
-function getBootstrapPopover(): BootstrapPopoverConstructor | undefined {
-  return (window as Window & { bootstrap?: { Popover?: BootstrapPopoverConstructor } }).bootstrap?.Popover;
-}
-
 @Component({
   selector: 'framework-agent-console-container',
-  imports: [CommonModule, RouterModule, IdentityLogoutConfirmModalComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    IdentityLogoutConfirmModalComponent,
+    FpcButtonComponent,
+    FpcTopBarComponent,
+    FpcLanguageSwitcherComponent,
+    FpcLoadingOverlayComponent,
+    FpcNotificationIndicatorComponent,
+    FpcSectionContainerComponent,
+    FpcSidebarComponent,
+    FpcSidebarPopoverComponent,
+    FpcThemeSwitcherComponent,
+  ],
   styleUrls: ['./container.component.scss'],
   templateUrl: './container.component.html',
   standalone: true,
 })
-export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
+export class AgentConsoleContainerComponent implements OnInit {
   private readonly authenticationFacade = inject(AuthenticationFacade);
   private readonly clientsFacade = inject(ClientsFacade);
   protected readonly notificationsFacade = inject(NotificationsFacade);
@@ -57,6 +67,12 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
   protected readonly themeService = inject(ThemeService);
   protected readonly localeService = inject(LocaleService);
   private readonly authEnvironment = inject(IDENTITY_AUTH_ENVIRONMENT);
+
+  readonly languageSwitcherAriaLabel = $localize`:@@featureContainer-languageSwitcherAriaLabel:Select language`;
+  readonly toggleDarkModeTitle = $localize`:@@featureContainer-toggleDarkMode:Toggle dark mode`;
+  readonly loadingFileLabel = $localize`:@@featureContainer-loadingFile:Loading file...`;
+  readonly sidebarAriaLabel = $localize`:@@featureContainer-sidebarAriaLabel:Main navigation`;
+  readonly adminPopoverAriaLabel = $localize`:@@featureContainer-adminTitle:Admin`;
 
   /** True when console uses users (email/password) authentication. */
   readonly isUsersAuth = this.authEnvironment.authentication.type === 'users';
@@ -126,7 +142,6 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
     map((status) => status != null && !status.totpEnabled),
   );
   readonly updatesAttentionBadge$ = this.adminUpdatesFacade.hasAttention$;
-  readonly updatesAttentionBadge = toSignal(this.updatesAttentionBadge$, { initialValue: false });
 
   /** Selected space (client); tickets need a client context in the UI. */
   readonly activeClientId$ = this.clientsFacade.activeClientId$;
@@ -171,16 +186,46 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
     },
   );
 
-  private adminPopover: BootstrapPopoverInstance | null = null;
-  private adminPopoverTrigger: HTMLElement | null = null;
+  adminPopoverOpen = false;
 
-  private readonly onAdminPopoverDocumentClick = (event: Event): void => {
-    this.hideAdminPopoverOnOutsideClick(event);
-  };
-
-  @ViewChild('adminNavTrigger') set adminNavTrigger(ref: ElementRef<HTMLElement> | undefined) {
-    this.onAdminNavTriggerReady(ref);
-  }
+  readonly adminNavItems: AdminNavItem[] = [
+    {
+      routerLink: ['/updates'],
+      activePaths: ['/updates'],
+      icon: 'bi-arrow-repeat',
+      navKey: 'updates',
+      title: $localize`:@@featureContainer-updatesTitle:Updates`,
+      label: $localize`:@@featureContainer-updates:Updates`,
+    },
+    {
+      routerLink: ['/webhooks'],
+      activePaths: ['/webhooks'],
+      icon: 'bi-broadcast',
+      title: $localize`:@@featureContainer-webhooksTitle:Webhooks`,
+      label: $localize`:@@featureContainer-webhooks:Webhooks`,
+    },
+    {
+      routerLink: ['/users'],
+      activePaths: ['/users'],
+      icon: 'bi-people',
+      title: $localize`:@@featureContainer-userManagementTitle:User Management`,
+      label: $localize`:@@featureContainer-users:Users`,
+    },
+    {
+      routerLink: ['/filters'],
+      activePaths: ['/filters'],
+      icon: 'bi-funnel',
+      title: $localize`:@@featureContainer-filtersTitle:Filters`,
+      label: $localize`:@@featureContainer-filters:Filters`,
+    },
+    {
+      routerLink: ['/imports/atlassian'],
+      activePaths: ['/imports'],
+      icon: 'bi-cloud-download',
+      title: $localize`:@@featureContainer-importTitle:Import`,
+      label: $localize`:@@featureContainer-importTitle:Import`,
+    },
+  ];
 
   @ViewChild(IdentityLogoutConfirmModalComponent)
   private logoutConfirmModal?: IdentityLogoutConfirmModalComponent;
@@ -218,6 +263,17 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
 
   getRoleAriaLabel(role: string): string {
     return $localize`:@@featureContainer-ariaLabelRole:Role ${role}:role:`;
+  }
+
+  /**
+   * Locales are served as separate builds, so switching requires a full document load.
+   */
+  onLocaleChange(localeCode: string | null): void {
+    if (!localeCode) {
+      return;
+    }
+
+    window.location.href = this.localeService.getLanguageSwitchUrl(localeCode);
   }
 
   /**
@@ -279,180 +335,5 @@ export class AgentConsoleContainerComponent implements OnInit, OnDestroy {
   onLogoutConfirmed(result: { invalidateAllSessions: boolean }): void {
     this.notificationsFacade.disconnectSocket();
     this.authenticationFacade.logout(result.invalidateAllSessions);
-  }
-
-  ngOnDestroy(): void {
-    this.disposeAdminPopover();
-  }
-
-  onAdminNavTriggerReady(trigger: ElementRef<HTMLElement> | undefined): void {
-    if (!trigger) {
-      this.disposeAdminPopover();
-
-      return;
-    }
-
-    this.setupAdminPopover(trigger.nativeElement);
-  }
-
-  private setupAdminPopover(trigger: HTMLElement): void {
-    if (this.adminPopover) {
-      return;
-    }
-
-    const Popover = getBootstrapPopover();
-
-    if (!Popover) {
-      return;
-    }
-
-    const buildBody = (): HTMLElement => this.buildAdminNavGrid();
-
-    this.adminPopover = Popover.getOrCreateInstance(trigger, {
-      trigger: 'click',
-      placement: 'right',
-      container: 'body',
-      html: true,
-      sanitize: false,
-      customClass: 'sidebar-admin-popover',
-      title: ' ',
-      template: '<div class="popover sidebar-admin-popover" role="tooltip"><div class="popover-body"></div></div>',
-      content: buildBody,
-      popperConfig: (defaultConfig: any) => ({
-        ...defaultConfig,
-        placement: 'right-start',
-      }),
-    });
-
-    trigger.addEventListener('show.bs.popover', () => {
-      this.adminPopover?.setContent({ '.popover-body': buildBody() });
-    });
-
-    this.adminPopoverTrigger = trigger;
-    // Bootstrap click popovers do not dismiss when clicking outside the tip.
-    document.addEventListener('click', this.onAdminPopoverDocumentClick, true);
-  }
-
-  private disposeAdminPopover(): void {
-    document.removeEventListener('click', this.onAdminPopoverDocumentClick, true);
-    this.adminPopover?.dispose();
-    this.adminPopover = null;
-    this.adminPopoverTrigger = null;
-  }
-
-  private hideAdminPopoverOnOutsideClick(event: Event): void {
-    const popoverEl = document.querySelector('.sidebar-admin-popover.show');
-
-    if (!this.adminPopover || !popoverEl) {
-      return;
-    }
-
-    const target = event.target;
-
-    if (!(target instanceof Node)) {
-      return;
-    }
-
-    if (this.adminPopoverTrigger?.contains(target) || popoverEl.contains(target)) {
-      return;
-    }
-
-    this.adminPopover.hide();
-  }
-
-  private buildAdminNavGrid(): HTMLElement {
-    const grid = document.createElement('div');
-
-    grid.className = 'sidebar-admin-popover__grid';
-    grid.setAttribute('role', 'menu');
-
-    for (const item of this.getAdminNavItems()) {
-      const link = document.createElement('a');
-
-      link.className = 'sidebar__item';
-      link.href = '#';
-      link.title = item.title;
-      link.setAttribute('role', 'menuitem');
-
-      if (this.isAdminNavItemActive(item)) {
-        link.classList.add('active');
-      }
-
-      const icon = document.createElement('i');
-
-      icon.className = `bi ${item.icon} me-1`;
-
-      const label = document.createElement('span');
-
-      label.className = 'small';
-      label.textContent = item.label;
-
-      link.append(icon, label);
-
-      if (item.navKey === 'updates' && this.updatesAttentionBadge()) {
-        const badge = document.createElement('span');
-
-        badge.className = 'notification-badge sidebar-admin-popover__tile-badge';
-        badge.setAttribute('aria-hidden', 'true');
-        link.classList.add('position-relative');
-        link.appendChild(badge);
-      }
-
-      link.addEventListener('click', (event) => {
-        event.preventDefault();
-        void this.router.navigate(item.routerLink);
-        this.adminPopover?.hide();
-      });
-      grid.appendChild(link);
-    }
-
-    return grid;
-  }
-
-  private getAdminNavItems(): AdminNavItem[] {
-    return [
-      {
-        routerLink: ['/updates'],
-        activePaths: ['/updates'],
-        icon: 'bi-arrow-repeat',
-        navKey: 'updates',
-        title: $localize`:@@featureContainer-updatesTitle:Updates`,
-        label: $localize`:@@featureContainer-updates:Updates`,
-      },
-      {
-        routerLink: ['/webhooks'],
-        activePaths: ['/webhooks'],
-        icon: 'bi-broadcast',
-        title: $localize`:@@featureContainer-webhooksTitle:Webhooks`,
-        label: $localize`:@@featureContainer-webhooks:Webhooks`,
-      },
-      {
-        routerLink: ['/users'],
-        activePaths: ['/users'],
-        icon: 'bi-people',
-        title: $localize`:@@featureContainer-userManagementTitle:User Management`,
-        label: $localize`:@@featureContainer-users:Users`,
-      },
-      {
-        routerLink: ['/filters'],
-        activePaths: ['/filters'],
-        icon: 'bi-funnel',
-        title: $localize`:@@featureContainer-filtersTitle:Filters`,
-        label: $localize`:@@featureContainer-filters:Filters`,
-      },
-      {
-        routerLink: ['/imports/atlassian'],
-        activePaths: ['/imports'],
-        icon: 'bi-cloud-download',
-        title: $localize`:@@featureContainer-importTitle:Import`,
-        label: $localize`:@@featureContainer-importTitle:Import`,
-      },
-    ];
-  }
-
-  private isAdminNavItemActive(item: AdminNavItem): boolean {
-    const url = this.router.url;
-
-    return item.activePaths.some((path) => url.includes(path));
   }
 }

@@ -13,13 +13,33 @@ import { RouterModule } from '@angular/router';
 import type { IdentityAuthEnvironment } from '@forepath/identity/frontend';
 import { AuthenticationFacade, registerSuccess } from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT, isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInputGroupComponent,
+  FpcSectionColumnComponent,
+  FpcSectionRowComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'identity-auth-register',
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcInputGroupComponent,
+    FpcSectionRowComponent,
+    FpcSectionColumnComponent,
+  ],
   styleUrls: ['./register.component.scss'],
   templateUrl: './register.component.html',
   standalone: true,

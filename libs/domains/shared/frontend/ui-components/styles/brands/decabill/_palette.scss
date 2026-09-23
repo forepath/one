@@ -1,0 +1,78 @@
+// Decabill palette — Sass overrides before `bootstrap/scss/bootstrap`.
+// Requires `bootstrap/scss/functions` already imported (for `mix`).
+//
+// Brand primary is fresh green. Semantics match that energy (saturated mid-tones for
+// white labels): emerald success (distinct from primary), cyan info, amber warning,
+// vivid red danger; teal tertiary sits beside the green family.
+
+$primary: #32a852;
+$secondary: #4d6a55;
+$tertiary: #0e7490;
+$success: #059669;
+$warning: #d97706;
+$danger: #ef4444;
+$info: #0284c7;
+// mix($a, $b, $w): higher $w = more of $a. Small $w with $primary first = subtle green wash.
+$light: mix($primary, #f8f8f5, 3.5%);
+$dark: #0f0f11;
+
+$code-color: mix($primary, #2a2d31, 28%);
+
+// Light-mode surfaces: only tint the pale end of the scale. $gray-300–$gray-900 stay as-is so
+// _variables-dark.scss (body text, secondary bg, borders) is unchanged.
+$gray-100: mix($primary, #f3f4f6, 4%);
+$gray-200: mix($primary, #e5e7eb, 3%);
+$gray-300: #d1d5db;
+$gray-400: #9ca3af;
+$gray-500: #6b7280;
+$gray-600: #4b5563;
+$gray-700: #2a2d31;
+$gray-800: #18191d;
+$gray-900: #0f0f11;
+
+// Dark mode maps $light-text-emphasis-dark to $gray-100; pin neutral so it does not pick up the tint above.
+$light-text-emphasis-dark: #f3f4f6;
+
+$border-color: rgba(15, 15, 17, 0.1);
+$border-color-dark: rgba(255, 255, 255, 0.08);
+
+$border-color-translucent: rgba(15, 15, 17, 0.06);
+$border-color-translucent-dark: rgba(255, 255, 255, 0.06);
+
+$body-bg: mix($primary, #f5f4f9, 2.5%);
+$body-color: #3c3f45;
+$body-emphasis-color: #24262c;
+
+$body-secondary-bg: mix($primary, #ebe9f0, 4%);
+// Tertiary must share $body-bg’s hue; a separate neutral (#f1f0f5 + low primary) reads cool/greenish beside the canvas.
+$body-tertiary-bg: mix($primary, #f2f1f6, 3%);
+
+// ~28% primary in the blend (was inverted: 72% on first arg made links very loud).
+$link-color: mix($primary, $gray-700, 28%);
+
+$primary-text-emphasis: #1f7833;
+$secondary-text-emphasis: #3c503e;
+$success-text-emphasis: mix(#000, $success, 38%);
+$info-text-emphasis: mix(#000, $info, 38%);
+$warning-text-emphasis: mix(#000, $warning, 38%);
+$danger-text-emphasis: mix(#000, $danger, 38%);
+$light-text-emphasis: $gray-600;
+$dark-text-emphasis: $gray-700;
+
+$primary-bg-subtle: #e6f5ea;
+$secondary-bg-subtle: #eaedeb;
+$success-bg-subtle: mix($success, #fff, 12%);
+$info-bg-subtle: mix($info, #fff, 12%);
+$warning-bg-subtle: mix($warning, #fff, 12%);
+$danger-bg-subtle: mix($danger, #fff, 12%);
+$light-bg-subtle: mix($gray-100, $body-bg, 55%);
+$dark-bg-subtle: #d6d8dc;
+
+$primary-border-subtle: #cce9d4;
+$secondary-border-subtle: #d6ddd8;
+$success-border-subtle: mix($success, #fff, 30%);
+$info-border-subtle: mix($info, #fff, 30%);
+$warning-border-subtle: mix($warning, #fff, 30%);
+$danger-border-subtle: mix($danger, #fff, 30%);
+$light-border-subtle: $gray-200;
+$dark-border-subtle: #b9bcc4;

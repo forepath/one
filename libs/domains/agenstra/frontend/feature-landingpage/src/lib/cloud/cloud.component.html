@@ -33,19 +33,25 @@
         </div>
       </div>
       <div class="d-flex gap-3 justify-content-center flex-wrap">
-        <a
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
           routerLink="/contact"
-          class="btn btn-primary btn-lg rounded-3 cta-btn cta-btn-primary"
           i18n="@@featurePortalCloud-heroCtaPrimary"
-          ><i class="bi bi-chat-dots" aria-hidden="true"></i>Talk to us</a
         >
-        <a
+          <i class="bi bi-chat-dots" aria-hidden="true"></i>Talk to us
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          size="xl"
+          btnClass="rounded-3"
           routerLink="."
           fragment="why"
-          class="btn btn-dark btn-lg rounded-3 cta-btn cta-btn-secondary"
           i18n="@@featurePortalCloud-heroCtaSecondary"
-          ><i class="bi bi-play-circle" aria-hidden="true"></i>See how it works</a
         >
+          <i class="bi bi-play-circle" aria-hidden="true"></i>See how it works
+        </fpc-button>
       </div>
     </div>
   </div>
@@ -89,8 +95,8 @@
             class="card border rounded-3 shadow-sm overflow-hidden h-100 card-capability card-capability-primary cloud-why-visual"
           >
             <div class="p-3 p-lg-4 pb-0">
-              <span class="badge bg-primary mb-3 bento-badge" i18n="@@featurePortalCloud-teaserVisualBadge"
-                >Managed console + workspaces</span
+              <fpc-badge color="primary" class="mb-3 bento-badge" i18n="@@featurePortalCloud-teaserVisualBadge"
+                >Managed console + workspaces</fpc-badge
               >
             </div>
             <img
@@ -160,24 +166,28 @@
     </p>
     <div class="position-relative">
       <div class="cloud-plans-carousel-buttons d-none d-lg-flex justify-content-between align-items-center">
-        <button
-          type="button"
-          class="btn btn-primary cloud-plans-carousel-button-left"
-          (click)="scrollCloudPlans('left')"
+        <fpc-button
+          variant="primary"
+          iconOnly
+          btnClass="cloud-plans-carousel-button-left"
+          (clicked)="scrollCloudPlans('left')"
           [disabled]="plansScrollAtStart()"
+          ariaLabel="Previous plans"
+          i18n-ariaLabel="@@featurePortalCloud-plansScrollPrev"
         >
           <i class="bi bi-arrow-left" aria-hidden="true"></i>
-          <span class="visually-hidden" i18n="@@featurePortalCloud-plansScrollPrev">Previous plans</span>
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary cloud-plans-carousel-button-right"
-          (click)="scrollCloudPlans('right')"
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          iconOnly
+          btnClass="cloud-plans-carousel-button-right"
+          (clicked)="scrollCloudPlans('right')"
           [disabled]="plansScrollAtEnd()"
+          ariaLabel="Next plans"
+          i18n-ariaLabel="@@featurePortalCloud-plansScrollNext"
         >
           <i class="bi bi-arrow-right" aria-hidden="true"></i>
-          <span class="visually-hidden" i18n="@@featurePortalCloud-plansScrollNext">Next plans</span>
-        </button>
+        </fpc-button>
       </div>
       <div
         #plansCarousel
@@ -213,9 +223,7 @@
                 <div class="card-body p-5 d-flex flex-column">
                   <div class="text-center">
                     <h3 class="h4 m-0">{{ plan.name }}</h3>
-                    <span class="badge bg-secondary-subtle text-secondary px-3 py-2 my-2">{{
-                      plan.serviceTypeName
-                    }}</span>
+                    <fpc-badge variant="marketing" color="secondary" class="my-2">{{ plan.serviceTypeName }}</fpc-badge>
                     <div class="card border-0 rounded-2 card-capability card-capability-primary p-3 my-3">
                       <div class="display-6 fw-bold text-primary mb-0">
                         @if (formatPublicOfferingPrice(plan); as price) {
@@ -251,15 +259,16 @@
                     }
                   </ul>
                   <div class="d-grid mt-auto">
-                    <a
+                    <fpc-button
                       [href]="billingBaseUrl"
-                      class="btn btn-primary"
+                      variant="primary"
+                      block
                       target="_blank"
                       rel="noopener noreferrer"
                       i18n="@@featurePortalCloud-planCta"
                     >
                       Get started
-                    </a>
+                    </fpc-button>
                   </div>
                 </div>
               </div>
@@ -324,7 +333,7 @@
                   class="img-fluid provider-logo"
                   [class.logo-partner--small]="infrastructureProvider.id === 'hetzner'"
                 />
-                <span class="badge bg-body-tertiary text-dark">{{ infrastructureProvider.name }}</span>
+                <fpc-badge variant="marketing">{{ infrastructureProvider.name }}</fpc-badge>
               </div>
               <p class="text-muted mb-4">{{ infrastructureProvider.tagline }}</p>
               <ul class="list-unstyled small mb-0 cloud-infra-specs">
@@ -368,14 +377,17 @@
             Talk to us about access, pricing, and how Agenstra Cloud fits your tools and environments.
           </p>
           <div class="d-flex justify-content-center">
-            <a
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
               [href]="billingBaseUrl"
-              class="btn btn-primary btn-lg rounded-3 cta-btn cta-btn-primary"
               target="_blank"
               rel="noopener noreferrer"
               i18n="@@featurePortalCloud-ctaPrimary"
-              ><i class="bi bi-person-plus" aria-hidden="true"></i>Register for free</a
             >
+              <i class="bi bi-person-plus" aria-hidden="true"></i>Register for free
+            </fpc-button>
           </div>
         </div>
       </div>

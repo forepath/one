@@ -2,11 +2,36 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { type KnowledgeNodeDto, type KnowledgeNodeType } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 
 @Component({
   selector: 'framework-knowledge-tree',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './knowledge-tree.component.html',
   styleUrls: ['./knowledge-tree.component.scss'],
 })
@@ -30,10 +55,13 @@ export class KnowledgeTreeComponent implements OnChanges {
   readonly expandedNodeIds = signal<Set<string>>(new Set());
   readonly contextMenuNodeId = signal<string | null>(null);
   readonly contextMenuPosition = signal<{ x: number; y: number } | null>(null);
+  readonly renameModalOpen = signal(false);
   readonly renameTargetNodeId = signal<string | null>(null);
   readonly renameDraft = signal('');
+  readonly moveModalOpen = signal(false);
   readonly moveTargetNodeId = signal<string | null>(null);
   readonly moveTargetParentId = signal<string | null>(null);
+  readonly deleteModalOpen = signal(false);
   readonly deleteTargetNodeId = signal<string | null>(null);
   readonly releaseExternalSyncMarkerOnDelete = signal(false);
   readonly hasLoadedWorkspaceTree = signal(false);
@@ -146,6 +174,7 @@ export class KnowledgeTreeComponent implements OnChanges {
     event.stopPropagation();
     this.releaseExternalSyncMarkerOnDelete.set(false);
     this.deleteTargetNodeId.set(node.id);
+    this.deleteModalOpen.set(true);
   }
 
   onContextMenu(event: MouseEvent, node: KnowledgeNodeDto): void {
@@ -180,10 +209,12 @@ export class KnowledgeTreeComponent implements OnChanges {
 
     this.renameTargetNodeId.set(node.id);
     this.renameDraft.set(node.title);
+    this.renameModalOpen.set(true);
     this.closeContextMenu();
   }
 
   onCancelRename(): void {
+    this.renameModalOpen.set(false);
     this.renameTargetNodeId.set(null);
     this.renameDraft.set('');
   }
@@ -205,10 +236,12 @@ export class KnowledgeTreeComponent implements OnChanges {
 
     this.moveTargetNodeId.set(node.id);
     this.moveTargetParentId.set(node.parentId ?? null);
+    this.moveModalOpen.set(true);
     this.closeContextMenu();
   }
 
   onCancelMove(): void {
+    this.moveModalOpen.set(false);
     this.moveTargetNodeId.set(null);
     this.moveTargetParentId.set(null);
   }
@@ -229,10 +262,12 @@ export class KnowledgeTreeComponent implements OnChanges {
 
     this.releaseExternalSyncMarkerOnDelete.set(false);
     this.deleteTargetNodeId.set(node.id);
+    this.deleteModalOpen.set(true);
     this.closeContextMenu();
   }
 
   onCancelDelete(): void {
+    this.deleteModalOpen.set(false);
     this.deleteTargetNodeId.set(null);
     this.releaseExternalSyncMarkerOnDelete.set(false);
   }

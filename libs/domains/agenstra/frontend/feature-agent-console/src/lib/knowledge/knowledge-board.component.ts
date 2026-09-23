@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
+  AfterViewInit,
   Component,
   DestroyRef,
   ElementRef,
@@ -27,7 +28,33 @@ import {
   type KnowledgeRelationDto,
   type TicketResponseDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
-import { EMPTY, catchError, debounceTime, distinctUntilChanged, finalize, of, skip, switchMap } from 'rxjs';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcTypeaheadSelectComponent,
+} from '@forepath/shared/frontend/ui-components';
+import {
+  EMPTY,
+  catchError,
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  finalize,
+  map,
+  of,
+  skip,
+  switchMap,
+} from 'rxjs';
 
 import { resolveNamedDisplayLabel } from '../display-name.util';
 import { KnowledgeEditorComponent } from './knowledge-editor/knowledge-editor.component';
@@ -36,29 +63,45 @@ import { KnowledgeTreeComponent } from './knowledge-tree/knowledge-tree.componen
 @Component({
   selector: 'framework-knowledge-board',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, KnowledgeTreeComponent, KnowledgeEditorComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    KnowledgeTreeComponent,
+    KnowledgeEditorComponent,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcTypeaheadSelectComponent,
+  ],
   templateUrl: './knowledge-board.component.html',
   styleUrls: ['./knowledge-board.component.scss'],
 })
-export class KnowledgeBoardComponent implements OnDestroy {
+export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
+  readonly pageTitle = $localize`:@@featureKnowledgeBoard-title:Knowledge`;
+  readonly switchWorkspaceTitle = $localize`:@@featureKnowledgeBoard-switchWorkspaceTitle:Switch workspace`;
+  readonly searchPagesTitle = $localize`:@@featureKnowledgeBoard-searchPagesTitle:Search pages`;
+
   private readonly RELATION_TARGET_KIND_KNOWLEDGE = 'knowledge';
   private readonly RELATION_TARGET_KIND_TICKET = 'ticket';
   @ViewChild(KnowledgeTreeComponent, { static: false })
   private knowledgeTreeComponent?: KnowledgeTreeComponent;
-  @ViewChild('workspaceSwitchModal', { static: false })
-  private workspaceSwitchModal?: ElementRef<HTMLDivElement>;
   @ViewChild('knowledgeTreeSidebar', { static: false })
   private knowledgeTreeSidebar?: ElementRef<HTMLDivElement>;
-  @ViewChild('globalSearchModal', { static: false })
-  private globalSearchModal?: ElementRef<HTMLDivElement>;
   @ViewChild('globalSearchInput', { static: false })
-  private globalSearchInput?: ElementRef<HTMLInputElement>;
+  private globalSearchInput?: ElementRef<HTMLElement>;
   @ViewChild('selectedNodeTitleInput', { static: false })
-  private selectedNodeTitleInput?: ElementRef<HTMLInputElement>;
-  @ViewChild('relationsModal', { static: false })
-  private relationsModal?: ElementRef<HTMLDivElement>;
+  private selectedNodeTitleInput?: ElementRef<HTMLElement>;
   @ViewChild('relationsSearchInput', { static: false })
-  private relationsSearchInput?: ElementRef<HTMLInputElement>;
+  private relationsSearchInput?: ElementRef<HTMLElement>;
 
   private readonly clientsFacade = inject(ClientsFacade);
   private readonly knowledgeFacade = inject(KnowledgeFacade);
@@ -69,8 +112,10 @@ export class KnowledgeBoardComponent implements OnDestroy {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ngZone = inject(NgZone);
-  private workspaceSwitchModalInstance: { show: () => void; hide: () => void } | null = null;
-  private openedWorkspaceModalForMissingClient = false;
+  readonly workspaceSwitchModalOpen = signal(false);
+  readonly globalSearchModalOpen = signal(false);
+  readonly relationsModalOpen = signal(false);
+
   private readonly SIDEBAR_MIN_WIDTH = 150;
   private readonly SIDEBAR_MAX_WIDTH = 600;
   readonly sidebarWidth = signal<number>(300);
@@ -79,6 +124,16 @@ export class KnowledgeBoardComponent implements OnDestroy {
   private readonly boundOnResizeEnd = this.onResizeEnd.bind(this);
 
   readonly activeClientId = toSignal(this.clientsFacade.activeClientId$, { initialValue: null });
+  /** Workspace for this board: URL `:clientId` wins so deep links load before store catches up. */
+  readonly effectiveClientId$ = combineLatest([this.route.paramMap, this.clientsFacade.activeClientId$]).pipe(
+    map(([params, active]) => {
+      const fromRoute = params.get('clientId')?.trim();
+
+      return (fromRoute || active || null) as string | null;
+    }),
+    distinctUntilChanged(),
+  );
+  readonly effectiveClientId = toSignal(this.effectiveClientId$, { initialValue: null });
   readonly clients = toSignal(this.clientsFacade.clients$, { initialValue: [] });
   readonly tree = toSignal(this.knowledgeFacade.tree$, { initialValue: [] });
   readonly selectedNode = toSignal(this.knowledgeFacade.selectedNode$, { initialValue: null });
@@ -102,6 +157,7 @@ export class KnowledgeBoardComponent implements OnDestroy {
   readonly globalSearchQuery$ = toObservable(this.globalSearchQuery);
   readonly globalSearchTree = signal<KnowledgeNodeDto[]>([]);
   readonly globalSearchLoading = signal(false);
+  readonly globalSearchSuggestionsOpen = signal(false);
   readonly relationsSearchQuery = signal('');
   readonly relationSuggestionsOpen = signal(false);
   readonly relationSearchError = signal<string | null>(null);
@@ -111,7 +167,7 @@ export class KnowledgeBoardComponent implements OnDestroy {
   readonly pendingOpenNodeId = signal<string | null>(null);
 
   readonly effectiveWorkspace = computed(() => {
-    const id = this.activeClientId();
+    const id = this.effectiveClientId();
     const clients = this.clients();
 
     return id ? (clients.find((c) => c.id === id) ?? null) : null;
@@ -125,18 +181,22 @@ export class KnowledgeBoardComponent implements OnDestroy {
     return resolveNamedDisplayLabel(title);
   }
 
-  readonly globalSearchHits = computed(() => {
-    const hits: Array<{ node: KnowledgeNodeDto; path: string[] }> = [];
-    const walk = (nodes: KnowledgeNodeDto[], path: string[]) => {
-      for (const node of nodes) {
-        const nextPath = [...path, node.title];
+  nodeTypeLabel(nodeType: KnowledgeNodeType): string {
+    return nodeType === 'folder'
+      ? $localize`:@@featureKnowledgeBoard-nodeTypeFolder:Folder`
+      : $localize`:@@featureKnowledgeBoard-nodeTypePage:Page`;
+  }
 
-        hits.push({ node, path: nextPath });
-        walk(node.children ?? [], nextPath);
+  readonly globalSearchHits = computed(() => {
+    const hits: KnowledgeNodeDto[] = [];
+    const walk = (nodes: KnowledgeNodeDto[]) => {
+      for (const node of nodes) {
+        hits.push(node);
+        walk(node.children ?? []);
       }
     };
 
-    walk(this.globalSearchTree(), []);
+    walk(this.globalSearchTree());
 
     return hits;
   });
@@ -293,7 +353,7 @@ export class KnowledgeBoardComponent implements OnDestroy {
       }
 
       this.pendingSelectedNodeTitleRename.set(null);
-      setTimeout(() => this.selectedNodeTitleInput?.nativeElement?.focus(), 0);
+      setTimeout(() => this.focusSelectedNodeTitleInput(), 0);
     });
 
     effect(() => {
@@ -377,85 +437,96 @@ export class KnowledgeBoardComponent implements OnDestroy {
       this.pendingOpenNodeId.set(null);
       this.knowledgeFacade.selectNode(null);
     });
+  }
 
-    effect(() => {
-      const activeClientId = this.activeClientId();
-
-      if (!activeClientId && this.clients().length > 0 && !this.openedWorkspaceModalForMissingClient) {
-        this.openedWorkspaceModalForMissingClient = true;
-        queueMicrotask(() => this.openWorkspaceSwitchModal());
-      }
-
-      if (activeClientId) {
-        this.openedWorkspaceModalForMissingClient = false;
-      }
-    });
+  ngAfterViewInit(): void {
+    this.effectiveClientId$
+      .pipe(
+        distinctUntilChanged(),
+        filter((id) => !id),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        setTimeout(() => this.openWorkspaceSwitchModal(), 0);
+      });
   }
 
   openWorkspaceSwitchModal(): void {
     this.workspaceSwitchSearch.set('');
-    const el = this.workspaceSwitchModal?.nativeElement;
-
-    if (!el) return;
-
-    if (!this.workspaceSwitchModalInstance) {
-      const modalCtor = (
-        window as unknown as { bootstrap?: { Modal?: new (e: Element) => { show: () => void; hide: () => void } } }
-      ).bootstrap?.Modal;
-
-      if (!modalCtor) return;
-
-      this.workspaceSwitchModalInstance = new modalCtor(el);
-    }
-
-    this.workspaceSwitchModalInstance.show();
+    this.clientsFacade.loadClients();
+    this.workspaceSwitchModalOpen.set(true);
   }
 
   onCloseWorkspaceSwitchModal(): void {
-    this.workspaceSwitchModalInstance?.hide();
+    this.workspaceSwitchModalOpen.set(false);
+  }
+
+  goToSpaces(event?: Event): void {
+    event?.preventDefault();
+    this.workspaceSwitchModalOpen.set(false);
+    void this.router.navigate(['/clients']);
   }
 
   openGlobalSearchModal(): void {
     this.globalSearchQuery.set('');
     this.globalSearchTree.set([]);
-    setTimeout(() => {
-      const shell = this.globalSearchModal?.nativeElement;
-
-      if (shell?.classList.contains('show')) {
-        this.globalSearchInput?.nativeElement?.focus({ preventScroll: true });
-
-        return;
-      }
-
-      this.showGlobalSearchModalEl();
-    }, 0);
+    this.globalSearchLoading.set(false);
+    this.globalSearchSuggestionsOpen.set(false);
+    this.globalSearchModalOpen.set(true);
+    setTimeout(() => this.focusGlobalSearchInput({ preventScroll: true }), 0);
   }
 
   onCloseGlobalSearchModal(): void {
-    this.hideGlobalSearchModalEl();
+    this.globalSearchModalOpen.set(false);
     this.globalSearchQuery.set('');
     this.globalSearchTree.set([]);
+    this.globalSearchLoading.set(false);
+    this.globalSearchSuggestionsOpen.set(false);
   }
 
-  onGlobalSearchResultClick(hit: { node: KnowledgeNodeDto; path: string[] }): void {
-    this.hideGlobalSearchModalEl();
+  onGlobalSearchQueryChange(value: string): void {
+    this.globalSearchQuery.set(value);
+    const term = value.trim();
+
+    if (!term) {
+      this.globalSearchTree.set([]);
+      this.globalSearchLoading.set(false);
+      this.globalSearchSuggestionsOpen.set(false);
+
+      return;
+    }
+
+    this.globalSearchTree.set([]);
+    this.globalSearchLoading.set(true);
+    this.globalSearchSuggestionsOpen.set(true);
+  }
+
+  onGlobalSearchSuggestionsOpenChange(open: boolean): void {
+    if (!open) {
+      this.globalSearchSuggestionsOpen.set(false);
+
+      return;
+    }
+
+    this.globalSearchSuggestionsOpen.set(this.globalSearchQuery().trim().length > 0);
+  }
+
+  onGlobalSearchResultClick(node: KnowledgeNodeDto, event?: MouseEvent): void {
+    event?.preventDefault();
+    this.globalSearchModalOpen.set(false);
     this.globalSearchQuery.set('');
     this.globalSearchTree.set([]);
-    this.onSelectNode(hit.node);
-  }
-
-  globalSearchPathDisplay(hit: { node: KnowledgeNodeDto; path: string[] }): string {
-    if (hit.path.length <= 1) return '';
-
-    return hit.path.slice(0, -1).join(' › ');
+    this.globalSearchLoading.set(false);
+    this.globalSearchSuggestionsOpen.set(false);
+    this.onSelectNode(node);
   }
 
   onSelectWorkspaceForKnowledge(client: ClientResponseDto): void {
+    this.workspaceSwitchModalOpen.set(false);
     this.clientsFacade.setActiveClient(client.id);
     this.knowledgeFacade.loadTree(client.id);
     this.knowledgeFacade.selectNode(null);
     void this.router.navigate(['/knowledge', client.id]);
-    this.onCloseWorkspaceSwitchModal();
   }
 
   onCreateNode(event: { parentId: string | null; nodeType: KnowledgeNodeType; title: string }): void {
@@ -534,7 +605,7 @@ export class KnowledgeBoardComponent implements OnDestroy {
 
     this.selectedNodeTitleDraft.set(selected.title);
     this.selectedNodeTitleEditing.set(true);
-    setTimeout(() => this.selectedNodeTitleInput?.nativeElement?.focus(), 0);
+    setTimeout(() => this.focusSelectedNodeTitleInput(), 0);
   }
 
   onSelectedNodeTitleCancel(): void {
@@ -563,11 +634,12 @@ export class KnowledgeBoardComponent implements OnDestroy {
     this.relationSearchError.set(null);
     this.relationSuggestionsOpen.set(false);
     this.selectedRelationTargets.set([]);
-    setTimeout(() => this.showRelationsModalEl(), 0);
+    this.relationsModalOpen.set(true);
+    setTimeout(() => this.focusRelationsSearchInput({ preventScroll: true }), 0);
   }
 
   onCloseRelationsModal(): void {
-    this.hideRelationsModalEl();
+    this.relationsModalOpen.set(false);
     this.relationsSearchQuery.set('');
     this.relationSearchError.set(null);
     this.relationSuggestionsOpen.set(false);
@@ -577,17 +649,13 @@ export class KnowledgeBoardComponent implements OnDestroy {
   onRelationInputChange(value: string): void {
     this.relationsSearchQuery.set(value);
     this.relationSearchError.set(null);
-    this.relationSuggestionsOpen.set(value.trim().length > 0);
+    this.relationSuggestionsOpen.set(value.trim().length > 0 && this.relationCandidates().length > 0);
   }
 
-  onRelationInputFocus(): void {
-    if (this.relationsSearchQuery().trim().length > 0 && this.relationCandidates().length > 0) {
-      this.relationSuggestionsOpen.set(true);
-    }
-  }
-
-  onRelationInputBlur(): void {
-    setTimeout(() => this.relationSuggestionsOpen.set(false), 180);
+  onRelationSuggestionsOpenChange(open: boolean): void {
+    this.relationSuggestionsOpen.set(
+      open && this.relationsSearchQuery().trim().length > 0 && this.relationCandidates().length > 0,
+    );
   }
 
   onPickRelationCandidate(
@@ -958,75 +1026,15 @@ export class KnowledgeBoardComponent implements OnDestroy {
     document.removeEventListener('touchend', this.boundOnResizeEnd);
   }
 
-  private showGlobalSearchModalEl(): void {
-    const el = this.globalSearchModal?.nativeElement;
-
-    if (!el) return;
-
-    const win = window as unknown as {
-      bootstrap?: {
-        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
-      };
-    };
-    const Modal = win.bootstrap?.Modal;
-
-    if (!Modal) return;
-
-    const focusSearchInput = (): void => {
-      this.globalSearchInput?.nativeElement?.focus({ preventScroll: true });
-    };
-
-    el.addEventListener('shown.bs.modal', focusSearchInput, { once: true });
-    const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
-
-    inst.show();
+  private focusGlobalSearchInput(options?: FocusOptions): void {
+    this.globalSearchInput?.nativeElement?.querySelector<HTMLInputElement>('input')?.focus(options);
   }
 
-  private hideGlobalSearchModalEl(): void {
-    const el = this.globalSearchModal?.nativeElement;
-
-    if (!el) return;
-
-    const win = window as unknown as {
-      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
-    };
-
-    win.bootstrap?.Modal?.getInstance(el)?.hide();
+  private focusSelectedNodeTitleInput(options?: FocusOptions): void {
+    this.selectedNodeTitleInput?.nativeElement?.querySelector<HTMLInputElement>('input')?.focus(options);
   }
 
-  private showRelationsModalEl(): void {
-    const el = this.relationsModal?.nativeElement;
-
-    if (!el) return;
-
-    const win = window as unknown as {
-      bootstrap?: {
-        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
-      };
-    };
-    const Modal = win.bootstrap?.Modal;
-
-    if (!Modal) return;
-
-    const focusSearchInput = (): void => {
-      this.relationsSearchInput?.nativeElement?.focus({ preventScroll: true });
-    };
-
-    el.addEventListener('shown.bs.modal', focusSearchInput, { once: true });
-    const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
-
-    inst.show();
-  }
-
-  private hideRelationsModalEl(): void {
-    const el = this.relationsModal?.nativeElement;
-
-    if (!el) return;
-
-    const win = window as unknown as {
-      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
-    };
-
-    win.bootstrap?.Modal?.getInstance(el)?.hide();
+  private focusRelationsSearchInput(options?: FocusOptions): void {
+    this.relationsSearchInput?.nativeElement?.querySelector<HTMLInputElement>('input')?.focus(options);
   }
 }

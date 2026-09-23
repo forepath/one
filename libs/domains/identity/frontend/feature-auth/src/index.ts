@@ -2,7 +2,7 @@
 export { IdentityConfirmEmailComponent } from './lib/confirm-email/confirm-email.component';
 export { IdentityLoginComponent } from './lib/login/login.component';
 export { IdentityLogin2faComponent } from './lib/login-2fa/login-2fa.component';
-export { IdentityOtpInputComponent } from './lib/otp-input/otp-input.component';
+export { FpcOtpInputComponent as IdentityOtpInputComponent } from '@forepath/shared/frontend/ui-components';
 export { IdentityRegisterComponent } from './lib/register/register.component';
 export { IdentityRequestPasswordResetConfirmationComponent } from './lib/request-password-reset-confirmation/request-password-reset-confirmation.component';
 export { IdentityRequestPasswordResetComponent } from './lib/request-password-reset/request-password-reset.component';

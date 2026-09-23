@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -19,7 +19,27 @@ import {
   type UsageAttachmentType,
   type UsageMeterEntryResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { InfiniteScrollDirective, ListAppendFooterComponent } from '@forepath/shared/frontend/ui-lists';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcModalComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInfiniteScrollDirective,
+  FpcListAppendFooterComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcSummaryBarComponent,
+  FpcSummaryCardComponent,
+  FpcSummaryCardValueDirective,
+} from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, filter, pairwise, skip } from 'rxjs';
 
 import {
@@ -51,20 +71,41 @@ interface AddonMeterOption {
 @Component({
   selector: 'framework-admin-subscriptions-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, InfiniteScrollDirective, ListAppendFooterComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    FpcAlertComponent,
+    FpcInfiniteScrollDirective,
+    FpcBadgeComponent,
+    FpcListAppendFooterComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+    FpcSummaryBarComponent,
+    FpcSummaryCardComponent,
+    FpcSummaryCardValueDirective,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcListItemComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcModalComponent,
+  ],
   providers: [DatePipe],
   templateUrl: './admin-subscriptions-page.component.html',
   styleUrls: ['./admin-subscriptions-page.component.scss'],
 })
 export class AdminSubscriptionsPageComponent implements OnInit {
-  @ViewChild('cancelSubscriptionModal', { static: false }) private cancelSubscriptionModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('withdrawSubscriptionModal', { static: false })
-  private withdrawSubscriptionModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('instantCancelSubscriptionModal', { static: false })
-  private instantCancelSubscriptionModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('resumeConfirmModal', { static: false }) private resumeConfirmModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('metersModal', { static: false }) private metersModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteEntryModal', { static: false }) private deleteEntryModal!: ElementRef<HTMLDivElement>;
+  readonly cancelSubscriptionModalOpen = signal(false);
+  readonly withdrawSubscriptionModalOpen = signal(false);
+  readonly instantCancelSubscriptionModalOpen = signal(false);
+  readonly resumeConfirmModalOpen = signal(false);
+  readonly metersModalOpen = signal(false);
+  readonly deleteEntryModalOpen = signal(false);
 
   readonly facade = inject(AdminSubscriptionsFacade);
   private readonly adminBillingFacade = inject(AdminBillingFacade);
@@ -73,11 +114,17 @@ export class AdminSubscriptionsPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly datePipe = inject(DatePipe);
 
+  readonly pageTitle = $localize`:@@featureAdminSubscriptions-title:Contracts`;
+  readonly searchAriaLabel = $localize`:@@featureAdminSubscriptions-search:Search contracts`;
+  readonly searchPlaceholder = $localize`:@@featureAdminSubscriptions-searchPlaceholder:Search by number, email, plan, or status`;
+
   readonly searchQuery = signal('');
   readonly searchQuery$ = toObservable(this.searchQuery);
   readonly subscriptions = toSignal(this.facade.subscriptions$, { initialValue: [] as AdminSubscriptionListItem[] });
   readonly billingSummary = toSignal(this.adminBillingFacade.summary$, { initialValue: null });
   readonly billingSummaryLoading$ = this.adminBillingFacade.summaryLoading$;
+  readonly summaryTotalLabel = $localize`:@@featureAdminSubscriptions-summaryTotal:Contracts`;
+  readonly summaryActiveLabel = $localize`:@@featureAdminSubscriptions-summaryActive:Active`;
   readonly meterSummaries = toSignal(this.subscriptionMetersFacade.summaries$, {
     initialValue: [] as SubscriptionMeterSummary[],
   });
@@ -141,7 +188,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
     this.entryForm = this.defaultEntryForm();
     this.selectedAddonMeterKey = '';
     this.subscriptionMetersFacade.loadAll(sub.id);
-    showBillingModal(this.metersModal);
+    showBillingModal(this.metersModalOpen);
   }
 
   submitMeterEntry(): void {
@@ -163,7 +210,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
 
   openDeleteEntryConfirm(entry: UsageMeterEntryResponse): void {
     this.entryToDelete = entry;
-    showBillingModal(this.deleteEntryModal);
+    showBillingModal(this.deleteEntryModalOpen);
   }
 
   confirmDeleteEntry(): void {
@@ -286,7 +333,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
 
   openCancelConfirm(sub: AdminSubscriptionListItem): void {
     this.subscriptionToCancel = sub;
-    showBillingModal(this.cancelSubscriptionModal);
+    showBillingModal(this.cancelSubscriptionModalOpen);
   }
 
   confirmCancelSubscription(): void {
@@ -297,7 +344,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
 
   openWithdrawConfirm(sub: AdminSubscriptionListItem): void {
     this.subscriptionToWithdraw = sub;
-    showBillingModal(this.withdrawSubscriptionModal);
+    showBillingModal(this.withdrawSubscriptionModalOpen);
   }
 
   confirmWithdrawSubscription(): void {
@@ -312,7 +359,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
 
   openInstantCancelConfirm(sub: AdminSubscriptionListItem): void {
     this.subscriptionToInstantCancel = sub;
-    showBillingModal(this.instantCancelSubscriptionModal);
+    showBillingModal(this.instantCancelSubscriptionModalOpen);
   }
 
   confirmInstantCancelSubscription(): void {
@@ -323,7 +370,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
 
   openResumeConfirm(sub: AdminSubscriptionListItem): void {
     this.subscriptionToResume = sub;
-    showBillingModal(this.resumeConfirmModal);
+    showBillingModal(this.resumeConfirmModalOpen);
   }
 
   confirmResume(): void {
@@ -405,7 +452,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.canceling$,
       error$: this.error$,
-      modal: () => this.cancelSubscriptionModal,
+      open: this.cancelSubscriptionModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.subscriptionToCancel = null;
@@ -414,7 +461,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.withdrawing$,
       error$: this.error$,
-      modal: () => this.withdrawSubscriptionModal,
+      open: this.withdrawSubscriptionModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.subscriptionToWithdraw = null;
@@ -423,7 +470,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.instantCanceling$,
       error$: this.error$,
-      modal: () => this.instantCancelSubscriptionModal,
+      open: this.instantCancelSubscriptionModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.subscriptionToInstantCancel = null;
@@ -432,7 +479,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.resuming$,
       error$: this.error$,
-      modal: () => this.resumeConfirmModal,
+      open: this.resumeConfirmModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.subscriptionToResume = null;
@@ -441,7 +488,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.deletingEntry$,
       error$: this.metersError$,
-      modal: () => this.deleteEntryModal,
+      open: this.deleteEntryModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.entryToDelete = null;

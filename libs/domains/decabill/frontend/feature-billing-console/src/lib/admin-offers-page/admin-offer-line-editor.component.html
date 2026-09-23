@@ -3,183 +3,191 @@
     <div class="admin-offer-line-card border rounded p-3">
       <div class="mb-3">
         <span class="form-label d-block" i18n="@@featureAdminOffers-lineType">Line type</span>
-        @for (type of lineTypes; track type) {
-          <div class="form-check form-check-inline">
-            <input
+        <fpc-form-check-group inline>
+          @for (type of lineTypes; track type) {
+            <fpc-form-check
               type="radio"
-              class="form-check-input"
+              inline
               [name]="prefix + 'LineType' + i"
-              [id]="prefix + 'LineType' + i + '_' + type"
+              [checkId]="prefix + 'LineType' + i + '_' + type"
               [value]="type"
               [checked]="line.lineType === type"
-              (change)="onLineTypeChange(line, type)"
+              (valueSelect)="onLineTypeChange(line, $any($event))"
+              [label]="lineTypeLabel(type)"
             />
-            <label class="form-check-label" [attr.for]="prefix + 'LineType' + i + '_' + type">
-              {{ lineTypeLabel(type) }}
-            </label>
-          </div>
-        }
+          }
+        </fpc-form-check-group>
       </div>
 
-      <div class="mb-2">
-        <label class="form-label" [for]="prefix + 'LineDesc' + i" i18n="@@featureAdminOffers-lineDescription"
-          >Description</label
-        >
-        <input
-          class="form-control"
-          [id]="prefix + 'LineDesc' + i"
+      <fpc-form-field
+        [forId]="prefix + 'LineDesc' + i"
+        i18n-label="@@featureAdminOffers-lineDescription"
+        label="Description"
+        required
+      >
+        <fpc-form-control
+          [controlId]="prefix + 'LineDesc' + i"
           [name]="prefix + 'LineDesc' + i"
           [(ngModel)]="line.description"
           required
         />
-      </div>
+      </fpc-form-field>
 
       @if (line.lineType === 'standard') {
-        <div class="row g-2 mb-2">
+        <div class="row g-2">
           <div class="col-sm-4">
-            <label class="form-label" [for]="prefix + 'LineQty' + i" i18n="@@featureAdminOffers-lineQuantity"
-              >Quantity</label
+            <fpc-form-field
+              [forId]="prefix + 'LineQty' + i"
+              i18n-label="@@featureAdminOffers-lineQuantity"
+              label="Quantity"
             >
-            <input
-              type="number"
-              class="form-control"
-              [id]="prefix + 'LineQty' + i"
-              [name]="prefix + 'LineQty' + i"
-              [(ngModel)]="line.quantity"
-              min="0.0001"
-              step="any"
-            />
+              <fpc-form-control
+                inputType="number"
+                [controlId]="prefix + 'LineQty' + i"
+                [name]="prefix + 'LineQty' + i"
+                [(ngModel)]="line.quantity"
+                min="0.0001"
+                step="any"
+              />
+            </fpc-form-field>
           </div>
           <div class="col-sm-4">
-            <label class="form-label" [for]="prefix + 'LinePrice' + i" i18n="@@featureAdminOffers-lineUnitPriceNet"
-              >Unit price (net)</label
+            <fpc-form-field
+              [forId]="prefix + 'LinePrice' + i"
+              i18n-label="@@featureAdminOffers-lineUnitPriceNet"
+              label="Unit price (net)"
             >
-            <input
-              type="number"
-              class="form-control"
-              [id]="prefix + 'LinePrice' + i"
-              [name]="prefix + 'LinePrice' + i"
-              [(ngModel)]="line.unitPriceNet"
-              min="0"
-              step="any"
-            />
+              <fpc-form-control
+                inputType="number"
+                [controlId]="prefix + 'LinePrice' + i"
+                [name]="prefix + 'LinePrice' + i"
+                [(ngModel)]="line.unitPriceNet"
+                min="0"
+                step="any"
+              />
+            </fpc-form-field>
           </div>
           <div class="col-sm-4">
-            <label class="form-label" [for]="prefix + 'LineUnit' + i" i18n="@@featureAdminOffers-lineUnitLabel"
-              >Unit label</label
+            <fpc-form-field
+              [forId]="prefix + 'LineUnit' + i"
+              i18n-label="@@featureAdminOffers-lineUnitLabel"
+              label="Unit label"
             >
-            <input
-              class="form-control"
-              [id]="prefix + 'LineUnit' + i"
-              [name]="prefix + 'LineUnit' + i"
-              [(ngModel)]="line.unitLabel"
-            />
+              <fpc-form-control
+                [controlId]="prefix + 'LineUnit' + i"
+                [name]="prefix + 'LineUnit' + i"
+                [(ngModel)]="line.unitLabel"
+              />
+            </fpc-form-field>
           </div>
         </div>
-        <div class="mb-2">
-          <label class="form-label" [for]="prefix + 'LineScheduled' + i" i18n="@@featureAdminOffers-scheduledAt"
-            >Scheduled at (optional)</label
-          >
-          <input
-            type="datetime-local"
-            class="form-control"
-            [id]="prefix + 'LineScheduled' + i"
+        <fpc-form-field
+          [forId]="prefix + 'LineScheduled' + i"
+          i18n-label="@@featureAdminOffers-scheduledAt"
+          label="Scheduled at (optional)"
+        >
+          <fpc-form-control
+            inputType="datetime-local"
+            [controlId]="prefix + 'LineScheduled' + i"
             [name]="prefix + 'LineScheduled' + i"
             [(ngModel)]="line.scheduledAt"
           />
-        </div>
+        </fpc-form-field>
         <div class="mb-0">
           <span class="form-label d-block" i18n="@@featureAdminOffers-lineTaxCategory">VAT rate</span>
-          @for (option of taxCategoryOptions(); track option.value) {
-            <div class="form-check form-check-inline">
-              <input
+          <fpc-form-check-group inline>
+            @for (option of taxCategoryOptions(); track option.value) {
+              <fpc-form-check
                 type="radio"
-                class="form-check-input"
+                inline
                 [name]="prefix + 'LineTax' + i"
-                [id]="prefix + 'LineTax' + i + '_' + option.value"
+                [checkId]="prefix + 'LineTax' + i + '_' + option.value"
                 [value]="option.value"
                 [checked]="line.taxCategory === option.value"
-                (change)="onTaxCategoryChange(line, option.value)"
+                (valueSelect)="onTaxCategoryChange(line, $any($event))"
+                [label]="option.label"
               />
-              <label class="form-check-label" [attr.for]="prefix + 'LineTax' + i + '_' + option.value">{{
-                option.label
-              }}</label>
-            </div>
-          }
+            }
+          </fpc-form-check-group>
         </div>
       }
 
       @if (line.lineType === 'project_template') {
-        <div class="mb-2">
-          <label class="form-label" [for]="prefix + 'LineProjectName' + i" i18n="@@featureAdminOffers-projectName"
-            >Project name</label
-          >
-          <input
-            class="form-control"
-            [id]="prefix + 'LineProjectName' + i"
+        <fpc-form-field
+          [forId]="prefix + 'LineProjectName' + i"
+          i18n-label="@@featureAdminOffers-projectName"
+          label="Project name"
+          required
+        >
+          <fpc-form-control
+            [controlId]="prefix + 'LineProjectName' + i"
             [name]="prefix + 'LineProjectName' + i"
             [(ngModel)]="line.name"
             required
           />
-        </div>
-        <div class="mb-2">
-          <label
-            class="form-label"
-            [for]="prefix + 'LineProjectDesc' + i"
-            i18n="@@featureAdminOffers-projectDescription"
-            >Project description</label
-          >
-          <textarea
-            class="form-control"
-            rows="2"
-            [id]="prefix + 'LineProjectDesc' + i"
+        </fpc-form-field>
+        <fpc-form-field
+          [forId]="prefix + 'LineProjectDesc' + i"
+          i18n-label="@@featureAdminOffers-projectDescription"
+          label="Project description"
+        >
+          <fpc-form-control
+            controlType="textarea"
+            [rows]="2"
+            [controlId]="prefix + 'LineProjectDesc' + i"
             [name]="prefix + 'LineProjectDesc' + i"
             [(ngModel)]="line.projectDescription"
-          ></textarea>
-        </div>
-        <div class="row g-2 mb-2">
+          />
+        </fpc-form-field>
+        <div class="row g-2">
           <div class="col-sm-6">
-            <label class="form-label" [for]="prefix + 'LineHourlyRate' + i" i18n="@@featureAdminOffers-hourlyRateNet"
-              >Hourly rate (net)</label
+            <fpc-form-field
+              [forId]="prefix + 'LineHourlyRate' + i"
+              i18n-label="@@featureAdminOffers-hourlyRateNet"
+              label="Hourly rate (net)"
             >
-            <input
-              type="number"
-              class="form-control"
-              [id]="prefix + 'LineHourlyRate' + i"
-              [name]="prefix + 'LineHourlyRate' + i"
-              [(ngModel)]="line.hourlyRateNet"
-              min="0"
-              step="any"
-            />
+              <fpc-form-control
+                inputType="number"
+                [controlId]="prefix + 'LineHourlyRate' + i"
+                [name]="prefix + 'LineHourlyRate' + i"
+                [(ngModel)]="line.hourlyRateNet"
+                min="0"
+                step="any"
+              />
+            </fpc-form-field>
           </div>
           <div class="col-sm-6">
-            <label class="form-label" [for]="prefix + 'LineTargetHours' + i" i18n="@@featureAdminOffers-targetHours"
-              >Target hours</label
+            <fpc-form-field
+              [forId]="prefix + 'LineTargetHours' + i"
+              i18n-label="@@featureAdminOffers-targetHours"
+              label="Target hours"
             >
-            <input
-              type="number"
-              class="form-control"
-              [id]="prefix + 'LineTargetHours' + i"
-              [name]="prefix + 'LineTargetHours' + i"
-              [(ngModel)]="line.targetHours"
-              min="0"
-              step="any"
-            />
+              <fpc-form-control
+                inputType="number"
+                [controlId]="prefix + 'LineTargetHours' + i"
+                [name]="prefix + 'LineTargetHours' + i"
+                [(ngModel)]="line.targetHours"
+                min="0"
+                step="any"
+              />
+            </fpc-form-field>
           </div>
         </div>
       }
 
       @if (line.lineType === 'plan_template') {
-        <div class="mb-2">
-          <label class="form-label" [for]="prefix + 'LinePlan' + i" i18n="@@featureAdminOffers-plan"
-            >Service plan</label
-          >
+        <fpc-form-field
+          [forId]="prefix + 'LinePlan' + i"
+          i18n-label="@@featureAdminOffers-plan"
+          label="Service plan"
+          required
+        >
           @if (plansLoading()) {
             <div class="text-muted small" i18n="@@featureAdminOffers-loadingPlans">Loading plans…</div>
           } @else {
-            <select
-              class="form-select"
-              [id]="prefix + 'LinePlan' + i"
+            <fpc-form-control
+              controlType="select"
+              [controlId]="prefix + 'LinePlan' + i"
               [name]="prefix + 'LinePlan' + i"
               [ngModel]="line.planId"
               (ngModelChange)="onPlanIdChange(line, $event)"
@@ -187,22 +195,22 @@
             >
               <option value="" i18n="@@featureAdminOffers-selectPlan">Select a plan</option>
               @for (plan of servicePlans(); track plan.id) {
-                <option [ngValue]="plan.id">{{ planLabel(plan) }}</option>
+                <option [value]="plan.id">{{ planLabel(plan) }}</option>
               }
-            </select>
+            </fpc-form-control>
           }
-        </div>
-        <div class="mb-2">
-          <label class="form-label" [for]="prefix + 'LinePromo' + i" i18n="@@featureAdminOffers-promotionCode"
-            >Promotion code (optional)</label
-          >
-          <input
-            class="form-control"
-            [id]="prefix + 'LinePromo' + i"
+        </fpc-form-field>
+        <fpc-form-field
+          [forId]="prefix + 'LinePromo' + i"
+          i18n-label="@@featureAdminOffers-promotionCode"
+          label="Promotion code (optional)"
+        >
+          <fpc-form-control
+            [controlId]="prefix + 'LinePromo' + i"
             [name]="prefix + 'LinePromo' + i"
             [(ngModel)]="line.promotionCode"
           />
-        </div>
+        </fpc-form-field>
         @if (line.planId.trim()) {
           <framework-plan-order-configurator
             [prefix]="prefix"
@@ -215,32 +223,35 @@
       }
 
       @if (line.lineType !== 'standard') {
-        <div class="mb-0 mt-2">
-          <label class="form-label" [for]="prefix + 'LineScheduled' + i" i18n="@@featureAdminOffers-scheduledAt"
-            >Scheduled at (optional)</label
-          >
-          <input
-            type="datetime-local"
-            class="form-control"
-            [id]="prefix + 'LineScheduled' + i"
+        <fpc-form-field
+          class="mt-2"
+          [forId]="prefix + 'LineScheduled' + i"
+          i18n-label="@@featureAdminOffers-scheduledAt"
+          label="Scheduled at (optional)"
+        >
+          <fpc-form-control
+            inputType="datetime-local"
+            [controlId]="prefix + 'LineScheduled' + i"
             [name]="prefix + 'LineScheduled' + i"
             [(ngModel)]="line.scheduledAt"
           />
-        </div>
+        </fpc-form-field>
       }
 
       @if (lines.length > 1) {
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-danger mt-2"
-          (click)="removeLine(i)"
+        <fpc-button
+          variant="danger"
+          size="sm"
+          iconOnly
+          (clicked)="removeLine(i)"
           title="Remove line"
           i18n-title="@@featureAdminInvoices-removeLine"
-          aria-label="Remove line"
-          i18n-aria-label="@@featureAdminInvoices-removeLine"
+          ariaLabel="Remove line"
+          i18n-ariaLabel="@@featureAdminInvoices-removeLine"
+          class="mt-2"
         >
           <i class="bi bi-trash" aria-hidden="true"></i>
-        </button>
+        </fpc-button>
       }
     </div>
 
@@ -254,14 +265,15 @@
   </div>
 }
 
-<button
-  type="button"
-  class="btn btn-sm btn-outline-secondary"
-  (click)="addLine()"
+<fpc-button
+  variant="dark"
+  size="sm"
+  iconOnly
+  (clicked)="addLine()"
   title="Add line item"
   i18n-title="@@featureAdminInvoices-addLineItem"
-  aria-label="Add line item"
-  i18n-aria-label="@@featureAdminInvoices-addLineItem"
+  ariaLabel="Add line item"
+  i18n-ariaLabel="@@featureAdminInvoices-addLineItem"
 >
   <i class="bi bi-plus" aria-hidden="true"></i>
-</button>
+</fpc-button>

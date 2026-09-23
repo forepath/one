@@ -7,12 +7,14 @@
         <p class="hero-lead lead fs-5 mb-4 mx-auto" i18n="@@featureDecabillLegalPrivacy-gdprInfo">
           Information in accordance with Section 13 of the GDPR
         </p>
-        <p
-          class="badge bg-light text-dark mt-2 mb-0 fs-6 fw-normal py-2 px-3"
+        <fpc-badge
+          variant="marketing"
+          color="light"
+          class="mt-2 mb-0 fs-6 fw-normal"
           i18n="@@featureDecabillLegalPrivacy-lastUpdated"
         >
           Last updated: January 1, 2026
-        </p>
+        </fpc-badge>
       </div>
     </div>
   </div>
@@ -382,12 +384,15 @@
             your rights, or need clarification on any aspect of our privacy policy, please reach out.
           </p>
           <div class="d-flex gap-3 justify-content-center flex-wrap">
-            <a
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
               routerLink="/contact"
-              class="btn btn-primary btn-lg rounded-3 cta-btn cta-btn-primary"
               i18n="@@featureDecabillLegalPrivacy-ctaContact"
-              ><i class="bi bi-envelope" aria-hidden="true"></i>Contact us</a
             >
+              <i class="bi bi-envelope" aria-hidden="true"></i>Contact us
+            </fpc-button>
           </div>
         </div>
       </div>

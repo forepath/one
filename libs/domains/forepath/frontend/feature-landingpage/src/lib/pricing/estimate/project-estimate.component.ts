@@ -26,6 +26,7 @@ import {
   type ProjectEstimatorDebugPreset,
 } from '@forepath/forepath/frontend/data-access-project-estimator';
 import { storeContactMessagePrefill } from '@forepath/shared/frontend/feature-landingpage';
+import { FpcAlertComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { firstValueFrom, map } from 'rxjs';
@@ -42,6 +43,8 @@ import { ForepathProjectEstimateLoadingPanelComponent } from './project-estimate
     FormsModule,
     ForepathProjectEstimateDebugPanelComponent,
     ForepathProjectEstimateLoadingPanelComponent,
+    FpcAlertComponent,
+    FpcButtonComponent,
     NgClass,
     RouterModule,
   ],

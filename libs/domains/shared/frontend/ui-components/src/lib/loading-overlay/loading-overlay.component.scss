@@ -1,0 +1,44 @@
+:host {
+  display: none;
+}
+
+:host(.fpc-loading-overlay--active) {
+  display: block;
+}
+
+:host(.fpc-loading-overlay--fixed.fpc-loading-overlay--active) {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+:host(.fpc-loading-overlay--fixed) .fpc-loading-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 9999;
+}
+
+:host(.fpc-loading-overlay--fixed) .fpc-loading-overlay__backdrop--dim {
+  background-color: var(--bs-tertiary-bg);
+}
+
+.fpc-loading-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.fpc-loading-overlay__backdrop--dim {
+  // Bootstrap's RGB channel variable keeps the tint theme-aware in light and dark mode.
+  background-color: rgb(var(--bs-body-bg-rgb, 255 255 255) / 0.7);
+}
+
+.fpc-loading-overlay__message {
+  color: var(--bs-secondary-color);
+  font-size: 0.875rem;
+}

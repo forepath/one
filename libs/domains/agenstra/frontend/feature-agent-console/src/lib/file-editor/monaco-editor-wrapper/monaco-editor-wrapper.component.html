@@ -48,11 +48,12 @@
         <div
           class="editor-toolbar d-flex align-items-center justify-content-between p-2 border-bottom bg-body-tertiary"
         >
-          <div class="btn-group btn-group-sm me-2" role="group">
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              (click)="undo()"
+          <fpc-button-group size="sm" class="me-2">
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              (clicked)="undo()"
               [disabled]="isBinary()"
               data-bs-toggle="tooltip"
               data-bs-placement="bottom"
@@ -60,11 +61,12 @@
               title="Undo (Ctrl+Z)"
             >
               <i class="bi bi-arrow-counterclockwise"></i>
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              (click)="redo()"
+            </fpc-button>
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              (clicked)="redo()"
               [disabled]="isBinary()"
               data-bs-toggle="tooltip"
               data-bs-placement="bottom"
@@ -72,20 +74,19 @@
               title="Redo (Ctrl+Y)"
             >
               <i class="bi bi-arrow-clockwise"></i>
-            </button>
-          </div>
+            </fpc-button>
+          </fpc-button-group>
           @if (isPreviewable()) {
-            <button
-              type="button"
-              class="btn btn-sm"
-              [class.btn-outline-secondary]="!previewVisible()"
-              [class.btn-secondary]="previewVisible()"
-              (click)="togglePreview()"
+            <fpc-button
+              size="sm"
+              iconOnly
+              [variant]="previewVisible() ? 'primary' : 'secondary'"
+              (clicked)="togglePreview()"
               i18n-title="@@featureMonacoEditor-togglePreviewTitle"
               title="Toggle preview"
             >
               <i class="bi bi-search"></i>
-            </button>
+            </fpc-button>
           }
         </div>
         <ngx-monaco-editor

@@ -411,13 +411,13 @@
         <source><x id="title" equiv-text="n.title"/> · <x id="sha" equiv-text="n.shas.short"/></source>
         <target><x id="title" equiv-text="n.title"/> · <x id="sha" equiv-text="n.shas.short"/></target>
       </trans-unit>
+      <trans-unit id="featureAudit-pageTitle" datatype="html">
+        <source>Audit</source>
+        <target>Audit</target>
+      </trans-unit>
       <trans-unit id="featureAudit-filtersTitle" datatype="html">
         <source>Filters</source>
         <target>Filter</target>
-      </trans-unit>
-      <trans-unit id="featureAudit-toggleFiltersTitle" datatype="html">
-        <source>Toggle filters</source>
-        <target>Filter ein-/ausblenden</target>
       </trans-unit>
       <trans-unit id="featureAudit-clientLabel" datatype="html">
         <source>Client</source>
@@ -426,6 +426,18 @@
       <trans-unit id="featureAudit-allClients" datatype="html">
         <source>All clients</source>
         <target>Alle Clients</target>
+      </trans-unit>
+      <trans-unit id="featureClientSelect-placeholder" datatype="html">
+        <source>Search by name or ID</source>
+        <target>Nach Name oder ID suchen</target>
+      </trans-unit>
+      <trans-unit id="featureClientSelect-clearSelectionAria" datatype="html">
+        <source>Clear selected client</source>
+        <target>Ausgewählten Client löschen</target>
+      </trans-unit>
+      <trans-unit id="featureClientSelect-noClients" datatype="html">
+        <source>No clients found.</source>
+        <target>Keine Clients gefunden.</target>
       </trans-unit>
       <trans-unit id="featureAudit-fromDateLabel" datatype="html">
         <source>From</source>
@@ -775,6 +787,10 @@
         <source>Share file link</source>
         <target>Dateilink teilen</target>
       </trans-unit>
+      <trans-unit id="featureChat-shareFileLinkCopied" datatype="html">
+        <source>Link copied</source>
+        <target>Link kopiert</target>
+      </trans-unit>
       <trans-unit id="featureChat-closeEditor" datatype="html">
         <source>Close Editor</source>
         <target>Editor schließen</target>
@@ -924,8 +940,8 @@
         <target>Remote-Arbeitsbereichskonfiguration</target>
       </trans-unit>
       <trans-unit id="featureChat-noMessages" datatype="html">
-        <source>No messages yet. Start a conversation!</source>
-        <target>Noch keine Nachrichten. Starten Sie eine Unterhaltung!</target>
+        <source>No messages yet</source>
+        <target>Noch keine Nachrichten</target>
       </trans-unit>
       <trans-unit id="featureChat-messageDropped" datatype="html">
         <source>Message Dropped</source>
@@ -1075,40 +1091,40 @@
         <target>Server bereitstellen</target>
       </trans-unit>
       <trans-unit id="featureChat-nameLabel" datatype="html">
-        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Name</source>
+        <target>Name</target>
       </trans-unit>
       <trans-unit id="featureChat-descriptionLabel" datatype="html">
         <source>Description</source>
         <target>Beschreibung</target>
       </trans-unit>
       <trans-unit id="featureChat-providerLabel" datatype="html">
-        <source>Provider <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Anbieter <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Anbieter</source>
+        <target>Anbieter</target>
       </trans-unit>
       <trans-unit id="featureChat-selectProvider" datatype="html">
         <source>Select provider</source>
         <target>Anbieter auswählen</target>
       </trans-unit>
       <trans-unit id="featureChat-serverTypeLabel" datatype="html">
-        <source>Server Type <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Servertyp <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Servertyp</source>
+        <target>Servertyp</target>
       </trans-unit>
       <trans-unit id="featureChat-selectServerType" datatype="html">
         <source>Select server type</source>
         <target>Servertyp auswählen</target>
       </trans-unit>
       <trans-unit id="featureChat-endpointLabel" datatype="html">
-        <source>Endpoint <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Endpunkt <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Endpunkt</source>
+        <target>Endpunkt</target>
       </trans-unit>
       <trans-unit id="featureChat-endpointPlaceholder" datatype="html">
         <source>https://example.com</source>
         <target>https://example.com</target>
       </trans-unit>
       <trans-unit id="featureChat-authTypeLabel" datatype="html">
-        <source>Authentication Type <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Authentifizierungstyp <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Authentifizierungstyp</source>
+        <target>Authentifizierungstyp</target>
       </trans-unit>
       <trans-unit id="featureChat-apiKeyAutoGeneratePlaceholder" datatype="html">
         <source>Leave empty to auto-generate</source>
@@ -1361,12 +1377,12 @@
         <target>Neue Umgebungsvariable hinzufügen</target>
       </trans-unit>
       <trans-unit id="featureChat-envVarNameLabel" datatype="html">
-        <source>Variable Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Variablenname <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Variablenname</source>
+        <target>Variablenname</target>
       </trans-unit>
       <trans-unit id="featureChat-envVarValueLabel" datatype="html">
-        <source>Value <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Wert <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Wert</source>
+        <target>Wert</target>
       </trans-unit>
       <trans-unit id="featureChat-envVarNamePlaceholder" datatype="html">
         <source>VARIABLE_NAME</source>
@@ -1449,8 +1465,8 @@
         <target> Zurücksetzen </target>
       </trans-unit>
       <trans-unit id="featureTicketAutonomyManager-save" datatype="html">
-        <source><x id="START_BLOCK_IF" equiv-text="@if (autonomySaving()) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/> Save </source>
-        <target><x id="START_BLOCK_IF" equiv-text="@if (autonomySaving()) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm me-1&quot; role=&quot;status&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/> Speichern</target>
+        <source>Save</source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureChat-manageClientUsersModalTitle" datatype="html">
         <source> Manage Workspace Users </source>
@@ -1639,6 +1655,10 @@
       <trans-unit id="featureContainer-languageSwitcherAriaLabel" datatype="html">
         <source>Select language</source>
         <target>Sprache auswählen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-sidebarAriaLabel" datatype="html">
+        <source>Main navigation</source>
+        <target>Hauptnavigation</target>
       </trans-unit>
       <trans-unit id="featureContainer-toggleDarkMode" datatype="html">
         <source>Toggle dark mode</source>
@@ -1829,11 +1849,11 @@
         <target>Workflow auslösen</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-noConfigMessage" datatype="html">
-        <source>No deployment configuration found. Create one to get started.</source>
-        <target>Keine Deployment-Konfiguration gefunden. Erstellen Sie eine, um zu beginnen.</target>
+        <source>No deployment configuration yet</source>
+        <target>Noch keine Deployment-Konfiguration</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-createConfigButton" datatype="html">
-        <source> Create Configuration </source>
+        <source>Create Configuration</source>
         <target>Konfiguration erstellen</target>
       </trans-unit>
       
@@ -1974,8 +1994,8 @@
         <target>Laufdetails schließen</target>
       </trans-unit>
       <trans-unit id="featureDeploymentManager-noRunSelected" datatype="html">
-        <source>No run selected</source>
-        <target>Kein Lauf ausgewählt</target>
+        <source>No run selected yet</source>
+        <target>Noch kein Lauf ausgewählt</target>
       </trans-unit>
       <trans-unit id="featureDeploymentManager-selectRunHint" datatype="html">
         <source>Select a run from the list to view details</source>
@@ -2142,12 +2162,8 @@
         <target>Datei wird geladen...</target>
       </trans-unit>
       <trans-unit id="featureFileEditor-noFileSelected" datatype="html">
-        <source>No file selected</source>
-        <target>Keine Datei ausgewählt</target>
-      </trans-unit>
-      <trans-unit id="featureFileEditor-selectFileHint" datatype="html">
-        <source>Select a file from the tree to start editing</source>
-        <target>Wählen Sie eine Datei aus dem Baum, um mit der Bearbeitung zu beginnen</target>
+        <source>No file selected yet</source>
+        <target>Noch keine Datei ausgewählt</target>
       </trans-unit>
       <trans-unit id="featureFileEditor-closeTerminalTitle" datatype="html">
         <source>Close Terminal</source>
@@ -2633,25 +2649,33 @@
         <source>Search pages</source>
         <target>Seiten suchen</target>
       </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-selectSpacePrefix" datatype="html">
-        <source>Select a space from</source>
-        <target>Wähle einen Space aus</target>
-      </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-selectSpaceLink" datatype="html">
-        <source>Spaces</source>
-        <target>Spaces</target>
-      </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-selectSpaceSuffix" datatype="html">
-        <source>to load pages.</source>
-        <target>um Seiten zu laden.</target>
+      <trans-unit id="featureKnowledgeBoard-noWorkspaceSelected" datatype="html">
+        <source>No workspace selected yet</source>
+        <target>Noch kein Workspace ausgewählt</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-chooseWorkspace" datatype="html">
         <source>Choose workspace…</source>
         <target>Workspace auswählen…</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-addRelations" datatype="html">
-        <source> Add relations </source>
+        <source>Add relations</source>
         <target>Beziehungen hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-relationsHeading" datatype="html">
+        <source>Relations</source>
+        <target>Beziehungen</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-descriptionHeading" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-relationsEmpty" datatype="html">
+        <source>No relations yet.</source>
+        <target>Noch keine Beziehungen.</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-openRelationTitle" datatype="html">
+        <source>Open relation</source>
+        <target>Beziehung öffnen</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-loadingRelations" datatype="html">
         <source>Loading relations...</source>
@@ -2674,8 +2698,8 @@
         <target>Noch keine Aktivität</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-selectPageHint" datatype="html">
-        <source> Select a page from the tree to start editing. </source>
-        <target>Wähle eine Seite im Baum aus, um mit der Bearbeitung zu beginnen.</target>
+        <source>No page selected yet</source>
+        <target>Noch keine Seite ausgewählt</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-searchPagesModalTitle" datatype="html">
         <source> Search pages </source>
@@ -2726,8 +2750,8 @@
         <target>Workspace wechseln</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-noWorkspaces" datatype="html">
-        <source> You don&apos;t have any workspaces yet. </source>
-        <target>Sie haben noch keine Workspaces.</target>
+        <source>No workspaces yet</source>
+        <target>Noch keine Workspaces</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-goToSpaces" datatype="html">
         <source>Go to Spaces</source>
@@ -3190,32 +3214,20 @@
         <target>Workspaces werden geladen…</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherEmpty" datatype="html">
-        <source>You don&apos;t have any workspaces yet.</source>
-        <target>Sie haben noch keine Workspaces.</target>
+        <source>No workspaces yet</source>
+        <target>Noch keine Workspaces</target>
       </trans-unit>
-      <trans-unit id="featureTicketsBoard-workspaceSwitcherEmptyHint" datatype="html">
-        <source> Create one from Spaces, or open Spaces if a workspace was shared with you. </source>
-        <target>Legen Sie einen unter Bereiche an, oder öffnen Sie Bereiche, falls ein Workspace für Sie freigegeben wurde.</target>
-      </trans-unit>
-      <trans-unit id="featureTicketsBoard-goToSpaces" datatype="html">
-        <source>Go to Spaces</source>
-        <target>Zu Bereichen</target>
-      </trans-unit>
-      <trans-unit id="featureTicketsBoard-selectSpacePrefix" datatype="html">
-        <source>Select a space from</source>
-        <target>Um Tickets zu laden, wählen Sie einen Bereich unter</target>
-      </trans-unit>
-      <trans-unit id="featureTicketsBoard-selectSpaceLink" datatype="html">
-        <source>Spaces</source>
-        <target>Bereiche</target>
-      </trans-unit>
-      <trans-unit id="featureTicketsBoard-selectSpaceSuffix" datatype="html">
-        <source>to load tickets.</source>
-        <target>.</target>
+      <trans-unit id="featureTicketsBoard-noWorkspaceSelected" datatype="html">
+        <source>No workspace selected yet</source>
+        <target>Noch kein Workspace ausgewählt</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-chooseWorkspaceButton" datatype="html">
         <source>Choose workspace…</source>
         <target>Workspace wählen…</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-goToSpaces" datatype="html">
+        <source>Go to Spaces</source>
+        <target>Zu Spaces</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-loading" datatype="html">
         <source>Loading tickets…</source>
@@ -3334,21 +3346,41 @@
         <source>Subtasks</source>
         <target>Unteraufgaben</target>
       </trans-unit>
+      <trans-unit id="featureTicketsBoard-subtasksEmpty" datatype="html">
+        <source>No subtasks yet.</source>
+        <target>Noch keine Unteraufgaben.</target>
+      </trans-unit>
       <trans-unit id="featureTicketsBoard-openSubtaskTitle" datatype="html">
         <source>Open subtask</source>
         <target>Unteraufgabe öffnen</target>
       </trans-unit>
+      <trans-unit id="featureTicketsBoard-relationsHeading" datatype="html">
+        <source>Relations</source>
+        <target>Beziehungen</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-relationsEmpty" datatype="html">
+        <source>No relations yet.</source>
+        <target>Noch keine Beziehungen.</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-openRelationTitle" datatype="html">
+        <source>Open relation</source>
+        <target>Beziehung öffnen</target>
+      </trans-unit>
       <trans-unit id="featureTicketsBoard-addRelations" datatype="html">
-        <source> Add relations </source>
+        <source>Add relations</source>
         <target>Beziehungen hinzufügen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-loadingRelations" datatype="html">
-        <source> Loading relations... </source>
+        <source>Loading relations...</source>
         <target>Beziehungen werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-removeRelationTitle" datatype="html">
         <source>Remove relation</source>
         <target>Beziehung entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-removeRelationTarget" datatype="html">
+        <source>Remove relation target</source>
+        <target>Beziehungsziel entfernen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationAccordionTitle" datatype="html">
         <source>Autonomous prototyping</source>
@@ -3475,8 +3507,8 @@
         <target>Entfernen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationSaving" datatype="html">
-        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm text-primary&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> Saving automation settings… </source>
-        <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;spinner-border spinner-border-sm text-primary&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> Automatisierungseinstellungen werden gespeichert...</target>
+        <source><x id="START_TAG_FPC_SPINNER" ctype="x-fpc_spinner" equiv-text="&lt;fpc-spinner size=&quot;sm&quot; variant=&quot;primary&quot;/&gt;"/> Saving automation settings… </source>
+        <target><x id="START_TAG_FPC_SPINNER" ctype="x-fpc_spinner" equiv-text="&lt;fpc-spinner size=&quot;sm&quot; variant=&quot;primary&quot;/&gt;"/> Automatisierungseinstellungen werden gespeichert...</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationApprove" datatype="html">
         <source> Approve </source>
@@ -4468,16 +4500,16 @@
         <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailLabel" datatype="html">
-        <source>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>E-Mail <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>E-Mail</source>
+        <target>E-Mail</target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailPlaceholder" datatype="html">
         <source>user@example.com</source>
         <target>user@example.com</target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordLabel" datatype="html">
-        <source>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Passwort <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Passwort</source>
+        <target>Passwort</target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordPlaceholder" datatype="html">
         <source>Min. 8 characters</source>
@@ -4591,8 +4623,8 @@
       </trans-unit>
       
       <trans-unit id="featureTokenManager-nameLabel" datatype="html">
-        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Name</source>
+        <target>Name</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-expiresAtLabel" datatype="html">
         <source>Expires at</source>
@@ -4603,8 +4635,8 @@
         <target>Optional. Leer lassen für ein Token ohne Ablaufdatum.</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-scopesLabel" datatype="html">
-        <source>Scopes <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Berechtigungen <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Scopes</source>
+        <target>Scopes</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-loadingScopes" datatype="html">
         <source>Loading scopes...</source>
@@ -4909,12 +4941,12 @@
         <target> Bitte geben Sie eine gültige E-Mail-Adresse ein. </target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
-        <source>Phone <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target> Telefon <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> </target>
+        <source>Phone (optional)</source>
+        <target>Telefon (optional)</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
-        <source>Company <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target> Unternehmen <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> </target>
+        <source>Company (optional)</source>
+        <target>Unternehmen (optional)</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
         <source>Message</source>
@@ -5077,16 +5109,16 @@
         <target>Aktualisieren</target>
       </trans-unit>
       <trans-unit id="featureNotifications-nameLabel" datatype="html">
-        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Name</source>
+        <target>Name</target>
       </trans-unit>
       <trans-unit id="featureNotifications-httpMethodLabel" datatype="html">
         <source>HTTP method</source>
         <target>HTTP-Methode</target>
       </trans-unit>
       <trans-unit id="featureNotifications-urlLabel" datatype="html">
-        <source>URL <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>URL <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>URL</source>
+        <target>URL</target>
       </trans-unit>
       <trans-unit id="featureNotifications-clientLabel" datatype="html">
         <source>Client</source>
@@ -5121,20 +5153,20 @@
         <target>Aktiviert</target>
       </trans-unit>
       <trans-unit id="featureNotifications-authHeaderNameLabel" datatype="html">
-        <source>Header name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Header-Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Header-Name</source>
+        <target>Header-Name</target>
       </trans-unit>
       <trans-unit id="featureNotifications-authValueLabel" datatype="html">
-        <source> Auth value <x id="START_BLOCK_IF" equiv-text="@if (!hasExistingAuthValue) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/></source>
-        <target> Authentifizierungswert <x id="START_BLOCK_IF" equiv-text="@if (!hasExistingAuthValue) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/></target>
+        <source>Auth-Wert</source>
+        <target>Auth-Wert</target>
       </trans-unit>
       <trans-unit id="featureNotifications-authValueKeepHint" datatype="html">
         <source>Leave empty to keep the current value</source>
         <target>Leer lassen, um den aktuellen Wert beizubehalten</target>
       </trans-unit>
       <trans-unit id="featureNotifications-subscribedEventsLabel" datatype="html">
-        <source>Subscribed events <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Abonnierte Ereignisse <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Abonnierte Ereignisse</source>
+        <target>Abonnierte Ereignisse</target>
       </trans-unit>
       <trans-unit id="featureNotifications-loadingEventTypes" datatype="html">
         <source>Loading event types...</source>

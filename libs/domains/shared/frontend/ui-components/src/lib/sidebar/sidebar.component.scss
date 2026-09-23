@@ -1,0 +1,71 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-width: var(--fpc-sidebar-width, calc(2rem + 40.5px));
+  width: var(--fpc-sidebar-width, calc(2rem + 40.5px));
+  height: 100%;
+  min-height: 0;
+  position: relative;
+  // Do not use `isolation: isolate` — it traps `fpc-sidebar-popover`'s `position: fixed`
+  // panel in this stacking context so it paints under the main shell.
+  background-color: var(--bs-tertiary-bg);
+  border-right: var(--bs-border-width) solid var(--bs-border-color);
+  // Clip the rail; scrolling lives on `__items` so a footer trigger can stay pinned.
+  overflow: hidden;
+  // Hover/active tints for rail + popover tiles (inherited by projected content).
+  --sidebar-item-hover-bg: rgb(0 0 0 / 0.05);
+  --sidebar-item-active-bg: rgb(0 0 0 / 0.05);
+  // Light: soft lift + opposite tilt. Dark overrides shade + angle below.
+  --fpc-sidebar-shade: color-mix(in srgb, var(--bs-white) 22%, transparent);
+  --fpc-sidebar-shade-angle: 155deg;
+}
+
+// Soft top→bottom grayscale wash under the rail (same language as top-bar / modal footer).
+:host::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(var(--fpc-sidebar-shade-angle), var(--fpc-sidebar-shade) 0%, transparent 55%);
+}
+
+:host-context(html[data-bs-theme='dark']) {
+  --sidebar-item-hover-bg: rgb(255 255 255 / 0.075);
+  --sidebar-item-active-bg: rgb(255 255 255 / 0.075);
+  // Dark tertiary: deepen with black, mirrored angle.
+  --fpc-sidebar-shade: color-mix(in srgb, var(--bs-black) 22%, transparent);
+  --fpc-sidebar-shade-angle: 205deg;
+}
+
+.fpc-sidebar__items {
+  // Block flow (not flex): projected 72×72 tiles keep their height. A flex column would
+  // flex-shrink them because emulated encapsulation cannot style projected children with `> *`.
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+  z-index: 1;
+
+  // The rail is narrow, so the scrollbar only appears while pointing at it.
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  &:hover::-webkit-scrollbar {
+    display: block;
+  }
+}
+
+.fpc-sidebar__footer {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.fpc-sidebar__footer:empty {
+  display: none;
+}

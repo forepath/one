@@ -1,0 +1,16 @@
+:host {
+  display: contents;
+}
+
+.fpc-toast-container__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: var(--bs-toast-zindex, 1090);
+  pointer-events: none;
+
+  // Only the toasts themselves should capture pointer events.
+  > * {
+    pointer-events: auto;
+  }
+}

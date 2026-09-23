@@ -3,6 +3,13 @@ import { ChangeDetectionStrategy, Component, HostListener, computed, inject, LOC
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { ENVIRONMENT, LocaleService, type Environment } from '@forepath/shared/frontend/util-configuration';
+import {
+  FpcButtonComponent,
+  FpcDropdownComponent,
+  FpcDropdownItemComponent,
+  FpcLanguageSwitcherComponent,
+  type FpcLocaleOption,
+} from '@forepath/shared/frontend/ui-components';
 import { filter, map, startWith } from 'rxjs';
 
 import { PORTAL_COMPARISON_NAV_ITEMS } from '../comparison/shared/misc/comparison-nav.items';
@@ -27,7 +34,14 @@ function isComparisonDropdownRoutePath(path: string): boolean {
 
 @Component({
   selector: 'framework-portal-container',
-  imports: [CommonModule, RouterModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FpcButtonComponent,
+    FpcDropdownComponent,
+    FpcDropdownItemComponent,
+    FpcLanguageSwitcherComponent,
+  ],
   styleUrls: ['./container.component.scss'],
   templateUrl: './container.component.html',
   standalone: true,
@@ -50,6 +64,11 @@ export class PortalContainerComponent {
 
   readonly comparisonNavItems = PORTAL_COMPARISON_NAV_ITEMS;
 
+  readonly footerLocales: readonly FpcLocaleOption[] = this.localeService.getAvailableLocales().map((locale) => ({
+    ...locale,
+    href: this.localeService.getLanguageSwitchUrl(locale.code),
+  }));
+
   private readonly navUrl = toSignal(
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd),
@@ -64,6 +83,7 @@ export class PortalContainerComponent {
   );
 
   readonly mobileMenuOpen = signal<boolean>(false);
+  readonly comparisonNavOpen = signal(false);
   readonly isScrolled = signal<boolean>(false);
 
   @HostListener('window:scroll')
@@ -77,5 +97,6 @@ export class PortalContainerComponent {
 
   closeMobileMenu(): void {
     this.mobileMenuOpen.set(false);
+    this.comparisonNavOpen.set(false);
   }
 }

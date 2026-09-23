@@ -87,7 +87,7 @@ export function getProvisioningStatusLabel(status: string | null | undefined): s
   }
 }
 
-/** Status chip modifier paired with global `.info-badge` base classes. */
+/** Status chip modifier paired with `fpc-badge variant="info"`. */
 export function getProvisioningStatusBadgeClass(status: string | null | undefined): string {
   switch (status) {
     case 'pending':
@@ -149,7 +149,7 @@ export function getInvoiceStatusLabel(status: string | null | undefined): string
   }
 }
 
-/** Status chip modifier paired with global `.info-badge` base classes. */
+/** Status chip modifier paired with `fpc-badge variant="info"`. */
 export function getSubscriptionStatusBadgeClass(status: string | null | undefined): string {
   switch (status) {
     case 'active':
@@ -588,7 +588,7 @@ export function getOfferStatusLabel(status: string | null | undefined): string {
   }
 }
 
-/** Status chip modifier paired with global `.info-badge` base classes. */
+/** Status chip modifier paired with `fpc-badge variant="info"`. */
 export function getOfferStatusBadgeClass(status: string | null | undefined): string {
   switch (status) {
     case 'draft':

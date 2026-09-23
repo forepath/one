@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -9,6 +9,23 @@ import {
   type MeterResponse,
   type UpdateMeterDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcConfirmDialogComponent,
+  FpcFormSwitchComponent,
+  FpcListComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
 
 import { getActiveStatusLabel, getActiveStatusTextClass, getMeterAggregatorLabel } from '../billing-status-labels';
@@ -28,14 +45,36 @@ interface MeterForm {
 @Component({
   selector: 'framework-billing-meters-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcConfirmDialogComponent,
+    FpcFormSwitchComponent,
+    FpcListItemComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './meters-page.component.html',
   styleUrls: ['./meters-page.component.scss'],
 })
 export class MetersPageComponent implements OnInit {
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteConfirmModal', { static: false }) private deleteConfirmModal!: ElementRef<HTMLDivElement>;
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly deleteConfirmModalOpen = signal(false);
+
+  readonly pageTitle = $localize`:@@featureMeters-title:Usage meters`;
+  readonly addMeterAriaLabel = $localize`:@@featureMeters-add:Add meter`;
+  readonly searchPlaceholder = $localize`:@@featureMeters-searchPlaceholder:Search meters`;
 
   private readonly facade = inject(MetersFacade);
   private readonly destroyRef = inject(DestroyRef);
@@ -69,7 +108,7 @@ export class MetersPageComponent implements OnInit {
 
   openCreateModal(): void {
     this.createForm = this.defaultForm();
-    showBillingModal(this.createModal);
+    showBillingModal(this.createModalOpen);
   }
 
   openEditModal(meter: MeterResponse): void {
@@ -84,12 +123,12 @@ export class MetersPageComponent implements OnInit {
       defaultIncludedUsage: meter.defaultIncludedUsage ?? 0,
       isActive: meter.isActive,
     };
-    showBillingModal(this.editModal);
+    showBillingModal(this.editModalOpen);
   }
 
   openDeleteConfirm(meter: MeterResponse): void {
     this.meterToDelete = meter;
-    showBillingModal(this.deleteConfirmModal);
+    showBillingModal(this.deleteConfirmModalOpen);
   }
 
   onSubmitCreate(): void {
@@ -172,7 +211,7 @@ export class MetersPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.creating$,
       error$: this.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.createForm = this.defaultForm();
@@ -181,7 +220,7 @@ export class MetersPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.updating$,
       error$: this.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.editForm = { ...this.defaultForm(), id: '' };
@@ -190,7 +229,7 @@ export class MetersPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.deleting$,
       error$: this.error$,
-      modal: () => this.deleteConfirmModal,
+      open: this.deleteConfirmModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.meterToDelete = null;

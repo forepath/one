@@ -35,15 +35,16 @@
             Allow the permission below to generate your quote. Your project details stay private and are not sent to our
             servers.
           </p>
-          <button
-            type="button"
-            class="btn btn-primary btn-lg rounded-3 cta-btn"
-            (click)="requestGpuAccess()"
-            [disabled]="isRequestingGpuAccess()"
+          <fpc-button
+            variant="primary"
+            size="xl"
+            btnClass="rounded-3"
             i18n="@@featureForepathProjectEstimate-gpuPermissionButton"
+            (clicked)="requestGpuAccess()"
+            [disabled]="isRequestingGpuAccess()"
           >
             <i class="bi bi-shield-lock" aria-hidden="true"></i>Continue securely
-          </button>
+          </fpc-button>
         </div>
       } @else if (isDeviceUnsupported()) {
         <div class="estimate-chat__overlay-card text-center w-100">
@@ -56,12 +57,15 @@
           <p class="text-muted mb-4" i18n="@@featureForepathProjectEstimate-unsupportedHelp">
             We can still review your project manually and provide a tailored quote.
           </p>
-          <a
+          <fpc-button
+            variant="primary"
+            size="xl"
+            btnClass="rounded-3"
             routerLink="/contact"
-            class="btn btn-primary btn-lg rounded-3 cta-btn"
             i18n="@@featureForepathProjectEstimate-contactButton"
-            ><i class="bi bi-envelope" aria-hidden="true"></i>Contact us</a
           >
+            <i class="bi bi-envelope" aria-hidden="true"></i>Contact us
+          </fpc-button>
         </div>
       } @else if (showOverlay()) {
         <framework-forepath-project-estimate-loading-panel [mode]="overlayKind()!" />
@@ -127,14 +131,15 @@
                           </ul>
                         </div>
                       }
-                      <div
-                        class="alert alert-warning estimate-notice-alert mb-0"
-                        role="alert"
+                      <fpc-alert
+                        class="estimate-notice-alert"
+                        variant="warning"
+                        [showIcon]="false"
                         i18n-aria-label="@@featureForepathProjectEstimate-disclaimerAriaLabel"
                         aria-label="Estimate disclaimer"
                       >
                         <p class="mb-0">{{ message.estimate.disclaimer }}</p>
-                      </div>
+                      </fpc-alert>
                     </div>
                   }
                 </div>
@@ -144,29 +149,27 @@
         }
 
         @if (facade.error$ | async; as error) {
-          <div class="alert alert-danger mx-4 mt-0 mb-4" role="alert">
-            {{ error }}
-          </div>
+          <fpc-alert class="mx-4 mt-0 mb-4" variant="danger" [showIcon]="false" [message]="error" />
         }
 
         @if (hasEstimate()) {
           <div class="estimate-chat__footer px-4 bg-white mt-4 d-flex flex-wrap gap-3">
-            <button
+            <fpc-button
               type="button"
-              class="btn btn-primary"
-              (click)="contactAboutQuote()"
+              variant="primary"
+              (clicked)="contactAboutQuote()"
               i18n="@@featureForepathProjectEstimate-contactAboutQuoteButton"
             >
               Contact us about this quote
-            </button>
-            <button
+            </fpc-button>
+            <fpc-button
               type="button"
-              class="btn btn-outline-primary"
-              (click)="startOver()"
+              variant="outline-primary"
+              (clicked)="startOver()"
               i18n="@@featureForepathProjectEstimate-startOverButton"
             >
               Start over
-            </button>
+            </fpc-button>
           </div>
         } @else {
           <div
@@ -191,26 +194,28 @@
                   >
                     @for (option of memoryProfileOptions(); track option.profileId) {
                       @if (option.isActive) {
-                        <button
+                        <fpc-button
                           type="button"
-                          class="btn btn-primary estimate-chat__memory-profile-btn"
+                          variant="primary"
+                          iconOnly
+                          btnClass="estimate-chat__memory-profile-btn"
                           disabled
-                          [attr.aria-label]="profileLabel(option.profileId)"
-                          aria-pressed="true"
+                          [ariaLabel]="profileLabel(option.profileId)"
                         >
                           <i class="bi {{ profileIconClass(option.profileId) }}" aria-hidden="true"></i>
-                        </button>
+                        </fpc-button>
                       } @else if (option.canSelect) {
-                        <button
+                        <fpc-button
                           type="button"
-                          class="btn btn-outline-secondary estimate-chat__memory-profile-btn"
-                          (click)="switchMemoryProfile(option.profileId)"
+                          variant="outline-secondary"
+                          iconOnly
+                          btnClass="estimate-chat__memory-profile-btn"
+                          (clicked)="switchMemoryProfile(option.profileId)"
                           [disabled]="isEstimating() || isModelLoading()"
-                          [attr.aria-label]="profileLabel(option.profileId)"
-                          aria-pressed="false"
+                          [ariaLabel]="profileLabel(option.profileId)"
                         >
                           <i class="bi {{ profileIconClass(option.profileId) }}" aria-hidden="true"></i>
-                        </button>
+                        </fpc-button>
                       }
                     }
                   </div>
@@ -218,9 +223,10 @@
               </div>
             }
             @if (showLiteProfileWarning()) {
-              <div
-                class="alert alert-warning estimate-notice-alert mb-3"
-                role="alert"
+              <fpc-alert
+                class="estimate-notice-alert mb-3"
+                variant="warning"
+                [showIcon]="false"
                 i18n-aria-label="@@featureForepathProjectEstimate-liteProfileWarningAriaLabel"
                 aria-label="Lite analysis effort warning"
               >
@@ -232,7 +238,7 @@
                     Choose Balanced or Standard above if available for more realistic results.
                   </p>
                 }
-              </div>
+              </fpc-alert>
             }
             <textarea
               #promptInput
@@ -248,16 +254,16 @@
               aria-label="Tell us about the scope, systems, timeline, and support needs for your project."
             ></textarea>
             <div class="d-grid d-md-flex justify-content-md-end mt-3">
-              <button
+              <fpc-button
                 type="button"
-                class="btn btn-primary"
-                (click)="submitPrompt()"
+                variant="primary"
+                (clicked)="submitPrompt()"
                 [disabled]="!canSubmit() || !prompt().trim()"
                 i18n-aria-label="@@featureForepathProjectEstimate-sendAriaLabel"
                 aria-label="Send project description"
               >
                 <span i18n="@@featureForepathProjectEstimate-sendButton">Send</span>
-              </button>
+              </fpc-button>
             </div>
             <p class="small text-muted mt-2 mb-0 text-end" i18n="@@featureForepathProjectEstimate-keyboardHint">
               Press Enter to send. Use Ctrl+Enter for a new line.
@@ -276,12 +282,15 @@
       <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featureForepathProjectEstimate-ctaLead">
         The quote above is indicative. We are happy to refine scope and provide a formal proposal.
       </p>
-      <a
+      <fpc-button
+        variant="primary"
+        size="xl"
+        btnClass="rounded-3"
         routerLink="/contact"
-        class="btn btn-primary btn-lg rounded-3 cta-btn"
         i18n="@@featureForepathProjectEstimate-ctaButton"
-        ><i class="bi bi-envelope" aria-hidden="true"></i>Contact us</a
       >
+        <i class="bi bi-envelope" aria-hidden="true"></i>Contact us
+      </fpc-button>
     </div>
   </div>
 </section>

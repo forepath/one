@@ -1,0 +1,26 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+:host(.fpc-icon--sm) {
+  font-size: 0.875rem;
+}
+
+:host(.fpc-icon--md) {
+  font-size: 1rem;
+}
+
+:host(.fpc-icon--lg) {
+  font-size: 1.25rem;
+}
+
+:host(.fpc-icon--xl) {
+  font-size: 1.75rem;
+}
+
+i {
+  line-height: 1;
+}

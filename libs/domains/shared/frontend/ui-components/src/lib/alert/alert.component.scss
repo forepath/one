@@ -1,0 +1,36 @@
+:host {
+  display: block;
+}
+
+.fpc-alert__alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+
+.fpc-alert__icon {
+  flex: 0 0 auto;
+  font-size: 1.125rem;
+  line-height: 1.2;
+}
+
+.fpc-alert__content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fpc-alert__close {
+  flex: 0 0 auto;
+  // The flex layout already reserves room, so the absolute Bootstrap positioning is dropped.
+  position: static;
+  padding: 0.25rem;
+}
+
+:host(.fpc-alert--flush) {
+  .fpc-alert__alert {
+    border-radius: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+  }
+}

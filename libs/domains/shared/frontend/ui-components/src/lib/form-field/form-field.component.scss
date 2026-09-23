@@ -1,0 +1,15 @@
+:host {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.fpc-form-field__error,
+.fpc-form-field__hint {
+  margin-bottom: 0;
+}
+
+// Slot wrappers collapse when nothing is projected, so they never add stray spacing.
+.fpc-form-field__error-slot:empty,
+.fpc-form-field__hint-slot:empty {
+  display: none;
+}

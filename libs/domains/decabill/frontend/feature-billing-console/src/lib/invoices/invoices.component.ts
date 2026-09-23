@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -12,6 +12,29 @@ import {
   type InvoiceResponse,
   type InvoicesSummaryResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcBoardLaneComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcLaneHeaderComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcSummaryBarComponent,
+  FpcSummaryCardComponent,
+  FpcSummaryCardValueDirective,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+} from '@forepath/shared/frontend/ui-components';
 import {
   BehaviorSubject,
   combineLatest,
@@ -38,14 +61,39 @@ type PaymentReturnFeedback = 'waiting' | 'confirmed' | 'canceled';
 @Component({
   selector: 'framework-billing-invoices',
   standalone: true,
-  imports: [CommonModule, FormsModule, NextBillingDayPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    NextBillingDayPipe,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcBoardLaneComponent,
+    FpcLaneHeaderComponent,
+    FpcPageHeaderComponent,
+    FpcSpinnerComponent,
+    FpcSummaryBarComponent,
+    FpcSummaryCardComponent,
+    FpcSummaryCardValueDirective,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcListItemComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcSearchFieldComponent,
+    FpcTabComponent,
+    FpcTabGroupComponent,
+  ],
   providers: [DatePipe],
   templateUrl: './invoices.component.html',
   styleUrls: ['./invoices.component.scss'],
 })
 export class InvoicesComponent implements OnInit {
-  @ViewChild('createInvoiceModal', { static: false }) private createInvoiceModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('previewInvoiceModal', { static: false }) private previewInvoiceModal!: ElementRef<HTMLDivElement>;
+  readonly createInvoiceModalOpen = signal(false);
+  readonly previewInvoiceModalOpen = signal(false);
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -56,7 +104,7 @@ export class InvoicesComponent implements OnInit {
   private readonly authFacade = inject(AuthenticationFacade);
   private readonly datePipe = inject(DatePipe);
 
-  readonly mobilePanels: CustomerBillingMobilePanel[] = ['openOverdue', 'history'];
+  readonly pageTitle = $localize`:@@featureInvoices-title:Billing`;
   readonly mobilePanel = signal<CustomerBillingMobilePanel>('openOverdue');
   readonly openOverdueSearch = signal('');
   readonly historyInvoicesSearch = signal('');
@@ -112,6 +160,10 @@ export class InvoicesComponent implements OnInit {
 
   readonly createInvoiceDisabledTitle = $localize`:@@featureInvoices-createInvoiceDisabledFinalized:Subscription is finalized; no further invoices can be created.`;
   readonly payInvoiceTitle = $localize`:@@featureInvoices-payButtonTitle:Pay invoice`;
+  readonly openOverdueCountLabel = $localize`:@@featureInvoices-openOverdueCount:Open and overdue invoices`;
+  readonly openOverdueTotalLabel = $localize`:@@featureInvoices-openOverdueTotal:Open total amount`;
+  readonly nextBillingDayLabel = $localize`:@@featureInvoices-nextBillingDay:Your next billing day`;
+  readonly unbilledTotalLabel = $localize`:@@featureInvoices-unbilledTotal:Unbilled amount`;
   private readonly defaultMinCheckoutPaymentAmount = 1;
 
   ngOnInit(): void {
@@ -136,7 +188,7 @@ export class InvoicesComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.invoicesCreating$,
       error$: this.invoicesError$,
-      modal: () => this.createInvoiceModal,
+      open: this.createInvoiceModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.createInvoiceDescription = '';
@@ -239,7 +291,7 @@ export class InvoicesComponent implements OnInit {
 
   openCreateInvoiceModal(): void {
     this.createInvoiceDescription = '';
-    showBillingModal(this.createInvoiceModal);
+    showBillingModal(this.createInvoiceModalOpen);
   }
 
   onSubmitCreateInvoice(): void {
@@ -267,7 +319,7 @@ export class InvoicesComponent implements OnInit {
     this.previewSubscriptionId$.next(resolvedSubscriptionId ?? null);
     this.previewInvoiceRefId$.next(inv.id);
     this.invoicesFacade.loadInvoiceDetails(resolvedSubscriptionId, inv.id);
-    showBillingModal(this.previewInvoiceModal);
+    showBillingModal(this.previewInvoiceModalOpen);
   }
 
   payInvoice(subscriptionId: string | undefined, inv: InvoiceResponse): void {
@@ -385,6 +437,12 @@ export class InvoicesComponent implements OnInit {
     if (!value) return '—';
 
     return this.datePipe.transform(value, 'mediumDate') ?? '—';
+  }
+
+  onMobilePanelTabChange(tabId: string | null): void {
+    if (tabId === 'openOverdue' || tabId === 'history') {
+      this.mobilePanel.set(tabId);
+    }
   }
 
   mobilePanelLabel(panel: CustomerBillingMobilePanel): string {

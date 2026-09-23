@@ -1,3 +1,5 @@
+import { BadRequestException } from '@nestjs/common';
+
 import {
   PromotionAdvantageType,
   type FixedAmountAdvantageConfig,
@@ -97,37 +99,47 @@ export function computeBenefitWindow(
   }
 }
 
+/**
+ * Validates and normalizes advantage config in place.
+ * Coerces string values from HTML number inputs (`fpc-form-control` emits strings).
+ */
 export function validateAdvantageConfig(type: PromotionAdvantageType, config: PromotionAdvantageConfig): void {
   switch (type) {
     case PromotionAdvantageType.FIXED_AMOUNT_NET: {
-      const amount = (config as FixedAmountAdvantageConfig).amountNet;
+      const amount = Number((config as FixedAmountAdvantageConfig).amountNet);
 
       if (!Number.isFinite(amount) || amount <= 0) {
-        throw new Error('Fixed amount must be greater than zero');
+        throw new BadRequestException('Fixed amount must be greater than zero');
       }
+
+      (config as FixedAmountAdvantageConfig).amountNet = amount;
 
       return;
     }
     case PromotionAdvantageType.FREE_DAYS: {
-      const days = (config as FreeDaysAdvantageConfig).days;
+      const days = Number((config as FreeDaysAdvantageConfig).days);
 
       if (!Number.isInteger(days) || days <= 0) {
-        throw new Error('Free days must be a positive integer');
+        throw new BadRequestException('Free days must be a positive integer');
       }
+
+      (config as FreeDaysAdvantageConfig).days = days;
 
       return;
     }
     case PromotionAdvantageType.FREE_BILLING_PERIODS: {
-      const periods = (config as FreeBillingPeriodsAdvantageConfig).periods;
+      const periods = Number((config as FreeBillingPeriodsAdvantageConfig).periods);
 
       if (!Number.isInteger(periods) || periods <= 0) {
-        throw new Error('Free billing periods must be a positive integer');
+        throw new BadRequestException('Free billing periods must be a positive integer');
       }
+
+      (config as FreeBillingPeriodsAdvantageConfig).periods = periods;
 
       return;
     }
     default:
-      throw new Error('Unsupported advantage type');
+      throw new BadRequestException('Unsupported advantage type');
   }
 }
 

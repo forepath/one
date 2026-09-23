@@ -8,12 +8,15 @@
       <p class="lead mb-4 mx-auto hero-lead section-lead" i18n="@@featureForepathPricing-heroDescription">
         Clear structures build trust. See exactly what IT systems and software development cost before you commit.
       </p>
-      <a
+      <fpc-button
+        variant="primary"
+        size="xl"
+        btnClass="rounded-3"
         routerLink="/pricing/estimate"
-        class="btn btn-primary btn-lg rounded-3 cta-btn"
         i18n="@@featureForepathPricing-heroEstimateCta"
-        ><i class="bi bi-calculator" aria-hidden="true"></i>Get an instant quote</a
       >
+        <i class="bi bi-calculator" aria-hidden="true"></i>Get an instant quote
+      </fpc-button>
     </div>
   </div>
 </section>
@@ -196,8 +199,8 @@
           </p>
         </div>
         <div class="col-lg-4 p-4 p-lg-5 text-center">
-          <a routerLink="/contact" class="btn btn-primary btn-lg" i18n="@@featureForepathPricing-startupCta"
-            >Request free of charge</a
+          <fpc-button routerLink="/contact" variant="primary" size="lg" i18n="@@featureForepathPricing-startupCta"
+            >Request free of charge</fpc-button
           >
         </div>
       </div>
@@ -220,18 +223,24 @@
         We are happy to walk through your scenario and recommend the right engagement model before work begins.
       </p>
       <div class="d-flex flex-wrap gap-3 justify-content-center">
-        <a
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
           routerLink="/pricing/estimate"
-          class="btn btn-primary btn-lg rounded-3 cta-btn"
           i18n="@@featureForepathPricing-ctaEstimateButton"
-          ><i class="bi bi-calculator" aria-hidden="true"></i>Get an instant quote</a
         >
-        <a
+          <i class="bi bi-calculator" aria-hidden="true"></i>Get an instant quote
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
           routerLink="/contact"
-          class="btn btn-primary btn-lg rounded-3 cta-btn"
           i18n="@@featureForepathPricing-ctaButton"
-          ><i class="bi bi-envelope" aria-hidden="true"></i>Contact us</a
         >
+          <i class="bi bi-envelope" aria-hidden="true"></i>Contact us
+        </fpc-button>
       </div>
     </div>
   </div>

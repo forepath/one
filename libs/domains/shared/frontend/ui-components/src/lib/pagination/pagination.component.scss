@@ -1,0 +1,14 @@
+:host {
+  display: block;
+}
+
+.pagination {
+  flex-wrap: wrap;
+}
+
+.page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.375rem;
+}

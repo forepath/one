@@ -1,0 +1,17 @@
+.client-select__chip {
+  max-width: min(100%, 22rem);
+}
+
+.client-select__clear {
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  margin-left: 0.125rem;
+  background-size: 0.5rem;
+  opacity: 0.55;
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    opacity: 1;
+  }
+}

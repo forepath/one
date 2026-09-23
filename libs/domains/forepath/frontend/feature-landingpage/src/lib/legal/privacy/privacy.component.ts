@@ -4,10 +4,11 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
+import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 @Component({
   selector: 'framework-forepath-legal-privacy',
-  imports: [CommonModule, RouterModule],
+  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule],
   styleUrls: ['./privacy.component.scss'],
   templateUrl: './privacy.component.html',
   standalone: true,

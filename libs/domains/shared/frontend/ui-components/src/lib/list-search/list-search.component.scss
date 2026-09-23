@@ -1,0 +1,27 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.fpc-list-search__search {
+  flex: 0 0 auto;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.fpc-list-search__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.fpc-list-search__footer {
+  flex: 0 0 auto;
+}
+
+.fpc-list-search__footer:empty {
+  display: none;
+}

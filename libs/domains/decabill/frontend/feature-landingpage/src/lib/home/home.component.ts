@@ -16,10 +16,11 @@ import type { PublicServicePlanOffering } from '@forepath/decabill/frontend/data
 import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/decabill/frontend/data-access-portal';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
+import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 @Component({
   selector: 'framework-portal-home',
-  imports: [CommonModule, RouterModule],
+  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule],
   styleUrls: ['./home.component.scss'],
   templateUrl: './home.component.html',
   standalone: true,

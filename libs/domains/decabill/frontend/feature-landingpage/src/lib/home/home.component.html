@@ -11,47 +11,53 @@
           subscriptions, and managed hosting without stitching together separate tools.
         </p>
         <div class="d-flex gap-2 justify-content-center flex-wrap hero-feature-badges mb-5">
-          <span class="badge bg-success info-badge px-3 py-2">
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featureDecabillHome-heroBadge1">Services &amp; projects</span>
-          </span>
-          <span class="badge bg-success info-badge px-3 py-2">
+          </fpc-badge>
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featureDecabillHome-heroBadge2">SaaS subscriptions</span>
-          </span>
-          <span class="badge bg-success info-badge px-3 py-2">
+          </fpc-badge>
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featureDecabillHome-heroBadge3">Automatic provisioning</span>
-          </span>
-          <span class="badge bg-success info-badge px-3 py-2">
+          </fpc-badge>
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featureDecabillHome-heroBadge4">ZUGFeRD invoicing</span>
-          </span>
-          <span class="badge bg-success info-badge px-3 py-2">
+          </fpc-badge>
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featureDecabillHome-heroBadge5">Stripe payments</span>
-          </span>
-          <span class="badge bg-success info-badge px-3 py-2">
+          </fpc-badge>
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featureDecabillHome-heroBadge6">Multi-tenant</span>
-          </span>
+          </fpc-badge>
         </div>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
-          <a
+          <fpc-button
+            variant="primary"
+            size="xl"
+            btnClass="rounded-3"
             href="https://docs.decabill.com/en/docs/getting-started"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn btn-primary btn-lg rounded-3 cta-btn cta-btn-primary"
             i18n="@@featureDecabillHome-getStartedHero"
-            ><i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Get started</a
           >
-          <a
+            <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Get started
+          </fpc-button>
+          <fpc-button
+            variant="dark"
+            size="xl"
+            btnClass="rounded-3"
             routerLink="."
             fragment="solution"
-            class="btn btn-dark btn-lg rounded-3 cta-btn cta-btn-secondary"
             i18n="@@featureDecabillHome-productTour"
-            ><i class="bi bi-play-circle" aria-hidden="true"></i>View product tour</a
           >
+            <i class="bi bi-play-circle" aria-hidden="true"></i>View product tour
+          </fpc-button>
         </div>
       </div>
     </div>
@@ -617,29 +623,17 @@
             without re-keying line items from side spreadsheets.
           </p>
           <div class="d-flex flex-wrap gap-2 align-items-center small text-muted">
-            <span
-              class="badge rounded-pill bg-body-tertiary text-dark border"
-              i18n="@@featureDecabillHome-howExampleStep1"
-              >Subscribe</span
+            <fpc-badge variant="marketing" [pill]="true" i18n="@@featureDecabillHome-howExampleStep1"
+              >Subscribe</fpc-badge
             >
             <i class="bi bi-arrow-right" aria-hidden="true"></i>
-            <span
-              class="badge rounded-pill bg-body-tertiary text-dark border"
-              i18n="@@featureDecabillHome-howExampleStep2"
-              >Pay</span
+            <fpc-badge variant="marketing" [pill]="true" i18n="@@featureDecabillHome-howExampleStep2">Pay</fpc-badge>
+            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            <fpc-badge variant="marketing" [pill]="true" i18n="@@featureDecabillHome-howExampleStep3"
+              >Provision</fpc-badge
             >
             <i class="bi bi-arrow-right" aria-hidden="true"></i>
-            <span
-              class="badge rounded-pill bg-body-tertiary text-dark border"
-              i18n="@@featureDecabillHome-howExampleStep3"
-              >Provision</span
-            >
-            <i class="bi bi-arrow-right" aria-hidden="true"></i>
-            <span
-              class="badge rounded-pill bg-body-tertiary text-dark border"
-              i18n="@@featureDecabillHome-howExampleStep4"
-              >Export</span
-            >
+            <fpc-badge variant="marketing" [pill]="true" i18n="@@featureDecabillHome-howExampleStep4">Export</fpc-badge>
           </div>
         </article>
       </div>
@@ -760,8 +754,8 @@
             class="card border rounded-3 shadow-sm overflow-hidden h-100 home-sell-visual card-capability card-capability-primary"
           >
             <div class="p-3 p-lg-4 pb-0">
-              <span class="badge bg-primary mb-3 bento-badge" i18n="@@featureDecabillHome-sellVisualBadge"
-                >Configure plans and pricing</span
+              <fpc-badge color="primary" class="mb-3 bento-badge" i18n="@@featureDecabillHome-sellVisualBadge"
+                >Configure plans and pricing</fpc-badge
               >
             </div>
             <img
@@ -840,8 +834,8 @@
     >
       <div class="row g-0 align-items-lg-stretch">
         <div class="col-lg-6 p-4 p-lg-5 d-flex flex-column card-capability-primary">
-          <span class="badge bg-primary mb-3 align-self-start" i18n="@@featureDecabillHome-ecosystemOpenSourceBadge"
-            >Open source</span
+          <fpc-badge color="primary" class="mb-3 align-self-start" i18n="@@featureDecabillHome-ecosystemOpenSourceBadge"
+            >Open source</fpc-badge
           >
           <h3 class="h3 fw-semibold mb-3" i18n="@@featureDecabillHome-ecosystemOpenSourceTitle">
             Decabill Open Source
@@ -854,13 +848,14 @@
             Self-hosted on your infrastructure. Same product capabilities without handing operations to a vendor.
           </p>
           <div class="mt-auto">
-            <a
+            <fpc-button
               href="https://docs.decabill.com/en/docs/getting-started"
-              class="btn btn-primary rounded-3"
+              variant="primary"
+              btnClass="rounded-3"
               target="_blank"
               rel="noopener noreferrer"
               i18n="@@featureDecabillHome-ecosystemOpenSourceCta"
-              >Get started</a
+              >Get started</fpc-button
             >
           </div>
         </div>
@@ -954,13 +949,14 @@
                   }
                 }
               </div>
-              <a
+              <fpc-button
                 [href]="billingBaseUrl"
-                class="btn btn-primary mb-2"
+                variant="primary"
+                btnClass="mb-2"
                 target="_blank"
                 rel="noopener noreferrer"
                 i18n="@@featureDecabillHome-ecosystemCloudGetStarted"
-                >Get started</a
+                >Get started</fpc-button
               >
               <a
                 routerLink="/pricing"
@@ -988,20 +984,26 @@
         your tenants.
       </p>
       <div class="d-flex gap-3 justify-content-center flex-wrap">
-        <a
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
           routerLink="/contact"
-          class="btn btn-primary btn-lg rounded-3 cta-btn"
           i18n="@@featureDecabillHome-ctaBookDemo"
-          ><i class="bi bi-calendar-check" aria-hidden="true"></i>Book a demo</a
         >
-        <a
+          <i class="bi bi-calendar-check" aria-hidden="true"></i>Book a demo
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
           href="https://docs.decabill.com/en/docs/getting-started"
-          class="btn btn-primary btn-lg rounded-3 cta-btn"
           target="_blank"
           rel="noopener noreferrer"
           i18n="@@featureDecabillHome-ctaDocs"
-          ><i class="bi bi-book" aria-hidden="true"></i>Read the docs</a
         >
+          <i class="bi bi-book" aria-hidden="true"></i>Read the docs
+        </fpc-button>
       </div>
     </div>
   </div>

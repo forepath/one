@@ -39,6 +39,15 @@ import {
 import { combineLatest, filter, take } from 'rxjs';
 
 import { getMeterAggregatorLabel, getProviderDisplayName } from '../billing-status-labels';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
+
 import type { OfferFormLineItem } from '../admin-offers-page/admin-offer-form.util';
 import {
   buildPricingTotalsSummary,
@@ -55,7 +64,16 @@ import {
 @Component({
   selector: 'framework-plan-order-configurator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './plan-order-configurator.component.html',
   styleUrls: ['./plan-order-configurator.component.scss'],
 })

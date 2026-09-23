@@ -1,57 +1,54 @@
 <div class="knowledge-tree-container d-flex flex-column h-100">
-  <div class="p-2 border-bottom bg-body-tertiary">
+  <div class="p-2 ps-3 border-bottom bg-body-tertiary">
     <div class="d-flex justify-content-between align-items-center">
       <h6 class="mb-0 fw-semibold" i18n="@@featureKnowledgeTree-pagesHeading">Pages</h6>
-      <div class="btn-group btn-group-sm">
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          [class.active]="creatingAt()?.parentId === null && creatingAt()?.nodeType === 'page'"
-          (click)="openCreate(null, 'page', $event)"
+      <fpc-button-group size="sm">
+        <fpc-button
+          size="sm"
+          variant="primary"
+          [iconOnly]="true"
+          (clicked)="openCreate(null, 'page', $event)"
           i18n-title="@@featureKnowledgeTree-newPageTitle"
           title="New page"
         >
           <i class="bi bi-file-earmark-plus"></i>
-        </button>
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          [class.active]="creatingAt()?.parentId === null && creatingAt()?.nodeType === 'folder'"
-          (click)="openCreate(null, 'folder', $event)"
+        </fpc-button>
+        <fpc-button
+          size="sm"
+          variant="primary"
+          [iconOnly]="true"
+          (clicked)="openCreate(null, 'folder', $event)"
           i18n-title="@@featureKnowledgeTree-newFolderTitle"
           title="New folder"
         >
           <i class="bi bi-folder-plus"></i>
-        </button>
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          (click)="onContextRefresh()"
+        </fpc-button>
+        <fpc-button
+          size="sm"
+          variant="dark"
+          [iconOnly]="true"
+          (clicked)="onContextRefresh()"
           i18n-title="@@featureKnowledgeTree-refreshTitle"
           title="Refresh"
         >
           <i class="bi bi-arrow-clockwise"></i>
-        </button>
-      </div>
+        </fpc-button>
+      </fpc-button-group>
     </div>
   </div>
 
-  <div class="knowledge-tree-scroll flex-grow-1 overflow-auto p-2">
+  <div class="knowledge-tree-scroll flex-grow-1 overflow-auto d-flex flex-column min-h-0 p-2">
     @if (shouldShowInitialLoadingSpinner()) {
-      <div class="d-flex justify-content-center p-4">
-        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+      <div class="d-flex justify-content-center align-items-center p-4 flex-grow-1">
+        <fpc-spinner size="sm" variant="primary" />
       </div>
     } @else if (filteredRoots().length === 0) {
-      <div class="text-center text-muted p-4">
-        <i class="bi bi-journal-x fs-4 d-block mb-2"></i>
-        <p class="mb-0 small" i18n="@@featureKnowledgeTree-noPages">No pages yet</p>
-      </div>
+      <fpc-empty-state size="sm" message="No pages yet" i18n-message="@@featureKnowledgeTree-noPages" />
       @if (creatingAt() && creatingAt()?.parentId === null) {
-        <div class="create-item-input px-2 py-1" [style.padding-left.px]="24">
+        <div class="create-item-input px-2 py-1 flex-shrink-0" [style.padding-left.px]="24">
           <div class="input-group input-group-sm">
-            <input
-              type="text"
-              class="form-control form-control-sm"
+            <fpc-form-control
+              size="sm"
               [ngModel]="newNodeTitle()"
               (ngModelChange)="newNodeTitle.set($event)"
               (keydown.enter)="confirmCreate($event)"
@@ -59,12 +56,12 @@
               i18n-placeholder="@@featureKnowledgeTree-titlePlaceholder"
               placeholder="Title"
             />
-            <button class="btn btn-primary" type="button" (click)="confirmCreate($event)">
+            <fpc-button variant="primary" size="sm" [iconOnly]="true" (clicked)="confirmCreate($event)">
               <i class="bi bi-check"></i>
-            </button>
-            <button class="btn btn-secondary" type="button" (click)="cancelCreate($event)">
+            </fpc-button>
+            <fpc-button variant="dark" size="sm" [iconOnly]="true" (clicked)="cancelCreate($event)">
               <i class="bi bi-x"></i>
-            </button>
+            </fpc-button>
           </div>
         </div>
       }
@@ -74,9 +71,8 @@
           <li>
             <div class="create-item-input px-2 py-1" [style.padding-left.px]="24">
               <div class="input-group input-group-sm">
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
+                <fpc-form-control
+                  size="sm"
                   [ngModel]="newNodeTitle()"
                   (ngModelChange)="newNodeTitle.set($event)"
                   (keydown.enter)="confirmCreate($event)"
@@ -84,12 +80,12 @@
                   i18n-placeholder="@@featureKnowledgeTree-titlePlaceholder"
                   placeholder="Title"
                 />
-                <button class="btn btn-primary" type="button" (click)="confirmCreate($event)">
+                <fpc-button variant="primary" size="sm" [iconOnly]="true" (clicked)="confirmCreate($event)">
                   <i class="bi bi-check"></i>
-                </button>
-                <button class="btn btn-secondary" type="button" (click)="cancelCreate($event)">
+                </fpc-button>
+                <fpc-button variant="dark" size="sm" [iconOnly]="true" (clicked)="cancelCreate($event)">
                   <i class="bi bi-x"></i>
-                </button>
+                </fpc-button>
               </div>
             </div>
           </li>
@@ -137,48 +133,54 @@
           {{ node.title }}
         </span>
 
-        <div class="btn-group btn-group-sm ms-2">
+        <fpc-button-group size="sm" class="ms-2">
           @if (node.nodeType === 'folder') {
-            <button
-              type="button"
-              class="btn btn-outline-secondary py-0 px-1"
-              [class.active]="creatingAt()?.parentId === node.id && creatingAt()?.nodeType === 'page'"
-              (click)="openCreate(node.id, 'page', $event)"
+            <fpc-button
+              size="sm"
+              [variant]="
+                creatingAt()?.parentId === node.id && creatingAt()?.nodeType === 'page' ? 'primary' : 'secondary'
+              "
+              [iconOnly]="true"
+              (clicked)="openCreate(node.id, 'page', $event)"
               i18n-title="@@featureKnowledgeTree-newPageTitle"
               title="New page"
             >
               <i class="bi bi-file-earmark-plus"></i>
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-secondary py-0 px-1"
-              [class.active]="creatingAt()?.parentId === node.id && creatingAt()?.nodeType === 'folder'"
-              (click)="openCreate(node.id, 'folder', $event)"
+            </fpc-button>
+            <fpc-button
+              size="sm"
+              [variant]="
+                creatingAt()?.parentId === node.id && creatingAt()?.nodeType === 'folder' ? 'primary' : 'secondary'
+              "
+              [iconOnly]="true"
+              (clicked)="openCreate(node.id, 'folder', $event)"
               i18n-title="@@featureKnowledgeTree-newFolderTitle"
               title="New folder"
             >
               <i class="bi bi-folder-plus"></i>
-            </button>
+            </fpc-button>
           }
-          <button
-            type="button"
-            class="btn btn-outline-secondary py-0 px-1"
-            (click)="onDuplicate(node, $event)"
+          <fpc-button
+            size="sm"
+            variant="dark"
+            [iconOnly]="true"
+            (clicked)="onDuplicate(node, $event)"
             i18n-title="@@featureKnowledgeTree-duplicateTitle"
             title="Duplicate"
           >
             <i class="bi bi-files"></i>
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-danger py-0 px-1"
-            (click)="onDelete(node, $event)"
+          </fpc-button>
+          <fpc-button
+            size="sm"
+            variant="danger"
+            [iconOnly]="true"
+            (clicked)="onDelete(node, $event)"
             i18n-title="@@featureKnowledgeTree-deleteTitle"
             title="Delete"
           >
             <i class="bi bi-trash"></i>
-          </button>
-        </div>
+          </fpc-button>
+        </fpc-button-group>
       </div>
     </div>
   </div>
@@ -186,9 +188,8 @@
   @if (creatingAt()?.parentId === node.id) {
     <div class="px-2 py-1" [style.padding-left.px]="(level + 1) * 16 + 38">
       <div class="input-group input-group-sm">
-        <input
-          type="text"
-          class="form-control form-control-sm"
+        <fpc-form-control
+          size="sm"
           [ngModel]="newNodeTitle()"
           (ngModelChange)="newNodeTitle.set($event)"
           (keydown.enter)="confirmCreate($event)"
@@ -196,10 +197,12 @@
           i18n-placeholder="@@featureKnowledgeTree-titlePlaceholder"
           placeholder="Title"
         />
-        <button class="btn btn-primary" type="button" (click)="confirmCreate($event)">
+        <fpc-button variant="primary" size="sm" [iconOnly]="true" (clicked)="confirmCreate($event)">
           <i class="bi bi-check"></i>
-        </button>
-        <button class="btn btn-secondary" type="button" (click)="cancelCreate($event)"><i class="bi bi-x"></i></button>
+        </fpc-button>
+        <fpc-button variant="dark" size="sm" [iconOnly]="true" (clicked)="cancelCreate($event)">
+          <i class="bi bi-x"></i>
+        </fpc-button>
       </div>
     </div>
   }
@@ -242,109 +245,72 @@
   }
 }
 
-@if (renameTargetNodeId()) {
-  <div class="modal-backdrop fade show"></div>
-  <div class="modal fade show d-block" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" i18n="@@featureKnowledgeTree-renameModalTitle">Rename item</h5>
-          <button type="button" class="btn-close" (click)="onCancelRename()"></button>
-        </div>
-        <div class="modal-body">
-          <input
-            type="text"
-            class="form-control"
-            [ngModel]="renameDraft()"
-            (ngModelChange)="renameDraft.set($event)"
-            (keydown.enter)="onConfirmRename()"
-            (keydown.escape)="onCancelRename()"
-            autofocus
-          />
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" [disabled]="!renameDraft().trim()" (click)="onConfirmRename()">
-            <span i18n="@@featureKnowledgeTree-rename">Rename</span>
-          </button>
-        </div>
-      </div>
-    </div>
+<fpc-modal
+  [(open)]="renameModalOpen"
+  i18n-title="@@featureKnowledgeTree-renameModalTitle"
+  title="Rename item"
+  (closed)="onCancelRename()"
+>
+  <fpc-form-control
+    [ngModel]="renameDraft()"
+    (ngModelChange)="renameDraft.set($event)"
+    (keydown.enter)="onConfirmRename()"
+    (keydown.escape)="onCancelRename()"
+  />
+  <div *fpcModalFooter>
+    <fpc-button variant="primary" [disabled]="!renameDraft().trim()" (clicked)="onConfirmRename()">
+      <span i18n="@@featureKnowledgeTree-rename">Rename</span>
+    </fpc-button>
   </div>
-}
+</fpc-modal>
 
-@if (moveTargetNodeId()) {
-  <div class="modal-backdrop fade show"></div>
-  <div class="modal fade show d-block" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" i18n="@@featureKnowledgeTree-moveModalTitle">Move item</h5>
-          <button type="button" class="btn-close" (click)="onCancelMove()"></button>
-        </div>
-        <div class="modal-body">
-          <label class="form-label" for="knowledgeMoveParentId" i18n="@@featureKnowledgeTree-destinationFolder">
-            Destination folder
-          </label>
-          <select
-            id="knowledgeMoveParentId"
-            class="form-select"
-            [ngModel]="moveTargetParentId()"
-            (ngModelChange)="moveTargetParentId.set($event)"
-          >
-            @for (opt of moveParentOptions(); track opt.id) {
-              <option [ngValue]="opt.id">{{ opt.label }}</option>
-            }
-          </select>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" (click)="onConfirmMove()" i18n="@@featureKnowledgeTree-move">
-            Move
-          </button>
-        </div>
-      </div>
-    </div>
+<fpc-modal
+  [(open)]="moveModalOpen"
+  i18n-title="@@featureKnowledgeTree-moveModalTitle"
+  title="Move item"
+  (closed)="onCancelMove()"
+>
+  <fpc-form-field
+    forId="knowledgeMoveParentId"
+    i18n-label="@@featureKnowledgeTree-destinationFolder"
+    label="Destination folder"
+  >
+    <fpc-form-control
+      controlType="select"
+      controlId="knowledgeMoveParentId"
+      [ngModel]="moveTargetParentId() ?? ''"
+      (ngModelChange)="moveTargetParentId.set($event || null)"
+    >
+      @for (opt of moveParentOptions(); track opt.id) {
+        <option [value]="opt.id ?? ''">{{ opt.label }}</option>
+      }
+    </fpc-form-control>
+  </fpc-form-field>
+  <div *fpcModalFooter>
+    <fpc-button variant="primary" (clicked)="onConfirmMove()" i18n="@@featureKnowledgeTree-move">Move</fpc-button>
   </div>
-}
+</fpc-modal>
 
-@if (deleteTargetNodeId()) {
-  <div class="modal-backdrop fade show"></div>
-  <div class="modal fade show d-block" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" i18n="@@featureKnowledgeTree-deleteModalTitle">Delete item</h5>
-          <button type="button" class="btn-close" (click)="onCancelDelete()"></button>
-        </div>
-        <div class="modal-body">
-          <p i18n="@@featureKnowledgeTree-deleteConfirmText">Are you sure you want to delete this item?</p>
-          <p class="text-danger mb-0">
-            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-            <span i18n="@@featureKnowledgeTree-cannotUndo">This action cannot be undone.</span>
-          </p>
-          <div class="form-check mt-3">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              id="releaseExternalSyncMarkerKnowledgeDelete"
-              [checked]="releaseExternalSyncMarkerOnDelete()"
-              (change)="releaseExternalSyncMarkerOnDelete.set($any($event.target).checked)"
-            />
-            <label class="form-check-label" for="releaseExternalSyncMarkerKnowledgeDelete">
-              Allow re-import from external integrations (clears import sync marker for this page)
-            </label>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="onConfirmDelete()"
-            i18n="@@featureKnowledgeTree-delete"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-}
+<fpc-confirm-dialog
+  [(open)]="deleteModalOpen"
+  i18n-title="@@featureKnowledgeTree-deleteModalTitle"
+  title="Delete item"
+  i18n-confirmLabel="@@featureKnowledgeTree-delete"
+  confirmLabel="Delete"
+  [danger]="true"
+  (confirmed)="onConfirmDelete()"
+  (cancelled)="onCancelDelete()"
+>
+  <p i18n="@@featureKnowledgeTree-deleteConfirmText">Are you sure you want to delete this item?</p>
+  <p class="text-danger mb-0">
+    <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+    <span i18n="@@featureKnowledgeTree-cannotUndo">This action cannot be undone.</span>
+  </p>
+  <fpc-form-check
+    class="mt-3"
+    checkId="releaseExternalSyncMarkerKnowledgeDelete"
+    [checked]="releaseExternalSyncMarkerOnDelete()"
+    (checkedChange)="releaseExternalSyncMarkerOnDelete.set($event)"
+    label="Allow re-import from external integrations (clears import sync marker for this page)"
+  />
+</fpc-confirm-dialog>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
@@ -19,6 +19,28 @@ import {
   type SubscriptionResponse,
   type TaxPreviewRates,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormCheckGroupComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcListComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSpinnerComponent,
+  FpcSummaryBarComponent,
+  FpcSummaryCardComponent,
+  FpcSummaryCardValueDirective,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { filter, finalize, map, startWith, switchMap, distinctUntilChanged, EMPTY, take } from 'rxjs';
 import type { Subscription } from 'rxjs';
 
@@ -43,7 +65,7 @@ import {
   hasProjectTargetHours,
   type ProjectSummaryProgressBar,
 } from '../project-summary-progress.utils';
-import { parseProjectDetailTab, type ProjectDetailTab } from './project-detail-tabs';
+import { isProjectDetailTab, parseProjectDetailTab, type ProjectDetailTab } from './project-detail-tabs';
 
 type ProjectViewMode = 'admin' | 'customer';
 
@@ -62,18 +84,39 @@ interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
     ProjectMilestonesPanelComponent,
     BillingAdminSubscriptionSelectComponent,
     PricingTotalsSummaryComponent,
+    FpcAlertComponent,
+    FpcPageHeaderComponent,
+    FpcSpinnerComponent,
+    FpcSummaryBarComponent,
+    FpcSummaryCardComponent,
+    FpcSummaryCardValueDirective,
+    FpcTabComponent,
+    FpcTabGroupComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormCheckGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcConfirmDialogComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
   ],
   templateUrl: './project-detail-page.component.html',
   styleUrls: ['./project-detail-page.component.scss'],
 })
 export class ProjectDetailPageComponent implements OnInit {
-  @ViewChild('createTimeModal', { static: false }) private createTimeModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editTimeModal', { static: false }) private editTimeModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteTimeModal', { static: false }) private deleteTimeModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('billTimeModal', { static: false }) private billTimeModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('timeReportModal', { static: false }) private timeReportModal!: ElementRef<HTMLDivElement>;
   @ViewChild('billTimeSubscriptionSelect')
   private billTimeSubscriptionSelect?: BillingAdminSubscriptionSelectComponent;
+
+  readonly createTimeModalOpen = signal(false);
+  readonly editTimeModalOpen = signal(false);
+  readonly deleteTimeModalOpen = signal(false);
+  readonly billTimeModalOpen = signal(false);
+  readonly timeReportModalOpen = signal(false);
 
   protected readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -86,6 +129,13 @@ export class ProjectDetailPageComponent implements OnInit {
 
   readonly isAdminView = signal(false);
   readonly trackedTimeProgressAriaLabel = $localize`:@@featureProjectDetail-trackedTimeProgressAria:Tracked time progress`;
+  readonly trackedTimeLabel = $localize`:@@featureProjectDetail-trackedTime:Tracked time`;
+  readonly unbilledTimeLabel = $localize`:@@featureProjectDetail-unbilledTime:Unbilled time`;
+  readonly openBillableLabel = $localize`:@@featureProjectDetail-openBillable:Open billable`;
+  readonly openMilestonesLabel = $localize`:@@featureProjectDetail-openMilestones:Open milestones`;
+  readonly completedMilestonesLabel = $localize`:@@featureProjectDetail-completedMilestones:Completed milestones`;
+  readonly openTicketsLabel = $localize`:@@featureProjectDetail-openTickets:Open tickets`;
+  readonly completedTicketsLabel = $localize`:@@featureProjectDetail-completedTickets:Completed tickets`;
 
   readonly selectedProject$ = this.projectsFacade.selectedProject$;
   readonly summary$ = this.projectsFacade.summary$;
@@ -219,6 +269,14 @@ export class ProjectDetailPageComponent implements OnInit {
     void this.router.navigate(this.projectTabLink(this.projectId, this.isAdminView() ? 'admin' : 'customer', tab));
   }
 
+  onProjectTabChange(tabId: string | null): void {
+    if (!isProjectDetailTab(tabId)) {
+      return;
+    }
+
+    this.setTab(tabId);
+  }
+
   tabLabel(tab: ProjectDetailTab): string {
     switch (tab) {
       case 'board':
@@ -272,7 +330,7 @@ export class ProjectDetailPageComponent implements OnInit {
         }
 
         this.billBoundsLoading.set(false);
-        showBillingModal(this.billTimeModal);
+        showBillingModal(this.billTimeModalOpen);
         queueMicrotask(() => this.billTimeSubscriptionSelect?.reset());
       },
       error: () => {
@@ -299,7 +357,7 @@ export class ProjectDetailPageComponent implements OnInit {
         }
 
         this.timeReportBoundsLoading.set(false);
-        showBillingModal(this.timeReportModal);
+        showBillingModal(this.timeReportModalOpen);
       },
       error: () => {
         this.timeReportBoundsLoading.set(false);
@@ -331,7 +389,7 @@ export class ProjectDetailPageComponent implements OnInit {
           anchor.download = `time-report-${this.projectId}.pdf`;
           anchor.click();
           URL.revokeObjectURL(url);
-          hideBillingModal(this.timeReportModal);
+          hideBillingModal(this.timeReportModalOpen);
         },
         error: () => {
           this.timeReportError.set('Failed to generate time report');
@@ -420,7 +478,7 @@ export class ProjectDetailPageComponent implements OnInit {
     if (!this.isAdminView()) return;
 
     this.resetTimeForm();
-    showBillingModal(this.createTimeModal);
+    showBillingModal(this.createTimeModalOpen);
   }
 
   submitTimeEntry(): void {
@@ -440,7 +498,7 @@ export class ProjectDetailPageComponent implements OnInit {
     this.editTimeFormStartedAt = this.toDatetimeLocalValue(new Date(entry.startedAt));
     this.editTimeFormEndedAt = this.toDatetimeLocalValue(new Date(entry.endedAt));
     this.editTimeFormDescription = entry.description ?? '';
-    showBillingModal(this.editTimeModal);
+    showBillingModal(this.editTimeModalOpen);
   }
 
   submitEditTimeEntry(): void {
@@ -457,7 +515,7 @@ export class ProjectDetailPageComponent implements OnInit {
     if (!this.isAdminView() || !this.isTimeEntryEditable(entry)) return;
 
     this.timeEntryToDelete = entry;
-    showBillingModal(this.deleteTimeModal);
+    showBillingModal(this.deleteTimeModalOpen);
   }
 
   submitDeleteTimeEntry(): void {
@@ -618,14 +676,14 @@ export class ProjectDetailPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.timeSaving$,
       error$: this.timeError$,
-      modal: () => this.createTimeModal,
+      open: this.createTimeModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => this.resetTimeForm(),
     });
     watchBillingMutationModalClose({
       loading$: this.timeSaving$,
       error$: this.timeError$,
-      modal: () => this.editTimeModal,
+      open: this.editTimeModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.editTimeEntryId = '';
@@ -634,7 +692,7 @@ export class ProjectDetailPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.timeSaving$,
       error$: this.timeError$,
-      modal: () => this.deleteTimeModal,
+      open: this.deleteTimeModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.timeEntryToDelete = null;
@@ -646,7 +704,7 @@ export class ProjectDetailPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.billing$,
       error$: this.error$,
-      modal: () => this.billTimeModal,
+      open: this.billTimeModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.resetBillTimeCustomFields();

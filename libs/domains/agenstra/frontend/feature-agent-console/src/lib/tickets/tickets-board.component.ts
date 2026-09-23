@@ -2,7 +2,6 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
-  AfterViewInit,
   Component,
   computed,
   DestroyRef,
@@ -31,8 +30,9 @@ import {
   ClientsService,
   deleteTicketFailure,
   deleteTicketSuccess,
-  buildTicketBreadcrumbTitles,
+  createTicketSuccess,
   KnowledgeFacade,
+  KnowledgeService,
   loadTickets,
   loadTicketsFailure,
   loadTicketsSuccess,
@@ -50,6 +50,7 @@ import {
   type BoardLaneStatus,
   type ClientResponseDto,
   type KnowledgeNodeDto,
+  type KnowledgeNodeType,
   type KnowledgeRelationDto,
   type TicketAutomationBranchStrategy,
   type TicketAutomationResponseDto,
@@ -57,12 +58,38 @@ import {
   type TicketAutomationRunStatus,
   type TicketBoardRow,
   type TicketCreationTemplate,
-  type TicketGlobalSearchHit,
   type TicketPriority,
   type TicketResponseDto,
   type TicketStatus,
   type UpdateTicketAutomationDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcBoardLaneComponent,
+  FpcBreadcrumbItemComponent,
+  FpcBreadcrumbsComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcFormSwitchComponent,
+  FpcLaneHeaderComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+  FpcTypeaheadSelectComponent,
+  type FpcBadgeColor,
+} from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 import {
   catchError,
@@ -76,16 +103,26 @@ import {
   merge,
   Observable,
   of,
+  pairwise,
   switchMap,
   skip,
   take,
   tap,
 } from 'rxjs';
 
+import {
+  AGENT_MODAL_TRANSITION_MS,
+  AgentModalSwapState,
+  hideAgentModal,
+  restoreUnderlyingAgentModal,
+  showAgentModal,
+  swapToOverlayAgentModal,
+} from '../agent-modal';
 import { getGitRepositoryDisplayLabel, isLocalGitRepository } from '../git-repository-display';
 import { resolveNamedDisplayLabel } from '../display-name.util';
 
 import { storeAgentConsoleChatDraft } from './chat-draft-storage';
+import { AgentSelectComponent } from '../agent-select/agent-select.component';
 import {
   ticketAutomationCancellationReasonLabel,
   ticketAutomationFailureCodeLabel,
@@ -192,11 +229,51 @@ const TICKETS_BOARD_VIRTUAL_ITEM_SIZE_PX = 88;
 @Component({
   selector: 'framework-tickets-board',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ScrollingModule, TicketEditorComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    ScrollingModule,
+    TicketEditorComponent,
+    AgentSelectComponent,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcBoardLaneComponent,
+    FpcBreadcrumbItemComponent,
+    FpcBreadcrumbsComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcFormSwitchComponent,
+    FpcLaneHeaderComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+    FpcTabComponent,
+    FpcTabGroupComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcConfirmDialogComponent,
+    FpcTypeaheadSelectComponent,
+  ],
   templateUrl: './tickets-board.component.html',
   styleUrls: ['./tickets-board.component.scss'],
 })
-export class TicketsBoardComponent implements OnInit, AfterViewInit {
+export class TicketsBoardComponent implements OnInit {
+  readonly pageTitle = $localize`:@@featureTicketsBoard-title:Tickets`;
+  readonly commentInputAriaLabel = $localize`:@@featureTicketsBoard-commentPlaceholder:Add a comment…`;
+  readonly workspaceBadgeSwitchTitle = $localize`:@@featureTicketsBoard-workspaceBadgeSwitchTitle:Switch workspace`;
+  readonly globalSearchTitle = $localize`:@@featureTicketsBoard-globalSearchOpenTitle:Search tickets (Ctrl+F)`;
+  readonly globalSearchAriaLabel = $localize`:@@featureTicketsBoard-globalSearchOpenAria:Search tickets`;
+  readonly newTicketAriaLabel = $localize`:@@featureTicketsBoard-newTicket:Add`;
+  readonly loadingLabel = $localize`:@@featureTicketsBoard-loading:Loading tickets…`;
+  readonly laneSearchPlaceholder = $localize`:@@featureTicketsBoard-searchLanePlaceholder:Search tickets`;
+  readonly laneSearchAriaLabel = $localize`:@@featureTicketsBoard-searchLaneLabel:Search tickets`;
   readonly laneVirtualItemSize = TICKETS_BOARD_VIRTUAL_ITEM_SIZE_PX;
   private readonly RELATION_TARGET_KIND_KNOWLEDGE = 'knowledge';
   private readonly RELATION_TARGET_KIND_TICKET = 'ticket';
@@ -205,6 +282,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly ticketsFacade = inject(TicketsFacade);
   private readonly knowledgeFacade = inject(KnowledgeFacade);
+  private readonly knowledgeService = inject(KnowledgeService);
   private readonly ticketsService = inject(TicketsService);
   private readonly socketsFacade = inject(SocketsFacade);
   private readonly ticketsBoardSocketFacade = inject(TicketsBoardSocketFacade);
@@ -224,55 +302,25 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   private automationDraftLastSyncedConfigUpdatedAt: string | null = null;
   /** If autosave ran while `ticketAutomationSaving`, flush again once the store finishes saving. */
   private pendingAutomationAutosaveAfterBusy = false;
-  /**
-   * Ticket detail was hidden so the automation run modal can show alone; when automation closes, show ticket again.
-   * Cleared whenever modals are dismissed without that handoff (close ticket, workspace switch, navigate to chat, etc.).
-   */
-  private ticketDetailSuspendedForAutomationRun = false;
-  private ticketDetailSuspendedForMigration = false;
-  /**
-   * Ticket detail was hidden so the create-subtask modal can show alone; when create closes, show ticket again.
-   * Cleared whenever modals are dismissed without that handoff (close ticket, workspace switch, navigate to chat, etc.).
-   */
-  private ticketDetailSuspendedForCreateSubtask = false;
-  private ticketDetailSuspendedForRelations = false;
-  /**
-   * Ticket detail was hidden so the delete confirmation modal can show alone; when delete closes without confirming,
-   * show ticket again.
-   */
-  private ticketDetailSuspendedForDeleteConfirm = false;
+  readonly ticketDetailModalOpen = signal(false);
+  readonly ticketRelationsModalOpen = signal(false);
+  readonly ticketMigrateModalOpen = signal(false);
+  readonly ticketAutomationRunModalOpen = signal(false);
+  readonly deleteTicketConfirmModalOpen = signal(false);
+  readonly createTicketModalOpen = signal(false);
+  readonly globalSearchModalOpen = signal(false);
+  readonly workspaceSwitchModalOpen = signal(false);
 
-  @ViewChild('ticketDetailModal', { static: false })
-  private ticketDetailModal?: ElementRef<HTMLDivElement>;
-
-  @ViewChild('createTicketModal', { static: false })
-  private createTicketModal?: ElementRef<HTMLDivElement>;
-
-  @ViewChild('deleteTicketConfirmModal', { static: false })
-  private deleteTicketConfirmModal?: ElementRef<HTMLDivElement>;
-
-  @ViewChild('workspaceSwitchModal', { static: false })
-  private workspaceSwitchModal?: ElementRef<HTMLDivElement>;
-
-  @ViewChild('globalSearchModal', { static: false })
-  private globalSearchModal?: ElementRef<HTMLDivElement>;
+  /** Tracks ticket-detail hide/show when a nested overlay opens over it. */
+  readonly ticketDetailOverlaySwapState: AgentModalSwapState = { suspended: false };
 
   @ViewChild('globalSearchInput', { static: false })
-  private globalSearchInput?: ElementRef<HTMLInputElement>;
-
-  @ViewChild('ticketRelationsModal', { static: false })
-  private ticketRelationsModal?: ElementRef<HTMLDivElement>;
+  private globalSearchInput?: ElementRef<HTMLElement>;
 
   @ViewChild('ticketRelationsSearchInput', { static: false })
-  private ticketRelationsSearchInput?: ElementRef<HTMLInputElement>;
+  private ticketRelationsSearchInput?: ElementRef<HTMLElement>;
 
-  @ViewChild('ticketAutomationRunModal', { static: false })
-  private ticketAutomationRunModal?: ElementRef<HTMLDivElement>;
-
-  @ViewChild('ticketMigrateModal', { static: false })
-  private ticketMigrateModal?: ElementRef<HTMLDivElement>;
-
-  private readonly detailTitleInputRef = viewChild<ElementRef<HTMLInputElement>>('detailTitleInput');
+  private readonly detailTitleInputRef = viewChild<ElementRef<HTMLElement>>('detailTitleInput');
 
   readonly lanes = BOARD_LANE_STATUSES;
   readonly statusOptions: TicketStatus[] = [...ALL_TICKET_STATUSES];
@@ -343,24 +391,20 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   readonly globalSearchQuery$ = toObservable(this.globalSearchQuery);
   readonly globalSearchResults = signal<TicketResponseDto[]>([]);
   readonly globalSearchLoading = signal(false);
-  readonly globalSearchHits = computed((): TicketGlobalSearchHit[] => {
+  readonly globalSearchSuggestionsOpen = signal(false);
+  readonly globalSearchHits = computed((): TicketResponseDto[] => {
     const list = this.globalSearchResults();
 
-    return list
-      .map((ticket) => ({
-        ticket,
-        pathTitles: buildTicketBreadcrumbTitles(list, ticket.id),
-      }))
-      .sort((a, b) => {
-        const ta = a.ticket.title.toLowerCase();
-        const tb = b.ticket.title.toLowerCase();
+    return [...list].sort((a, b) => {
+      const ta = a.title.toLowerCase();
+      const tb = b.title.toLowerCase();
 
-        if (ta !== tb) {
-          return ta.localeCompare(tb);
-        }
+      if (ta !== tb) {
+        return ta.localeCompare(tb);
+      }
 
-        return a.ticket.id.localeCompare(b.ticket.id);
-      });
+      return a.id.localeCompare(b.id);
+    });
   });
   readonly workspaceSwitchSearch$ = toObservable(this.workspaceSwitchSearch);
 
@@ -417,8 +461,12 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   ticketRelationsSuggestionsOpen = signal(false);
   ticketRelationsSearchError = signal<string | null>(null);
   selectedTicketRelationTargets = signal<
-    Array<{ kind: 'knowledge'; nodeId: string } | { kind: 'ticket'; ticketLongSha: string }>
+    Array<
+      { kind: 'knowledge'; nodeId: string; nodeType: KnowledgeNodeType } | { kind: 'ticket'; ticketLongSha: string }
+    >
   >([]);
+  /** Flat knowledge nodes for relation search (independent of nested store tree). */
+  readonly ticketRelationKnowledgeNodes = signal<KnowledgeNodeDto[]>([]);
 
   readonly ticketRelationCandidates = computed(() => {
     const detail = this.detail();
@@ -439,22 +487,44 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         .map((relation) => relation.targetTicketLongSha ?? null)
         .filter((sha): sha is string => sha !== null),
     );
+    const pendingNodeIds = new Set(
+      this.selectedTicketRelationTargets()
+        .filter(
+          (target): target is { kind: 'knowledge'; nodeId: string; nodeType: KnowledgeNodeType } =>
+            target.kind === this.RELATION_TARGET_KIND_KNOWLEDGE,
+        )
+        .map((target) => target.nodeId),
+    );
+    const pendingTicketShas = new Set(
+      this.selectedTicketRelationTargets()
+        .filter(
+          (target): target is { kind: 'ticket'; ticketLongSha: string } =>
+            target.kind === this.RELATION_TARGET_KIND_TICKET,
+        )
+        .map((target) => target.ticketLongSha),
+    );
     const candidates: Array<
       { kind: 'knowledge'; node: KnowledgeNodeDto } | { kind: 'ticket'; ticket: TicketResponseDto }
     > = [];
-    const walk = (nodes: KnowledgeNodeDto[]) => {
-      for (const node of nodes) {
-        const matchesQuery = node.title.toLowerCase().includes(query) || node.shas.short.toLowerCase().includes(query);
 
-        if (matchesQuery && !existingNodeIds.has(node.id)) {
-          candidates.push({ kind: this.RELATION_TARGET_KIND_KNOWLEDGE, node });
-        }
-
-        walk(node.children ?? []);
+    for (const node of this.ticketRelationKnowledgeNodesForSearch()) {
+      if (node.nodeType !== 'page' && node.nodeType !== 'folder') {
+        continue;
       }
-    };
 
-    walk(this.knowledgeTree());
+      if (existingNodeIds.has(node.id) || pendingNodeIds.has(node.id)) {
+        continue;
+      }
+
+      const title = (node.title ?? '').toLowerCase();
+      const shortSha = (node.shas?.short ?? '').toLowerCase();
+      const longSha = (node.shas?.long ?? '').toLowerCase();
+      const matchesQuery = title.includes(query) || shortSha.includes(query) || longSha.includes(query);
+
+      if (matchesQuery) {
+        candidates.push({ kind: this.RELATION_TARGET_KIND_KNOWLEDGE, node });
+      }
+    }
 
     for (const ticket of this.ticketsList()) {
       if (ticket.clientId !== clientId || ticket.id === detail.id || !ticket.shas?.long) {
@@ -466,7 +536,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       const title = (ticket.title ?? '').toLowerCase();
       const matchesQuery = title.includes(query) || shortSha.includes(query) || longSha.includes(query);
 
-      if (!matchesQuery || existingTicketShas.has(ticket.shas.long)) {
+      if (!matchesQuery || existingTicketShas.has(ticket.shas.long) || pendingTicketShas.has(ticket.shas.long)) {
         continue;
       }
 
@@ -588,8 +658,29 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
    */
   private chatAgentForAiSyncTicketId: string | null = null;
   private chatAgentForAiLastSyncedDetailUpdatedAt: string | null = null;
+  /** Bumps on each {@link openTicketDetailFlow} so stale load completions cannot reopen the modal. */
+  private ticketDetailOpenGeneration = 0;
 
   constructor() {
+    effect(() => {
+      if (this.globalSearchModalOpen()) {
+        afterNextRender(() => this.focusGlobalSearchInput({ preventScroll: true }), { injector: this.injector });
+      }
+    });
+
+    effect(() => {
+      if (this.ticketRelationsModalOpen()) {
+        afterNextRender(
+          () => {
+            this.ticketRelationsSearchInput?.nativeElement
+              ?.querySelector<HTMLInputElement>('input')
+              ?.focus({ preventScroll: true });
+          },
+          { injector: this.injector },
+        );
+      }
+    });
+
     effect(() => {
       const clientId = this.effectiveClientId();
 
@@ -609,6 +700,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       }
 
       this.knowledgeFacade.loadRelations(clientId, 'ticket', detail.id);
+      this.refreshTicketRelationKnowledgeNodes();
     });
 
     effect(() => {
@@ -649,7 +741,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       this.pendingDetailTitleRename.set(null);
       afterNextRender(
         () => {
-          this.detailTitleInputRef()?.nativeElement?.focus();
+          this.detailTitleInputRef()?.nativeElement?.querySelector<HTMLInputElement>('input')?.focus();
         },
         { injector: this.injector },
       );
@@ -856,9 +948,9 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       });
 
     this.actions$.pipe(ofType(migrateTicketSuccess), takeUntilDestroyed(this.destroyRef)).subscribe((a) => {
-      this.ticketDetailSuspendedForMigration = false;
-      this.ticketDetailSuspendedForDeleteConfirm = false;
-      this.hideTicketMigrateModalEl();
+      this.ticketDetailOverlaySwapState.suspended = false;
+      hideAgentModal(this.ticketMigrateModalOpen);
+      hideAgentModal(this.deleteTicketConfirmModalOpen);
       const targetId = a.rootTicket.clientId;
       const current = this.effectiveClientId();
 
@@ -881,6 +973,16 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         this.showTicketDetailModalAfterTicketListLoadForClient(targetId, a.requestedTicketId);
         this.ticketsFacade.loadTickets({ clientId: targetId });
       }
+    });
+
+    this.actions$.pipe(ofType(createTicketSuccess), takeUntilDestroyed(this.destroyRef)).subscribe(({ ticket }) => {
+      if (!ticket.parentId) {
+        return;
+      }
+
+      // Subtask create: leave the parent and open the new ticket detail.
+      this.ticketDetailOverlaySwapState.suspended = false;
+      this.openTicketDetailFlow(ticket.id);
     });
   }
 
@@ -1037,9 +1139,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         });
       }
     });
+
+    this.watchOpenWorkspaceSwitchWhenNoClientSelected();
   }
 
-  ngAfterViewInit(): void {
+  private watchOpenWorkspaceSwitchWhenNoClientSelected(): void {
     this.effectiveClientId$
       .pipe(
         distinctUntilChanged(),
@@ -1047,7 +1151,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
-        setTimeout(() => this.openWorkspaceSwitchModal(), 0);
+        queueMicrotask(() => this.openWorkspaceSwitchModal());
       });
   }
 
@@ -1074,6 +1178,14 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   laneLabel(status: TicketStatus): string {
     return ticketLaneStatusLabel(status);
+  }
+
+  onSelectedLaneTabChange(status: string | null): void {
+    if (status === null || !(BOARD_LANE_STATUSES as readonly string[]).includes(status)) {
+      return;
+    }
+
+    this.selectedLane.set(status as BoardLaneStatus);
   }
 
   priorityLabel(priority: TicketPriority): string {
@@ -1152,8 +1264,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Semantic tint modifier for `.info-badge` chips (chat / deployments style:
-   * `info-badge text-muted bg-body-tertiary py-1 px-2 rounded`).
+   * Semantic tint modifier for `fpc-badge variant="info"` chips.
    */
   activityActionBadgeClass(actionType: string): string {
     switch (actionType) {
@@ -1198,7 +1309,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     }
   }
 
-  /** Priority chip modifier (paired with global `.info-badge` base classes). */
+  /** Priority chip modifier (paired with `fpc-badge variant="info"`). */
   ticketPriorityBadgeClass(priority: TicketPriority): string {
     switch (priority) {
       case 'low':
@@ -1245,12 +1356,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     }
 
     const target = event.target;
-    const modalEl = this.globalSearchModal?.nativeElement;
 
     if (isEditableDomTarget(target)) {
-      if (modalEl && target instanceof Node && modalEl.contains(target)) {
+      if (this.globalSearchModalOpen()) {
         event.preventDefault();
-        this.globalSearchInput?.nativeElement?.focus();
+        this.focusGlobalSearchInput();
       }
 
       return;
@@ -1263,40 +1373,57 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   openGlobalSearchModal(): void {
     this.globalSearchQuery.set('');
     this.globalSearchResults.set([]);
-    setTimeout(() => {
-      const shell = this.globalSearchModal?.nativeElement;
+    this.globalSearchLoading.set(false);
+    this.globalSearchSuggestionsOpen.set(false);
 
-      if (shell?.classList.contains('show')) {
-        this.globalSearchInput?.nativeElement?.focus({ preventScroll: true });
+    if (this.globalSearchModalOpen()) {
+      this.focusGlobalSearchInput({ preventScroll: true });
 
-        return;
-      }
+      return;
+    }
 
-      this.showGlobalSearchModalEl();
-    }, 0);
+    showAgentModal(this.globalSearchModalOpen);
   }
 
   onCloseGlobalSearchModal(): void {
-    this.hideGlobalSearchModalEl();
+    hideAgentModal(this.globalSearchModalOpen);
     this.globalSearchQuery.set('');
     this.globalSearchResults.set([]);
+    this.globalSearchLoading.set(false);
+    this.globalSearchSuggestionsOpen.set(false);
   }
 
-  onGlobalSearchResultClick(hit: TicketGlobalSearchHit): void {
-    this.hideGlobalSearchModalEl();
-    this.globalSearchQuery.set('');
-    this.globalSearchResults.set([]);
-    this.openTicketDetailFlow(hit.ticket.id);
-  }
+  onGlobalSearchQueryChange(value: string): void {
+    this.globalSearchQuery.set(value);
+    const term = value.trim();
 
-  globalSearchPathDisplay(hit: TicketGlobalSearchHit): string {
-    const titles = hit.pathTitles;
+    if (!term) {
+      this.globalSearchResults.set([]);
+      this.globalSearchLoading.set(false);
+      this.globalSearchSuggestionsOpen.set(false);
 
-    if (titles.length <= 1) {
-      return '';
+      return;
     }
 
-    return titles.slice(0, -1).join(' › ');
+    this.globalSearchResults.set([]);
+    this.globalSearchLoading.set(true);
+    this.globalSearchSuggestionsOpen.set(true);
+  }
+
+  onGlobalSearchSuggestionsOpenChange(open: boolean): void {
+    if (!open) {
+      this.globalSearchSuggestionsOpen.set(false);
+
+      return;
+    }
+
+    this.globalSearchSuggestionsOpen.set(this.globalSearchQuery().trim().length > 0);
+  }
+
+  onGlobalSearchResultClick(ticket: TicketResponseDto, event?: MouseEvent): void {
+    event?.preventDefault();
+    this.onCloseGlobalSearchModal();
+    this.openTicketDetailFlow(ticket.id);
   }
 
   onTicketCardClick(ticket: TicketResponseDto): void {
@@ -1312,68 +1439,84 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.ticketRelationsSearchError.set(null);
     this.ticketRelationsSuggestionsOpen.set(false);
     this.selectedTicketRelationTargets.set([]);
-    const relationsEl = this.ticketRelationsModal?.nativeElement;
-
-    if (relationsEl?.classList.contains('show')) {
-      return;
-    }
-
-    if (this.ticketDetailSuspendedForRelations) {
-      return;
-    }
-
-    const ticketEl = this.ticketDetailModal?.nativeElement;
-
-    if (!ticketEl || !ticketEl.classList.contains('show')) {
-      queueMicrotask(() => this.showTicketRelationsModalEl());
-
-      return;
-    }
-
-    this.ticketDetailSuspendedForRelations = true;
-
-    const onTicketHidden = (): void => {
-      queueMicrotask(() => {
-        const modalEl = this.ticketRelationsModal?.nativeElement;
-
-        if (!modalEl) {
-          this.ticketDetailSuspendedForRelations = false;
-          this.showModal();
-
-          return;
-        }
-
-        this.showTicketRelationsModalEl();
-        this.registerReopenTicketDetailAfterRelationsModal();
-      });
-    };
-
-    ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
-    this.hideModal();
+    this.refreshTicketRelationKnowledgeNodes();
+    swapToOverlayAgentModal({
+      underlyingOpen: this.ticketDetailModalOpen,
+      overlayOpen: this.ticketRelationsModalOpen,
+      swapState: this.ticketDetailOverlaySwapState,
+    });
   }
 
   onCloseTicketRelationsModal(): void {
-    this.hideTicketRelationsModalEl();
+    hideAgentModal(this.ticketRelationsModalOpen);
+    this.onTicketRelationsModalClosed();
+  }
+
+  onTicketRelationsModalClosed(): void {
+    restoreUnderlyingAgentModal({
+      underlyingOpen: this.ticketDetailModalOpen,
+      swapState: this.ticketDetailOverlaySwapState,
+    });
     this.ticketRelationsSearchQuery.set('');
     this.ticketRelationsSearchError.set(null);
     this.ticketRelationsSuggestionsOpen.set(false);
     this.selectedTicketRelationTargets.set([]);
   }
 
+  /** Prefer flat list from `/knowledge`; fall back to flattening the store tree. */
+  private ticketRelationKnowledgeNodesForSearch(): KnowledgeNodeDto[] {
+    const flat = this.ticketRelationKnowledgeNodes();
+
+    if (flat.length > 0) {
+      return flat;
+    }
+
+    return this.flattenKnowledgeNodes(this.knowledgeTree());
+  }
+
+  private flattenKnowledgeNodes(nodes: KnowledgeNodeDto[]): KnowledgeNodeDto[] {
+    const result: KnowledgeNodeDto[] = [];
+    const walk = (list: KnowledgeNodeDto[]) => {
+      for (const node of list) {
+        result.push(node);
+        walk(node.children ?? []);
+      }
+    };
+
+    walk(nodes);
+
+    return result;
+  }
+
+  private refreshTicketRelationKnowledgeNodes(): void {
+    const clientId = this.effectiveClientId();
+
+    if (!clientId) {
+      this.ticketRelationKnowledgeNodes.set([]);
+
+      return;
+    }
+
+    this.knowledgeFacade.loadTree(clientId);
+    this.knowledgeService
+      .listByClient(clientId)
+      .pipe(
+        take(1),
+        catchError(() => of([] as KnowledgeNodeDto[])),
+      )
+      .subscribe((nodes) => this.ticketRelationKnowledgeNodes.set(nodes));
+  }
+
   onTicketRelationInputChange(value: string): void {
     this.ticketRelationsSearchQuery.set(value);
     this.ticketRelationsSearchError.set(null);
-    this.ticketRelationsSuggestionsOpen.set(value.trim().length > 0);
+    this.ticketRelationsSuggestionsOpen.set(value.trim().length > 0 && this.ticketRelationCandidates().length > 0);
   }
 
-  onTicketRelationInputFocus(): void {
-    if (this.ticketRelationsSearchQuery().trim().length > 0 && this.ticketRelationCandidates().length > 0) {
-      this.ticketRelationsSuggestionsOpen.set(true);
-    }
-  }
-
-  onTicketRelationInputBlur(): void {
-    setTimeout(() => this.ticketRelationsSuggestionsOpen.set(false), 180);
+  onTicketRelationSuggestionsOpenChange(open: boolean): void {
+    this.ticketRelationsSuggestionsOpen.set(
+      open && this.ticketRelationsSearchQuery().trim().length > 0 && this.ticketRelationCandidates().length > 0,
+    );
   }
 
   onPickTicketRelationCandidate(
@@ -1445,18 +1588,12 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         continue;
       }
 
-      const targetNode = this.ticketRelationNodeById(target.nodeId);
-
-      if (!targetNode) {
-        continue;
-      }
-
       this.knowledgeFacade.createRelation({
         clientId,
         sourceType: 'ticket',
         sourceId: detail.id,
-        targetType: targetNode.nodeType,
-        targetNodeId: targetNode.id,
+        targetType: target.nodeType,
+        targetNodeId: target.nodeId,
       });
     }
 
@@ -1470,6 +1607,12 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   ticketRelationNodeById(nodeId?: string | null): KnowledgeNodeDto | null {
     if (!nodeId) {
       return null;
+    }
+
+    const fromFlat = this.ticketRelationKnowledgeNodes().find((node) => node.id === nodeId);
+
+    if (fromFlat) {
+      return fromFlat;
     }
 
     const find = (nodes: KnowledgeNodeDto[]): KnowledgeNodeDto | null => {
@@ -1492,7 +1635,9 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   }
 
   ticketRelationTrackId(
-    target: { kind: 'knowledge'; nodeId: string } | { kind: 'ticket'; ticketLongSha: string },
+    target:
+      | { kind: 'knowledge'; nodeId: string; nodeType?: KnowledgeNodeType }
+      | { kind: 'ticket'; ticketLongSha: string },
   ): string {
     return target.kind === this.RELATION_TARGET_KIND_KNOWLEDGE
       ? `knowledge:${target.nodeId}`
@@ -1500,7 +1645,9 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   }
 
   ticketRelationChipDisplay(
-    target: { kind: 'knowledge'; nodeId: string } | { kind: 'ticket'; ticketLongSha: string },
+    target:
+      | { kind: 'knowledge'; nodeId: string; nodeType?: KnowledgeNodeType }
+      | { kind: 'ticket'; ticketLongSha: string },
   ): string {
     if (target.kind === this.RELATION_TARGET_KIND_TICKET) {
       const ticket = this.ticketByLongSha(target.ticketLongSha);
@@ -1515,7 +1662,9 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     const node = this.ticketRelationNodeById(target.nodeId);
 
     if (!node) {
-      return `${target.nodeId.slice(0, 7)} · Unavailable knowledge`;
+      const type = target.nodeType === 'folder' ? 'Folder' : 'Page';
+
+      return `${target.nodeId.slice(0, 7)} · ${type}: Unavailable knowledge`;
     }
 
     const type = node.nodeType === 'folder' ? 'Folder' : 'Page';
@@ -1524,7 +1673,9 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   }
 
   onRemovePendingTicketRelation(
-    target: { kind: 'knowledge'; nodeId: string } | { kind: 'ticket'; ticketLongSha: string },
+    target:
+      | { kind: 'knowledge'; nodeId: string; nodeType?: KnowledgeNodeType }
+      | { kind: 'ticket'; ticketLongSha: string },
   ): void {
     const trackId = this.ticketRelationTrackId(target);
 
@@ -1597,24 +1748,76 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
   /** Open detail modal for a ticket (board card, breadcrumb, or nested row). */
   openTicketDetailFlow(ticketId: string): void {
+    if (this.detail()?.id === ticketId && this.ticketDetailModalOpen()) {
+      return;
+    }
+
+    const generation = ++this.ticketDetailOpenGeneration;
+
     this.prototypeError.set(null);
     this.bodyGenError.set(null);
     this.newCommentText.set('');
-    this.ticketsFacade.openDetail(ticketId);
-    this.ticketAutomationFacade.loadConfig(ticketId);
-    this.ticketAutomationFacade.loadRuns(ticketId);
 
-    const clientId = this.effectiveClientId();
+    // Drop overlays without restoring the previous detail shell (relation/subtask navigation).
+    this.ticketDetailOverlaySwapState.suspended = false;
+    const closingOverlay =
+      this.ticketRelationsModalOpen() ||
+      this.ticketMigrateModalOpen() ||
+      this.createTicketModalOpen() ||
+      this.deleteTicketConfirmModalOpen() ||
+      this.ticketAutomationRunModalOpen();
+    hideAgentModal(this.ticketRelationsModalOpen);
+    hideAgentModal(this.ticketMigrateModalOpen);
+    hideAgentModal(this.createTicketModalOpen);
+    hideAgentModal(this.deleteTicketConfirmModalOpen);
+    hideAgentModal(this.ticketAutomationRunModalOpen);
 
-    if (clientId) {
-      this.agentsFacade.loadClientAgents(clientId);
+    const wasOpen = this.ticketDetailModalOpen();
+
+    if (wasOpen) {
+      hideAgentModal(this.ticketDetailModalOpen);
     }
 
-    setTimeout(() => this.showModal(), 0);
+    const closeMs = wasOpen || closingOverlay ? AGENT_MODAL_TRANSITION_MS : 0;
+
+    setTimeout(() => {
+      if (generation !== this.ticketDetailOpenGeneration) {
+        return;
+      }
+
+      const whenReady$ = this.detailLoading$.pipe(
+        pairwise(),
+        filter(([wasLoading, loading]) => wasLoading && !loading),
+        take(1),
+      );
+
+      this.ticketsFacade.openDetail(ticketId);
+      this.ticketAutomationFacade.loadConfig(ticketId);
+      this.ticketAutomationFacade.loadRuns(ticketId);
+
+      const clientId = this.effectiveClientId();
+
+      if (clientId) {
+        this.agentsFacade.loadClientAgents(clientId);
+      }
+
+      whenReady$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+        if (generation !== this.ticketDetailOpenGeneration || this.detail()?.id !== ticketId) {
+          return;
+        }
+
+        showAgentModal(this.ticketDetailModalOpen);
+      });
+    }, closeMs);
   }
 
   onBreadcrumbNavigate(ticketId: string): void {
     this.openTicketDetailFlow(ticketId);
+  }
+
+  onHierarchyBreadcrumbSelected(event: MouseEvent, ticketId: string): void {
+    event.preventDefault();
+    this.onBreadcrumbNavigate(ticketId);
   }
 
   /** Prefer stored ticket choice when still valid; else socket agent; else first chat-capable agent. */
@@ -1637,9 +1840,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     return chatAgents[0]?.id ?? null;
   }
 
-  onPreferredChatAgentChange(ticket: TicketResponseDto, raw: string): void {
-    const agentId = raw === '' ? null : raw;
-
+  onPreferredChatAgentChange(ticket: TicketResponseDto, agentId: string | null): void {
     this.selectedAgentForAi.set(agentId);
     const current = ticket.preferredChatAgentId ?? null;
 
@@ -1664,59 +1865,23 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.createTicketPriority.set('medium');
     this.createTicketCreationTemplate.set('empty');
     this.createTicketParentId.set(parentId);
-    const createEl = this.createTicketModal?.nativeElement;
-
-    if (createEl?.classList.contains('show')) {
-      return;
-    }
-
-    if (this.ticketDetailSuspendedForCreateSubtask) {
-      return;
-    }
-
-    const ticketEl = this.ticketDetailModal?.nativeElement;
-
-    if (!ticketEl || !ticketEl.classList.contains('show')) {
-      queueMicrotask(() => this.showCreateModalEl());
-
-      return;
-    }
-
-    this.ticketDetailSuspendedForCreateSubtask = true;
-
-    const onTicketHidden = (): void => {
-      queueMicrotask(() => {
-        const subtaskModalEl = this.createTicketModal?.nativeElement;
-
-        if (!subtaskModalEl) {
-          this.ticketDetailSuspendedForCreateSubtask = false;
-          this.showModal();
-
-          return;
-        }
-
-        this.showCreateModalEl();
-        this.registerReopenTicketDetailAfterCreateTicketModal();
-      });
-    };
-
-    ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
-    this.hideModal();
+    swapToOverlayAgentModal({
+      underlyingOpen: this.ticketDetailModalOpen,
+      overlayOpen: this.createTicketModalOpen,
+      swapState: this.ticketDetailOverlaySwapState,
+    });
   }
 
   onCloseModal(): void {
     this.detailTitleEditing.set(false);
     this.pendingDetailTitleRename.set(null);
-    this.ticketDetailSuspendedForAutomationRun = false;
-    this.ticketDetailSuspendedForCreateSubtask = false;
-    this.ticketDetailSuspendedForRelations = false;
-    this.ticketDetailSuspendedForMigration = false;
-    this.ticketDetailSuspendedForDeleteConfirm = false;
-    this.hideModal();
-    this.hideAutomationRunDetailModal();
-    this.hideTicketRelationsModalEl();
-    this.hideTicketMigrateModalEl();
-    this.hideDeleteTicketConfirmModal();
+    this.ticketDetailOverlaySwapState.suspended = false;
+    hideAgentModal(this.ticketDetailModalOpen);
+    hideAgentModal(this.ticketAutomationRunModalOpen);
+    hideAgentModal(this.ticketRelationsModalOpen);
+    hideAgentModal(this.ticketMigrateModalOpen);
+    hideAgentModal(this.deleteTicketConfirmModalOpen);
+    hideAgentModal(this.createTicketModalOpen);
     this.ticketPendingDelete.set(null);
     this.ticketsFacade.closeDetail();
     this.prototypeError.set(null);
@@ -1830,45 +1995,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     }
 
     this.ticketAutomationFacade.loadRunDetail(tid, runId);
-
-    const automationEl = this.ticketAutomationRunModal?.nativeElement;
-
-    if (automationEl?.classList.contains('show')) {
-      return;
-    }
-
-    if (this.ticketDetailSuspendedForAutomationRun) {
-      return;
-    }
-
-    const ticketEl = this.ticketDetailModal?.nativeElement;
-
-    if (!ticketEl || !ticketEl.classList.contains('show')) {
-      queueMicrotask(() => this.showAutomationRunDetailModal());
-
-      return;
-    }
-
-    this.ticketDetailSuspendedForAutomationRun = true;
-
-    const onTicketHidden = (): void => {
-      queueMicrotask(() => {
-        const runModalEl = this.ticketAutomationRunModal?.nativeElement;
-
-        if (!runModalEl) {
-          this.ticketDetailSuspendedForAutomationRun = false;
-          this.showModal();
-
-          return;
-        }
-
-        this.showAutomationRunDetailModal();
-        this.registerReopenTicketDetailAfterAutomationRunModal();
-      });
-    };
-
-    ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
-    this.hideModal();
+    swapToOverlayAgentModal({
+      underlyingOpen: this.ticketDetailModalOpen,
+      overlayOpen: this.ticketAutomationRunModalOpen,
+      swapState: this.ticketDetailOverlaySwapState,
+    });
   }
 
   onCancelTicketAutomationRun(run: TicketAutomationRunResponseDto): void {
@@ -1900,21 +2031,21 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     return run.status === 'pending' || run.status === 'running';
   }
 
-  ticketAutomationRunStatusBadgeClass(status: TicketAutomationRunStatus): string {
+  ticketAutomationRunStatusBadgeColor(status: TicketAutomationRunStatus): FpcBadgeColor {
     switch (status) {
       case 'succeeded':
-        return 'text-bg-success';
+        return 'success';
       case 'failed':
       case 'timed_out':
       case 'escalated':
-        return 'text-bg-danger';
+        return 'danger';
       case 'running':
       case 'pending':
-        return 'text-bg-primary';
+        return 'primary';
       case 'cancelled':
-        return 'text-bg-secondary';
+        return 'secondary';
       default:
-        return 'text-bg-secondary';
+        return 'secondary';
     }
   }
 
@@ -2160,83 +2291,16 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private showAutomationRunDetailModal(): void {
-    const el = this.ticketAutomationRunModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: {
-        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
-      };
-    };
-    const Modal = win.bootstrap?.Modal;
-
-    if (Modal) {
-      const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
-
-      inst.show();
-    }
-  }
-
   onCloseTicketAutomationRunModal(): void {
-    this.hideAutomationRunDetailModal();
+    hideAgentModal(this.ticketAutomationRunModalOpen);
+    this.onTicketAutomationRunModalClosed();
   }
 
-  private hideAutomationRunDetailModal(): void {
-    const el = this.ticketAutomationRunModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
-    };
-
-    win.bootstrap?.Modal?.getInstance(el)?.hide();
-  }
-
-  /** One-time: after automation run modal hides, restore ticket detail if it was swapped out for this flow. */
-  private registerReopenTicketDetailAfterAutomationRunModal(): void {
-    const el = this.ticketAutomationRunModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const onAutomationHidden = (): void => {
-      if (!this.ticketDetailSuspendedForAutomationRun) {
-        return;
-      }
-
-      this.ticketDetailSuspendedForAutomationRun = false;
-      queueMicrotask(() => this.showModal());
-    };
-
-    el.addEventListener('hidden.bs.modal', onAutomationHidden, { once: true });
-  }
-
-  /** One-time: after create modal hides, restore ticket detail if it was swapped out for subtask creation. */
-  private registerReopenTicketDetailAfterCreateTicketModal(): void {
-    const el = this.createTicketModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const onCreateHidden = (): void => {
-      if (!this.ticketDetailSuspendedForCreateSubtask) {
-        return;
-      }
-
-      this.ticketDetailSuspendedForCreateSubtask = false;
-      queueMicrotask(() => this.showModal());
-    };
-
-    el.addEventListener('hidden.bs.modal', onCreateHidden, { once: true });
+  onTicketAutomationRunModalClosed(): void {
+    restoreUnderlyingAgentModal({
+      underlyingOpen: this.ticketDetailModalOpen,
+      swapState: this.ticketDetailOverlaySwapState,
+    });
   }
 
   openTicketMigrationModal(): void {
@@ -2248,48 +2312,23 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
 
     this.ticketsFacade.clearError();
     this.migrationTargetClientId.set(choices[0]?.id ?? '');
-    const migrateEl = this.ticketMigrateModal?.nativeElement;
-
-    if (migrateEl?.classList.contains('show')) {
-      return;
-    }
-
-    if (this.ticketDetailSuspendedForMigration) {
-      return;
-    }
-
-    const ticketEl = this.ticketDetailModal?.nativeElement;
-
-    if (!ticketEl || !ticketEl.classList.contains('show')) {
-      queueMicrotask(() => this.showTicketMigrateModalEl());
-
-      return;
-    }
-
-    this.ticketDetailSuspendedForMigration = true;
-
-    const onTicketHidden = (): void => {
-      queueMicrotask(() => {
-        const inner = this.ticketMigrateModal?.nativeElement;
-
-        if (!inner) {
-          this.ticketDetailSuspendedForMigration = false;
-          this.showModal();
-
-          return;
-        }
-
-        this.showTicketMigrateModalEl();
-        this.registerReopenTicketDetailAfterMigrationModal();
-      });
-    };
-
-    ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
-    this.hideModal();
+    swapToOverlayAgentModal({
+      underlyingOpen: this.ticketDetailModalOpen,
+      overlayOpen: this.ticketMigrateModalOpen,
+      swapState: this.ticketDetailOverlaySwapState,
+    });
   }
 
   onCancelTicketMigrationModal(): void {
-    this.hideTicketMigrateModalEl();
+    hideAgentModal(this.ticketMigrateModalOpen);
+    this.onTicketMigrateModalClosed();
+  }
+
+  onTicketMigrateModalClosed(): void {
+    restoreUnderlyingAgentModal({
+      underlyingOpen: this.ticketDetailModalOpen,
+      swapState: this.ticketDetailOverlaySwapState,
+    });
   }
 
   onConfirmTicketMigration(): void {
@@ -2303,73 +2342,17 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.ticketsFacade.migrateTicket(d.id, targetId);
   }
 
-  private registerReopenTicketDetailAfterMigrationModal(): void {
-    const el = this.ticketMigrateModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const onHidden = (): void => {
-      if (!this.ticketDetailSuspendedForMigration) {
-        return;
-      }
-
-      this.ticketDetailSuspendedForMigration = false;
-      queueMicrotask(() => this.showModal());
-    };
-
-    el.addEventListener('hidden.bs.modal', onHidden, { once: true });
-  }
-
-  /** One-time: after delete confirmation modal hides, restore ticket detail if it was swapped out for this flow. */
-  private registerReopenTicketDetailAfterDeleteConfirmModal(): void {
-    const el = this.deleteTicketConfirmModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const onHidden = (): void => {
-      if (!this.ticketDetailSuspendedForDeleteConfirm) {
-        return;
-      }
-
-      this.ticketDetailSuspendedForDeleteConfirm = false;
-      this.ticketPendingDelete.set(null);
-      queueMicrotask(() => this.showModal());
-    };
-
-    el.addEventListener('hidden.bs.modal', onHidden, { once: true });
-  }
-
-  /** One-time: after relations modal hides, restore ticket detail if it was swapped out for this flow. */
-  private registerReopenTicketDetailAfterRelationsModal(): void {
-    const el = this.ticketRelationsModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const onHidden = (): void => {
-      if (!this.ticketDetailSuspendedForRelations) {
-        return;
-      }
-
-      this.ticketDetailSuspendedForRelations = false;
-      queueMicrotask(() => this.showModal());
-    };
-
-    el.addEventListener('hidden.bs.modal', onHidden, { once: true });
-  }
-
   private addTicketRelationCandidate(
     candidate: { kind: 'knowledge'; node: KnowledgeNodeDto } | { kind: 'ticket'; ticket: TicketResponseDto },
   ): void {
     const current = this.selectedTicketRelationTargets();
     const nextTarget =
       candidate.kind === this.RELATION_TARGET_KIND_KNOWLEDGE
-        ? ({ kind: this.RELATION_TARGET_KIND_KNOWLEDGE, nodeId: candidate.node.id } as const)
+        ? ({
+            kind: this.RELATION_TARGET_KIND_KNOWLEDGE,
+            nodeId: candidate.node.id,
+            nodeType: candidate.node.nodeType,
+          } as const)
         : ({ kind: this.RELATION_TARGET_KIND_TICKET, ticketLongSha: candidate.ticket.shas.long } as const);
     const nextTargetId = this.ticketRelationTrackId(nextTarget);
 
@@ -2382,93 +2365,18 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     return this.ticketsList().find((ticket) => ticket.shas?.long === longSha) ?? null;
   }
 
-  private showTicketRelationsModalEl(): void {
-    const el = this.ticketRelationsModal?.nativeElement;
-
-    if (!el) return;
-
-    const win = window as unknown as {
-      bootstrap?: {
-        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
-      };
-    };
-    const Modal = win.bootstrap?.Modal;
-
-    if (!Modal) return;
-
-    const focusSearchInput = (): void => {
-      this.ticketRelationsSearchInput?.nativeElement?.focus({ preventScroll: true });
-    };
-
-    el.addEventListener('shown.bs.modal', focusSearchInput, { once: true });
-    const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
-
-    inst.show();
-  }
-
-  private hideTicketRelationsModalEl(): void {
-    const el = this.ticketRelationsModal?.nativeElement;
-
-    if (!el) return;
-
-    const win = window as unknown as {
-      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
-    };
-
-    win.bootstrap?.Modal?.getInstance(el)?.hide();
-  }
-
   private closeTicketModalStackForCrossRouteNavigation(): void {
-    this.ticketDetailSuspendedForAutomationRun = false;
-    this.ticketDetailSuspendedForCreateSubtask = false;
-    this.ticketDetailSuspendedForRelations = false;
-    this.ticketDetailSuspendedForMigration = false;
-    this.ticketDetailSuspendedForDeleteConfirm = false;
-    this.hideTicketRelationsModalEl();
-    this.hideModal();
-    this.hideAutomationRunDetailModal();
-    this.hideTicketMigrateModalEl();
-    this.hideCreateModalEl();
-    this.hideDeleteTicketConfirmModal();
-    this.hideGlobalSearchModalEl();
+    this.ticketDetailOverlaySwapState.suspended = false;
+    hideAgentModal(this.ticketRelationsModalOpen);
+    hideAgentModal(this.ticketDetailModalOpen);
+    hideAgentModal(this.ticketAutomationRunModalOpen);
+    hideAgentModal(this.ticketMigrateModalOpen);
+    hideAgentModal(this.createTicketModalOpen);
+    hideAgentModal(this.deleteTicketConfirmModalOpen);
+    hideAgentModal(this.globalSearchModalOpen);
     this.ticketPendingDelete.set(null);
     this.ticketsFacade.closeDetail();
     this.ticketAutomationFacade.clear();
-  }
-
-  private showTicketMigrateModalEl(): void {
-    const el = this.ticketMigrateModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: {
-        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
-      };
-    };
-    const Modal = win.bootstrap?.Modal;
-
-    if (Modal) {
-      const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
-
-      inst.show();
-    }
-  }
-
-  private hideTicketMigrateModalEl(): void {
-    const el = this.ticketMigrateModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
-    };
-
-    win.bootstrap?.Modal?.getInstance(el)?.hide();
   }
 
   effectiveWorkspaceTitle(ew: { id: string; client: ClientResponseDto | null }): string {
@@ -2482,31 +2390,34 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   openWorkspaceSwitchModal(): void {
     this.workspaceSwitchSearch.set('');
     this.clientsFacade.loadClients();
-    setTimeout(() => this.showWorkspaceSwitchModal(), 0);
+    queueMicrotask(() => showAgentModal(this.workspaceSwitchModalOpen));
   }
 
   onCloseWorkspaceSwitchModal(): void {
-    this.hideWorkspaceSwitchModal();
+    hideAgentModal(this.workspaceSwitchModalOpen);
+  }
+
+  goToSpaces(event?: Event): void {
+    event?.preventDefault();
+    hideAgentModal(this.workspaceSwitchModalOpen);
+    void this.router.navigate(['/clients']);
   }
 
   onSelectWorkspaceForTickets(client: ClientResponseDto): void {
     if (client.id === this.effectiveClientId()) {
-      this.hideWorkspaceSwitchModal();
+      hideAgentModal(this.workspaceSwitchModalOpen);
 
       return;
     }
 
-    this.hideWorkspaceSwitchModal();
-    this.ticketDetailSuspendedForAutomationRun = false;
-    this.ticketDetailSuspendedForCreateSubtask = false;
-    this.ticketDetailSuspendedForMigration = false;
-    this.ticketDetailSuspendedForDeleteConfirm = false;
-    this.hideModal();
-    this.hideAutomationRunDetailModal();
-    this.hideTicketMigrateModalEl();
-    this.hideCreateModalEl();
-    this.hideDeleteTicketConfirmModal();
-    this.hideGlobalSearchModalEl();
+    hideAgentModal(this.workspaceSwitchModalOpen);
+    this.ticketDetailOverlaySwapState.suspended = false;
+    hideAgentModal(this.ticketDetailModalOpen);
+    hideAgentModal(this.ticketAutomationRunModalOpen);
+    hideAgentModal(this.ticketMigrateModalOpen);
+    hideAgentModal(this.createTicketModalOpen);
+    hideAgentModal(this.deleteTicketConfirmModalOpen);
+    hideAgentModal(this.globalSearchModalOpen);
     this.ticketPendingDelete.set(null);
     this.ticketsFacade.closeDetail();
     this.ticketAutomationFacade.clear();
@@ -2527,52 +2438,20 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
   }
 
   private openDeleteTicketConfirmFlow(): void {
-    const deleteEl = this.deleteTicketConfirmModal?.nativeElement;
-
-    if (deleteEl?.classList.contains('show')) {
-      return;
-    }
-
-    if (this.ticketDetailSuspendedForDeleteConfirm) {
-      return;
-    }
-
-    const ticketEl = this.ticketDetailModal?.nativeElement;
-
-    if (!ticketEl || !ticketEl.classList.contains('show')) {
-      queueMicrotask(() => this.showDeleteTicketConfirmModal());
-
-      return;
-    }
-
-    this.ticketDetailSuspendedForDeleteConfirm = true;
-
-    const onTicketHidden = (): void => {
-      queueMicrotask(() => {
-        const inner = this.deleteTicketConfirmModal?.nativeElement;
-
-        if (!inner) {
-          this.ticketDetailSuspendedForDeleteConfirm = false;
-          this.showModal();
-
-          return;
-        }
-
-        this.showDeleteTicketConfirmModal();
-        this.registerReopenTicketDetailAfterDeleteConfirmModal();
-      });
-    };
-
-    ticketEl.addEventListener('hidden.bs.modal', onTicketHidden, { once: true });
-    this.hideModal();
+    swapToOverlayAgentModal({
+      underlyingOpen: this.ticketDetailModalOpen,
+      overlayOpen: this.deleteTicketConfirmModalOpen,
+      swapState: this.ticketDetailOverlaySwapState,
+    });
   }
 
   onCancelDeleteTicketConfirm(): void {
-    this.hideDeleteTicketConfirmModal();
-
-    if (!this.ticketDetailSuspendedForDeleteConfirm) {
-      this.ticketPendingDelete.set(null);
-    }
+    this.ticketPendingDelete.set(null);
+    this.releaseExternalSyncMarkerOnTicketDelete.set(false);
+    restoreUnderlyingAgentModal({
+      underlyingOpen: this.ticketDetailModalOpen,
+      swapState: this.ticketDetailOverlaySwapState,
+    });
   }
 
   onConfirmDeleteTicket(): void {
@@ -2585,8 +2464,8 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     const { id } = pending;
     const releaseMarker = this.releaseExternalSyncMarkerOnTicketDelete();
 
-    this.ticketDetailSuspendedForDeleteConfirm = false;
-    this.hideDeleteTicketConfirmModal();
+    this.ticketDetailOverlaySwapState.suspended = false;
+    hideAgentModal(this.deleteTicketConfirmModalOpen);
     this.ticketPendingDelete.set(null);
     this.releaseExternalSyncMarkerOnTicketDelete.set(false);
     this.ticketsFacade.remove(id, releaseMarker);
@@ -2606,7 +2485,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
         if (outcome === 'success') {
           this.onCloseModal();
         } else {
-          queueMicrotask(() => this.showModal());
+          queueMicrotask(() => showAgentModal(this.ticketDetailModalOpen));
         }
       });
   }
@@ -2632,7 +2511,7 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.detailTitleEditing.set(true);
     afterNextRender(
       () => {
-        this.detailTitleInputRef()?.nativeElement?.focus();
+        this.detailTitleInputRef()?.nativeElement?.querySelector<HTMLInputElement>('input')?.focus();
       },
       { injector: this.injector },
     );
@@ -2806,11 +2685,19 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
     this.createTicketPriority.set('medium');
     this.createTicketCreationTemplate.set('empty');
     this.createTicketParentId.set(null);
-    setTimeout(() => this.showCreateModalEl(), 0);
+    queueMicrotask(() => showAgentModal(this.createTicketModalOpen));
   }
 
   onCloseCreateTicketModal(): void {
-    this.hideCreateModalEl();
+    hideAgentModal(this.createTicketModalOpen);
+    this.onCreateTicketModalClosed();
+  }
+
+  onCreateTicketModalClosed(): void {
+    restoreUnderlyingAgentModal({
+      underlyingOpen: this.ticketDetailModalOpen,
+      swapState: this.ticketDetailOverlaySwapState,
+    });
     this.createTicketError.set(null);
     this.createTicketParentId.set(null);
   }
@@ -2859,8 +2746,8 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
       });
     }
 
-    this.hideCreateModalEl();
-    this.createTicketParentId.set(null);
+    hideAgentModal(this.createTicketModalOpen);
+    this.onCreateTicketModalClosed();
   }
 
   onSubmitComment(): void {
@@ -2907,14 +2794,11 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
               }
             : {}),
         });
-        this.ticketDetailSuspendedForAutomationRun = false;
-        this.ticketDetailSuspendedForCreateSubtask = false;
-        this.ticketDetailSuspendedForMigration = false;
-        this.ticketDetailSuspendedForDeleteConfirm = false;
-        this.hideModal();
-        this.hideAutomationRunDetailModal();
-        this.hideTicketMigrateModalEl();
-        this.hideDeleteTicketConfirmModal();
+        this.ticketDetailOverlaySwapState.suspended = false;
+        hideAgentModal(this.ticketDetailModalOpen);
+        hideAgentModal(this.ticketAutomationRunModalOpen);
+        hideAgentModal(this.ticketMigrateModalOpen);
+        hideAgentModal(this.deleteTicketConfirmModalOpen);
         this.ticketsFacade.closeDetail();
         this.ticketAutomationFacade.clear();
         void this.router.navigate(['/clients', clientId, 'agents', agentId]);
@@ -3055,190 +2939,12 @@ export class TicketsBoardComponent implements OnInit, AfterViewInit {
             this.ticketsFacade.openDetail(reopenTicketIdIfDetailMissing);
           }
 
-          this.showModal();
+          showAgentModal(this.ticketDetailModalOpen);
         }),
       );
   }
 
-  private showModal(): void {
-    const el = this.ticketDetailModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: {
-        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
-      };
-    };
-    const Modal = win.bootstrap?.Modal;
-
-    if (Modal) {
-      const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
-
-      inst.show();
-    }
-  }
-
-  private hideModal(): void {
-    const el = this.ticketDetailModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
-    };
-
-    win.bootstrap?.Modal?.getInstance(el)?.hide();
-  }
-
-  private showCreateModalEl(): void {
-    const el = this.createTicketModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: {
-        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
-      };
-    };
-    const Modal = win.bootstrap?.Modal;
-
-    if (Modal) {
-      const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
-
-      inst.show();
-    }
-  }
-
-  private hideCreateModalEl(): void {
-    const el = this.createTicketModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
-    };
-
-    win.bootstrap?.Modal?.getInstance(el)?.hide();
-  }
-
-  private showDeleteTicketConfirmModal(): void {
-    const el = this.deleteTicketConfirmModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: {
-        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
-      };
-    };
-    const Modal = win.bootstrap?.Modal;
-
-    if (Modal) {
-      const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
-
-      inst.show();
-    }
-  }
-
-  private hideDeleteTicketConfirmModal(): void {
-    const el = this.deleteTicketConfirmModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
-    };
-
-    win.bootstrap?.Modal?.getInstance(el)?.hide();
-  }
-
-  private showWorkspaceSwitchModal(): void {
-    const el = this.workspaceSwitchModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: {
-        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
-      };
-    };
-    const Modal = win.bootstrap?.Modal;
-
-    if (Modal) {
-      const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
-
-      inst.show();
-    }
-  }
-
-  private hideWorkspaceSwitchModal(): void {
-    const el = this.workspaceSwitchModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
-    };
-
-    win.bootstrap?.Modal?.getInstance(el)?.hide();
-  }
-
-  private showGlobalSearchModalEl(): void {
-    const el = this.globalSearchModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: {
-        Modal?: { getOrCreateInstance: (e: Element) => { show(): void }; new (e: Element): { show(): void } };
-      };
-    };
-    const Modal = win.bootstrap?.Modal;
-
-    if (!Modal) {
-      return;
-    }
-
-    const focusSearchInput = (): void => {
-      this.globalSearchInput?.nativeElement?.focus({ preventScroll: true });
-    };
-
-    el.addEventListener('shown.bs.modal', focusSearchInput, { once: true });
-    const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
-
-    inst.show();
-  }
-
-  private hideGlobalSearchModalEl(): void {
-    const el = this.globalSearchModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    const win = window as unknown as {
-      bootstrap?: { Modal?: { getInstance: (e: Element) => { hide(): void } | null } };
-    };
-
-    win.bootstrap?.Modal?.getInstance(el)?.hide();
+  private focusGlobalSearchInput(options?: FocusOptions): void {
+    this.globalSearchInput?.nativeElement?.querySelector<HTMLInputElement>('input')?.focus(options);
   }
 }

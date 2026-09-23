@@ -1,50 +1,47 @@
 <div class="git-manager-container d-flex flex-column h-100">
-  <div class="git-manager-header p-2 border-bottom bg-body-tertiary">
+  <div class="git-manager-header p-2 ps-3 border-bottom bg-body-tertiary">
     <div class="d-flex justify-content-between align-items-center">
       <h6 class="mb-0 fw-semibold" i18n="@@featureGitManager-versionControlHeader">Version Control</h6>
-      <div class="btn-group btn-group-sm" role="group">
-        <button
-          type="button"
-          class="btn btn-sm"
-          [class.btn-outline-secondary]="!(fetchError$ | async)"
-          [class.btn-danger]="fetchError$ | async"
-          (click)="onFetch()"
+      <fpc-button-group size="sm">
+        <fpc-button
+          size="sm"
+          iconOnly
+          [variant]="(fetchError$ | async) ? 'danger' : 'secondary'"
+          (clicked)="onFetch()"
           [disabled]="(fetching$ | async) || (fetchError$ | async) || (anyError$ | async)"
           i18n-title="@@featureGitManager-fetchTitle"
           title="Fetch from remote"
         >
           @if (fetching$ | async) {
-            <span class="spinner-border spinner-border-sm" role="status"></span>
+            <fpc-spinner size="sm" />
           } @else if (fetchError$ | async) {
             <i class="bi bi-x-circle"></i>
           } @else {
             <i class="bi bi-download"></i>
           }
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm"
-          [class.btn-outline-secondary]="!(pullError$ | async)"
-          [class.btn-danger]="pullError$ | async"
-          (click)="onPull()"
+        </fpc-button>
+        <fpc-button
+          size="sm"
+          iconOnly
+          [variant]="(pullError$ | async) ? 'danger' : 'secondary'"
+          (clicked)="onPull()"
           [disabled]="(pulling$ | async) || (pullError$ | async) || (anyError$ | async)"
           i18n-title="@@featureGitManager-pullTitle"
           title="Pull from remote"
         >
           @if (pulling$ | async) {
-            <span class="spinner-border spinner-border-sm" role="status"></span>
+            <fpc-spinner size="sm" />
           } @else if (pullError$ | async) {
             <i class="bi bi-x-circle"></i>
           } @else {
             <i class="bi bi-arrow-down-circle"></i>
           }
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm"
-          [class.btn-outline-secondary]="!(pushError$ | async)"
-          [class.btn-danger]="pushError$ | async"
-          (click)="onPush()"
+        </fpc-button>
+        <fpc-button
+          size="sm"
+          iconOnly
+          [variant]="(pushError$ | async) ? 'danger' : 'secondary'"
+          (clicked)="onPush()"
           [disabled]="
             (pushing$ | async) || (pushError$ | async) || (anyError$ | async) || !(hasUnpushedCommits$ | async)
           "
@@ -52,33 +49,32 @@
           title="Push to remote"
         >
           @if (pushing$ | async) {
-            <span class="spinner-border spinner-border-sm" role="status"></span>
+            <fpc-spinner size="sm" />
           } @else if (pushError$ | async) {
             <i class="bi bi-x-circle"></i>
           } @else {
             <i class="bi bi-arrow-up-circle"></i>
           }
-        </button>
-        <button
-          type="button"
-          class="btn btn-outline-primary"
-          (click)="onForcePush()"
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          size="sm"
+          iconOnly
+          (clicked)="onForcePush()"
           [disabled]="(pushing$ | async) || (pushError$ | async) || (anyError$ | async)"
           i18n-title="@@featureGitManager-forcePushTitle"
           title="Force push (--force-with-lease)"
         >
           <i class="bi bi-lightning-charge"></i>
-        </button>
-      </div>
+        </fpc-button>
+      </fpc-button-group>
     </div>
   </div>
 
   <div class="git-manager-content flex-grow-1 overflow-auto">
     @if (showLoadingSpinner$ | async) {
       <div class="d-flex justify-content-center align-items-center p-4">
-        <div class="spinner-border spinner-border-sm text-primary" role="status">
-          <span class="visually-hidden" i18n="@@featureGitManager-loading">Loading...</span>
-        </div>
+        <fpc-spinner size="sm" variant="primary" i18n-label="@@featureGitManager-loading" label="Loading..." />
       </div>
     } @else {
       @if (status$ | async; as status) {
@@ -90,41 +86,34 @@
         } @else {
           <!-- Commit Section -->
           @if ((stagedFiles$ | async)?.length && (stagedFiles$ | async)!.length > 0) {
-            <div
-              class="git-section-header px-2 py-1 border-bottom bg-body-tertiary"
-              [class.border-top]="hasCommitTopBorder$ | async"
-            >
-              <label
-                for="commitMessage"
-                class="form-label fw-semibold small mb-0"
-                i18n="@@featureGitManager-commitMessageLabel"
-                >Commit Message</label
+            <div class="px-2 pt-3 pb-3" [class.border-top]="hasCommitTopBorder$ | async">
+              <fpc-form-field
+                forId="commitMessage"
+                i18n-label="@@featureGitManager-commitMessageLabel"
+                label="Commit Message"
               >
-            </div>
-            <div class="px-2 pt-3 pb-3">
-              <div class="input-group mb-2">
-                <textarea
-                  class="form-control form-control-sm"
-                  id="commitMessage"
-                  rows="3"
+                <fpc-form-control
+                  controlType="textarea"
+                  controlId="commitMessage"
+                  size="sm"
+                  [rows]="3"
                   [(ngModel)]="commitMessage"
                   i18n-placeholder="@@featureGitManager-commitMessagePlaceholder"
                   placeholder="Enter commit message..."
                   (keydown.ctrl.enter)="onCommit()"
                   (keydown.meta.enter)="onCommit()"
-                ></textarea>
-              </div>
-              <button
-                type="button"
-                class="btn btn-sm btn-primary w-100"
-                (click)="onCommit()"
+                />
+              </fpc-form-field>
+              <fpc-button
+                variant="primary"
+                size="sm"
+                block
+                (clicked)="onCommit()"
                 [disabled]="!commitMessage().trim() || (isAnyOperationInProgress$ | async)"
+                [loading]="(committing$ | async) === true"
               >
-                @if (committing$ | async) {
-                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                }
                 <span i18n="@@featureGitManager-commitChangesButton">Commit Changes</span>
-              </button>
+              </fpc-button>
             </div>
           }
 
@@ -140,18 +129,19 @@
                     <i class="bi bi-check-circle me-1"></i
                     ><span i18n="@@featureGitManager-stagedChanges">Staged Changes</span>
                   </h6>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary py-0 px-2"
-                    (click)="onUnstageAll()"
+                  <fpc-button
+                    variant="dark"
+                    size="sm"
+                    iconOnly
+                    (clicked)="onUnstageAll()"
                     [disabled]="isAnyOperationInProgress$ | async"
                     i18n-title="@@featureGitManager-unstageAllTitle"
                     title="Unstage all"
                     i18n-aria-label="@@featureGitManager-unstageAllTitle"
-                    aria-label="Unstage all"
+                    ariaLabel="Unstage all"
                   >
                     <i class="bi bi-dash-circle" aria-hidden="true"></i>
-                  </button>
+                  </fpc-button>
                 </div>
               </div>
               <div class="git-file-list p-2">
@@ -161,21 +151,24 @@
                       <i class="bi git-file-icon" [ngClass]="[getStatusIcon(file)]"></i>
                       <span class="git-file-name text-truncate" [title]="file.path">{{ file.path }}</span>
                       @if (file.isBinary) {
-                        <span class="badge bg-secondary badge-sm" i18n="@@featureGitManager-binaryBadge">Binary</span>
+                        <fpc-badge color="secondary" class="badge-sm" i18n="@@featureGitManager-binaryBadge"
+                          >Binary</fpc-badge
+                        >
                       }
                     </div>
-                    <div class="btn-group btn-group-sm ms-2" role="group">
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-outline-secondary py-0 px-1"
-                        (click)="onUnstageFile(file.path); $event.stopPropagation()"
+                    <fpc-button-group size="sm" class="ms-2">
+                      <fpc-button
+                        variant="dark"
+                        size="sm"
+                        iconOnly
+                        (clicked)="onUnstageFile(file.path); $event.stopPropagation()"
                         [disabled]="isAnyOperationInProgress$ | async"
                         i18n-title="@@featureGitManager-unstageTitle"
                         title="Unstage"
                       >
                         <i class="bi bi-x-circle"></i>
-                      </button>
-                    </div>
+                      </fpc-button>
+                    </fpc-button-group>
                   </div>
                 }
               </div>
@@ -194,18 +187,19 @@
                     <i class="bi bi-exclamation-circle me-1"></i
                     ><span i18n="@@featureGitManager-unstagedChanges">Unstaged Changes</span>
                   </h6>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary py-0 px-2"
-                    (click)="onStageAll()"
+                  <fpc-button
+                    variant="dark"
+                    size="sm"
+                    iconOnly
+                    (clicked)="onStageAll()"
                     [disabled]="isAnyOperationInProgress$ | async"
                     i18n-title="@@featureGitManager-stageAllTitle"
                     title="Stage all"
                     i18n-aria-label="@@featureGitManager-stageAllTitle"
-                    aria-label="Stage all"
+                    ariaLabel="Stage all"
                   >
                     <i class="bi bi-plus" aria-hidden="true"></i>
-                  </button>
+                  </fpc-button>
                 </div>
               </div>
               <div class="git-file-list p-2">
@@ -215,21 +209,24 @@
                       <i class="bi git-file-icon" [ngClass]="[getStatusIcon(file)]"></i>
                       <span class="git-file-name text-truncate" [title]="file.path">{{ file.path }}</span>
                       @if (file.isBinary) {
-                        <span class="badge bg-secondary badge-sm" i18n="@@featureGitManager-binaryBadge">Binary</span>
+                        <fpc-badge color="secondary" class="badge-sm" i18n="@@featureGitManager-binaryBadge"
+                          >Binary</fpc-badge
+                        >
                       }
                     </div>
-                    <div class="btn-group btn-group-sm ms-2" role="group">
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-outline-success py-0 px-1"
-                        (click)="onStageFile(file.path); $event.stopPropagation()"
+                    <fpc-button-group size="sm" class="ms-2">
+                      <fpc-button
+                        variant="success"
+                        size="sm"
+                        iconOnly
+                        (clicked)="onStageFile(file.path); $event.stopPropagation()"
                         [disabled]="isAnyOperationInProgress$ | async"
                         i18n-title="@@featureGitManager-stageTitle"
                         title="Stage"
                       >
                         <i class="bi bi-plus"></i>
-                      </button>
-                    </div>
+                      </fpc-button>
+                    </fpc-button-group>
                   </div>
                 }
               </div>

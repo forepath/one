@@ -1,0 +1,46 @@
+<div class="client-select">
+  @if (selectedClient(); as client) {
+    <fpc-badge variant="info" color="secondary" class="client-select__chip">
+      <span class="text-truncate">{{ client.name }}</span>
+      <button
+        type="button"
+        class="btn-close client-select__clear"
+        [disabled]="disabled()"
+        (click)="clearSelection()"
+        i18n-aria-label="@@featureClientSelect-clearSelectionAria"
+        aria-label="Clear selected client"
+      ></button>
+    </fpc-badge>
+  } @else {
+    <fpc-typeahead-select
+      [inputId]="inputId()"
+      [listboxId]="inputId() + '-listbox'"
+      [size]="size()"
+      [placeholder]="placeholder()"
+      [disabled]="disabled()"
+      [required]="required()"
+      [loading]="loading()"
+      [openOnFocus]="showSuggestionsOnFocus()"
+      [query]="searchQuery()"
+      (queryChange)="onSearchChange($event)"
+      [open]="suggestionsOpen()"
+      (openChange)="suggestionsOpen.set($event)"
+      (cleared)="reset()"
+    >
+      <div fpcTypeaheadSuggestions>
+        @if (filteredClients().length > 0) {
+          @for (client of filteredClients(); track client.id) {
+            <button type="button" class="dropdown-item py-2 text-start" (mousedown)="pickClient(client, $event)">
+              <span class="d-block small fw-medium text-truncate">{{ client.name }}</span>
+              <span class="d-block font-monospace text-muted small text-truncate">{{ client.id }}</span>
+            </button>
+          }
+        } @else if (searchQuery().trim() && !loading()) {
+          <span class="dropdown-item-text text-muted small" i18n="@@featureClientSelect-noClients"
+            >No clients found.</span
+          >
+        }
+      </div>
+    </fpc-typeahead-select>
+  }
+</div>

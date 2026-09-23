@@ -1,159 +1,81 @@
-<!-- Standalone Loading Spinner Overlay -->
-@if (showStandaloneLoading()) {
-  <div
-    class="position-fixed top-0 start-0 w-100 h-100 bg-body-tertiary d-flex justify-content-center align-items-center"
-    style="z-index: 9999"
-  >
-    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem">
-      <span class="visually-hidden" i18n="@@featureContainer-loadingFile">Loading file...</span>
-    </div>
-  </div>
-}
+<fpc-loading-overlay [loading]="showStandaloneLoading()" [fixed]="true" spinnerSize="lg" [label]="loadingFileLabel" />
 
 @if (!fileOnlyMode()) {
-  <section class="bg-dark text-white d-flex align-items-center justify-content-between gap-2">
-    <div class="d-flex align-items-center gap-3">
-      <div class="brand-icon-container me-2 fs-3 bg-primary p-3">
-        <img
-          src="assets/images/icon_light.svg"
-          alt="Agenstra"
-          i18n-alt="@@featureContainer-brandAlt"
-          class="brand-icon"
-        />
-      </div>
-    </div>
-    <div class="d-flex align-items-center gap-2">
-      <!-- Language Switcher -->
-      <div class="dropdown me-1">
-        <button
-          class="btn btn-link text-white text-decoration-none p-2 dropdown-toggle"
-          type="button"
-          id="languageDropdown"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-          i18n-aria-label="@@featureContainer-languageSwitcherAriaLabel"
-          aria-label="Select language"
-        >
-          <i class="bi bi-globe"></i>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
-          @for (locale of localeService.getAvailableLocales(); track locale.code) {
-            <li>
-              <a
-                class="dropdown-item"
-                [class.active]="localeService.getCurrentLocale() === locale.code"
-                [href]="localeService.getLanguageSwitchUrl(locale.code)"
-                >{{ locale.label }}</a
-              >
-            </li>
-          }
-        </ul>
-      </div>
-      @if (isUsersAuth && (isAuthenticated$ | async)) {
-        <a
-          routerLink="/settings/security"
-          routerLinkActive="active"
-          class="btn btn-link text-white text-decoration-none p-2 position-relative"
-          i18n-title="@@featureContainer-securityTitle"
-          title="Security"
-          i18n-aria-label="@@featureContainer-security"
-          aria-label="Security"
-        >
-          <i class="bi bi-shield-lock" aria-hidden="true"></i>
-          @if (showSecurityAuthenticatorBadge$ | async) {
-            <span class="notification-badge notification-badge--security-warning" aria-hidden="true"></span>
-            <span class="visually-hidden" i18n="@@featureContainer-securityAuthenticatorSuggested"
-              >Authenticator app is not enabled</span
-            >
-          }
-        </a>
-      }
-      <!-- Dark Mode Toggle -->
-      <div class="form-check form-switch me-3 mb-0">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          role="switch"
-          id="darkModeToggle"
-          [checked]="themeService.isDarkMode()"
-          (change)="themeService.toggleTheme()"
-        />
-        <label
-          class="form-check-label text-white"
-          for="darkModeToggle"
-          i18n-title="@@featureContainer-toggleDarkMode"
-          title="Toggle dark mode"
-        >
-          <i
-            class="bi"
-            [class.bi-moon-fill]="!themeService.isDarkMode()"
-            [class.bi-sun-fill]="themeService.isDarkMode()"
-          ></i>
-        </label>
-      </div>
-      @if (isAuthenticated$ | async) {
-        <button class="btn btn-primary me-3" (click)="onLogoutClick()" i18n="@@featureContainer-logout">Logout</button>
-      }
-    </div>
-  </section>
-} @else {
-  <!-- Language Switcher and Dark Mode Toggle for Standalone Mode -->
-  <section class="d-flex align-items-center justify-content-end gap-2 p-2 bg-dark text-white">
-    <div class="dropdown">
-      <button
-        class="btn btn-link text-white text-decoration-none p-2 dropdown-toggle"
-        type="button"
-        id="languageDropdownStandalone"
-        data-bs-toggle="dropdown"
-        aria-expanded="false"
-        i18n-aria-label="@@featureContainer-languageSwitcherAriaLabel"
-        aria-label="Select language"
+  <fpc-top-bar brandSrc="assets/images/icon_light.svg" brandAlt="Agenstra" i18n-brandAlt="@@featureContainer-brandAlt">
+    @if (isUsersAuth && (isAuthenticated$ | async)) {
+      <fpc-button
+        routerLink="/settings/security"
+        routerLinkActive="active"
+        variant="link"
+        size="sm"
+        iconOnly
+        class="fpc-top-bar__action position-relative"
+        i18n-title="@@featureContainer-securityTitle"
+        title="Security"
+        i18n-ariaLabel="@@featureContainer-security"
+        ariaLabel="Security"
       >
-        <i class="bi bi-globe"></i>
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdownStandalone">
-        @for (locale of localeService.getAvailableLocales(); track locale.code) {
-          <li>
-            <a
-              class="dropdown-item"
-              [class.active]="localeService.getCurrentLocale() === locale.code"
-              [href]="localeService.getLanguageSwitchUrl(locale.code)"
-              >{{ locale.label }}</a
-            >
-          </li>
+        <i class="bi bi-shield-lock" aria-hidden="true"></i>
+        @if (showSecurityAuthenticatorBadge$ | async) {
+          <fpc-notification-indicator kind="security-warning" placement="absolute" />
+          <span class="visually-hidden" i18n="@@featureContainer-securityAuthenticatorSuggested"
+            >Authenticator app is not enabled</span
+          >
         }
-      </ul>
-    </div>
-    <div class="form-check form-switch mb-0">
-      <input
-        class="form-check-input"
-        type="checkbox"
-        role="switch"
-        id="darkModeToggleStandalone"
-        [checked]="themeService.isDarkMode()"
-        (change)="themeService.toggleTheme()"
-      />
-      <label
-        class="form-check-label"
-        for="darkModeToggleStandalone"
-        i18n-title="@@featureContainer-toggleDarkMode"
-        title="Toggle dark mode"
+      </fpc-button>
+    }
+    <fpc-language-switcher
+      data-bs-theme="dark"
+      [locales]="localeService.getAvailableLocales()"
+      [locale]="localeService.getCurrentLocale()"
+      [ariaLabel]="languageSwitcherAriaLabel"
+      (localeChange)="onLocaleChange($event)"
+    />
+    <fpc-theme-switcher
+      [dark]="themeService.isDarkMode()"
+      [ariaLabel]="toggleDarkModeTitle"
+      (darkChange)="themeService.toggleTheme()"
+    />
+    @if (isAuthenticated$ | async) {
+      <fpc-button
+        class="d-md-none"
+        variant="primary"
+        size="sm"
+        (clicked)="onLogoutClick()"
+        i18n="@@featureContainer-logout"
+        >Logout</fpc-button
       >
-        <i
-          class="bi"
-          [class.bi-moon-fill]="!themeService.isDarkMode()"
-          [class.bi-sun-fill]="themeService.isDarkMode()"
-        ></i>
-      </label>
-    </div>
-  </section>
+      <fpc-button
+        class="d-none d-md-inline-block"
+        variant="primary"
+        (clicked)="onLogoutClick()"
+        i18n="@@featureContainer-logout"
+        >Logout</fpc-button
+      >
+    }
+  </fpc-top-bar>
+} @else {
+  <fpc-top-bar [compact]="true">
+    <fpc-language-switcher
+      data-bs-theme="dark"
+      [locales]="localeService.getAvailableLocales()"
+      [locale]="localeService.getCurrentLocale()"
+      [ariaLabel]="languageSwitcherAriaLabel"
+      (localeChange)="onLocaleChange($event)"
+    />
+    <fpc-theme-switcher
+      [dark]="themeService.isDarkMode()"
+      [ariaLabel]="toggleDarkModeTitle"
+      (darkChange)="themeService.toggleTheme()"
+    />
+  </fpc-top-bar>
 }
 <div
   class="container__workspace d-flex justify-content-end flex-grow-1 overflow-hidden"
   [class.border-top]="!isMainMask()"
 >
   @if (isMainMask()) {
-    <aside class="sidebar bg-body-tertiary h-100">
+    <fpc-sidebar [ariaLabel]="sidebarAriaLabel">
       <a
         routerLink="/clients"
         routerLinkActive="active"
@@ -164,15 +86,8 @@
         <i class="bi bi-grid me-1"></i>
         <span class="small" i18n="@@featureContainer-spaces">Spaces</span>
         @if (spacesAttentionBadge$ | async; as attentionBadge) {
-          <span
-            class="notification-badge"
-            [class.notification-badge--git]="attentionBadge === 'git'"
-            [class.notification-badge--unread]="attentionBadge === 'unread'"
-            [class.notification-badge--both]="attentionBadge === 'both'"
-            aria-hidden="true"
-          >
-            <span class="visually-hidden" i18n="@@featureContainer-spacesAttention">Spaces need attention</span>
-          </span>
+          <fpc-notification-indicator [kind]="attentionBadge" placement="absolute" />
+          <span class="visually-hidden" i18n="@@featureContainer-spacesAttention">Spaces need attention</span>
         }
       </a>
       <a
@@ -220,31 +135,51 @@
         </a>
       }
       @if (canAccessUserManager$ | async) {
-        <span
-          #adminNavTrigger
-          class="sidebar__item border-top position-relative"
-          [class.active]="isAdminRouteActive()"
-          tabindex="0"
-          role="button"
-          i18n-title="@@featureContainer-adminTitle"
-          title="Admin"
-          i18n-aria-label="@@featureContainer-adminTitle"
-          aria-label="Admin"
-        >
-          <i class="bi bi-gear me-1"></i>
-          <span class="small" i18n="@@featureContainer-admin">Admin</span>
-          @if (updatesAttentionBadge$ | async) {
-            <span class="notification-badge" aria-hidden="true">
-              <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
+        <div fpcSidebarFooter>
+          <fpc-sidebar-popover [(open)]="adminPopoverOpen" [ariaLabel]="adminPopoverAriaLabel">
+            <span
+              fpcSidebarPopoverTrigger
+              class="sidebar__item border-top position-relative"
+              [class.active]="isAdminRouteActive()"
+              tabindex="0"
+              role="button"
+              i18n-title="@@featureContainer-adminTitle"
+              title="Admin"
+              i18n-aria-label="@@featureContainer-adminTitle"
+              aria-label="Admin"
+            >
+              <i class="bi bi-gear me-1"></i>
+              <span class="small" i18n="@@featureContainer-admin">Admin</span>
+              @if (updatesAttentionBadge$ | async) {
+                <fpc-notification-indicator placement="absolute" />
+                <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
+              }
             </span>
-          }
-        </span>
+            @for (item of adminNavItems; track item.routerLink.join('/')) {
+              <a
+                [routerLink]="item.routerLink"
+                routerLinkActive="active"
+                class="sidebar__item position-relative"
+                [title]="item.title"
+                [attr.aria-label]="item.title"
+                (click)="adminPopoverOpen = false"
+              >
+                <i class="bi {{ item.icon }} me-1" aria-hidden="true"></i>
+                <span class="small">{{ item.label }}</span>
+                @if (item.navKey === 'updates' && (updatesAttentionBadge$ | async)) {
+                  <fpc-notification-indicator placement="absolute" />
+                  <span class="visually-hidden" i18n="@@featureContainer-updatesAttention">Updates need attention</span>
+                }
+              </a>
+            }
+          </fpc-sidebar-popover>
+        </div>
       }
-    </aside>
+    </fpc-sidebar>
   }
-  <section class="section__container">
+  <fpc-section-container>
     <router-outlet></router-outlet>
-  </section>
+  </fpc-section-container>
 </div>
 
 <identity-logout-confirm-modal (confirmed)="onLogoutConfirmed($event)" />

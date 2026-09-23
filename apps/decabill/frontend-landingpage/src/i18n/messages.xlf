@@ -1743,10 +1743,10 @@
         <source> Enter a valid email address. </source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
-        <source>Phone <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>Phone (optional)</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
-        <source>Company <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>Company (optional)</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
         <source>Message</source>

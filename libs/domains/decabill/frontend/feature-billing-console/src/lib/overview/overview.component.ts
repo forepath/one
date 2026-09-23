@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -26,6 +26,26 @@ import {
   type SubscriptionWithServerInfo,
   integratedProvisioningServiceLabel,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcBoardLaneComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcLaneHeaderComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcSummaryBarComponent,
+  FpcSummaryCardComponent,
+  FpcSummaryCardValueDirective,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+} from '@forepath/shared/frontend/ui-components';
 import type { Environment } from '@forepath/shared/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { combineLatest, debounceTime, distinctUntilChanged, filter, finalize, map, skip, take } from 'rxjs';
@@ -40,7 +60,29 @@ import { hideBillingModal, showBillingModal } from '../billing-modal';
 @Component({
   selector: 'framework-billing-overview',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcBoardLaneComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcLaneHeaderComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+    FpcSummaryBarComponent,
+    FpcSummaryCardComponent,
+    FpcSummaryCardValueDirective,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+  ],
   templateUrl: './overview.component.html',
   styleUrls: ['./overview.component.scss'],
 })
@@ -56,10 +98,8 @@ export class OverviewComponent implements OnInit {
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
   private readonly invoicesFacade = inject(InvoicesFacade);
 
-  @ViewChild('sshAccessConfirmModal', { static: false })
-  private sshAccessConfirmModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('sshAccessDisplayModal', { static: false })
-  private sshAccessDisplayModal!: ElementRef<HTMLDivElement>;
+  readonly sshAccessConfirmModalOpen = signal(false);
+  readonly sshAccessDisplayModalOpen = signal(false);
 
   sshRevealTarget: SubscriptionWithServerInfo | null = null;
   revealedSshPrivateKey: string | null = null;
@@ -130,6 +170,13 @@ export class OverviewComponent implements OnInit {
   readonly isServerStartable = isBillingServerStartable;
   readonly isServerStatusTransitional = isBillingServerStatusTransitional;
   readonly serverLocationLabel = getBillingServerLocationLabel;
+  readonly pageTitle = $localize`:@@featureOverview-title:Overview`;
+  readonly searchInstancesPlaceholder = $localize`:@@featureOverview-searchInstances:Search cloud instances`;
+  readonly activePlansLabel = $localize`:@@featureOverview-activePlans:Active plans`;
+  readonly activeProjectsLabel = $localize`:@@featureOverview-projects:Active projects`;
+  readonly backordersLabel = $localize`:@@featureOverview-backorders:Backorders`;
+  readonly openOverdueInvoicesLabel = $localize`:@@featureOverview-openOverdueCount:Open and overdue invoices`;
+  readonly billingProfileLabel = $localize`:@@featureOverview-customerProfile:Billing profile`;
   readonly sshAccessButtonTitle = $localize`:@@featureOverview-sshAccessButtonTitle:Show SSH access key`;
   readonly sshAccessGrantedButtonTitle = $localize`:@@featureOverview-sshAccessGrantedButtonTitle:SSH access key already revealed`;
 
@@ -163,10 +210,6 @@ export class OverviewComponent implements OnInit {
       serviceTypeName: item.serviceTypeName,
       service: item.service,
     });
-  }
-
-  onInstancesSearchChange(value: string): void {
-    this.instancesSearch.set(value);
   }
 
   serviceTypeLabel(service: SubscriptionWithServerInfo['service']): string {
@@ -256,7 +299,7 @@ export class OverviewComponent implements OnInit {
     this.sshRevealError = null;
     this.sshRevealLoading = false;
     this.revealedSshPrivateKey = null;
-    showBillingModal(this.sshAccessConfirmModal);
+    showBillingModal(this.sshAccessConfirmModalOpen);
   }
 
   confirmSshAccessReveal(): void {
@@ -282,8 +325,8 @@ export class OverviewComponent implements OnInit {
           this.serverInfoFacade.markSshAccessGranted(target.subscription.id);
           this.revealedSshPrivateKey = response.privateKey;
           this.sshAccessKeyCopied = false;
-          hideBillingModal(this.sshAccessConfirmModal);
-          showBillingModal(this.sshAccessDisplayModal);
+          hideBillingModal(this.sshAccessConfirmModalOpen);
+          showBillingModal(this.sshAccessDisplayModalOpen);
         },
         error: (error: unknown) => {
           const status =
@@ -304,7 +347,7 @@ export class OverviewComponent implements OnInit {
     this.revealedSshPrivateKey = null;
     this.sshRevealTarget = null;
     this.sshAccessKeyCopied = false;
-    hideBillingModal(this.sshAccessDisplayModal);
+    hideBillingModal(this.sshAccessDisplayModalOpen);
   }
 
   async copySshPrivateKey(): Promise<void> {

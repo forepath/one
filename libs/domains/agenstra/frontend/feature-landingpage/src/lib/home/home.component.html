@@ -15,55 +15,61 @@
           that match how you review changes and release software.
         </p>
         <div class="d-flex gap-2 justify-content-center flex-wrap hero-feature-badges mb-5">
-          <span class="badge bg-success info-badge px-3 py-2">
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featurePortalHome-heroFeatureBadge1">Multi-workspace control</span>
-          </span>
-          <span class="badge bg-success info-badge px-3 py-2">
+          </fpc-badge>
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featurePortalHome-heroFeatureBadge2">Ticket automation</span>
-          </span>
-          <span class="badge bg-success info-badge px-3 py-2">
+          </fpc-badge>
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featurePortalHome-heroFeatureBadge3">Policy &amp; audit trails</span>
-          </span>
-          <span class="badge bg-success info-badge px-3 py-2">
+          </fpc-badge>
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featurePortalHome-heroFeatureBadge4">Code &amp; Git in the browser</span>
-          </span>
-          <span class="badge bg-success info-badge px-3 py-2">
+          </fpc-badge>
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featurePortalHome-heroFeatureBadge5">Deployments</span>
-          </span>
-          <span class="badge bg-success info-badge px-3 py-2">
+          </fpc-badge>
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featurePortalHome-heroFeatureBadge6">Team knowledge</span>
-          </span>
-          <span class="badge bg-success info-badge px-3 py-2">
+          </fpc-badge>
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featurePortalHome-heroFeatureBadge7">Roles &amp; single sign-on</span>
-          </span>
-          <span class="badge bg-success info-badge px-3 py-2">
+          </fpc-badge>
+          <fpc-badge variant="marketing" color="success" size="xl">
             <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
             <span i18n="@@featurePortalHome-heroFeatureBadge8">Your cloud or ours</span>
-          </span>
+          </fpc-badge>
         </div>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
-          <a
+          <fpc-button
+            variant="primary"
+            size="xl"
+            btnClass="rounded-3"
             href="https://docs.agenstra.com/en/docs/getting-started"
             target="_blank"
             rel="noopener noreferrer"
-            class="btn btn-primary btn-lg rounded-3 cta-btn cta-btn-primary"
             i18n="@@featurePortalHome-getStartedHero"
-            ><i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Get started</a
           >
-          <a
+            <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Get started
+          </fpc-button>
+          <fpc-button
+            variant="dark"
+            size="xl"
+            btnClass="rounded-3"
             routerLink="."
             fragment="solution"
-            class="btn btn-dark btn-lg rounded-3 cta-btn cta-btn-secondary"
             i18n="@@featurePortalHome-productTour"
-            ><i class="bi bi-play-circle" aria-hidden="true"></i>View product tour</a
           >
+            <i class="bi bi-play-circle" aria-hidden="true"></i>View product tour
+          </fpc-button>
         </div>
       </div>
     </div>
@@ -662,8 +668,8 @@
             class="card border rounded-3 shadow-sm overflow-hidden h-100 home-engineering-visual card-capability card-capability-primary"
           >
             <div class="p-3 p-lg-4 pb-0">
-              <span class="badge bg-primary mb-3 bento-badge" i18n="@@featurePortalHome-engineeringVisualBadge"
-                >Web IDE + agent chat</span
+              <fpc-badge color="primary" class="mb-3 bento-badge" i18n="@@featurePortalHome-engineeringVisualBadge"
+                >Web IDE + agent chat</fpc-badge
               >
             </div>
             <img
@@ -1118,8 +1124,8 @@
     >
       <div class="row g-0 align-items-lg-stretch">
         <div class="col-lg-6 p-4 p-lg-5 d-flex flex-column card-capability-primary">
-          <span class="badge bg-primary mb-3 align-self-start" i18n="@@featurePortalHome-ecosystemStudioBadge"
-            >Core platform</span
+          <fpc-badge color="primary" class="mb-3 align-self-start" i18n="@@featurePortalHome-ecosystemStudioBadge"
+            >Core platform</fpc-badge
           >
           <h3 class="h3 fw-semibold mb-3" i18n="@@featurePortalHome-ecosystemStudioTitle">Agenstra Studio</h3>
           <p class="text-muted mb-4 lh-lg" i18n="@@featurePortalHome-ecosystemStudioLead">
@@ -1130,12 +1136,13 @@
             Self-hosted or managed. Same product, your choice of operations.
           </p>
           <div class="mt-auto">
-            <a
+            <fpc-button
               routerLink="."
               fragment="features"
-              class="btn btn-primary rounded-3"
+              variant="primary"
+              btnClass="rounded-3"
               i18n="@@featurePortalHome-ecosystemStudioCta"
-              >See what you get</a
+              >See what you get</fpc-button
             >
           </div>
         </div>
@@ -1218,13 +1225,14 @@
                   }
                 }
               </div>
-              <a
+              <fpc-button
                 [href]="billingBaseUrl"
-                class="btn btn-primary mb-2"
+                variant="primary"
+                btnClass="mb-2"
                 target="_blank"
                 rel="noopener noreferrer"
                 i18n="@@featurePortalPricing-getStartedNow"
-                >Get Started Now</a
+                >Get Started Now</fpc-button
               >
               <a
                 routerLink="/cloud"
@@ -1257,20 +1265,26 @@
             Run on your own infrastructure or let us host Agenstra Cloud for you.
           </p>
           <div class="d-flex gap-3 justify-content-center flex-wrap">
-            <a
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
               href="https://docs.agenstra.com/en/docs/getting-started"
               target="_blank"
               rel="noopener noreferrer"
-              class="btn btn-primary btn-lg rounded-3 home-cta-btn cta-btn-primary"
               i18n="@@featurePortalHome-getStarted"
-              ><i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Get started</a
             >
-            <a
+              <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Get started
+            </fpc-button>
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
               routerLink="/contact"
-              class="btn btn-primary btn-lg rounded-3 home-cta-btn cta-btn-secondary"
               i18n="@@featurePortalHome-talkToTeam"
-              ><i class="bi bi-chat-dots" aria-hidden="true"></i>Talk to the team</a
             >
+              <i class="bi bi-chat-dots" aria-hidden="true"></i>Talk to the team
+            </fpc-button>
           </div>
         </div>
       </div>

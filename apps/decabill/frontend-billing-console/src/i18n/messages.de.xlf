@@ -1108,6 +1108,10 @@
         <source>Select language</source>
         <target>Sprache auswählen</target>
       </trans-unit>
+      <trans-unit id="featureContainer-sidebarAriaLabel" datatype="html">
+        <source>Main navigation</source>
+        <target>Hauptnavigation</target>
+      </trans-unit>
       <trans-unit id="featureContainer-toggleDarkMode" datatype="html">
         <source>Toggle dark mode</source>
         <target>Dunkelmodus ein-/ausschalten</target>
@@ -3763,16 +3767,16 @@
         <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailLabel" datatype="html">
-        <source>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>E-Mail <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>E-Mail</source>
+        <target>E-Mail</target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailPlaceholder" datatype="html">
         <source>user@example.com</source>
         <target>user@example.com</target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordLabel" datatype="html">
-        <source>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Passwort <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Passwort</source>
+        <target>Passwort</target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordPlaceholder" datatype="html">
         <source>Min. 8 characters</source>
@@ -3886,8 +3890,8 @@
       </trans-unit>
       
       <trans-unit id="featureTokenManager-nameLabel" datatype="html">
-        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Name</source>
+        <target>Name</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-expiresAtLabel" datatype="html">
         <source>Expires at</source>
@@ -3898,8 +3902,8 @@
         <target>Optional. Leer lassen für ein Token ohne Ablaufdatum.</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-scopesLabel" datatype="html">
-        <source>Scopes <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Berechtigungen <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Scopes</source>
+        <target>Scopes</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-loadingScopes" datatype="html">
         <source>Loading scopes...</source>
@@ -5264,8 +5268,12 @@
         <target>Projekte suchen</target>
       </trans-unit>
       <trans-unit id="featureProjects-empty" datatype="html">
-        <source>No projects assigned to you</source>
-        <target>Ihnen sind keine Projekte zugewiesen</target>
+        <source>No projects yet</source>
+        <target>Noch keine Projekte</target>
+      </trans-unit>
+      <trans-unit id="featureProjects-noMatching" datatype="html">
+        <source>No matching projects</source>
+        <target>Keine passenden Projekte</target>
       </trans-unit>
       <trans-unit id="featurePromotions-duringFreeDaysUntil" datatype="html">
         <source>Until <x id="date" equiv-text="benefitEndsLabel"/></source>
@@ -5620,12 +5628,12 @@
         <target> Bitte geben Sie eine gültige E-Mail-Adresse ein. </target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
-        <source>Phone <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target> Telefon <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> </target>
+        <source>Phone (optional)</source>
+        <target>Telefon (optional)</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
-        <source>Company <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target> Unternehmen <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> </target>
+        <source>Company (optional)</source>
+        <target>Unternehmen (optional)</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
         <source>Message</source>
@@ -5788,16 +5796,16 @@
         <target>Aktualisieren</target>
       </trans-unit>
       <trans-unit id="featureNotifications-nameLabel" datatype="html">
-        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Name</source>
+        <target>Name</target>
       </trans-unit>
       <trans-unit id="featureNotifications-httpMethodLabel" datatype="html">
         <source>HTTP method</source>
         <target>HTTP-Methode</target>
       </trans-unit>
       <trans-unit id="featureNotifications-urlLabel" datatype="html">
-        <source>URL <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>URL <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>URL</source>
+        <target>URL</target>
       </trans-unit>
       <trans-unit id="featureNotifications-clientLabel" datatype="html">
         <source>Client</source>
@@ -5832,20 +5840,20 @@
         <target>Aktiviert</target>
       </trans-unit>
       <trans-unit id="featureNotifications-authHeaderNameLabel" datatype="html">
-        <source>Header name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Header-Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Header-Name</source>
+        <target>Header-Name</target>
       </trans-unit>
       <trans-unit id="featureNotifications-authValueLabel" datatype="html">
-        <source> Auth value <x id="START_BLOCK_IF" equiv-text="@if (!hasExistingAuthValue) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/></source>
-        <target> Authentifizierungswert <x id="START_BLOCK_IF" equiv-text="@if (!hasExistingAuthValue) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/></target>
+        <source>Auth-Wert</source>
+        <target>Auth-Wert</target>
       </trans-unit>
       <trans-unit id="featureNotifications-authValueKeepHint" datatype="html">
         <source>Leave empty to keep the current value</source>
         <target>Leer lassen, um den aktuellen Wert beizubehalten</target>
       </trans-unit>
       <trans-unit id="featureNotifications-subscribedEventsLabel" datatype="html">
-        <source>Subscribed events <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Abonnierte Ereignisse <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Abonnierte Ereignisse</source>
+        <target>Abonnierte Ereignisse</target>
       </trans-unit>
       <trans-unit id="featureNotifications-loadingEventTypes" datatype="html">
         <source>Loading event types...</source>
@@ -7293,9 +7301,9 @@
         <source>Offers</source>
         <target>Angebote</target>
       </trans-unit>
-      <trans-unit id="featureAdminOffers-toggleFilters" datatype="html">
-        <source>Toggle filters</source>
-        <target>Filter ein-/ausblenden</target>
+      <trans-unit id="featureAdminOffers-filters" datatype="html">
+        <source>Filters</source>
+        <target>Filter</target>
       </trans-unit>
       <trans-unit id="featureAdminOffers-fromDate" datatype="html">
         <source>From</source>
@@ -7322,8 +7330,12 @@
         <target>Kunde</target>
       </trans-unit>
       <trans-unit id="featureAdminOffers-applyFilters" datatype="html">
-        <source>Apply filters</source>
-        <target>Filter anwenden</target>
+        <source>Apply</source>
+        <target>Anwenden</target>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-resetFilters" datatype="html">
+        <source>Reset</source>
+        <target>Zurücksetzen</target>
       </trans-unit>
       <trans-unit id="featureAdminOffers-noStatistics" datatype="html">
         <source>No statistics for the selected period.</source>

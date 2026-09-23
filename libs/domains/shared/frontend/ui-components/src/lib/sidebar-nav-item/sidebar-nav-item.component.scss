@@ -1,0 +1,52 @@
+:host {
+  display: block;
+  flex-shrink: 0;
+}
+
+// Mirrors the sidebar item layout of the consoles; the hover/active tints come from
+// `--sidebar-item-*` on `fpc-sidebar` / `fpc-sidebar-popover` (with local fallbacks).
+.fpc-sidebar-nav-item__tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.125rem;
+  width: 72px;
+  height: 72px;
+  cursor: pointer;
+  border: 0;
+  outline: 0;
+  background-color: transparent;
+  color: var(--bs-heading-color);
+  text-decoration: none;
+
+  span.small {
+    font-size: 0.65rem;
+    text-align: center;
+  }
+
+  &:hover {
+    background-color: var(--sidebar-item-hover-bg, rgb(0 0 0 / 0.05));
+  }
+
+  &.active,
+  &.active:hover {
+    background-color: var(--sidebar-item-active-bg, rgb(0 0 0 / 0.05));
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+:host-context(html[data-bs-theme='dark']) .fpc-sidebar-nav-item__tile {
+  &:hover {
+    background-color: var(--sidebar-item-hover-bg, rgb(255 255 255 / 0.075));
+  }
+
+  &.active,
+  &.active:hover {
+    background-color: var(--sidebar-item-active-bg, rgb(255 255 255 / 0.075));
+  }
+}

@@ -1,8 +1,1 @@
-.list-group {
-  .list-group-item {
-    &.active {
-      background-color: var(--bs-primary-bg-subtle);
-      border-color: var(--bs-primary-border-subtle);
-    }
-  }
-}
+// Branch list active styling lives on `fpc-list-item` (primary → transparent wash).

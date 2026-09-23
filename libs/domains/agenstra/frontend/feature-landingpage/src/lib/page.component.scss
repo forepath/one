@@ -195,23 +195,8 @@ section {
   }
 }
 
-// Marketing CTAs: same 1:2 y:x padding ratio as Bootstrap buttons, scaled above btn-lg.
-// Font weight matches base `.btn` ($btn-font-weight / normal).
-.cta-btn,
-.home-cta-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
-  font-weight: 400;
-
-  > i {
-    font-size: 1.25rem;
-    line-height: 1;
-  }
-}
+// Marketing CTA sizing lives on `fpc-button` (`size="xl"` → `.fpc-button__btn--xl` / `.cta-btn`).
+// Context color overrides below still target `.cta-btn.btn-*` on the native control.
 
 // Pre-footer CTA bands: slightly darkened primary (subtle, same idea as hero contrast).
 #cta,

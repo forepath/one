@@ -10,14 +10,14 @@
           Illegal content notices under the DSA and official terrorist-content removal orders under the TCO Regulation
         </p>
         <div class="d-flex flex-wrap align-items-center gap-3 mt-2">
-          <a
+          <fpc-button
             routerLink="."
             fragment="report-form"
-            class="btn btn-primary"
+            variant="primary"
             i18n="@@featureForepathLegalContentReport-reportCta"
           >
             Report illegal content
-          </a>
+          </fpc-button>
         </div>
       </div>
     </div>
@@ -211,381 +211,364 @@
 
                 <div class="row g-3">
                   <div class="col-12">
-                    <label class="form-label" for="cr-urls" i18n="@@featureForepathLegalContentReport-formUrlsLabel"
-                      >Exact URL(s) / electronic location</label
-                    >
-                    <textarea
-                      id="cr-urls"
-                      class="form-control bg-white"
-                      formControlName="contentUrls"
-                      rows="3"
+                    <fpc-form-field
+                      forId="cr-urls"
+                      i18n-label="@@featureForepathLegalContentReport-formUrlsLabel"
+                      label="Exact URL(s) / electronic location"
                       required
-                      [class.is-invalid]="form.controls.contentUrls.touched && form.controls.contentUrls.invalid"
-                    ></textarea>
-                    @if (form.controls.contentUrls.touched && form.controls.contentUrls.hasError('required')) {
-                      <div class="invalid-feedback" i18n="@@featureForepathLegalContentReport-formUrlsRequired">
-                        Exact URL(s) are required.
-                      </div>
-                    }
+                    >
+                      <fpc-form-control
+                        controlId="cr-urls"
+                        controlType="textarea"
+                        formControlName="contentUrls"
+                        [rows]="3"
+                        controlClass="bg-white"
+                        required
+                        [invalid]="form.controls.contentUrls.touched && form.controls.contentUrls.invalid"
+                      />
+                      @if (form.controls.contentUrls.touched && form.controls.contentUrls.hasError('required')) {
+                        <div fpcFormFieldError i18n="@@featureForepathLegalContentReport-formUrlsRequired">
+                          Exact URL(s) are required.
+                        </div>
+                      }
+                    </fpc-form-field>
                   </div>
 
                   @if (selectedReportType() === 'dsa') {
                     <div class="col-12">
-                      <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="cr-csam" formControlName="csamAnonymous" />
-                        <label
-                          class="form-check-label"
-                          for="cr-csam"
-                          i18n="@@featureForepathLegalContentReport-formCsamLabel"
-                        >
-                          This notice concerns child sexual abuse offences under Articles 3 to 7 of Directive 2011/93/EU
-                          and I request anonymity (name and email waived).
-                        </label>
-                      </div>
+                      <fpc-form-check
+                        checkId="cr-csam"
+                        formControlName="csamAnonymous"
+                        i18n-label="@@featureForepathLegalContentReport-formCsamLabel"
+                        label="This notice concerns child sexual abuse offences under Articles 3 to 7 of Directive 2011/93/EU and I request anonymity (name and email waived)."
+                      />
                     </div>
                   }
 
                   <div class="col-md-6">
-                    <label class="form-label" for="cr-name" i18n="@@featureForepathLegalContentReport-formNameLabel"
-                      >Name</label
+                    <fpc-form-field
+                      forId="cr-name"
+                      i18n-label="@@featureForepathLegalContentReport-formNameLabel"
+                      label="Name"
                     >
-                    <input
-                      id="cr-name"
-                      type="text"
-                      class="form-control bg-white"
-                      formControlName="name"
-                      autocomplete="name"
-                      [attr.placeholder]="isAnonymousDsa ? anonymousNamePlaceholder : null"
-                      [class.is-invalid]="form.controls.name.touched && form.controls.name.invalid"
-                    />
-                    @if (form.controls.name.touched && form.controls.name.hasError('required')) {
-                      <div class="invalid-feedback" i18n="@@featureForepathLegalContentReport-formNameRequired">
-                        Name is required.
-                      </div>
-                    }
+                      <fpc-form-control
+                        controlId="cr-name"
+                        formControlName="name"
+                        autocomplete="name"
+                        controlClass="bg-white"
+                        [placeholder]="isAnonymousDsa ? anonymousNamePlaceholder : null"
+                        [invalid]="form.controls.name.touched && form.controls.name.invalid"
+                      />
+                      @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+                        <div fpcFormFieldError i18n="@@featureForepathLegalContentReport-formNameRequired">
+                          Name is required.
+                        </div>
+                      }
+                    </fpc-form-field>
                   </div>
                   <div class="col-md-6">
-                    <label class="form-label" for="cr-email" i18n="@@featureForepathLegalContentReport-formEmailLabel"
-                      >Email</label
+                    <fpc-form-field
+                      forId="cr-email"
+                      i18n-label="@@featureForepathLegalContentReport-formEmailLabel"
+                      label="Email"
                     >
-                    <input
-                      id="cr-email"
-                      type="email"
-                      class="form-control bg-white"
-                      formControlName="email"
-                      autocomplete="email"
-                      [attr.placeholder]="isAnonymousDsa ? anonymousEmailPlaceholder : null"
-                      [class.is-invalid]="form.controls.email.touched && form.controls.email.invalid"
-                    />
-                    @if (form.controls.email.touched && form.controls.email.hasError('required')) {
-                      <div class="invalid-feedback" i18n="@@featureForepathLegalContentReport-formEmailRequired">
-                        Email is required.
-                      </div>
-                    }
-                    @if (form.controls.email.touched && form.controls.email.hasError('email')) {
-                      <div class="invalid-feedback" i18n="@@featureForepathLegalContentReport-formEmailInvalid">
-                        Enter a valid email address.
-                      </div>
-                    }
+                      <fpc-form-control
+                        controlId="cr-email"
+                        inputType="email"
+                        formControlName="email"
+                        autocomplete="email"
+                        controlClass="bg-white"
+                        [placeholder]="isAnonymousDsa ? anonymousEmailPlaceholder : null"
+                        [invalid]="form.controls.email.touched && form.controls.email.invalid"
+                      />
+                      @if (form.controls.email.touched && form.controls.email.invalid) {
+                        <div fpcFormFieldError>
+                          @if (form.controls.email.hasError('required')) {
+                            <ng-container i18n="@@featureForepathLegalContentReport-formEmailRequired"
+                              >Email is required.</ng-container
+                            >
+                          } @else if (form.controls.email.hasError('email')) {
+                            <ng-container i18n="@@featureForepathLegalContentReport-formEmailInvalid"
+                              >Enter a valid email address.</ng-container
+                            >
+                          }
+                        </div>
+                      }
+                    </fpc-form-field>
                   </div>
 
                   @if (selectedReportType() === 'dsa') {
                     <div class="col-12">
-                      <label
-                        class="form-label"
-                        for="cr-explanation"
-                        i18n="@@featureForepathLegalContentReport-formExplanationLabel"
-                        >Explanation of alleged illegality</label
+                      <fpc-form-field
+                        forId="cr-explanation"
+                        i18n-label="@@featureForepathLegalContentReport-formExplanationLabel"
+                        label="Explanation of alleged illegality"
                       >
-                      <textarea
-                        id="cr-explanation"
-                        class="form-control bg-white"
-                        formControlName="explanation"
-                        rows="4"
-                        [class.is-invalid]="form.controls.explanation.touched && form.controls.explanation.invalid"
-                      ></textarea>
-                      @if (form.controls.explanation.touched && form.controls.explanation.hasError('required')) {
-                        <div
-                          class="invalid-feedback"
-                          i18n="@@featureForepathLegalContentReport-formExplanationRequired"
-                        >
-                          A sufficiently substantiated explanation is required.
-                        </div>
-                      }
+                        <fpc-form-control
+                          controlId="cr-explanation"
+                          controlType="textarea"
+                          formControlName="explanation"
+                          [rows]="4"
+                          controlClass="bg-white"
+                          [invalid]="form.controls.explanation.touched && form.controls.explanation.invalid"
+                        />
+                        @if (form.controls.explanation.touched && form.controls.explanation.hasError('required')) {
+                          <div fpcFormFieldError i18n="@@featureForepathLegalContentReport-formExplanationRequired">
+                            A sufficiently substantiated explanation is required.
+                          </div>
+                        }
+                      </fpc-form-field>
                     </div>
                     <div class="col-md-6">
-                      <label
-                        class="form-label"
-                        for="cr-category"
-                        i18n="@@featureForepathLegalContentReport-formCategoryLabel"
-                        >Category of illegal content (optional)</label
+                      <fpc-form-field
+                        forId="cr-category"
+                        i18n-label="@@featureForepathLegalContentReport-formCategoryLabel"
+                        label="Category of illegal content (optional)"
                       >
-                      <input
-                        id="cr-category"
-                        type="text"
-                        class="form-control bg-white"
-                        formControlName="illegalContentCategory"
-                      />
+                        <fpc-form-control
+                          controlId="cr-category"
+                          formControlName="illegalContentCategory"
+                          controlClass="bg-white"
+                        />
+                      </fpc-form-field>
                     </div>
                     <div class="col-md-6">
-                      <label
-                        class="form-label"
-                        for="cr-additional"
-                        i18n="@@featureForepathLegalContentReport-formAdditionalLabel"
-                        >Additional identifying information (optional)</label
+                      <fpc-form-field
+                        forId="cr-additional"
+                        i18n-label="@@featureForepathLegalContentReport-formAdditionalLabel"
+                        label="Additional identifying information (optional)"
                       >
-                      <input
-                        id="cr-additional"
-                        type="text"
-                        class="form-control bg-white"
-                        formControlName="additionalIdentifiers"
-                      />
+                        <fpc-form-control
+                          controlId="cr-additional"
+                          formControlName="additionalIdentifiers"
+                          controlClass="bg-white"
+                        />
+                      </fpc-form-field>
                     </div>
                     <div class="col-12">
-                      <div class="form-check">
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          id="cr-good-faith"
-                          formControlName="goodFaithConfirmed"
-                          [class.is-invalid]="
-                            form.controls.goodFaithConfirmed.touched && form.controls.goodFaithConfirmed.invalid
-                          "
-                        />
-                        <label
-                          class="form-check-label"
-                          for="cr-good-faith"
-                          i18n="@@featureForepathLegalContentReport-formGoodFaithLabel"
-                        >
-                          I confirm in good faith that the information and allegations in this notice are accurate and
-                          complete.
-                        </label>
-                      </div>
+                      <fpc-form-check
+                        checkId="cr-good-faith"
+                        formControlName="goodFaithConfirmed"
+                        i18n-label="@@featureForepathLegalContentReport-formGoodFaithLabel"
+                        label="I confirm in good faith that the information and allegations in this notice are accurate and complete."
+                        [invalid]="form.controls.goodFaithConfirmed.touched && form.controls.goodFaithConfirmed.invalid"
+                        [inputClass]="
+                          form.controls.goodFaithConfirmed.touched && form.controls.goodFaithConfirmed.invalid
+                            ? 'is-invalid'
+                            : null
+                        "
+                      />
                     </div>
                   }
 
                   @if (selectedReportType() === 'tco') {
                     <div class="col-md-6">
-                      <label
-                        class="form-label"
-                        for="cr-authority"
-                        i18n="@@featureForepathLegalContentReport-formAuthorityLabel"
-                        >Issuing competent authority</label
+                      <fpc-form-field
+                        forId="cr-authority"
+                        i18n-label="@@featureForepathLegalContentReport-formAuthorityLabel"
+                        label="Issuing competent authority"
                       >
-                      <input
-                        id="cr-authority"
-                        type="text"
-                        class="form-control bg-white"
-                        formControlName="authorityName"
-                        [class.is-invalid]="form.controls.authorityName.touched && form.controls.authorityName.invalid"
-                      />
+                        <fpc-form-control
+                          controlId="cr-authority"
+                          formControlName="authorityName"
+                          controlClass="bg-white"
+                          [invalid]="form.controls.authorityName.touched && form.controls.authorityName.invalid"
+                        />
+                      </fpc-form-field>
                     </div>
                     <div class="col-md-6">
-                      <label
-                        class="form-label"
-                        for="cr-member-state"
-                        i18n="@@featureForepathLegalContentReport-formMemberStateLabel"
-                        >Member State</label
+                      <fpc-form-field
+                        forId="cr-member-state"
+                        i18n-label="@@featureForepathLegalContentReport-formMemberStateLabel"
+                        label="Member State"
                       >
-                      <input
-                        id="cr-member-state"
-                        type="text"
-                        class="form-control bg-white"
-                        formControlName="memberState"
-                        [class.is-invalid]="form.controls.memberState.touched && form.controls.memberState.invalid"
-                      />
+                        <fpc-form-control
+                          controlId="cr-member-state"
+                          formControlName="memberState"
+                          controlClass="bg-white"
+                          [invalid]="form.controls.memberState.touched && form.controls.memberState.invalid"
+                        />
+                      </fpc-form-field>
                     </div>
                     <div class="col-md-6">
-                      <label
-                        class="form-label"
-                        for="cr-official-name"
-                        i18n="@@featureForepathLegalContentReport-formOfficialNameLabel"
-                        >Authorized official's name</label
+                      <fpc-form-field
+                        forId="cr-official-name"
+                        i18n-label="@@featureForepathLegalContentReport-formOfficialNameLabel"
+                        label="Authorized official's name"
                       >
-                      <input
-                        id="cr-official-name"
-                        type="text"
-                        class="form-control bg-white"
-                        formControlName="officialName"
-                        [class.is-invalid]="form.controls.officialName.touched && form.controls.officialName.invalid"
-                      />
+                        <fpc-form-control
+                          controlId="cr-official-name"
+                          formControlName="officialName"
+                          controlClass="bg-white"
+                          [invalid]="form.controls.officialName.touched && form.controls.officialName.invalid"
+                        />
+                      </fpc-form-field>
                     </div>
                     <div class="col-md-6">
-                      <label
-                        class="form-label"
-                        for="cr-official-role"
-                        i18n="@@featureForepathLegalContentReport-formOfficialRoleLabel"
-                        >Official's role</label
+                      <fpc-form-field
+                        forId="cr-official-role"
+                        i18n-label="@@featureForepathLegalContentReport-formOfficialRoleLabel"
+                        label="Official's role"
                       >
-                      <input
-                        id="cr-official-role"
-                        type="text"
-                        class="form-control bg-white"
-                        formControlName="officialRole"
-                        [class.is-invalid]="form.controls.officialRole.touched && form.controls.officialRole.invalid"
-                      />
+                        <fpc-form-control
+                          controlId="cr-official-role"
+                          formControlName="officialRole"
+                          controlClass="bg-white"
+                          [invalid]="form.controls.officialRole.touched && form.controls.officialRole.invalid"
+                        />
+                      </fpc-form-field>
                     </div>
                     <div class="col-md-6">
-                      <label
-                        class="form-label"
-                        for="cr-order-ref"
-                        i18n="@@featureForepathLegalContentReport-formOrderRefLabel"
-                        >Removal order reference number</label
+                      <fpc-form-field
+                        forId="cr-order-ref"
+                        i18n-label="@@featureForepathLegalContentReport-formOrderRefLabel"
+                        label="Removal order reference number"
                       >
-                      <input
-                        id="cr-order-ref"
-                        type="text"
-                        class="form-control bg-white"
-                        formControlName="orderReference"
-                        [class.is-invalid]="
-                          form.controls.orderReference.touched && form.controls.orderReference.invalid
-                        "
-                      />
+                        <fpc-form-control
+                          controlId="cr-order-ref"
+                          formControlName="orderReference"
+                          controlClass="bg-white"
+                          [invalid]="form.controls.orderReference.touched && form.controls.orderReference.invalid"
+                        />
+                      </fpc-form-field>
                     </div>
                     <div class="col-md-6">
-                      <label
-                        class="form-label"
-                        for="cr-order-issued"
-                        i18n="@@featureForepathLegalContentReport-formOrderIssuedLabel"
-                        >Date and time of issuance</label
+                      <fpc-form-field
+                        forId="cr-order-issued"
+                        i18n-label="@@featureForepathLegalContentReport-formOrderIssuedLabel"
+                        label="Date and time of issuance"
                       >
-                      <input
-                        id="cr-order-issued"
-                        type="datetime-local"
-                        class="form-control bg-white"
-                        formControlName="orderIssuedAt"
-                        [class.is-invalid]="form.controls.orderIssuedAt.touched && form.controls.orderIssuedAt.invalid"
-                      />
+                        <fpc-form-control
+                          controlId="cr-order-issued"
+                          inputType="datetime-local"
+                          formControlName="orderIssuedAt"
+                          controlClass="bg-white"
+                          [invalid]="form.controls.orderIssuedAt.touched && form.controls.orderIssuedAt.invalid"
+                        />
+                      </fpc-form-field>
                     </div>
                     <div class="col-md-6">
-                      <label
-                        class="form-label"
-                        for="cr-language"
-                        i18n="@@featureForepathLegalContentReport-formLanguageLabel"
-                        >Preferred language of exchange</label
+                      <fpc-form-field
+                        forId="cr-language"
+                        i18n-label="@@featureForepathLegalContentReport-formLanguageLabel"
+                        label="Preferred language of exchange"
                       >
-                      <select
-                        id="cr-language"
-                        class="form-select bg-white"
-                        formControlName="preferredLanguage"
-                        [class.is-invalid]="
-                          form.controls.preferredLanguage.touched && form.controls.preferredLanguage.invalid
-                        "
-                      >
-                        <option value="" disabled i18n="@@featureForepathLegalContentReport-formLanguagePlaceholder">
-                          Select a language
-                        </option>
-                        <option value="en" i18n="@@featureForepathLegalContentReport-formLanguageEn">English</option>
-                        <option value="de" i18n="@@featureForepathLegalContentReport-formLanguageDe">German</option>
-                      </select>
+                        <fpc-form-control
+                          controlId="cr-language"
+                          controlType="select"
+                          formControlName="preferredLanguage"
+                          controlClass="bg-white"
+                          [invalid]="form.controls.preferredLanguage.touched && form.controls.preferredLanguage.invalid"
+                        >
+                          <option value="" disabled i18n="@@featureForepathLegalContentReport-formLanguagePlaceholder">
+                            Select a language
+                          </option>
+                          <option value="en" i18n="@@featureForepathLegalContentReport-formLanguageEn">English</option>
+                          <option value="de" i18n="@@featureForepathLegalContentReport-formLanguageDe">German</option>
+                        </fpc-form-control>
+                      </fpc-form-field>
                     </div>
                     <div class="col-md-6 d-flex align-items-end">
-                      <div class="form-check mb-2">
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          id="cr-emergency"
-                          formControlName="emergencyCase"
-                        />
-                        <label
-                          class="form-check-label"
-                          for="cr-emergency"
-                          i18n="@@featureForepathLegalContentReport-formEmergencyLabel"
-                        >
-                          Emergency case (12-hour pre-notification exception)
-                        </label>
-                      </div>
-                    </div>
-                    <div class="col-12">
-                      <label
-                        class="form-label"
-                        for="cr-reasons"
-                        i18n="@@featureForepathLegalContentReport-formReasonsLabel"
-                        >Statement of reasons / legal basis</label
-                      >
-                      <textarea
-                        id="cr-reasons"
-                        class="form-control bg-white"
-                        formControlName="statementOfReasons"
-                        rows="4"
-                        [class.is-invalid]="
-                          form.controls.statementOfReasons.touched && form.controls.statementOfReasons.invalid
-                        "
-                      ></textarea>
-                    </div>
-                    <div class="col-12">
-                      <label
-                        class="form-label"
-                        for="cr-redress"
-                        i18n="@@featureForepathLegalContentReport-formRedressLabel"
-                        >Redress information provided to the host and content provider</label
-                      >
-                      <textarea
-                        id="cr-redress"
-                        class="form-control bg-white"
-                        formControlName="redressInformation"
-                        rows="3"
-                        [class.is-invalid]="
-                          form.controls.redressInformation.touched && form.controls.redressInformation.invalid
-                        "
-                      ></textarea>
-                    </div>
-                    <div class="col-12">
-                      <label class="form-label" for="cr-pdf" i18n="@@featureForepathLegalContentReport-formPdfLabel"
-                        >Signed removal-order PDF</label
-                      >
-                      <input
-                        id="cr-pdf"
-                        type="file"
-                        class="form-control bg-white"
-                        accept="application/pdf,.pdf"
-                        (change)="onPdfSelected($event)"
+                      <fpc-form-check
+                        class="mb-2"
+                        checkId="cr-emergency"
+                        formControlName="emergencyCase"
+                        i18n-label="@@featureForepathLegalContentReport-formEmergencyLabel"
+                        label="Emergency case (12-hour pre-notification exception)"
                       />
-                      @if (selectedPdfError()) {
-                        <div class="text-danger small mt-2">{{ selectedPdfError() }}</div>
-                      }
                     </div>
                     <div class="col-12">
-                      <div class="form-check">
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          id="cr-attestation"
-                          formControlName="authorityAttestation"
-                          [class.is-invalid]="
-                            form.controls.authorityAttestation.touched && form.controls.authorityAttestation.invalid
+                      <fpc-form-field
+                        forId="cr-reasons"
+                        i18n-label="@@featureForepathLegalContentReport-formReasonsLabel"
+                        label="Statement of reasons / legal basis"
+                      >
+                        <fpc-form-control
+                          controlId="cr-reasons"
+                          controlType="textarea"
+                          formControlName="statementOfReasons"
+                          [rows]="4"
+                          controlClass="bg-white"
+                          [invalid]="
+                            form.controls.statementOfReasons.touched && form.controls.statementOfReasons.invalid
                           "
                         />
-                        <label
-                          class="form-check-label"
-                          for="cr-attestation"
-                          i18n="@@featureForepathLegalContentReport-formAttestationLabel"
-                        >
-                          I confirm that I am submitting on behalf of an EU Member State competent authority and that
-                          this is a binding terrorist-content removal order under Regulation (EU) 2021/784.
-                        </label>
-                      </div>
+                      </fpc-form-field>
+                    </div>
+                    <div class="col-12">
+                      <fpc-form-field
+                        forId="cr-redress"
+                        i18n-label="@@featureForepathLegalContentReport-formRedressLabel"
+                        label="Redress information provided to the host and content provider"
+                      >
+                        <fpc-form-control
+                          controlId="cr-redress"
+                          controlType="textarea"
+                          formControlName="redressInformation"
+                          [rows]="3"
+                          controlClass="bg-white"
+                          [invalid]="
+                            form.controls.redressInformation.touched && form.controls.redressInformation.invalid
+                          "
+                        />
+                      </fpc-form-field>
+                    </div>
+                    <div class="col-12">
+                      <fpc-form-field
+                        forId="cr-pdf"
+                        i18n-label="@@featureForepathLegalContentReport-formPdfLabel"
+                        label="Signed removal-order PDF"
+                      >
+                        <fpc-form-control
+                          controlId="cr-pdf"
+                          inputType="file"
+                          controlClass="bg-white"
+                          accept="application/pdf,.pdf"
+                          (filesChange)="onPdfFilesChange($event)"
+                        />
+                        @if (selectedPdfError()) {
+                          <div fpcFormFieldError class="text-danger">{{ selectedPdfError() }}</div>
+                        }
+                      </fpc-form-field>
+                    </div>
+                    <div class="col-12">
+                      <fpc-form-check
+                        checkId="cr-attestation"
+                        formControlName="authorityAttestation"
+                        i18n-label="@@featureForepathLegalContentReport-formAttestationLabel"
+                        label="I confirm that I am submitting on behalf of an EU Member State competent authority and that this is a binding terrorist-content removal order under Regulation (EU) 2021/784."
+                        [invalid]="
+                          form.controls.authorityAttestation.touched && form.controls.authorityAttestation.invalid
+                        "
+                        [inputClass]="
+                          form.controls.authorityAttestation.touched && form.controls.authorityAttestation.invalid
+                            ? 'is-invalid'
+                            : null
+                        "
+                      />
                     </div>
                   }
 
                   <div class="col-12">
-                    <div class="form-check">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        id="cr-privacy"
-                        formControlName="privacyPolicyAccepted"
-                        [class.is-invalid]="
-                          form.controls.privacyPolicyAccepted.touched && form.controls.privacyPolicyAccepted.invalid
-                        "
-                      />
+                    <fpc-form-check
+                      checkId="cr-privacy"
+                      formControlName="privacyPolicyAccepted"
+                      [invalid]="
+                        form.controls.privacyPolicyAccepted.touched && form.controls.privacyPolicyAccepted.invalid
+                      "
+                      [inputClass]="
+                        form.controls.privacyPolicyAccepted.touched && form.controls.privacyPolicyAccepted.invalid
+                          ? 'is-invalid'
+                          : null
+                      "
+                    >
                       <label class="form-check-label" for="cr-privacy">
                         <span i18n="@@featureForepathLegalContentReport-formPrivacyPrefix">I agree to the </span>
                         <a routerLink="/legal/privacy" target="_blank" rel="noopener noreferrer"
                           ><span i18n="@@featureForepathLegalContentReport-formPrivacyLink">Privacy Policy</span></a
                         >.
                       </label>
-                    </div>
+                    </fpc-form-check>
                   </div>
 
                   <div class="col-12">
@@ -598,24 +581,22 @@
 
                   @if (error$ | async; as error) {
                     <div class="col-12">
-                      <div class="alert alert-danger mb-0" role="alert">{{ error }}</div>
+                      <fpc-alert variant="danger" [showIcon]="false" [message]="error" />
                     </div>
                   }
 
                   <div class="col-12 d-grid d-md-flex justify-content-md-end">
-                    <button
+                    <fpc-button
                       type="submit"
-                      class="btn btn-primary"
+                      variant="primary"
                       [disabled]="
-                        form.invalid ||
-                        !turnstileToken() ||
-                        (selectedReportType() === 'tco' && !hasSelectedPdf()) ||
-                        (submitting$ | async)
+                        form.invalid || !turnstileToken() || (selectedReportType() === 'tco' && !hasSelectedPdf())
                       "
+                      [loading]="(submitting$ | async) ?? false"
                       i18n="@@featureForepathLegalContentReport-formSubmit"
                     >
                       Submit report
-                    </button>
+                    </fpc-button>
                   </div>
                 </div>
               </form>

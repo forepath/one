@@ -1,0 +1,15 @@
+// Routed views are siblings of `<router-outlet>` inside the shell `fpc-section-container`.
+// Must live in global styles: emulated encapsulation cannot target those hosts from the
+// container/section-container component stylesheets.
+//
+// Only match the routed host (`router-outlet + *`). Do not use `> *:not(router-outlet)` —
+// nested `fpc-section-container` pages (updates, subscriptions) would grow every child
+// (summary bar, alerts, tabs) as if they were page hosts.
+.fpc-section-container > router-outlet + * {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}

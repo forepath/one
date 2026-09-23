@@ -3,6 +3,13 @@ import { Component, computed, DestroyRef, inject, LOCALE_ID, OnInit, signal } fr
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import {
+  FpcEmptyStateComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
 import { filter, map } from 'rxjs';
@@ -13,7 +20,16 @@ import { getDocsSearchMetaDescription } from '../../utils/docs-seo-metadata';
 
 @Component({
   selector: 'framework-docs-search-page',
-  imports: [CommonModule, RouterModule, DocsSearchComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    DocsSearchComponent,
+    FpcSpinnerComponent,
+    FpcEmptyStateComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcPageHeaderComponent,
+  ],
   templateUrl: './docs-search-page.component.html',
   styleUrls: ['./docs-search-page.component.scss'],
   standalone: true,
@@ -27,6 +43,10 @@ export class DocsSearchPageComponent implements OnInit {
   private readonly environment = inject<Environment>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
+
+  readonly pageTitle = $localize`:@@featureDocsSearchPage-title:Search Documentation`;
+  readonly enterQueryHint = $localize`:@@featureDocsSearchPage-enterQueryHint:Enter a search query above to find documentation.`;
+  readonly resultsAriaLabel = $localize`:@@featureDocsSearchPage-resultsAriaLabel:Search results`;
 
   private get docsSiteOrigin(): string {
     return `https://docs.${this.environment.docs.contentRoot}.com`;
@@ -94,9 +114,6 @@ export class DocsSearchPageComponent implements OnInit {
     }
   }
 
-  /**
-   * Get formatted results count message
-   */
   getResultsCountMessage(count: number, query: string): string {
     if (count === 1) {
       return $localize`:@@featureDocsSearchPage-foundOneResult:Found ${count} result for "${query}"`;
@@ -109,6 +126,6 @@ export class DocsSearchPageComponent implements OnInit {
    * Handle result click
    */
   onResultClick(result: SearchResult): void {
-    this.router.navigate([result.entry.path]);
+    void this.router.navigate([result.entry.path]);
   }
 }

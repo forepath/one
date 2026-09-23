@@ -1,65 +1,46 @@
 <div class="billing-admin-user-select">
   @if (selectedSupplier(); as supplier) {
-    <small
-      class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1 billing-admin-user-select__chip"
-    >
-      <span class="text-truncate small">{{ supplierPrimaryLabel(supplier) }}</span>
+    <fpc-badge variant="info" color="secondary" class="billing-admin-user-select__chip">
+      <span class="text-truncate">{{ supplierPrimaryLabel(supplier) }}</span>
       <button
         type="button"
-        class="btn btn-link btn-sm p-0 ms-1 align-baseline flex-shrink-0"
+        class="btn-close billing-admin-user-select__clear"
         [disabled]="disabled()"
         (click)="clearSelection()"
         i18n-aria-label="@@featureBillingAdminSupplierSelect-clearSelectionAria"
         aria-label="Clear selected supplier"
-      >
-        <i class="bi bi-x" aria-hidden="true"></i>
-      </button>
-    </small>
+      ></button>
+    </fpc-badge>
   } @else {
-    <div class="position-relative">
-      <input
-        [id]="inputId()"
-        type="text"
-        class="form-control"
-        autocomplete="off"
-        [disabled]="disabled()"
-        [ngModel]="searchQuery()"
-        (ngModelChange)="onSearchChange($event)"
-        (focus)="onSearchFocus()"
-        (blur)="onSearchBlur()"
-        [placeholder]="placeholder()"
-        [attr.aria-required]="required() ? true : null"
-      />
-      @if (loading()) {
-        <span
-          class="position-absolute top-50 end-0 translate-middle-y me-2 spinner-border spinner-border-sm"
-          aria-hidden="true"
-        ></span>
-      }
-      @if (suggestionsOpen() && filteredSuppliers().length > 0) {
-        <ul
-          class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100 billing-admin-user-select__suggestions"
-        >
+    <fpc-typeahead-select
+      [inputId]="inputId()"
+      [listboxId]="inputId() + '-listbox'"
+      [size]="size()"
+      [placeholder]="placeholder()"
+      [disabled]="disabled()"
+      [required]="required()"
+      [loading]="loading()"
+      [openOnFocus]="showSuggestionsOnFocus()"
+      [query]="searchQuery()"
+      (queryChange)="onSearchChange($event)"
+      [open]="suggestionsOpen()"
+      (openChange)="suggestionsOpen.set($event)"
+      (cleared)="reset()"
+    >
+      <div fpcTypeaheadSuggestions>
+        @if (filteredSuppliers().length > 0) {
           @for (supplier of filteredSuppliers(); track supplier.id) {
-            <li>
-              <button type="button" class="dropdown-item py-2 text-start" (mousedown)="pickSupplier(supplier, $event)">
-                <span class="d-block small fw-medium text-truncate">{{ supplierPrimaryLabel(supplier) }}</span>
-                <span class="d-block font-monospace text-muted small text-truncate">{{ supplier.supplierNumber }}</span>
-              </button>
-            </li>
+            <button type="button" class="dropdown-item py-2 text-start" (mousedown)="pickSupplier(supplier, $event)">
+              <span class="d-block small fw-medium text-truncate">{{ supplierPrimaryLabel(supplier) }}</span>
+              <span class="d-block font-monospace text-muted small text-truncate">{{ supplier.supplierNumber }}</span>
+            </button>
           }
-        </ul>
-      } @else if (suggestionsOpen() && searchQuery().trim()) {
-        <ul
-          class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100 billing-admin-user-select__suggestions"
-        >
-          <li>
-            <span class="dropdown-item-text text-muted small" i18n="@@featureBillingAdminSupplierSelect-noSuppliers"
-              >No suppliers found.</span
-            >
-          </li>
-        </ul>
-      }
-    </div>
+        } @else if (searchQuery().trim() && !loading()) {
+          <span class="dropdown-item-text text-muted small" i18n="@@featureBillingAdminSupplierSelect-noSuppliers"
+            >No suppliers found.</span
+          >
+        }
+      </div>
+    </fpc-typeahead-select>
   }
 </div>

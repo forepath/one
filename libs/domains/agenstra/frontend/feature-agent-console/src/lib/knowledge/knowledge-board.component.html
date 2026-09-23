@@ -1,49 +1,73 @@
 <div class="section__content-wrapper d-flex flex-column border-top">
-  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <div class="d-flex align-items-center flex-wrap gap-2 min-width-0">
-      <h5 class="mb-0 fw-semibold" i18n="@@featureKnowledgeBoard-title">Knowledge</h5>
+  <fpc-page-header>
+    <div fpcPageHeaderTitle class="d-flex align-items-center flex-wrap gap-3 min-w-0">
+      <h1 class="fpc-page-header__title h5 mb-0 fw-semibold">{{ pageTitle }}</h1>
       @if (effectiveWorkspace(); as ew) {
-        <button
-          type="button"
-          class="btn btn-link text-decoration-none p-0 border-0 text-body"
-          (click)="openWorkspaceSwitchModal()"
-          i18n-title="@@featureKnowledgeBoard-switchWorkspaceTitle"
-          title="Switch workspace"
+        <fpc-button
+          variant="link"
+          btnClass="text-decoration-none text-body"
+          (clicked)="openWorkspaceSwitchModal()"
+          [title]="switchWorkspaceTitle"
         >
-          <small class="info-badge text-muted mt-0 bg-body-secondary py-1 px-2 rounded">
-            <i class="bi bi-building me-1"></i>
+          <fpc-badge variant="info" color="secondary">
+            <i class="bi bi-building" aria-hidden="true"></i>
             <span class="text-truncate">{{ workspaceDisplayName(ew.name) }}</span>
-          </small>
-        </button>
+          </fpc-badge>
+        </fpc-button>
       }
     </div>
-    @if (activeClientId() !== null) {
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-secondary"
-        (click)="openGlobalSearchModal()"
-        i18n-title="@@featureKnowledgeBoard-searchPagesTitle"
-        title="Search pages"
+    @if (effectiveClientId() !== null) {
+      <fpc-button
+        fpcPageHeaderActions
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="searchPagesTitle"
+        [title]="searchPagesTitle"
+        (clicked)="openGlobalSearchModal()"
       >
         <i class="bi bi-search" aria-hidden="true"></i>
-      </button>
+      </fpc-button>
     }
-  </div>
+  </fpc-page-header>
 
-  @if (activeClientId() === null) {
-    <div class="alert alert-primary" role="status">
-      <span i18n="@@featureKnowledgeBoard-selectSpacePrefix">Select a space from</span>&nbsp;
-      <a routerLink="/clients" i18n="@@featureKnowledgeBoard-selectSpaceLink">Spaces</a>&nbsp;
-      <span i18n="@@featureKnowledgeBoard-selectSpaceSuffix">to load pages.</span>
-      <div class="mt-2">
-        <button type="button" class="btn btn-outline-primary btn-sm" (click)="openWorkspaceSwitchModal()">
-          <span i18n="@@featureKnowledgeBoard-chooseWorkspace">Choose workspace…</span>
-        </button>
-      </div>
-    </div>
+  @if (effectiveClientId() === null) {
+    @if (clients().length === 0) {
+      <fpc-empty-state
+        class="flex-grow-1"
+        message="No workspaces yet"
+        i18n-message="@@featureKnowledgeBoard-noWorkspaces"
+      >
+        <fpc-button
+          fpcEmptyStateActions
+          variant="primary"
+          size="sm"
+          routerLink="/clients"
+          i18n="@@featureKnowledgeBoard-goToSpaces"
+        >
+          Go to Spaces
+        </fpc-button>
+      </fpc-empty-state>
+    } @else {
+      <fpc-empty-state
+        class="flex-grow-1"
+        message="No workspace selected yet"
+        i18n-message="@@featureKnowledgeBoard-noWorkspaceSelected"
+      >
+        <fpc-button
+          fpcEmptyStateActions
+          variant="primary"
+          size="sm"
+          (clicked)="openWorkspaceSwitchModal()"
+          i18n="@@featureKnowledgeBoard-chooseWorkspace"
+        >
+          Choose workspace…
+        </fpc-button>
+      </fpc-empty-state>
+    }
   } @else {
-    @if (error()) {
-      <div class="alert alert-danger m-3 mb-0">{{ error() }}</div>
+    @if (error(); as err) {
+      <fpc-alert variant="danger" [flush]="true" [message]="err" />
     }
 
     <section class="section__row flex-grow-1 d-flex">
@@ -53,7 +77,7 @@
         [style.flex-basis.px]="sidebarWidth()"
       >
         <framework-knowledge-tree
-          [workspaceId]="activeClientId()"
+          [workspaceId]="effectiveClientId()"
           [nodes]="tree()"
           [selectedNodeId]="selectedNode()?.id ?? null"
           [loading]="loading()"
@@ -71,19 +95,19 @@
 
       <div class="section__column d-flex flex-column flex-grow-1">
         @if (selectedNode()?.nodeType === 'page') {
-          <div class="p-3 border-bottom bg-body-tertiary d-flex align-items-center gap-2">
-            <h2 class="modal-title h5 mb-0 d-flex align-items-center gap-2 min-width-0 flex-grow-1">
+          <fpc-page-header>
+            <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-width-0 flex-grow-1">
               @if (selectedNode()?.shas?.short) {
                 <small class="text-muted small flex-shrink-0">{{ selectedNode()?.shas?.short }}</small>
               }
               @if (selectedNodeTitleEditing()) {
-                <input
+                <fpc-form-control
                   #selectedNodeTitleInput
-                  type="text"
-                  class="form-control form-control-sm flex-grow-1 min-width-0"
+                  size="sm"
+                  controlClass="flex-grow-1 min-width-0"
                   [ngModel]="selectedNodeTitleDraft()"
                   (ngModelChange)="selectedNodeTitleDraft.set($event)"
-                  (blur)="onSavePageTitle()"
+                  (focusout)="onSavePageTitle()"
                   (keydown.enter)="onSavePageTitle()"
                   (keydown.escape)="onSelectedNodeTitleCancel()"
                 />
@@ -99,391 +123,370 @@
                   >{{ selectedNode()?.title }}</span
                 >
               }
-            </h2>
-          </div>
-          <div class="flex-grow-1 p-3 knowledge-editor-area">
-            <framework-knowledge-editor
-              [markdown]="editContent()"
-              (markdownChange)="editContent.set($event)"
-              (blurred)="onSavePage()"
-            ></framework-knowledge-editor>
-            <div class="d-flex align-items-center justify-content-between gap-2 mb-2 mt-3">
-              <button
-                type="button"
-                class="btn btn-outline-secondary btn-sm"
-                (click)="openRelationsModal()"
-                i18n="@@featureKnowledgeBoard-addRelations"
-              >
-                Add relations
-              </button>
             </div>
-            @if (relationsLoading()) {
-              <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-loadingRelations">Loading relations...</p>
-            } @else if (relations().length > 0) {
-              <div class="list-group list-group-flush border rounded">
-                @for (relation of relations(); track relation.id) {
-                  @let relationNode = relationNodeById(relation.targetNodeId);
-                  <div
-                    class="list-group-item d-flex justify-content-between align-items-center gap-2 cursor-pointer"
-                    role="button"
-                    tabindex="0"
-                    (click)="onRelationClick(relation)"
-                    (keydown.enter)="onRelationClick(relation)"
-                    (keydown.space)="$event.preventDefault(); onRelationClick(relation)"
+          </fpc-page-header>
+          <div class="flex-grow-1 p-3 knowledge-editor-area">
+            <div class="d-flex flex-column gap-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+                  <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-descriptionHeading">Description</h3>
+                </div>
+                <framework-knowledge-editor
+                  [markdown]="editContent()"
+                  (markdownChange)="editContent.set($event)"
+                  (blurred)="onSavePage()"
+                ></framework-knowledge-editor>
+              </div>
+
+              <div>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                  <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-relationsHeading">Relations</h3>
+                  <fpc-button
+                    variant="dark"
+                    size="sm"
+                    [iconOnly]="true"
+                    (clicked)="openRelationsModal()"
+                    i18n-title="@@featureKnowledgeBoard-addRelations"
+                    title="Add relations"
+                    i18n-ariaLabel="@@featureKnowledgeBoard-addRelations"
+                    ariaLabel="Add relations"
                   >
-                    <div class="d-flex flex-column min-width-0">
-                      <div class="d-flex align-items-center gap-2 min-width-0">
-                        <span class="badge text-bg-light">{{
-                          relation.targetType === 'folder'
-                            ? 'Folder'
-                            : relation.targetType === 'page'
-                              ? 'Page'
-                              : 'Ticket'
-                        }}</span>
-                        <span>
-                          @if (relation.targetType === 'ticket') {
-                            <small class="text-muted small fw-medium me-1">{{
-                              relationTicketShortSha(relation.targetTicketLongSha)
-                            }}</small>
-                          } @else if (relationNode?.shas?.short) {
-                            <small class="text-muted small fw-medium me-1">{{ relationNode?.shas?.short }}</small>
-                          }
-                          <span class="fw-medium text-truncate">{{
-                            relation.targetType === 'ticket'
-                              ? relationTicketDisplay(relation.targetTicketLongSha)
-                              : relationKnowledgeTitle(relationNode?.title)
-                          }}</span>
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-outline-danger flex-shrink-0"
-                      (click)="$event.stopPropagation(); onRemoveRelation(relation)"
-                      i18n-title="@@featureKnowledgeBoard-removeRelationTitle"
-                      title="Remove relation"
-                    >
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
+                    <i class="bi bi-plus" aria-hidden="true"></i>
+                  </fpc-button>
+                </div>
+                @if (relationsLoading()) {
+                  <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-loadingRelations">
+                    Loading relations...
+                  </p>
+                } @else if (relations().length === 0) {
+                  <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-relationsEmpty">No relations yet.</p>
+                } @else {
+                  <ul
+                    class="list-group list-group-flush knowledge-board__detail-relations border rounded small mb-0"
+                    role="list"
+                  >
+                    @for (relation of relations(); track relation.id) {
+                      @let relationNode = relationNodeById(relation.targetNodeId);
+                      <li class="list-group-item knowledge-board__detail-relation-row py-2 px-3" role="listitem">
+                        <div class="d-flex align-items-center gap-2 min-width-0">
+                          <fpc-button
+                            variant="link"
+                            [block]="true"
+                            btnClass="p-0 text-start text-decoration-none justify-content-start"
+                            class="knowledge-board__detail-relation-btn flex-grow-1 min-width-0"
+                            (clicked)="onRelationClick(relation)"
+                            i18n-title="@@featureKnowledgeBoard-openRelationTitle"
+                            title="Open relation"
+                          >
+                            <span class="d-flex align-items-center gap-2 w-100 min-width-0">
+                              <fpc-badge variant="info" color="secondary" class="flex-shrink-0">{{
+                                relation.targetType === 'folder'
+                                  ? 'Folder'
+                                  : relation.targetType === 'page'
+                                    ? 'Page'
+                                    : 'Ticket'
+                              }}</fpc-badge>
+                              @if (relation.targetType === 'ticket') {
+                                <small class="text-muted flex-shrink-0 small fw-medium">{{
+                                  relationTicketShortSha(relation.targetTicketLongSha)
+                                }}</small>
+                              } @else if (relationNode?.shas?.short) {
+                                <small class="text-muted flex-shrink-0 small fw-medium">{{
+                                  relationNode?.shas?.short
+                                }}</small>
+                              }
+                              <span class="fw-medium text-break flex-grow-1 min-width-0">{{
+                                relation.targetType === 'ticket'
+                                  ? relationTicketDisplay(relation.targetTicketLongSha)
+                                  : relationKnowledgeTitle(relationNode?.title)
+                              }}</span>
+                            </span>
+                          </fpc-button>
+                          <fpc-button
+                            variant="danger"
+                            size="sm"
+                            class="flex-shrink-0"
+                            [iconOnly]="true"
+                            (clicked)="onRemoveRelation(relation)"
+                            i18n-title="@@featureKnowledgeBoard-removeRelationTitle"
+                            title="Remove relation"
+                            i18n-ariaLabel="@@featureKnowledgeBoard-removeRelationTitle"
+                            ariaLabel="Remove relation"
+                          >
+                            <i class="bi bi-trash" aria-hidden="true"></i>
+                          </fpc-button>
+                        </div>
+                      </li>
+                    }
+                  </ul>
                 }
               </div>
-            }
 
-            <div class="d-flex align-items-center justify-content-between mb-2 mt-3">
-              <h2 class="h6 mb-0" i18n="@@featureKnowledgeBoard-activityHeading">Activity</h2>
-            </div>
-            @if (activity().length > 0) {
-              <ul class="list-unstyled small mb-0">
-                @for (ev of activity(); track ev.id) {
-                  <li class="mb-2 pb-2 border-bottom border-opacity-50">
-                    <div class="d-flex flex-wrap align-items-center column-gap-2 row-gap-1 small">
-                      <small
-                        class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
-                        [ngClass]="activityActionBadgeClass(ev.actionType)"
-                        [attr.title]="ev.actionType"
-                        >{{ activityActionLabel(ev.actionType) }}</small
-                      >
-                      <span class="text-body-secondary">{{ ev.occurredAt | date: 'MMM d, y · h:mm a' }}</span>
-                      @if (ev.actorEmail) {
-                        <span class="text-body-secondary text-truncate">{{ ev.actorEmail }}</span>
-                      } @else {
-                        <span class="text-body-secondary text-truncate fst-italic">{{ ev.actorType }}</span>
-                      }
-                    </div>
-                  </li>
+              <div>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                  <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-activityHeading">Activity</h3>
+                </div>
+                @if (activity().length > 0) {
+                  <ul class="list-unstyled small mb-0">
+                    @for (ev of activity(); track ev.id) {
+                      <li class="mb-2 pb-2 border-bottom border-opacity-50">
+                        <div class="d-flex flex-wrap align-items-center column-gap-2 row-gap-1 small">
+                          <fpc-badge
+                            variant="info"
+                            color="secondary"
+                            [ngClass]="activityActionBadgeClass(ev.actionType)"
+                            [attr.title]="ev.actionType"
+                            >{{ activityActionLabel(ev.actionType) }}</fpc-badge
+                          >
+                          <span class="text-body-secondary">{{ ev.occurredAt | date: 'MMM d, y · h:mm a' }}</span>
+                          @if (ev.actorEmail) {
+                            <span class="text-body-secondary text-truncate">{{ ev.actorEmail }}</span>
+                          } @else {
+                            <span class="text-body-secondary text-truncate fst-italic">{{ ev.actorType }}</span>
+                          }
+                        </div>
+                      </li>
+                    }
+                  </ul>
+                } @else if (activityLoading()) {
+                  <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-loadingActivity">
+                    Loading activity...
+                  </p>
+                } @else {
+                  <fpc-empty-state
+                    size="sm"
+                    message="No activity yet"
+                    i18n-message="@@featureKnowledgeBoard-noActivity"
+                  />
                 }
-              </ul>
-            } @else if (activityLoading()) {
-              <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-loadingActivity">Loading activity...</p>
-            } @else {
-              <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-noActivity">No activity yet</p>
-            }
+              </div>
+            </div>
           </div>
         } @else {
-          <div class="alert alert-secondary m-3" i18n="@@featureKnowledgeBoard-selectPageHint">
-            Select a page from the tree to start editing.
-          </div>
+          <fpc-empty-state
+            icon="file-earmark"
+            message="No page selected yet"
+            i18n-message="@@featureKnowledgeBoard-selectPageHint"
+          />
         }
       </div>
     </section>
   }
 </div>
 
-<div
-  class="modal fade"
-  id="globalSearchModal"
-  tabindex="-1"
-  aria-labelledby="globalSearchModalLabel"
-  aria-hidden="true"
-  #globalSearchModal
+<fpc-modal
+  [(open)]="globalSearchModalOpen"
+  i18n-title="@@featureKnowledgeBoard-searchPagesModalTitle"
+  title="Search pages"
+  [scrollable]="true"
+  (closed)="onCloseGlobalSearchModal()"
 >
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title h5" id="globalSearchModalLabel" i18n="@@featureKnowledgeBoard-searchPagesModalTitle">
-          Search pages
-        </h2>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          i18n-aria-label="@@featureKnowledgeBoard-closeAria"
-          (click)="onCloseGlobalSearchModal()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <label class="visually-hidden" for="globalSearchInput" i18n="@@featureKnowledgeBoard-searchPagesLabel">
-          Search pages
-        </label>
-        <div class="input-group search-input-container border rounded mb-3">
-          <i class="bi bi-search" aria-hidden="true"></i>
-          <input
-            #globalSearchInput
-            id="globalSearchInput"
-            type="search"
-            class="form-control border-0 search-input"
-            [ngModel]="globalSearchQuery()"
-            (ngModelChange)="globalSearchQuery.set($event)"
-            i18n-placeholder="@@featureKnowledgeBoard-searchPagesPlaceholder"
-            placeholder="Search by title or id"
-          />
-        </div>
-        @if (globalSearchQuery().trim() === '') {
-          <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-searchPagesHint">
-            Type to search all pages and folders in this workspace.
-          </p>
-        } @else if (globalSearchHits().length === 0) {
-          <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-noMatchingNodes">
-            No matching pages or folders
-          </p>
-        } @else {
-          <div class="list-group list-group-flush border rounded">
-            @for (hit of globalSearchHits(); track hit.node.id) {
-              <button
-                type="button"
-                class="list-group-item list-group-item-action d-flex flex-column align-items-start gap-1 text-start"
-                (click)="onGlobalSearchResultClick(hit)"
-              >
-                <div class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
-                  @if (hit.node.shas.short) {
-                    <span class="font-monospace text-muted small flex-shrink-0">{{ hit.node.shas.short }}</span>
-                  }
-                  <span class="fw-medium text-break flex-grow-1 min-width-0">{{ hit.node.title }}</span>
-                  <small class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded flex-shrink-0">{{
-                    hit.node.nodeType
-                  }}</small>
-                </div>
-                @if (globalSearchPathDisplay(hit)) {
-                  <small class="text-muted text-truncate w-100">{{ globalSearchPathDisplay(hit) }}</small>
-                }
-              </button>
-            }
-          </div>
-        }
-      </div>
-    </div>
-  </div>
-</div>
-
-<div
-  class="modal fade"
-  id="relationsModal"
-  tabindex="-1"
-  aria-labelledby="relationsModalLabel"
-  aria-hidden="true"
-  #relationsModal
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title h5" id="relationsModalLabel" i18n="@@featureKnowledgeBoard-relationsModalTitle">
-          Add relations
-        </h2>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          i18n-aria-label="@@featureKnowledgeBoard-closeAria"
-          (click)="onCloseRelationsModal()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <label class="visually-hidden" for="relationsSearchInput" i18n="@@featureKnowledgeBoard-searchRelationsLabel">
-          Search relations
-        </label>
-        <div class="position-relative mb-2">
-          <div class="input-group">
-            <input
-              #relationsSearchInput
-              id="relationsSearchInput"
-              type="text"
-              class="form-control"
-              autocomplete="off"
-              [ngModel]="relationsSearchQuery()"
-              (ngModelChange)="onRelationInputChange($event)"
-              (focus)="onRelationInputFocus()"
-              (blur)="onRelationInputBlur()"
-              i18n-placeholder="@@featureKnowledgeBoard-searchRelationsPlaceholder"
-              placeholder="Title or short/long SHA"
-            />
-            <button type="button" class="btn btn-outline-secondary" (click)="onAddRelationBySearch()">
-              <i class="bi bi-plus"></i>
-            </button>
-          </div>
-          @if (relationSuggestionsOpen() && relationCandidates().length > 0) {
-            <ul
-              class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100"
-              style="z-index: 1070; max-height: 240px; overflow-y: auto"
-            >
-              @for (
-                candidate of relationCandidates();
-                track candidate.kind === 'knowledge' ? candidate.node.id : candidate.ticket.id
-              ) {
-                <li>
-                  <button
-                    type="button"
-                    class="dropdown-item py-2 text-start"
-                    (mousedown)="onPickRelationCandidate(candidate, $event)"
-                  >
-                    <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-                      <span class="font-monospace text-muted small flex-shrink-0">{{
-                        candidate.kind === 'knowledge' ? candidate.node.shas.short : candidate.ticket.shas.short
-                      }}</span>
-                      <span class="text-truncate small flex-grow-1 min-width-0">
-                        {{
-                          candidate.kind === 'knowledge'
-                            ? (candidate.node.nodeType === 'folder' ? 'Folder' : 'Page') + ' · ' + candidate.node.title
-                            : 'Ticket · ' + candidate.ticket.title
-                        }}
-                      </span>
-                    </span>
-                  </button>
-                </li>
-              }
-            </ul>
-          }
-        </div>
-        @if (relationSearchError()) {
-          <div class="form-text text-danger mb-2">{{ relationSearchError() }}</div>
-        }
-        @if (selectedRelationTargets().length > 0) {
-          <div class="d-flex flex-wrap gap-2 mt-2">
-            @for (target of selectedRelationTargets(); track relationTargetTrackId(target)) {
-              <small
-                class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1"
-                style="max-width: min(100%, 24rem)"
-              >
-                <span class="text-truncate small">{{ relationCandidateChipDisplay(target) }}</span>
-                <button
-                  type="button"
-                  class="btn btn-link btn-sm p-0 ms-1 align-baseline flex-shrink-0"
-                  (click)="onRemovePendingRelation(target)"
-                >
-                  <i class="bi bi-x"></i>
-                </button>
-              </small>
-            }
-          </div>
-        } @else {
-          <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-searchRelationsHint">
-            Search by title or SHA and add one or more relation targets.
-          </p>
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          [disabled]="selectedRelationTargets().length === 0"
-          (click)="onAddSelectedRelations()"
-        >
-          <span i18n="@@featureKnowledgeBoard-add">Add</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div
-  class="modal fade"
-  id="workspaceSwitchModal"
-  tabindex="-1"
-  aria-labelledby="workspaceSwitchModalLabel"
-  aria-hidden="true"
-  #workspaceSwitchModal
->
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2
-          class="modal-title h5"
-          id="workspaceSwitchModalLabel"
-          i18n="@@featureKnowledgeBoard-switchWorkspaceModalTitle"
-        >
-          Switch workspace
-        </h2>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          i18n-aria-label="@@featureKnowledgeBoard-closeAria"
-          (click)="onCloseWorkspaceSwitchModal()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        @if (clients().length === 0) {
-          <p class="text-muted small mb-2 text-center" i18n="@@featureKnowledgeBoard-noWorkspaces">
-            You don't have any workspaces yet.
-          </p>
-          <a
-            routerLink="/clients"
-            class="btn btn-primary btn-sm d-block w-100"
-            (click)="onCloseWorkspaceSwitchModal()"
-            i18n="@@featureKnowledgeBoard-goToSpaces"
-            >Go to Spaces</a
+  <label class="visually-hidden" for="globalSearchInput" i18n="@@featureKnowledgeBoard-searchPagesLabel">
+    Search pages
+  </label>
+  <fpc-typeahead-select
+    #globalSearchInput
+    inputId="globalSearchInput"
+    listboxId="knowledgeGlobalSearchInput-listbox"
+    variant="inline"
+    [openOnFocus]="false"
+    [loading]="globalSearchLoading()"
+    i18n-placeholder="@@featureKnowledgeBoard-searchPagesPlaceholder"
+    placeholder="Search by title or id"
+    i18n-ariaLabel="@@featureKnowledgeBoard-searchPagesLabel"
+    ariaLabel="Search pages"
+    [query]="globalSearchQuery()"
+    (queryChange)="onGlobalSearchQueryChange($event)"
+    [open]="globalSearchSuggestionsOpen()"
+    (openChange)="onGlobalSearchSuggestionsOpenChange($event)"
+    (cleared)="onGlobalSearchQueryChange('')"
+  >
+    <div fpcTypeaheadSuggestions>
+      @if (globalSearchHits().length > 0) {
+        @for (node of globalSearchHits(); track node.id) {
+          <button
+            type="button"
+            class="dropdown-item py-2 text-start"
+            (mousedown)="onGlobalSearchResultClick(node, $event)"
           >
-        } @else {
-          <div class="input-group search-input-container border rounded mb-3">
-            <i class="bi bi-search"></i>
-            <input
-              id="workspaceSwitchSearch"
-              type="search"
-              class="form-control border-0 search-input"
-              [ngModel]="workspaceSwitchSearch()"
-              (ngModelChange)="workspaceSwitchSearch.set($event)"
-              i18n-placeholder="@@featureKnowledgeBoard-searchWorkspacesPlaceholder"
-              placeholder="Search workspaces"
-            />
-          </div>
-          @if (clients().length === 0) {
-            <p class="text-muted small mb-0 text-center py-3" i18n="@@featureKnowledgeBoard-noMatchingWorkspaces">
-              No matching workspaces
-            </p>
-          } @else {
-            <div class="list-group list-group-flush border rounded">
-              @for (c of clients(); track c.id) {
-                <button
-                  type="button"
-                  class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2"
-                  [class.active]="c.id === activeClientId()"
-                  (click)="onSelectWorkspaceForKnowledge(c)"
-                >
-                  <span class="text-truncate text-start">{{ workspaceDisplayName(c.name) }}</span>
-                  @if (c.id === activeClientId()) {
-                    <span
-                      class="badge rounded-pill text-bg-light flex-shrink-0"
-                      i18n="@@featureKnowledgeBoard-currentWorkspace"
-                    >
-                      Current
-                    </span>
-                  }
-                </button>
+            <span class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
+              @if (node.shas.short) {
+                <span class="font-monospace text-muted small flex-shrink-0">{{ node.shas.short }}</span>
               }
-            </div>
-          }
+              <span class="fw-medium text-break flex-grow-1 min-width-0">{{ node.title }}</span>
+              <fpc-badge variant="info" color="secondary" class="flex-shrink-0">{{
+                nodeTypeLabel(node.nodeType)
+              }}</fpc-badge>
+            </span>
+          </button>
+        }
+      } @else if (globalSearchQuery().trim()) {
+        <span class="dropdown-item-text text-muted small" i18n="@@featureKnowledgeBoard-noMatchingNodes"
+          >No matching pages or folders</span
+        >
+      }
+    </div>
+  </fpc-typeahead-select>
+  @if (globalSearchQuery().trim() === '') {
+    <p class="text-muted small mb-0 mt-2" i18n="@@featureKnowledgeBoard-searchPagesHint">
+      Type to search all pages and folders in this workspace.
+    </p>
+  }
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="relationsModalOpen"
+  i18n-title="@@featureKnowledgeBoard-relationsModalTitle"
+  title="Add relations"
+  (closed)="onCloseRelationsModal()"
+>
+  <label class="visually-hidden" for="relationsSearchInput" i18n="@@featureKnowledgeBoard-searchRelationsLabel">
+    Search relations
+  </label>
+  <div class="d-flex align-items-start gap-2 mb-2">
+    <fpc-typeahead-select
+      #relationsSearchInput
+      class="flex-grow-1 min-width-0"
+      inputId="relationsSearchInput"
+      listboxId="relationsSearchInput-listbox"
+      [openOnFocus]="false"
+      i18n-placeholder="@@featureKnowledgeBoard-searchRelationsPlaceholder"
+      placeholder="Title or short/long SHA"
+      i18n-ariaLabel="@@featureKnowledgeBoard-searchRelationsLabel"
+      ariaLabel="Search relations"
+      [query]="relationsSearchQuery()"
+      (queryChange)="onRelationInputChange($event)"
+      [open]="relationSuggestionsOpen()"
+      (openChange)="onRelationSuggestionsOpenChange($event)"
+      (cleared)="onRelationInputChange('')"
+    >
+      <div fpcTypeaheadSuggestions>
+        @for (
+          candidate of relationCandidates();
+          track candidate.kind === 'knowledge' ? candidate.node.id : candidate.ticket.id
+        ) {
+          <button
+            type="button"
+            class="dropdown-item py-2 text-start"
+            (mousedown)="onPickRelationCandidate(candidate, $event)"
+          >
+            <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
+              <span class="font-monospace text-muted small flex-shrink-0">{{
+                candidate.kind === 'knowledge' ? candidate.node.shas.short : candidate.ticket.shas.short
+              }}</span>
+              <span class="text-truncate small flex-grow-1 min-width-0">
+                {{
+                  candidate.kind === 'knowledge'
+                    ? (candidate.node.nodeType === 'folder' ? 'Folder' : 'Page') + ' · ' + candidate.node.title
+                    : 'Ticket · ' + candidate.ticket.title
+                }}
+              </span>
+            </span>
+          </button>
         }
       </div>
-    </div>
+    </fpc-typeahead-select>
+    <fpc-button variant="dark" [iconOnly]="true" (clicked)="onAddRelationBySearch()">
+      <i class="bi bi-plus"></i>
+    </fpc-button>
   </div>
-</div>
+  @if (relationSearchError()) {
+    <div class="form-text text-danger mb-2">{{ relationSearchError() }}</div>
+  }
+  @if (selectedRelationTargets().length > 0) {
+    <div class="d-flex flex-wrap gap-2 mt-2">
+      @for (target of selectedRelationTargets(); track relationTargetTrackId(target)) {
+        <fpc-badge
+          variant="info"
+          color="secondary"
+          class="knowledge-board__relation-chip"
+          style="max-width: min(100%, 24rem)"
+        >
+          <span class="text-truncate small">{{ relationCandidateChipDisplay(target) }}</span>
+          <button
+            type="button"
+            class="btn-close knowledge-board__relation-chip-clear"
+            (click)="onRemovePendingRelation(target)"
+            aria-label="Remove relation target"
+          ></button>
+        </fpc-badge>
+      }
+    </div>
+  } @else {
+    <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-searchRelationsHint">
+      Search by title or SHA and add one or more relation targets.
+    </p>
+  }
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      [disabled]="selectedRelationTargets().length === 0"
+      (clicked)="onAddSelectedRelations()"
+    >
+      <span i18n="@@featureKnowledgeBoard-add">Add</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="workspaceSwitchModalOpen"
+  i18n-title="@@featureKnowledgeBoard-switchWorkspaceModalTitle"
+  title="Switch workspace"
+  [scrollable]="true"
+  (closed)="onCloseWorkspaceSwitchModal()"
+>
+  @if (clients().length === 0 && !workspaceSwitchSearch().trim()) {
+    <fpc-empty-state size="sm" message="No workspaces yet" i18n-message="@@featureKnowledgeBoard-noWorkspaces">
+      <fpc-button
+        fpcEmptyStateActions
+        variant="primary"
+        size="sm"
+        i18n="@@featureKnowledgeBoard-goToSpaces"
+        (clicked)="goToSpaces($event)"
+      >
+        Go to Spaces
+      </fpc-button>
+    </fpc-empty-state>
+  } @else {
+    <fpc-search-field
+      class="mb-3"
+      inputId="workspaceSwitchSearch"
+      [value]="workspaceSwitchSearch()"
+      (valueChange)="workspaceSwitchSearch.set($event)"
+      i18n-placeholder="@@featureKnowledgeBoard-searchWorkspacesPlaceholder"
+      placeholder="Search workspaces"
+    />
+    @if (clients().length === 0) {
+      <fpc-empty-state
+        size="sm"
+        icon="search"
+        message="No search results"
+        i18n-message="@@featureKnowledgeBoard-noSearchResults"
+      />
+    } @else {
+      <fpc-list [flush]="true" class="border rounded">
+        @for (c of clients(); track c.id) {
+          <fpc-list-item
+            [active]="c.id === activeClientId()"
+            [clickable]="true"
+            (selected)="onSelectWorkspaceForKnowledge(c)"
+          >
+            <div fpcListItemTitle class="text-truncate text-start">{{ workspaceDisplayName(c.name) }}</div>
+            @if (c.id === activeClientId()) {
+              <div fpcListItemActions>
+                <fpc-badge
+                  color="light"
+                  [pill]="true"
+                  class="flex-shrink-0"
+                  i18n="@@featureKnowledgeBoard-currentWorkspace"
+                >
+                  Current
+                </fpc-badge>
+              </div>
+            }
+          </fpc-list-item>
+        }
+      </fpc-list>
+    }
+  }
+</fpc-modal>

@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import {
   AdminUpdatesFacade,
   UPDATES_ADMIN_ENVIRONMENT,
@@ -10,6 +9,27 @@ import {
   type ServiceInstanceRecord,
   type UpdateState,
 } from '@forepath/shared/frontend/data-access-updates';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcBoardLaneComponent,
+  FpcButtonComponent,
+  FpcEmptyStateComponent,
+  FpcLaneHeaderComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSectionColumnComponent,
+  FpcSectionContainerComponent,
+  FpcSectionRowComponent,
+  FpcSpinnerComponent,
+  FpcSummaryBarComponent,
+  FpcSummaryCardComponent,
+  FpcSummaryCardValueDirective,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { combineLatestWith, map } from 'rxjs';
 
 import { parseChangelogMarkdownLinks, type ChangelogTextPart } from './changelog-text.utils';
@@ -20,7 +40,28 @@ const UPDATES_MOBILE_PANELS: UpdatesMobilePanel[] = ['instances', 'product', 'sh
 
 @Component({
   selector: 'shared-updates-manager',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcBoardLaneComponent,
+    FpcButtonComponent,
+    FpcEmptyStateComponent,
+    FpcLaneHeaderComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSectionColumnComponent,
+    FpcSectionContainerComponent,
+    FpcSectionRowComponent,
+    FpcSpinnerComponent,
+    FpcSummaryBarComponent,
+    FpcSummaryCardComponent,
+    FpcSummaryCardValueDirective,
+    FpcTabComponent,
+    FpcTabGroupComponent,
+  ],
   templateUrl: './updates-manager.component.html',
   styleUrls: ['./updates-manager.component.scss'],
   standalone: true,
@@ -34,6 +75,16 @@ export class UpdatesManagerComponent implements OnInit {
   readonly checking$ = this.facade.checking$;
   readonly error$ = this.facade.error$;
   readonly scopedChangelog$ = this.facade.scopedChangelog$;
+
+  readonly pageTitle = $localize`:@@featureUpdates-title:Updates`;
+  readonly checkNowTitle = $localize`:@@featureUpdates-checkNow:Check now`;
+  readonly installedVersionLabel = $localize`:@@featureUpdates-installedVersion:Installed version`;
+  readonly latestVersionLabel = $localize`:@@featureUpdates-latestVersion:Latest version`;
+  readonly lastCheckLabel = $localize`:@@featureUpdates-lastCheck:Last check`;
+  readonly frontendVersionLabel = $localize`:@@featureUpdates-frontendVersion:Frontend version`;
+  readonly searchInstancesPlaceholder = $localize`:@@featureUpdates-searchInstancesPlaceholder:Search instances`;
+  readonly searchProductChangelogPlaceholder = $localize`:@@featureUpdates-searchProductChangelogPlaceholder:Search product changelog`;
+  readonly searchSharedChangelogPlaceholder = $localize`:@@featureUpdates-searchSharedChangelogPlaceholder:Search shared changelog`;
 
   readonly mobilePanels = UPDATES_MOBILE_PANELS;
   readonly mobilePanel = signal<UpdatesMobilePanel>('instances');
@@ -97,6 +148,14 @@ export class UpdatesManagerComponent implements OnInit {
       case 'shared':
         return $localize`:@@featureUpdates-mobilePanelShared:Shared`;
     }
+  }
+
+  onMobilePanelTabChange(panel: string | null): void {
+    if (panel !== 'instances' && panel !== 'product' && panel !== 'shared') {
+      return;
+    }
+
+    this.mobilePanel.set(panel);
   }
 
   private filterChangelogEntries(entries: ChangelogEntry[], searchQuery: string): ChangelogEntry[] {

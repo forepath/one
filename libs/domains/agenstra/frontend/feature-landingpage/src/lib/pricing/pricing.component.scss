@@ -9,26 +9,29 @@
   width: 100%;
   pointer-events: none;
 
-  .btn {
-    pointer-events: auto;
+  // Reach inner `.btn` / btnClass hooks inside `fpc-button`.
+  ::ng-deep {
+    .btn {
+      pointer-events: auto;
 
-    &:disabled {
-      --bs-btn-disabled-opacity: 1;
-      --bs-btn-disabled-bg: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
-      --bs-btn-disabled-border-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
+      &:disabled {
+        --bs-btn-disabled-opacity: 1;
+        --bs-btn-disabled-bg: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
+        --bs-btn-disabled-border-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
 
-      i {
-        opacity: 0.25;
+        i {
+          opacity: 0.25;
+        }
       }
     }
-  }
 
-  .pricing-carousel-scroll-button-left {
-    transform: translateX(-50%);
-  }
+    .pricing-carousel-scroll-button-left {
+      transform: translateX(-50%);
+    }
 
-  .pricing-carousel-scroll-button-right {
-    transform: translateX(50%);
+    .pricing-carousel-scroll-button-right {
+      transform: translateX(50%);
+    }
   }
 }
 

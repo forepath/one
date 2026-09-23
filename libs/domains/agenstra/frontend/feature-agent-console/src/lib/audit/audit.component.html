@@ -1,164 +1,144 @@
-<div class="audit-container d-flex flex-column h-100">
-  <!-- Fixed top area: filters -->
-  <div class="audit-filters border-bottom border-top bg-body-tertiary flex-shrink-0">
-    <div class="p-3">
-      <div class="d-flex justify-content-between align-items-center">
-        <h5 class="mb-0 fw-semibold" i18n="@@featureAudit-filtersTitle">Filters</h5>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary d-md-none"
-          [attr.aria-expanded]="!filtersCollapsed()"
-          [attr.aria-controls]="'auditFiltersCollapse'"
-          [attr.data-bs-target]="'#auditFiltersCollapse'"
-          data-bs-toggle="collapse"
-          (click)="onToggleFilters()"
-          i18n-title="@@featureAudit-toggleFiltersTitle"
-          title="Toggle filters"
-        >
-          <i class="bi" [class.bi-chevron-down]="filtersCollapsed()" [class.bi-chevron-up]="!filtersCollapsed()"></i>
-        </button>
+<div class="audit-container border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle" />
+
+  <fpc-summary-bar [columns]="5">
+    <fpc-summary-card [label]="totalMessagesLabel">
+      <span fpcSummaryCardValue>
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary(); as summaryData) {
+          {{ summaryData.totalMessages }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card [label]="totalWordsLabel">
+      <span fpcSummaryCardValue>
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary(); as summaryData) {
+          {{ summaryData.totalWords }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card [label]="avgWordsPerMessageLabel">
+      <span fpcSummaryCardValue>
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary(); as summaryData) {
+          {{ summaryData.avgWordsPerMessage | number: '1.1-1' }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card [label]="filterFlagsLabel">
+      <span fpcSummaryCardValue>
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary(); as summaryData) {
+          {{ summaryData.filterFlagCount }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card [label]="filterDropsLabel">
+      <span fpcSummaryCardValue>
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary(); as summaryData) {
+          {{ summaryData.filterDropCount }}
+        }
+      </span>
+    </fpc-summary-card>
+  </fpc-summary-bar>
+
+  <fpc-collapsible-filter-panel
+    [open]="!filtersCollapsed()"
+    (openChange)="onFiltersOpenChange($event)"
+    [title]="filtersPanelTitle"
+    [showClear]="false"
+  >
+    <div class="row g-3 mb-0 w-100">
+      <div class="col-12">
+        <fpc-form-field forId="auditClientSelect" i18n-label="@@featureAudit-clientLabel" label="Client">
+          <framework-client-select
+            inputId="auditClientSelect"
+            [size]="'sm'"
+            [clients]="clients()"
+            [selectedClientId]="selectedClientId() ?? ''"
+            (selectedClientIdChange)="selectedClientId.set($event || null)"
+          />
+        </fpc-form-field>
       </div>
-      <div class="collapse d-md-block mt-2" id="auditFiltersCollapse">
-        <div class="row g-3">
-          <div class="col-12 col-md-3">
-            <label for="auditClientSelect" class="form-label small" i18n="@@featureAudit-clientLabel">Client</label>
-            <select
-              id="auditClientSelect"
-              class="form-select form-select-sm"
-              [ngModel]="selectedClientId()"
-              (ngModelChange)="selectedClientId.set($event)"
-            >
-              <option [ngValue]="null" i18n="@@featureAudit-allClients">All clients</option>
-              @for (client of clients(); track client.id) {
-                <option [ngValue]="client.id">{{ client.name }}</option>
-              }
-            </select>
-          </div>
-          <div class="col-12 col-md-2">
-            <label for="auditFromDate" class="form-label small" i18n="@@featureAudit-fromDateLabel">From</label>
-            <input
-              id="auditFromDate"
-              type="date"
-              class="form-control form-control-sm"
-              [ngModel]="fromDate()"
-              (ngModelChange)="fromDate.set($event)"
-            />
-          </div>
-          <div class="col-12 col-md-2">
-            <label for="auditToDate" class="form-label small" i18n="@@featureAudit-toDateLabel">To</label>
-            <input
-              id="auditToDate"
-              type="date"
-              class="form-control form-control-sm"
-              [ngModel]="toDate()"
-              (ngModelChange)="toDate.set($event)"
-            />
-          </div>
-          <div class="col-12 col-md-2">
-            <label for="auditGroupBy" class="form-label small" i18n="@@featureAudit-groupByLabel">Group by</label>
-            <select
-              id="auditGroupBy"
-              class="form-select form-select-sm"
-              [ngModel]="groupBy()"
-              (ngModelChange)="groupBy.set($event)"
-            >
-              <option value="day" i18n="@@featureAudit-groupByDay">Day</option>
-              <option value="hour" i18n="@@featureAudit-groupByHour">Hour</option>
-            </select>
-          </div>
-          <div class="col-12 col-md-2 offset-md-1 d-flex align-items-end gap-2">
-            <button
-              type="button"
-              class="btn btn-primary btn-sm flex-grow-1"
-              (click)="onApplyFilters()"
-              [disabled]="(loadingSummary$ | async) === true"
-            >
-              @if (loadingSummary$ | async) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              } @else {
-                <span i18n="@@featureAudit-apply">Apply</span>
-              }
-            </button>
-            @if (!filtersAreDefault()) {
-              <button
-                type="button"
-                class="btn btn-outline-secondary btn-sm"
-                (click)="onResetFilters()"
-                [disabled]="(loadingSummary$ | async) === true"
-                i18n-title="@@featureAudit-resetFiltersTitle"
-                title="Reset filters to defaults"
-              >
-                <span i18n="@@featureAudit-reset">Reset</span>
-              </button>
-            }
-          </div>
-        </div>
+      <div class="col-6">
+        <fpc-form-field forId="auditFromDate" i18n-label="@@featureAudit-fromDateLabel" label="From">
+          <fpc-form-control
+            controlId="auditFromDate"
+            inputType="date"
+            size="sm"
+            [ngModel]="fromDate()"
+            (ngModelChange)="fromDate.set($event)"
+          />
+        </fpc-form-field>
+      </div>
+      <div class="col-6">
+        <fpc-form-field forId="auditToDate" i18n-label="@@featureAudit-toDateLabel" label="To">
+          <fpc-form-control
+            controlId="auditToDate"
+            inputType="date"
+            size="sm"
+            [ngModel]="toDate()"
+            (ngModelChange)="toDate.set($event)"
+          />
+        </fpc-form-field>
+      </div>
+      <div class="col-12">
+        <fpc-form-field forId="auditGroupBy" i18n-label="@@featureAudit-groupByLabel" label="Group by">
+          <fpc-form-control
+            controlType="select"
+            controlId="auditGroupBy"
+            size="sm"
+            [ngModel]="groupBy()"
+            (ngModelChange)="groupBy.set($event)"
+          >
+            <option value="day" i18n="@@featureAudit-groupByDay">Day</option>
+            <option value="hour" i18n="@@featureAudit-groupByHour">Hour</option>
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-12 d-flex gap-2">
+        <fpc-button
+          variant="primary"
+          size="sm"
+          [loading]="(loadingSummary$ | async) === true"
+          [disabled]="(loadingSummary$ | async) === true"
+          (clicked)="onApplyFilters()"
+          i18n="@@featureAudit-apply"
+        >
+          Apply
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          size="sm"
+          [disabled]="(loadingSummary$ | async) === true"
+          [title]="resetFiltersTitle"
+          (clicked)="onResetFilters()"
+          i18n="@@featureAudit-reset"
+        >
+          Reset
+        </fpc-button>
       </div>
     </div>
-  </div>
+  </fpc-collapsible-filter-panel>
 
   <!-- Scrollable content area -->
-  <div class="audit-content flex-grow-1 overflow-auto">
+  <div class="audit-content flex-grow-1 overflow-auto d-flex flex-column min-h-0">
     @let summaryData = summary();
     @if (error$ | async; as error) {
-      <div class="alert alert-danger m-3" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        {{ error }}
-      </div>
+      <fpc-alert class="m-3" variant="danger" [message]="error" />
     } @else if (loadingSummary$ | async) {
       <div class="d-flex justify-content-center align-items-center p-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden" i18n="@@featureAudit-loading">Loading statistics...</span>
-        </div>
+        <fpc-spinner variant="primary" [label]="loadingLabel" />
       </div>
     } @else if (summaryData) {
-      <!-- Summary cards -->
       <div class="p-3">
-        <div class="row g-3 mb-4">
-          <div class="col-6 col-md">
-            <div class="card h-100">
-              <div class="card-body">
-                <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAudit-totalMessages">Total messages</h6>
-                <p class="card-title mb-0 fs-4 fw-bold">{{ summaryData.totalMessages }}</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-6 col-md">
-            <div class="card h-100">
-              <div class="card-body">
-                <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAudit-totalWords">Total words</h6>
-                <p class="card-title mb-0 fs-4 fw-bold">{{ summaryData.totalWords }}</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-6 col-md">
-            <div class="card h-100">
-              <div class="card-body">
-                <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAudit-avgWordsPerMessage">
-                  Avg words/message
-                </h6>
-                <p class="card-title mb-0 fs-4 fw-bold">{{ summaryData.avgWordsPerMessage | number: '1.1-1' }}</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-6 col-md">
-            <div class="card h-100">
-              <div class="card-body">
-                <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAudit-filterFlags">Filter flags</h6>
-                <p class="card-title mb-0 fs-4 fw-bold">{{ summaryData.filterFlagCount }}</p>
-              </div>
-            </div>
-          </div>
-          <div class="col-6 col-md">
-            <div class="card h-100">
-              <div class="card-body">
-                <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAudit-filterDrops">Filter drops</h6>
-                <p class="card-title mb-0 fs-4 fw-bold">{{ summaryData.filterDropCount }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Charts row -->
         <div class="row g-3">
           @if (seriesChartOptions(); as chartOpts) {
@@ -207,22 +187,19 @@
           <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
               <span i18n="@@featureAudit-chatIoTable">Chat I/O</span>
-              <div class="input-group input-group-sm" style="max-width: 200px">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Search"
-                  i18n-placeholder="@@featureAudit-searchPlaceholder"
-                  [ngModel]="chatIoSearch()"
-                  (ngModelChange)="onChatIoSearchChange($event)"
-                />
-              </div>
+              <fpc-search-field
+                class="audit-table-search"
+                size="sm"
+                [placeholder]="searchPlaceholder"
+                [ariaLabel]="searchPlaceholder"
+                [value]="chatIoSearch()"
+                (valueChange)="onChatIoSearchChange($event)"
+              />
             </div>
             <div class="card-body p-0">
               @if (loadingChatIo$ | async) {
                 <div class="text-center py-4">
-                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <fpc-spinner size="sm" />
                 </div>
               } @else {
                 <div class="table-responsive">
@@ -254,12 +231,9 @@
                             }
                           </td>
                           <td>
-                            <span
-                              class="badge"
-                              [class.bg-primary]="row.direction === 'input'"
-                              [class.bg-secondary]="row.direction === 'output'"
-                              >{{ formatChatIoDirection(row.direction) }}</span
-                            >
+                            <fpc-badge [color]="row.direction === 'input' ? 'primary' : 'secondary'">{{
+                              formatChatIoDirection(row.direction)
+                            }}</fpc-badge>
                           </td>
                           <td>{{ row.wordCount }}</td>
                           <td>{{ row.charCount }}</td>
@@ -312,22 +286,19 @@
           <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
               <span i18n="@@featureAudit-filterDropsTable">Filter Drops</span>
-              <div class="input-group input-group-sm" style="max-width: 200px">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Search"
-                  i18n-placeholder="@@featureAudit-searchPlaceholder"
-                  [ngModel]="filterDropsSearch()"
-                  (ngModelChange)="onFilterDropsSearchChange($event)"
-                />
-              </div>
+              <fpc-search-field
+                class="audit-table-search"
+                size="sm"
+                [placeholder]="searchPlaceholder"
+                [ariaLabel]="searchPlaceholder"
+                [value]="filterDropsSearch()"
+                (valueChange)="onFilterDropsSearchChange($event)"
+              />
             </div>
             <div class="card-body p-0">
               @if (loadingFilterDrops$ | async) {
                 <div class="text-center py-4">
-                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <fpc-spinner size="sm" />
                 </div>
               } @else {
                 <div class="table-responsive">
@@ -361,12 +332,9 @@
                           </td>
                           <td>{{ row.filterDisplayName }}</td>
                           <td>
-                            <span
-                              class="badge"
-                              [class.bg-primary]="row.direction === 'incoming'"
-                              [class.bg-secondary]="row.direction === 'outgoing'"
-                              >{{ formatFilterDirection(row.direction) }}</span
-                            >
+                            <fpc-badge [color]="row.direction === 'incoming' ? 'primary' : 'secondary'">{{
+                              formatFilterDirection(row.direction)
+                            }}</fpc-badge>
                           </td>
                           <td>{{ row.wordCount }}</td>
                           <td>{{ row.filterReason ?? '-' }}</td>
@@ -419,22 +387,19 @@
           <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
               <span i18n="@@featureAudit-filterFlagsTable">Filter Flags</span>
-              <div class="input-group input-group-sm" style="max-width: 200px">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Search"
-                  i18n-placeholder="@@featureAudit-searchPlaceholder"
-                  [ngModel]="filterFlagsSearch()"
-                  (ngModelChange)="onFilterFlagsSearchChange($event)"
-                />
-              </div>
+              <fpc-search-field
+                class="audit-table-search"
+                size="sm"
+                [placeholder]="searchPlaceholder"
+                [ariaLabel]="searchPlaceholder"
+                [value]="filterFlagsSearch()"
+                (valueChange)="onFilterFlagsSearchChange($event)"
+              />
             </div>
             <div class="card-body p-0">
               @if (loadingFilterFlags$ | async) {
                 <div class="text-center py-4">
-                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <fpc-spinner size="sm" />
                 </div>
               } @else {
                 <div class="table-responsive">
@@ -468,12 +433,9 @@
                           </td>
                           <td>{{ row.filterDisplayName }}</td>
                           <td>
-                            <span
-                              class="badge"
-                              [class.bg-primary]="row.direction === 'incoming'"
-                              [class.bg-secondary]="row.direction === 'outgoing'"
-                              >{{ formatFilterDirection(row.direction) }}</span
-                            >
+                            <fpc-badge [color]="row.direction === 'incoming' ? 'primary' : 'secondary'">{{
+                              formatFilterDirection(row.direction)
+                            }}</fpc-badge>
                           </td>
                           <td>{{ row.wordCount }}</td>
                           <td>{{ row.filterReason ?? '-' }}</td>
@@ -526,22 +488,19 @@
           <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
               <span i18n="@@featureAudit-entityEventsTable">Entity Events</span>
-              <div class="input-group input-group-sm" style="max-width: 200px">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Search"
-                  i18n-placeholder="@@featureAudit-searchPlaceholder"
-                  [ngModel]="entityEventsSearch()"
-                  (ngModelChange)="onEntityEventsSearchChange($event)"
-                />
-              </div>
+              <fpc-search-field
+                class="audit-table-search"
+                size="sm"
+                [placeholder]="searchPlaceholder"
+                [ariaLabel]="searchPlaceholder"
+                [value]="entityEventsSearch()"
+                (valueChange)="onEntityEventsSearchChange($event)"
+              />
             </div>
             <div class="card-body p-0">
               @if (loadingEntityEvents$ | async) {
                 <div class="text-center py-4">
-                  <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <fpc-spinner size="sm" />
                 </div>
               } @else {
                 <div class="table-responsive">
@@ -573,13 +532,17 @@
                             }
                           </td>
                           <td>
-                            <span
-                              class="badge"
-                              [class.bg-success]="row.eventType === 'created'"
-                              [class.bg-warning]="row.eventType === 'updated'"
-                              [class.bg-danger]="row.eventType === 'deleted'"
-                              [class.text-dark]="row.eventType === 'updated'"
-                              >{{ formatEntityEventType(row.eventType) }}</span
+                            <fpc-badge
+                              [color]="
+                                row.eventType === 'created'
+                                  ? 'success'
+                                  : row.eventType === 'updated'
+                                    ? 'warning'
+                                    : row.eventType === 'deleted'
+                                      ? 'danger'
+                                      : 'secondary'
+                              "
+                              >{{ formatEntityEventType(row.eventType) }}</fpc-badge
                             >
                           </td>
                         </tr>
@@ -629,12 +592,7 @@
         </div>
       </div>
     } @else if (!(loadingSummary$ | async) && !(error$ | async)) {
-      <div class="d-flex justify-content-center align-items-center p-5">
-        <div class="text-center text-muted">
-          <i class="bi bi-graph-up fs-1 d-block mb-2"></i>
-          <p class="mb-0" i18n="@@featureAudit-noData">No data yet. Apply filters and load statistics.</p>
-        </div>
-      </div>
+      <fpc-empty-state message="No data yet" i18n-message="@@featureAudit-noData" />
     }
   </div>
 </div>

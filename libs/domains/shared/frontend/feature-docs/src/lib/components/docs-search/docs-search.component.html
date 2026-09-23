@@ -1,59 +1,47 @@
-<div class="docs-search-container position-relative">
-  <div class="input-group">
-    @if (searchField()) {
-      <input
-        type="text"
-        class="form-control"
-        i18n-placeholder="@@featureDocsSearch-searchPlaceholder"
-        placeholder="Search documentation..."
-        [value]="searchQuery()"
-        (input)="onSearchInput($event)"
-        (focus)="onFocus()"
-        (blur)="onBlur()"
-        (keydown.enter)="onSearchClick()"
-      />
-    }
-    <button class="btn btn-primary" type="button" (click)="onSearchClick()">
-      <i class="bi bi-search"></i>
-    </button>
-  </div>
+<div
+  class="docs-search-container position-relative"
+  (keydown.enter)="onSearchClick()"
+  (focusin)="onFocus()"
+  (focusout)="onBlur()"
+>
+  @if (searchField()) {
+    <fpc-search-field
+      [value]="searchQuery()"
+      [placeholder]="searchPlaceholder"
+      [ariaLabel]="searchPlaceholder"
+      (valueChange)="onSearchValueChange($event)"
+    />
+  } @else {
+    <fpc-button variant="primary" iconOnly [ariaLabel]="searchPlaceholder" (clicked)="onSearchClick()">
+      <i class="bi bi-search" aria-hidden="true"></i>
+    </fpc-button>
+  }
 
   @if (showResults() && searchResults().length > 0) {
     <div class="search-results-dropdown">
-      <div class="list-group">
+      <fpc-list [bordered]="false" [ariaLabel]="searchResultsAriaLabel">
         @for (result of searchResults(); track result.entry.path) {
-          <button type="button" class="list-group-item list-group-item-action" (click)="onResultClick(result)">
-            <div class="d-flex w-100 justify-content-between">
-              <h6 class="mb-1">{{ result.entry.title }}</h6>
-              <small class="text-muted">{{ result.score }}</small>
-            </div>
+          <fpc-list-item [clickable]="true" (selected)="onResultClick(result)">
+            <span fpcListItemTitle>{{ result.entry.title }}</span>
+            <small fpcListItemMeta class="text-muted">{{ result.score }}</small>
             @if (result.entry.summary) {
               <p class="mb-1 small text-muted">{{ result.entry.summary }}</p>
             }
             @if (result.highlights.length > 0) {
               <small [innerHTML]="result.highlights[0]"></small>
             }
-          </button>
+          </fpc-list-item>
         }
-      </div>
+      </fpc-list>
       <div class="search-results-footer">
-        <button
-          type="button"
-          class="btn btn-link btn-sm"
-          (click)="onSearchClick()"
-          i18n="@@featureDocsSearch-viewAllResults"
-        >
+        <fpc-button variant="link" size="sm" (clicked)="onSearchClick()" i18n="@@featureDocsSearch-viewAllResults">
           View all results
-        </button>
+        </fpc-button>
       </div>
     </div>
   } @else if (showResults() && searchQuery().trim().length > 0) {
-    <div class="search-results-dropdown">
-      <div class="list-group">
-        <div class="list-group-item text-center text-muted">
-          <small i18n="@@featureDocsSearch-noResults">No results found</small>
-        </div>
-      </div>
+    <div class="search-results-dropdown p-3">
+      <fpc-empty-state size="sm" icon="search" [message]="noResultsMessage" />
     </div>
   }
 </div>

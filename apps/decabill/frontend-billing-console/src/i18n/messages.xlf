@@ -1688,6 +1688,9 @@
       <trans-unit id="featureContainer-languageSwitcherAriaLabel" datatype="html">
         <source>Select language</source>
         </trans-unit>
+      <trans-unit id="featureContainer-sidebarAriaLabel" datatype="html">
+        <source>Main navigation</source>
+        </trans-unit>
       <trans-unit id="featureContainer-toggleDarkMode" datatype="html">
         <source>Toggle dark mode</source>
         </trans-unit>
@@ -2587,7 +2590,10 @@
         <source>Search projects</source>
         </trans-unit>
       <trans-unit id="featureProjects-empty" datatype="html">
-        <source>No projects assigned to you</source>
+        <source>No projects yet</source>
+        </trans-unit>
+      <trans-unit id="featureProjects-noMatching" datatype="html">
+        <source>No matching projects</source>
         </trans-unit>
       <trans-unit id="featurePromotions-duringFreeDaysUntil" datatype="html">
         <source>Until <x id="date" equiv-text="benefitEndsLabel"/></source>
@@ -4654,7 +4660,7 @@
         <source> Done </source>
         </trans-unit>
       <trans-unit id="featureTokenManager-nameLabel" datatype="html">
-        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>Name</source>
         </trans-unit>
       <trans-unit id="featureTokenManager-expiresAtLabel" datatype="html">
         <source>Expires at</source>
@@ -4663,7 +4669,7 @@
         <source>Optional. Leave empty for a token that does not expire.</source>
         </trans-unit>
       <trans-unit id="featureTokenManager-scopesLabel" datatype="html">
-        <source>Scopes <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>Scopes</source>
         </trans-unit>
       <trans-unit id="featureTokenManager-loadingScopes" datatype="html">
         <source>Loading scopes...</source>
@@ -4744,13 +4750,13 @@
         <source>Close</source>
         </trans-unit>
       <trans-unit id="featureUserManager-emailLabel" datatype="html">
-        <source>Email <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>Email</source>
         </trans-unit>
       <trans-unit id="featureUserManager-emailPlaceholder" datatype="html">
         <source>user@example.com</source>
         </trans-unit>
       <trans-unit id="featureUserManager-passwordLabel" datatype="html">
-        <source>Password <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>Password</source>
         </trans-unit>
       <trans-unit id="featureUserManager-passwordPlaceholder" datatype="html">
         <source>Min. 8 characters</source>
@@ -4906,10 +4912,10 @@
         <source> Enter a valid email address. </source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
-        <source>Phone <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>Phone (optional)</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
-        <source>Company <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>Company (optional)</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
         <source>Message</source>
@@ -5032,13 +5038,13 @@
         <source>Update</source>
         </trans-unit>
       <trans-unit id="featureNotifications-nameLabel" datatype="html">
-        <source>Name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>Name</source>
         </trans-unit>
       <trans-unit id="featureNotifications-httpMethodLabel" datatype="html">
         <source>HTTP method</source>
         </trans-unit>
       <trans-unit id="featureNotifications-urlLabel" datatype="html">
-        <source>URL <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>URL</source>
         </trans-unit>
       <trans-unit id="featureNotifications-clientLabel" datatype="html">
         <source>Client</source>
@@ -5065,16 +5071,16 @@
         <source>Enabled</source>
         </trans-unit>
       <trans-unit id="featureNotifications-authHeaderNameLabel" datatype="html">
-        <source>Header name <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>Header name</source>
         </trans-unit>
       <trans-unit id="featureNotifications-authValueLabel" datatype="html">
-        <source> Auth value <x id="START_BLOCK_IF" equiv-text="@if (!hasExistingAuthValue) {"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="CLOSE_BLOCK_IF" equiv-text="}"/></source>
+        <source>Auth value</source>
         </trans-unit>
       <trans-unit id="featureNotifications-authValueKeepHint" datatype="html">
         <source>Leave empty to keep the current value</source>
         </trans-unit>
       <trans-unit id="featureNotifications-subscribedEventsLabel" datatype="html">
-        <source>Subscribed events <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <source>Subscribed events</source>
         </trans-unit>
       <trans-unit id="featureNotifications-loadingEventTypes" datatype="html">
         <source>Loading event types...</source>
@@ -5460,8 +5466,8 @@
       <trans-unit id="featureAdminOffers-listTitle" datatype="html">
         <source>Offers</source>
       </trans-unit>
-      <trans-unit id="featureAdminOffers-toggleFilters" datatype="html">
-        <source>Toggle filters</source>
+      <trans-unit id="featureAdminOffers-filters" datatype="html">
+        <source>Filters</source>
       </trans-unit>
       <trans-unit id="featureAdminOffers-fromDate" datatype="html">
         <source>From</source>
@@ -5483,6 +5489,9 @@
       </trans-unit>
       <trans-unit id="featureAdminOffers-applyFilters" datatype="html">
         <source>Apply</source>
+      </trans-unit>
+      <trans-unit id="featureAdminOffers-resetFilters" datatype="html">
+        <source>Reset</source>
       </trans-unit>
       <trans-unit id="featureAdminOffers-noStatistics" datatype="html">
         <source>No statistics for the selected period.</source>

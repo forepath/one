@@ -38,20 +38,6 @@
   border-radius: 0;
 }
 
-.btn-group-options {
-  > .btn-options {
-    border-radius: 0;
-    border-top: 0;
-    border-bottom: 0;
-    border-left: 0;
-    flex: 1 1 auto;
-
-    &:last-child {
-      border-right: 0;
-    }
-  }
-}
-
 .atlassian-import-admin__config-query {
   margin-top: 0;
   margin-bottom: 0.75rem;
@@ -62,25 +48,5 @@
     display: block;
     white-space: pre-wrap;
     word-break: break-word;
-  }
-}
-
-.search-input {
-  border-radius: 0;
-  position: relative;
-  padding-left: 0;
-  box-shadow: none;
-}
-
-.search-input-container {
-  position: relative;
-  flex-shrink: 0;
-
-  i {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
   }
 }

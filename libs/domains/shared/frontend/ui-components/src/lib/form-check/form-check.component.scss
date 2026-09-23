@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+:host(.fpc-form-check--inline) {
+  display: inline-block;
+}
+
+.form-check {
+  margin-bottom: 0;
+}
+
+.form-check-input {
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.form-check-label {
+  cursor: pointer;
+}

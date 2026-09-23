@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, type WritableSignal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -19,6 +19,24 @@ import {
   type ProviderDetail,
   type UpdateAddonDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcConfirmDialogComponent,
+  FpcFormSwitchComponent,
+  FpcListComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { catchError, debounceTime, distinctUntilChanged, forkJoin, map, of, skip, switchMap, take } from 'rxjs';
 
 import { getActiveStatusLabel, getActiveStatusTextClass, resolveNamedLabel } from '../billing-status-labels';
@@ -60,20 +78,44 @@ const MIN_RANDOM_DEFAULT_LENGTH = 21;
 @Component({
   selector: 'framework-billing-addons-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, MonacoEditorWrapperComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MonacoEditorWrapperComponent,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcConfirmDialogComponent,
+    FpcFormSwitchComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcListItemComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './addons-page.component.html',
   styleUrls: ['./addons-page.component.scss'],
 })
 export class AddonsPageComponent implements OnInit {
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteConfirmModal', { static: false }) private deleteConfirmModal!: ElementRef<HTMLDivElement>;
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly deleteConfirmModalOpen = signal(false);
 
   private readonly facade = inject(AddonsFacade);
   private readonly addonsService = inject(AddonsService);
   private readonly metersFacade = inject(MetersFacade);
   private readonly serviceTypesFacade = inject(ServiceTypesFacade);
   private readonly destroyRef = inject(DestroyRef);
+
+  readonly pageTitle = $localize`:@@featureAddons-title:Addons`;
+  readonly addAddonAriaLabel = $localize`:@@featureAddons-add:Add addon`;
+  readonly searchPlaceholder = $localize`:@@featureAddons-searchPlaceholder:Search addons`;
 
   readonly searchQuery = signal('');
   readonly searchQuery$ = toObservable(this.searchQuery);
@@ -128,7 +170,7 @@ export class AddonsPageComponent implements OnInit {
     this.createAttachedMeters = [];
     this.resetAddonMeterAttachForm('create');
     this.addonMeterAttachError = null;
-    this.showModalWithMonacoLayout(this.createModal);
+    this.openModalWithMonacoLayout(this.createModalOpen);
   }
 
   openEditModal(addon: AddonResponse): void {
@@ -175,12 +217,12 @@ export class AddonsPageComponent implements OnInit {
                   .map((row) => [row.key, detail.defaultValues?.[row.key] ?? '']),
               ),
         };
-        showBillingModal(this.editModal);
+        showBillingModal(this.editModalOpen);
         this.resetAddonMeterAttachForm('edit');
         this.addonMeterAttachError = null;
         this.editAttachedMeters = detail.meters ?? [];
         this.loadAddonAttachedMeters(detail.id);
-        this.scheduleMonacoLayout(this.editModal);
+        this.scheduleMonacoLayout();
       });
   }
 
@@ -465,7 +507,7 @@ export class AddonsPageComponent implements OnInit {
 
   openDeleteConfirm(addon: AddonResponse): void {
     this.addonToDelete = addon;
-    showBillingModal(this.deleteConfirmModal);
+    showBillingModal(this.deleteConfirmModalOpen);
   }
 
   onSubmitCreate(): void {
@@ -754,26 +796,20 @@ export class AddonsPageComponent implements OnInit {
     };
   }
 
-  private showModalWithMonacoLayout(modal: ElementRef<HTMLDivElement>): void {
-    this.scheduleMonacoLayout(modal);
-    showBillingModal(modal);
+  private openModalWithMonacoLayout(open: WritableSignal<boolean>): void {
+    showBillingModal(open);
+    this.scheduleMonacoLayout();
   }
 
-  private scheduleMonacoLayout(modal: ElementRef<HTMLDivElement>): void {
-    modal.nativeElement.addEventListener(
-      'shown.bs.modal',
-      () => {
-        window.dispatchEvent(new Event('resize'));
-      },
-      { once: true },
-    );
+  private scheduleMonacoLayout(): void {
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 200);
   }
 
   private registerModalCloseWatchers(): void {
     watchBillingMutationModalClose({
       loading$: this.creating$,
       error$: this.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         const pendingMeters = [...this.createAttachedMeters];
@@ -787,7 +823,7 @@ export class AddonsPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.updating$,
       error$: this.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.editForm = { ...this.defaultForm(), id: '' };
@@ -799,7 +835,7 @@ export class AddonsPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.deleting$,
       error$: this.error$,
-      modal: () => this.deleteConfirmModal,
+      open: this.deleteConfirmModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.addonToDelete = null;

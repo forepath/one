@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, NgZone, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProjectEstimatorFacade } from '@forepath/forepath/frontend/data-access-project-estimator';
+import { FpcAlertComponent, FpcSpinnerComponent } from '@forepath/shared/frontend/ui-components';
 import { auditTime, distinctUntilChanged } from 'rxjs';
 
 import {
@@ -15,6 +16,7 @@ export type EstimateLoadingMode = 'checking' | 'warmup' | 'generating';
   selector: 'framework-forepath-project-estimate-loading-panel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FpcAlertComponent, FpcSpinnerComponent],
   styles: [
     `
       .estimate-loading__spinner-wrap {
@@ -23,9 +25,7 @@ export type EstimateLoadingMode = 'checking' | 'warmup' | 'generating';
         margin-bottom: 1rem;
       }
 
-      .estimate-loading__spinner-wrap .spinner-border {
-        width: 3rem;
-        height: 3rem;
+      .estimate-loading__spinner-wrap .fpc-spinner .spinner-border {
         animation-duration: 0.75s;
         animation-timing-function: linear;
       }
@@ -71,7 +71,7 @@ export type EstimateLoadingMode = 'checking' | 'warmup' | 'generating';
       "
     >
       <div class="estimate-loading__spinner-wrap" aria-hidden="true">
-        <div class="spinner-border text-primary"></div>
+        <fpc-spinner size="lg" variant="primary" label="Loading" />
       </div>
 
       @if (mode() === 'checking') {
@@ -92,16 +92,17 @@ export type EstimateLoadingMode = 'checking' | 'warmup' | 'generating';
         </div>
 
         @if (mode() === 'warmup') {
-          <div
-            class="alert alert-warning estimate-notice-alert mt-3 mb-0 text-start"
-            role="note"
+          <fpc-alert
+            class="estimate-notice-alert mt-3 text-start"
+            variant="warning"
+            [showIcon]="false"
             i18n-aria-label="@@featureForepathProjectEstimate-warmupCacheDisclaimerAriaLabel"
             aria-label="First visit load time notice"
           >
             <p class="mb-0" i18n="@@featureForepathProjectEstimate-warmupCacheDisclaimer">
               The first visit can take a minute or longer. Later visits start much faster.
             </p>
-          </div>
+          </fpc-alert>
         }
 
         @if (mode() === 'warmup') {

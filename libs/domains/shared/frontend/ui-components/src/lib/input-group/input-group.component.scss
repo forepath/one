@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+.fpc-input-group__group--borderless {
+  .form-control,
+  .form-select,
+  .input-group-text {
+    border: 0;
+  }
+}

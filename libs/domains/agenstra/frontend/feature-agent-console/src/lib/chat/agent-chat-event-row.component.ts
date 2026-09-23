@@ -1,5 +1,6 @@
 import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { FpcBadgeComponent } from '@forepath/shared/frontend/ui-components';
 
 import type { AgentChatEventDisplayRow } from './agent-chat-event-display';
 import { AgentChatEventPopoverDirective } from './agent-chat-event-popover.directive';
@@ -7,12 +8,12 @@ import { AgentChatEventPopoverDirective } from './agent-chat-event-popover.direc
 @Component({
   selector: 'framework-agent-chat-event-row',
   standalone: true,
-  imports: [NgClass, AgentChatEventPopoverDirective],
+  imports: [NgClass, FpcBadgeComponent, AgentChatEventPopoverDirective],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './agent-chat-event-row.component.scss',
   template: `
     <div class="small mb-2 d-flex align-items-center gap-2">
-      <span class="badge rounded-pill" [ngClass]="row().badgeClass">{{ row().kindLabel }}</span>
+      <fpc-badge [color]="row().badgeColor" [pill]="true">{{ row().kindLabel }}</fpc-badge>
       <div class="flex-grow-1 min-w-0">
         <div class="d-flex align-items-center gap-1 flex-wrap">
           <span class="fw-semibold">{{ row().summaryTitle }}</span>

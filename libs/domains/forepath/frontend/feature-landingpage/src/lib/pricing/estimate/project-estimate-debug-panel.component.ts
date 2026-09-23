@@ -4,11 +4,13 @@ import {
   PROJECT_ESTIMATOR_DEBUG_PRESETS,
   type ProjectEstimatorDebugPreset,
 } from '@forepath/forepath/frontend/data-access-project-estimator';
+import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 @Component({
   selector: 'framework-forepath-project-estimate-debug-panel',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FpcButtonComponent],
   styles: [
     `
       .estimate-debug-panel {
@@ -33,23 +35,22 @@ import {
           <p class="small fw-semibold text-warning-emphasis mb-0">Temp debug: force estimator UI state</p>
           <p class="small text-muted mb-0">Bypasses the local LLM. Remove before production release.</p>
         </div>
-        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="runInitialize.emit()">
+        <fpc-button type="button" size="sm" variant="outline-secondary" (clicked)="runInitialize.emit()">
           Run real init
-        </button>
+        </fpc-button>
       </div>
 
       <div class="estimate-debug-panel__actions">
         @for (option of presets; track option.preset) {
-          <button
+          <fpc-button
             type="button"
-            class="btn btn-sm"
-            [class.btn-dark]="activePreset() === option.preset"
-            [class.btn-outline-dark]="activePreset() !== option.preset"
+            size="sm"
+            [variant]="activePreset() === option.preset ? 'dark' : 'outline-dark'"
             [title]="option.description"
-            (click)="presetSelected.emit(option.preset)"
+            (clicked)="presetSelected.emit(option.preset)"
           >
             {{ option.label }}
-          </button>
+          </fpc-button>
         }
       </div>
     </aside>

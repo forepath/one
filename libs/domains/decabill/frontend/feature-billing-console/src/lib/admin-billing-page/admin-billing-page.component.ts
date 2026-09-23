@@ -1,15 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import {
-  AfterViewInit,
-  Component,
-  computed,
-  DestroyRef,
-  ElementRef,
-  inject,
-  OnInit,
-  signal,
-  ViewChild,
-} from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -36,7 +26,34 @@ import {
   type TaxPreviewRates,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade, type UserResponseDto } from '@forepath/identity/frontend';
-import { InfiniteScrollDirective, ListAppendFooterComponent } from '@forepath/shared/frontend/ui-lists';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcCollapsibleFilterPanelComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormCheckGroupComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInfiniteScrollDirective,
+  FpcLaneHeaderComponent,
+  FpcListAppendFooterComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcConfirmDialogComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcSummaryBarComponent,
+  FpcSummaryCardComponent,
+  FpcSummaryCardValueDirective,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+} from '@forepath/shared/frontend/ui-components';
 import type {
   ApexAxisChartSeries,
   ApexChart,
@@ -82,10 +99,6 @@ interface SupplierInvoiceFormLineItem extends SupplierInvoiceLineItemDto {
   taxCategory: 'standard' | 'reduced' | 'custom';
   taxRate?: number;
 }
-
-type AdminBillingTab = 'customer' | 'supplier';
-type CreateInvoiceType = 'customer' | 'supplier';
-type ActionInvoiceKind = 'customer' | 'supplier';
 
 interface InvoicePreviewLineItem {
   description: string;
@@ -139,23 +152,48 @@ type AdminBillingPerspective = 'customer' | 'supplier';
     BillingAdminSubscriptionSelectComponent,
     BillingAdminSupplierSelectComponent,
     BillingAdminSupplierContractSelectComponent,
-    InfiniteScrollDirective,
-    ListAppendFooterComponent,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcEmptyStateComponent,
+    FpcCollapsibleFilterPanelComponent,
+    FpcFormCheckComponent,
+    FpcFormCheckGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcInfiniteScrollDirective,
+    FpcLaneHeaderComponent,
+    FpcListAppendFooterComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcConfirmDialogComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSpinnerComponent,
+    FpcSummaryBarComponent,
+    FpcSummaryCardComponent,
+    FpcSummaryCardValueDirective,
+    FpcTabComponent,
+    FpcTabGroupComponent,
+    FpcSearchFieldComponent,
     PricingTotalsSummaryComponent,
   ],
   providers: [DatePipe],
   templateUrl: './admin-billing-page.component.html',
   styleUrls: ['./admin-billing-page.component.scss'],
 })
-export class AdminBillingPageComponent implements OnInit, AfterViewInit {
-  @ViewChild('billNowModal', { static: false }) private billNowModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('actionConfirmModal', { static: false }) private actionConfirmModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('auditHistoryModal', { static: false }) private auditHistoryModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('issueModal', { static: false }) private issueModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteModal', { static: false }) private deleteModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('previewInvoiceModal', { static: false }) private previewInvoiceModal!: ElementRef<HTMLDivElement>;
+export class AdminBillingPageComponent implements OnInit {
+  readonly billNowModalOpen = signal(false);
+  readonly actionConfirmModalOpen = signal(false);
+  readonly auditHistoryModalOpen = signal(false);
+  readonly previewInvoiceModalOpen = signal(false);
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly issueModalOpen = signal(false);
+  readonly deleteModalOpen = signal(false);
+
   @ViewChild('createInvoiceUserSelect') private createInvoiceUserSelect?: BillingAdminUserSelectComponent;
   @ViewChild('createInvoiceSubscriptionSelect')
   private createInvoiceSubscriptionSelect?: BillingAdminSubscriptionSelectComponent;
@@ -177,8 +215,15 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
   private readonly datePipe = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
 
+  readonly pageTitle = $localize`:@@featureAdminBilling-title:Billing`;
+  readonly customerTabLabel = $localize`:@@featureAdminBilling-customerTab:Customer`;
+  readonly supplierTabLabel = $localize`:@@featureAdminBilling-supplierTab:Supplier`;
+  readonly addInvoiceAriaLabel = $localize`:@@featureAdminInvoices-add:Add`;
+  readonly billNowAriaLabel = $localize`:@@featureAdminBilling-billNow:Bill now`;
+
   readonly billingPerspective = signal<AdminBillingPerspective>('customer');
   readonly filtersCollapsed = signal(true);
+  readonly filtersPanelTitle = $localize`:@@featureAdminBilling-filters:Filters`;
   readonly fromDate = signal('');
   readonly toDate = signal('');
   readonly groupBy = signal<'day' | 'month'>('day');
@@ -190,7 +235,6 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
   readonly invoiceSearch$ = toObservable(this.invoiceSearch);
   readonly supplierInvoiceSearch$ = toObservable(this.supplierInvoiceSearch);
 
-  readonly mobilePanels: AdminBillingMobilePanel[] = ['overview', 'invoices'];
   readonly mobilePanel = signal<AdminBillingMobilePanel>('overview');
   readonly taxRates = signal<TaxPreviewRates>({ standard: 19, reduced: 7 });
   readonly taxCategoryOptions = computed(() => {
@@ -227,6 +271,14 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
   readonly summary$ = this.adminBillingFacade.summary$;
   readonly summaryLoading$ = this.adminBillingFacade.summaryLoading$;
   readonly summaryError$ = this.adminBillingFacade.summaryError$;
+  readonly activeSubscriptionsLabel = $localize`:@@featureAdminBilling-activeSubscriptions:Active subscriptions`;
+  readonly openOverdueCountLabel = $localize`:@@featureAdminBilling-openOverdueCount:Open and overdue invoices`;
+  readonly openOverdueTotalLabel = $localize`:@@featureAdminBilling-openOverdueTotal:Open total amount`;
+  readonly unbilledTotalLabel = $localize`:@@featureAdminBilling-unbilledTotal:Unbilled amount`;
+  readonly supplierInvoiceCountLabel = $localize`:@@featureAdminBilling-supplierInvoiceCount:Supplier invoices`;
+  readonly supplierOpenCountLabel = $localize`:@@featureAdminBilling-supplierOpenCount:Open expenses`;
+  readonly supplierOpenTotalLabel = $localize`:@@featureAdminBilling-supplierOpenTotal:Open total amount`;
+  readonly supplierExpenseTotalLabel = $localize`:@@featureAdminBilling-supplierExpenseTotal:Total expenses`;
   readonly billNowLoading$ = this.adminBillingFacade.billNowLoading$;
   readonly billNowResult$ = this.adminBillingFacade.billNowResult$;
   readonly billNowError$ = this.adminBillingFacade.billNowError$;
@@ -385,28 +437,20 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
-        hideBillingModal(this.billNowModal);
+        hideBillingModal(this.billNowModalOpen);
         this.refreshDashboard();
       });
 
     this.registerModalCloseWatchers();
   }
 
-  ngAfterViewInit(): void {
-    this.adminBillingFacade.billNowError$
-      .pipe(
-        filter((err) => !!err),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe();
-  }
-
-  onToggleFilters(): void {
-    this.filtersCollapsed.update((v) => !v);
+  onFiltersOpenChange(open: boolean): void {
+    this.filtersCollapsed.set(!open);
     this.persistFilters();
   }
 
   onApplyFilters(): void {
+    this.filtersCollapsed.set(true);
     this.persistFilters();
     this.reloadActiveStatistics();
   }
@@ -416,6 +460,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     this.groupBy.set('day');
     this.selectedUserId.set(null);
     this.selectedSupplierId.set(null);
+    this.filtersCollapsed.set(true);
     this.persistFilters();
     this.reloadActiveStatistics();
   }
@@ -423,7 +468,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
   openBillNowModal(): void {
     this.billNowScope.set('all');
     this.billNowUserId = '';
-    showBillingModal(this.billNowModal);
+    showBillingModal(this.billNowModalOpen);
     queueMicrotask(() => this.billNowUserSelect?.reset());
   }
 
@@ -435,11 +480,25 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     }
   }
 
+  onBillingPerspectiveTabChange(perspective: string | null): void {
+    if (perspective !== 'customer' && perspective !== 'supplier') {
+      return;
+    }
+
+    this.onBillingPerspectiveChange(perspective);
+  }
+
+  onMobilePanelTabChange(tabId: string | null): void {
+    if (tabId === 'overview' || tabId === 'invoices') {
+      this.mobilePanel.set(tabId);
+    }
+  }
+
   openCreateModal(): void {
     this.resetCreateForm();
     this.createInvoiceType = this.billingPerspective();
     this.refreshTaxRates();
-    showBillingModal(this.createModal);
+    showBillingModal(this.createModalOpen);
     queueMicrotask(() => {
       this.createInvoiceUserSelect?.reset();
       this.createInvoiceSubscriptionSelect?.reset();
@@ -470,7 +529,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
                 taxCategory: line.taxCategory as 'standard' | 'reduced',
               }))
             : [this.emptyLineItem()];
-        showBillingModal(this.editModal);
+        showBillingModal(this.editModalOpen);
       },
     });
   }
@@ -478,13 +537,13 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
   openIssueModal(invoice: AdminInvoiceListItem): void {
     this.issueInvoiceId = invoice.id;
     this.issueDueInDays = 14;
-    showBillingModal(this.issueModal);
+    showBillingModal(this.issueModalOpen);
   }
 
   openDeleteModal(invoice: AdminInvoiceListItem): void {
     this.deleteSupplierInvoice = null;
     this.deleteInvoice = invoice;
-    showBillingModal(this.deleteModal);
+    showBillingModal(this.deleteModalOpen);
   }
 
   submitBillNow(): void {
@@ -532,9 +591,8 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     });
   }
 
-  onCreateSupplierFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
+  onCreateSupplierFileSelected(files: FileList | null): void {
+    const file = files?.[0] ?? null;
 
     this.createSupplierFile = file;
 
@@ -558,7 +616,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
           detail.lineItems.length > 0
             ? detail.lineItems.map((line) => this.mapSupplierDetailLine(line))
             : [this.emptySupplierLineItem()];
-        showBillingModal(this.editModal);
+        showBillingModal(this.editModalOpen);
       },
     });
   }
@@ -581,7 +639,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     this.issueSupplierInvoiceNumber = invoice.invoiceNumber ?? '';
     this.issueSupplierIssueDate = invoice.issueDate?.slice(0, 10) ?? '';
     this.issueSupplierDueDate = invoice.dueDate?.slice(0, 10) ?? '';
-    showBillingModal(this.issueModal);
+    showBillingModal(this.issueModalOpen);
   }
 
   submitIssueSupplier(): void {
@@ -597,7 +655,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
   openDeleteSupplierModal(invoice: AdminSupplierInvoiceListItem): void {
     this.deleteInvoice = null;
     this.deleteSupplierInvoice = invoice;
-    showBillingModal(this.deleteModal);
+    showBillingModal(this.deleteModalOpen);
   }
 
   confirmDeleteSupplier(): void {
@@ -612,7 +670,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     this.pendingInvoice.set(null);
     this.actionReason.set('');
     this.actionPaidAt.set(action === 'markPaid' ? this.defaultPaidAtLocalInput() : '');
-    showBillingModal(this.actionConfirmModal);
+    showBillingModal(this.actionConfirmModalOpen);
   }
 
   confirmSupplierAction(): void {
@@ -639,7 +697,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     this.supplierAuditInvoiceId.set(invoice.id);
     this.supplierAuditLogsLoading.set(true);
     this.supplierAuditLogs.set([]);
-    showBillingModal(this.auditHistoryModal);
+    showBillingModal(this.auditHistoryModalOpen);
     this.supplierInvoicesService.listAuditLogs(invoice.id).subscribe({
       next: (response) => {
         this.supplierAuditLogs.set(response.items);
@@ -677,7 +735,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
 
     this.previewLoading.set(true);
     this.previewDetail.set(null);
-    showBillingModal(this.previewInvoiceModal);
+    showBillingModal(this.previewInvoiceModalOpen);
     this.adminBillingService
       .getManualInvoiceDetail(invoice.id)
       .pipe(finalize(() => this.previewLoading.set(false)))
@@ -692,7 +750,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
 
     this.previewLoading.set(true);
     this.previewDetail.set(null);
-    showBillingModal(this.previewInvoiceModal);
+    showBillingModal(this.previewInvoiceModalOpen);
     this.supplierInvoicesService
       .getById(invoice.id)
       .pipe(finalize(() => this.previewLoading.set(false)))
@@ -733,12 +791,6 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
 
   supplierInvoiceLabel(invoice: AdminSupplierInvoiceListItem): string {
     return invoice.supplierName?.trim() || invoice.supplierNumber?.trim() || getUnavailableLabel();
-  }
-
-  supplierFilterOptionLabel(supplier: AdminSupplierProfileListItem): string {
-    const name = supplier.company?.trim() || [supplier.firstName, supplier.lastName].filter(Boolean).join(' ').trim();
-
-    return name ? `${name} (${supplier.supplierNumber})` : supplier.supplierNumber;
   }
 
   submitEdit(): void {
@@ -782,7 +834,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     this.pendingSupplierInvoice.set(null);
     this.actionReason.set('');
     this.actionPaidAt.set(action === 'markPaid' ? this.defaultPaidAtLocalInput() : '');
-    showBillingModal(this.actionConfirmModal);
+    showBillingModal(this.actionConfirmModalOpen);
   }
 
   confirmAction(): void {
@@ -814,7 +866,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     this.supplierAuditInvoiceId.set(null);
     this.auditInvoiceId.set(invoice.id);
     this.adminBillingFacade.loadAuditLogs(invoice.id);
-    showBillingModal(this.auditHistoryModal);
+    showBillingModal(this.auditHistoryModalOpen);
   }
 
   downloadInvoice(invoice: AdminInvoiceListItem): void {
@@ -1239,7 +1291,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.invoicesCreating$,
       error$: this.invoiceManagerFacade.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.resetCreateForm();
@@ -1249,7 +1301,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.supplierInvoicesCreating$,
       error$: this.supplierInvoiceManagerFacade.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.resetCreateForm();
@@ -1259,7 +1311,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.invoicesUpdating$,
       error$: this.invoiceManagerFacade.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.resetEditForm();
@@ -1269,7 +1321,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.supplierInvoicesUpdating$,
       error$: this.supplierInvoiceManagerFacade.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.editSupplierInvoiceId = '';
@@ -1280,7 +1332,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.invoicesIssuing$,
       error$: this.invoiceManagerFacade.error$,
-      modal: () => this.issueModal,
+      open: this.issueModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.issueInvoiceId = '';
@@ -1290,7 +1342,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.supplierInvoicesIssuing$,
       error$: this.supplierInvoiceManagerFacade.error$,
-      modal: () => this.issueModal,
+      open: this.issueModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.issueSupplierInvoiceId = '';
@@ -1300,7 +1352,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.invoicesDeleting$,
       error$: this.invoiceManagerFacade.error$,
-      modal: () => this.deleteModal,
+      open: this.deleteModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.deleteInvoice = null;
@@ -1310,7 +1362,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.supplierInvoicesDeleting$,
       error$: this.supplierInvoiceManagerFacade.error$,
-      modal: () => this.deleteModal,
+      open: this.deleteModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.deleteSupplierInvoice = null;
@@ -1320,7 +1372,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.actionLoading$,
       error$: this.actionError$,
-      modal: () => this.actionConfirmModal,
+      open: this.actionConfirmModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.pendingAction.set(null);
@@ -1334,7 +1386,7 @@ export class AdminBillingPageComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.supplierActionLoading$,
       error$: this.supplierInvoicesError$,
-      modal: () => this.actionConfirmModal,
+      open: this.actionConfirmModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.pendingAction.set(null);

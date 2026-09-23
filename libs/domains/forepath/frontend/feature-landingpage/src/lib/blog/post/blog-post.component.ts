@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal,
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DomSanitizer, Meta, SafeHtml, Title } from '@angular/platform-browser';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import {
   addPageMetaTags,
@@ -40,7 +41,7 @@ function isGhostNotFoundError(error: unknown): boolean {
 
 @Component({
   selector: 'framework-forepath-blog-post',
-  imports: [CommonModule, RouterModule, DatePipe],
+  imports: [CommonModule, RouterModule, DatePipe, FpcBadgeComponent, FpcButtonComponent],
   styleUrls: ['./blog-post.component.scss'],
   templateUrl: './blog-post.component.html',
   standalone: true,

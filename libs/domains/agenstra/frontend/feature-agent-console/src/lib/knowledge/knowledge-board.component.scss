@@ -67,6 +67,8 @@
 }
 
 .knowledge-editor-area {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 0;
   min-height: 0;
   overflow: auto;
@@ -83,21 +85,25 @@
   border-radius: 0.25rem;
 }
 
-.search-input-container {
-  position: relative;
-
-  i {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-  }
+.knowledge-board__detail-relations {
+  max-height: 14rem;
+  overflow-y: auto;
 }
 
-.search-input {
-  padding-left: 0;
-  box-shadow: none;
+.knowledge-board__detail-relation-btn {
+  max-width: 100%;
+}
+
+:host ::ng-deep .knowledge-board__detail-relation-btn .fpc-button__btn {
+  color: var(--bs-body-color);
+  text-decoration: none;
+  max-width: 100%;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-link-hover-color);
+    text-decoration: none;
+  }
 }
 
 @mixin knowledge-board-chip-tint($mix-color, $text-color) {
@@ -105,22 +111,36 @@
   color: $text-color !important;
 }
 
-.info-badge.knowledge-board__chip--activity-created {
+fpc-badge.knowledge-board__chip--activity-created {
   @include knowledge-board-chip-tint(var(--bs-success), var(--bs-success-text-emphasis, var(--bs-success)));
 }
 
-.info-badge.knowledge-board__chip--activity-deleted {
+fpc-badge.knowledge-board__chip--activity-deleted {
   @include knowledge-board-chip-tint(var(--bs-danger), var(--bs-danger-text-emphasis, var(--bs-danger)));
 }
 
-.info-badge.knowledge-board__chip--activity-comment {
+fpc-badge.knowledge-board__chip--activity-comment {
   @include knowledge-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
 }
 
-.info-badge.knowledge-board__chip--activity-status {
+fpc-badge.knowledge-board__chip--activity-status {
   @include knowledge-board-chip-tint(var(--bs-primary), var(--bs-primary-text-emphasis, var(--bs-primary)));
 }
 
-.info-badge.knowledge-board__chip--activity-muted {
+fpc-badge.knowledge-board__chip--activity-muted {
   @include knowledge-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
+}
+
+.knowledge-board__relation-chip-clear {
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  margin-left: 0.125rem;
+  background-size: 0.5rem;
+  opacity: 0.55;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
@@ -14,6 +14,18 @@ import {
 } from '@forepath/identity/frontend';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { AdminUpdatesFacade } from '@forepath/shared/frontend/data-access-updates';
+import {
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcTopBarComponent,
+  FpcLanguageSwitcherComponent,
+  FpcLoadingOverlayComponent,
+  FpcNotificationIndicatorComponent,
+  FpcSectionContainerComponent,
+  FpcSidebarComponent,
+  FpcSidebarPopoverComponent,
+  FpcThemeSwitcherComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, LocaleService } from '@forepath/shared/frontend/util-configuration';
 import { combineLatest, distinctUntilChanged, filter, map, startWith } from 'rxjs';
 
@@ -22,28 +34,28 @@ import { collectContributorNavItems } from '../contributors/contributor-ui.regis
 import type { ContributorNavItem } from '../contributors/contributor-ui.types';
 import { FIRST_PARTY_CONTRIBUTOR_UI_MODULES } from '../contributors/first-party-contributor-ui.modules';
 
-interface BootstrapPopoverInstance {
-  dispose(): void;
-  hide(): void;
-  setContent(content: Record<string, string | Element | null | (() => string)>): void;
-}
-
-interface BootstrapPopoverConstructor {
-  getOrCreateInstance(element: Element, options?: Record<string, unknown>): BootstrapPopoverInstance;
-}
-
-function getBootstrapPopover(): BootstrapPopoverConstructor | undefined {
-  return (window as Window & { bootstrap?: { Popover?: BootstrapPopoverConstructor } }).bootstrap?.Popover;
-}
-
 @Component({
   selector: 'framework-billing-console-container',
-  imports: [CommonModule, RouterModule, IdentityLogoutConfirmModalComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    IdentityLogoutConfirmModalComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcTopBarComponent,
+    FpcLanguageSwitcherComponent,
+    FpcLoadingOverlayComponent,
+    FpcNotificationIndicatorComponent,
+    FpcSectionContainerComponent,
+    FpcSidebarComponent,
+    FpcSidebarPopoverComponent,
+    FpcThemeSwitcherComponent,
+  ],
   styleUrls: ['./container.component.scss'],
   templateUrl: './container.component.html',
   standalone: true,
 })
-export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
+export class BillingConsoleContainerComponent implements OnInit {
   private readonly authenticationFacade = inject(AuthenticationFacade);
   private readonly billingCapabilitiesFacade = inject(BillingCapabilitiesFacade);
   private readonly customerProfileFacade = inject(CustomerProfileFacade);
@@ -57,6 +69,12 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
   protected readonly localeService = inject(LocaleService);
   protected readonly productName = inject(ENVIRONMENT).productName;
   private readonly authEnvironment = inject(IDENTITY_AUTH_ENVIRONMENT);
+
+  readonly languageSwitcherAriaLabel = $localize`:@@featureContainer-languageSwitcherAriaLabel:Select language`;
+  readonly toggleDarkModeTitle = $localize`:@@featureContainer-toggleDarkMode:Toggle dark mode`;
+  readonly loadingFileLabel = $localize`:@@featureContainer-loadingFile:Loading file...`;
+  readonly sidebarAriaLabel = $localize`:@@featureContainer-sidebarAriaLabel:Main navigation`;
+  readonly adminPopoverAriaLabel = $localize`:@@featureContainer-adminTitle:Admin`;
 
   /** True when console uses users (email/password) authentication. */
   readonly isUsersAuth = this.authEnvironment.authentication.type === 'users';
@@ -143,7 +161,6 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
    */
   readonly canAccessAdministration$ = this.authenticationFacade.canAccessBillingAdministration$;
   readonly updatesAttentionBadge$ = this.adminUpdatesFacade.hasAttention$;
-  readonly updatesAttentionBadge = toSignal(this.updatesAttentionBadge$, { initialValue: false });
   readonly offersPendingBadge = toSignal(this.offersFacade.getPendingBadgeCount$(), { initialValue: 0 });
 
   readonly datevExportEnabled = toSignal(this.billingCapabilitiesFacade.datevExportEnabled$, {
@@ -172,16 +189,7 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
     },
   );
 
-  private adminPopover: BootstrapPopoverInstance | null = null;
-  private adminPopoverTrigger: HTMLElement | null = null;
-
-  private readonly onAdminPopoverDocumentClick = (event: Event): void => {
-    this.hideAdminPopoverOnOutsideClick(event);
-  };
-
-  @ViewChild('adminNavTrigger') set adminNavTrigger(ref: ElementRef<HTMLElement> | undefined) {
-    this.onAdminNavTriggerReady(ref);
-  }
+  adminPopoverOpen = false;
 
   @ViewChild(IdentityLogoutConfirmModalComponent)
   private logoutConfirmModal?: IdentityLogoutConfirmModalComponent;
@@ -223,6 +231,17 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
 
   getCustomerNumberAriaLabel(customerNumber: string): string {
     return $localize`:@@featureContainer-customerNumberAria:Customer number ${customerNumber}:customerNumber:`;
+  }
+
+  /**
+   * Locales are served as separate builds, so switching requires a full document load.
+   */
+  onLocaleChange(localeCode: string | null): void {
+    if (!localeCode) {
+      return;
+    }
+
+    window.location.href = this.localeService.getLanguageSwitchUrl(localeCode);
   }
 
   /**
@@ -290,135 +309,8 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
     this.authenticationFacade.logout(result.invalidateAllSessions);
   }
 
-  ngOnDestroy(): void {
-    this.disposeAdminPopover();
-  }
-
-  onAdminNavTriggerReady(trigger: ElementRef<HTMLElement> | undefined): void {
-    if (!trigger) {
-      this.disposeAdminPopover();
-
-      return;
-    }
-
-    this.setupAdminPopover(trigger.nativeElement);
-  }
-
-  private setupAdminPopover(trigger: HTMLElement): void {
-    if (this.adminPopover) {
-      return;
-    }
-
-    const Popover = getBootstrapPopover();
-
-    if (!Popover) {
-      return;
-    }
-
-    const buildBody = (): HTMLElement => this.buildAdminNavGrid();
-
-    this.adminPopover = Popover.getOrCreateInstance(trigger, {
-      trigger: 'click',
-      placement: 'right',
-      container: 'body',
-      html: true,
-      sanitize: false,
-      customClass: 'sidebar-admin-popover',
-      title: ' ',
-      template: '<div class="popover sidebar-admin-popover" role="tooltip"><div class="popover-body"></div></div>',
-      content: buildBody,
-      popperConfig: (defaultConfig: any) => ({
-        ...defaultConfig,
-        placement: 'right-start',
-      }),
-    });
-
-    trigger.addEventListener('show.bs.popover', () => {
-      this.adminPopover?.setContent({ '.popover-body': buildBody() });
-    });
-
-    this.adminPopoverTrigger = trigger;
-    // Bootstrap click popovers do not dismiss when clicking outside the tip.
-    document.addEventListener('click', this.onAdminPopoverDocumentClick, true);
-  }
-
-  private disposeAdminPopover(): void {
-    document.removeEventListener('click', this.onAdminPopoverDocumentClick, true);
-    this.adminPopover?.dispose();
-    this.adminPopover = null;
-    this.adminPopoverTrigger = null;
-  }
-
-  private hideAdminPopoverOnOutsideClick(event: Event): void {
-    const popoverEl = document.querySelector('.sidebar-admin-popover.show');
-
-    if (!this.adminPopover || !popoverEl) {
-      return;
-    }
-
-    const target = event.target;
-
-    if (!(target instanceof Node)) {
-      return;
-    }
-
-    if (this.adminPopoverTrigger?.contains(target) || popoverEl.contains(target)) {
-      return;
-    }
-
-    this.adminPopover.hide();
-  }
-
-  private buildAdminNavGrid(): HTMLElement {
-    const grid = document.createElement('div');
-
-    grid.className = 'sidebar-admin-popover__grid';
-    grid.setAttribute('role', 'menu');
-
-    for (const item of this.getAdminNavItems()) {
-      const link = document.createElement('a');
-
-      link.className = 'sidebar__item';
-      link.href = '#';
-      link.title = item.title;
-      link.setAttribute('role', 'menuitem');
-
-      if (this.isAdminNavItemActive(item)) {
-        link.classList.add('active');
-      }
-
-      const icon = document.createElement('i');
-
-      icon.className = `bi ${item.icon} me-1`;
-
-      const label = document.createElement('span');
-
-      label.className = 'small';
-      label.textContent = item.label;
-
-      link.append(icon, label);
-
-      if (item.navKey === 'updates' && this.updatesAttentionBadge()) {
-        const badge = document.createElement('span');
-
-        badge.className = 'notification-badge sidebar-admin-popover__tile-badge';
-        badge.setAttribute('aria-hidden', 'true');
-        link.classList.add('position-relative');
-        link.appendChild(badge);
-      }
-
-      link.addEventListener('click', (event) => {
-        event.preventDefault();
-        void this.router.navigate(item.routerLink);
-        this.adminPopover?.hide();
-      });
-      grid.appendChild(link);
-    }
-
-    return grid;
-  }
-
-  private getAdminNavItems(): ContributorNavItem[] {
+  /** Admin tile grid; recomputed when DATEV capability flips. */
+  adminNavItems(): ContributorNavItem[] {
     const items: ContributorNavItem[] = [
       {
         routerLink: ['/administration/service-types'],
@@ -541,11 +433,5 @@ export class BillingConsoleContainerComponent implements OnInit, OnDestroy {
     items.push(...collectContributorNavItems(FIRST_PARTY_CONTRIBUTOR_UI_MODULES).admin);
 
     return items;
-  }
-
-  private isAdminNavItemActive(item: ContributorNavItem): boolean {
-    const url = this.router.url;
-
-    return item.activePaths.some((path) => url.includes(path));
   }
 }

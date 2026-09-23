@@ -15,6 +15,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
+import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { catchError, of } from 'rxjs';
 
 import { GhostContentApiService } from '../blog/ghost-content-api.service';
@@ -56,7 +57,7 @@ const PLATFORM_LOGO_SLOTS: readonly (readonly PlatformLogo[])[] = [
 
 @Component({
   selector: 'framework-forepath-home',
-  imports: [CommonModule, RouterModule, DatePipe],
+  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule, DatePipe],
   styleUrls: ['./home.component.scss'],
   templateUrl: './home.component.html',
   standalone: true,

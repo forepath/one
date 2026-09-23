@@ -1,6 +1,6 @@
 @if (statsWithPrevious$ | async; as statsData) {
   @if (statsData.current; as stats) {
-    <div class="container-stats-status-bar px-2 py-1 border-top bg-primary text-white">
+    <div class="container-stats-status-bar px-2 py-1 bg-primary text-white">
       <div class="d-flex align-items-center gap-3">
         <!-- CPU Usage -->
         <div class="d-flex align-items-center gap-1">
@@ -35,7 +35,7 @@
       </div>
     </div>
   } @else {
-    <div class="container-stats-status-bar px-2 py-1 border-top bg-primary text-white">
+    <div class="container-stats-status-bar px-2 py-1 bg-primary text-white">
       <div class="d-flex align-items-center gap-2">
         <small>
           <i class="bi bi-hourglass-split small me-1"></i>

@@ -1,107 +1,63 @@
-import { DestroyRef, ElementRef } from '@angular/core';
+import { DestroyRef, WritableSignal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, Observable, of, pairwise, withLatestFrom } from 'rxjs';
 
-type BootstrapModal = { show: () => void; hide: () => void };
+/** Matches `fpc-modal` close transition so overlay swaps do not stack backdrops. */
+export const BILLING_MODAL_TRANSITION_MS = 150;
 
-function getBootstrapModal(el: HTMLElement): BootstrapModal | null {
-  return (
-    (
-      globalThis as { bootstrap?: { Modal?: { getOrCreateInstance: (el: HTMLElement) => BootstrapModal } } }
-    ).bootstrap?.Modal?.getOrCreateInstance(el) ?? null
-  );
+export function showBillingModal(open: WritableSignal<boolean>): void {
+  open.set(true);
 }
 
-export function showBillingModal(modalElement: ElementRef<HTMLDivElement>): void {
-  getBootstrapModal(modalElement.nativeElement)?.show();
-}
-
-export function hideBillingModal(modalElement: ElementRef<HTMLDivElement>): void {
-  getBootstrapModal(modalElement.nativeElement)?.hide();
+export function hideBillingModal(open: WritableSignal<boolean>): void {
+  open.set(false);
 }
 
 export type BillingModalSwapState = {
   suspended: boolean;
 };
 
-/** Hide an open underlying modal, show overlay, then restore underlying when overlay closes. */
+/**
+ * Hide an open underlying `fpc-modal`, show overlay, then restore underlying via
+ * {@link restoreUnderlyingBillingModal} from the overlay `(closed)` handler.
+ */
 export function swapToOverlayBillingModal(options: {
-  underlyingModal?: ElementRef<HTMLDivElement>;
-  overlayModal: ElementRef<HTMLDivElement>;
+  underlyingOpen?: WritableSignal<boolean>;
+  overlayOpen: WritableSignal<boolean>;
   swapState: BillingModalSwapState;
 }): void {
-  const overlayEl = options.overlayModal.nativeElement;
-
-  if (overlayEl.classList.contains('show')) {
+  if (options.overlayOpen() || options.swapState.suspended) {
     return;
   }
 
-  if (options.swapState.suspended) {
-    return;
-  }
-
-  const underlyingEl = options.underlyingModal?.nativeElement;
-
-  if (!underlyingEl?.classList.contains('show')) {
-    queueMicrotask(() => showBillingModal(options.overlayModal));
+  if (!options.underlyingOpen?.()) {
+    queueMicrotask(() => options.overlayOpen.set(true));
 
     return;
   }
 
   options.swapState.suspended = true;
-
-  const onUnderlyingHidden = (): void => {
-    queueMicrotask(() => {
-      if (!options.overlayModal?.nativeElement) {
-        options.swapState.suspended = false;
-
-        if (options.underlyingModal) {
-          showBillingModal(options.underlyingModal);
-        }
-
-        return;
-      }
-
-      showBillingModal(options.overlayModal);
-      registerRestoreUnderlyingBillingModal({
-        underlyingModal: options.underlyingModal!,
-        overlayModal: options.overlayModal,
-        swapState: options.swapState,
-      });
-    });
-  };
-
-  underlyingEl.addEventListener('hidden.bs.modal', onUnderlyingHidden, { once: true });
-  hideBillingModal(options.underlyingModal!);
+  options.underlyingOpen.set(false);
+  setTimeout(() => options.overlayOpen.set(true), BILLING_MODAL_TRANSITION_MS);
 }
 
-function registerRestoreUnderlyingBillingModal(options: {
-  underlyingModal: ElementRef<HTMLDivElement>;
-  overlayModal: ElementRef<HTMLDivElement>;
+/** Call from an overlay `fpc-modal` `(closed)` when opened via {@link swapToOverlayBillingModal}. */
+export function restoreUnderlyingBillingModal(options: {
+  underlyingOpen: WritableSignal<boolean>;
   swapState: BillingModalSwapState;
 }): void {
-  const el = options.overlayModal.nativeElement;
-
-  if (!el) {
+  if (!options.swapState.suspended) {
     return;
   }
 
-  const onOverlayHidden = (): void => {
-    if (!options.swapState.suspended) {
-      return;
-    }
-
-    options.swapState.suspended = false;
-    queueMicrotask(() => showBillingModal(options.underlyingModal));
-  };
-
-  el.addEventListener('hidden.bs.modal', onOverlayHidden, { once: true });
+  options.swapState.suspended = false;
+  queueMicrotask(() => options.underlyingOpen.set(true));
 }
 
 export function watchBillingMutationModalClose(options: {
   loading$: Observable<boolean>;
   error$?: Observable<string | null | undefined>;
-  modal: () => ElementRef<HTMLDivElement>;
+  open: WritableSignal<boolean>;
   destroyRef: DestroyRef;
   onSuccess?: () => void;
 }): void {
@@ -116,7 +72,7 @@ export function watchBillingMutationModalClose(options: {
       takeUntilDestroyed(options.destroyRef),
     )
     .subscribe(() => {
-      hideBillingModal(options.modal());
+      hideBillingModal(options.open);
       options.onSuccess?.();
     });
 }

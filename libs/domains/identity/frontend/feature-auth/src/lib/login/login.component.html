@@ -1,6 +1,7 @@
-<section class="section__row" [class.section__row--marketing-hidden]="!showAuthMarketingPanel">
-  <div
-    class="section__column section__column--marketing d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
+<fpc-section-row [marketingHidden]="!showAuthMarketingPanel">
+  <fpc-section-column
+    variant="marketing"
+    class="d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
   >
     <div class="p-4" style="width: 700px; max-width: 100%">
       <h1 class="display-5 fw-bold mb-3">{{ productName }}</h1>
@@ -17,103 +18,87 @@
         }
       </ul>
     </div>
-  </div>
-  <div class="section__column section__column--form section__column--scroll d-flex align-items-center">
+  </fpc-section-column>
+  <fpc-section-column variant="form" [scroll]="true" class="d-flex align-items-center">
     <div class="p-4 my-auto" style="width: 500px; max-width: 100%">
       <h2 class="section__column-title mb-4 text-end" i18n="@@featureLogin-title">Login</h2>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
         <!-- Success Alert -->
         @if (successMessage$ | async; as successMessage) {
-          <div class="alert alert-success" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            <span>{{ successMessage }}</span>
-          </div>
+          <fpc-alert variant="success" [message]="successMessage" />
         }
 
-        <!-- Error Alert -->
         @if (patRejectedError; as patError) {
-          <div class="alert alert-danger" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            <span>{{ patError }}</span>
-          </div>
+          <fpc-alert variant="danger" [message]="patError" />
         } @else if (error$ | async; as error) {
-          <div class="alert alert-danger" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            <span>{{ error }}</span>
-          </div>
+          <fpc-alert variant="danger" [message]="error" />
         }
 
         @if (isApiKeyAuth) {
           <!-- API Base Hostname Input (only shown when controllerApiUrl is provided) -->
           @if (showApiBaseHostname) {
-            <div class="mb-3">
-              <label for="apiBaseHostname" class="form-label" i18n="@@featureLogin-controllerApiHost"
-                >Controller API Host</label
-              >
-              <div class="input-group">
-                <span class="input-group-text">
-                  <i class="bi bi-globe"></i>
+            <fpc-form-field
+              forId="apiBaseHostname"
+              i18n-label="@@featureLogin-controllerApiHost"
+              label="Controller API Host"
+            >
+              <fpc-input-group>
+                <span fpcInputGroupPrefix class="input-group-text">
+                  <i class="bi bi-globe" aria-hidden="true"></i>
                 </span>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="apiBaseHostname"
+                <fpc-form-control
+                  controlId="apiBaseHostname"
                   [value]="apiBaseHostname"
-                  readonly
-                  disabled
+                  [readOnly]="true"
+                  [disabled]="true"
                 />
-              </div>
-            </div>
+              </fpc-input-group>
+            </fpc-form-field>
           }
 
           <!-- API Key Input -->
-          <div class="mb-3">
-            <label for="apiKey" class="form-label" i18n="@@featureLogin-controllerApiKey">Controller API Key</label>
-            <div class="input-group">
-              <span class="input-group-text">
-                <i class="bi bi-key-fill"></i>
+          <fpc-form-field forId="apiKey" i18n-label="@@featureLogin-controllerApiKey" label="Controller API Key">
+            <fpc-input-group>
+              <span fpcInputGroupPrefix class="input-group-text">
+                <i class="bi bi-key-fill" aria-hidden="true"></i>
               </span>
-              <input
-                type="text"
-                class="form-control"
-                [class.is-invalid]="loginForm.get('apiKey')?.invalid && loginForm.get('apiKey')?.touched"
-                id="apiKey"
+              <fpc-form-control
+                controlId="apiKey"
                 formControlName="apiKey"
-                placeholder="Enter your API key"
                 i18n-placeholder="@@featureLogin-apiKeyPlaceholder"
-                [disabled]="(loading$ | async) ?? false"
+                placeholder="Enter your API key"
                 autocomplete="off"
+                [invalid]="!!(loginForm.get('apiKey')?.invalid && loginForm.get('apiKey')?.touched)"
+                [disabled]="(loading$ | async) ?? false"
               />
-            </div>
+            </fpc-input-group>
             @if (loginForm.get('apiKey')?.invalid && loginForm.get('apiKey')?.touched) {
-              <div class="invalid-feedback d-block" i18n="@@featureLogin-apiKeyRequired">API key is required.</div>
+              <div fpcFormFieldError i18n="@@featureLogin-apiKeyRequired">API key is required.</div>
             }
-          </div>
+          </fpc-form-field>
         }
 
         @if (isUsersAuth) {
           <!-- Email Input -->
-          <div class="mb-3">
-            <label for="email" class="form-label" i18n="@@featureLogin-emailLabel">Email</label>
-            <div class="input-group">
-              <span class="input-group-text">
-                <i class="bi bi-envelope-fill"></i>
+          <fpc-form-field forId="email" i18n-label="@@featureLogin-emailLabel" label="Email">
+            <fpc-input-group>
+              <span fpcInputGroupPrefix class="input-group-text">
+                <i class="bi bi-envelope-fill" aria-hidden="true"></i>
               </span>
-              <input
-                type="email"
-                class="form-control"
-                [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
-                id="email"
+              <fpc-form-control
+                controlId="email"
+                inputType="email"
                 formControlName="email"
-                placeholder="Enter your email"
                 i18n-placeholder="@@featureLogin-emailPlaceholder"
-                [disabled]="(loading$ | async) ?? false"
+                placeholder="Enter your email"
                 autocomplete="email"
+                [invalid]="!!(loginForm.get('email')?.invalid && loginForm.get('email')?.touched)"
+                [disabled]="(loading$ | async) ?? false"
               />
-            </div>
+            </fpc-input-group>
             @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
-              <div class="invalid-feedback d-block">
+              <div fpcFormFieldError>
                 @if (loginForm.get('email')?.errors?.['required']) {
                   <ng-container i18n="@@featureLogin-emailRequired">Email is required.</ng-container>
                 } @else if (loginForm.get('email')?.errors?.['email']) {
@@ -121,31 +106,29 @@
                 }
               </div>
             }
-          </div>
+          </fpc-form-field>
 
           <!-- Password Input -->
-          <div class="mb-3">
-            <label for="password" class="form-label" i18n="@@featureLogin-passwordLabel">Password</label>
-            <div class="input-group">
-              <span class="input-group-text">
-                <i class="bi bi-lock-fill"></i>
+          <fpc-form-field forId="password" i18n-label="@@featureLogin-passwordLabel" label="Password">
+            <fpc-input-group>
+              <span fpcInputGroupPrefix class="input-group-text">
+                <i class="bi bi-lock-fill" aria-hidden="true"></i>
               </span>
-              <input
-                type="password"
-                class="form-control"
-                [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-                id="password"
+              <fpc-form-control
+                controlId="password"
+                inputType="password"
                 formControlName="password"
-                placeholder="Enter your password"
                 i18n-placeholder="@@featureLogin-passwordPlaceholder"
-                [disabled]="(loading$ | async) ?? false"
+                placeholder="Enter your password"
                 autocomplete="current-password"
+                [invalid]="!!(loginForm.get('password')?.invalid && loginForm.get('password')?.touched)"
+                [disabled]="(loading$ | async) ?? false"
               />
-            </div>
+            </fpc-input-group>
             @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-              <div class="invalid-feedback d-block" i18n="@@featureLogin-passwordRequired">Password is required.</div>
+              <div fpcFormFieldError i18n="@@featureLogin-passwordRequired">Password is required.</div>
             }
-          </div>
+          </fpc-form-field>
         }
 
         <!-- Submit Button -->
@@ -165,20 +148,20 @@
               </a>
             }
           </div>
-          <button
+          <fpc-button
             type="submit"
-            class="btn btn-primary d-flex align-items-center justify-content-center gap-1 w-auto"
+            variant="primary"
             [disabled]="loginForm.invalid || ((loading$ | async) ?? false)"
+            [loading]="(loading$ | async) ?? false"
           >
             @if ((loading$ | async) ?? false) {
-              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
               <span i18n="@@featureLogin-loggingIn">Logging in...</span>
             } @else {
               <span i18n="@@featureLogin-submit">Login</span>
             }
-          </button>
+          </fpc-button>
         </div>
       </form>
     </div>
-  </div>
-</section>
+  </fpc-section-column>
+</fpc-section-row>

@@ -1,11 +1,26 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, Input, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   ProjectMilestonesFacade,
   type CreateProjectMilestoneDto,
   type ProjectMilestoneResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcListComponent,
+  FpcConfirmDialogComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 
@@ -19,7 +34,23 @@ type MilestoneEditForm = {
 @Component({
   selector: 'framework-project-milestones-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcConfirmDialogComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './project-milestones-panel.component.html',
   styleUrls: ['./project-milestones-panel.component.scss'],
 })
@@ -27,12 +58,15 @@ export class ProjectMilestonesPanelComponent implements OnInit {
   @Input({ required: true }) projectId!: string;
   @Input() isAdmin = false;
 
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteModal', { static: false }) private deleteModal!: ElementRef<HTMLDivElement>;
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly deleteModalOpen = signal(false);
 
   private readonly facade = inject(ProjectMilestonesFacade);
   private readonly destroyRef = inject(DestroyRef);
+
+  readonly pageTitle = $localize`:@@featureProjectMilestones-title:Milestones`;
+  readonly addTitle = $localize`:@@featureProjectMilestones-add:Add`;
 
   readonly milestones$ = this.facade.milestones$;
   readonly loading$ = this.facade.loading$;
@@ -52,7 +86,7 @@ export class ProjectMilestonesPanelComponent implements OnInit {
     if (!this.isAdmin) return;
 
     this.createForm = { name: '' };
-    showBillingModal(this.createModal);
+    showBillingModal(this.createModalOpen);
   }
 
   openEditModal(milestone: ProjectMilestoneResponse): void {
@@ -64,14 +98,14 @@ export class ProjectMilestonesPanelComponent implements OnInit {
       description: milestone.description ?? '',
       targetDate: this.toDateInputValue(milestone.targetDate),
     };
-    showBillingModal(this.editModal);
+    showBillingModal(this.editModalOpen);
   }
 
   openDeleteModal(milestone: ProjectMilestoneResponse): void {
     if (!this.isAdmin || milestone.lockedAt) return;
 
     this.milestoneToDelete = milestone;
-    showBillingModal(this.deleteModal);
+    showBillingModal(this.deleteModalOpen);
   }
 
   submitCreate(): void {
@@ -142,7 +176,7 @@ export class ProjectMilestonesPanelComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.saving$,
       error$: this.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.createForm = { name: '' };
@@ -151,13 +185,13 @@ export class ProjectMilestonesPanelComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.saving$,
       error$: this.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
     });
     watchBillingMutationModalClose({
       loading$: this.saving$,
       error$: this.error$,
-      modal: () => this.deleteModal,
+      open: this.deleteModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.milestoneToDelete = null;

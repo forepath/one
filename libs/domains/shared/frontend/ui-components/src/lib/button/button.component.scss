@@ -1,0 +1,124 @@
+:host {
+  display: inline-block;
+}
+
+// Stretch beside form controls in Bootstrap input groups; radius matches addon chaining.
+:host-context(.input-group) {
+  display: flex;
+  align-items: stretch;
+}
+
+:host-context(.input-group) .fpc-button__btn {
+  align-self: stretch;
+  height: auto;
+}
+
+:host-context(.input-group):not(:last-child) .fpc-button__btn {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+:host-context(.input-group):not(:first-child) .fpc-button__btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+:host(.fpc-button--block) {
+  display: block;
+}
+
+:host(.fpc-button--link) {
+  // Keep anchor-as-button layout identical to the native button host.
+  vertical-align: middle;
+}
+
+:host(.fpc-button--link) .fpc-button__btn.disabled {
+  pointer-events: none;
+}
+
+.fpc-button__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+}
+
+// Chip-as-control: `fpc-badge` already owns padding/radius. Bootstrap `.btn` / `.btn-link`
+// padding would stack on top and inflate parents (e.g. `fpc-page-header` row past sm icon height).
+// Host utilities like `p-0` never reach the inner control — drop chrome here instead.
+:host:has(fpc-badge) {
+  vertical-align: middle;
+  line-height: 0;
+}
+
+:host:has(fpc-badge) .fpc-button__btn {
+  padding: 0;
+  border-width: 0;
+  line-height: 1;
+  height: auto;
+  min-height: 0;
+  gap: 0;
+}
+
+.fpc-button__spinner {
+  // Keep the label from shifting while the spinner is visible.
+  flex: 0 0 auto;
+}
+
+// Bootstrap has no `btn-xs`; match the compact inline action height used across the apps.
+.fpc-button__btn--xs {
+  --bs-btn-padding-y: 0.125rem;
+  --bs-btn-padding-x: 0.375rem;
+  --bs-btn-font-size: 0.75rem;
+}
+
+// Landing / marketing CTAs: same 1:2 y:x padding ratio as Bootstrap buttons, scaled above btn-lg.
+.fpc-button__btn--xl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 400;
+
+  > i {
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+}
+
+.fpc-button__btn--icon {
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  line-height: 1;
+  width: 2.5625rem;
+  height: 2.5625rem;
+  min-width: 2.5625rem;
+  min-height: 2.5625rem;
+  flex: 0 0 auto;
+  align-self: center;
+  box-sizing: border-box;
+
+  &.btn-sm {
+    width: 2.025rem;
+    height: 2.025rem;
+    min-width: 2.025rem;
+    min-height: 2.025rem;
+  }
+
+  &.fpc-button__btn--xs {
+    width: 1.5rem;
+    height: 1.5rem;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+  }
+}
+
+// Page-header chrome uses a taller control size so icon-only actions stay 1:1 with the bar.
+:host-context(.fpc-page-header) .fpc-button__btn--icon.btn-sm {
+  width: var(--fpc-page-header-control-size, 2.35rem);
+  height: var(--fpc-page-header-control-size, 2.35rem);
+  min-width: var(--fpc-page-header-control-size, 2.35rem);
+  min-height: var(--fpc-page-header-control-size, 2.35rem);
+}

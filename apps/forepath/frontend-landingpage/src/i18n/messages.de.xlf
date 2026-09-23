@@ -2458,12 +2458,12 @@
         <target>E-Mail</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
-        <source>Phone <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Telefon <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Phone (optional)</source>
+        <target>Telefon (optional)</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
-        <source>Company <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Unternehmen <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Company (optional)</source>
+        <target>Unternehmen (optional)</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
         <source>Message</source>
@@ -3054,8 +3054,8 @@
         <target> Schritte zur Reproduktion sind erforderlich. </target>
       </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formFixLabel" datatype="html">
-        <source>Suggested fix <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Vorgeschlagener Fix <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted fw-normal&quot;&gt;"/>(optional)<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></target>
+        <source>Suggested fix (optional)</source>
+        <target>Vorgeschlagener Fix (optional)</target>
       </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formVdpPrefix" datatype="html">
         <source>I accept the</source>

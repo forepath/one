@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -12,6 +12,23 @@ import {
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import type { DatevExportScope } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade, type UserResponseDto } from '@forepath/identity/frontend';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
 
@@ -27,14 +44,30 @@ import { showBillingModal, watchBillingMutationModalClose } from '../billing-mod
 @Component({
   selector: 'framework-admin-datev-exports-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcListItemComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSpinnerComponent,
+    FpcTabComponent,
+    FpcTabGroupComponent,
+    FpcSearchFieldComponent,
+  ],
   providers: [DatePipe],
   templateUrl: './admin-datev-exports-page.component.html',
   styleUrl: './admin-datev-exports-page.component.scss',
 })
 export class AdminDatevExportsPageComponent implements OnInit {
-  @ViewChild('exportModal', { static: false }) private exportModal!: ElementRef<HTMLDivElement>;
-
   private readonly facade = inject(AdminDatevExportsFacade);
   private readonly capabilitiesFacade = inject(BillingCapabilitiesFacade);
   private readonly authFacade = inject(AuthenticationFacade);
@@ -43,7 +76,12 @@ export class AdminDatevExportsPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly tenantTabLabel = resolveBillingTenantDisplayName(this.environment);
+  readonly pageTitle = $localize`:@@featureAdminDatevExports-title:DATEV exports`;
+  readonly unifiedTabLabel = $localize`:@@featureAdminDatevExports-tabUnified:Unified`;
+  readonly searchPlaceholder = $localize`:@@featureAdminDatevExports-searchPlaceholder:Search exports`;
+  readonly exportMonthAriaLabel = $localize`:@@featureAdminDatevExports-trigger:Export month`;
 
+  readonly exportModalOpen = signal(false);
   readonly searchQuery = signal('');
   readonly searchQuery$ = toObservable(this.searchQuery);
   readonly items$ = this.facade.items$;
@@ -77,11 +115,19 @@ export class AdminDatevExportsPageComponent implements OnInit {
 
   openExportModal(): void {
     this.resetTriggerForm();
-    showBillingModal(this.exportModal);
+    showBillingModal(this.exportModalOpen);
   }
 
   setScope(scope: DatevExportScope): void {
     this.facade.loadExports({ scope, search: this.searchQuery().trim() || undefined });
+  }
+
+  onScopeTabChange(scope: string | null): void {
+    if (scope !== 'tenant' && scope !== 'unified') {
+      return;
+    }
+
+    this.setScope(scope);
   }
 
   submitTriggerExport(): void {
@@ -182,7 +228,7 @@ export class AdminDatevExportsPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.triggerLoading$,
       error$: this.triggerError$,
-      modal: () => this.exportModal,
+      open: this.exportModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => this.resetTriggerForm(),
     });

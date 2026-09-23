@@ -17,7 +17,7 @@
   gap: 0.375rem;
 }
 
-.estimate-chat__memory-profile-btn {
+:host ::ng-deep .estimate-chat__memory-profile-btn {
   --estimate-memory-profile-btn-size: 2.25rem;
 
   width: var(--estimate-memory-profile-btn-size);
@@ -31,7 +31,7 @@
   line-height: 1;
 }
 
-.estimate-chat__memory-profile-btn .bi {
+:host ::ng-deep .estimate-chat__memory-profile-btn .bi {
   font-size: 0.95rem;
 }
 

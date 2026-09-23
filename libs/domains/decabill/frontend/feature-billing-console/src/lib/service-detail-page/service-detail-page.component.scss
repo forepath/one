@@ -50,11 +50,6 @@
   flex: 1 1 auto;
 }
 
-.service-detail-page__lane-header {
-  background: var(--bs-tertiary-bg);
-  border-radius: 0;
-}
-
 .service-detail-page__lane-body {
   flex: 1 1 0;
   min-height: 0;
@@ -64,18 +59,4 @@
 
 .service-detail-page__filters {
   border-top: 1px solid var(--bs-border-color);
-}
-
-.btn-group-options {
-  > .btn-options {
-    border-radius: 0;
-    border-top: 0;
-    border-bottom: 0;
-    border-left: 0;
-    flex: 1 1 auto;
-
-    &:last-child {
-      border-right: 0;
-    }
-  }
 }

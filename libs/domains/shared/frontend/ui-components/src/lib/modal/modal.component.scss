@@ -1,0 +1,186 @@
+// Accent close, header/footer chrome, and scrollable flex fixes for `fpc-modal`.
+// Formerly global `styles/_modal.scss` + `styles/_scrollable-modal.scss` — no longer needed
+// outside this component (all consoles use `fpc-modal` / `fpc-confirm-dialog`).
+
+$modal-accent-close-size: 40px;
+
+@mixin modal-accent-close-button($size: $modal-accent-close-size) {
+  --bs-btn-close-filter: none;
+  --bs-btn-close-opacity: 1;
+  --bs-btn-close-hover-opacity: 0.85;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: $size;
+  height: $size;
+  min-width: $size;
+  min-height: $size;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  filter: none;
+  opacity: 1;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 35%;
+    left: 35%;
+    width: 30%;
+    height: 30%;
+    // Paint the Bootstrap close glyph with the same ink as `.btn-{accent}` text.
+    background-color: var(--fpc-modal-accent-fg, #fff);
+    background-image: none;
+    -webkit-mask-image: var(--bs-btn-close-bg);
+    mask-image: var(--bs-btn-close-bg);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    z-index: 2;
+    filter: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--fpc-modal-accent, var(--bs-primary));
+    z-index: 1;
+    border-top-right-radius: var(--bs-modal-inner-border-radius);
+    border-bottom-left-radius: var(--bs-modal-inner-border-radius);
+  }
+
+  &:hover,
+  &:focus {
+    opacity: var(--bs-btn-close-hover-opacity);
+    box-shadow: none;
+  }
+}
+
+:host {
+  display: contents;
+}
+
+// Accent tokens on `.modal-content` (host is `display: contents`, so vars live on a real box).
+// Fill mirrors `.btn-{accent}` background; fg mirrors that button's `--bs-btn-color`.
+.modal-content {
+  --fpc-modal-accent: var(--bs-primary);
+  --fpc-modal-accent-fg: #fff; // matches brand `.btn-primary` / Bootstrap `.btn-danger`
+  // Keep visible so typeahead / absolute menus in the body are not clipped. The accent close
+  // button rounds its own top-right corner instead of relying on overflow clipping.
+  overflow: visible;
+}
+
+:host(.fpc-modal--accent-primary) .modal-content {
+  --fpc-modal-accent: var(--bs-primary);
+  --fpc-modal-accent-fg: #fff;
+}
+
+:host(.fpc-modal--accent-danger) .modal-content {
+  --fpc-modal-accent: var(--bs-danger);
+  --fpc-modal-accent-fg: #fff;
+}
+
+:host(.fpc-modal--accent-warning) .modal-content {
+  --fpc-modal-accent: var(--bs-warning);
+  --fpc-modal-accent-fg: #000; // matches Bootstrap `.btn-warning`
+}
+
+.fpc-modal__backdrop {
+  // Bootstrap's own z-index, so stacked modals keep their expected order.
+  z-index: var(--bs-backdrop-zindex, 1050);
+}
+
+.fpc-modal__modal {
+  z-index: var(--bs-modal-zindex, 1055);
+}
+
+// Accent close button flush to the top-right modal corner.
+.modal-content > .modal-header {
+  --bs-modal-header-border-width: 0;
+  position: relative;
+
+  > *:first-child {
+    padding-right: max(0px, calc(#{$modal-accent-close-size} - var(--bs-modal-header-padding-x)));
+  }
+
+  .btn-close {
+    @include modal-accent-close-button();
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+  }
+}
+
+.modal-content > .modal-footer {
+  --bs-modal-footer-border-width: 0;
+  padding: var(--bs-modal-padding);
+  margin: -1px -1px -1px -1px;
+  border-top: 1px solid var(--bs-modal-border-color);
+  position: relative;
+  // Keep the shade in this stacking context so `z-index: -1` does not escape behind the modal.
+  isolation: isolate;
+  gap: calc(var(--bs-modal-padding) / 2);
+  // Light: tertiary strip + soft white lift on the actions side.
+  background-color: var(--bs-tertiary-bg);
+  --fpc-modal-footer-shade: color-mix(in srgb, var(--bs-white) 36%, transparent);
+  --fpc-modal-footer-shade-angle: 295deg;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    // Behind projected footer actions (they lack this component's `_ngcontent`, so a `> *`
+    // z-index bump would not apply under emulated encapsulation).
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(var(--fpc-modal-footer-shade-angle), var(--fpc-modal-footer-shade) 0%, transparent 55%);
+  }
+
+  > * {
+    margin: 0;
+  }
+}
+
+// Dark: same language as `fpc-top-bar` — dark chrome + black wash.
+:host-context(html[data-bs-theme='dark']) .modal-content > .modal-footer {
+  background-color: var(--bs-dark);
+  color: var(--bs-white);
+  --fpc-modal-footer-shade: color-mix(in srgb, var(--bs-black) 28%, transparent);
+  --fpc-modal-footer-shade-angle: 65deg;
+}
+
+.modal-body:empty {
+  display: none;
+}
+
+.modal-title:empty {
+  display: none;
+}
+
+// Scrollable: overflow on `.modal-body`; nested forms (projected) need the flex height chain.
+.modal-dialog-scrollable {
+  .modal-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+
+    > form {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: 100%;
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -8,30 +8,74 @@ import {
   type CustomerOfferListItem,
   type OffersSummaryResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcBoardLaneComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcLaneHeaderComponent,
+  FpcListComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcSummaryBarComponent,
+  FpcSummaryCardComponent,
+  FpcSummaryCardValueDirective,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { BehaviorSubject, debounceTime, distinctUntilChanged, map, of, skip, switchMap } from 'rxjs';
 
 import { canCustomerRespondToOffer, getOfferStatusBadgeClass, getOfferStatusLabel } from '../billing-status-labels';
-import { hideBillingModal, showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 
 type CustomerOffersMobilePanel = 'pending' | 'history';
 
 @Component({
   selector: 'framework-billing-offers-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcBoardLaneComponent,
+    FpcLaneHeaderComponent,
+    FpcPageHeaderComponent,
+    FpcSpinnerComponent,
+    FpcSummaryBarComponent,
+    FpcSummaryCardComponent,
+    FpcSummaryCardValueDirective,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcListItemComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcSearchFieldComponent,
+    FpcConfirmDialogComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcTabComponent,
+    FpcTabGroupComponent,
+  ],
   providers: [DatePipe],
   templateUrl: './offers-page.component.html',
   styleUrls: ['./offers-page.component.scss'],
 })
 export class OffersPageComponent implements OnInit {
-  @ViewChild('previewOfferModal', { static: false }) private previewOfferModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('declineConfirmModal', { static: false }) private declineConfirmModal!: ElementRef<HTMLDivElement>;
+  readonly previewOfferModalOpen = signal(false);
+  readonly declineConfirmModalOpen = signal(false);
 
   private readonly destroyRef = inject(DestroyRef);
   private readonly offersFacade = inject(OffersFacade);
   private readonly datePipe = inject(DatePipe);
 
-  readonly mobilePanels: CustomerOffersMobilePanel[] = ['pending', 'history'];
   readonly mobilePanel = signal<CustomerOffersMobilePanel>('pending');
   readonly pendingSearch = signal('');
   readonly historySearch = signal('');
@@ -62,6 +106,11 @@ export class OffersPageComponent implements OnInit {
   readonly offerDetailsLoading$ = this.offersFacade.getOfferDetailsLoading$();
   readonly respondingOfferId$ = this.offersFacade.getRespondingOfferId$();
   readonly offersError$ = this.offersFacade.getOffersError$();
+  readonly pageTitle = $localize`:@@featureOffers-title:Offers`;
+  readonly pendingCountLabel = $localize`:@@featureOffers-pendingCount:Pending offers`;
+  readonly actionRequiredCountLabel = $localize`:@@featureOffers-actionRequiredCount:Action required`;
+  readonly acceptedCountLabel = $localize`:@@featureOffers-acceptedCount:Accepted`;
+  readonly historyCountLabel = $localize`:@@featureOffers-historyCount:History`;
 
   pendingDeclineOfferId: string | null = null;
 
@@ -85,11 +134,8 @@ export class OffersPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.respondingOfferId$.pipe(map((id) => id !== null)),
       error$: this.offersError$,
-      modal: () => this.previewOfferModal,
+      open: this.previewOfferModalOpen,
       destroyRef: this.destroyRef,
-      onSuccess: () => {
-        hideBillingModal(this.previewOfferModal);
-      },
     });
   }
 
@@ -104,7 +150,7 @@ export class OffersPageComponent implements OnInit {
   openPreview(offer: CustomerOfferListItem): void {
     this.previewOfferId$.next(offer.id);
     this.offersFacade.loadOfferDetails(offer.id);
-    showBillingModal(this.previewOfferModal);
+    showBillingModal(this.previewOfferModalOpen);
   }
 
   acceptOffer(offerId: string): void {
@@ -113,7 +159,7 @@ export class OffersPageComponent implements OnInit {
 
   openDeclineConfirm(offerId: string): void {
     this.pendingDeclineOfferId = offerId;
-    showBillingModal(this.declineConfirmModal);
+    showBillingModal(this.declineConfirmModalOpen);
   }
 
   confirmDecline(): void {
@@ -121,7 +167,6 @@ export class OffersPageComponent implements OnInit {
 
     this.offersFacade.declineOffer(this.pendingDeclineOfferId);
     this.pendingDeclineOfferId = null;
-    hideBillingModal(this.declineConfirmModal);
   }
 
   downloadOfferPdf(offer: CustomerOfferListItem): void {
@@ -162,6 +207,12 @@ export class OffersPageComponent implements OnInit {
     if (!value) return '—';
 
     return this.datePipe.transform(value, 'mediumDate') ?? '—';
+  }
+
+  onMobilePanelTabChange(tabId: string | null): void {
+    if (tabId === 'pending' || tabId === 'history') {
+      this.mobilePanel.set(tabId);
+    }
   }
 
   mobilePanelLabel(panel: CustomerOffersMobilePanel): string {

@@ -43,12 +43,12 @@
   &:hover {
     background-color: var(--bs-secondary-bg);
 
-    .btn-group {
+    fpc-button-group {
       opacity: 1;
     }
   }
 
-  .btn-group {
+  fpc-button-group {
     opacity: 0;
     transition: opacity 0.15s ease-in-out;
     flex-shrink: 0;

@@ -1,0 +1,5 @@
+// Match console apps: Plus Jakarta Sans Variable as the document face.
+body {
+  font-family: var(--bs-body-font-family, 'Plus Jakarta Sans Variable', sans-serif);
+  font-size: var(--bs-body-font-size, 0.875rem);
+}

@@ -26,6 +26,16 @@ import {
   type ContainerManagerNetworkNode,
   type ContainerManagerStatsHistoryPoint,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcEmptyStateComponent,
+  FpcLaneHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
+
 import type { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexTitleSubtitle, ApexXAxis } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
@@ -61,7 +71,18 @@ const TOPOLOGY_NODE_RADIUS = 16;
 @Component({
   selector: 'framework-container-manager-tab',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    NgApexchartsModule,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcAlertComponent,
+    FpcLaneHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+    FpcEmptyStateComponent,
+  ],
   providers: [DatePipe],
   templateUrl: './container-manager-tab.component.html',
   styleUrls: ['./container-manager-tab.component.scss'],
@@ -94,6 +115,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
   readonly sidebarOpen = signal(false);
   /** Main pane: container detail (stats/logs) or network topology map. */
   readonly contentView = signal<'container' | 'network'>('container');
+  readonly containerSearchPlaceholder = $localize`:@@featureContainerManager-searchPlaceholder:Search containers`;
   readonly searchQuery = signal('');
   readonly topologyHover = signal<TopologyPopoverModel | null>(null);
   readonly topologyPopoverPos = signal<{ left: number; top: number } | null>(null);

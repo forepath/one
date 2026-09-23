@@ -1,0 +1,14 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Bootstrap only ships a `sm` modifier, so `lg` is handled with the CSS variables.
+:host(.fpc-spinner--lg) .spinner-border,
+:host(.fpc-spinner--lg) .spinner-grow {
+  --bs-spinner-width: 3rem;
+  --bs-spinner-height: 3rem;
+  width: 3rem;
+  height: 3rem;
+}

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -14,12 +14,47 @@ import {
   type UserResponseDto,
 } from '@forepath/identity/frontend';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatestWith, map } from 'rxjs/operators';
 
 @Component({
   selector: 'identity-auth-user-manager',
-  imports: [CommonModule, FormsModule, RouterModule, UserRoleLabelPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    UserRoleLabelPipe,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './user-manager.component.html',
   styleUrls: ['./user-manager.component.scss'],
   standalone: true,
@@ -31,17 +66,16 @@ export class IdentityUserManagerComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly standaloneLoadingService = inject(StandaloneLoadingService);
 
-  @ViewChild('createUserModal', { static: false })
-  private createUserModal!: ElementRef<HTMLDivElement>;
+  readonly createUserModalOpen = signal(false);
+  readonly editUserModalOpen = signal(false);
+  readonly deleteUserModalOpen = signal(false);
+  readonly clearTotpModalOpen = signal(false);
 
-  @ViewChild('editUserModal', { static: false })
-  private editUserModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('deleteUserModal', { static: false })
-  private deleteUserModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('clearTotpModal', { static: false })
-  private clearTotpModal!: ElementRef<HTMLDivElement>;
+  readonly pageTitle = $localize`:@@featureUserManager-title:User Management`;
+  readonly addUserTitle = $localize`:@@featureUserManager-addUserTitle:Add user`;
+  readonly searchUsersPlaceholder = $localize`:@@featureUserManager-searchUsersPlaceholder:Search users`;
+  readonly loadingUsersLabel = $localize`:@@featureUserManager-loadingUsers:Loading users...`;
+  readonly noOtherUsersMessage = $localize`:@@featureUserManager-noOtherUsers:No other users yet`;
 
   readonly searchUserQuery = signal<string>('');
   readonly searchUserQuery$ = toObservable(this.searchUserQuery);
@@ -105,14 +139,14 @@ export class IdentityUserManagerComponent implements OnInit {
     this.actions$
       .pipe(ofType(createUserSuccess, updateUserSuccess), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
-        this.hideModal(this.createUserModal);
-        this.hideModal(this.editUserModal);
+        this.createUserModalOpen.set(false);
+        this.editUserModalOpen.set(false);
         this.userToEdit = null;
         this.authFacade.loadUsers();
       });
 
     this.actions$.pipe(ofType(adminClearTotpSuccess), takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      this.hideModal(this.clearTotpModal);
+      this.clearTotpModalOpen.set(false);
       this.userToClearTotp = null;
       this.authFacade.loadUsers();
     });
@@ -120,7 +154,7 @@ export class IdentityUserManagerComponent implements OnInit {
 
   onAddUser(): void {
     this.createForm = { email: '', password: '', role: 'user' };
-    this.showModal(this.createUserModal);
+    this.createUserModalOpen.set(true);
   }
 
   onSubmitCreateUser(): void {
@@ -140,7 +174,7 @@ export class IdentityUserManagerComponent implements OnInit {
       password: '',
       role: user.role,
     };
-    this.showModal(this.editUserModal);
+    this.editUserModalOpen.set(true);
   }
 
   onSubmitEditUser(): void {
@@ -160,12 +194,12 @@ export class IdentityUserManagerComponent implements OnInit {
 
   onDeleteUser(user: UserResponseDto): void {
     this.userToDelete = user;
-    this.showModal(this.deleteUserModal);
+    this.deleteUserModalOpen.set(true);
   }
 
   onClearTotp(user: UserResponseDto): void {
     this.userToClearTotp = user;
-    this.showModal(this.clearTotpModal);
+    this.clearTotpModalOpen.set(true);
   }
 
   onLockUser(user: UserResponseDto): void {
@@ -179,23 +213,23 @@ export class IdentityUserManagerComponent implements OnInit {
   confirmDeleteUser(): void {
     if (this.userToDelete) {
       this.authFacade.deleteUser(this.userToDelete.id);
-      this.hideModal(this.deleteUserModal);
+      this.deleteUserModalOpen.set(false);
       this.userToDelete = null;
       this.authFacade.loadUsers();
     }
   }
 
   cancelCreateUser(): void {
-    this.hideModal(this.createUserModal);
+    this.createUserModalOpen.set(false);
   }
 
   cancelEditUser(): void {
-    this.hideModal(this.editUserModal);
+    this.editUserModalOpen.set(false);
     this.userToEdit = null;
   }
 
   cancelDeleteUser(): void {
-    this.hideModal(this.deleteUserModal);
+    this.deleteUserModalOpen.set(false);
     this.userToDelete = null;
   }
 
@@ -206,7 +240,7 @@ export class IdentityUserManagerComponent implements OnInit {
   }
 
   cancelClearTotp(): void {
-    this.hideModal(this.clearTotpModal);
+    this.clearTotpModalOpen.set(false);
     this.userToClearTotp = null;
   }
 
@@ -217,35 +251,6 @@ export class IdentityUserManagerComponent implements OnInit {
       return new Date(iso).toLocaleString();
     } catch {
       return iso;
-    }
-  }
-
-  private showModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.show();
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const Modal = (window as any).bootstrap?.Modal;
-
-        if (Modal) {
-          new Modal(modalElement.nativeElement).show();
-        }
-      }
-    }
-  }
-
-  private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modal = (window as any).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.hide();
-      }
     }
   }
 }

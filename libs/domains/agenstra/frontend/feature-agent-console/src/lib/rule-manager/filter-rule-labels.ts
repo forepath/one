@@ -30,7 +30,7 @@ export function filterRuleTypeLabel(filterType: string): string {
 }
 
 export function filterRuleTesterNoMatch(): string {
-  return $localize`:@@featureRuleManager-testerNoMatch:No match.`;
+  return $localize`:@@featureRuleManager-testerNoMatch:No match`;
 }
 
 export function filterRuleTesterWouldDrop(): string {

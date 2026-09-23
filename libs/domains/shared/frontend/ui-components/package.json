@@ -1,0 +1,10 @@
+{
+  "name": "@forepath/shared/frontend/ui-components",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^21.0.0",
+    "@angular/core": "^21.0.0",
+    "@angular/forms": "^21.0.0"
+  },
+  "sideEffects": false
+}

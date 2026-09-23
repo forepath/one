@@ -17,6 +17,13 @@ import {
   CONTACT_FORM_FIELD_MAX_LENGTH,
   ContactRequestFacade,
 } from '@forepath/shared/frontend/data-access-communication';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { NgxTurnstileComponent, NgxTurnstileModule } from 'ngx-turnstile';
@@ -27,7 +34,17 @@ import { readAndClearContactMessagePrefill } from './contact-message-prefill.sto
 
 @Component({
   selector: 'shared-contact-page',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, NgxTurnstileModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    NgxTurnstileModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+  ],
   templateUrl: './contact-page.component.html',
   styleUrls: ['./contact-page.component.scss'],
   standalone: true,

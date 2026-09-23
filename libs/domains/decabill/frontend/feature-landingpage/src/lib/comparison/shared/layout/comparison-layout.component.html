@@ -85,18 +85,24 @@
           </h2>
           <p class="lead mb-0 comparison-fit-lead">{{ page.technologyFitLead }}</p>
           <div class="d-flex flex-wrap gap-3 mt-5">
-            <a
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
               routerLink="/contact"
-              class="btn btn-primary btn-lg rounded-3 cta-btn"
               i18n="@@featureDecabillComparison-ctaDemo"
-              ><i class="bi bi-calendar-check" aria-hidden="true"></i>Book a demo</a
             >
-            <a
+              <i class="bi bi-calendar-check" aria-hidden="true"></i>Book a demo
+            </fpc-button>
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
               routerLink="/pricing"
-              class="btn btn-primary btn-lg rounded-3 cta-btn"
               i18n="@@featureDecabillComparison-ctaPricing"
-              ><i class="bi bi-tags" aria-hidden="true"></i>View pricing</a
             >
+              <i class="bi bi-tags" aria-hidden="true"></i>View pricing
+            </fpc-button>
           </div>
         </article>
       </div>

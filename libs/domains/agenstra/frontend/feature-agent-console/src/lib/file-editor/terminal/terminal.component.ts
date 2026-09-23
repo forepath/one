@@ -19,6 +19,11 @@ import {
   type TerminalCreatedData,
   type TerminalOutputData,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcButtonComponent,
+  FpcDropdownComponent,
+  FpcDropdownItemComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { Terminal } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
 
@@ -30,7 +35,7 @@ interface TerminalSession {
 
 @Component({
   selector: 'framework-terminal',
-  imports: [CommonModule],
+  imports: [CommonModule, FpcButtonComponent, FpcDropdownComponent, FpcDropdownItemComponent],
   templateUrl: './terminal.component.html',
   styleUrls: ['./terminal.component.scss'],
   standalone: true,
@@ -46,6 +51,8 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
 
   // ViewChild for terminal container
   @ViewChild('terminalContainer', { static: false }) terminalContainerRef?: ElementRef<HTMLDivElement>;
+
+  readonly sessionMenuOpen = signal(false);
 
   // Terminal sessions
   private readonly sessions = signal<Map<string, TerminalSession>>(new Map());
@@ -222,11 +229,8 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
    * Switch to a different terminal session
    */
   onSwitchSession(sessionId: string, event?: Event): void {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
+    event?.preventDefault();
+    this.sessionMenuOpen.set(false);
     this.setActiveSession(sessionId);
   }
 

@@ -1,41 +1,32 @@
 @use '../../section.scss';
 
 .docs-layout {
-  .docs-header {
-    z-index: 1020;
+  // Sticky product chrome — matches prior docs header (top bar is ~72px with brand mark padding).
+  .docs-layout__top-bar {
     position: sticky;
     top: 0;
-    height: 72px;
+    z-index: 1020;
+  }
 
-    .brand-icon-container {
-      height: calc(40px + 2rem);
-    }
+  .docs-layout__brand-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
 
-    .brand-icon {
-      color: #fff;
-      height: 39px;
-      width: 39px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+  .docs-layout__brand-icon {
+    height: 40px;
+    width: 40px;
+    display: block;
+  }
 
-    .menu-collapse-button {
-      height: 71px;
-      width: 71px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 0;
-      background-color: transparent;
-      border: none;
-      padding: 0;
-      background-color: rgb(0 0 0 / 0.25);
-    }
-
-    h5 {
-      margin: 0;
-    }
+  .docs-layout__menu-button {
+    background-color: rgb(0 0 0 / 0.25);
+    border-radius: 0;
+    height: 100%;
+    min-height: 4.5rem;
+    min-width: 4.5rem;
   }
 
   .docs-main {
@@ -87,11 +78,5 @@
         padding: 1rem;
       }
     }
-  }
-}
-
-#languageDropdown {
-  &:after {
-    display: none;
   }
 }

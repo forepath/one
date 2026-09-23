@@ -1,4 +1,14 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .deployment-runs-list-container {
+  flex: 1 1 0;
   min-height: 0;
   overflow: auto;
   display: flex;
@@ -7,40 +17,4 @@
 
 .list-group-item-action {
   min-width: 0;
-}
-
-.search-input {
-  border-radius: 0;
-  position: relative;
-  padding-left: 0;
-  box-shadow: none;
-}
-
-.search-input-container {
-  position: relative;
-
-  i {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-  }
-}
-
-// Active list items - white text on primary background
-.list-group-item.active {
-  color: white;
-
-  strong,
-  .text-muted,
-  small {
-    color: white !important;
-    opacity: 0.9;
-  }
-
-  .text-primary {
-    color: white !important;
-    opacity: 1;
-  }
 }

@@ -14,7 +14,6 @@ import {
   OnInit,
   signal,
   viewChild,
-  ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -24,21 +23,55 @@ import {
   ProjectTicketsFacade,
   ProjectTicketsService,
   ProjectTimeEntriesFacade,
-  buildTicketBreadcrumbTitles,
+  createProjectTicketSuccess,
   type BoardLaneStatus,
   type CreateProjectTicketDto,
   type ProjectMilestoneResponse,
   type ProjectTicketBoardRow,
-  type ProjectTicketGlobalSearchHit,
   type ProjectTicketPriority,
   type ProjectTicketResponse,
   type ProjectTicketStatus,
   type ProjectTimeEntryResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { catchError, debounceTime, distinctUntilChanged, filter, map, of, switchMap } from 'rxjs';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcBoardLaneComponent,
+  FpcBreadcrumbItemComponent,
+  FpcBreadcrumbsComponent,
+  FpcButtonComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcLaneHeaderComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+  FpcTypeaheadSelectComponent,
+} from '@forepath/shared/frontend/ui-components';
+import { Actions, ofType } from '@ngrx/effects';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  finalize,
+  map,
+  of,
+  pairwise,
+  switchMap,
+  take,
+} from 'rxjs';
 
 import {
+  BILLING_MODAL_TRANSITION_MS,
   hideBillingModal,
+  restoreUnderlyingBillingModal,
   showBillingModal,
   swapToOverlayBillingModal,
   watchBillingMutationModalClose,
@@ -88,29 +121,62 @@ function isEditableDomTarget(target: EventTarget | null): boolean {
 @Component({
   selector: 'framework-project-board',
   standalone: true,
-  imports: [CommonModule, FormsModule, ScrollingModule, ProjectMilestoneSelectComponent, ProjectTicketEditorComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ScrollingModule,
+    ProjectMilestoneSelectComponent,
+    ProjectTicketEditorComponent,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcBoardLaneComponent,
+    FpcBreadcrumbItemComponent,
+    FpcBreadcrumbsComponent,
+    FpcButtonComponent,
+    FpcConfirmDialogComponent,
+    FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcLaneHeaderComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+    FpcTabComponent,
+    FpcTabGroupComponent,
+    FpcTypeaheadSelectComponent,
+  ],
   templateUrl: './project-board.component.html',
   styleUrls: ['./project-board.component.scss'],
 })
 export class ProjectBoardComponent implements OnInit {
+  readonly pageTitle = $localize`:@@featureProjectBoard-title:Board`;
+  readonly globalSearchTitle = $localize`:@@featureProjectBoard-globalSearchOpenTitle:Search tickets (Ctrl+F)`;
+  readonly globalSearchAriaLabel = $localize`:@@featureProjectBoard-globalSearchOpenAria:Search tickets`;
+  readonly commentInputAriaLabel = $localize`:@@featureProjectBoard-commentPlaceholder:Add a comment…`;
+  readonly laneSearchPlaceholder = $localize`:@@featureProjectBoard-searchLanePlaceholder:Search tickets`;
+  readonly laneSearchAriaLabel = $localize`:@@featureProjectBoard-searchLaneLabel:Search tickets`;
+  readonly addTitle = $localize`:@@featureProjectBoard-add:Add`;
+
   @Input({ required: true }) projectId!: string;
   @Input() isAdmin = false;
 
-  @ViewChild('detailModal', { static: false }) private detailModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('createTimeModal', { static: false }) private createTimeModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteTicketConfirmModal', { static: false })
-  private deleteTicketConfirmModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('globalSearchModal', { static: false }) private globalSearchModal?: ElementRef<HTMLDivElement>;
-  @ViewChild('globalSearchInput', { static: false }) private globalSearchInput?: ElementRef<HTMLInputElement>;
-
+  private readonly globalSearchInput = viewChild<ElementRef<HTMLElement>>('globalSearchInput');
   private readonly detailTitleInputRef = viewChild<ElementRef<HTMLInputElement>>('detailTitleInput');
+
+  readonly detailModalOpen = signal(false);
+  readonly createModalOpen = signal(false);
+  readonly createTimeModalOpen = signal(false);
+  readonly deleteTicketConfirmModalOpen = signal(false);
+  readonly globalSearchModalOpen = signal(false);
   private readonly ticketsFacade = inject(ProjectTicketsFacade);
   private readonly ticketsService = inject(ProjectTicketsService);
   private readonly milestonesFacade = inject(ProjectMilestonesFacade);
   private readonly timeEntriesFacade = inject(ProjectTimeEntriesFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
+  private readonly actions$ = inject(Actions);
 
   readonly laneVirtualItemSize = PROJECT_BOARD_VIRTUAL_ITEM_SIZE_PX;
   readonly lanes = BOARD_LANE_STATUSES;
@@ -138,14 +204,16 @@ export class ProjectBoardComponent implements OnInit {
   readonly dragOverLane = signal<BoardLaneStatus | null>(null);
   readonly globalSearchQuery = signal('');
   readonly globalSearchQuery$ = toObservable(this.globalSearchQuery);
-  readonly globalSearchHits = signal<ProjectTicketGlobalSearchHit[]>([]);
+  readonly globalSearchHits = signal<ProjectTicketResponse[]>([]);
+  readonly globalSearchLoading = signal(false);
+  readonly globalSearchSuggestionsOpen = signal(false);
   readonly ticketPendingDelete = signal<{ id: string; title: string } | null>(null);
-
-  readonly ticketsList = toSignal(this.ticketsFacade.tickets$, { initialValue: [] as ProjectTicketResponse[] });
 
   private lastDetailIdForDraft: string | null = null;
   private detailTitleEditSyncDetailId: string | null = null;
   private readonly detailModalSwap: BillingModalSwapState = { suspended: false };
+  /** Bumps on each {@link openTicketDetailFlow} so stale load completions cannot reopen the modal. */
+  private ticketDetailOpenGeneration = 0;
   /** Skip opening detail right after a drag ended (browser may emit click). */
   private suppressCardClickUntil = 0;
 
@@ -236,36 +304,27 @@ export class ProjectBoardComponent implements OnInit {
           const trimmed = query.trim();
 
           if (!trimmed) {
-            return of([] as ProjectTicketGlobalSearchHit[]);
+            this.globalSearchLoading.set(false);
+
+            return of([] as ProjectTicketResponse[]);
           }
 
+          this.globalSearchLoading.set(true);
+
           return this.ticketsService.list({ projectId: this.projectId, search: trimmed, limit: 50 }).pipe(
-            map((tickets) =>
-              tickets
-                .map((ticket) => ({
-                  ticket,
-                  pathTitles: buildTicketBreadcrumbTitles(this.ticketsList(), ticket.id),
-                }))
-                .sort((a, b) => a.ticket.title.toLowerCase().localeCompare(b.ticket.title.toLowerCase())),
-            ),
-            catchError(() => of([] as ProjectTicketGlobalSearchHit[])),
+            map((tickets) => [...tickets].sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()))),
+            catchError(() => of([] as ProjectTicketResponse[])),
+            finalize(() => this.globalSearchLoading.set(false)),
           );
         }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((hits) => this.globalSearchHits.set(hits));
 
-    this.ticketsFacade.selectedTicketId$
-      .pipe(
-        filter((id): id is string => !!id),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => showBillingModal(this.detailModal));
-
     watchBillingMutationModalClose({
       loading$: this.saving$,
       error$: this.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.createParentId.set(null);
@@ -273,18 +332,37 @@ export class ProjectBoardComponent implements OnInit {
       },
     });
 
+    this.actions$
+      .pipe(ofType(createProjectTicketSuccess), takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ ticket }) => {
+        if (!ticket.parentId) {
+          return;
+        }
+
+        // Prevent create-modal `(closed)` from restoring the parent detail over the new ticket.
+        this.detailModalSwap.suspended = false;
+        this.openTicketDetailFlow(ticket.id);
+      });
+
     watchBillingMutationModalClose({
       loading$: this.ticketTimeSaving$,
-      error$: this.ticketTimeError$,
-      modal: () => this.createTimeModal,
+      error$: this.timeEntriesFacade.error$,
+      open: this.createTimeModalOpen,
       destroyRef: this.destroyRef,
-      onSuccess: () => this.resetTicketTimeForm(),
+      onSuccess: () => {
+        this.resetTicketTimeForm();
+        // `hideBillingModal` does not emit `fpc-modal` `(closed)`, so restore here (cancel still uses `(closed)`).
+        restoreUnderlyingBillingModal({
+          underlyingOpen: this.detailModalOpen,
+          swapState: this.detailModalSwap,
+        });
+      },
     });
 
     watchBillingMutationModalClose({
       loading$: this.saving$,
       error$: this.error$,
-      modal: () => this.deleteTicketConfirmModal,
+      open: this.deleteTicketConfirmModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.ticketPendingDelete.set(null);
@@ -317,6 +395,12 @@ export class ProjectBoardComponent implements OnInit {
 
   laneLabel(status: string): string {
     return projectTicketLaneStatusLabel(status);
+  }
+
+  onSelectedLaneTabChange(tabId: string | null): void {
+    if (tabId && (this.lanes as readonly string[]).includes(tabId)) {
+      this.selectedLane.set(tabId as BoardLaneStatus);
+    }
   }
 
   milestoneLabel(milestoneId: string | null | undefined): string {
@@ -393,7 +477,7 @@ export class ProjectBoardComponent implements OnInit {
       return;
     }
 
-    this.ticketsFacade.openDetail(ticket.id);
+    this.openTicketDetailFlow(ticket.id);
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -407,12 +491,12 @@ export class ProjectBoardComponent implements OnInit {
     }
 
     const target = event.target;
-    const modalEl = this.globalSearchModal?.nativeElement;
+    const searchHost = this.globalSearchInput()?.nativeElement;
 
     if (isEditableDomTarget(target)) {
-      if (modalEl && target instanceof Node && modalEl.contains(target)) {
+      if (this.globalSearchModalOpen() && searchHost && target instanceof Node && searchHost.contains(target)) {
         event.preventDefault();
-        this.globalSearchInput?.nativeElement?.focus();
+        this.focusGlobalSearchInput();
       }
 
       return;
@@ -424,53 +508,130 @@ export class ProjectBoardComponent implements OnInit {
 
   openGlobalSearchModal(): void {
     this.globalSearchQuery.set('');
+    this.globalSearchHits.set([]);
+    this.globalSearchLoading.set(false);
+    this.globalSearchSuggestionsOpen.set(false);
     setTimeout(() => {
-      const shell = this.globalSearchModal?.nativeElement;
-
-      if (shell?.classList.contains('show')) {
-        this.globalSearchInput?.nativeElement?.focus({ preventScroll: true });
+      if (this.globalSearchModalOpen()) {
+        this.focusGlobalSearchInput({ preventScroll: true });
 
         return;
       }
 
-      this.showGlobalSearchModal();
+      showBillingModal(this.globalSearchModalOpen);
+      afterNextRender(() => this.focusGlobalSearchInput({ preventScroll: true }), { injector: this.injector });
     }, 0);
   }
 
   onCloseGlobalSearchModal(): void {
-    if (this.globalSearchModal) {
-      hideBillingModal(this.globalSearchModal);
-    }
-
+    this.globalSearchModalOpen.set(false);
     this.globalSearchQuery.set('');
+    this.globalSearchHits.set([]);
+    this.globalSearchLoading.set(false);
+    this.globalSearchSuggestionsOpen.set(false);
   }
 
-  onGlobalSearchResultClick(hit: ProjectTicketGlobalSearchHit): void {
-    this.onCloseGlobalSearchModal();
-    this.ticketsFacade.openDetail(hit.ticket.id);
-  }
+  onGlobalSearchQueryChange(value: string): void {
+    this.globalSearchQuery.set(value);
+    const term = value.trim();
 
-  globalSearchPathDisplay(hit: ProjectTicketGlobalSearchHit): string {
-    const titles = hit.pathTitles;
+    if (!term) {
+      this.globalSearchHits.set([]);
+      this.globalSearchLoading.set(false);
+      this.globalSearchSuggestionsOpen.set(false);
 
-    if (titles.length <= 1) {
-      return '';
+      return;
     }
 
-    return titles.slice(0, -1).join(' › ');
+    this.globalSearchHits.set([]);
+    this.globalSearchLoading.set(true);
+    this.globalSearchSuggestionsOpen.set(true);
+  }
+
+  onGlobalSearchSuggestionsOpenChange(open: boolean): void {
+    if (!open) {
+      this.globalSearchSuggestionsOpen.set(false);
+
+      return;
+    }
+
+    this.globalSearchSuggestionsOpen.set(this.globalSearchQuery().trim().length > 0);
+  }
+
+  onGlobalSearchResultClick(ticket: ProjectTicketResponse, event?: MouseEvent): void {
+    event?.preventDefault();
+    this.onCloseGlobalSearchModal();
+    this.openTicketDetailFlow(ticket.id);
   }
 
   onBreadcrumbNavigate(ticketId: string): void {
-    this.ticketsFacade.openDetail(ticketId);
+    this.openTicketDetailFlow(ticketId);
+  }
+
+  onHierarchyBreadcrumbSelected(event: MouseEvent, ticketId: string): void {
+    event.preventDefault();
+    this.onBreadcrumbNavigate(ticketId);
   }
 
   openSubtaskDetail(ticketId: string): void {
-    this.ticketsFacade.openDetail(ticketId);
+    this.openTicketDetailFlow(ticketId);
+  }
+
+  /**
+   * Close any open detail/overlay fully, then load ticket detail and reopen
+   * (avoids unloading state while the modal is still animating closed).
+   */
+  openTicketDetailFlow(ticketId: string): void {
+    if (this.detail()?.id === ticketId && this.detailModalOpen()) {
+      return;
+    }
+
+    const generation = ++this.ticketDetailOpenGeneration;
+
+    this.detailModalSwap.suspended = false;
+    const closingOverlay = this.createModalOpen() || this.createTimeModalOpen() || this.deleteTicketConfirmModalOpen();
+    hideBillingModal(this.createModalOpen);
+    hideBillingModal(this.createTimeModalOpen);
+    hideBillingModal(this.deleteTicketConfirmModalOpen);
+
+    const wasOpen = this.detailModalOpen();
+
+    if (wasOpen) {
+      hideBillingModal(this.detailModalOpen);
+    }
+
+    const closeMs = wasOpen || closingOverlay ? BILLING_MODAL_TRANSITION_MS : 0;
+
+    setTimeout(() => {
+      if (generation !== this.ticketDetailOpenGeneration) {
+        return;
+      }
+
+      const whenReady$ = this.loadingDetail$.pipe(
+        pairwise(),
+        filter(([wasLoading, loading]) => wasLoading && !loading),
+        take(1),
+      );
+
+      this.ticketsFacade.openDetail(ticketId);
+
+      whenReady$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+        if (generation !== this.ticketDetailOpenGeneration || this.detail()?.id !== ticketId) {
+          return;
+        }
+
+        showBillingModal(this.detailModalOpen);
+      });
+    }, closeMs);
   }
 
   closeDetail(): void {
+    this.detailModalOpen.set(false);
+    this.onDetailModalClosed();
+  }
+
+  onDetailModalClosed(): void {
     this.detailModalSwap.suspended = false;
-    hideBillingModal(this.detailModal);
     this.detailTitleEditing.set(false);
     this.ticketsFacade.closeDetail();
     this.commentBody.set('');
@@ -481,7 +642,7 @@ export class ProjectBoardComponent implements OnInit {
 
     this.createParentId.set(null);
     this.resetCreateForm();
-    showBillingModal(this.createModal);
+    showBillingModal(this.createModalOpen);
   }
 
   showCreateSubtaskModal(): void {
@@ -501,16 +662,24 @@ export class ProjectBoardComponent implements OnInit {
     };
 
     swapToOverlayBillingModal({
-      underlyingModal: this.detailModal,
-      overlayModal: this.createModal,
+      underlyingOpen: this.detailModalOpen,
+      overlayOpen: this.createModalOpen,
       swapState: this.detailModalSwap,
     });
   }
 
-  closeCreateModal(): void {
-    hideBillingModal(this.createModal);
+  onCreateModalClosed(): void {
+    restoreUnderlyingBillingModal({
+      underlyingOpen: this.detailModalOpen,
+      swapState: this.detailModalSwap,
+    });
     this.createParentId.set(null);
     this.resetCreateForm();
+  }
+
+  closeCreateModal(): void {
+    hideBillingModal(this.createModalOpen);
+    this.onCreateModalClosed();
   }
 
   submitCreate(): void {
@@ -571,15 +740,22 @@ export class ProjectBoardComponent implements OnInit {
 
     this.ticketPendingDelete.set({ id: ticket.id, title: ticket.title });
     swapToOverlayBillingModal({
-      underlyingModal: this.detailModal,
-      overlayModal: this.deleteTicketConfirmModal,
+      underlyingOpen: this.detailModalOpen,
+      overlayOpen: this.deleteTicketConfirmModalOpen,
+      swapState: this.detailModalSwap,
+    });
+  }
+
+  onDeleteTicketConfirmModalClosed(): void {
+    restoreUnderlyingBillingModal({
+      underlyingOpen: this.detailModalOpen,
       swapState: this.detailModalSwap,
     });
   }
 
   onCancelDeleteTicketConfirm(): void {
-    hideBillingModal(this.deleteTicketConfirmModal);
     this.ticketPendingDelete.set(null);
+    this.onDeleteTicketConfirmModalClosed();
   }
 
   onConfirmDeleteTicket(): void {
@@ -599,8 +775,15 @@ export class ProjectBoardComponent implements OnInit {
 
     this.resetTicketTimeForm();
     swapToOverlayBillingModal({
-      underlyingModal: this.detailModal,
-      overlayModal: this.createTimeModal,
+      underlyingOpen: this.detailModalOpen,
+      overlayOpen: this.createTimeModalOpen,
+      swapState: this.detailModalSwap,
+    });
+  }
+
+  onCreateTimeModalClosed(): void {
+    restoreUnderlyingBillingModal({
+      underlyingOpen: this.detailModalOpen,
       swapState: this.detailModalSwap,
     });
   }
@@ -676,7 +859,8 @@ export class ProjectBoardComponent implements OnInit {
     this.detailTitleEditing.set(true);
     afterNextRender(
       () => {
-        this.detailTitleInputRef()?.nativeElement?.focus();
+        this.detailTitleInputRef()?.nativeElement?.querySelector('input')?.focus() ??
+          this.detailTitleInputRef()?.nativeElement?.focus();
       },
       { injector: this.injector },
     );
@@ -895,18 +1079,7 @@ export class ProjectBoardComponent implements OnInit {
     return new Date(value).toISOString();
   }
 
-  private showGlobalSearchModal(): void {
-    const modal = this.globalSearchModal;
-
-    if (!modal) {
-      return;
-    }
-
-    const focusSearchInput = (): void => {
-      this.globalSearchInput?.nativeElement?.focus({ preventScroll: true });
-    };
-
-    modal.nativeElement.addEventListener('shown.bs.modal', focusSearchInput, { once: true });
-    showBillingModal(modal);
+  private focusGlobalSearchInput(options?: FocusOptions): void {
+    this.globalSearchInput()?.nativeElement?.querySelector<HTMLInputElement>('input')?.focus(options);
   }
 }

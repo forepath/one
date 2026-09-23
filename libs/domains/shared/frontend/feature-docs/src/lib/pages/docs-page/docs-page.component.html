@@ -1,14 +1,9 @@
 @if (loading()) {
   <div class="d-flex justify-content-center align-items-center p-5">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden" i18n="@@featureDocsPage-loading">Loading...</span>
-    </div>
+    <fpc-spinner variant="primary" i18n-label="@@featureDocsPage-loading" label="Loading..." />
   </div>
 } @else if (error()) {
-  <div class="alert alert-danger" role="alert">
-    <i class="bi bi-exclamation-triangle me-2"></i>
-    {{ error() }}
-  </div>
+  <fpc-alert variant="danger" [message]="error()!" />
 } @else if (metadata()) {
   <div class="docs-page">
     <framework-docs-breadcrumbs [currentPath]="currentPath()" [navigationNodes]="navigationNodes()!" />

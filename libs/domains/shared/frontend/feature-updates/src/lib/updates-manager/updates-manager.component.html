@@ -1,343 +1,330 @@
-<div class="updates-manager-container border-top d-flex flex-column h-100">
-  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureUpdates-title">Updates</h5>
-    <button
-      type="button"
-      class="btn btn-sm btn-primary"
-      (click)="onCheckNow()"
+<div class="updates-manager-container border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="primary"
+      size="sm"
+      iconOnly
       [disabled]="(checking$ | async) === true || (fullLoading$ | async) === true"
-      i18n="@@featureUpdates-checkNow"
+      [title]="checkNowTitle"
+      [ariaLabel]="checkNowTitle"
+      (clicked)="onCheckNow()"
     >
-      Check now
-    </button>
-  </div>
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
 
-  <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
+  <fpc-section-container>
     @if (fullLoading$ | async) {
       <div class="d-flex justify-content-center align-items-center p-4">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden" i18n="@@featureUpdates-loading">Loading updates...</span>
-        </div>
+        <fpc-spinner variant="primary" i18n-label="@@featureUpdates-loading" label="Loading updates..." />
       </div>
     } @else {
       @if (error(); as errorMessage) {
-        <div class="alert alert-danger mb-0 rounded-0 border-0 border-bottom" role="alert">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          {{ errorMessage }}
-        </div>
+        <fpc-alert [flush]="true" variant="danger" [message]="errorMessage" />
       }
 
       @if (fullState(); as state) {
-        <div class="updates-manager__summary-bar flex-shrink-0">
-          <div
-            class="row g-0 updates-manager__summary-grid"
-            [class.updates-manager__summary-grid--three]="summaryCardCount() === 3"
-            [class.updates-manager__summary-grid--four]="summaryCardCount() === 4"
-          >
-            <div class="col-6" [class.col-md-4]="summaryCardCount() === 3" [class.col-md-3]="summaryCardCount() === 4">
-              <div class="card h-100 rounded-0 updates-manager__summary-card updates-manager__summary-card--first">
-                <div class="card-body">
-                  <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureUpdates-installedVersion">
-                    Installed version
-                  </h6>
-                  <div class="d-flex align-items-center gap-2">
-                    <p class="card-title mb-0 fs-4 fw-bold">{{ formatVersion(state.installedVersion) }}</p>
-                    <i
-                      class="bi fs-5"
-                      [class]="updateStateIconClass(state.updateState)"
-                      [attr.title]="updateStateLabel(state.updateState)"
-                      [attr.aria-label]="updateStateLabel(state.updateState)"
-                      role="img"
-                    ></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-6" [class.col-md-4]="summaryCardCount() === 3" [class.col-md-3]="summaryCardCount() === 4">
-              <div class="card h-100 rounded-0 updates-manager__summary-card updates-manager__summary-card--second">
-                <div class="card-body d-flex flex-column">
-                  <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureUpdates-latestVersion">
-                    Latest version
-                  </h6>
-                  <div class="d-flex align-items-center justify-content-between gap-2 mt-auto">
-                    <p class="card-title mb-0 fs-4 fw-bold">{{ formatVersion(state.latestVersion) }}</p>
-                    @if (state.release?.htmlUrl; as releaseUrl) {
-                      <a
-                        class="btn btn-sm btn-outline-secondary flex-shrink-0"
-                        [href]="releaseUrl"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title="View release"
-                        i18n-title="@@featureUpdates-viewRelease"
-                        i18n-aria-label="@@featureUpdates-viewRelease"
-                        aria-label="View release"
-                      >
-                        <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-                      </a>
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-6" [class.col-md-4]="summaryCardCount() === 3" [class.col-md-3]="summaryCardCount() === 4">
-              <div class="card h-100 rounded-0 updates-manager__summary-card updates-manager__summary-card--third">
-                <div class="card-body">
-                  <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureUpdates-lastCheck">Last check</h6>
-                  @if ((checking$ | async) === true) {
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    <span class="visually-hidden" i18n="@@featureUpdates-checkInProgress">Checking for updates...</span>
-                  } @else {
-                    <p class="card-title mb-0 fs-4 fw-bold">{{ formatDate(state.lastCheckAt) }}</p>
-                  }
-                </div>
-              </div>
-            </div>
-            @if (environment.frontendVersion) {
-              <div class="col-6 col-md-3">
-                <div class="card h-100 rounded-0 updates-manager__summary-card updates-manager__summary-card--fourth">
-                  <div class="card-body">
-                    <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureUpdates-frontendVersion">
-                      Frontend version
-                    </h6>
-                    <p class="card-title mb-0 fs-4 fw-bold">{{ formatVersion(environment.frontendVersion) }}</p>
-                  </div>
-                </div>
-              </div>
+        <fpc-summary-bar [columns]="summaryCardCount()">
+          <fpc-summary-card [label]="installedVersionLabel">
+            <span fpcSummaryCardValue>
+              {{ formatVersion(state.installedVersion) }}
+              <i
+                class="bi fs-5"
+                [class]="updateStateIconClass(state.updateState)"
+                [attr.title]="updateStateLabel(state.updateState)"
+                [attr.aria-label]="updateStateLabel(state.updateState)"
+                role="img"
+              ></i>
+            </span>
+          </fpc-summary-card>
+          <fpc-summary-card [label]="latestVersionLabel">
+            <span fpcSummaryCardValue>{{ formatVersion(state.latestVersion) }}</span>
+            @if (state.release?.htmlUrl; as releaseUrl) {
+              <fpc-button
+                fpcSummaryCardActions
+                variant="dark"
+                size="sm"
+                iconOnly
+                [href]="releaseUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="View release"
+                i18n-title="@@featureUpdates-viewRelease"
+                i18n-ariaLabel="@@featureUpdates-viewRelease"
+                ariaLabel="View release"
+              >
+                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+              </fpc-button>
             }
-          </div>
-        </div>
-
-        <div class="d-flex align-items-center gap-0 d-md-none border-bottom btn-group-options flex-shrink-0">
-          @for (panel of mobilePanels; track panel) {
-            <button
-              type="button"
-              class="btn btn-sm btn-options"
-              [class.btn-outline-secondary]="mobilePanel() !== panel"
-              [class.btn-primary]="mobilePanel() === panel"
-              (click)="mobilePanel.set(panel)"
-            >
-              {{ mobilePanelLabel(panel) }}
-            </button>
-          }
-        </div>
-
-        <div
-          class="updates-manager__instances-lane card flex-grow-1 border-0 border-bottom rounded-0 d-md-flex flex-column min-h-0"
-          [class.d-none]="mobilePanel() !== 'instances'"
-          [class.d-flex]="mobilePanel() === 'instances'"
-        >
-          <div
-            class="card-header updates-manager__lane-header py-2 small fw-semibold flex-shrink-0"
-            i18n="@@featureUpdates-instancesTitle"
-          >
-            Service instances
-          </div>
-          <form class="updates-manager__instances-search flex-shrink-0">
-            <div class="input-group search-input-container border-bottom">
-              <i class="bi bi-search" aria-hidden="true"></i>
-              <input
-                type="text"
-                class="form-control border-0 search-input"
-                name="instanceSearch"
-                [ngModel]="searchQuery()"
-                (ngModelChange)="searchQuery.set($event)"
-                placeholder="Search instances"
-                i18n-placeholder="@@featureUpdates-searchInstancesPlaceholder"
-              />
-            </div>
-          </form>
-          <div class="list-group list-group-flush updates-manager__lane-list">
-            @if (filteredInstances().length === 0) {
-              <div class="text-muted p-3" i18n="@@featureUpdates-noInstances">No service instances reported yet.</div>
-            } @else {
-              @for (instance of filteredInstances(); track instance.instanceId) {
-                <div class="list-group-item d-flex align-items-stretch p-0 border-bottom">
-                  <div class="min-w-0 flex-grow-1 p-3">
-                    <div class="fw-semibold mb-1 d-flex align-items-center gap-2 flex-wrap">
-                      <span>{{ serviceNameLabel(instance.serviceName) }}</span>
-                      <i
-                        class="bi"
-                        [class]="updateStateIconClass(instance.updateState)"
-                        [attr.title]="updateStateLabel(instance.updateState)"
-                        [attr.aria-label]="updateStateLabel(instance.updateState)"
-                        role="img"
-                      ></i>
-                    </div>
-                    <div class="small text-muted d-flex align-items-center gap-3 row-gap-1 flex-wrap">
-                      <span>
-                        <i class="bi bi-fingerprint me-1" aria-hidden="true"></i
-                        ><span class="font-monospace">{{ instance.instanceId }}</span>
-                      </span>
-                      <span> <i class="bi bi-hdd me-1" aria-hidden="true"></i>{{ instance.hostname }} </span>
-                      <span>
-                        <i class="bi bi-tag me-1" aria-hidden="true"></i>{{ formatVersion(instance.installedVersion) }}
-                      </span>
-                      <span>
-                        <i class="bi bi-heart-pulse me-1" aria-hidden="true"></i
-                        >{{ formatDate(instance.lastHeartbeatAt) }}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="updates-manager__role-status d-flex align-items-center justify-content-center px-4">
-                    <span class="badge text-bg-secondary">{{ roleLabel(instance.role) }}</span>
-                  </div>
-                  <div class="d-flex flex-shrink-0 align-self-stretch" role="group" aria-label="Dependencies">
-                    <div
-                      class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
-                        dependencyHealthClass(instance.dependencies.redis)
-                      }}"
-                      [attr.title]="dependencyStatusTitle('Redis', instance.dependencies.redis)"
-                      [attr.aria-label]="dependencyStatusTitle('Redis', instance.dependencies.redis)"
-                      role="img"
-                    >
-                      <i class="bi bi-memory" aria-hidden="true"></i>
-                    </div>
-                    <div
-                      class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
-                        dependencyHealthClass(instance.dependencies.queue)
-                      }}"
-                      [attr.title]="dependencyStatusTitle('Queue', instance.dependencies.queue)"
-                      [attr.aria-label]="dependencyStatusTitle('Queue', instance.dependencies.queue)"
-                      role="img"
-                    >
-                      <i class="bi bi-stack" aria-hidden="true"></i>
-                    </div>
-                    <div
-                      class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
-                        dependencyHealthClass(instance.dependencies.database)
-                      }}"
-                      [attr.title]="dependencyStatusTitle('Database', instance.dependencies.database)"
-                      [attr.aria-label]="dependencyStatusTitle('Database', instance.dependencies.database)"
-                      role="img"
-                    >
-                      <i class="bi bi-database" aria-hidden="true"></i>
-                    </div>
-                    <div
-                      class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
-                        dependencyHealthClass(instance.dependencies.opensearch)
-                      }}"
-                      [attr.title]="dependencyStatusTitle('OpenSearch', instance.dependencies.opensearch)"
-                      [attr.aria-label]="dependencyStatusTitle('OpenSearch', instance.dependencies.opensearch)"
-                      role="img"
-                    >
-                      <i class="bi bi-search" aria-hidden="true"></i>
-                    </div>
-                  </div>
-                </div>
+          </fpc-summary-card>
+          <fpc-summary-card [label]="lastCheckLabel">
+            <span fpcSummaryCardValue>
+              @if ((checking$ | async) === true) {
+                <fpc-spinner
+                  size="sm"
+                  variant="primary"
+                  i18n-label="@@featureUpdates-checkInProgress"
+                  label="Checking for updates..."
+                />
+              } @else {
+                {{ formatDate(state.lastCheckAt) }}
               }
-            }
-          </div>
-        </div>
+            </span>
+          </fpc-summary-card>
+          @if (environment.frontendVersion) {
+            <fpc-summary-card [label]="frontendVersionLabel">
+              <span fpcSummaryCardValue>{{ formatVersion(environment.frontendVersion) }}</span>
+            </fpc-summary-card>
+          }
+        </fpc-summary-bar>
 
-        <div
-          class="section__row flex-grow-1 min-h-0 d-md-flex"
+        <fpc-tab-group
+          class="d-md-none flex-shrink-0"
+          [activeId]="mobilePanel()"
+          (activeIdChange)="onMobilePanelTabChange($event)"
+        >
+          @for (panel of mobilePanels; track panel) {
+            <fpc-tab [id]="panel" [label]="mobilePanelLabel(panel)" />
+          }
+        </fpc-tab-group>
+
+        <fpc-board-lane
+          class="h-100 flex-grow-1 border-bottom d-md-flex"
+          [class.d-none]="mobilePanel() !== 'instances'"
+        >
+          <fpc-lane-header fpcBoardLaneHeader flush>
+            <span fpcLaneHeaderTitle i18n="@@featureUpdates-instancesTitle">Service instances</span>
+          </fpc-lane-header>
+          <fpc-search-field
+            fpcBoardLaneSearch
+            name="instanceSearch"
+            [bordered]="false"
+            [placeholder]="searchInstancesPlaceholder"
+            [ariaLabel]="searchInstancesPlaceholder"
+            [(value)]="searchQuery"
+          />
+          @if (filteredInstances().length === 0) {
+            @if (searchQuery().trim()) {
+              <fpc-empty-state
+                size="sm"
+                icon="search"
+                message="No search results"
+                i18n-message="@@featureUpdates-noSearchResults"
+              />
+            } @else {
+              <fpc-empty-state
+                size="sm"
+                message="No service instances yet"
+                i18n-message="@@featureUpdates-noInstances"
+              />
+            }
+          } @else {
+            <fpc-list [flush]="true">
+              @for (instance of filteredInstances(); track instance.instanceId) {
+                <fpc-list-item class="p-0 align-items-stretch updates-manager__instance-row">
+                  <div class="d-flex align-items-stretch w-100">
+                    <div class="min-w-0 flex-grow-1 p-3">
+                      <div class="fw-semibold mb-1 d-flex align-items-center gap-2 flex-wrap">
+                        <span>{{ serviceNameLabel(instance.serviceName) }}</span>
+                        <i
+                          class="bi"
+                          [class]="updateStateIconClass(instance.updateState)"
+                          [attr.title]="updateStateLabel(instance.updateState)"
+                          [attr.aria-label]="updateStateLabel(instance.updateState)"
+                          role="img"
+                        ></i>
+                      </div>
+                      <div class="small text-muted d-flex align-items-center gap-3 row-gap-1 flex-wrap">
+                        <span>
+                          <i class="bi bi-fingerprint me-1" aria-hidden="true"></i
+                          ><span class="font-monospace">{{ instance.instanceId }}</span>
+                        </span>
+                        <span> <i class="bi bi-hdd me-1" aria-hidden="true"></i>{{ instance.hostname }} </span>
+                        <span>
+                          <i class="bi bi-tag me-1" aria-hidden="true"></i
+                          >{{ formatVersion(instance.installedVersion) }}
+                        </span>
+                        <span>
+                          <i class="bi bi-heart-pulse me-1" aria-hidden="true"></i
+                          >{{ formatDate(instance.lastHeartbeatAt) }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="updates-manager__role-status d-flex align-items-center justify-content-center px-4">
+                      <fpc-badge color="secondary">{{ roleLabel(instance.role) }}</fpc-badge>
+                    </div>
+                    <div class="d-flex flex-shrink-0 align-self-stretch" role="group" aria-label="Dependencies">
+                      <div
+                        class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
+                          dependencyHealthClass(instance.dependencies.redis)
+                        }}"
+                        [attr.title]="dependencyStatusTitle('Redis', instance.dependencies.redis)"
+                        [attr.aria-label]="dependencyStatusTitle('Redis', instance.dependencies.redis)"
+                        role="img"
+                      >
+                        <i class="bi bi-memory" aria-hidden="true"></i>
+                      </div>
+                      <div
+                        class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
+                          dependencyHealthClass(instance.dependencies.queue)
+                        }}"
+                        [attr.title]="dependencyStatusTitle('Queue', instance.dependencies.queue)"
+                        [attr.aria-label]="dependencyStatusTitle('Queue', instance.dependencies.queue)"
+                        role="img"
+                      >
+                        <i class="bi bi-stack" aria-hidden="true"></i>
+                      </div>
+                      <div
+                        class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
+                          dependencyHealthClass(instance.dependencies.database)
+                        }}"
+                        [attr.title]="dependencyStatusTitle('Database', instance.dependencies.database)"
+                        [attr.aria-label]="dependencyStatusTitle('Database', instance.dependencies.database)"
+                        role="img"
+                      >
+                        <i class="bi bi-database" aria-hidden="true"></i>
+                      </div>
+                      <div
+                        class="updates-manager__dependency-status d-flex align-items-center justify-content-center px-3 border-start {{
+                          dependencyHealthClass(instance.dependencies.opensearch)
+                        }}"
+                        [attr.title]="dependencyStatusTitle('OpenSearch', instance.dependencies.opensearch)"
+                        [attr.aria-label]="dependencyStatusTitle('OpenSearch', instance.dependencies.opensearch)"
+                        role="img"
+                      >
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                      </div>
+                    </div>
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-board-lane>
+
+        <fpc-section-row
+          [nowrap]="true"
+          class="d-md-flex"
           [class.d-none]="mobilePanel() === 'instances'"
           [class.d-flex]="mobilePanel() !== 'instances'"
         >
-          <div
-            class="section__column d-md-flex flex-column min-h-0"
+          <fpc-section-column
+            class="d-md-flex flex-column min-h-0"
             [class.d-none]="mobilePanel() !== 'product'"
             [class.d-flex]="mobilePanel() === 'product'"
           >
-            <div class="card updates-manager__changelog-card border-0 rounded-0 d-flex flex-column">
-              <div
-                class="card-header updates-manager__lane-header py-2 small fw-semibold flex-shrink-0"
-                i18n="@@featureUpdates-changelogProduct"
-              >
-                Product changelog
-              </div>
-              <form class="updates-manager__changelog-search flex-shrink-0">
-                <div class="input-group search-input-container border-bottom">
-                  <i class="bi bi-search" aria-hidden="true"></i>
-                  <input
-                    type="text"
-                    class="form-control border-0 search-input"
-                    name="productChangelogSearch"
-                    [ngModel]="productChangelogSearch()"
-                    (ngModelChange)="productChangelogSearch.set($event)"
-                    placeholder="Search product changelog"
-                    i18n-placeholder="@@featureUpdates-searchProductChangelogPlaceholder"
+            <fpc-board-lane class="h-100">
+              <fpc-lane-header fpcBoardLaneHeader flush>
+                <span fpcLaneHeaderTitle i18n="@@featureUpdates-changelogProduct">Product changelog</span>
+              </fpc-lane-header>
+              <fpc-search-field
+                fpcBoardLaneSearch
+                name="productChangelogSearch"
+                [bordered]="false"
+                [placeholder]="searchProductChangelogPlaceholder"
+                [ariaLabel]="searchProductChangelogPlaceholder"
+                [(value)]="productChangelogSearch"
+              />
+              @if (filteredProductChangelog().length === 0) {
+                @if (productChangelogSearch().trim()) {
+                  <fpc-empty-state
+                    size="sm"
+                    icon="search"
+                    message="No search results"
+                    i18n-message="@@featureUpdates-noSearchResults"
                   />
-                </div>
-              </form>
-              <div class="list-group list-group-flush updates-manager__changelog-list">
-                @if (filteredProductChangelog().length === 0) {
-                  <div class="text-muted p-3" i18n="@@featureUpdates-noChangelogProduct">
-                    No product changelog entries.
-                  </div>
                 } @else {
-                  @for (entry of filteredProductChangelog(); track $index) {
-                    <div class="list-group-item border-bottom">
-                      @if (entry.category) {
-                        <span class="badge text-bg-secondary me-2">{{ changelogCategoryLabel(entry.category) }}</span>
-                      }
-                      @for (part of changelogTextParts(entry.text); track $index) {
-                        @if (part.kind === 'link') {
-                          <a [href]="part.href" target="_blank" rel="noopener noreferrer">{{ part.label }}</a>
-                        } @else {
-                          {{ part.value }}
-                        }
-                      }
-                    </div>
-                  }
+                  <fpc-empty-state
+                    size="sm"
+                    message="No product changelog entries yet"
+                    i18n-message="@@featureUpdates-noChangelogProduct"
+                  />
                 }
-              </div>
-            </div>
-          </div>
-          <div
-            class="section__column d-md-flex flex-column min-h-0 border-start"
+              } @else {
+                <fpc-list [flush]="true">
+                  @for (entry of filteredProductChangelog(); track $index) {
+                    <fpc-list-item>
+                      <div fpcListItemTitle>
+                        @if (entry.category) {
+                          <fpc-badge class="me-2" color="secondary">{{
+                            changelogCategoryLabel(entry.category)
+                          }}</fpc-badge>
+                        }
+                        @for (part of changelogTextParts(entry.text); track $index) {
+                          @if (part.kind === 'link') {
+                            <a [href]="part.href" target="_blank" rel="noopener noreferrer">{{ part.label }}</a>
+                          } @else {
+                            {{ part.value }}
+                          }
+                        }
+                      </div>
+                    </fpc-list-item>
+                  }
+                </fpc-list>
+              }
+            </fpc-board-lane>
+          </fpc-section-column>
+          <fpc-section-column
+            class="d-md-flex flex-column min-h-0 border-start"
             [class.d-none]="mobilePanel() !== 'shared'"
             [class.d-flex]="mobilePanel() === 'shared'"
           >
-            <div class="card updates-manager__changelog-card border-0 rounded-0 d-flex flex-column">
-              <div
-                class="card-header updates-manager__lane-header py-2 small fw-semibold flex-shrink-0"
-                i18n="@@featureUpdates-changelogShared"
-              >
-                Shared changelog
-              </div>
-              <form class="updates-manager__changelog-search flex-shrink-0">
-                <div class="input-group search-input-container border-bottom">
-                  <i class="bi bi-search" aria-hidden="true"></i>
-                  <input
-                    type="text"
-                    class="form-control border-0 search-input"
-                    name="sharedChangelogSearch"
-                    [ngModel]="sharedChangelogSearch()"
-                    (ngModelChange)="sharedChangelogSearch.set($event)"
-                    placeholder="Search shared changelog"
-                    i18n-placeholder="@@featureUpdates-searchSharedChangelogPlaceholder"
+            <fpc-board-lane class="h-100">
+              <fpc-lane-header fpcBoardLaneHeader flush>
+                <span fpcLaneHeaderTitle i18n="@@featureUpdates-changelogShared">Shared changelog</span>
+              </fpc-lane-header>
+              <fpc-search-field
+                fpcBoardLaneSearch
+                name="sharedChangelogSearch"
+                [bordered]="false"
+                [placeholder]="searchSharedChangelogPlaceholder"
+                [ariaLabel]="searchSharedChangelogPlaceholder"
+                [(value)]="sharedChangelogSearch"
+              />
+              @if (filteredSharedChangelog().length === 0) {
+                @if (sharedChangelogSearch().trim()) {
+                  <fpc-empty-state
+                    size="sm"
+                    icon="search"
+                    message="No search results"
+                    i18n-message="@@featureUpdates-noSearchResults"
                   />
-                </div>
-              </form>
-              <div class="list-group list-group-flush updates-manager__changelog-list">
-                @if (filteredSharedChangelog().length === 0) {
-                  <div class="text-muted p-3" i18n="@@featureUpdates-noChangelogShared">
-                    No shared changelog entries.
-                  </div>
                 } @else {
-                  @for (entry of filteredSharedChangelog(); track $index) {
-                    <div class="list-group-item border-bottom">
-                      @if (entry.category) {
-                        <span class="badge text-bg-secondary me-2">{{ changelogCategoryLabel(entry.category) }}</span>
-                      }
-                      @for (part of changelogTextParts(entry.text); track $index) {
-                        @if (part.kind === 'link') {
-                          <a [href]="part.href" target="_blank" rel="noopener noreferrer">{{ part.label }}</a>
-                        } @else {
-                          {{ part.value }}
-                        }
-                      }
-                    </div>
-                  }
+                  <fpc-empty-state
+                    size="sm"
+                    message="No shared changelog entries yet"
+                    i18n-message="@@featureUpdates-noChangelogShared"
+                  />
                 }
-              </div>
-            </div>
-          </div>
-        </div>
+              } @else {
+                <fpc-list [flush]="true">
+                  @for (entry of filteredSharedChangelog(); track $index) {
+                    <fpc-list-item>
+                      <div fpcListItemTitle>
+                        @if (entry.category) {
+                          <fpc-badge class="me-2" color="secondary">{{
+                            changelogCategoryLabel(entry.category)
+                          }}</fpc-badge>
+                        }
+                        @for (part of changelogTextParts(entry.text); track $index) {
+                          @if (part.kind === 'link') {
+                            <a [href]="part.href" target="_blank" rel="noopener noreferrer">{{ part.label }}</a>
+                          } @else {
+                            {{ part.value }}
+                          }
+                        }
+                      </div>
+                    </fpc-list-item>
+                  }
+                </fpc-list>
+              }
+            </fpc-board-lane>
+          </fpc-section-column>
+        </fpc-section-row>
       } @else if (!error()) {
-        <div class="text-muted p-4" i18n="@@featureUpdates-empty">No update information available.</div>
+        <fpc-empty-state message="No update information yet" i18n-message="@@featureUpdates-empty" />
       }
     }
-  </div>
+  </fpc-section-container>
 </div>

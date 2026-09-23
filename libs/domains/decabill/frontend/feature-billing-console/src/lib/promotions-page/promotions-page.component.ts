@@ -9,6 +9,25 @@ import {
   type PromotionRedemptionResponse,
   type ValidatePromotionRequest,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcBoardLaneComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcLaneHeaderComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, map, skip, switchMap } from 'rxjs';
 
 import {
@@ -17,21 +36,41 @@ import {
   getPromotionRedemptionStatusIconClass,
   getPromotionRedemptionStatusLabel,
   getPromotionRedemptionStatusTextClass,
-  getSubscriptionStatusLabel,
   resolveNamedLabel,
 } from '../billing-status-labels';
+import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
+import { BillingSubscriptionSelectComponent } from '../billing-subscription-select/billing-subscription-select.component';
 import { buildPromotionPeriodPricingPreview } from '../promotion-pricing-preview.util';
 
 const PROMOTION_ELIGIBLE_SUBSCRIPTION_STATUSES = new Set(['active', 'pending_backorder', 'pending_cancel']);
 
 type PromotionsMobilePanel = 'active' | 'history';
 
-const PROMOTIONS_MOBILE_PANELS: PromotionsMobilePanel[] = ['active', 'history'];
-
 @Component({
   selector: 'framework-billing-promotions-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcPageHeaderComponent,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcListItemComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcBoardLaneComponent,
+    FpcLaneHeaderComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+    FpcTabComponent,
+    FpcTabGroupComponent,
+    BillingSubscriptionSelectComponent,
+  ],
   providers: [DatePipe],
   templateUrl: './promotions-page.component.html',
   styleUrls: ['./promotions-page.component.scss'],
@@ -43,6 +82,10 @@ export class PromotionsPageComponent implements OnInit {
   private readonly datePipe = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
 
+  readonly pageTitle = $localize`:@@featurePromotions-pageTitle:Promotions`;
+  readonly applyPromoAriaLabel = $localize`:@@featurePromotions-applyCode:Apply a promotion code`;
+
+  readonly applyModalOpen = signal(false);
   promoCode = signal('');
   selectedSubscriptionId = signal('');
   readonly activeSearch = signal('');
@@ -50,7 +93,6 @@ export class PromotionsPageComponent implements OnInit {
   readonly activeSearch$ = toObservable(this.activeSearch);
   readonly historySearch$ = toObservable(this.historySearch);
   readonly mobilePanel = signal<PromotionsMobilePanel>('active');
-  readonly mobilePanels = PROMOTIONS_MOBILE_PANELS;
 
   readonly activePromotions = toSignal(this.promotionsFacade.getActivePromotions$(), { initialValue: [] });
   readonly redemptions = toSignal(this.promotionsFacade.getRedemptions$(), { initialValue: [] });
@@ -72,7 +114,7 @@ export class PromotionsPageComponent implements OnInit {
       ),
     );
 
-  private readonly eligibleSubscriptions = toSignal(this.eligibleSubscriptions$, { initialValue: [] });
+  readonly eligibleSubscriptions = toSignal(this.eligibleSubscriptions$, { initialValue: [] });
 
   readonly selectedSubscription = computed(
     () =>
@@ -143,6 +185,16 @@ export class PromotionsPageComponent implements OnInit {
 
   readonly canRedeem = toSignal(this.canRedeem$, { initialValue: false });
 
+  constructor() {
+    watchBillingMutationModalClose({
+      loading$: this.redeeming$,
+      error$: this.redeemError$,
+      open: this.applyModalOpen,
+      destroyRef: this.destroyRef,
+      onSuccess: () => this.resetApplyForm(),
+    });
+  }
+
   ngOnInit(): void {
     this.promotionsFacade.loadActivePromotions();
     this.promotionsFacade.loadRedemptions();
@@ -160,6 +212,15 @@ export class PromotionsPageComponent implements OnInit {
       .subscribe((search) => {
         this.promotionsFacade.loadRedemptions({ search: search.trim() || undefined });
       });
+  }
+
+  openApplyModal(): void {
+    this.resetApplyForm();
+    showBillingModal(this.applyModalOpen);
+  }
+
+  onApplyModalClosed(): void {
+    this.resetApplyForm();
   }
 
   onPromoInputChange(): void {
@@ -196,6 +257,18 @@ export class PromotionsPageComponent implements OnInit {
     });
   }
 
+  private resetApplyForm(): void {
+    this.promoCode.set('');
+    this.selectedSubscriptionId.set('');
+    this.promotionsFacade.clearValidation();
+  }
+
+  onMobilePanelTabChange(tabId: string | null): void {
+    if (tabId === 'active' || tabId === 'history') {
+      this.mobilePanel.set(tabId);
+    }
+  }
+
   mobilePanelLabel(panel: PromotionsMobilePanel): string {
     switch (panel) {
       case 'active':
@@ -205,10 +278,6 @@ export class PromotionsPageComponent implements OnInit {
       default:
         return panel;
     }
-  }
-
-  subscriptionStatusLabel(status: string | null | undefined): string {
-    return getSubscriptionStatusLabel(status);
   }
 
   redemptionContextLabel(context: PromotionRedemptionResponse['redemptionContext']): string {

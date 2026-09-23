@@ -1,16 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  computed,
-  DestroyRef,
-  effect,
-  ElementRef,
-  inject,
-  input,
-  output,
-  signal,
-  ViewChild,
-} from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -20,11 +9,38 @@ import {
   type UpdateDeploymentConfigurationDto,
   type Workflow,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInputGroupComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { take } from 'rxjs';
 
 @Component({
   selector: 'framework-deployment-configuration',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcInputGroupComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcConfirmDialogComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './deployment-configuration.component.html',
   styleUrls: ['./deployment-configuration.component.scss'],
   standalone: true,
@@ -33,11 +49,8 @@ export class DeploymentConfigurationComponent {
   private readonly deploymentsFacade = inject(DeploymentsFacade);
   private readonly destroyRef = inject(DestroyRef);
 
-  @ViewChild('configurationModal', { static: false })
-  private configurationModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('deleteConfigurationConfirmModal', { static: false })
-  private deleteConfigurationConfirmModal!: ElementRef<HTMLDivElement>;
+  readonly configurationModalOpen = signal(false);
+  readonly deleteConfigurationConfirmModalOpen = signal(false);
 
   // Inputs
   clientId = input.required<string>();
@@ -264,11 +277,11 @@ export class DeploymentConfigurationComponent {
   }
 
   onShowConfigurationForm(): void {
-    this.showModal();
+    this.configurationModalOpen.set(true);
   }
 
   onCancelConfigurationForm(): void {
-    this.hideModal();
+    this.configurationModalOpen.set(false);
     // Reset form to current configuration
     const config = this.configuration();
 
@@ -320,21 +333,21 @@ export class DeploymentConfigurationComponent {
     this.deploymentsFacade.configuration$.pipe(take(2), takeUntilDestroyed(this.destroyRef)).subscribe((newConfig) => {
       if (newConfig) {
         this.configurationSaved.emit(newConfig);
-        this.hideModal();
+        this.configurationModalOpen.set(false);
       }
     });
   }
 
   onOpenDeleteConfigurationConfirm(): void {
-    setTimeout(() => this.showDeleteConfigurationConfirmModal(), 0);
+    this.deleteConfigurationConfirmModalOpen.set(true);
   }
 
   onCancelDeleteConfigurationConfirm(): void {
-    this.hideDeleteConfigurationConfirmModal();
+    this.deleteConfigurationConfirmModalOpen.set(false);
   }
 
   confirmDeleteConfiguration(): void {
-    this.hideDeleteConfigurationConfirmModal();
+    this.deleteConfigurationConfirmModalOpen.set(false);
     const clientId = this.clientId();
     const agentId = this.agentId();
 
@@ -464,75 +477,6 @@ export class DeploymentConfigurationComponent {
     }
 
     return false;
-  }
-
-  /**
-   * Show the Bootstrap modal
-   */
-  private showModal(): void {
-    if (this.configurationModal?.nativeElement) {
-      // Use Bootstrap 5 Modal API
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(this.configurationModal.nativeElement);
-
-      if (modal) {
-        modal.show();
-      } else {
-        // Fallback: create new modal instance
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const Modal = (window as any).bootstrap?.Modal;
-
-        if (Modal) {
-          new Modal(this.configurationModal.nativeElement).show();
-        }
-      }
-    }
-  }
-
-  /**
-   * Hide the Bootstrap modal
-   */
-  private hideModal(): void {
-    if (this.configurationModal?.nativeElement) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modal = (window as any).bootstrap?.Modal?.getInstance(this.configurationModal.nativeElement);
-
-      if (modal) {
-        modal.hide();
-      }
-    }
-  }
-
-  private showDeleteConfigurationConfirmModal(): void {
-    const el = this.deleteConfigurationConfirmModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Modal = (window as any).bootstrap?.Modal;
-
-    if (!Modal) {
-      return;
-    }
-
-    const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
-
-    inst.show();
-  }
-
-  private hideDeleteConfigurationConfirmModal(): void {
-    const el = this.deleteConfigurationConfirmModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const modal = (window as any).bootstrap?.Modal?.getInstance(el);
-
-    modal?.hide();
   }
 
   getModalTitle(): string {

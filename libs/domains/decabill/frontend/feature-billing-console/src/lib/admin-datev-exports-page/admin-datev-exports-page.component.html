@@ -1,215 +1,173 @@
-<div class="admin-datev-exports border-top d-flex flex-column h-100">
-  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center gap-3 flex-wrap">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminDatevExports-title">DATEV exports</h5>
-    <button
-      type="button"
-      class="btn btn-sm btn-primary"
-      (click)="openExportModal()"
-      [disabled]="triggerLoading$ | async"
-      i18n-title="@@featureAdminDatevExports-trigger"
-      title="Export month"
-      i18n-aria-label="@@featureAdminDatevExports-trigger"
-      aria-label="Export month"
+<div class="admin-datev-exports border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="primary"
+      size="sm"
+      iconOnly
+      [disabled]="(triggerLoading$ | async) === true"
+      [ariaLabel]="exportMonthAriaLabel"
+      [title]="exportMonthAriaLabel"
+      (clicked)="openExportModal()"
     >
       <i class="bi bi-calendar-plus" aria-hidden="true"></i>
-    </button>
-  </div>
+    </fpc-button>
+  </fpc-page-header>
 
   @if (unifiedExportAllowed$ | async) {
-    <div class="d-flex align-items-center gap-0 border-bottom btn-group-options">
-      <button
-        type="button"
-        class="btn btn-sm btn-options"
-        [class.btn-outline-secondary]="(scope$ | async) !== 'tenant'"
-        [class.btn-primary]="(scope$ | async) === 'tenant'"
-        (click)="setScope('tenant')"
-      >
-        {{ tenantTabLabel }}
-      </button>
-      <button
-        type="button"
-        class="btn btn-sm btn-options"
-        [class.btn-outline-secondary]="(scope$ | async) !== 'unified'"
-        [class.btn-primary]="(scope$ | async) === 'unified'"
-        (click)="setScope('unified')"
-        i18n="@@featureAdminDatevExports-tabUnified"
-      >
-        Unified
-      </button>
-    </div>
+    <fpc-tab-group class="flex-shrink-0" [activeId]="scope()" (activeIdChange)="onScopeTabChange($event)">
+      <fpc-tab id="tenant" [label]="tenantTabLabel" />
+      <fpc-tab id="unified" [label]="unifiedTabLabel" />
+    </fpc-tab-group>
   }
 
-  <div class="input-group search-input-container border-bottom">
-    <i class="bi bi-search" aria-hidden="true"></i>
-    <input
-      id="datevExportSearch"
-      type="search"
-      class="form-control border-0 search-input"
-      placeholder="Search exports"
-      i18n-placeholder="@@featureAdminDatevExports-searchPlaceholder"
-      [ngModel]="searchQuery()"
-      (ngModelChange)="searchQuery.set($event)"
-      name="datevExportSearch"
-    />
-  </div>
+  <fpc-search-field
+    class="border-bottom"
+    inputId="datevExportSearch"
+    name="datevExportSearch"
+    [bordered]="false"
+    [placeholder]="searchPlaceholder"
+    [ariaLabel]="searchPlaceholder"
+    [(value)]="searchQuery"
+  />
 
-  <div class="flex-grow-1 overflow-auto min-h-0">
+  <div class="flex-grow-1 overflow-auto min-h-0 d-flex flex-column">
     @if ((loading$ | async) && items().length === 0) {
       <div class="d-flex justify-content-center align-items-center p-4">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden" i18n="@@featureAdminDatevExports-loading">Loading DATEV exports…</span>
-        </div>
+        <fpc-spinner variant="primary" i18n-label="@@featureAdminDatevExports-loading" label="Loading DATEV exports…" />
       </div>
     } @else {
       @if (error$ | async; as err) {
-        <div class="alert alert-danger m-3" role="alert">{{ err }}</div>
+        <fpc-alert class="m-3" variant="danger" [message]="err" />
       }
       @if (items().length === 0) {
-        <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-          <p class="mb-0" i18n="@@featureAdminDatevExports-empty">No DATEV exports yet.</p>
-        </div>
+        @if (searchQuery().trim()) {
+          <fpc-empty-state
+            icon="search"
+            message="No search results"
+            i18n-message="@@featureAdminDatevExports-noSearchResults"
+          />
+        } @else {
+          <fpc-empty-state message="No DATEV exports yet" i18n-message="@@featureAdminDatevExports-empty" />
+        }
       } @else {
-        <div class="list-group list-group-flush">
+        <fpc-list [flush]="true">
           @for (item of items(); track item.id) {
-            <div
-              class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3"
-              [class.list-group-item-primary]="isQueuedExport(item)"
-            >
-              <div class="min-w-0 flex-grow-1">
-                <div class="fw-semibold mb-1">{{ exportPrimaryTitle(item) }}</div>
+            <fpc-list-item [active]="isQueuedExport(item)">
+              <div fpcListItemTitle>
+                <div class="fw-semibold">{{ exportPrimaryTitle(item) }}</div>
                 @if (isQueuedExport(item)) {
-                  <div class="small mb-1">{{ queuedExportMessage() }}</div>
-                  <div class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                    <span class="me-2 d-inline-flex align-items-center">
-                      <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                      <span i18n="@@featureAdminDatevExports-statusQueued">Queued</span>
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-layers me-1" aria-hidden="true"></i>{{ exportScopeLabel(item.scope) }}
-                    </span>
-                  </div>
+                  <div class="small">{{ queuedExportMessage() }}</div>
                 } @else if (exportItem(item); as exportItem) {
                   @if (exportSecondaryLine(exportItem); as secondary) {
-                    <div class="small text-muted mb-1">{{ secondary }}</div>
+                    <div class="small text-muted">{{ secondary }}</div>
                   }
-                  <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                    <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                      <span class="me-2" [ngClass]="exportStatusTextClass(exportItem.status)">
-                        <i class="bi me-1" [ngClass]="exportStatusIconClass(exportItem.status)" aria-hidden="true"></i>
-                        {{ exportStatusLabel(exportItem.status) }}
-                      </span>
-                      <span class="me-2">
-                        <i class="bi bi-layers me-1" aria-hidden="true"></i>{{ exportScopeLabel(exportItem.scope) }}
-                      </span>
-                      <span class="me-2">
-                        <i class="bi bi-journal-text me-1" aria-hidden="true"></i
-                        ><span i18n="@@featureAdminDatevExports-metaBookings">Bookings</span>:
-                        {{ formatCount(exportItem.bookingCount) }}
-                      </span>
-                      <span class="me-2">
-                        <i class="bi bi-receipt me-1" aria-hidden="true"></i
-                        ><span i18n="@@featureAdminDatevExports-metaInvoices">Invoices</span>:
-                        {{ formatCount(exportItem.invoiceCount) }}
-                      </span>
-                      <span class="me-2">
-                        <i class="bi bi-people me-1" aria-hidden="true"></i
-                        ><span i18n="@@featureAdminDatevExports-metaDebtors">Debtors</span>:
-                        {{ formatCount(exportItem.debtorCount) }}
-                      </span>
-                      <span class="me-2">
-                        <i class="bi bi-calendar-check me-1" aria-hidden="true"></i
-                        >{{ formatDate(exportItem.completedAt) }}
-                      </span>
-                      <span class="me-2">
-                        <i
-                          class="bi me-1"
-                          [ngClass]="triggeredByIconClass(exportItem.triggeredBy)"
-                          aria-hidden="true"
-                        ></i
-                        >{{ triggeredByLabel(exportItem.triggeredBy) }}
-                      </span>
-                    </div>
+                }
+              </div>
+              <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+                @if (isQueuedExport(item)) {
+                  <span class="me-2 d-inline-flex align-items-center">
+                    <fpc-spinner class="me-1" size="sm" />
+                    <span i18n="@@featureAdminDatevExports-statusQueued">Queued</span>
+                  </span>
+                  <span class="me-2">
+                    <i class="bi bi-layers me-1" aria-hidden="true"></i>{{ exportScopeLabel(item.scope) }}
+                  </span>
+                } @else if (exportItem(item); as exportItem) {
+                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                    <span class="me-2" [ngClass]="exportStatusTextClass(exportItem.status)">
+                      <i class="bi me-1" [ngClass]="exportStatusIconClass(exportItem.status)" aria-hidden="true"></i>
+                      {{ exportStatusLabel(exportItem.status) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-layers me-1" aria-hidden="true"></i>{{ exportScopeLabel(exportItem.scope) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-journal-text me-1" aria-hidden="true"></i
+                      ><span i18n="@@featureAdminDatevExports-metaBookings">Bookings</span>:
+                      {{ formatCount(exportItem.bookingCount) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-receipt me-1" aria-hidden="true"></i
+                      ><span i18n="@@featureAdminDatevExports-metaInvoices">Invoices</span>:
+                      {{ formatCount(exportItem.invoiceCount) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-people me-1" aria-hidden="true"></i
+                      ><span i18n="@@featureAdminDatevExports-metaDebtors">Debtors</span>:
+                      {{ formatCount(exportItem.debtorCount) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-calendar-check me-1" aria-hidden="true"></i
+                      >{{ formatDate(exportItem.completedAt) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi me-1" [ngClass]="triggeredByIconClass(exportItem.triggeredBy)" aria-hidden="true"></i
+                      >{{ triggeredByLabel(exportItem.triggeredBy) }}
+                    </span>
                   </div>
                 }
               </div>
               @if (exportItem(item); as exportItem) {
-                <div
-                  class="btn-group btn-group-sm flex-shrink-0"
-                  role="group"
-                  aria-label="Export actions"
-                  i18n-aria-label="@@featureAdminDatevExports-exportActionsAria"
+                <fpc-button-group
+                  fpcListItemActions
+                  size="sm"
+                  ariaLabel="Export actions"
+                  i18n-ariaLabel="@@featureAdminDatevExports-exportActionsAria"
                 >
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary"
-                    (click)="downloadExport(exportItem.id)"
+                  <fpc-button
+                    iconOnly
+                    size="sm"
+                    variant="dark"
+                    (clicked)="downloadExport(exportItem.id)"
                     [disabled]="exportItem.status !== 'completed'"
                     title="Download export"
                     i18n-title="@@featureAdminDatevExports-downloadButtonTitle"
                   >
                     <i class="bi bi-download" aria-hidden="true"></i>
-                  </button>
-                </div>
+                  </fpc-button>
+                </fpc-button-group>
               }
-            </div>
+            </fpc-list-item>
           }
-        </div>
+        </fpc-list>
       }
     }
   </div>
 </div>
 
-<div class="modal fade" tabindex="-1" aria-hidden="true" #exportModal>
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminDatevExports-exportModalTitle">Export month</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label" for="datevYear" i18n="@@featureAdminDatevExports-year">Year</label>
-          <input id="datevYear" type="number" class="form-control" [(ngModel)]="triggerYear" name="datevYear" />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="datevMonth" i18n="@@featureAdminDatevExports-month">Month</label>
-          <input
-            id="datevMonth"
-            type="number"
-            min="1"
-            max="12"
-            class="form-control"
-            [(ngModel)]="triggerMonth"
-            name="datevMonth"
-          />
-        </div>
-        @if (unifiedExportAllowed$ | async) {
-          <div class="mb-3">
-            <label class="form-label" for="datevScope" i18n="@@featureAdminDatevExports-scope">Scope</label>
-            <select id="datevScope" class="form-select" [(ngModel)]="triggerScope" name="datevScope">
-              <option value="tenant">{{ tenantTabLabel }}</option>
-              <option value="unified" i18n="@@featureAdminDatevExports-scopeUnified">Unified</option>
-            </select>
-          </div>
-        }
-        @if (triggerError$ | async; as triggerErr) {
-          <div class="alert alert-danger mb-0" role="alert">{{ triggerErr }}</div>
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitTriggerExport()"
-          [disabled]="triggerLoading$ | async"
-        >
-          @if (triggerLoading$ | async) {
-            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          } @else {
-            <span i18n="@@featureAdminDatevExports-export">Export</span>
-          }
-        </button>
-      </div>
-    </div>
+<fpc-modal [(open)]="exportModalOpen" i18n-title="@@featureAdminDatevExports-exportModalTitle" title="Export month">
+  <fpc-form-field forId="datevYear" i18n-label="@@featureAdminDatevExports-year" label="Year">
+    <fpc-form-control controlId="datevYear" inputType="number" [(ngModel)]="triggerYear" name="datevYear" />
+  </fpc-form-field>
+  <fpc-form-field forId="datevMonth" i18n-label="@@featureAdminDatevExports-month" label="Month">
+    <fpc-form-control
+      controlId="datevMonth"
+      inputType="number"
+      min="1"
+      max="12"
+      [(ngModel)]="triggerMonth"
+      name="datevMonth"
+    />
+  </fpc-form-field>
+  @if (unifiedExportAllowed$ | async) {
+    <fpc-form-field forId="datevScope" i18n-label="@@featureAdminDatevExports-scope" label="Scope">
+      <fpc-form-control controlType="select" controlId="datevScope" [(ngModel)]="triggerScope" name="datevScope">
+        <option value="tenant">{{ tenantTabLabel }}</option>
+        <option value="unified" i18n="@@featureAdminDatevExports-scopeUnified">Unified</option>
+      </fpc-form-control>
+    </fpc-form-field>
+  }
+  @if (triggerError$ | async; as triggerErr) {
+    <fpc-alert variant="danger" [message]="triggerErr" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="primary" (clicked)="submitTriggerExport()" [disabled]="triggerLoading$ | async">
+      @if (triggerLoading$ | async) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAdminDatevExports-export">Export</span>
+      }
+    </fpc-button>
   </div>
-</div>
+</fpc-modal>

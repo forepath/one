@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -11,6 +11,31 @@ import {
   type CreateAdminOfferDto,
   type OfferStatisticsSeriesPoint,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcCollapsibleFilterPanelComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcLaneHeaderComponent,
+  FpcListComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcSummaryBarComponent,
+  FpcSummaryCardComponent,
+  FpcSummaryCardValueDirective,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+} from '@forepath/shared/frontend/ui-components';
 import type {
   ApexAxisChartSeries,
   ApexChart,
@@ -51,35 +76,62 @@ type AdminOffersMobilePanel = 'overview' | 'offers';
     BillingAdminUserSelectComponent,
     AdminOfferLineEditorComponent,
     PricingTotalsSummaryComponent,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcFormCheckComponent,
+    FpcListItemComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcCollapsibleFilterPanelComponent,
+    FpcConfirmDialogComponent,
+    FpcLaneHeaderComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSpinnerComponent,
+    FpcSummaryBarComponent,
+    FpcSummaryCardComponent,
+    FpcSummaryCardValueDirective,
+    FpcSearchFieldComponent,
+    FpcTabComponent,
+    FpcTabGroupComponent,
   ],
   providers: [DatePipe],
   templateUrl: './admin-offers-page.component.html',
   styleUrls: ['./admin-offers-page.component.scss'],
 })
 export class AdminOffersPageComponent implements OnInit {
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
   @ViewChild('createOfferUserSelect', { static: false })
   private createOfferUserSelect?: BillingAdminUserSelectComponent;
   @ViewChild('createLineEditor', { static: false })
   createLineEditor?: AdminOfferLineEditorComponent;
-  @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
   @ViewChild('editLineEditor', { static: false })
   editLineEditor?: AdminOfferLineEditorComponent;
-  @ViewChild('deleteModal', { static: false }) private deleteModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('auditHistoryModal', { static: false }) private auditHistoryModal!: ElementRef<HTMLDivElement>;
+
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly deleteModalOpen = signal(false);
+  readonly auditHistoryModalOpen = signal(false);
 
   private readonly facade = inject(AdminOffersFacade);
   private readonly adminOffersService = inject(AdminOffersService);
   private readonly datePipe = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly mobilePanels: AdminOffersMobilePanel[] = ['overview', 'offers'];
   readonly mobilePanel = signal<AdminOffersMobilePanel>('overview');
   readonly filtersCollapsed = signal(true);
+  readonly filtersPanelTitle = $localize`:@@featureAdminOffers-filters:Filters`;
   readonly fromDate = signal('');
   readonly toDate = signal('');
   readonly groupBy = signal<'day' | 'month'>('day');
   filterUserId = '';
+  readonly pageTitle = $localize`:@@featureAdminOffers-title:Offers`;
+  readonly createOfferAriaLabel = $localize`:@@featureAdminOffers-create:Create offer`;
+
   readonly searchQuery = signal('');
   readonly searchQuery$ = toObservable(this.searchQuery);
   readonly auditOfferId = signal<string | null>(null);
@@ -90,6 +142,10 @@ export class AdminOffersPageComponent implements OnInit {
   readonly error$ = this.facade.error$;
   readonly statistics$ = this.facade.statistics$;
   readonly statisticsLoading$ = this.facade.statisticsLoading$;
+  readonly draftCountLabel = $localize`:@@featureAdminOffers-draftCount:Draft`;
+  readonly pendingCountLabel = $localize`:@@featureAdminOffers-pendingCount:Pending`;
+  readonly acceptedCountLabel = $localize`:@@featureAdminOffers-acceptedCount:Accepted`;
+  readonly pendingGrossLabel = $localize`:@@featureAdminOffers-pendingGross:Pending gross`;
   readonly statisticsError$ = this.facade.statisticsError$;
   readonly auditLogsLoading$ = this.facade.auditLogsLoading$;
   readonly auditLogsAppendLoading$ = this.facade.auditLogsAppendLoading$;
@@ -143,7 +199,7 @@ export class AdminOffersPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.facade.creating$,
       error$: this.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.createForm = this.emptyForm();
@@ -153,13 +209,13 @@ export class AdminOffersPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.facade.updating$,
       error$: this.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
     });
     watchBillingMutationModalClose({
       loading$: this.facade.deleting$,
       error$: this.error$,
-      modal: () => this.deleteModal,
+      open: this.deleteModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.selectedOffer = null;
@@ -167,11 +223,12 @@ export class AdminOffersPageComponent implements OnInit {
     });
   }
 
-  onToggleFilters(): void {
-    this.filtersCollapsed.update((value) => !value);
+  onFiltersOpenChange(open: boolean): void {
+    this.filtersCollapsed.set(!open);
   }
 
   onApplyFilters(): void {
+    this.filtersCollapsed.set(true);
     this.loadStatistics();
     this.facade.loadOffers({
       search: this.searchQuery().trim() || undefined,
@@ -179,11 +236,18 @@ export class AdminOffersPageComponent implements OnInit {
     });
   }
 
+  onResetFilters(): void {
+    this.setDefaultDates();
+    this.groupBy.set('day');
+    this.filterUserId = '';
+    this.onApplyFilters();
+  }
+
   openCreateModal(): void {
     this.createForm = this.emptyForm();
     this.createUserId = '';
     this.createLineItems = [createEmptyOfferFormLine()];
-    showBillingModal(this.createModal);
+    showBillingModal(this.createModalOpen);
     queueMicrotask(() => this.createOfferUserSelect?.reset());
   }
 
@@ -198,7 +262,7 @@ export class AdminOffersPageComponent implements OnInit {
       lineItems: [],
     };
     this.editLineItems = [createEmptyOfferFormLine()];
-    showBillingModal(this.editModal);
+    showBillingModal(this.editModalOpen);
 
     this.adminOffersService
       .get(offer.id)
@@ -225,13 +289,13 @@ export class AdminOffersPageComponent implements OnInit {
 
   openDeleteModal(offer: AdminOfferListItem): void {
     this.selectedOffer = offer;
-    showBillingModal(this.deleteModal);
+    showBillingModal(this.deleteModalOpen);
   }
 
   openAuditHistory(offer: AdminOfferListItem): void {
     this.auditOfferId.set(offer.id);
     this.facade.loadAuditLogs(offer.id);
-    showBillingModal(this.auditHistoryModal);
+    showBillingModal(this.auditHistoryModalOpen);
   }
 
   loadMoreAuditLogs(): void {
@@ -304,6 +368,12 @@ export class AdminOffersPageComponent implements OnInit {
     if (!value) return getUnavailableLabel();
 
     return this.datePipe.transform(value, 'medium') ?? value;
+  }
+
+  onMobilePanelTabChange(tabId: string | null): void {
+    if (tabId === 'overview' || tabId === 'offers') {
+      this.mobilePanel.set(tabId);
+    }
   }
 
   mobilePanelLabel(panel: AdminOffersMobilePanel): string {

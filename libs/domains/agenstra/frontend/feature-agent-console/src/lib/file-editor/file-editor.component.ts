@@ -29,6 +29,19 @@ import {
   type OpenTab,
   type WriteFileDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcDropdownComponent,
+  FpcDropdownItemComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { LocaleService } from '@forepath/shared/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatest, debounceTime, filter, map, Observable, of, Subject, switchMap, take } from 'rxjs';
@@ -50,6 +63,17 @@ import { TerminalComponent } from './terminal/terminal.component';
     GitManagerComponent,
     GitDiffViewerComponent,
     ContainerStatsStatusBarComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcDropdownComponent,
+    FpcDropdownItemComponent,
+    FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcSpinnerComponent,
   ],
   templateUrl: './file-editor.component.html',
   styleUrls: ['./file-editor.component.scss'],
@@ -67,8 +91,6 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
   @ViewChild('tabsContainer', { static: false }) tabsContainerRef?: ElementRef<HTMLDivElement>;
   @ViewChild('tabsWrapper', { static: false }) tabsWrapperRef?: ElementRef<HTMLDivElement>;
-  @ViewChild('fileUpdateModal', { static: false }) fileUpdateModalRef?: ElementRef<HTMLDivElement>;
-  @ViewChild('saveOverrideModal', { static: false }) saveOverrideModalRef?: ElementRef<HTMLDivElement>;
   @ViewChild('fileTreeSidebar', { static: false }) fileTreeSidebarRef?: ElementRef<HTMLDivElement>;
 
   // Inputs
@@ -87,6 +109,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   visibleTabs = signal<OpenTab[]>([]);
   overflowedTabs = signal<OpenTab[]>([]);
   showMoreFilesDropdown = signal<boolean>(false);
+  moreFilesMenuOpen = signal(false);
   private allTabs = signal<OpenTab[]>([]);
 
   // Visibility toggles (exposed for parent component access)
@@ -103,6 +126,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
   // File update notification state
   readonly showFileUpdateModal = signal<boolean>(false);
+  readonly saveOverrideModalOpen = signal<boolean>(false);
   readonly fileUpdateNotification = signal<FileUpdateNotificationData | null>(null);
   // Track rejected file updates: filePath -> timestamp of rejected update
   private readonly rejectedFileUpdates = signal<Map<string, string>>(new Map());
@@ -542,9 +566,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     if (rejectedTimestamp) {
       // Show confirmation modal before overriding newer changes
-      if (this.saveOverrideModalRef) {
-        this.showModal(this.saveOverrideModalRef);
-      }
+      this.saveOverrideModalOpen.set(true);
 
       return;
     }
@@ -653,10 +675,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       return;
     }
 
-    // Hide modal
-    if (this.saveOverrideModalRef) {
-      this.hideModal(this.saveOverrideModalRef);
-    }
+    this.saveOverrideModalOpen.set(false);
 
     // Get content and perform save
     const contentToSave = this.editorContent();
@@ -670,10 +689,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
    * Cancel save override - keep local changes without saving
    */
   onCancelSaveOverride(): void {
-    // Just hide the modal
-    if (this.saveOverrideModalRef) {
-      this.hideModal(this.saveOverrideModalRef);
-    }
+    this.saveOverrideModalOpen.set(false);
   }
 
   onFileCreate(event: { path: string; type: 'file' | 'directory'; name: string }): void {
@@ -852,9 +868,8 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     this.selectedFilePath.set(filePath);
   }
 
-  onTabClickFromDropdown(filePath: string, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
+  onTabClickFromDropdown(filePath: string, event?: Event): void {
+    event?.preventDefault();
 
     // Move the tab to the front before selecting it
     if (this.clientId() && this.agentId()) {
@@ -862,23 +877,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     }
 
     this.onTabClick(filePath);
-
-    // Close Bootstrap dropdown
-    const dropdownElement = (event.target as HTMLElement).closest('.dropdown');
-
-    if (dropdownElement) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const bootstrap = (window as any).bootstrap;
-      const toggleButton = dropdownElement.querySelector('[data-bs-toggle="dropdown"]');
-
-      if (bootstrap?.Dropdown && toggleButton) {
-        const dropdown = bootstrap.Dropdown.getInstance(toggleButton);
-
-        if (dropdown) {
-          dropdown.hide();
-        }
-      }
-    }
+    this.moreFilesMenuOpen.set(false);
 
     // Recalculate visible tabs after moving to front
     setTimeout(() => this.calculateVisibleTabs(), 100);
@@ -893,7 +892,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  onTabClose(filePath: string, event: MouseEvent): void {
+  onTabClose(filePath: string, event: Event): void {
     event.preventDefault();
     event.stopPropagation();
 
@@ -1213,51 +1212,9 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
         this.autosaveEnabled.set(false);
         this.fileUpdateNotification.set(notification);
         this.showFileUpdateModal.set(true);
-
-        if (this.fileUpdateModalRef) {
-          this.showModal(this.fileUpdateModalRef);
-        }
       } else {
         // File is not dirty - automatically reload from server (no need to disable autosave)
         this.filesFacade.readFile(clientId, agentId, notification.filePath, this.fileManagerContext());
-      }
-    }
-  }
-
-  /**
-   * Show a Bootstrap modal
-   */
-  private showModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      // Use Bootstrap 5 Modal API
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const bootstrap = (window as any).bootstrap;
-      const modal = bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.show();
-      } else {
-        // Fallback: create new modal instance
-        const Modal = bootstrap?.Modal;
-
-        if (Modal) {
-          new Modal(modalElement.nativeElement).show();
-        }
-      }
-    }
-  }
-
-  /**
-   * Hide a Bootstrap modal
-   */
-  private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const bootstrap = (window as any).bootstrap;
-      const modal = bootstrap?.Modal?.getInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.hide();
       }
     }
   }
@@ -1305,11 +1262,6 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       return newRejected;
     });
 
-    // Hide modal and clear notification
-    if (this.fileUpdateModalRef) {
-      this.hideModal(this.fileUpdateModalRef);
-    }
-
     this.showFileUpdateModal.set(false);
     this.fileUpdateNotification.set(null);
 
@@ -1336,11 +1288,6 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
         return newRejected;
       });
-    }
-
-    // Hide modal - keep the file dirty so user can save with CTRL+S or save button
-    if (this.fileUpdateModalRef) {
-      this.hideModal(this.fileUpdateModalRef);
     }
 
     this.showFileUpdateModal.set(false);
