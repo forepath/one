@@ -4852,7 +4852,7 @@
         <source>Loading...</source>
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-noResultsFor" datatype="html">
-        <source>No results found for &quot;<x id="INTERPOLATION" equiv-text="{{ searchQuery() }}"/>&quot;</source>
+        <source>No search results</source>
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-enterQueryHint" datatype="html">
         <source>Enter a search query above to find documentation.</source>
