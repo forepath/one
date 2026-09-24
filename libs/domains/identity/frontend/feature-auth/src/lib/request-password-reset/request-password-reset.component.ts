@@ -57,6 +57,9 @@ export class IdentityRequestPasswordResetComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.authFacade.clearError();
+    this.authFacade.clearSuccessMessage();
+
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
     });

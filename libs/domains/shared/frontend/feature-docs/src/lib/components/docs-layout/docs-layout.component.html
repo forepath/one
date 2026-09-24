@@ -3,9 +3,9 @@
     <a
       fpcTopBarBrand
       [routerLink]="getBasePath()"
-      class="docs-layout__brand text-decoration-none text-white d-flex align-items-center gap-3"
+      class="docs-layout__brand text-decoration-none text-white d-flex align-items-center gap-2 gap-md-3 min-w-0"
     >
-      <span class="docs-layout__brand-mark bg-primary">
+      <span class="docs-layout__brand-mark bg-primary flex-shrink-0">
         <img
           src="assets/images/icon_light.svg"
           i18n-alt="@@featureDocsLayout-brandAlt"
@@ -13,7 +13,7 @@
           class="docs-layout__brand-icon"
         />
       </span>
-      <h5 class="mb-0 d-none d-md-block" i18n="@@featureDocsLayout-documentation">Documentation</h5>
+      <h5 class="mb-0 d-none d-md-block text-truncate" i18n="@@featureDocsLayout-documentation">Documentation</h5>
     </a>
 
     <fpc-language-switcher
@@ -24,10 +24,12 @@
       (localeChange)="onLocaleChange($event)"
     />
 
-    <framework-docs-search [searchField]="!isMobile()" />
+    @if (isBrowser) {
+      <framework-docs-search [searchField]="!isMobile()" />
+    }
 
     <fpc-button
-      class="d-none d-md-inline-flex text-white"
+      class="d-none d-md-inline-flex fpc-top-bar__action"
       variant="link"
       size="sm"
       iconOnly
@@ -41,24 +43,25 @@
     </fpc-button>
 
     <fpc-theme-switcher
-      class="text-white"
       [dark]="themeService.isDarkMode()"
       [ariaLabel]="toggleDarkModeTitle"
       (darkChange)="themeService.setTheme($event)"
     />
 
     <fpc-button
-      class="d-md-none docs-layout__menu-button text-white"
+      class="d-md-none fpc-top-bar__action"
       variant="link"
+      size="sm"
       iconOnly
       [ariaLabel]="toggleNavAriaLabel"
+      [title]="toggleNavAriaLabel"
       (clicked)="toggleMobileMenu()"
     >
-      <i class="bi bi-list fs-4" aria-hidden="true"></i>
+      <i class="bi bi-list fs-5" aria-hidden="true"></i>
     </fpc-button>
   </fpc-top-bar>
 
-  <div class="docs-main flex-grow-1 d-flex overflow-hidden">
+  <div class="docs-main border-top flex-grow-1 d-flex overflow-hidden">
     <aside class="docs-sidebar border-end" [class.mobile-open]="mobileMenuOpen()">
       <div class="docs-sidebar-content">
         <framework-docs-navigation [navigationNodes]="navigationNodes()!" />
@@ -68,10 +71,8 @@
       }
     </aside>
 
-    <div class="docs-content-area-container overflow-auto flex-grow-1 h-100">
-      <main class="docs-content-area">
-        <router-outlet></router-outlet>
-      </main>
-    </div>
+    <fpc-section-container>
+      <router-outlet></router-outlet>
+    </fpc-section-container>
   </div>
 </div>

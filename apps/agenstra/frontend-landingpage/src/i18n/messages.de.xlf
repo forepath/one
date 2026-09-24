@@ -3386,6 +3386,10 @@
         <source>Contact</source>
         <target> Kontakt </target>
       </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageBlog-footerLink" datatype="html">
+        <source>Blog</source>
+        <target>Blog</target>
+      </trans-unit>
       <trans-unit id="sharedFeatureLandingpagePortal-footerLink" datatype="html">
         <source>Portal</source>
         <target>Portal</target>

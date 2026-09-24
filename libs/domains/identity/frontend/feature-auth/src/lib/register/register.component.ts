@@ -67,6 +67,9 @@ export class IdentityRegisterComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.authFacade.clearError();
+    this.authFacade.clearSuccessMessage();
+
     this.registerForm = this.fb.group(
       {
         email: ['', [Validators.required, Validators.email]],

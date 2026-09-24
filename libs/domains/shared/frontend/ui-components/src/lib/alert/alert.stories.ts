@@ -2,13 +2,14 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { moduleMetadata } from '@storybook/angular';
 import { action } from 'storybook/actions';
 
+import { FpcButtonComponent } from '../button/button.component';
 import { FpcAlertComponent } from './alert.component';
 
 const meta: Meta<FpcAlertComponent> = {
   parameters: {
     docs: {
       description: {
-        component: `**When to use:** Inline page/form feedback (\`showIcon\` on by default; \`flush\` under page headers).
+        component: `**When to use:** Inline page/form feedback (\`showIcon\` on by default; \`flush\` under page headers). Trailing CTAs use \`[fpcAlertActions]\` (e.g. \`fpc-button\`) and sit at the far right.
 
 **When not to:** Transient toast → \`fpc-toast\`.`,
       },
@@ -17,7 +18,7 @@ const meta: Meta<FpcAlertComponent> = {
 
   title: 'Feedback/Alert',
   component: FpcAlertComponent,
-  decorators: [moduleMetadata({ imports: [FpcAlertComponent] })],
+  decorators: [moduleMetadata({ imports: [FpcAlertComponent, FpcButtonComponent] })],
   argTypes: {
     variant: {
       control: 'select',
@@ -77,6 +78,15 @@ export const WithProjectedContent: Story = {
   render: () => ({
     template: `<fpc-alert variant="success" heading="Export ready">
             <p class="mb-0">The DATEV export is available for <a href="#" class="alert-link">download</a>.</p>
+        </fpc-alert>`,
+  }),
+};
+
+export const WithActions: Story = {
+  render: () => ({
+    template: `<fpc-alert flush variant="warning">
+            <span>Complete your billing profile to place orders and receive invoices.</span>
+            <fpc-button fpcAlertActions variant="warning" size="sm">Edit profile</fpc-button>
         </fpc-alert>`,
   }),
 };

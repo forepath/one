@@ -15,6 +15,12 @@
 }
 
 .fpc-typeahead-select__input-group {
+  position: relative;
+  align-items: center;
+  // Match `fpc-search-field`: one surface for glyph + input so a dark parent (top bar)
+  // cannot show through as a separate “badge” beside the control.
+  background-color: var(--bs-body-bg);
+
   i.bi-search {
     display: flex;
     align-items: center;
@@ -35,19 +41,76 @@
   }
 }
 
-.fpc-typeahead-select__input:focus {
-  box-shadow: none;
+.fpc-typeahead-select__input {
+  min-height: 2.25rem;
+  height: 2.25rem;
+  padding-top: 0;
+  padding-bottom: 0;
+
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+:host(.fpc-typeahead-select--sm) .fpc-typeahead-select__input {
+  min-height: 1.875rem;
+  height: 1.875rem;
+}
+
+// Reserve end inset whenever clear is enabled so showing the × does not widen the strip.
+:host(.fpc-typeahead-select--clearable) .fpc-typeahead-select__input {
+  padding-right: 2.25rem;
+}
+
+:host(.fpc-typeahead-select--sm.fpc-typeahead-select--clearable) .fpc-typeahead-select__input {
+  padding-right: 1.875rem;
 }
 
 .fpc-typeahead-select__spinner,
 .fpc-typeahead-select__clear {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   width: 2.25rem;
-  flex: 0 0 auto;
+  height: 2.25rem;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
   color: var(--bs-secondary-color);
   text-decoration: none;
+}
+
+.fpc-typeahead-select__spinner {
+  // Sit left of the clear control when both are present.
+  right: 0;
+}
+
+:host(.fpc-typeahead-select--clearable) .fpc-typeahead-select__spinner {
+  right: 2.25rem;
+}
+
+:host(.fpc-typeahead-select--sm.fpc-typeahead-select--clearable) .fpc-typeahead-select__spinner {
+  right: 1.875rem;
+}
+
+.fpc-typeahead-select__clear:hover {
+  color: var(--bs-body-color);
+}
+
+.fpc-typeahead-select__menu,
+.fpc-typeahead-select__panel {
+  // Global `--bs-scrollbar-track` is transparent. On a floating/overflow panel that sits over
+  // dark chrome (docs top bar), the gutter shows through and the thin thumb reads as invisible.
+  --bs-scrollbar-track: var(--bs-dropdown-bg, var(--bs-body-bg));
+  scrollbar-color: var(--bs-scrollbar-thumb) var(--bs-scrollbar-track);
 }
 
 .fpc-typeahead-select__menu {
@@ -55,29 +118,43 @@
   // Above Bootstrap modal (1055) when the menu is on `document.body`.
   position: fixed;
   z-index: 1080;
+  box-sizing: border-box;
   max-height: 18rem;
+  // Width is set to the anchor; keep overflow vertical-only so nowrap Bootstrap items
+  // cannot introduce a horizontal scrollbar under the top-bar field.
+  overflow-x: hidden;
   overflow-y: auto;
   margin: 0;
+  padding: 0;
+  background-color: var(--bs-dropdown-bg, var(--bs-body-bg));
 }
 
 .fpc-typeahead-select__panel {
   margin-top: 0.75rem;
   max-height: min(20rem, 50vh);
+  overflow-x: hidden;
   overflow-y: auto;
   padding: 0;
   background-color: var(--bs-body-bg);
   border: var(--bs-border-width) solid var(--bs-border-color);
   border-radius: var(--bs-border-radius);
+}
 
-  // Suggestions are projected from the consumer; pierce encapsulation for list chrome.
+// Suggestions are projected from the consumer; pierce encapsulation for list chrome.
+// Shared by menu + panel so Bootstrap `.dropdown-item { white-space: nowrap }` cannot
+// force the fixed-width menu wider than the search field.
+.fpc-typeahead-select__menu,
+.fpc-typeahead-select__panel {
   ::ng-deep .fpc-typeahead-select__suggestions {
     display: flex;
     flex-direction: column;
+    min-width: 0;
   }
 
   ::ng-deep .dropdown-item,
   ::ng-deep .list-group-item {
     white-space: normal;
+    overflow-wrap: anywhere;
     margin: 0;
     border: 0;
     border-radius: 0;
@@ -92,6 +169,8 @@
 
   ::ng-deep .dropdown-item-text {
     display: block;
+    white-space: normal;
+    overflow-wrap: anywhere;
     padding: var(--bs-list-group-item-padding-y, 0.5rem) var(--bs-list-group-item-padding-x, 1rem);
   }
 }

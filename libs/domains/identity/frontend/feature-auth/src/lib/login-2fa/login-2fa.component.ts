@@ -75,8 +75,9 @@ export class IdentityLogin2faComponent implements OnInit {
 
     this.method = methodParam === 'totp' ? 'totp' : 'email';
 
-    // Challenge redirect is not a failure; clear any leftover message from login.
+    // Challenge redirect is not a failure; clear leftovers from other auth screens.
     this.authFacade.clearError();
+    this.authFacade.clearSuccessMessage();
 
     const password = sessionStorage.getItem(PENDING_LOGIN_PASSWORD_STORAGE_KEY) ?? '';
 

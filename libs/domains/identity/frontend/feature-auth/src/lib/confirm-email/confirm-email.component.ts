@@ -67,6 +67,9 @@ export class IdentityConfirmEmailComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Clear errors from other auth screens; keep success (e.g. after register redirect).
+    this.authFacade.clearError();
+
     const emailFromQuery = this.route.snapshot.queryParamMap.get('email') ?? '';
     const codeFromQuery = (this.route.snapshot.queryParamMap.get('code') ?? '').toUpperCase();
 

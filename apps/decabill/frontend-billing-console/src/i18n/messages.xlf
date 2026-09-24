@@ -3511,7 +3511,7 @@
         <source> Pending backorders </source>
         </trans-unit>
       <trans-unit id="featureSubscriptions-customerProfileHint" datatype="html">
-        <source> Required for invoicing. Please complete your profile with first name, last name, email, address, city and country. </source>
+        <source> A complete billing profile is required for invoicing. Add your first name, last name, email, address, city, and country. </source>
         </trans-unit>
       <trans-unit id="featureAudit-chatIoTable" datatype="html">
         <source>Subscriptions</source>
@@ -4855,7 +4855,7 @@
         <source>No search results</source>
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-enterQueryHint" datatype="html">
-        <source>Enter a search query above to find documentation.</source>
+        <source>No search query yet</source>
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
         <source>Search Documentation</source>

@@ -25,7 +25,7 @@ import { MermaidDiagramComponent } from '../mermaid-diagram/mermaid-diagram.comp
  */
 @Component({
   selector: 'framework-docs-content',
-  imports: [CommonModule, MermaidDiagramComponent],
+  imports: [CommonModule],
   templateUrl: './docs-content.component.html',
   styleUrls: ['./docs-content.component.scss'],
   standalone: true,

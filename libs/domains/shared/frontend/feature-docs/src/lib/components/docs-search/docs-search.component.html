@@ -1,47 +1,54 @@
 <div
-  class="docs-search-container position-relative"
+  class="docs-search-container"
+  [class.docs-search-container--field]="searchField()"
+  [class.docs-search-container--icon]="!searchField()"
   (keydown.enter)="onSearchClick()"
-  (focusin)="onFocus()"
-  (focusout)="onBlur()"
 >
   @if (searchField()) {
-    <fpc-search-field
-      [value]="searchQuery()"
+    <fpc-typeahead-select
+      inputId="docsSearchInput"
+      listboxId="docsSearchInput-listbox"
+      [query]="searchQuery()"
+      [open]="suggestionsOpen()"
+      [openOnFocus]="false"
       [placeholder]="searchPlaceholder"
       [ariaLabel]="searchPlaceholder"
-      (valueChange)="onSearchValueChange($event)"
-    />
+      (queryChange)="onSearchValueChange($event)"
+      (openChange)="onSuggestionsOpenChange($event)"
+      (cleared)="onCleared()"
+    >
+      <div fpcTypeaheadSuggestions>
+        @if (searchResults().length > 0) {
+          @for (result of searchResults(); track result.entry.path) {
+            <button type="button" class="dropdown-item py-2 text-start" (mousedown)="onResultClick(result, $event)">
+              <span class="fw-medium d-block text-break">{{ result.entry.title }}</span>
+              @if (result.entry.summary) {
+                <small class="d-block text-muted text-break">{{ result.entry.summary }}</small>
+              }
+              @if (result.highlights.length > 0) {
+                <small class="d-block text-muted" [innerHTML]="result.highlights[0]"></small>
+              }
+            </button>
+          }
+          <button type="button" class="dropdown-item py-2 text-center text-primary" (mousedown)="onSearchClick($event)">
+            {{ viewAllResultsLabel }}
+          </button>
+        } @else if (searchQuery().trim().length > 0) {
+          <span class="dropdown-item-text text-muted small">{{ noResultsMessage }}</span>
+        }
+      </div>
+    </fpc-typeahead-select>
   } @else {
-    <fpc-button variant="primary" iconOnly [ariaLabel]="searchPlaceholder" (clicked)="onSearchClick()">
+    <fpc-button
+      class="fpc-top-bar__action"
+      variant="link"
+      size="sm"
+      iconOnly
+      [ariaLabel]="searchPlaceholder"
+      [title]="searchPlaceholder"
+      (clicked)="onSearchClick()"
+    >
       <i class="bi bi-search" aria-hidden="true"></i>
     </fpc-button>
-  }
-
-  @if (showResults() && searchResults().length > 0) {
-    <div class="search-results-dropdown">
-      <fpc-list [bordered]="false" [ariaLabel]="searchResultsAriaLabel">
-        @for (result of searchResults(); track result.entry.path) {
-          <fpc-list-item [clickable]="true" (selected)="onResultClick(result)">
-            <span fpcListItemTitle>{{ result.entry.title }}</span>
-            <small fpcListItemMeta class="text-muted">{{ result.score }}</small>
-            @if (result.entry.summary) {
-              <p class="mb-1 small text-muted">{{ result.entry.summary }}</p>
-            }
-            @if (result.highlights.length > 0) {
-              <small [innerHTML]="result.highlights[0]"></small>
-            }
-          </fpc-list-item>
-        }
-      </fpc-list>
-      <div class="search-results-footer">
-        <fpc-button variant="link" size="sm" (clicked)="onSearchClick()" i18n="@@featureDocsSearch-viewAllResults">
-          View all results
-        </fpc-button>
-      </div>
-    </div>
-  } @else if (showResults() && searchQuery().trim().length > 0) {
-    <div class="search-results-dropdown p-3">
-      <fpc-empty-state size="sm" icon="search" [message]="noResultsMessage" />
-    </div>
   }
 </div>

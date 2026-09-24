@@ -1,20 +1,24 @@
-@if (loading()) {
-  <div class="d-flex justify-content-center align-items-center p-5">
-    <fpc-spinner variant="primary" i18n-label="@@featureDocsPage-loading" label="Loading..." />
-  </div>
-} @else if (error()) {
-  <fpc-alert variant="danger" [message]="error()!" />
-} @else if (metadata()) {
-  <div class="docs-page">
-    <framework-docs-breadcrumbs [currentPath]="currentPath()" [navigationNodes]="navigationNodes()!" />
+<div class="docs-content-area-container">
+  <main class="docs-content-area">
+    @if (loading()) {
+      <div class="d-flex justify-content-center align-items-center p-5">
+        <fpc-spinner variant="primary" i18n-label="@@featureDocsPage-loading" label="Loading..." />
+      </div>
+    } @else if (error()) {
+      <fpc-alert variant="danger" [message]="error()!" />
+    } @else if (metadata()) {
+      <div class="docs-page">
+        <framework-docs-breadcrumbs [currentPath]="currentPath()" [navigationNodes]="navigationNodes()!" />
 
-    <div class="row mt-4">
-      <div class="col-lg-9">
-        <framework-docs-content [metadata]="metadata()!" />
+        <div class="row mt-4">
+          <div class="col-lg-9">
+            <framework-docs-content [metadata]="metadata()!" />
+          </div>
+          <div class="col-lg-3 d-none d-lg-block">
+            <framework-docs-table-of-contents [headings]="metadata()!.headings" />
+          </div>
+        </div>
       </div>
-      <div class="col-lg-3 d-none d-lg-block">
-        <framework-docs-table-of-contents [headings]="metadata()!.headings" />
-      </div>
-    </div>
-  </div>
-}
+    }
+  </main>
+</div>

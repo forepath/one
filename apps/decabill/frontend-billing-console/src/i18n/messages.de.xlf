@@ -2647,8 +2647,8 @@
         <target>Rückstände</target>
       </trans-unit>
       <trans-unit id="featureSubscriptions-customerProfileHint" datatype="html">
-        <source> Required for invoicing. Please complete your profile with first name, last name, email, address, city and country. </source>
-        <target>Für die Rechnungsstellung erforderlich. Bitte Vornamen, Nachnamen, E-Mail, Adresse, Stadt und Land angeben.</target>
+        <source> A complete billing profile is required for invoicing. Add your first name, last name, email, address, city, and country. </source>
+        <target>Für die Rechnungsstellung ist ein vollständiges Rechnungsprofil erforderlich. Bitte Vornamen, Nachnamen, E-Mail, Adresse, Stadt und Land angeben.</target>
       </trans-unit>
       <trans-unit id="featureAudit-chatIoTable" datatype="html">
         <source>Subscriptions</source>
@@ -3999,8 +3999,8 @@
         <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureDocsSearchPage-enterQueryHint" datatype="html">
-        <source>Enter a search query above to find documentation.</source>
-        <target>Geben Sie oben eine Suchanfrage ein, um die Dokumentation zu durchsuchen.</target>
+        <source>No search query yet</source>
+        <target>Noch keine Suchanfrage</target>
       </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
         <source>Search Documentation</source>

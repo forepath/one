@@ -51,7 +51,7 @@
         <source>No search results</source>
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-enterQueryHint" datatype="html">
-        <source>Enter a search query above to find documentation.</source>
+        <source>No search query yet</source>
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
         <source>Search Documentation</source>

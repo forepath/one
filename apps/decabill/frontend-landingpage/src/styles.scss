@@ -1,6 +1,8 @@
 // Decabill design system (Bootstrap 5 overrides via shared FPC brands)
 //
 // Stack: functions → brands/decabill/palette → brands/chrome → brands/badge-tint → bootstrap → FPC styles → brands extras
+@use 'sass:color';
+
 @import 'bootstrap/scss/functions';
 @import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/decabill/palette';
 @import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/chrome';
@@ -20,8 +22,8 @@ $card-bg: #ffffff;
 
 :root {
   // Shared console palette darkened tertiary; landing banding stays at main's lighter wash.
-  --bs-tertiary-bg: #{mix($primary, #f9f8fc, 1.5%)};
-  --bs-tertiary-bg-rgb: #{to-rgb(mix($primary, #f9f8fc, 1.5%))};
+  --bs-tertiary-bg: #{color.mix($primary, #f9f8fc, 1.5%)};
+  --bs-tertiary-bg-rgb: #{to-rgb(color.mix($primary, #f9f8fc, 1.5%))};
 }
 
 .status-badge {
@@ -186,6 +188,11 @@ body {
         top: 0;
       }
     }
+  }
+
+  &.grid-section--footer {
+    // Allow footer language dropup to paint outside the section bounds.
+    overflow: visible;
   }
 
   &.bg-dark {

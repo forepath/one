@@ -33,6 +33,11 @@
   }
 
   .fpc-search-field__clear {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -44,8 +49,16 @@
     padding: 0;
     margin: 0;
     line-height: 1;
-    flex: 0 0 auto;
   }
+}
+
+// Reserve end inset whenever clear is enabled so showing the × does not widen the strip.
+:host(.fpc-search-field--clearable) .search-input-container .fpc-search-field__input {
+  padding-right: 2.25rem;
+}
+
+:host(.fpc-search-field--sm.fpc-search-field--clearable) .search-input-container .fpc-search-field__input {
+  padding-right: 1.875rem;
 }
 
 .fpc-search-field__input {
@@ -111,6 +124,10 @@
   &:focus {
     box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
   }
+}
+
+:host(.fpc-search-field--clearable) .fpc-search-field__input--marketing {
+  padding-right: 2.75rem;
 }
 
 .fpc-search-field__input--xl {

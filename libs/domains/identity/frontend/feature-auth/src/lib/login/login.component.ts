@@ -109,6 +109,10 @@ export class IdentityLoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Drop leftover errors from other auth screens; keep success (e.g. after reset/confirm).
+    this.patRejectedError = null;
+    this.authFacade.clearError();
+
     if (this.isUsersAuth) {
       this.loginForm = this.fb.group({
         email: ['', [Validators.required, Validators.email]],

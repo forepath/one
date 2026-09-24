@@ -74,6 +74,9 @@ export class IdentityRequestPasswordResetConfirmationComponent implements OnInit
   }
 
   ngOnInit(): void {
+    // Clear errors from other auth screens; keep success from the reset-request redirect.
+    this.authFacade.clearError();
+
     const emailFromQuery = this.route.snapshot.queryParamMap.get('email') ?? '';
 
     this.form = this.fb.group(

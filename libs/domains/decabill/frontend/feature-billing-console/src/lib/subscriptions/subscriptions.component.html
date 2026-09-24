@@ -79,10 +79,10 @@
     </fpc-summary-bar>
 
     @if ((isCustomerProfileComplete$ | async) !== true) {
-      <fpc-alert [flush]="true" class="py-2 small" variant="warning"
+      <fpc-alert [flush]="true" variant="warning"
         ><span i18n="@@featureSubscriptions-customerProfileHint">
-          Required for invoicing. Please complete your profile with first name, last name, email, address, city and
-          country.
+          A complete billing profile is required for invoicing. Add your first name, last name, email, address, city,
+          and country.
         </span></fpc-alert
       >
     }

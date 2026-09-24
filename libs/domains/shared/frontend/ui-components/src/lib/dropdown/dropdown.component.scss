@@ -26,7 +26,8 @@
   top: auto;
   bottom: 100%;
   margin-top: 0;
-  margin-bottom: 0;
+  // Small gap so the menu does not sit flush on the trigger.
+  margin-bottom: 0.125rem;
 }
 
 .fpc-dropdown__menu.dropdown-menu-end {

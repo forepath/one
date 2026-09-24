@@ -2,9 +2,9 @@ import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { isMainModule } from '@angular/ssr/node';
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import bootstrap from '@forepath/shared/frontend/util-docs-bootstrap';
 import { createDocsServer } from '@forepath/shared/frontend/util-express-server/docs-server';
+
+import bootstrap from './main.server';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const { app, warmStaticCache } = createDocsServer(['agenstra.com'], bootstrap, serverDistFolder);

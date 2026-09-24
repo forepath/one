@@ -12,21 +12,21 @@
 
   <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
     @if (paymentReturnFeedback === 'waiting') {
-      <fpc-alert [flush]="true" class="py-2 small" variant="success"
+      <fpc-alert [flush]="true" variant="success"
         ><span i18n="@@featureInvoices-paymentWaiting">
           Payment submitted. Waiting for confirmation from the payment provider…
         </span></fpc-alert
       >
     }
     @if (paymentReturnFeedback === 'confirmed') {
-      <fpc-alert [flush]="true" class="py-2 small" variant="success"
+      <fpc-alert [flush]="true" variant="success"
         ><span i18n="@@featureInvoices-paymentConfirmed"
           >Payment confirmed. Your invoice is marked as paid.</span
         ></fpc-alert
       >
     }
     @if (paymentReturnFeedback === 'canceled') {
-      <fpc-alert [flush]="true" class="py-2 small" variant="warning"
+      <fpc-alert [flush]="true" variant="warning"
         ><span i18n="@@featureInvoices-paymentCanceled"
           >Payment was canceled. You can try again from an open invoice.</span
         ></fpc-alert

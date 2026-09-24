@@ -251,39 +251,11 @@
   }
 }
 
-#footerLanguageDropdown {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  --bs-btn-color: var(--bs-white);
-  --bs-btn-bg: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);
-  --bs-btn-border-color: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);
-  --bs-btn-hover-color: var(--bs-white);
-  --bs-btn-hover-bg: color-mix(in srgb, var(--bs-tertiary-bg) 62%, #000);
-  --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-tertiary-bg) 62%, #000);
-  --bs-btn-active-color: var(--bs-white);
-  --bs-btn-active-bg: color-mix(in srgb, var(--bs-tertiary-bg) 54%, #000);
-  --bs-btn-active-border-color: color-mix(in srgb, var(--bs-tertiary-bg) 54%, #000);
-  --bs-btn-disabled-color: var(--bs-white);
-  --bs-btn-disabled-bg: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);
-  --bs-btn-disabled-border-color: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);
-
-  &:after {
-    display: none;
-  }
-}
-
-.portal-nav-dropdown-menu.dropdown-menu[aria-labelledby='footerLanguageDropdown'] {
-  @media (max-width: 767.98px) {
-    position: absolute !important;
-    width: auto;
-    margin-top: 0;
-    margin-bottom: 0.625rem;
-    box-shadow: var(--portal-nav-dropdown-shadow);
-    border: 1px solid rgba(255, 107, 53, 0.14);
-    border-radius: 0.75rem;
-    background-color: var(--bs-body-bg);
-  }
+// Footer language trigger: tertiary-surface charcoal (light footer), same mix as main.
+.fpc-language-switcher--footer {
+  --fpc-lang-footer-btn-bg: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);
+  --fpc-lang-footer-btn-hover-bg: color-mix(in srgb, var(--bs-tertiary-bg) 62%, #000);
+  --fpc-lang-footer-btn-active-bg: color-mix(in srgb, var(--bs-tertiary-bg) 54%, #000);
 }
 
 .portal-nav-dropdown-toggle {
@@ -375,8 +347,8 @@
   }
 }
 
-.portal-nav-dropdown-item {
-  border-radius: 0.5rem;
+:host ::ng-deep .portal-nav-dropdown-item {
+  border-radius: 0;
   padding: 0.5rem 0.75rem;
   font-size: 0.9375rem;
   font-weight: 500;
@@ -403,39 +375,9 @@
   }
 }
 
-.portal-nav-dropdown-item--stacked {
-  align-items: flex-start;
-  gap: 0.125rem;
-  line-height: 1.35;
-
-  .fpc-dropdown-item__label {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.125rem;
-  }
-
-  @media (min-width: 768px) {
-    white-space: nowrap;
-
-    .fpc-dropdown-item__label > span {
-      white-space: nowrap;
-    }
-  }
-
-  @media (max-width: 767.98px) {
-    white-space: normal;
-    width: 100%;
-    min-width: 0;
-
-    .fpc-dropdown-item__label > span {
-      display: block;
-      max-width: 100%;
-      white-space: normal;
-      overflow-wrap: break-word;
-    }
-  }
-
+// Stacked title + caption: label column lives on `fpc-dropdown-item__label`.
+// Caption tone targets projected spans via the host (encapsulation-safe).
+.portal-nav-dropdown fpc-dropdown-item {
   .small.text-muted {
     font-weight: 400;
     color: currentColor;
@@ -446,16 +388,45 @@
   }
 
   &:hover,
-  &:focus,
-  &.active,
-  &:active {
+  &:focus-within {
     .small.text-muted {
       opacity: 0.72;
     }
   }
+
+  @media (min-width: 768px) {
+    .small {
+      white-space: nowrap;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .small {
+      display: block;
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: break-word;
+    }
+  }
 }
 
-.portal-nav-dropdown-item--highlight {
+:host ::ng-deep .portal-nav-dropdown-item--stacked.fpc-dropdown-item__row {
+  align-items: flex-start;
+  gap: 0.125rem;
+  line-height: 1.35;
+
+  @media (min-width: 768px) {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 767.98px) {
+    white-space: normal;
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+:host ::ng-deep .portal-nav-dropdown-item--highlight {
   background-color: var(--bs-primary);
   border: 1px solid var(--bs-primary);
   color: #fff;

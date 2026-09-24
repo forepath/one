@@ -19,7 +19,8 @@ export type FpcLanguageSwitcherAppearance = 'default' | 'footer';
  * Locale picker built on `fpc-dropdown`.
  *
  * - `appearance="default"` (consoles): link-style trigger with optional translate icon + uppercase locale code.
- * - `appearance="footer"` (landings): dark `btn-sm` trigger with globe + visible “Language” label; menu opens upward.
+ * - `appearance="footer"` (landings): soft dark chip (footer-listing style; overridable via `--fpc-lang-footer-btn-*`)
+ *   with globe + “Language” label; menu opens upward.
  *
  * Optional `href` on locale options renders anchor menuitems for full-page locale navigation.
  * Otherwise the consuming app handles `(localeChange)` (reload, route change, runtime i18n).

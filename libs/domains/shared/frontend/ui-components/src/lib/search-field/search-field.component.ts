@@ -20,6 +20,7 @@ export type FpcSearchFieldAppearance = 'default' | 'marketing';
     class: 'fpc-search-field',
     '[class.fpc-search-field--marketing]': 'appearance() === "marketing"',
     '[class.fpc-search-field--sm]': 'appearance() === "default" && size() === "sm"',
+    '[class.fpc-search-field--clearable]': 'clearable()',
   },
   providers: [
     {

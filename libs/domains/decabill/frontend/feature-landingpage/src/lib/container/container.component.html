@@ -120,7 +120,7 @@
   </nav>
 </header>
 <router-outlet></router-outlet>
-<footer class="footer bg-dark text-white position-relative overflow-hidden grid-section pt-10">
+<footer class="footer bg-dark text-white position-relative grid-section grid-section--footer pt-10">
   <div class="container grid-section__container grid-section__container--footer-top">
     <div class="row">
       <div class="col-md-4 mb-3 mb-md-0">
@@ -195,6 +195,16 @@
       <div class="col-md-3">
         <h6 class="fw-bold mb-3" i18n="@@featureDecabillPortal-footerCompany">Company</h6>
         <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a
+              href="https://forepath.io/blog"
+              class="text-decoration-none footer-link small"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@sharedFeatureLandingpageBlog-footerLink"
+              >Blog</a
+            >
+          </li>
           <li class="mb-2">
             <a
               [href]="portalUrl"

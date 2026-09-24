@@ -1,3 +1,4 @@
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   afterNextRender,
   ChangeDetectionStrategy,
@@ -11,6 +12,7 @@ import {
   model,
   OnDestroy,
   output,
+  PLATFORM_ID,
   signal,
   viewChild,
 } from '@angular/core';
@@ -46,6 +48,7 @@ export type FpcTypeaheadSelectVariant = 'menu' | 'inline';
     class: 'fpc-typeahead-select',
     '[class.fpc-typeahead-select--sm]': 'size() === "sm"',
     '[class.fpc-typeahead-select--inline]': 'variant() === "inline"',
+    '[class.fpc-typeahead-select--clearable]': 'clearable()',
   },
   template: `
     <div class="fpc-typeahead-select__selection">
@@ -112,6 +115,8 @@ export type FpcTypeaheadSelectVariant = 'menu' | 'inline';
 export class FpcTypeaheadSelectComponent implements OnDestroy {
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly injector = inject(Injector);
+  private readonly document = inject(DOCUMENT);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly anchorRef = viewChild<ElementRef<HTMLElement>>('anchor');
   private readonly menuRef = viewChild<ElementRef<HTMLElement>>('menu');
   private readonly onScrollReposition = (): void => this.syncMenuPosition();
@@ -150,6 +155,10 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
 
   constructor() {
     effect(() => {
+      if (!this.isBrowser) {
+        return;
+      }
+
       if (!this.open() || !this.isMenuVariant()) {
         this.restoreMenuToHost();
         this.detachScrollListeners();
@@ -178,6 +187,10 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
     this.restoreMenuToHost();
     this.detachScrollListeners();
   }
@@ -185,7 +198,7 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
   @HostListener('document:click', ['$event'])
   protected onDocumentClick(event: MouseEvent): void {
     // Inline results are part of the page/modal flow; do not dismiss on outside click.
-    if (!this.open() || !this.isMenuVariant()) {
+    if (!this.isBrowser || !this.open() || !this.isMenuVariant()) {
       return;
     }
 
@@ -200,7 +213,7 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
 
   @HostListener('window:resize')
   protected onResize(): void {
-    if (this.open() && this.isMenuVariant()) {
+    if (this.isBrowser && this.open() && this.isMenuVariant()) {
       this.syncMenuPosition();
     }
   }
@@ -236,22 +249,34 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
   }
 
   private portalMenuToBody(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
     const menu = this.menuRef()?.nativeElement;
 
-    if (menu && menu.parentElement !== document.body) {
-      document.body.appendChild(menu);
+    if (menu && menu.parentElement !== this.document.body) {
+      this.document.body.appendChild(menu);
     }
   }
 
   private restoreMenuToHost(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
     const menu = this.menuRef()?.nativeElement;
 
-    if (menu?.parentElement === document.body) {
+    if (menu?.parentElement === this.document.body) {
       this.elementRef.nativeElement.appendChild(menu);
     }
   }
 
   private attachScrollListeners(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
     this.detachScrollListeners();
 
     const targets: Array<HTMLElement | Window> = [window];
@@ -283,6 +308,10 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
   }
 
   private syncMenuPosition(): void {
+    if (!this.isBrowser) {
+      return;
+    }
+
     const menu = this.menuRef()?.nativeElement;
     const anchor = this.anchorRef()?.nativeElement;
 

@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import {
   FpcButtonComponent,
   FpcLanguageSwitcherComponent,
+  FpcSectionContainerComponent,
   FpcThemeSwitcherComponent,
   FpcTopBarComponent,
 } from '@forepath/shared/frontend/ui-components';
@@ -23,6 +24,7 @@ import { DocsSearchComponent } from '../docs-search/docs-search.component';
     DocsNavigationComponent,
     DocsSearchComponent,
     FpcTopBarComponent,
+    FpcSectionContainerComponent,
     FpcLanguageSwitcherComponent,
     FpcThemeSwitcherComponent,
     FpcButtonComponent,
@@ -34,6 +36,7 @@ import { DocsSearchComponent } from '../docs-search/docs-search.component';
 export class DocsLayoutComponent implements AfterViewInit, OnDestroy {
   private readonly navigationService = inject(DocsNavigationService);
   private readonly platformId = inject(PLATFORM_ID);
+  protected readonly isBrowser = isPlatformBrowser(this.platformId);
   protected readonly themeService = inject(ThemeService);
   protected readonly localeService = inject(LocaleService);
   protected readonly productName = inject<Environment>(ENVIRONMENT).productName;

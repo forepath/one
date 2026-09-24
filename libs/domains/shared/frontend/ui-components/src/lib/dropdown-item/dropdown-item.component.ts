@@ -1,58 +1,45 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { IsActiveMatchOptions, RouterLink, RouterLinkActive } from '@angular/router';
 
-/** Menu row for `fpc-dropdown` (action, `routerLink`, or `href` menuitem with optional icon / end actions). */
+/**
+ * Menu row for `fpc-dropdown` (action, `routerLink`, or `href` menuitem with optional icon / end actions).
+ *
+ * Projected label + end-slot content use a single pair of `<ng-content>` nodes (never inside `@if`) —
+ * Angular does not project into duplicate/default slots across `@if` / `@else` branches.
+ */
 @Component({
   selector: 'fpc-dropdown-item',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RouterLinkActive],
-  host: { class: 'fpc-dropdown-item' },
+  host: {
+    class: 'fpc-dropdown-item',
+  },
   template: `
-    @if (href(); as url) {
-      <a
-        [href]="disabled() ? null : url"
-        [attr.target]="target()"
-        [attr.rel]="rel()"
-        [class]="rowClasses()"
-        [attr.title]="title() || null"
-        role="menuitem"
-        [attr.aria-current]="active() ? 'true' : null"
-        [attr.aria-disabled]="disabled() ? 'true' : null"
-        [attr.tabindex]="disabled() ? -1 : null"
-        (click)="onAnchorClick($event)"
-      >
-        @if (icon()) {
-          <i class="bi bi-{{ icon() }}" aria-hidden="true"></i>
-        }
-        <span class="fpc-dropdown-item__label"><ng-content /></span>
-        <div class="fpc-dropdown-item__end" (click)="$event.stopPropagation()">
-          <ng-content select="[fpcDropdownItemEnd]" />
-        </div>
-      </a>
-    } @else {
-      <div
-        [class]="rowClasses()"
-        [attr.title]="title() || null"
-        role="menuitem"
-        [attr.aria-current]="active() ? 'true' : null"
-        [attr.aria-disabled]="disabled() ? 'true' : null"
-        [attr.tabindex]="disabled() ? -1 : 0"
-        [routerLink]="routerLink()"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="resolvedRouterLinkActiveOptions()"
-        (click)="onRowClick($event)"
-        (keydown.enter)="onRowClick($event)"
-      >
-        @if (icon()) {
-          <i class="bi bi-{{ icon() }}" aria-hidden="true"></i>
-        }
-        <span class="fpc-dropdown-item__label"><ng-content /></span>
-        <div class="fpc-dropdown-item__end" (click)="$event.stopPropagation()">
-          <ng-content select="[fpcDropdownItemEnd]" />
-        </div>
+    <a
+      [href]="anchorHref()"
+      [attr.target]="href() ? target() : null"
+      [attr.rel]="href() ? rel() : null"
+      [class]="rowClasses()"
+      [attr.title]="title() || null"
+      role="menuitem"
+      [attr.aria-current]="active() ? 'true' : null"
+      [attr.aria-disabled]="disabled() ? 'true' : null"
+      [attr.tabindex]="disabled() ? -1 : 0"
+      [routerLink]="routerLinkForRow()"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="resolvedRouterLinkActiveOptions()"
+      (click)="onActivate($event)"
+      (keydown.enter)="onActivate($event)"
+    >
+      @if (icon()) {
+        <i class="bi bi-{{ icon() }}" aria-hidden="true"></i>
+      }
+      <span class="fpc-dropdown-item__label"><ng-content /></span>
+      <div class="fpc-dropdown-item__end" (click)="$event.stopPropagation()">
+        <ng-content select="[fpcDropdownItemEnd]" />
       </div>
-    }
+    </a>
   `,
   styleUrl: './dropdown-item.component.scss',
 })
@@ -68,7 +55,7 @@ export class FpcDropdownItemComponent {
   /** When set, navigates in-app via `RouterLink` on the row. */
   readonly routerLink = input<string | readonly unknown[] | null>(null);
   readonly routerLinkActiveOptions = input<IsActiveMatchOptions | { exact: boolean } | null>(null);
-  /** When set, renders an `<a href>` menuitem (e.g. external product links). */
+  /** When set, renders a real `href` menuitem (e.g. locale / external links). */
   readonly href = input<string | null>(null);
   readonly target = input<string | null>(null);
   readonly rel = input<string | null>(null);
@@ -77,6 +64,25 @@ export class FpcDropdownItemComponent {
 
   protected readonly resolvedRouterLinkActiveOptions = computed(() => {
     return this.routerLinkActiveOptions() ?? { exact: true };
+  });
+
+  /** Only set `href` for external/full-page links; SPA rows use `routerLink` instead. */
+  protected readonly anchorHref = computed(() => {
+    const url = this.href();
+
+    if (!url || this.disabled()) {
+      return null;
+    }
+
+    return url;
+  });
+
+  protected readonly routerLinkForRow = computed(() => {
+    if (this.href()) {
+      return null;
+    }
+
+    return this.routerLink();
   });
 
   protected readonly rowClasses = computed(() => {
@@ -103,7 +109,7 @@ export class FpcDropdownItemComponent {
     return classes.join(' ');
   });
 
-  protected onRowClick(event: Event): void {
+  protected onActivate(event: Event): void {
     if (this.disabled()) {
       event.preventDefault();
       event.stopPropagation();
@@ -115,14 +121,9 @@ export class FpcDropdownItemComponent {
       return;
     }
 
-    this.selected.emit();
-  }
-
-  protected onAnchorClick(event: MouseEvent): void {
-    if (this.disabled()) {
+    // Action-only rows (no href / routerLink) must not follow a bare `<a>`.
+    if (!this.href() && !this.routerLink()) {
       event.preventDefault();
-      event.stopPropagation();
-      return;
     }
 
     this.selected.emit();

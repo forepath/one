@@ -2,27 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
-import {
-  FpcButtonComponent,
-  FpcEmptyStateComponent,
-  FpcListComponent,
-  FpcListItemComponent,
-  FpcSearchFieldComponent,
-} from '@forepath/shared/frontend/ui-components';
+import { FpcButtonComponent, FpcTypeaheadSelectComponent } from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
-import { DocsSearchService } from '../../services';
+import { DocsSearchService, SearchResult } from '../../services';
 
 @Component({
   selector: 'framework-docs-search',
-  imports: [
-    CommonModule,
-    FpcSearchFieldComponent,
-    FpcButtonComponent,
-    FpcListComponent,
-    FpcListItemComponent,
-    FpcEmptyStateComponent,
-  ],
+  imports: [CommonModule, FpcTypeaheadSelectComponent, FpcButtonComponent],
   templateUrl: './docs-search.component.html',
   styleUrls: ['./docs-search.component.scss'],
   standalone: true,
@@ -36,21 +23,15 @@ export class DocsSearchComponent {
 
   readonly searchPlaceholder = $localize`:@@featureDocsSearch-searchPlaceholder:Search documentation...`;
   readonly noResultsMessage = $localize`:@@featureDocsSearch-noResults:No search results`;
-  readonly searchResultsAriaLabel = $localize`:@@featureDocsSearch-resultsAriaLabel:Search results`;
+  readonly viewAllResultsLabel = $localize`:@@featureDocsSearch-viewAllResults:View all results`;
 
-  /**
-   * Search input value
-   */
+  /** Search input value. */
   readonly searchQuery = signal<string>('');
 
-  /**
-   * Whether search dropdown is visible
-   */
-  readonly showResults = signal<boolean>(false);
+  /** Whether the typeahead suggestion menu is open. */
+  readonly suggestionsOpen = signal<boolean>(false);
 
-  /**
-   * Search results
-   */
+  /** Search results. */
   readonly searchResults = computed(() => this.searchService.searchResults());
 
   private readonly searchSubject = new Subject<string>();
@@ -82,44 +63,44 @@ export class DocsSearchComponent {
   onSearchValueChange(value: string): void {
     this.searchQuery.set(value);
     this.searchSubject.next(value);
-    this.showResults.set(value.trim().length > 0);
+    this.suggestionsOpen.set(value.trim().length > 0);
   }
 
-  /**
-   * Handle search result click
-   */
-  onResultClick(result: { entry: { path: string } }): void {
+  onSuggestionsOpenChange(open: boolean): void {
+    if (!open) {
+      this.suggestionsOpen.set(false);
+
+      return;
+    }
+
+    this.suggestionsOpen.set(this.searchQuery().trim().length > 0);
+  }
+
+  onCleared(): void {
+    this.searchQuery.set('');
+    this.searchService.clearSearch();
+    this.suggestionsOpen.set(false);
+  }
+
+  onResultClick(result: SearchResult, event: MouseEvent): void {
+    event.preventDefault();
     void this.router.navigate([result.entry.path]);
-    this.showResults.set(false);
+    this.suggestionsOpen.set(false);
     this.searchQuery.set('');
     this.searchService.clearSearch();
   }
 
-  /**
-   * Handle search button click / Enter
-   */
-  onSearchClick(): void {
+  onSearchClick(event?: MouseEvent): void {
+    event?.preventDefault();
+
     const query = this.searchQuery().trim();
 
     if (query.length > 0) {
       void this.router.navigate(['/search'], { queryParams: { q: query } });
-      this.showResults.set(false);
     } else {
       void this.router.navigate(['/search']);
-      this.showResults.set(false);
     }
-  }
 
-  onFocus(): void {
-    if (this.searchQuery().trim().length > 0) {
-      this.showResults.set(true);
-    }
-  }
-
-  onBlur(): void {
-    // Delay so list-item click can fire before the dropdown closes.
-    setTimeout(() => {
-      this.showResults.set(false);
-    }, 200);
+    this.suggestionsOpen.set(false);
   }
 }

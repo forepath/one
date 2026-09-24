@@ -18,7 +18,7 @@ const meta: Meta<LanguageSwitcherStoryArgs> = {
     backgrounds: { default: 'dark' },
     docs: {
       description: {
-        component: `**When to use:** Locale dropdown in console top bars (\`appearance="default"\`: icon + code) or landing footers (\`appearance="footer"\`: dark trigger + Language label + dropup). Optional \`href\` on locale options for full-page switches.
+        component: `**When to use:** Locale dropdown in console top bars (\`appearance="default"\`: icon + code) or landing footers (\`appearance="footer"\`: soft dark chip + Language label + dropup). Optional \`href\` on locale options for full-page switches.
 
 **Pairs with:** \`fpc-dropdown\` / shell i18n wiring.`,
       },

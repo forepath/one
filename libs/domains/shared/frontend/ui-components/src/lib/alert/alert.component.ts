@@ -16,6 +16,9 @@ const VARIANT_ICONS: Record<FpcAlertVariant, string> = {
 /**
  * Inline status / error banner. Always shows a leading variant icon unless `showIcon` is false
  * (e.g. custom spinner content). Use `flush` for full-width strips under `fpc-page-header`.
+ *
+ * Optional trailing actions via `[fpcAlertActions]` (e.g. `fpc-button`) sit at the far right of
+ * the alert row, before the dismiss control when `dismissible` is set.
  */
 @Component({
   selector: 'fpc-alert',
@@ -44,6 +47,10 @@ const VARIANT_ICONS: Record<FpcAlertVariant, string> = {
             <p class="mb-0">{{ message() }}</p>
           }
           <ng-content />
+        </div>
+
+        <div class="fpc-alert__actions">
+          <ng-content select="[fpcAlertActions]" />
         </div>
 
         @if (dismissible()) {

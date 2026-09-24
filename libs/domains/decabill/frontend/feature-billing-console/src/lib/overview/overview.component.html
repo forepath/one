@@ -137,13 +137,16 @@
         <span i18n="@@featureOverview-profileIncompleteHint"
           >Complete your billing profile to place orders and receive invoices.</span
         >
-        <a
+        <fpc-button
+          fpcAlertActions
           routerLink="/subscriptions"
           [queryParams]="{ profile: 'true' }"
-          class="alert-link ms-1"
+          variant="warning"
+          size="sm"
           i18n="@@featureOverview-editProfile"
-          >Edit profile</a
         >
+          Edit profile
+        </fpc-button>
       </fpc-alert>
     }
 

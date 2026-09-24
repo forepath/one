@@ -72,6 +72,9 @@ export class IdentityResetPasswordComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.authFacade.clearError();
+    this.authFacade.clearSuccessMessage();
+
     const emailFromQuery = this.route.snapshot.queryParamMap.get('email') ?? '';
 
     this.form = this.fb.group(

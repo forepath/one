@@ -1,0 +1,6 @@
+Contact: mailto:soc@forepath.io
+Encryption: https://forepath.io/.well-known/pgp-key.txt
+Expires: 2027-09-09T00:00:00.000Z
+Policy: https://forepath.io/legal/vulnerability-disclosure
+Preferred-Languages: en, de
+Canonical: https://decabill.com/.well-known/security.txt
